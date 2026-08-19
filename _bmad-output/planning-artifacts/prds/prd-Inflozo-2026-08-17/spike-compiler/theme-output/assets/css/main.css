@@ -1,0 +1,11 @@
+:root {
+  --accent: #1f6feb;
+  --gh-font-heading: var(--font-heading, ui-sans-serif, system-ui, sans-serif);
+  --gh-font-body: var(--font-body, ui-serif, Georgia, serif);
+}
+body { font-family: var(--gh-font-body); }
+h1, h2, h3 { font-family: var(--gh-font-heading); }
+.hero { padding: 4rem 1rem; text-align: center; }
+.post-card { display: block; }
+.kg-width-wide { max-width: 1000px; margin-inline: auto; }
+.kg-width-full { max-width: 100%; }

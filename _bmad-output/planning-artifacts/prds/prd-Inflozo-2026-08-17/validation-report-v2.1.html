@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PRD Validation: Inflozo PRD v2.1</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+
+    --grade-exc: #16a34a;
+    --grade-good: #65a30d;
+    --grade-fair: #d97706;
+    --grade-poor: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .grade {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .grade-excellent { background: var(--grade-exc); }
+  .grade-good { background: var(--grade-good); }
+  .grade-fair { background: var(--grade-fair); }
+  .grade-poor { background: var(--grade-poor); }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="report-header">
+      <div class="title">
+        <h1>Inflozo PRD v2.1 — Validation Report</h1>
+        <div class="subtitle">_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md</div>
+      </div>
+      <div class="grade grade-poor">Poor</div>
+    </header>
+
+    <div class="synthesis">
+      <p>This is an unusually decision-dense, testable PRD: nearly every FR carries a verifiable consequence, trade-offs are recorded with what was given up (Addendum AD3, Appendix G, FR-J14's "chosen for implementation simplicity"), and the appendices are genuinely normative rather than decorative. What's at risk is the handoff layer, not the substance: there is no glossary and no user journeys for a product whose thesis is experience quality, so the UX agent must reconstruct flows from FR prose — and one real coherence gap (every starter emits <code>routes.yaml</code>, putting the manual Ghost Admin step into every starter first deploy) could ship unexamined into onboarding design.</p>
+      <p>The adversarial and consistency reviewers materially shift that picture, and they drive the grade. Two critical findings make the PRD unsafe to hand to autonomous agents as-is: FR-J14 promises updates arrive "never automatically" while mandating a single unpinned live library, so every redeploy is a compulsory upgrade the user cannot decline; and FR-D6's "documented synthesis defaults" — the mechanism a home-only design depends on to produce a complete theme — are documented nowhere. Around them sits a cluster of asserted-but-unavailable third-party mechanisms (theme download via an Admin API endpoint Ghost doesn't document, Ghost(Pro) plan detection no API exposes), an unsatisfiable Definition of Done (deploy to T4, a target that blocks deploys by design), and stale companion-file residue from the same-day hardening pass. The grade is <em>Poor</em> by the rubric's formula (any critical finding); the substance underneath grades strong, and each critical is a one-paragraph decision away from resolution — this is a hardening problem, not a rethink.</p>
+    </div>
+
+    <div class="dimension-summary">
+      <div class="dim-card">
+        <div class="dim-name">Decision-readiness</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Substance over theater</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Strategic coherence</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Done-ness clarity</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Scope honesty</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Downstream usability</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Shape fit</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+    </div>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Decision-readiness</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Decisions are stated as decisions, with force. The §5 preamble even explains its own ordering. Real trade-offs name their cost: FR-J14 picks a single live library "chosen for implementation simplicity" and immediately owns the consequence; FR-D10/AD1 accept a data-loss window and say so; §4's live-production testing is labeled "owner mandate — must-have" with an explicit safety argument rather than smoothed into neutrality. AD3's rejected-alternatives log is exactly what this dimension asks for. Counter-metrics on G8–G10 show the metrics were argued, not listed. Zero Open Questions on a <code>status: final</code> PRD is earned here, not evasive — the residue of debate is visibly recorded.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">No contingency for the all-or-nothing library bet</h3>
+              <span class="finding-location">§4 P7, G5, §7.6</span>
+            </header>
+            <div class="finding-note">"Everything ships before launch" plus 487 variants is the PRD's biggest schedule risk; §7.6 names it but the mitigation is only "factory workflow + shared primitives". There is no de-scope trigger: if Wave 3 (E11) slips, is launch delayed, or is there a smaller normative floor?</div>
+            <div class="finding-fix"><strong>Fix:</strong> One sentence in §4 stating the fallback (even "launch slips; the 487 inventory is not de-scopeable" is a decision worth writing down).</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Substance over theater</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Nothing here is furniture. The four personas (§3) are lean and each one is traceable to real scope. The Differentiators (§1.4) each resolve to named FRs rather than adjectives, and §1.5 names the competitor's specific gaps instead of generic superiority claims. NFRs carry product-specific numbers throughout (theme JS &lt; 30 KB gzipped; 60/80/95% quota alerts; Safari 16.4+). The vision's one unfalsifiable flourish ("the most beautiful UI/UX in the Ghost ecosystem") is operationalized by G6 and Appendix H, so it reads as ambition, not theater. No findings.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Strategic coherence</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>The thesis is crisp and everything hangs off it: single-source WYSIWYG (P4/§7.3, enforced to the point of rejecting React previews by fiat), impossible-to-make-ugly (P2 + closed control vocabulary + token-only sections), and Ghost-native depth (FR-H6, FR-Q, A32) as the moat against Fantasma. Success metrics validate the thesis rather than counting activity, each with a counter-metric. MVP scope kind is coherent — a deliberate full-product experience-plus-revenue GA, with §4 explaining why that's safe. One coherence gap, and it's the most consequential rubric finding:</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Every starter forces the manual routes.yaml step into first deploy, unreconciled with G2 and the ease thesis</h3>
+              <span class="finding-location">Appendix E, FR-I1, FR-I4, FR-I5</span>
+            </header>
+            <div class="finding-note">Appendix E declares all 10 starters ship with "Members … designed"; FR-I1 says designing a members template "automatically adds its route … to <code>routes.yaml</code>"; FR-I5 confirms "designing one is, in effect, opening routing." Therefore every starter-created project (and every FR-C7 redesign proposal) emits routes.yaml — and FR-I4's guided manual Ghost Admin → Labs upload is "the primary, documented flow." The flagship onboarding path always lands the "one more step" card on the user's very first deploy — the moment Appendix H reserves for confetti — and the PRD never acknowledges this tension against G2's "&lt; 15 minutes" or "extremely easy." Downstream UX will design first-deploy celebration without knowing the interruption is unconditional.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Decide and state it — either starters ship with members templates present-but-undesigned (Ghost Portal covers those flows natively, no routes.yaml emitted), or the "one more step" card is explicitly designed as part of the first-deploy journey and §4/FR-O1 say so.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Done-ness clarity</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>This is the PRD's standout dimension. FRs routinely specify the failure paths and edge lifecycles that PRDs usually leave to discovery: FR-H2 defines the zero-feed-section SEO guard and the main-feed designation lifecycle; FR-J13 pins snapshot semantics down to "never re-captured while the active theme is an <code>inflozo-*</code> theme"; FR-L2 enumerates the full entitlement transition table; FR-C7 makes variety an explicit acceptance criterion. "Gracefully" appears, but almost always immediately defined. NFR-6 gives downstream QA a concrete four-part gate.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Performance targets lack a reference environment</h3>
+              <span class="finding-location">NFR-1, G6, FR-D14</span>
+            </header>
+            <div class="finding-note">"60 fps interactions" and "&lt; 100 ms" name no device class or CPU throttle, and FR-D14 removes the section cap while requiring the editor to "hold NFR-1 performance on long pages" with no stress fixture — "long" is unbounded, so an engineer cannot know what page must hold 60 fps.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Name the reference (e.g., mid-tier laptop, 4× CPU throttle) and a stress fixture (e.g., "a 40-section template is the NFR-1 reference page").</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Undo persistence vs lock-takeover snapshot authority is unresolved</h3>
+              <span class="finding-location">FR-D9, FR-D10, AD1/AD2</span>
+            </header>
+            <div class="finding-note">FR-D9 promises "a deleted section is recoverable … via undo even after a reload," while FR-D10 says on lock acquisition "the local doc is replaced" by the authoritative cloud snapshot. AD1 makes undo the local op-log tail — so after a takeover-and-return, journal ops reference a superseded doc. FR-D9 covers schema mismatch but not stale-doc ops. (The adversarial review escalates this to high as H6.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> One sentence in FR-D9 or AD1 stating whether the journal is invalidated (undo resets) or rebased on lock re-acquisition.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Last soft phrases</h3>
+              <span class="finding-location">FR-I3, FR-J14</span>
+            </header>
+            <div class="finding-note">FR-I3 "drop the removed template gracefully" (what does the open editor show — switch to Home?) and FR-J14 "human-readable summary of what changed" (granularity unspecified: per-variant? per-category?).</div>
+            <div class="finding-fix"><strong>Fix:</strong> One clause each.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Scope honesty</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Omissions are explicit and priced. Appendix G is a real Deferred list (15 items, several of them tempting), and AD3 records why five alternatives died, which is scope honesty of a rarer kind. FR-L3's downgrade rules are exhaustively honest. De-scoping is never silent — FR-O4 even confesses that Appendix E's Quiet/Ledger compositions "currently use Pro variants" and states the swap rule. Open-items density is zero, which on a green-light PRD is the right number <em>provided</em> the resolution is real — and here it visibly is.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">No [ASSUMPTION] tags or index despite load-bearing external-world claims</h3>
+              <span class="finding-location">FR-C2, FR-A2, FR-I4, Appendix B, Appendix F</span>
+            </header>
+            <div class="finding-note">Ghost(Pro)'s 2026 plan lineup and Starter theme restriction, Supabase passkey beta status "as of May 2026," the "community-known internal routes endpoint," Dodo's fee schedule, Ghost 6's <code>?limit=all</code> removal. Most are risk-registered in §7.6, but there is no single index telling the build phase what to re-verify before relying on it.</div>
+            <div class="finding-fix"><strong>Fix:</strong> A 6-line "Verify at build time" list appended to §7.6.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Downstream usability</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>For a chain-top PRD this is good but not what it could be. IDs are contiguous and unique; cross-references spot-checked all resolve; the Appendix A externalization is handled cleanly with an explicit conflict rule. Terminology is impressively disciplined — "Style Pack", "variant", "main feed", "site-wide singleton", "pre-Inflozo snapshot", "edit lock" are used identically everywhere. But that discipline lives only in point-of-first-use definitions buried inside FRs.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">No Glossary</h3>
+              <span class="finding-location">whole PRD</span>
+            </header>
+            <div class="finding-note">A downstream agent extracting, say, FR-J13 alone meets "pre-Inflozo snapshot" defined three sections earlier; "site-wide singleton", "main feed", "open canvas / gated exits", "Preview-only" all have precise meanings an extractor must hunt for. The rubric weighs this dimension most heavily for exactly this chain-top shape.</div>
+            <div class="finding-fix"><strong>Fix:</strong> A 12–15 term glossary appendix; each entry one line pointing at the defining FR.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Appendix E contradicts FR-O4 for Quiet and Ledger</h3>
+              <span class="finding-location">Appendix E, FR-O4</span>
+            </header>
+            <div class="finding-note">Appendix E still lists Pro variants in their compositions while FR-O4 mandates all-[Free] composition. FR-O4 states the governing rule, but E11 ("assemble 10 starters") will build from Appendix E as written. (Consistency review confirms against the inventory and rates it medium — F4.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> Patch the two Appendix E entries to their [Free] compositions.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Version drift in the companion</h3>
+              <span class="finding-location">sections-inventory.md frontmatter</span>
+            </header>
+            <div class="finding-note"><code>sections-inventory.md</code> frontmatter says "normative companion to prd.md v2.0"; the PRD is v2.1.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Bump the string (or drop the version pin so it can't drift again).</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Shape fit</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>The capability-spec shape with binding principles (§2), normative appendices, and an explicit epic sequencing map is well fitted to the stated consumers ("BMAD agents … via Claude Code") — §7 even addresses the architect directly, and §8 bounds the SM agent's scope. Brownfield concerns don't apply; the live-Ghost test matrix (§4 T1–T4) grounds the deploy claims. The one shape mismatch is the rubric's own named flag:</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Consumer-grade product, no user journeys</h3>
+              <span class="finding-location">whole PRD</span>
+            </header>
+            <div class="finding-note">Inflozo's thesis is experience quality ("closer to playing with a well-made toy"), the shape the rubric marks as UJ-load-bearing, yet there are no named-protagonist journeys. The critical flows exist — G1/G2 encode them as timings, FR-C1→C4→C7 and FR-J8 narrate them procedurally — but the UX agent inherits fragments, not journeys. If journeys are deliberately delegated to the UX pass, the PRD never says so.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Either one sentence in the header delegating journey authorship to the UX workflow, or 3–4 short journeys — the personas in §3 are ready-made protagonists.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="reviewer-section">
+      <details>
+        <summary>
+          <h2>Adversarial review</h2>
+          <span class="reviewer-source">review-adversarial-general.md</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p><strong>Verdict:</strong> This is a strong v2.1 — most of the classic PRD failure modes are already patched — but it is not safe to hand to autonomous agents yet. Two requirements are unbuildable or self-contradictory as written (forced library updates sold as opt-in; compiler "synthesis defaults" that are documented nowhere), the flagship "safe installs" promise rests on an Admin API endpoint Ghost does not document, and the business model's own math invites export-and-cancel. The document's confidence is its biggest liability: it states mechanisms ("detect custom-theme capability", "tracks the last routes.yaml delivered") that no public Ghost API supports, and downstream agents will either invent them or build theater. Minimum bar before handing downstream: resolve C1 and C2, and settle H1–H5 (each is a one-paragraph decision); the metrics FR (H7) must exist before the SM writes stories. 2 critical · 8 high · 13 medium · 6 low = 29 findings.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-critical">critical</span>
+              <h3 class="finding-title">C1 · Library updates are compulsory while being sold as opt-in — FR-J14 contradicts itself</h3>
+              <span class="finding-location">FR-J14; §1.4 diff 5 &amp; 7; AD3</span>
+            </header>
+            <div class="finding-note">"The user updates by redeploying — never automatically" vs., two sentences later, "Compiles always use the current library version (a single live library, no per-project pinning)." These cannot both be true. With no pinning, <em>every</em> redeploy is an automatic, involuntary, full library upgrade. A user who redeploys to fix one line of copy silently absorbs every section change since their last deploy. The "Updates available" notice is decoration: the user has no way to decline. This also detonates differentiator 5 ("an Inflozo theme never breaks your site"): a library regression ships to user sites piggybacked on unrelated edits, and the only escape (rollback) throws away the edit the user was trying to make. Downstream agents will build both halves faithfully and ship a product that lies to its users.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Pick one. Either (a) pin each project to its last-deployed library version with an explicit "Upgrade library" action (reverse AD3), or (b) delete "never automatically," reword differentiator 7, and add a pre-deploy diff summary + mandatory confirmation whenever the library advanced, plus render-matrix evidence that placed variants are visually unchanged.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-critical">critical</span>
+              <h3 class="finding-title">C2 · "Documented synthesis defaults" are documented nowhere — the compiler's behavior for untouched templates is pure invention</h3>
+              <span class="finding-location">FR-D6; FR-I1; §7.4</span>
+            </header>
+            <div class="finding-note">"Derive header/footer/style" covers three of the ~10 decisions per template. A blank-canvas user designs Home only; the compiler must then emit post/page/tag/author/error templates — which post header variant? Which content layout? Related posts or not? Which pagination style? Appendix A inventories 487 variants but defines zero default compositions; nothing supplies the recipe. The word "documented" points at a document that does not exist. Three downstream agents will produce three different default themes, and the one thing G2 (&lt;15 min to first deploy) depends on is unspecified at its core.</div>
+            <div class="finding-fix"><strong>Fix:</strong> A normative appendix (or a section in <code>sections-inventory.md</code>): per template, the exact default section stack (category + variant id + key control values) and the derivation rules from the Home canvas. One page of tables.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H1 · The "safe installs" snapshot depends on an Admin API capability Ghost does not document</h3>
+              <span class="finding-location">FR-J13; §1.4 diff 5; P8</span>
+            </header>
+            <div class="finding-note">Ghost's documented Admin API for themes is upload and activate; theme <em>download</em> is an internal endpoint. Whether a Custom Integration JWT can call it — on self-hosted 5.x, 6.x, and especially Ghost(Pro) — is unverified. FR-I4 hedges the routes endpoint as "community-known internal" with a first-class manual fallback; FR-J13 gets no such treatment. The warn-and-proceed fallback firing on 100% of Ghost(Pro) connections would gut the differentiator at launch.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Same treatment as FR-I4: name the endpoint as internal/undocumented, require verification per Ghost version/host as an acceptance criterion on all four §4 targets, and specify the degraded path as a designed flow, not a warning toast.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H2 · Ghost(Pro) Starter "capability detection" has no mechanism — no API exposes it</h3>
+              <span class="finding-location">FR-C2; FR-C5; §7.6</span>
+            </header>
+            <div class="finding-note">Ghost has no endpoint that reports plan or theme-upload permission; the <code>site</code>/<code>settings</code> reads FR-C2 specifies return neither. The only reliable probe is attempting a theme upload — a side-effecting action P8 forbids outside deploys. The architect must invent: hostname heuristic, probe upload + delete (violates P8's spirit), or flag-on-first-failed-deploy (contradicts "deploy attempts are blocked").</div>
+            <div class="finding-fix"><strong>Fix:</strong> Choose the mechanism: connect-time heuristic (Ghost(Pro) hostname + documented lookup) with the authoritative signal being the first deploy attempt's error response; rewrite FR-C2/C5 accordingly.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H3 · Theme-name freeze vs. collision-rename is a deadlock, and the freeze's scope is ambiguous</h3>
+              <span class="finding-location">FR-J10; FR-B5</span>
+            </header>
+            <div class="finding-note">"First deploy to a site" — first deploy <em>ever</em>, or first deploy <em>to each site</em>? FR-B5 makes projects site-switchable: project first-deploys to Site 1 (name freezes), switches to Site 2 where another <code>inflozo-blog</code> lives. Collision → "prompts a project rename" → but renaming "changes the display name only" because the theme name is frozen. The prompt asks for an action the same FR defines as a no-op; deploy to Site 2 is permanently blocked.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Freeze per project×site (each site gets its own frozen slug, collision resolved by a per-site slug suffix), and say so explicitly.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H4 · Tag and author archives are excluded from the main-feed rule — broken pagination on every archive page</h3>
+              <span class="finding-location">FR-H2; FR-D6; Appendix A §29, §34</span>
+            </header>
+            <div class="finding-note">Ghost paginates taxonomy pages (<code>/tag/x/page/2/</code>) with the same native pagination context as collections, but FR-H2's designation rule scopes itself to "index and custom collections" — so on archive templates every feed section is <code>{{#get}}</code>-driven with a fixed Count, meaning page 2 of every tag archive renders the same posts as page 1. That is precisely the indexable-duplicate failure FR-H2 guards against for zero-feed collections, silently reintroduced on every archive of every theme.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Extend the main-feed designation and lifecycle to all paginated contexts: index, custom collections, tag, and author templates.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H5 · FR-Q5's "its dark counterpart already exists" is false for every token except accent</h3>
+              <span class="finding-location">FR-Q5; FR-Q3; FR-Q2</span>
+            </header>
+            <div class="finding-note">The built-ins reserve exactly one dark color: Dark accent. Promote <code>surface</code>, <code>background</code>, or <code>text</code> and no dark counterpart exists. The architect faces an undecided fork: auto-create a dark twin (consuming two of the 17 user slots per promotion, wrecking the cap arithmetic) or promote light-only (shipping the exact broken half-pair FR-Q5 claims cannot happen).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Decide: color promotion creates a light+dark pair costing 2 slots (meter shows it), or promotion is accent-only in v1, or dark values always derive from light via the pack's pairing rules. One sentence.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H6 · Edit-lock takeover destroys work with unspecified semantics — and the undo stack survives a doc it no longer matches</h3>
+              <span class="finding-location">FR-D18; FR-D10; FR-D9; AD1/AD2</span>
+            </header>
+            <div class="finding-note">(1) The former holder's unsynced ops: "not included" — destroyed, recoverable, or merged later? The local journal still physically contains them; when that device re-acquires the lock and the doc is replaced by the cloud snapshot, do its orphaned ops vanish, replay, or linger as landmines in the undo stack? Up to 3 minutes of work (unbounded with autosave off) is at stake. (2) FR-D9 protects undo only against <em>schema</em> mismatches, not <em>doc-state</em> mismatches: after hydrate-from-cloud, every persisted undo entry references a document that no longer exists.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Specify: on hydrate-from-authoritative-snapshot the local undo journal is cleared (or archived as a read-only "recovered edits" bundle); takeover UX states the loss in edits, not vibes. AD1/AD2 get one paragraph each.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H7 · G8–G10 are unmeasurable — no FR builds the instrumentation</h3>
+              <span class="finding-location">§1.3 G8/G9/G10; NFR-8; §5</span>
+            </header>
+            <div class="finding-note">Activation funnels, 90-day conversion cohorts, monthly churn, rollback rates — all require event instrumentation and cohort reporting. No FR specifies any of it; the only mention of analytics is NFR-8's aside. Downstream agents build zero telemetry and the launch flies blind against its own goals. "7-day rollback rate" is also underdefined (per deploy, per user, per site?) and perverse — rollback is a headline safety feature.</div>
+            <div class="finding-fix"><strong>Fix:</strong> An FR-R (analytics/telemetry): named events, the chosen privacy-respecting tool, dashboard requirements, and precise denominators for every goal and counter in §1.3.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">H8 · The business model funds its own churn: export-and-cancel is the rational Pro behavior</h3>
+              <span class="finding-location">Appendix F; FR-J12; FR-J15; P5; §1.5; G10</span>
+            </header>
+            <div class="finding-note">One month of Pro ($15) buys: build up to 25 themes from all 487 variants, export white-labeled, cancel. The themes work forever (P5 — correctly, but it removes the hostage). Inflozo is accidentally the cheapest one-shot theme tool on the market, while G10 assumes &lt;5% monthly churn with no retention mechanic. Nothing addresses generated-theme licensing either — FR-N1's legal pages don't include theme license terms. Separately, §1.5 leans on unverifiable competitor claims stated as fact.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Either model one-shot economics honestly in Appendix F (blended LTV with a month-1 churn spike, which changes break-even), or add a stated retention mechanic (e.g., white-label export requires active subscription per Terms; theme license terms as a required legal page), and mark §1.5 claims with a verification date.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M1 · "Impossible to make ugly" and "Accessibility ≥ 95" are unenforceable the moment FR-E3 exists</h3>
+              <span class="finding-location">§1.4 diff 4; G4; FR-G4; FR-E3</span>
+            </header>
+            <div class="finding-note">FR-G4 claims AA "via token pairs," but FR-E3 lets users edit every token to failing values with only a warning. AA and Lighthouse-a11y-95 are properties of the 12 presets, not of "every possible output" — yet G4 is written as a goal over generated themes, unqualified. QA agents will fail builds that are working as designed.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Scope G4/FR-G4 to preset packs and library defaults; state that user token edits can break AA and the warning transfers responsibility.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M2 · Goal measurements are undefined: G1's 60-second clock includes a manual Ghost Admin task</h3>
+              <span class="finding-location">G1, G2, G6</span>
+            </header>
+            <div class="finding-note">FR-C1's connect flow requires the user to open Ghost Admin, create a Custom Integration, and paste two keys. No first-time human does that in 60 seconds — either the clock starts after key paste (unstated) or the goal is theater. G2 has no percentile; G6's "60fps" names no reference hardware.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Define each goal's clock start/stop, percentile, and measurement environment in §1.3.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M3 · Unbounded performance promise: "no hard cap" + 60fps with no stated budget</h3>
+              <span class="finding-location">FR-D14; NFR-1; G6; FR-F4; FR-E2</span>
+            </header>
+            <div class="finding-note">An unbounded input with a fixed performance floor is unfalsifiable, and "long pages" is not a number. The same interaction also has two budgets: G6 says control changes visible "&lt; 100 ms," FR-F4 says "within one frame" (16 ms).</div>
+            <div class="finding-fix"><strong>Fix:</strong> A tested reference budget ("60fps up to N sections; degradation strategy beyond N"), and one number per interaction.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M4 · "Routes never silently drift" is unverifiable — Inflozo cannot observe the manual upload</h3>
+              <span class="finding-location">FR-I4</span>
+            </header>
+            <div class="finding-note">In the primary (manual) flow, "delivered" means "we showed the user a download button." Whether the user completed the Labs upload is unknowable, so the tracked state measures Inflozo's output, not Ghost's reality. A user who skips the step has drift the system believes impossible.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rename the state honestly ("last routes.yaml <em>offered</em>"), add a verification probe where possible (fetch a route URL and check), with an "unverified" nag state.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M5 · Epic wave counts don't match the categories the epics name</h3>
+              <span class="finding-location">§8 E9/E10/E11; Appendix A</span>
+            </header>
+            <div class="finding-note">Sum the categories each epic assigns itself: E9 = 156; E10 = 199; E11 = 132 — stated as 150/200/137. Both triples total 487, which is exactly how this kind of error survives review. An SM agent slicing stories by the stated numbers mis-scopes three epics. (Independently found by the consistency review, F2.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> 156 / 199 / 132.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M6 · Even the total is soft: the winning document says "~487"</h3>
+              <span class="finding-location">Appendix A; sections-inventory.md; G5; Appendix H</span>
+            </header>
+            <div class="finding-note">The PRD declares the inventory normative and conflict-winning, then the inventory hedges the headline number with a tilde. Appendix H hard-codes "487 gorgeous sections" as canonical microcopy. (Counts verify to exactly 487 both ways — the tilde is stale caution; consistency review rates this low.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> Delete the tilde in the inventory, or make the microcopy count-agnostic.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M7 · Appendix E's two "all-Free" starters are specified with Pro variants and unspecified replacements</h3>
+              <span class="finding-location">FR-O4; Appendix E items 5, 9</span>
+            </header>
+            <div class="finding-note">Verified against the inventory: Quiet's "Big Type Manifesto" (A4 #8) and "Minimal Index" (A18 #4), Ledger's "Feature Post Hero," "Meta-Rich Rows," and "Tier Cards Inline" are all Pro. The normative starter specs are self-declared stale, and "swap to [Free] variants" names no targets — which of the two Free variants per category, chosen by whom? A "final" PRD ships with a known-wrong appendix and a TODO disguised as a rule. (Consistency review F4 confirms against the memlog's "rebuilt Free-only" decision.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> Update Appendix E to name the actual Free compositions for Quiet and Ledger; delete FR-O4's transitional clause.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M8 · Pre-Inflozo snapshot keyed by site URL — domains change</h3>
+              <span class="finding-location">FR-J13</span>
+            </header>
+            <div class="finding-note">A user migrates their Ghost site to a new domain and reconnects: new URL key → no snapshot found → and re-capture is forbidden because the active theme is <code>inflozo-*</code>. Restore-to-original is now silently impossible for that site, forever — the exact outcome the never-re-capture rule exists to prevent, produced by the keying choice.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Key by a stable site identity (Ghost site UUID) with URL as display metadata; define a re-key path on URL change.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M9 · "Safety operations remain available throughout" — not for the sites you were forced to disconnect</h3>
+              <span class="finding-location">FR-L3; FR-C6; FR-J9; FR-D18</span>
+            </header>
+            <div class="finding-note">Rollback and restore execute via the Admin API, which requires a connected site. FR-L3 forces a downgraded user to disconnect down to one connection — for the other nine sites there are no credentials, so the safety operations are exactly as available as the cap allows: not. Separately, FR-D18 gates "deploy and ZIP export" behind the edit lock; a rollback is an artifact redeploy — does it need the lock? Unspecified either way.</div>
+            <div class="finding-fix"><strong>Fix:</strong> State that safety ops apply to connected sites only (and whether reconnecting for a restore breaches the cap), and explicitly exempt rollback/restore from the edit-lock requirement.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M10 · Promoting a text prop to Ghost Admin silently strips the user's inline marks</h3>
+              <span class="finding-location">FR-Q3; FR-D4</span>
+            </header>
+            <div class="finding-note">Ghost <code>@custom</code> text settings are plain strings. A text prop carrying <code>&lt;strong&gt;</code>/<code>&lt;a&gt;</code> marks promoted to a setting either loses the marks (silent formatting loss discovered post-deploy) or emits stored HTML into a Ghost Admin text field. The PRD defines neither.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Disallow promotion of props containing marks (with a "remove formatting to promote" prompt), or strip marks at promotion with an explicit warning.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M11 · Internationalization is absent from scope <em>and</em> from out-of-scope</h3>
+              <span class="finding-location">§5; Appendix G; Appendix B</span>
+            </header>
+            <div class="finding-note">Marketplace-quality Ghost themes ship translatable strings; Ghost sites declare a locale, which Appendix B even catalogs as bindable. The PRD never says whether generated themes hard-code English chrome strings, whether <code>{{date}}</code> respects locale, or whether RTL is supported — and Appendix G's fourteen deliberate deferrals don't mention i18n. Silence is not a boundary.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One Appendix G line stating the v1 position — but written down.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M12 · The production-testing mandate expires at "first customer" with no successor</h3>
+              <span class="finding-location">§4; NFR-6(d); P7</span>
+            </header>
+            <div class="finding-note">The mandate is explicitly time-boxed and nothing replaces it. Day 2, with real users on production: does the E2E suite still run real deploys, real Dodo transactions, theme activations against production? There is no staging by design; the PRD regulates the pre-launch window in loving detail and says nothing about the regime it knows is coming.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One paragraph: post-launch test topology (dedicated test accounts flagged out of analytics, Dodo test mode, the live Ghost targets retained as a permanent test fleet).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">M13 · Single-GA + "everything ships" + 487 normative variants = no descope lever exists anywhere</h3>
+              <span class="finding-location">P7; §4; FR-G1; §7.6</span>
+            </header>
+            <div class="finding-note">The risk table itself flags "library scale (487 variants) slips schedule" — but the PRD structurally forbids the one mitigation that always works: cutting scope. No priority ordering within the library, no launch-blocking vs. fast-follow partition exists for any feature. (The rubric independently flags this under Decision-readiness.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep the mandate, add a ranked cut-line appendix — unused if all goes well, priceless if not.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L1 · Google Fonts hotlinking: GDPR exposure and a third-party runtime dependency in "self-contained" themes</h3>
+              <span class="finding-location">FR-J3; NFR-2</span>
+            </header>
+            <div class="finding-note">German case law (LG München, 2022) made hotloading Google Fonts a GDPR liability for EU site owners — Inflozo's customers. Also a third-party runtime dependency and Lighthouse variable in themes the PRD otherwise makes proudly self-contained (P5).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Bundle woff2 subsets of the curated ~30-pairing pool into <code>assets/fonts/</code> at compile. Bounded work; removes the liability.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L2 · The local-storage-failure fallback is the exact design AD3 rejected for latency</h3>
+              <span class="finding-location">FR-D10; AD3; NFR-1</span>
+            </header>
+            <div class="finding-note">In fallback mode the editor runs the rejected per-change cloud sync architecture, and NFR-1's "saving must never add perceptible input latency" is not exempted for it. Either the fallback violates NFR-1 or the rejection rationale was wrong. (Consistency review F9 adds: a future architect could "correctly" delete the fallback citing AD3's blanket rejection.)</div>
+            <div class="finding-fix"><strong>Fix:</strong> Exempt fallback mode from NFR-1's latency clause explicitly, or debounce the fallback; add one clause to AD3 scoping the rejection to the default path.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L3 · Image optimization is destructive with no original retained</h3>
+              <span class="finding-location">FR-K2</span>
+            </header>
+            <div class="finding-note">Originals are discarded client-side; a 6000px portfolio photograph is permanently ceilinged at 2400px/q82. When the policy changes (AVIF, larger sizes) there is nothing to re-derive from. Two starters (Bloom, Studio) target exactly the image-centric users who will notice.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep originals for Pro (quota priced accordingly) or state the destruction in the upload UI as an accepted trade.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L4 · Infinite scroll's no-JS and SEO story is unstated</h3>
+              <span class="finding-location">FR-G4; FR-H2; Appendix A §34</span>
+            </header>
+            <div class="finding-note">FR-G4 enumerates JS-disabled fallbacks and names load-more but not infinite scroll; FR-H2 offers infinite scroll without stating whether <code>/page/N/</code> URLs remain crawlable links. Probably intended to mirror load-more — but "probably" is the defect.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add infinite scroll to FR-G4's fallback list with the same numbered-links rule.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L5 · Flapping connections generate an email per flap</h3>
+              <span class="finding-location">FR-C5</span>
+            </header>
+            <div class="finding-note">"Sends once per healthy→unhealthy transition … resets on recovery" — a site flapping daily re-arms the email each cycle. The dedup logic dedupes the steady state and amplifies the noisy one.</div>
+            <div class="finding-fix"><strong>Fix:</strong> A cool-down (max one health email per site per N days) on top of the transition rule.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">L6 · No backup/recovery NFR for user work-product</h3>
+              <span class="finding-location">NFR-4</span>
+            </header>
+            <div class="finding-note">Projects are hours of user work in Supabase Postgres; NFR-4 covers autosave retries and spend caps but names no RPO/RTO, no PITR requirement, no restore drill. "Supabase probably has backups" is not a requirement.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One line in NFR-4: PITR enabled, RPO/RTO targets, restore tested pre-launch.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section class="reviewer-section">
+      <details>
+        <summary>
+          <h2>Cross-document consistency review</h2>
+          <span class="reviewer-source">review-consistency.md</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p><strong>Verdict:</strong> The hardening pass landed cleanly in the FR text — every logged memlog decision is reflected or explicitly superseded, all FR/NFR/§/AD cross-references resolve mechanically (zero dangling IDs), and the variant arithmetic verifies to exactly 487/68 — but it left arithmetic and companion-file residue: an unsatisfiable "deploy to all targets" DoD, stale wave counts, a version-pinned companion, and two normative surfaces (Appendix E, A31 compile targets) the pass never revisited. 0 critical · 1 high · 4 medium · 6 low.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">F1 · "Deployable to all live Ghost deploy targets" includes a target that blocks deploys by design</h3>
+              <span class="finding-location">§4 DoD, E7, E11 vs. §4 T4, FR-C2</span>
+            </header>
+            <div class="finding-note">§4's Definition of Done and the E7/E11 exit criteria require deploying "to all live Ghost deploy targets (§4)" — but T4 is a Ghost(Pro) Starter site that exists precisely because deploying to it is impossible (its job is verifying the Preview-only block). As written, the DoD is unsatisfiable — no theme can ever deploy to T4. The drift was introduced when T3/T4 joined an older two-target list.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Define the deployable set as T1–T3; state that T4's acceptance criterion is the Preview-only block path (which E3's exit already captures correctly).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">F2 · Epic library-wave counts don't match the Appendix A groups they name</h3>
+              <span class="finding-location">§8 E9/E10/E11 vs. sections-inventory.md</span>
+            </header>
+            <div class="finding-note">Actual group sums: E9 scope = 156, E10 = 199, E11 = 132; stated 150/200/137. Both sum to 487, masking the error. Counts appear frozen from an earlier inventory draft.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Renumber the waves 156 / 199 / 132 (the inventory is normative and internally verifies).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">F3 · Inventory frontmatter still pins "prd.md v2.0"</h3>
+              <span class="finding-location">sections-inventory.md frontmatter vs. prd.md frontmatter</span>
+            </header>
+            <div class="finding-note">The normative companion declares allegiance to a version that no longer exists. File mtimes confirm: inventory last touched 21:14, PRD hardened through 22:36 — the hardening pass never revisited the companion's frontmatter.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Update to v2.1, or drop the version pin ("companion to prd.md, same folder") so it can't drift again.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">F4 · Quiet &amp; Ledger starters still composed of Pro variants despite the logged "rebuilt Free-only" decision</h3>
+              <span class="finding-location">.memlog.md + FR-O4 vs. Appendix E</span>
+            </header>
+            <div class="finding-note">The memlog records the rebuild as done ("2 starters (Quiet, Ledger) rebuilt Free-only"), but Appendix E's compositions were never updated; FR-O4 papers over it with transitional "currently use… those swap" language — draft-state wording inside a status:final v2.1 document. The two normative surfaces disagree about what these starters contain.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rewrite the Quiet and Ledger lines in Appendix E using [Free] variants, then delete FR-O4's transitional clause.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">F5 · Appendix A requires <code>private.hbs</code>, which the compiler spec never emits</h3>
+              <span class="finding-location">sections-inventory.md A31 vs. FR-I1, §7.4</span>
+            </header>
+            <div class="finding-note">A31 names "Private Site Gate → private.hbs" as a compile target and Appendix A is normative ("every listed variant is a launch deliverable") — but neither FR-I1's template set nor §7.4's theme structure mentions <code>private.hbs</code>, and FR-J1 requires compiler output "matching the structure in §7.4." A project using the Private Site Gate produces output that violates §7.4 as written.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add <code>private.hbs</code> to FR-I1/§7.4 as a conditional emit (same pattern as members templates).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F6 · Inventory hedges "~487" where the PRD asserts exactly 487</h3>
+              <span class="finding-location">sections-inventory.md vs. FR-G1/G5/App A/F</span>
+            </header>
+            <div class="finding-note">The document declared to win conflicts is the one that's vague. The per-category counts sum to exactly 487 (verified), so the tilde is stale caution.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Drop the "~" in the inventory.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F7 · "All 15–20 sibling designs" overstates the shuffle range</h3>
+              <span class="finding-location">§1.4 diff 2 vs. sections-inventory.md</span>
+            </header>
+            <div class="finding-note">Actual per-category range is 6–18 (A33 Koenig = 6; max A4/A17 = 18; nothing has 20).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Soften to "through every sibling design in its category (up to 18)".</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F8 · Terminology drift: "primary feed" vs the defined term "main feed"</h3>
+              <span class="finding-location">sections-inventory.md A17 vs. FR-H2</span>
+            </header>
+            <div class="finding-note">FR-H2's hardened text defines and consistently uses "main feed"; A17 says "when primary feed." Cosmetic, but it's the one term FR-H2's designation lifecycle hangs on.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Change A17 to "when main feed".</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F9 · AD3 rejects "per-change cloud autosave," which FR-D10 uses as a failure fallback</h3>
+              <span class="finding-location">addendum.md AD3 vs. FR-D10</span>
+            </header>
+            <div class="finding-note">Not a true contradiction (the rejection targets the default mechanism; the fallback fires only when local storage is broken), but AD3 reads as a blanket rejection and a future architect could "correctly" delete the FR-D10 fallback citing it.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One clause in AD3: "rejected as the default; survives only as FR-D10's no-local-storage fallback."</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F10 · Ghost(Pro) Publisher price: memlog "$29/mo" vs Appendix F "~$31"</h3>
+              <span class="finding-location">.memlog.md vs. Appendix F</span>
+            </header>
+            <div class="finding-note">Likely annual-billing ($29) vs monthly-billing (~$31) rates of the same plan; harmless to the fixed-cost total, but the two documents cite different numbers without saying why.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep ~$31 and optionally note "monthly billing" in Appendix F; no memlog edit (append-only).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">F11 · Memlog hygiene: triage 1/7 entry logged three times</h3>
+              <span class="finding-location">.memlog.md</span>
+            </header>
+            <div class="finding-note">The "review triage 1/7: canvas isolation" line appears 3× consecutively. Harmless in an append-only log, but inflates the entry count.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Leave as-is (append-only); noted for the record.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <div class="mechanical">
+      <h3>Mechanical notes</h3>
+      <ul>
+        <li><strong>Variant math verified twice, independently:</strong> per-category counts in <code>sections-inventory.md</code> sum to exactly 487; 34 categories × 2 = 68 [Free] variants, matching FR-G2, the Appendix A summary, and Appendix F.</li>
+        <li><strong>Cross-references:</strong> every FR/NFR/§/AD reference in all four workspace documents resolves — zero dangling IDs (mechanically extracted and checked).</li>
+        <li><strong>ID continuity:</strong> clean; FR-Q's out-of-alphabet position is self-explained in the §5 preamble. No gaps or duplicates in FR/NFR/G/E numbering.</li>
+        <li><strong>Memlog reconciliation:</strong> all ~106 memlog decisions are reflected in the PRD or explicitly superseded; all seven review-triage decisions and P1–P5 are present in the PRD text.</li>
+        <li><strong>Money and versions:</strong> $15/mo · $150/yr consistent across G7, §1.5, FR-L1, Appendix F, E12; break-even 8–9 arithmetically checks; 12 Style Packs = Appendix D rows; 10 starters = Appendix E entries.</li>
+        <li><code>private.hbs</code> omission from §7.4's generated-theme tree independently caught by both the rubric walker and the consistency review (F5).</li>
+        <li><strong>Epic design pointer:</strong> E1's reference to <code>_bmad-output/planning-artifacts/design/</code> verified present.</li>
+        <li><strong>Memlog hygiene:</strong> one triage entry triplicated (F11) — harmless, append-only.</li>
+      </ul>
+    </div>
+
+    <footer class="report-footer">
+      <div class="meta">
+        <span>Rubric: .claude/skills/bmad-prd/assets/prd-validation-checklist.md</span>
+        <span>Generated: 2026-08-17T22:50:04+05:30</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

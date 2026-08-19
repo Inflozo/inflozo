@@ -1,0 +1,20 @@
+{
+  "name": "inflozo-spike",
+  "description": "Compiler spike",
+  "version": "1.0.0",
+  "engines": {
+    "ghost": ">=6.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ghost-theme"
+  ],
+  "author": {
+    "name": "Inflozo",
+    "email": "hello@inflozo.com"
+  },
+  "config": {
+    "posts_per_page": 12,
+    "card_assets": true
+  }
+}

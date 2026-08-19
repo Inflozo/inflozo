@@ -1,0 +1,14 @@
+<section class="post-grid">
+  <div class="post-grid__header">
+    <h2 class="post-grid__title" data-prop="title">Latest posts</h2>
+  </div>
+  <div class="post-grid__items">
+    <article class="post-card" data-repeat="posts" data-repeat-limit="3" data-partial="post-card">
+      <a class="post-card__image-link" data-bind-attr="href:url">
+        <img class="post-card__image" data-bind-attr="src:feature_image|img_url:m" data-empty="hide" src="/placeholder.jpg" alt="">
+      </a>
+      <h3 class="post-card__title" data-bind="title">A sample post title</h3>
+      <time class="post-card__date" data-bind="published_at|date:D MMM YYYY">14 Mar 2026</time>
+    </article>
+  </div>
+</section>

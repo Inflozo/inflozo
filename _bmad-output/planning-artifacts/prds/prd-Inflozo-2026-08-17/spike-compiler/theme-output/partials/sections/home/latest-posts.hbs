@@ -1,0 +1,11 @@
+{{!-- Latest Posts · 3-up grid --}}
+<section class="post-grid">
+  <div class="post-grid__header">
+    <h2 class="post-grid__title">From the blog</h2>
+  </div>
+  <div class="post-grid__items">
+    {{#foreach posts limit="3"}}
+  {{> "post-card"}}
+{{/foreach}}
+  </div>
+</section>

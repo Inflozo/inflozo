@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#1C1B1A; text-decoration:none; }
+  a:hover { color:#FF5941; }
+</style>
+<script src="./interactions.js"></script>
+</helmet>
+<section style="padding:48px;display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M7 · docs — "Connect your Ghost site" · 1440</div>
+    <div data-screen-label="M7 Docs" style="width:1440px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:64px;display:flex;align-items:center;gap:28px;padding:0 40px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:21px;letter-spacing:-0.02em">Inflozo <span style="font-weight:500;color:#6E6A64;font-size:16px">Docs</span></span>
+        <div style="display:flex;align-items:center;gap:8px;width:300px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;margin-left:16px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+          <span style="font-size:13px;color:#A8A29A;flex:1">Search the docs…</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+          <a href="#" style="font-size:14px;font-weight:500;color:#6E6A64">← Back to inflozo.com</a>
+          <button style="height:38px;padding:0 20px;background:#FF5941;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#E84B34">Open the app</button>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="width:264px;border-right:1px solid #E7E2DB;padding:26px 18px;display:flex;flex-direction:column;gap:20px;flex-shrink:0;overflow:hidden">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.05em;padding:0 10px 6px">Start here</span>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Getting started</a>
+            <a href="#" style="font-size:13.5px;font-weight:600;color:#E84B34;padding:6px 10px;border-radius:8px;background:#FFEDE8">Connect your site</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Hosting requirements</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.05em;padding:0 10px 6px">Building</span>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Sections &amp; shuffle</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Style Packs</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Assets</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Routes &amp; routes.yaml</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.05em;padding:0 10px 6px">Shipping</span>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Deploying &amp; rollback</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Reading gscan results</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.05em;padding:0 10px 6px">Account</span>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Billing</a>
+            <a href="#" style="font-size:13.5px;font-weight:500;color:#6E6A64;padding:6px 10px;border-radius:8px;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Troubleshooting</a>
+          </div>
+        </div>
+        <div style="flex:1;padding:40px 64px;display:flex;flex-direction:column;gap:22px;min-width:0;overflow:hidden">
+          <span style="font-size:12.5px;color:#6E6A64">Docs <span style="color:#C9C2B8">/</span> Start here <span style="color:#C9C2B8">/</span> <span style="color:#1C1B1A;font-weight:500">Connect your site</span></span>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:38px;letter-spacing:-0.02em">Connect your Ghost site</h1>
+            <span style="font-size:13px;color:#6E6A64">Updated Aug 2026 · 4 min read · works with Ghost 5.x</span>
+          </div>
+          <p style="margin:0;font-size:16px;line-height:1.7;max-width:660px">Inflozo talks to your site through a Ghost <strong style="font-weight:600">custom integration</strong> — the official, supported way for tools to work with Ghost. You'll create one integration and paste three values. Takes about a minute.</p>
+          <div style="display:flex;gap:11px;background:#EAF0FF;border:1px solid #D4E0FA;border-radius:12px;padding:14px 16px;max-width:660px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3155B4" stroke-width="1.8" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16" stroke-linecap="round"></line><circle cx="12" cy="8" r="0.5" fill="#3155B4"></circle></svg>
+            <span style="font-size:14px;line-height:1.6;color:#2A448C">You need <strong style="font-weight:600">Admin access</strong> to the Ghost site. On Ghost(Pro), the Starter plan can't accept theme uploads — see <a href="#" style="color:#3155B4;font-weight:600;text-decoration:underline;text-underline-offset:2px">Hosting requirements</a>.</span>
+          </div>
+          <h2 style="margin:10px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">1 · Create the integration</h2>
+          <p style="margin:0;font-size:16px;line-height:1.7;max-width:660px">In Ghost Admin, open <span style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#F1EDE7;border:1px solid #E7E2DB;border-radius:6px;padding:1px 7px">Settings → Integrations</span>, click <strong style="font-weight:600">Add custom integration</strong>, and name it <span style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#F1EDE7;border:1px solid #E7E2DB;border-radius:6px;padding:1px 7px">Inflozo</span>. Ghost shows you three values on the next screen.</p>
+          <div style="max-width:660px;height:210px;flex-shrink:0;border-radius:12px;background:repeating-linear-gradient(45deg,#F1EDE7 0 12px,#EAE5DE 12px 24px);position:relative;border:1px solid #E7E2DB">
+            <span style="position:absolute;top:12px;left:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;background:#FFFFFF;padding:3px 9px;border-radius:6px">screenshot: Ghost Admin → Integrations → Inflozo</span>
+          </div>
+          <div style="max-width:660px;flex-shrink:0;background:#1C1B1A;border-radius:12px;overflow:hidden">
+            <div style="display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid rgba(247,245,242,.12)"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A">the three values, for example</span><span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A;cursor:pointer">copy</span></div>
+            <div style="padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;color:#F0EAE0">
+              <div><span style="color:#8FA8E8">API URL</span>        https://orbitweekly.com</div>
+              <div><span style="color:#8FA8E8">Admin API key</span>  65a3f0e1c9d2…:9c2b41d8e0f7…</div>
+              <div><span style="color:#8FA8E8">Content key</span>    8d41c0a97b36…</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:11px;background:#FFEDE8;border:1px solid #FAD3CA;border-radius:12px;padding:14px 16px;max-width:660px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C93F2B" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.4" fill="#C93F2B"></circle></svg>
+            <span style="font-size:14px;line-height:1.6;color:#A3341F">Your Admin key is a secret — it can publish to your site. Inflozo stores it encrypted and never shows it again after you save. If it ever leaks, regenerate it in Ghost and update it under <strong style="font-weight:600">Sites → ⋯ → Manage API keys</strong>.</span>
+          </div>
+          <h2 style="margin:10px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">2 · Paste the keys in Inflozo</h2>
+          <p style="margin:0;font-size:16px;line-height:1.7;max-width:660px">Back in Inflozo, paste all three values and hit <strong style="font-weight:600">Connect</strong>. We check the connection immediately and pull in your accent color, title font and body font so the canvas starts out looking like you.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;max-width:660px;border-top:1px solid #E7E2DB;padding-top:20px;margin-top:10px">
+            <a href="#" style="display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;color:#6E6A64">← Previous</span><span style="font-size:14px;font-weight:600;color:#E84B34">Getting started</span></a>
+            <a href="#" style="display:flex;flex-direction:column;gap:3px;text-align:right"><span style="font-size:12px;color:#6E6A64">Next →</span><span style="font-size:14px;font-weight:600;color:#E84B34">Deploying &amp; rollback</span></a>
+          </div>
+        </div>
+        <div style="width:230px;padding:44px 28px 0 0;display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+          <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.05em">On this page</span>
+          <div style="display:flex;flex-direction:column;border-left:1px solid #E7E2DB">
+            <a href="#" style="font-size:13px;font-weight:600;color:#E84B34;padding:5px 0 5px 14px;border-left:2px solid #FF5941;margin-left:-1.5px">Create the integration</a>
+            <a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;padding:5px 0 5px 14px">Paste the keys</a>
+            <a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;padding:5px 0 5px 14px">What we import</a>
+            <a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;padding:5px 0 5px 14px">Rolling your keys</a>
+          </div>
+          <a href="#" style="font-size:12px;color:#6E6A64;margin-top:12px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg>Suggest an edit</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M7 · docs mobile · 390</div>
+    <div data-screen-label="M7 Docs mobile" style="width:390px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:60px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid #E7E2DB">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo <span style="font-weight:500;color:#6E6A64;font-size:14px">Docs</span></span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg></div>
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+        </div>
+      </div>
+      <div style="padding:22px 20px 44px;display:flex;flex-direction:column;gap:16px">
+        <span style="font-size:11.5px;color:#6E6A64">Docs <span style="color:#C9C2B8">/</span> Start here</span>
+        <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:29px;letter-spacing:-0.02em">Connect your Ghost site</h1>
+        <span style="font-size:12px;color:#6E6A64">Updated Aug 2026 · 4 min · Ghost 5.x</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:10px;padding:11px 14px;background:#FFFFFF">
+          <span style="font-size:13px;font-weight:600">On this page</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <p style="margin:0;font-size:15px;line-height:1.65">Inflozo talks to your site through a Ghost <strong style="font-weight:600">custom integration</strong>. You'll create one integration and paste three values — about a minute.</p>
+        <div style="display:flex;gap:9px;background:#EAF0FF;border:1px solid #D4E0FA;border-radius:10px;padding:12px 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3155B4" stroke-width="1.8" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16" stroke-linecap="round"></line><circle cx="12" cy="8" r="0.5" fill="#3155B4"></circle></svg><span style="font-size:13px;line-height:1.55;color:#2A448C">You need <strong style="font-weight:600">Admin access</strong> to the Ghost site.</span></div>
+        <h2 style="margin:6px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px">1 · Create the integration</h2>
+        <p style="margin:0;font-size:15px;line-height:1.65">In Ghost Admin open <span style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F1EDE7;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px">Settings → Integrations</span> and add a custom integration named <span style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F1EDE7;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px">Inflozo</span>.</p>
+        <div style="height:140px;border-radius:10px;background:repeating-linear-gradient(45deg,#F1EDE7 0 12px,#EAE5DE 12px 24px);position:relative;border:1px solid #E7E2DB;flex-shrink:0"><span style="position:absolute;top:10px;left:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;background:#FFFFFF;padding:2px 7px;border-radius:5px">screenshot: Ghost Admin → Integrations</span></div>
+        <div style="background:#1C1B1A;border-radius:10px;overflow:hidden;flex-shrink:0">
+          <div style="padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;color:#F0EAE0">
+            <div><span style="color:#8FA8E8">API URL</span>    https://orbitweekly.com</div>
+            <div><span style="color:#8FA8E8">Admin key</span>  65a3f0e1c9d2…</div>
+            <div><span style="color:#8FA8E8">Content</span>    8d41c0a97b36…</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #E7E2DB;padding-top:16px">
+          <a href="#" style="font-size:13px;font-weight:600;color:#E84B34">← Getting started</a>
+          <a href="#" style="font-size:13px;font-weight:600;color:#E84B34">Deploying →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M7b · "Suggest an edit" popup</div>
+    <div style="width:620px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      <div style="width:460px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:16px;position:relative">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Suggest an edit.</span><span style="font-size:13px;color:#6E6A64">Spotted something wrong or missing? We read every one.</span></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;border:1px solid #E7E2DB;border-radius:10px;padding:10px 13px;background:#F7F5F2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <span style="font-size:12.5px;font-weight:500">Connect your Ghost site</span>
+          <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">docs/connect</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:#6E6A64">What should change?</label>
+          <textarea placeholder="e.g. Step 2 shows the old Ghost Admin — the Integrations tab moved." style="height:96px;border:1px solid #FF5941;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;resize:none;line-height:1.5;box-shadow:0 0 0 2px rgba(255,89,65,.4)"></textarea>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:#6E6A64">Email <span style="color:#A8A29A;font-weight:400">· optional, if you'd like a reply</span></label>
+          <input type="text" placeholder="you@yoursite.com" style="height:38px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-size:13px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+          <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Send suggestion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>
