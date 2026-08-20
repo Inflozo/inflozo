@@ -38,7 +38,40 @@ function bindValue(spec, ctx) {
 }
 
 // User content is data, never code: a headline containing {{...}} must render literally.
-const escapeHbs = (s) => String(s).replace(/\{\{/g, '\\{{');
+//
+// CORRECTED 2026-08-20 (Round 3, decision D2). This was
+//     const escapeHbs = (s) => String(s).replace(/\{\{/g, '\\{{');
+// which is the backslash rule MEASUREMENTS.md §3 refuted and AD-5 replaced. It is
+// inert for exactly one input shape and live for the rest: a user typing
+// `C:\{{@site.title}}` shipped `C:\\{{@site.title}}`, which Handlebars reads as an
+// escaped backslash followed by a LIVE expression, and the site's own title
+// appeared inside the user's headline. `C:\{{#if x}}y{{/if}}` produced a theme that
+// would not compile at all. test.js asserted only the one shape that worked, so
+// this shipped through two stress-test rounds printing "16 checks passed".
+//
+// AD-5: escape by HTML numeric entity. Handlebars never sees a mustache; the
+// browser decodes the exact characters back.
+const escapeUserText = (s) => String(s)
+  .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')   // strip anything marker-shaped
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/\{/g, '&#123;').replace(/\}/g, '&#125;');
+
+// AD-4: the theme renderer must never put escaped user text into a DOM. The HTML
+// parser decodes `&#123;` straight back to `{` on assignment and the serializer
+// never re-escapes it, so a DOM round trip re-creates the live mustache. User text
+// therefore goes in as an opaque marker and is substituted into the serialized
+// STRING, last, across the template and every emitted partial (R2-5).
+const U0 = String.fromCharCode(3), U1 = String.fromCharCode(4);
+class UserText {
+  constructor() { this.map = []; }
+  put(value) { const m = `${U0}${this.map.length}${U1}`; this.map.push(value); return m; }
+  // ONE regex pass. A loop of per-marker replaces re-scans its own output, so a
+  // user who types slot 0's marker shape inside slot 3's text ships it raw.
+  substitute(text) {
+    return text.replace(new RegExp(`${U0}(\\d+)${U1}`, 'g'),
+      (m, i) => (this.map[+i] === undefined ? m : escapeUserText(this.map[+i])));
+  }
+}
 
 function parse(src) {
   const dom = new JSDOM(`<body>${src}</body>`);
@@ -63,7 +96,7 @@ function renderCanvas(src, content, ghost) {
     }
     el.remove();
   }
-  applyProps(root, content, { canvas: true });
+  applyProps(root, content, { users: null });
   return serialize(root, new Tokens());
 }
 
@@ -83,16 +116,18 @@ function applyBindings(scope, ctx) {
   }
 }
 
-function applyProps(scope, content, { canvas }) {
+// `users` is null on the canvas path (the user must see their own literal text)
+// and a UserText instance on the theme path.
+function applyProps(scope, content, { users }) {
   for (const el of [...scope.querySelectorAll('[data-prop]')]) {
     const v = get(content, el.getAttribute('data-prop'));
-    el.textContent = v == null ? el.textContent : (canvas ? v : escapeHbs(v));
+    el.textContent = v == null ? el.textContent : (users ? users.put(v) : v);
     el.removeAttribute('data-prop'); el.removeAttribute('data-empty');
   }
   for (const el of [...scope.querySelectorAll('[data-prop-attr]')]) {
     const [attr, path] = splitFirst(el.getAttribute('data-prop-attr'), ':');
     const v = get(content, path);
-    if (v != null) el.setAttribute(attr, canvas ? v : escapeHbs(v));
+    if (v != null) el.setAttribute(attr, users ? users.put(v) : v);
     el.removeAttribute('data-prop-attr');
   }
 }
@@ -125,9 +160,14 @@ function renderTheme(src, content, name) {
     el.parentNode.replaceChild(marker, el);
   }
 
+  const users = new UserText();
   emitBindings(root, tokens);
-  applyProps(root, content, { canvas: false });
-  return { template: serialize(root, tokens), partials, name };
+  applyProps(root, content, { users });
+  // R2-5: substitute LAST, over the template AND every emitted partial. Running it
+  // over the template alone ships a raw marker in the partial with the text absent.
+  const template = users.substitute(serialize(root, tokens));
+  for (const k of Object.keys(partials)) partials[k] = users.substitute(partials[k]);
+  return { template, partials, name };
 }
 
 function emitBindings(scope, tokens) {
@@ -157,4 +197,4 @@ function wrapGuard(el, expr, tokens) {
   el.parentNode.insertBefore(doc.createComment(tokens.put(`{{/if}}`)), el.nextSibling);
 }
 
-module.exports = { renderCanvas, renderTheme };
+module.exports = { renderCanvas, renderTheme, escapeUserText };
