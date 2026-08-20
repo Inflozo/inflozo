@@ -905,3 +905,33 @@ consequence nobody had connected to it.
 stale peaks from earlier bursts; the co-location figures above are taken from live concurrency and
 from RSS, not from that counter. Recorded because the first reading of the 40-way burst looked like
 4-way co-location with 300 MB allocations, and it was not.
+
+### 17d. Does 4 GB cost more, and does it buy CPU? Measured.
+
+**It buys no CPU.** Identical CPU-bound work, same code, same region, five runs each:
+
+| memory | median | cores reported |
+| --- | --- | --- |
+| 2048 MB | **1,992 ms** | 2 |
+| 4096 MB | **1,892 ms** | 2 |
+
+~5% apart, inside run-to-run variance, and **both sizes already report 2 cores**. An earlier note in
+this session claimed 4 GB brings a second vCPU and would roughly halve compile time; that is **false**
+and is corrected here rather than quietly dropped. Node's JavaScript is single-threaded, so a second
+core would not have halved it in any case.
+
+**It costs more, and the amount is trivial.** Fluid bills **Active CPU at $0.128/hour — only while
+code actually runs, I/O wait is free** — and **Provisioned Memory at $0.0106/GB-hour**
+(`vercel.com/docs/functions/usage-and-pricing`, read 2026-08-20). With duration unchanged, only the
+memory reservation doubles:
+
+| per compile (~4 s) | 2 GB | 4 GB |
+| --- | --- | --- |
+| provisioned memory | $0.0000236 | $0.0000471 |
+| active CPU | $0.000142 | $0.000142 |
+| **total** | **$0.000166** | **$0.000189** |
+
+**+14% of a deploy's compute — about 2 cents per thousand deploys, $2.30 per hundred thousand.**
+Against Appendix F's blended **$12.61/month net per Pro customer**, a user deploying ten times a day
+pays about **5.7 cents/month** in compile at 4 GB against 5.0 at 2 GB. **No Appendix F break-even
+moves**, so G7's 11–15-subscriber cash break-even and the 160–180 payback are unaffected.
