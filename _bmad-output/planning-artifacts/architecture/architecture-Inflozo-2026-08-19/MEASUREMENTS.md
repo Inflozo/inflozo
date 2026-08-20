@@ -193,9 +193,17 @@ designing a card means styling **every** class gscan checks for it, or the 0/0 t
 `SCHEMA.sql` applies clean to PostgreSQL 17.11 on the first run. The static sweep reports:
 
 - **0** public tables with RLS disabled
-- **policies across tables — re-derive from the proof, do not quote this line.** It read "34 policies across 26 tables"; the shipped `RLS-TEST.sql` prints **37 / 28**. The drift is Round 1 decision 24's whole point: a number restated by hand in a second place goes stale the first time the schema moves. *(Round 3, decision D8 — the count is now read from the proof's own output, and this line exists only to record why it is not a number.)*
+- **policies across tables — re-derive from the proof; this line is deliberately not a number.**
+  It once read "34 policies across 26 tables" and has gone stale twice since: **37 / 28** after Round
+  2's grants, **46 / 29** after Round 4 (the parent-ownership policies, `renewal_reminders`, and the
+  AD-7 tables moving to `private`). That drift is Round 1 decision 24's whole point — a count
+  restated by hand in a second place goes stale the first time the schema moves. `RLS-TEST.sql`
+  prints the live figure on every run; container and hosted were confirmed identical at **46 / 29**
+  on 2026-08-20. *(Round 3 decision D8 flagged this line for re-derivation; Round 4 re-derived it.)*
 - exactly **2** deliberate server-only tables (`site_credentials`, `billing_events`) — both
-  RLS-enabled with zero policies, which is AD-7's deny mechanism
+  RLS-enabled with zero policies, which is AD-7's deny mechanism. **Both moved to the `private`
+  schema in Round 4 (F6), and a third joined them** (`credential_audit`), so the equivalent
+  present-day check is that `public` holds exactly one deny-all table, `feature_flags`
 - **0** tables carrying `user_id` without a policy that scopes on it
 
 The behavioural pass proves isolation rather than asserting it — every line reads PASS:
@@ -1794,3 +1802,70 @@ And it still bites, in editor mode, with no `ON_ERROR_STOP` anywhere:
 
     drop trigger auth_user_profile      -> exit 1  ERROR: FAIL: missing guard trigger(s)
     grant update (image_approved) …     -> exit 1  ERROR: FAIL (F3): suggestions.image_approved (UPDATE)
+
+---
+
+## 24. Propagation audit, and the reliability gap · 2026-08-20
+
+### 24a. Every Round 4 finding cross-referenced against the docs. Three gaps found.
+Checked mechanically rather than from memory — standing rule 2 ("propagate, never localise") is the
+rule this project has broken most often, and an audit done by recollection is how it stays broken.
+Each of the 20 finding ids was searched across the spine, the schema and the register.
+
+**17 of 20 had propagated. Three had not, and one of them mattered:**
+
+- **F0 was an orphan in the spine.** The finding — the harness could not fail — lived in
+  `MEASUREMENTS.md` and in `RLS-TEST.sql`'s own header, and **nowhere in the architecture**. AD-26 is
+  the invariant that owns `supabase/tests/rls.sql`; it required every migration to ship a row there
+  and said **nothing about that file having to raise**. So the single most expensive defect this
+  project has found was recorded as evidence and not as a rule, and the real repo's harness would
+  have been rebuilt with no instruction to make it a gate. **AD-26 now carries it**, with the three
+  consequences that bind every future migration: `raise exception` not `raise notice`, catalogue
+  queries wrapped in a raising block, and the harness **mutation-tested** rather than trusted.
+- **§23a — the renderer-agreement proof was not referenced from AD-1**, whose "the same code ran is
+  the proof" sentence is exactly the claim it makes runnable. Added.
+- **§23b — the new storage DELETE guard was not in AD-32.** Added, including the part that matters:
+  it does **not** cover TRUNCATE.
+
+**Also corrected while auditing**: §8's policy count, which Round 3's decision D8 had already flagged
+for re-derivation, still carried a stale figure inside its own correction. It is now not a number at
+all — the proof prints the live one, and container and hosted agree at **46 / 29**. Register item 37
+is marked **superseded** by 37b rather than left reading OPEN.
+
+### 24b. AD-11's cold-start row — Round 4 asked for it and never filled it
+The round-4 prompt's performance table listed *"Cold starts — Fluid instance boot on a real deploy:
+how long before the first byte on a cold path?"* and the round did not measure it. Closed now,
+against the live probe deployment:
+
+    request 1, after hours idle   1325 ms
+    requests 2-7, warm             657 · 598 · 604 · 576 · 632 · 403 ms   (median 601 ms)
+    cold-start penalty             ~724 ms
+
+The warm figure is dominated by network RTT to `iad1` from this machine, not by the function. **The
+penalty is ~0.7 s and it is immaterial to every budget the product states** — against AD-11's 300 s
+compile ceiling it is noise, and against G1's ten minutes it is invisible. Where it is worth
+remembering is perceived responsiveness on a user's *first* action after idle, which is a UX note for
+E5 rather than a budget concern.
+
+### 24c. ⚠️ The reliability leg is the weak one, and NFR-4 names a gate nobody has run
+Security and performance have both been executed hard. **Reliability has not been tested at all.**
+
+NFR-4 reads: *"Supabase Postgres point-in-time recovery (PITR) enabled for user work-product, **with
+a restore drill exercised before launch**."* Searched across every measurement file: **zero mentions
+of a restore drill, and zero evidence any restore has ever been attempted.** The probe project shows
+`wal_level=logical` and `archive_mode=on`, so the machinery is there, but PITR itself is a Supabase
+**paid add-on** and whether it is enabled — and at what retention — has never been checked. Appendix F
+already carries a `[NOTE FOR PM]` to confirm the retention window matches NFR-4 before launch; that
+note and this gate are the same item, and neither has been actioned.
+
+**Three reliability facts that follow from AD-29 and have no evidence behind them:**
+
+1. **No restore has ever been performed.** A backup that has not been restored from is a hypothesis,
+   and this project's own standing rule 1 is about exactly that class of belief.
+2. **Storage has no PITR at all** — AD-29 states this plainly — and `site-snapshots` holds the one
+   artifact that *cannot* be regenerated: a customer's pre-Inflozo theme. There is currently **no
+   backup story for it whatsoever**, only a lifecycle rule that deletes it.
+3. **No failure path has been executed.** AD-20's partial-success state, AD-24's error envelope and
+   §19e's webhook contract all describe what happens when something breaks; not one of them has been
+   run against a real failure — a Ghost that 500s mid-upload, a dropped connection, an unreachable
+   Supabase.
