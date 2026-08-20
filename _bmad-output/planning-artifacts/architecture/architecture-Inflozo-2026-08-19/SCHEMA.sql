@@ -9,6 +9,29 @@
 --   * ids are uuid v4 defaulted in Postgres; timestamps are timestamptz; money never appears
 --   * a table with no policy is server-only (service role); that is the deny mechanism
 
+-- ============================================================================
+-- 0a. Default privileges — grant IN, never out.  [R2-4]
+-- ============================================================================
+--
+-- Round 1 found `suggestions_public` writable cross-tenant because `authenticated` held write
+-- privileges nobody in this file ever granted: they were inherited from a platform default and
+-- §11 narrowed only the objects it happened to think of. Round 2 found the same root cause on
+-- every table. Narrowing per object is a list you must remember; this is a floor.
+--
+-- Every object created from here on confers NOTHING on anon/authenticated until this file grants
+-- it explicitly (§11a). That also matches where the platform is going -- see PRELUDE.sql (b).
+--
+-- Note this governs FUTURE objects only, which is exactly the point: it is the rule every later
+-- migration inherits without having to know it exists. AD-26's per-migration checklist covers
+-- views and functions too, because this statement does not reach objects created by another role.
+
+-- NOTE the shape: ALTER DEFAULT PRIVILEGES takes ONE object type per statement. Round 1's rider was
+-- written as a single `on tables, sequences, functions` clause, which Postgres rejects with a syntax
+-- error at the first comma. Three statements, verified on PostgreSQL 17.
+alter default privileges in schema public revoke all on tables    from anon, authenticated;
+alter default privileges in schema public revoke all on sequences from anon, authenticated;
+alter default privileges in schema public revoke all on functions from anon, authenticated;
+
 create extension if not exists "pgcrypto";
 
 -- ============================================================================
@@ -362,6 +385,10 @@ create table public.deploys (
   library_version  text,
   variant_manifest jsonb,                                 -- [{sectionId, designId, template}]
   emitted_custom_templates text[] not null default '{}',  -- FR-I6's post-deploy checklist reads this
+  -- AD-27(a): sites.site_settings as it stood WHEN THIS DEPLOY COMPILED. AD-14 forbids the compile
+  -- re-fetching it, so the value it was handed has to be recorded here or the deploy is not
+  -- reproducible and FR-J9's rollback replays against settings that have since moved. [R1 decision 15]
+  settings_snapshot jsonb,
   created_at    timestamptz not null default now(),
   activated_at  timestamptz
 );
@@ -705,7 +732,30 @@ create view public.suggestions_public as
          case when image_approved or user_id = (select auth.uid())
               then image_path else null end as image_path
   from public.suggestions where hidden = false;
-grant select on public.suggestions_public to anon, authenticated;
+-- Grants for this view live in §11a(8): SELECT only, to anon and authenticated.
+--
+-- [R1 decision 3, CORRECTED 2026-08-19 -- the decision as written is refuted by execution.]
+-- Decision 3 said "make suggestions_public security_invoker = true and revoke write grants through
+-- it". The second half is right and is what actually closes Round 1's hole. The first half breaks
+-- the view outright, and the two halves were never separable in testing because nobody ran them.
+--
+-- Executed, clean database, schema as shipped:
+--   * BASELINE   user A updated AND DELETED user B's suggestion through this view. Confirmed:
+--                B's row count went 1 -> 0. The cause is the WRITE GRANT, not the definer-ness:
+--                `authenticated` held INSERT/UPDATE/DELETE on the view, and a definer view executes
+--                them as the owner, around RLS.
+--   * DECIDED    alter view ... set (security_invoker = true)
+--                -> "ERROR: permission denied for table suggestions" for BOTH anon and authenticated,
+--                on plain SELECT. An invoker view needs the CALLER to hold privileges on the base
+--                table, and §10 deliberately revokes image_path from the caller's column grant. The
+--                view selects image_path, so every read fails. The public board goes dark.
+--   * CORRECTED  keep SECURITY DEFINER; revoke all, grant select.
+--                -> A reads the board and the approved image renders; A's UPDATE and DELETE both
+--                   return "permission denied for view suggestions_public"; B's row is intact.
+--
+-- So the definer-ness is load-bearing exactly as this file's original comment said -- the view must
+-- read a column its callers cannot -- and the fix is to take the verbs away, not the definer.
+-- §0a makes this the default for every future view, which is the durable half.
 
 -- 10c. updated_at triggers
 do $$
@@ -720,6 +770,83 @@ begin
                     for each row execute function public.touch_updated_at()', t);
   end loop;
 end $$;
+
+-- ============================================================================
+-- 11a. Table-level grants — the schema grants IN, and names every privilege  [R2-1]
+-- ============================================================================
+--
+-- Nothing below is inherited. §0a revoked the default, so a table absent from this section is
+-- unreachable by the client -- which is the intended failure mode for the three server-only tables
+-- and a build error for anything else.
+--
+-- Executed 2026-08-19: with the platform default removed, the previous form of this file applied
+-- with ZERO errors and left 29 of 30 tables with no privilege at all, because §11 below narrows
+-- UPDATE and nothing ever granted SELECT/INSERT/DELETE. RLS-TEST.sql then aborted in its fixture
+-- block having run 0 assertions. That is what this section fixes.
+--
+-- RLS still decides WHICH ROWS. These grants decide which VERBS. Both are required; neither
+-- substitutes for the other. TRUNCATE, REFERENCES and TRIGGER are granted to nobody, ever --
+-- TRUNCATE in particular is not subject to RLS, so it would bypass every policy in §10.
+
+-- (1) Owner read/write. The uniform AD-6 policy in §10a scopes the rows.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'passkey_labels','site_snapshots','project_templates','project_template_prefs',
+    'custom_templates','translation_overrides','routes_config','project_treatments'
+  ] loop
+    execute format('grant select, insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;
+
+-- (2) Owner read/write, but UPDATE is column-narrowed in §11 below. INSERT and DELETE are whole-row
+--     and stay here; the UPDATE grant is deliberately absent so §11 is the only place that confers it.
+do $$
+declare t text;
+begin
+  foreach t in array array['sites','projects','custom_settings','assets','edit_locks'] loop
+    execute format('grant select, insert, delete on public.%I to authenticated', t);
+  end loop;
+end $$;
+
+-- (3) profiles: the row is created at signup and never deleted by the client (FR-A5 is a soft
+--     delete performed by a server route). SELECT here; UPDATE is column-narrowed in §11.
+grant select on public.profiles to authenticated;
+
+-- (4) AD-8 select-only. These are facts the server asserts; a client-writable row here is a forged
+--     deploy history, a self-granted entitlement or an invented export record.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'deploys','project_site_bindings','exports','deployed_template_names','asset_usages',
+    'subscriptions','entitlements','checkout_consents','deploy_jobs','template_binding_checklist'
+  ] loop
+    execute format('grant select on public.%I to authenticated', t);
+  end loop;
+end $$;
+-- deploy_jobs.cancel_requested and template_binding_checklist.marked_done_at are the two exceptions,
+-- granted per-column in §11.
+
+-- (5) notifications: read and mark-read. `read_at` is the only column the client sets -- everything
+--     else is written by the emitting epic (AD-25), and `resolved_at` in particular is what makes
+--     the prune exemption safe, so a client that could clear it would defeat FR-B7.
+grant select on public.notifications to authenticated;
+grant update (read_at) on public.notifications to authenticated;
+
+-- (6) FR-M3's public board. `suggestions` already has its explicit column grant in §10 (the
+--     image_path gate); votes are owner-writable and publicly countable.
+grant select, insert, update, delete on public.suggestion_votes to authenticated;
+grant select on public.suggestion_votes to anon;
+
+-- (7) AD-7 server-only -- site_credentials, billing_events, feature_flags -- are granted NOTHING,
+--     deliberately and by omission. RLS-on-with-no-policy remains, but it is no longer the only
+--     thing standing between a client and the table.
+
+-- (8) suggestions_public: SELECT only.  [R1 decision 3, CORRECTED -- see the note in §10 above]
+revoke all on public.suggestions_public from anon, authenticated;
+grant  select on public.suggestions_public to anon, authenticated;
 
 -- ============================================================================
 -- 11. Column-level write surfaces — RLS is row-level and CANNOT express these
@@ -757,6 +884,39 @@ grant  update (label, options, default_value, group_name, visibility_condition,
 -- stage='done', rewrite error and forge stage_timings.
 revoke update on public.deploy_jobs from authenticated;
 grant  update (cancel_requested) on public.deploy_jobs to authenticated;
+
+-- profiles: the owner edits their own presentation and their autosave preference. The SERVER
+-- asserts is_admin (FR-M4), free_editable_project_id (FR-L3 — which project stays editable in an
+-- over-limit state is the entitlement resolver's call, not the client's) and the FR-A5 soft-delete
+-- stamps. Round 1 found all three client-writable. is_admin additionally keeps its AD-9 trigger,
+-- because a grant cannot express "and not by the service role either".  [R1 decision 13]
+revoke update on public.profiles from authenticated;
+grant  update (display_name, autosave_enabled, updated_at) on public.profiles to authenticated;
+
+-- assets: the owner renames. Everything else describes bytes the client already uploaded, and
+-- stored_bytes in particular IS FR-K3's quota meter — a writable meter is not a meter.  [R1 decision 13]
+--
+-- NOTE, and it is not closed by this grant: `assets` rows are INSERTed by the client (AD-32 makes
+-- the assets bucket the one the browser writes directly), so a client can still understate
+-- stored_bytes AT INSERT. Locking UPDATE stops it being edited afterwards; it does not make the
+-- meter trustworthy. Closing that needs either a server-side insert path or a trigger that recomputes
+-- stored_bytes from `renditions` — a design question this batch deliberately does not invent.
+revoke update on public.assets from authenticated;
+grant  update (display_name) on public.assets to authenticated;
+
+-- edit_locks: project_id and user_id are the lock's identity — a client that could rewrite them
+-- re-parents someone else's lock onto its own project. The rest is the live protocol and stays
+-- writable by the holder. lock_generation additionally carries the monotonic trigger AD-31 already
+-- promises and Round 1 found absent.  [R1 decision 13]
+--
+-- NOTE: this does NOT close the whole of Round 1's edit-lock finding. Forging holder_session_id
+-- without advancing lock_generation is a PROTOCOL question, and R1 decision 32 explicitly defers the
+-- protocol to a state diagram before E5 builds it. What is closed here is the rewind and the
+-- re-parent; what remains open is named so it is not mistaken for done.
+revoke update on public.edit_locks from authenticated;
+grant  update (holder_session_id, lock_generation, heartbeat_at, unsynced_edits,
+               nudge_requested_by, nudge_requested_at)
+  on public.edit_locks to authenticated;
 
 -- template_binding_checklist: FR-I6 is a checklist the user marks. The filename is the server's.
 revoke update on public.template_binding_checklist from authenticated;
@@ -802,8 +962,85 @@ begin
   end if;
   return new;
 end $$;
-create trigger custom_templates_name_guard before insert on public.custom_templates
+-- [R1 decision 16] INSERT-only left the rule trivially bypassable: insert a throwaway filename,
+-- then UPDATE it to the reused one. The guard is the floor under §7.4 collision kind (2), so it has
+-- to see both verbs. tg_op is already tested inside the function; widen it to check on UPDATE too.
+create or replace function public.guard_custom_template_name() returns trigger
+language plpgsql as $$
+begin
+  if exists (select 1 from public.deployed_template_names d
+             where d.project_id = new.project_id and d.filename = new.filename)
+     and (tg_op = 'INSERT' or new.filename is distinct from old.filename) then
+    raise exception 'custom template % was already deployed by this project and can never be reused', new.filename
+      using errcode = '23505';
+  end if;
+  return new;
+end $$;
+create trigger custom_templates_name_guard before insert or update on public.custom_templates
   for each row execute function public.guard_custom_template_name();
+
+-- AD-31 states lock_generation is trigger-guarded monotonic. Round 1 executed a rewind from 999 to 1
+-- and found no trigger at all. AD-15's takeover test reads "has the generation advanced past the one
+-- this device held" — a rewind therefore un-clears a journal that must stay cleared.  [R1 decision 13]
+create or replace function public.guard_lock_generation() returns trigger
+language plpgsql as $$
+begin
+  if new.lock_generation < old.lock_generation then
+    raise exception 'edit_locks.lock_generation is monotonic (% -> %)', old.lock_generation, new.lock_generation
+      using errcode = '42501';
+  end if;
+  return new;
+end $$;
+create trigger edit_locks_generation_monotonic before update on public.edit_locks
+  for each row execute function public.guard_lock_generation();
+
+-- ============================================================================
+-- 11b. Signup — AD-28's entitlements row has a writer  [R1 decision 14]
+-- ============================================================================
+--
+-- AD-28 says "an entitlements row is created at signup and the absent-row case resolves to free".
+-- Round 1 found zero triggers on auth.users, so nothing created it: the first half was aspirational
+-- and only the fallback was real. E5, E7 and E8 all read plan state before E12 ships a writer, which
+-- is exactly the divergence one resolver was meant to prevent.
+create or replace function public.provision_entitlement() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.entitlements (user_id) values (new.id) on conflict (user_id) do nothing;
+  return new;
+end $$;
+revoke execute on function public.provision_entitlement() from public;
+create trigger auth_user_entitlement after insert on auth.users
+  for each row execute function public.provision_entitlement();
+
+-- ============================================================================
+-- 11c. Function EXECUTE — the same grant-in rule, applied to callables
+-- ============================================================================
+--
+-- A function with a null ACL is EXECUTE to PUBLIC, which includes anon. Round 1 reported
+-- sync_vote_count as reachable by `authenticated`; Round 2 found it is reachable by PUBLIC, and so
+-- is every guard function here. §0a fixes this for future functions only, so the ones this file
+-- already created are revoked explicitly.  [R1 decision 16, widened by R2-11]
+--
+-- These are all trigger functions. Nothing calls them directly and nothing should be able to:
+-- sync_vote_count is SECURITY DEFINER, so a direct call executes as its owner.
+do $$
+declare f text;
+begin
+  foreach f in array array[
+    'public.touch_updated_at()','public.freeze_columns()','public.guard_revision()',
+    'public.guard_slug()','public.guard_custom_template_name()','public.guard_lock_generation()',
+    'public.sync_vote_count()','public.enforce_custom_setting_cap()'
+  ] loop
+    execute format('revoke execute on function %s from public, anon, authenticated', f);
+  end loop;
+end $$;
+
+-- pgcrypto is created into `public` by this file's header, so its ~40 functions are also EXECUTE to
+-- PUBLIC. That is not a hole on its own — a caller still needs the ciphertext and the key — but it
+-- is the same hygiene class, and AD-7 keeps Vault references in site_credentials. Left as-is
+-- deliberately: moving the extension to its own schema changes the search_path every migration and
+-- every server route resolves against, which is a bigger change than this batch should make. Raised
+-- rather than done.
 
 -- ============================================================================
 -- 12. Storage — four buckets, and RLS on storage.objects is a separate system

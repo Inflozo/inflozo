@@ -39,7 +39,31 @@ set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 
 select 'sites visible to A (expect 1)' as check, count(*) from public.sites;
 select 'projects visible to A (expect 1)' as check, count(*) from public.projects;
-select 'site_credentials visible to A (expect 0 — server-only)' as check, count(*) from public.site_credentials;
+-- [R2-1] AD-7's server-only tables now deny TWICE: no grant at all (§11a(7)) and RLS-with-no-policy
+-- behind it. The observable shape therefore CHANGED — this used to return 0 rows, because the client
+-- held a platform-default SELECT and RLS filtered every row. It now raises insufficient_privilege
+-- before RLS is consulted. That is defence in depth and it fails loud rather than silently empty,
+-- but it is a different signature and any caller expecting an empty set now throws.
+do $$ begin
+  begin
+    perform 1 from public.site_credentials;
+    raise notice 'FAIL: site_credentials is reachable by the client';
+  exception when insufficient_privilege then
+    raise notice 'PASS: site_credentials denied at the grant layer, not just by RLS (42501)';
+  end;
+  begin
+    perform 1 from public.billing_events;
+    raise notice 'FAIL: billing_events is reachable by the client';
+  exception when insufficient_privilege then
+    raise notice 'PASS: billing_events denied at the grant layer, not just by RLS (42501)';
+  end;
+  begin
+    perform 1 from public.feature_flags;
+    raise notice 'FAIL: feature_flags is reachable by the client';
+  exception when insufficient_privilege then
+    raise notice 'PASS: feature_flags denied at the grant layer, not just by RLS (42501)';
+  end;
+end $$;
 select 'suggestions visible to A (expect 1 — public board)' as check, count(*) from public.suggestions;
 select 'unapproved image via view (expect NULL)' as check,
        (select image_path from public.suggestions_public where id='cccccccc-0000-0000-0000-000000000003') as v;
@@ -228,3 +252,122 @@ order by 1;
 
 -- 4. Policy count, for the record.
 select count(*) as policies, count(distinct polrelid) as tables_with_policies from pg_policy;
+
+-- ============================================================================
+-- 5. Round 2 regressions — the grant surface itself  [R2-1, R2-3, R2-4]
+-- ============================================================================
+-- Round 1 and Round 2 both found holes that RLS could not see because they were privilege holes,
+-- not policy holes. These four queries must ALL return zero rows.
+
+-- 5a. TRUNCATE ignores RLS entirely; REFERENCES and TRIGGER are never a client's business.
+select table_name||' -> '||grantee||' has '||privilege_type as forbidden_grant
+from information_schema.role_table_grants
+where grantee in ('anon','authenticated') and privilege_type in ('TRUNCATE','REFERENCES','TRIGGER')
+order by 1;
+
+-- 5b. Every table except the three deliberate AD-7 server-only ones must be reachable. A table that
+--     falls off §11a is silently dead to the client, and SCHEMA.sql applies with zero errors either way.
+select t.tablename as table_with_no_grant
+from pg_tables t
+where t.schemaname='public'
+  and t.tablename not in ('site_credentials','billing_events','feature_flags')
+  and not exists (select 1 from information_schema.role_table_grants g
+                  where g.table_schema='public' and g.table_name=t.tablename
+                    and g.grantee in ('authenticated','anon'))
+order by 1;
+
+-- 5c. The inverse: an AD-7 server-only table must hold NO grant at all.
+select g.table_name||' -> '||g.grantee||' has '||g.privilege_type as server_only_table_is_granted
+from information_schema.role_table_grants g
+where g.table_schema='public'
+  and g.table_name in ('site_credentials','billing_events','feature_flags')
+  and g.grantee in ('anon','authenticated')
+order by 1;
+
+-- 5d. A function with a null ACL is EXECUTE to PUBLIC, which includes anon.
+select p.proname as function_executable_by_public
+from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+where n.nspname='public' and p.proacl is null
+  and p.proname in ('touch_updated_at','freeze_columns','guard_revision','guard_slug',
+                    'guard_custom_template_name','guard_lock_generation','sync_vote_count',
+                    'enforce_custom_setting_cap','provision_entitlement')
+order by 1;
+
+-- ============================================================================
+-- 6. Round 1 decisions 3, 13, 14, 15, 16 — as executable regressions
+-- ============================================================================
+do $$
+declare n int;
+begin
+  -- d15: the settings snapshot AD-27(a) names has a column to live in.
+  if exists (select 1 from information_schema.columns
+             where table_name='deploys' and column_name='settings_snapshot')
+    then raise notice 'PASS: deploys carries the AD-27(a) settings snapshot';
+    else raise notice 'FAIL: deploys has no settings snapshot column'; end if;
+
+  -- d14: AD-28's entitlements row has a writer.
+  insert into auth.users(id) values ('33333333-3333-3333-3333-333333333333');
+  select count(*) into n from public.entitlements where user_id='33333333-3333-3333-3333-333333333333';
+  if n = 1 then raise notice 'PASS: entitlements row provisioned at signup (AD-28)';
+          else raise notice 'FAIL: no entitlements row created at signup'; end if;
+
+  -- d13: lock_generation is monotonic, and against the OWNER too (AD-31).
+  insert into public.edit_locks(project_id,user_id,holder_session_id,lock_generation)
+    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','s1',5);
+  begin
+    update public.edit_locks set lock_generation = 1
+      where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+    raise notice 'FAIL: lock_generation rewound';
+  exception when insufficient_privilege then
+    raise notice 'PASS: edit_locks.lock_generation is monotonic (42501)'; end;
+
+  -- d16: the custom-template name guard sees UPDATE, not only INSERT.
+  insert into public.deployed_template_names(project_id,user_id,filename)
+    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','custom-taken');
+  insert into public.custom_templates(project_id,user_id,display_name,filename,kind)
+    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
+            'Free one','custom-free','routes');
+  begin
+    update public.custom_templates set filename='custom-taken'
+      where project_id='aaaaaaaa-1111-0000-0000-000000000001' and filename='custom-free';
+    raise notice 'FAIL: a deployed template name was reused via UPDATE';
+  exception when unique_violation then
+    raise notice 'PASS: name guard fires on UPDATE as well as INSERT (23505)'; end;
+end $$;
+
+-- d3 (corrected): the view reads, and cannot be written through.
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+do $$ begin
+  begin
+    perform 1 from public.suggestions_public;
+    raise notice 'PASS: suggestions_public is still readable (the image gate survives)';
+  exception when others then raise notice 'FAIL: suggestions_public unreadable (%)', sqlstate; end;
+  begin
+    update public.suggestions_public set title='PWNED';
+    raise notice 'FAIL: cross-tenant write through suggestions_public';
+  exception when insufficient_privilege then
+    raise notice 'PASS: suggestions_public is not writable (42501)'; end;
+  begin
+    delete from public.suggestions_public;
+    raise notice 'FAIL: cross-tenant delete through suggestions_public';
+  exception when insufficient_privilege then
+    raise notice 'PASS: suggestions_public rows cannot be deleted by a client (42501)'; end;
+  -- d13: the three column locks Round 1 found open.
+  begin
+    update public.profiles set free_editable_project_id = gen_random_uuid();
+    raise notice 'FAIL: profiles.free_editable_project_id is client-writable';
+  exception when insufficient_privilege then
+    raise notice 'PASS: profiles.free_editable_project_id is server-only (42501)'; end;
+  begin
+    update public.assets set stored_bytes = 1;
+    raise notice 'FAIL: assets.stored_bytes is client-writable';
+  exception when insufficient_privilege then
+    raise notice 'PASS: assets.stored_bytes is server-only (42501)'; end;
+  begin
+    update public.edit_locks set user_id = '22222222-2222-2222-2222-222222222222';
+    raise notice 'FAIL: an edit lock can be re-parented onto another user';
+  exception when insufficient_privilege then
+    raise notice 'PASS: edit_locks identity columns are frozen (42501)'; end;
+end $$;
+reset role;
