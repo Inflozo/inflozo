@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Provision the Ghost 5.x probe box — target T3 in §4's build order.
+# Provision a Ghost probe box — §4's targets T1 (6.x) and T3 (5.x).
 #
 # The canonical Ghost-CLI production install, not a container: nginx, MySQL 8,
 # systemd, Let's Encrypt. That shape is deliberate — VERIFY item 3 asks for
 # "theme-upload size limits per host", and Ghost-CLI's own nginx config IS the
 # answer, so hand-rolling it would measure our config instead of a real one.
 #
-#   ssh root@<host> 'bash -s' < provision-ghost5.sh <mysql_pw> <url> <ssl_email>
+#   ssh root@<host> 'bash -s' < provision-ghost.sh \
+#       <mysql_pw> <url> <ssl_email> <ghost_version> <expected_gscan>
+#
+# The expected gscan version is REQUIRED and asserted at the end. AD-34 makes the
+# version a Ghost major BUNDLES the gate's input, so a box whose pairing has moved
+# is worse than no box — it produces verdicts that look comparable and are not.
 #
 # Idempotent enough to re-run after a rebuild. Every step reports.
 set -uo pipefail
@@ -14,11 +19,16 @@ set -uo pipefail
 MYSQL_PW="${1:?mysql root password required}"
 GHOST_URL="${2:?url required, e.g. https://ghost5.inflozo.com}"
 SSL_EMAIL="${3:?ssl email required}"
-GHOST_VERSION="5.130.6"          # pinned: AD-34 makes the BUNDLED gscan the gate's input
-NODE_MAJOR="22"                  # engines.node: ^18.12.1 || ^20.11.1 || ^22.13.1
-GHOST_DIR="/var/www/ghost5"
+GHOST_VERSION="${4:?ghost version required, e.g. 5.130.6}"
+GSCAN_EXPECTED="${5:?expected bundled gscan required, e.g. 4.49.7}"
+
+MAJOR="${GHOST_VERSION%%.*}"
+# Node 22 satisfies both majors: Ghost 5 wants ^18.12.1 || ^20.11.1 || ^22.13.1,
+# Ghost 6 wants ^22.23.1 exactly.
+NODE_MAJOR="22"
+GHOST_DIR="/var/www/ghost${MAJOR}"
 GHOST_USER="ghostadmin"          # Ghost-CLI refuses to run as root
-DB_NAME="ghost5_prod"
+DB_NAME="ghost${MAJOR}_prod"
 
 say() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
 ok()  { printf '   \033[32mok\033[0m %s\n' "$*"; }
@@ -99,7 +109,7 @@ say "8. Ghost-CLI"
 npm install -g ghost-cli@latest >/dev/null 2>&1 || die "ghost-cli install"
 ok "ghost-cli $(ghost version 2>/dev/null | grep -oP 'Ghost-CLI version: \K.*' || echo '?')"
 
-say "9. ghost install ${GHOST_VERSION}"
+say "9. ghost install ${GHOST_VERSION} (major ${MAJOR}) into ${GHOST_DIR}"
 install -d -m 775 -o "$GHOST_USER" -g "$GHOST_USER" "$GHOST_DIR"
 sudo -u "$GHOST_USER" -H bash -c "cd '$GHOST_DIR' && ghost install '$GHOST_VERSION' \
   --no-prompt \
@@ -115,7 +125,7 @@ GHOSTV=$(grep -m1 '"version"' "$GHOST_DIR/current/package.json" | grep -oP '[0-9
 echo "   ghost   $GHOSTV"
 echo "   gscan   $GSCAN"
 [ "$GHOSTV" = "$GHOST_VERSION" ] || die "expected ghost $GHOST_VERSION, got $GHOSTV"
-[ "$GSCAN" = "4.49.7" ] || die "expected gscan 4.49.7, got $GSCAN — AD-34's pairing has MOVED and MEASUREMENTS §13 is stale for Ghost 5"
+[ "$GSCAN" = "$GSCAN_EXPECTED" ] || die "expected gscan $GSCAN_EXPECTED, got $GSCAN — AD-34's pairing has MOVED for Ghost $MAJOR and MEASUREMENTS §13 is stale for it"
 ok "ghost $GHOSTV bundles gscan $GSCAN — matches MEASUREMENTS §13"
 
 say "11. The host's theme-upload ceiling (VERIFY item 3)"
