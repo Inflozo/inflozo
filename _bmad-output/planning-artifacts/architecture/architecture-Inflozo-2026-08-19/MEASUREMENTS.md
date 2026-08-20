@@ -406,3 +406,99 @@ on Ghost 6**, and the **3-warning delta is exactly** `GS050-CSS-KGVIDTHUMB`, `-K
 never see. This lands on **E7** and **E10's A33 category gate** simultaneously: designing a Koenig
 card means styling every class gscan checks for it, on **both** majors, or FR-J6's 0/0 target breaks
 on Ghost 5 only — the harder failure to notice.
+
+---
+
+## 14. AD-11 re-measured on the rebuilt stress fixture · Round 3 · **corrects §2 and §11**
+
+Round 1 decision 10 is closed. The fixture is checked in at `tools/stress/` and this is its
+measurement. §2's numbers were taken on a fixture that was never committed and that Round 1
+established was ~7.4x too light per section; these replace them.
+
+    cd tools/stress && npm install && node build.js && node gate.js theme
+
+**Fixture shape.** Eight annotated-HTML archetypes sized from `sections-inventory.md` — header with
+a nav repeat, split hero with a stat row and a trust rail, post feed with a **nested** tag repeat,
+tiers with a benefit sub-repeat, gallery, member-aware CTA band, article body with a related-posts
+repeat, footer with three nav repeats. **Mean 39.1 elements and 21.0 directives per section**
+against the spike's toy hero at **5 elements and 3 directives**. 70 renders over 7 templates
+(`custom-stress` 40, six others 5 each), 197 files, 10.20 MB uncompressed / 10.09 MB zipped, with
+80 hashed renditions and 8 woff2 subsets generated as incompressible seeded bytes.
+
+The pipeline it runs is the one **as decided**, not the one the spike ships: AD-5 numeric entities,
+AD-4's splice-after-serialization, R2-5's substitute-last-over-the-file-tree, R2-7's unforgeable
+token and R1 decision 7's nested repeats.
+
+### 14a. The budget
+
+| stage | §2 claimed | host · node 22 · 4 cores | **node 24 · 2 GB · 1 vCPU** | node 24 · musl · 1 vCPU |
+| --- | --- | --- | --- | --- |
+| render + serialize (70) | 770 ms | 1046 ms | **1422 ms** | 1768 ms |
+| per section | 11.0 ms | 14.9 ms | **20.3 ms** | 25.3 ms |
+| assemble | 14 ms | 38 ms | **42 ms** | 78 ms |
+| substitute user text | *(not measured)* | 8 ms | **16 ms** | 9 ms |
+| FR-J17 quality gate | 700 ms | 984 ms | **1554 ms** | 1738 ms |
+| zip | 222 ms | 240 ms | **260 ms** | 264 ms |
+| gscan 4.49.7 + 6.4.2 | 305 ms | 493 ms | **641 ms** | 816 ms |
+| **total** | **~2.0 s** | **~2.8 s** | **~3.9 s** | **~4.7 s** |
+| peak RSS | 289 MB | 454 MB | **486 MB** | 456 MB |
+
+**AD-11's decision survives; its headroom does not.** Against `maxDuration: 300` and
+`memory: 2048` the worst measured case is **~4.7 s and 486 MB** — **~64x duration** and **~4.2x
+memory**, where AD-11 states ~140x and ~7x. §7.1's gscan-boundary split still does not trigger and
+is still not built. The same caveat §2 carries applies unchanged: the fixture reads no Storage bytes
+and subsets no fonts, so the real function pays more than this.
+
+**`substitute user text` is a stage §2 never had.** R2-5 made it one, and it is cheap only if it is
+a single regex pass — the first implementation looped one replace per marker over every file and
+cost **289 ms**, 36x the corrected 8 ms.
+
+### 14b. Three defects that only appear once the decided pipeline is actually run
+
+None of these is visible on a two-section fixture, which is why two rounds did not see them.
+
+1. **Token resolution must run in REVERSE insertion order.** Repeats are processed deepest-first
+   (R1 decision 7), so an inner repeat's tokens are inserted *before* the outer replacement that
+   carries them into the string. Forward order — what `spike-compiler/compile.js` does — substitutes
+   the inner tokens before they exist, and **ten `partials/*.hbs` shipped raw `\u0001N\u0002` tokens**.
+2. **User-text substitution must be one regex pass, never a loop of per-marker replaces.** A loop
+   re-scans its own output: a user who types the marker shape for slot 0 inside the text of slot 3
+   gets that shape written into the file *after* slot 0 was processed, and it ships raw. Escaping
+   cannot save this, because the marker is not made of escapable characters.
+3. **The escaper must strip the marker delimiters.** R1 decision 6 calls for "a marker shape escaped
+   user text can never contain" — true only if the escaper removes it. Two files shipped delimiters
+   straight through until the escaper dropped C0 controls.
+
+### 14c. The two-checker verdict, on a real fixture
+
+    Ghost 5.x  via gscan 4.49.7 (v5)  ->  ERRORS 0  WARNINGS 0
+    Ghost 6.x  via gscan 6.4.2 (v6)   ->  ERRORS 0  WARNINGS 0
+
+§13c's scope limit is lifted: the pair costs **493–816 ms** on the 197-file theme rather than the
+57.5 ms measured on the two-section spike, and the split is still not a budget risk.
+
+**`GS050-CSS-KGWF` is an ERROR on both majors even under `card_assets: true`** — a theme that never
+styles `.kg-width-wide` and `.kg-width-full` scores 1 error on 4.49.7 *and* 6.4.2. It is not in
+§13d's exclusion arithmetic, because it fires without any exclusion at all. E6 and E7 both need it.
+
+**gscan does catch an unresolvable partial reference** — `{{> "sections/index/does-not-exist"}}`
+scores `GS005-TPL-ERR`, an error on both majors. It does **not** catch an orphan partial, which is
+AD-34's assertion and remains so.
+
+### 14d. AD-14 determinism across environments
+
+The 197-file tree is **byte-identical** — `sha256 b442dfa9f6bf23af…` over `find … | sort | xargs
+sha256sum` under `LC_ALL=C` — across four environments: host (node 22.23.2, ext4, 4 cores), and
+containers at node 22 glibc, **node 24 glibc** and **node 24 musl/alpine**, each 2 GB / 1 vCPU on
+overlayfs. Two libc implementations, two Node majors, two filesystems, two CPU allocations.
+
+**Residual, stated:** these are four environments on one physical machine and one CPU architecture.
+A second machine and a non-x86 arch remain untested.
+
+### 14e. AD-5 end-to-end on a full theme
+
+The fixture plants five hostile strings in user text, including `C:\{{@site.title}}` — the case that
+defeats every backslash rule (§3). Compiled with Handlebars 4.7.9 against a context binding
+`site.title` and `title`: **zero live evaluations, zero parse failures**, and the browser's own
+parser decodes every one back to the exact characters the user typed. `grep` finds no live `{{title}}`,
+`{{@site.title}}` or `{{#if @member}}` anywhere in the emitted tree.
