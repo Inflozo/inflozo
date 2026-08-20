@@ -371,6 +371,20 @@ const escapeHbs = (s) => String(s).replace(/(\\*)(\{\{)/g, (_, bs, br) => bs + b
 ```
 Double any run of backslashes preceding a `{{`, then escape the brace. Leave one runnable assertion behind covering the five cases above plus `{{#each}}`/`{{/each}}`.
 
+> **⚠️ CORRECTION 2026-08-20 (stress test Round 3, decision D2) — the remedy recommended below does
+> not work either, and was verified false by execution.** This claim's *diagnosis* is right and was
+> understated exactly as it says. Its **fix** — "double any run of backslashes preceding a `{{`, then
+> escape the brace" — is refuted: Handlebars' escape is not composable at any count. Executed against
+> `handlebars@4.7.9`, the rule emits `C:\\\{{x}}` for a typed `C:\{{x}}`, which renders
+> **`C:\\LIVE-VALUE`** — two literal backslashes and a live expression. The ladder is
+> 1 backslash inert, 2 → `\LIVE`, 3 → `\\LIVE`, and every higher count evaluates.
+> **The mechanism that works is HTML numeric entity encoding** (`&#123;` / `&#125;`), carried by an
+> opaque marker so the escaped value is spliced into the serialized string rather than set into a DOM
+> — a DOM round trip decodes the entities straight back into a live mustache. See AD-5,
+> `MEASUREMENTS.md` §3, and `spike-compiler/test.js` §4, which now runs all seven shapes.
+> This document outranks the review findings it checks, so the wrong fix sitting here unmarked is
+> exactly how it would have been re-adopted.
+
 **Verdict: CONFIRMED.** Raise from **Low** to at least **Medium**: FR-J1 states the rule absolutely, and the helper does not deliver it. Correct the finding's stated consequence — "which Ghost renders as `\{{x}}`" must become "which Ghost renders as a backslash followed by the **evaluated** expression."
 
 ---

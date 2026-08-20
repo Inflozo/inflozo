@@ -18,7 +18,7 @@ parsing or executing Handlebars.
 
 ## Result
 
-- `test.js` — **16/16 pass**
+- `test.js` — **21/21 pass**
 - `build.js` — generated theme scores **0 errors, 0 warnings** on gscan 6.4.2, against
   **both** the v5 and v6 specs.
 
@@ -33,11 +33,22 @@ parsing or executing Handlebars.
 4. Repeating elements extract to real partials invoked with NO parameters
    (`{{> "post-card"}}`), because `{{#foreach}}` supplies the context.
 5. FR-H8 media guards wrap the element, never the attribute.
-6. User content containing `{{...}}` is emitted inert (`\{{`) and renders literally.
+6. User content containing `{{...}}` is emitted inert **as HTML numeric entities** (`&#123;`) and
+   renders literally. **Corrected 2026-08-20 (Round 3, decision D2)** — this line previously read
+   "emitted inert (`\\{{`)" and the code matched it. That backslash rule is refuted: it is inert for
+   exactly one input shape and **live** for the rest, and `test.js` asserted only that one shape, so
+   the suite printed 16/16 while a user typing `C:\\{{@site.title}}` shipped the site's own title
+   into their headline and `C:\\{{#if x}}y{{/if}}` produced a theme that would not compile. See
+   `MEASUREMENTS.md` §3 for the executed ladder and AD-5 for the rule. §4 of `test.js` now runs all
+   seven shapes, including the marker shape itself.
 7. Canvas and compiled output produce an identical element/class skeleton.
 8. Zero builder fingerprints survive into the output.
 
 ## Bugs the spike caught (all implementation, none architectural)
+
+- **The escaping rule this spike shipped for two rounds was wrong, and its own test hid that.**
+  Recorded here rather than quietly fixed: a runnable artifact printing a pass count is evidence
+  only of what it actually asserts. See item 6 above.
 
 - **Order of operations in token resolution.** Comment-wrapped markers must be unwrapped
   BEFORE tokens are substituted. Substitute first and a marker Inflozo inserted becomes

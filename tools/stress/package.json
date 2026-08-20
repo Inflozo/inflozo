@@ -1,0 +1,7 @@
+{ "name": "inflozo-stress", "private": true,
+  "description": "AD-11 stress fixture — 70 realistic sections over 7 templates, gated by both gscan majors",
+  "dependencies": {
+    "jsdom": "30.0.1", "handlebars": "4.7.9",
+    "gscan4": "npm:gscan@4.49.7", "gscan6": "npm:gscan@6.4.2"
+  }
+}

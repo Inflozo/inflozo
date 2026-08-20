@@ -60,12 +60,32 @@ ok('renders real post titles through the partial');
 assert(!out.includes('A post with no image') || !/no-image[\s\S]{0,200}<img/.test(out));
 ok('post with null feature_image renders without a broken <img>');
 
-console.log('\n4. Escaping — user content is data, not code');
-const evil = renderTheme(hero, { ...heroContent, title: 'Try {{@site.title}} here' }, 'x');
-assert(evil.template.includes('\\{{@site.title}}'), evil.template);
-ok('a headline containing {{...}} is emitted inert');
-assert(Handlebars.compile(evil.template)({}).includes('{{@site.title}}'));
-ok('and renders as literal text, not an expression');
+console.log('\n4. Escaping — user content is data, not code  [AD-5, the five-case ladder]');
+// Round 3 D2: this block used to assert ONE input — the single shape the refuted
+// backslash rule happened to get right — so it passed while the rule was broken.
+// Every case below now runs, including the two that shipped live Handlebars.
+const ESC = [
+  ['a plain mustache',            'Try {{@site.title}} here'],
+  ['a Windows path first',        'C:\\{{title}}'],
+  ['a path then a site expression','C:\\{{@site.title}}'],
+  ['a block helper',              'Hi {{#if @member}}member{{/if}} bye'],
+  ['a triple stash',              'See {{{title}}} now'],
+  ['two backslashes',            'path C:\\\\{{title}} end'],
+  ['the marker shape itself',     'a user typing \u00030\u0004 here'],
+];
+const LIVE = { title: 'LEAKED-PROP', site: { title: 'LEAKED-SITE-TITLE' }, member: true };
+for (const [label, typed] of ESC) {
+  const out = renderTheme(hero, { ...heroContent, title: typed }, 'esc');
+  let rendered;
+  try { rendered = Handlebars.compile(out.template)(LIVE, { data: { site: LIVE.site, member: true } }); }
+  catch (e) { assert.fail(`${label}: emitted theme does not compile — ${e.message.split('\n')[0]}`); }
+  assert(!/LEAKED/.test(rendered), `${label}: user text was EVALUATED, not shown`);
+  // what a browser actually displays, once it decodes the numeric entities
+  const shown = new (require('jsdom').JSDOM)(`<body>${rendered}</body>`).window.document.body.textContent;
+  const expected = typed.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+  assert(shown.includes(expected), `${label}: browser shows ${JSON.stringify(shown.slice(0, 60))}, not the typed text`);
+  ok(`${label} — emitted inert, compiles, and renders literally`);
+}
 
 console.log('\n5. Canvas vs theme agreement');
 const canvasGrid = renderCanvas(grid, gridContent, ghost);

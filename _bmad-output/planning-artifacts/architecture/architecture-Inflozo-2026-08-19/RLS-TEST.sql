@@ -371,3 +371,55 @@ do $$ begin
     raise notice 'PASS: edit_locks identity columns are frozen (42501)'; end;
 end $$;
 reset role;
+
+-- ============================================================================
+-- Round 3 D6 — TRUNCATE is not subject to RLS, and Supabase re-grants it
+-- ============================================================================
+--
+-- storage-api's migration 0046-buckets-objects-grants.sql does `grant all` on both
+-- storage tables to anon and authenticated. `all` includes TRUNCATE; RLS does not
+-- cover TRUNCATE. Executed as authenticated before the revoke, `truncate
+-- storage.objects cascade` SUCCEEDED. This assertion fails if a storage upgrade
+-- re-grants it, which is the only way it comes back.
+do $$
+declare bad text;
+begin
+  select string_agg(format('%s.%s -> %s', table_schema, table_name, grantee), ', ')
+    into bad
+  from information_schema.role_table_grants
+  where table_schema = 'storage'
+    and table_name in ('buckets', 'objects')
+    and grantee in ('anon', 'authenticated')
+    and privilege_type = 'TRUNCATE';
+  if bad is not null then
+    raise warning 'OPEN (D6): TRUNCATE is granted on storage tables (%). SCHEMA.sql section 12''s revoke is a no-op wherever the running role is not the grantor (supabase_storage_admin). This is EXPECTED to fail until the revoke is confirmed working on hosted Supabase. It is not reachable while `storage` stays out of PGRST_DB_SCHEMAS -- assert that too, below.', bad;
+  else
+    raise notice 'PASS: no TRUNCATE grant on storage.buckets or storage.objects for anon/authenticated';
+  end if;
+end $$;
+
+-- The half that HELD, asserted so it is not assumed either: buckets carries RLS with
+-- zero policies, which is what makes AD-32's "no bucket is public" true by default.
+do $$
+declare n int; rls boolean;
+begin
+  select relrowsecurity into rls from pg_class c join pg_namespace ns on ns.oid = c.relnamespace
+    where ns.nspname = 'storage' and c.relname = 'buckets';
+  select count(*) into n from pg_policy p join pg_class c on c.oid = p.polrelid
+    join pg_namespace ns on ns.oid = c.relnamespace
+    where ns.nspname = 'storage' and c.relname = 'buckets';
+  if not rls then raise exception 'FAIL: RLS is off on storage.buckets'; end if;
+  raise notice 'PASS: storage.buckets has RLS on with % policies (0 = deny-all, the documented default)', n;
+end $$;
+
+-- The control that actually holds today: `storage` must never be a PostgREST-exposed
+-- schema, because that is the only thing standing between a browser session and the
+-- TRUNCATE grant above. Asserted rather than assumed.
+do $$
+declare exposed text := coalesce(current_setting('pgrst.db_schemas', true), '');
+begin
+  if exposed <> '' and exposed like '%storage%' then
+    raise exception 'FAIL: `storage` is an exposed PostgREST schema (%). With TRUNCATE still granted (D6), any authenticated session can destroy every user''s objects.', exposed;
+  end if;
+  raise notice 'PASS: storage is not PostgREST-exposed (db_schemas = %)', coalesce(nullif(exposed, ''), 'unset locally');
+end $$;
