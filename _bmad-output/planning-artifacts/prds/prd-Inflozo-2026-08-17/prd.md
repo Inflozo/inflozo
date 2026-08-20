@@ -512,9 +512,31 @@ Requirements are numbered `FR-<domain><n>`. "Must" is the default force. Free/Pr
 
 1. **Handlebars expressions are carried through serialization as opaque ASCII tokens** placed in text nodes and attribute values, then swapped for the real expression *after* serialization. Without this the serializer escapes the quotes inside an attribute-borne expression, and `src="{{img_url feature_image size="m"}}"` — the single riskiest case in the design — comes out corrupt.
 2. **Block helpers inject as HTML comments carrying tokens.** `{{#foreach}}` wrappers and FR-H8's `{{#if}}` guards are placed as comment siblings around the element they enclose, then unwrapped in the final pass. Guards wrap the **element**, never the attribute — and guard on the **bound field**, never on a helper argument (FR-H8).
-3. **A mustache may never abut a closing brace, and the compiled theme carries no `{{{` or `}}}` at all.** *(Added 2026-08-19, verified by execution.)* Handlebars reads `}}}` as a triple-stash close, so `:root{--a:{{@custom.x}}}` is a **parse error** — and that is exactly the shape FR-Q5's inline token block in `default.hbs` emits for a promoted colour. gscan reports it only as "Templates must contain valid Handlebars", which points at nothing. The serializer therefore terminates every CSS declaration (`;}`, a space or a newline all parse), and compile CI asserts the emitted theme contains **zero `{{{` and zero `}}}` sequences**. Inflozo emits no triple-stash by design — FR-D4 removes the need for one — so the assertion is exact and closes the whole class rather than this one instance.
+3. **A mustache may never abut a closing brace, and the compiled theme carries no `{{{` or `}}}` at all.** *(Added 2026-08-19, verified by execution.)* Handlebars reads `}}}` as a triple-stash close, so `:root{--a:{{@custom.x}}}` is a **parse error** — and that is exactly the shape FR-Q5's inline token block in `default.hbs` emits for a promoted colour. gscan reports it only as "Templates must contain valid Handlebars", which points at nothing. The serializer therefore terminates every CSS declaration (`;}`, a space or a newline all parse), and compile CI asserts **exactly one permitted `{{{body}}}`, in `default.hbs`, and zero `{{{` or `}}}` in every other emitted file**.
+
+  **⚠ CORRECTED 2026-08-20 (stress test Round 3, decision D3).** This read *"compile CI asserts the emitted theme contains zero `{{{` and zero `}}}` sequences. Inflozo emits no triple-stash by design … so the assertion is exact."* The premise is false. Inflozo emits **one**, unavoidably: `{{{body}}}` is how a Ghost layout injects the rendered template, and there is no alternative — read from the shipped Ghost 5.130.6 image, `casper/default.hbs:77` and `source/default.hbs:56` both use it, and `express-hbs/lib/hbs.js:527` assigns `locals.body` as a plain string, so `{{body}}` would HTML-escape the entire page. `spike-compiler/build.js` has emitted it since the spike was written. As stated the assertion fails on **every** build, which means it gets deleted by whoever hits it first — taking with it the guard against `:root{--a:{{@custom.x}}}`, the actual defect it exists for. Scoping it to the one permitted occurrence keeps the guard and lets it pass.
 
 4. **Comment-wrapped markers MUST be unwrapped BEFORE token substitution.** Substituting first makes a marker Inflozo inserted indistinguishable from a comment the section author wrote, and the compiler then rewrites author comments as template code. This is an ordering constraint on the design, not an implementation detail; it belongs in the compiler's own test suite and must not be left for the implementer to rediscover.
+
+**The directive vocabulary is incomplete, and the complete gap list is stated here rather than discovered per category** *(Round 3, decision D5 — closes Round 1 decision 8, deferred through two rounds)*. The eight directives above (`data-prop`, `data-prop-attr`, `data-bind`, `data-bind-attr`, `data-empty`, `data-repeat`, `data-repeat-limit`, `data-partial`) were derived from a two-section spike. Walking all 34 categories of `sections-inventory.md` against them yields **13** constructs the library needs and the vocabulary cannot express. This list is normative for E4's authoring-format deliverable and **gates it**: the vocabulary is settled once, before the first category is authored, because these directives are read by *both* renderers and a late addition re-authors every design that predates it.
+
+| # | Missing construct | Where it is needed |
+|---|---|---|
+| 1 | **Repeat over a content-prop array** — `items[]`, `logos[]`, `steps[]`, `images[]`, `team[]`, `values[]`, `socials[]`, `locations[]`. `data-repeat` names a **Ghost** source and emits `{{#foreach}}`; a content array is *user* data and must be baked at compile as N static blocks, with per-item `data-prop` and per-item `data-empty`. **This is the largest single gap in the library and is named nowhere else.** | A5, A8, A9, A10, A11, A12, A13, A14, A15, A16, A22 — **11 categories, ~166 designs** |
+| 2 | **`{{#get}}` with `filter` / `limit` / `order`** — the whole FR-H2 Data group (Source · Count · Order), plus A7's mandatory `filter="visibility:public"` and FR-H2's ban on `limit="all"` | A7, A15 #5–#6, A17, A18, A19, A20, A21, A22 #7, A27 |
+| 3 | **Two-armed conditional (`{{else}}`)** — `data-empty` emits a one-armed `{{#if}}` and there is no way to express the other arm | A1's `@member` swap (Sign in ↔ Account), A22's signed-in swap, A19 #11's no-quote state, A27's "by primary tag **with fallback to latest**", A23's zero-state |
+| 4 | **Member-state conditional over four closed values** — Everyone / Logged out / Free members / Paid members. The paid-vs-free test is not a plain path | A2, A6, A22, A26, plus A30 (13) and A32 (12) |
+| 5 | **Positional helpers** — `@first`, `@last`, `@index`, `@number`, `@even` / `@odd` | A17 #3/#4/#8/#17/#18, A18 #6, A13's numbering, A19 #6 |
+| 6 | **Pagination** — `{{pagination}}`, `{{#if pagination.next}}`, `{{page_url}}` | A34's 10 designs, FR-D21's page-2 state |
+| 7 | **Nested repeats**, with tokens resolved in **reverse insertion order** (AD-5b(a)) | A17/A18 per-card tag chips, A20 #3/#14, A21 #5, A9 #6 |
+| 8 | **Group-by / change detection** — emit a header when a bound field changes between items | A18 #7 (sticky month/year), A20 #12, A21 #15 (alphabetical) |
+| 9 | **Bare-helper binding** — a helper with no bound path. `data-bind` requires one | `{{content}}` (A25), `{{comments}}` (A28), `{{total_members}}` (A7 #12), `{{navigation}}`, `{{statusCode}}` / `{{message}}` (A31), `{{content_api_key}}` (A23) |
+| 10 | **Compile-target-conditional wrapper** — the same design emitting different markup per target: `{{#if @page.show_title_and_feature_image}}` around title and feature image on `page.hbs` **only**, never on `post.hbs` | A24 — normative for all 16 designs |
+| 11 | **Mixed literal-and-bound attribute value** — `data-portal="signup/{tier}"` where the tier comes from a bound row | A22, A30, A32 |
+| 12 | **Bound value into an inline custom property** — A20's tag-accent tint needs the tag's own `accent_color` on the element. **This collides with AD-3's "no inline styles" and the collision must be ruled on, not worked around** | A20 |
+| 13 | **Text-node interpolation mixing static and bound text** — `data-bind` replaces the whole `textContent` | A10 #7 ("stats embedded within a flowing sentence"), A20 #14 |
+
+Items 5, 6 and 7 were already known (§7.3's original list and Round 1). Items 1, 2, 3, 4, 8, 9, 10, 11, 12 and 13 are new, and item 1 alone covers roughly a third of the library.
 
 **Escaping.** User content is data, never code. Any Handlebars syntax a user types into a text prop is emitted **inert**. **The naive rule is not sufficient and must not be shipped:** escaping only `{{` leaves a user-typed backslash immediately before it producing `\\{{…}}`, which Handlebars reads as an escaped backslash followed by a **live expression** — so the value is evaluated rather than shown, and a block helper typed the same way produces a template that will not compile. This is a functional break of the guarantee, not a cosmetic one, and it is in E0's spike scope.
 
@@ -1052,29 +1074,33 @@ Tier and paywall behavior in these starters (A7 live pricing, A32 designs, A22 p
 
 This table is the **sole definition of Free/Pro gating** (§5). A capability with no row here is available on both plans.
 
-| | Free | Pro — $15/mo · $150/yr |
-|---|---|---|
-| Projects | 1 | 25 |
-| Site connections | 1 | 10 |
-| Section library | canvas: all 484 · deploy/export: [Free] designs only (**70**) | All 484 |
-| Asset storage | 100 MB | 5 GB |
-| Per-upload cap | 10 MB (stored optimized) | 10 MB |
-| Deploy history / rollback | last 3 | last 10 per project |
-| Theme ZIP export | ✓ (with credits, Free designs only) | ✓ |
-| Credit removal (white-label) | — | ✓ |
-| Dark mode authoring · Routes Manager · Style Pack editing | ✓ | ✓ |
-| **Theme Settings** (`posts_per_page`, custom-settings builder — FR-Q1/Q2) | ✓ | ✓ |
-| **Translations** (chrome-string overrides, locale file — FR-Q6) | ✓ | ✓ — the `credit.*` namespace is locked on **both** plans, which is what keeps Translations ungated without defeating FR-J15's white-label |
-| **Compatibility watch** (per-release broadcast — FR-C5) | ✓ | ✓ — not Pro-gated; the risk is not plan-dependent |
-| **Paywall Template editor** (A32 designs — FR-H6) | ✓ (design freely; A32 #1–#2 are [Free], the other 10 gate at the exits) | ✓ |
-| **Post Content section** (A25 — design picker, measure, TOC, drop cap, share rail; FR-D19, Appendix A §25) | ✓ (design freely; A25 #1–#2 are [Free], the other 10 gate at the exits) | ✓ |
-| **Ghost card design module** (FR-Q7 — every Koenig card, `cards.css` emission) | ✓ | ✓ — the cards a post author writes are Ghost's, and shipping them unstyled on a Free plan would degrade the reading experience Inflozo exists to improve |
-| **Koenig card treatments** (A33 — the 6 starting points) | ✓ (design freely; A33 #1–#2 are [Free], the other 4 gate at the exits, remediable by reverting — FR-L3) | ✓ |
-| **Pagination styles** (A34 — the 10 treatments) | ✓ (A34 #1–#2 are [Free], the other 8 gate at the exits, remediable by reverting — FR-L3) | ✓ |
-| Variant Shuffle · Site Remix · Member-state preview · Preview subject (FR-D22) | ✓ | ✓ |
-| Pre-Inflozo snapshot, restore and rollback (FR-J13, FR-J9) | ✓ — safety operations survive downgrade (FR-L3) | ✓ |
-| Suggestions board (submit + vote) | ✓ | ✓ |
-| Starter templates | ✓ — Quiet and Ledger are Free end-to-end (FR-O4); the other 8 contain Pro designs | ✓ |
+**Three states, two purchasable plans** *(Round 3, decision D7)*. `entitlements.state` has three values — `free`, `pro_active`, `pro_past_due` — and this table defined caps for two, leaving the 7-day grace window undefined in the one place AD-28 names as the resolver's **sole** data source. That is verbatim the divergence AD-28 exists to prevent ("they will disagree … on `pro_past_due`"). The third column is added below. **It is not a plan and is never shown as one:** FR-N1's public Pricing page lists Free and Pro, because those are the only two anyone can buy. `pro_past_due` is a temporary state of a Pro subscription, and what the customer sees is FR-L2's banner, not a different plan.
+
+**The rule is simple, and deliberately generous:** during grace a past-due customer keeps **every** Pro capability. FR-L2's transitions already say so — `pro_active → pro_past_due` carries a banner, and only `pro_past_due → free` on grace expiry downgrades. Withdrawing capability the moment a card bounces would be the retention dark pattern F.2 forbids, and it would strand a customer mid-deploy over a bank decline. Where the third column reads "= Pro" it means exactly Pro, with no per-row exception.
+
+| | Free | Pro — $15/mo · $150/yr | Pro, past due *(internal — 7-day grace, FR-L2)* |
+|---|---|---|---|
+| Projects | 1 | 25 | = Pro |
+| Site connections | 1 | 10 | = Pro |
+| Section library | canvas: all 484 · deploy/export: [Free] designs only (**70**) | All 484 | = Pro |
+| Asset storage | 100 MB | 5 GB | = Pro |
+| Per-upload cap | 10 MB (stored optimized) | 10 MB | = Pro |
+| Deploy history / rollback | last 3 | last 10 per project | = Pro |
+| Theme ZIP export | ✓ (with credits, Free designs only) | ✓ | = Pro |
+| Credit removal (white-label) | — | ✓ | = Pro |
+| Dark mode authoring · Routes Manager · Style Pack editing | ✓ | ✓ | = Pro |
+| **Theme Settings** (`posts_per_page`, custom-settings builder — FR-Q1/Q2) | ✓ | ✓ | = Pro |
+| **Translations** (chrome-string overrides, locale file — FR-Q6) | ✓ | ✓ — the `credit.*` namespace is locked on **both** plans, which is what keeps Translations ungated without defeating FR-J15's white-label | = Pro |
+| **Compatibility watch** (per-release broadcast — FR-C5) | ✓ | ✓ — not Pro-gated; the risk is not plan-dependent | = Pro |
+| **Paywall Template editor** (A32 designs — FR-H6) | ✓ (design freely; A32 #1–#2 are [Free], the other 10 gate at the exits) | ✓ | = Pro |
+| **Post Content section** (A25 — design picker, measure, TOC, drop cap, share rail; FR-D19, Appendix A §25) | ✓ (design freely; A25 #1–#2 are [Free], the other 10 gate at the exits) | ✓ | = Pro |
+| **Ghost card design module** (FR-Q7 — every Koenig card, `cards.css` emission) | ✓ | ✓ — the cards a post author writes are Ghost's, and shipping them unstyled on a Free plan would degrade the reading experience Inflozo exists to improve | = Pro |
+| **Koenig card treatments** (A33 — the 6 starting points) | ✓ (design freely; A33 #1–#2 are [Free], the other 4 gate at the exits, remediable by reverting — FR-L3) | ✓ | = Pro |
+| **Pagination styles** (A34 — the 10 treatments) | ✓ (A34 #1–#2 are [Free], the other 8 gate at the exits, remediable by reverting — FR-L3) | ✓ | = Pro |
+| Variant Shuffle · Site Remix · Member-state preview · Preview subject (FR-D22) | ✓ | ✓ | = Pro |
+| Pre-Inflozo snapshot, restore and rollback (FR-J13, FR-J9) | ✓ — safety operations survive downgrade (FR-L3) | ✓ | = Pro — and exempt regardless, per AD-28 |
+| Suggestions board (submit + vote) | ✓ | ✓ | = Pro |
+| Starter templates | ✓ — Quiet and Ledger are Free end-to-end (FR-O4); the other 8 contain Pro designs | ✓ | = Pro |
 
 ### F.2 Billing policy (owner)
 
