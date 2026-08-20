@@ -935,3 +935,74 @@ memory reservation doubles:
 Against Appendix F's blended **$12.61/month net per Pro customer**, a user deploying ten times a day
 pays about **5.7 cents/month** in compile at 4 GB against 5.0 at 2 GB. **No Appendix F break-even
 moves**, so G7's 11–15-subscriber cash break-even and the 160–180 payback are unaffected.
+
+---
+
+## 18. The Next 16 CSP, executed · closes R1 decision 5 · deferred through three rounds
+
+NFR-3's per-session CSP and R1 decision 5 — *"two CSP policies: nonce-based on `app.inflozo.com`,
+static on `inflozo.com`"* — were carried by Rounds 1, 2 and 3 without ever being run. Round 1
+finding 6 stated the hazard: *"Next 16 CSP requires nonce + `strict-dynamic`; nonces force dynamic
+rendering"*, which reads as a collision with the marketing site being SSG. This is that test: a real
+Next **16.3.1** app, built locally and deployed to Vercel Pro (`iad1`).
+
+**Item 25 confirmed from Next's own source**, not from the blog post it was originally cited to.
+`next/dist/lib/constants.js` in 16.3.1 declares **both**:
+
+    MIDDLEWARE_FILENAME = "middleware"      MIDDLEWARE_LOCATION_REGEXP = "(?:src/)?middleware"
+    PROXY_FILENAME      = "proxy"           PROXY_LOCATION_REGEXP      = "(?:src/)?proxy"
+
+### 18a. The finding that dissolves the collision
+
+`next build` route manifest, with `proxy.ts` setting a CSP on **every** route:
+
+    ┌ ○ /            <- marketing. STATIC, and it receives a CSP
+    ├ ○ /_not-found
+    ├ ƒ /editor      <- app. DYNAMIC, because it READS the nonce
+    └ ○ /frame       <- STATIC
+    ƒ Proxy (Middleware)
+
+**Setting a CSP header in `proxy.ts` does not force dynamic rendering. Reading the nonce does.**
+Round 1 finding 6 is correct on both clauses, but the operative distinction is between *emitting* the
+header and *consuming* it in the page — and only the second costs prerendering. The marketing site
+therefore keeps SSG **and** carries a CSP; it simply carries one without a nonce. R1 decision 5's
+split is not a workaround for a collision, it is the shape the framework already wants.
+
+### 18b. Two policies, one deployment — verified on Vercel
+
+| | `/` (marketing branch) | `/editor` (app branch) |
+| --- | --- | --- |
+| `x-vercel-cache` | **PRERENDER** | MISS |
+| `cache-control` | `public, max-age=0, must-revalidate` | `private, no-cache, no-store` |
+| `script-src` | `'self'` | `'self' 'nonce-…' 'strict-dynamic'` |
+| `connect-src` | *(default-src)* | `'self' https://ghost5… https://ghost6…` |
+| `frame-ancestors` | `'self'` | `'self'` |
+
+**`x-vercel-cache: PRERENDER` while serving a CSP** is the whole answer to the SSG question, on the
+real platform rather than in a build manifest.
+
+**The nonce is genuinely per-request.** Two consecutive requests to the same deployment:
+
+    nonce="NzFmODdhMTAtNmMxZS00MjY5LTljNjktZjQyMTdlZjY5NTAx"
+    nonce="YTUzZTUyM2ItNzNlZC00NGFmLTg0NTItMWJhMTk0NDg5ODlk"
+
+and locally the nonce in the `content-security-policy` header was confirmed to **match the nonce
+attribute in the delivered HTML** — the `proxy.ts` → `x-nonce` request header → `headers()` path
+works end to end. A nonce that did not match would fail silently: the policy would look correct and
+every inline script would be blocked.
+
+**Host routing works from one deployment.** `Host: inflozo.com` returned `x-inflozo-policy:
+marketing-static`; `Host: app.inflozo.com` returned `app-nonce`. That is §7.1's "two domains, one
+deployment" exercised rather than assumed.
+
+**`frame-ancestors 'self'`** is emitted on the iframe host page, which is what AD-21's same-origin
+editing canvas needs and why NFR-3 chose it over `'none'`.
+
+### 18c. What this does NOT prove — stated because the gap is the interesting part
+
+The probe is a minimal app: three routes, one inline script. It establishes the **mechanism** —
+two policies, one deployment, per-request nonce, SSG preserved, Node runtime. It does **not**
+establish that the real editor runs under `script-src 'self'` with **no `'unsafe-eval'`**. That
+claim rests on §7.1's "there is no Handlebars runtime in the browser" and on nothing in the editor
+calling `new Function`, and it stays unproven until E5 has a canvas to test. The conventions row
+should be read as a requirement on E5, not as a verified property.
