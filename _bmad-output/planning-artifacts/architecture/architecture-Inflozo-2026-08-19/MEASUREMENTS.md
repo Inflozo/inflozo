@@ -492,8 +492,22 @@ sha256sum` under `LC_ALL=C` — across four environments: host (node 22.23.2, ex
 containers at node 22 glibc, **node 24 glibc** and **node 24 musl/alpine**, each 2 GB / 1 vCPU on
 overlayfs. Two libc implementations, two Node majors, two filesystems, two CPU allocations.
 
-**Residual, stated:** these are four environments on one physical machine and one CPU architecture.
-A second machine and a non-x86 arch remain untested.
+**Residual CLOSED 2026-08-20 — three physically separate machines, one digest.** The same 197-file
+tree, byte-identical, built on this workstation and on **two DigitalOcean droplets in Frankfurt**
+(`DO-Regular` vCPUs, kernel 6.8.0-124, Node 22.23.2, different hardware and a different datacentre
+from the reference machine and from each other):
+
+    workstation          b442dfa9f6bf23afa16d7ce5717924a7bdfa60ebd6ed95c5cf45dcb9dab79ace   197 files
+    droplet 178.128…187  b442dfa9f6bf23afa16d7ce5717924a7bdfa60ebd6ed95c5cf45dcb9dab79ace   197 files
+    droplet 164.92…18    b442dfa9f6bf23afa16d7ce5717924a7bdfa60ebd6ed95c5cf45dcb9dab79ace   197 files
+
+Together with §14d's earlier four environments that is **seven** — two libc implementations, two Node
+majors, three filesystems, three CPU allocations and three physical machines. **AD-14 holds.**
+
+**What remains untested, and it is now the only thing:** a **non-x86 architecture**. All three
+machines are `x86_64`. An arm64 runner would exercise the one axis nothing here touches — and since
+Vercel and most CI now offer arm, it is worth folding into the NFR-6(a) container image rather than
+left as a note.
 
 ### 14e. AD-5 end-to-end on a full theme
 
@@ -1158,3 +1172,41 @@ naturally occurs, not chased now.
 
 **Recorded as provisional:** one transaction, GBP, credit card, UK VAT, on a USD-priced product that
 Dodo currency-converted. A US or EU card, or a same-currency charge, may differ.
+
+---
+
+## 20. VERIFY item 4 — the Supabase passkey API. **Present, and disabled by default.**
+
+§7.6 item 4 asks for "Supabase passkey API status and `supabase-js` ≥ 2.105.0 behaviour". Item 28
+established that the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, well below the PRD's
+floor, and explicitly left open "whether the Beta API is *usable*". This closes that.
+
+**The client half is real.** `@supabase/supabase-js@2.112.3` resolves `@supabase/auth-js@2.112.3`,
+whose `GoTrueClient` carries a full WebAuthn vocabulary — `webauthn`, `passkey`, `passkeys`,
+`credential_options`, `credential_response`, `webauthnAbortService`, `credentialError` — and lists
+`'webauthn'` alongside `'totp'` and `'phone'` as an MFA factor type.
+
+**The server half exists and is switched off.** Against the live project, as a signed-in user:
+
+    POST /auth/v1/factors  {"factor_type":"webauthn"}
+      -> 422  mfa_webauthn_enroll_not_enabled  "MFA enroll is disabled for WebAuthn"
+
+    POST /auth/v1/factors  {"factor_type":"totp"}          <- the control
+      -> 200  factor created, QR returned
+
+    GET /auth/v1/settings  ->  passkeys_enabled: false
+
+The TOTP control matters: the endpoint, the session and the enrolment flow all work, so the 422 is
+**WebAuthn specifically being disabled**, not a broken probe. `passkeys_enabled: false` is a
+**project setting**, not a missing capability — so this is a switch, not a gap.
+
+**Consequence, and it is the one §7.6 predicted:** FR-A2's `passkeys` feature flag stays off and
+magic link remains primary, so nothing else moves. **One thing to add for E2, which the register did
+not anticipate:** there are now **two** switches — Inflozo's `feature_flags.passkeys` row *and*
+Supabase's project-level `passkeys_enabled`. If they disagree the user is offered a passkey flow the
+platform will refuse with a 422. **E2 must read the platform setting, not only its own flag**, or the
+flag's whole purpose — turning the feature off without a redeploy — is defeated from the other side.
+
+**Still unexecuted, and honestly so:** a complete enrolment and assertion round trip needs a browser
+and a real authenticator. What is established is that the API is present, the client supports it, and
+it is off by default — which is what item 4 asked.
