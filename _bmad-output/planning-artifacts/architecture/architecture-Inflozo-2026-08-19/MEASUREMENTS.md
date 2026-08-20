@@ -1696,3 +1696,71 @@ Nothing regressed on the real pipeline or the real Ghosts:
 | S1 | test with a staff login first *(deferred)* | register item 34 | — |
 | S2 | note on the story + per-account budget *(owner)* | register item 35 | — |
 | H2 | re-measure on real designs *(deferred)* | register item 36 | — |
+
+---
+
+## 23. Round 4 follow-through · 2026-08-20
+
+### 23a. E0(a) closed — the canvas emitter exists and the two renderers are proven to agree
+§7.3 rests the product on canvas and shipped theme agreeing **by construction**, justified by "the
+same code ran". The rebuilt pipeline had only the theme emitter, so that was a promise nothing could
+falsify. `renderCanvas` now shares `applyProps`, `safeUrl`, `bindExpr`'s grammar and
+`assertBindableAttr` with the theme path — **the `users` parameter is the only difference between
+them** (a `UserText` on the theme, `null` on the canvas).
+
+`tools/stress/test-renderer-agreement.js` — 8 checks, comparing the two **node by node**:
+
+    ok  a static section agrees exactly
+    ok  AD-3 control attributes survive identically on both emitters
+    ok  a Ghost-bound repeat agrees, structure for structure
+    ok  no directive attribute survives on either emitter
+    ok  the two intended differences are present: foreach-vs-rows, mustache-vs-value
+    ok  AD-4/AD-5 — the canvas decodes and the theme ships inert, from one serializer
+    ok  AD-36 — the URL scheme check runs on both emitters, not just the theme
+    ok  FR-H8 — an empty media binding hides the element on both, by each emitter's own mechanism
+
+The comparison is over **structure** — tag tree, classes, attribute names — because those three are
+what a design's stylesheet selects on, and it is deliberately blind to the two things that must
+differ. Those two are asserted **positively** as well, so nobody "fixes" them into agreement.
+
+**The test caught a flaw in itself first, and it is worth recording.** The theme legitimately emits
+`src="{{img_url feature_image size="800"}}"` — valid Handlebars that gscan passes 0/0, but **not**
+valid HTML, so a raw parse read the inner `size="800"` as a stray attribute and reported a
+disagreement that did not exist. Inline mustaches are collapsed before the structural compare.
+
+Both defects `build-sequence.md` names are now fixed in the live pipeline: the FR-H8 guard (§22, and
+it was silent content loss) and the date helper, which **now honours its format argument** — written
+from UTC getters, since AD-1 bans `Intl` and `toLocale*` for reading the machine rather than the
+argument. `spike-compiler/` is **retired**, not repaired (`RETIRED.md`): it is a second copy of the
+pipeline missing six rounds of decisions, it does not run, and its one unique asset was `renderCanvas`.
+
+### 23b. Supabase now blocks DELETE on storage tables — and not TRUNCATE
+Found by the reset script failing:
+
+    ERROR: 42501: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+    CONTEXT: PL/pgSQL function storage.protect_delete()
+
+Two new triggers, `protect_buckets_delete` and `protect_objects_delete`, refuse a direct SQL DELETE
+**even to `postgres`**. That is the platform enforcing AD-32's own rule — a row delete orphans the
+bytes — and it is welcome. Re-tested what it does *not* cover:
+
+    trigger coverage:  protect_buckets_delete  DELETE
+                       protect_objects_delete  DELETE          <- DELETE only
+    grants still held: anon TRUNCATE, authenticated TRUNCATE   <- unchanged
+    as authenticated:  truncate storage.objects   -> SUCCEEDED
+
+**So the platform now guards the recoverable verb and leaves the destructive one open.** D6 is
+unchanged: the control that holds is that `storage` is not PostgREST-exposed, which `RLS-TEST.sql`
+asserts. Second time this item has moved under us — re-check after any storage-api upgrade.
+
+### 23c. FR-P1's sixth email, decided and built into the schema
+Owner decision: send our own renewal reminder at **30 days (annual) / 7 days (monthly)**, and leave
+Dodo's ~2-day reminder **on** — they fire at different moments, so they complement rather than
+duplicate. `public.renewal_reminders` carries the send record and **its primary key
+`(user_id, period_end)` is the never-send-twice rule**, expressed as a database fact rather than as
+something the cron must remember. Keyed on the renewal being announced rather than the send time, so
+a renewal date that moves earns a fresh reminder. AD-33's closed cron set gains its **seventh**, with
+E12 as its owner, and the schema still applies clean: **67 assertions, 0 failures, exit 0**.
+
+**The consequence of owning it is stated in the AD rather than discovered later:** a silent failure
+of that job now means nobody is warned at all, so it belongs on the NFR-9 alerting path.

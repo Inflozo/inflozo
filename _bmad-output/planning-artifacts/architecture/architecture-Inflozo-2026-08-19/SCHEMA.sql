@@ -539,6 +539,33 @@ create table public.subscriptions (
   updated_at           timestamptz not null default now()
 );
 
+-- FR-P1's sixth email — the renewal reminder.  [Round 4, owner decision 2026-08-20]
+--
+-- Dodo DOES send an "Upcoming Renewal Reminder", ~2 days ahead, off by default. The owner's
+-- decision is to send our own AND to leave Dodo's on — and the two do not collide, because they
+-- fire at different moments: ours is the heads-up (30 days before an annual renewal, 7 before a
+-- monthly one), Dodo's ~2-day note is the final nudge.
+--
+-- Owning it is about CONTROL rather than redundancy. The compliance exposure is in the TIMING —
+-- ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes
+-- a 60% yearly mix, so the annual plan is the majority case — and Dodo's timing is not ours to
+-- set. 30 days is.
+--
+-- This table exists for one reason: to make "never twice for the same renewal" a database fact
+-- rather than something the cron has to remember. The primary key IS the idempotency rule — one
+-- row per subscription per renewal date — so a cron that runs twice, runs late, or overlaps itself
+-- cannot double-send. Without it the failure mode is a customer receiving the same email every day
+-- for a month. Keying on the renewal being announced (not the send time) also means a renewal date
+-- that MOVES correctly earns a fresh reminder.
+create table public.renewal_reminders (
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  period_end    timestamptz not null,                    -- the renewal this announces
+  plan          public.plan_interval not null,           -- which window applied: 30d or 7d
+  sent_at       timestamptz not null default now(),
+  primary key (user_id, period_end)
+);
+create index on public.renewal_reminders (user_id);
+
 -- FR-L2 names entitlements directly; the state machine needs a home that is not a status string.
 create table public.entitlements (
   user_id           uuid primary key references auth.users(id) on delete cascade,
@@ -753,6 +780,7 @@ alter table public.project_site_bindings     enable row level security;
 alter table public.exports                   enable row level security;
 alter table public.template_binding_checklist enable row level security;
 alter table public.edit_locks                enable row level security;
+alter table public.renewal_reminders         enable row level security;
 alter table public.subscriptions             enable row level security;
 alter table public.entitlements              enable row level security;
 alter table private.billing_events           enable row level security;  -- no policy: server-only (and off the data API, §0b)
@@ -812,6 +840,7 @@ begin
   foreach t in array array[
     'deploy_jobs','deploys','project_site_bindings','exports','deployed_template_names',
     'asset_usages','subscriptions','entitlements','checkout_consents','template_binding_checklist',
+    'renewal_reminders',       -- [Round 4] a send record the client must never forge or clear
     -- site_snapshots joins the read-only set.  [Round 4, F14]
     -- AD-32 makes the site-snapshots BUCKET server-only with no policy at all, because "a snapshot
     -- the client could write defeats FR-J13 entirely". The bucket was governed and the row pointing
@@ -1052,7 +1081,8 @@ begin
   foreach t in array array[
     'deploys','project_site_bindings','exports','deployed_template_names','asset_usages',
     'subscriptions','entitlements','checkout_consents','deploy_jobs','template_binding_checklist',
-    'site_snapshots'                                            -- [Round 4, F14]
+    'site_snapshots',                                           -- [Round 4, F14]
+    'renewal_reminders'                                         -- [Round 4]
   ] loop
     execute format('grant select on public.%I to authenticated', t);
   end loop;
@@ -1116,6 +1146,7 @@ begin
     'deploys','deploy_jobs','entitlements','subscriptions','exports','project_site_bindings',
     'deployed_template_names','asset_usages','checkout_consents','notifications',
     'template_binding_checklist','profiles','site_snapshots','assets','suggestions',
+    'renewal_reminders',
     'suggestion_votes','projects','sites','custom_settings','custom_templates',
     'project_templates','project_template_prefs','translation_overrides','routes_config',
     'project_treatments','passkey_labels'
