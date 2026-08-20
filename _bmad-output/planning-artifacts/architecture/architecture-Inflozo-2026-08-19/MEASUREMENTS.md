@@ -1210,3 +1210,378 @@ flag's whole purpose — turning the feature off without a redeploy — is defea
 **Still unexecuted, and honestly so:** a complete enrolment and assertion round trip needs a browser
 and a real authenticator. What is established is that the API is present, the client supports it, and
 it is off by default — which is what item 4 asked.
+
+---
+
+## 21. Round 4 — attack & performance, executed against the live estate · 2026-08-20
+
+Real end-user JWTs (publishable key + password grant), never the secret key except where the secret
+key IS the subject. Two tenants A/B. Every line is a PostgREST/Admin-API call, not reasoning.
+Probes: `scratchpad/attack_supabase*.py`, `attack_board.py`, `attack_ghost_accent.py`,
+`rls_perf2.sql`, `deploy_timing.py`, `visitor.py` (session scratch; verdict-only, no secrets printed).
+
+### 21a. Public board — self-approval and forgery AT INSERT (F1, HIGH)
+`authenticated` holds INSERT on **all** columns of `suggestions` (verified via
+`information_schema.role_column_grants`: INSERT covers `image_approved, vote_count, status, hidden,
+merged_into, …`). The RLS insert policy checks only `user_id = auth.uid()`. Executed, tenant B:
+
+    POST /rest/v1/suggestions {image_approved:true, vote_count:99999, status:'shipped', image_path:…}
+      -> HTTP 201
+    (anon) GET /rest/v1/suggestions_public?id=eq.<sid>
+      -> {"status":"shipped","vote_count":99999,"image_path":"suggestion-images/<B>/evil.svg"}
+
+The FR-M3 admin approval gate, the vote count and the roadmap status are all client-set at creation.
+Chains with §16c/F8 (raw `<script>` SVG lands in `suggestion-images` byte-identical, re-confirmed this
+run) → an attacker's unsanitized image reaches every board visitor with no admin in the loop.
+
+### 21b. Owner policy authorizes by the child's own user_id, never the parent (F2, HIGH, systemic)
+The uniform AD-6 policy is `user_id = (select auth.uid())` with no parent-ownership check. Tenant A,
+against tenant B's project id:
+
+    POST /rest/v1/project_templates {project_id:<B's project>, user_id:<A>, template_key:'home', doc:{}}
+      -> HTTP 201   (row created, attached to B's project)
+    POST … {project_id:<random uuid>, …}
+      -> HTTP 409 code 23503 (foreign_key_violation)
+
+So a client can (a) attach child rows to **another tenant's project** and (b) use the FK error as a
+cross-tenant existence oracle. A server route that reads a project's children by `project_id` alone
+under `service_role` (bypassrls) ingests the foreign row — cross-tenant compile/theme injection.
+Bounded by UUID unguessability of `project_id`.
+
+### 21c. Whole-row INSERT grants defeat the narrowed UPDATE grants (F3, MEDIUM, systemic)
+`§11` narrows UPDATE column-by-column; INSERT stays whole-row. Executed:
+
+    POST /rest/v1/assets {bytes:9999999, stored_bytes:1, …}  -> HTTP 201  (meter understated at rest)
+    PATCH /rest/v1/assets?id=eq.<id> {stored_bytes:5e8}      -> HTTP 403  (UPDATE correctly locked)
+
+`assets.stored_bytes` (FR-K3 meter → quota evasion), `edit_locks.lock_generation` (arbitrary initial
+value) and the F1 columns are all the same class. One fix — column-narrow the INSERT grants, or a
+BEFORE INSERT trigger that resets server-asserted columns — closes all of them.
+
+### 21d. edit_locks holder reseated without advancing lock_generation (F4, MEDIUM) — R3 §2.4, still open
+    POST  /rest/v1/edit_locks {holder:'device-1', lock_generation:5} -> 201
+    PATCH /rest/v1/edit_locks {holder:'device-2-SEIZED'}             -> 200, holder=device-2 at gen STILL 5
+    PATCH /rest/v1/edit_locks {lock_generation:1}                    -> 403 (monotonic trigger HELD)
+    PATCH /rest/v1/edit_locks {user_id:<B>}                          -> 403 (identity frozen HELD)
+
+AD-15 detects takeover from the generation advancing; a reseated holder at the same generation is a
+split-brain the displaced device never notices. R1 d32 deferred the protocol; it is still undecided.
+
+### 21e. Decision B — accent_color is a CSS-injection channel (F5, MEDIUM), both Ghosts
+`POST /ghost/api/admin/tags {accent_color:…}`, then read back. Ghost's validation is a loose char
+filter, not a CSS validator — it rejects some payloads and passes others:
+
+    '#ff0000; background:url(https://evil.example/track.png)'  -> 422 REJECTED (has space + //. )
+    'red;}body{display:none'                                    -> 201 ACCEPTED verbatim
+    '#fff" onmouseover="x'                                       -> 201 ACCEPTED verbatim
+    'javascript:alert(1)'                                        -> 201 ACCEPTED verbatim
+    '#fff;background:url(x)'                                     -> 201 ACCEPTED verbatim
+    '#fff;width:100vw'                                           -> 201 ACCEPTED verbatim
+    '#f00;/* c */color:red'                                      -> 201 ACCEPTED verbatim
+    '#fff;position:fixed;inset:0;background:#000;z-index:99999'  -> 422 REJECTED
+
+Emitted as `style="--tag-accent: {{accent_color}}"`, Ghost HTML-escapes `{{ }}` so `"`/`<` cannot
+break the attribute or inject script, and inline styles cannot hold a selector — so the quote and
+brace vectors are inert. What survives is **extra CSS declarations on the same tag element**
+(layout/defacement/tracking). Actor E (controls the Ghost); blast radius is the customer's visitors.
+Ghost's own filter is not a control Inflozo can rely on. Inflozo must strictly parse accent_color
+(hex/rgb/hsl only) in ghost-shim before it reaches the custom property.
+
+### 21f. AD-7 tables are on the PostgREST data API (F6, MEDIUM)
+    (authenticated) GET /rest/v1/site_credentials -> 403 42501   (HELD)
+    (authenticated) GET /rest/v1/billing_events   -> 403 42501   (HELD)
+    (secret key)    GET /rest/v1/site_credentials -> 200, rows=1  <-- service_role reads it over REST,
+                                                                       no server route involved
+
+AD-7 reads "reachable only by the service role inside a server route". It is reachable by the service
+role from anywhere PostgREST is exposed. A leaked secret key dumps every tenant's Vault references
+over HTTP. Move `site_credentials`/`billing_events` to a schema outside `PGRST_DB_SCHEMAS`.
+
+### 21g. RLS index coverage (P1, MEDIUM scaling) and the AD-6 wrapper (P2, HELD)
+21 of 29 RLS-scoped tables have **no index whose first key is user_id** (only `assets, entitlements,
+notifications, passkey_labels, profiles, projects, sites, subscriptions` do). RLS rewrites every
+tenant query to `where user_id = uid`; an unfiltered list seq-scans the whole multi-tenant table.
+
+AD-6's wrapper proven on 200k rows (50k for the target tenant), claims set, `set role authenticated`:
+
+    with an index on user_id:  wrapped 11.8ms  |  bare 11.2ms   (both Index Only Scan)
+    NO index (seq scan):       wrapped 23.4ms  |  bare 320.9ms   (14x)
+
+Wrapped emits `Index Cond: (user_id = (InitPlan 1).col1)` — auth.uid() computed **once**. Bare inlines
+the `coalesce(current_setting(...))` and, on a seq scan, re-evaluates it **per row**. The wrapper is
+real insurance, but it only removes the per-row call; it does not remove the seq scan. P1 is the
+missing half — index user_id on every RLS table.
+
+### 21h. Performance held
+- `screen.css` = **1.36 KB brotli** (raw 42 KB, gzip 2.2 KB) on the 70-section stress theme — far under
+  NFR-2's 40 KB. Caveat: the synthetic fixture's CSS is highly repetitive and compresses unusually well.
+- **Deploy half, measured**: upload **7.2 s (Ghost 5) / 7.5 s (Ghost 6)**, activate **1.6 s / 1.4 s**,
+  gscan **0/0 on upload** both majors, for the 10.09 MB / 70-section theme. With R3's ~3.9 s compile
+  that is ~13 s end to end — inside G1's 10 minutes with three orders of magnitude to spare.
+- **Visitor page** (Ghost's own active theme): homepage ~59 KB, post ~19 KB, the `{{comments}}`
+  cdn.jsdelivr.net script present on posts (§15c). Ghost's portal/search/comments scripts dominate a
+  visitor's download and are outside Inflozo's theme and CSP.
+
+### 21i. Regressions re-tested — all HELD
+lock_generation monotonic (403) · edit_locks.user_id frozen (403) · assets.stored_bytes UPDATE locked
+(403) · site_credentials/billing_events denied to authenticated (403) · cross-tenant project read
+scoped (rows=0, Content-Range */0) · count(*) oracle scoped · suggestions_public hides another user's
+unapproved image (null) · base suggestions.image_path unreadable by client (403) · A cannot edit/delete
+B's suggestion (403) · F8 raw SVG still lands byte-identical, server-only buckets + folder scoping deny
+· storage schema not PostgREST-exposed (404, D6 control) · gscan 0/0 on upload both majors.
+
+### 21j. Vault — probed for the first time (5.2 item 4). HELD, and it bounds 21f.
+`site_credentials.admin_key_vault_ref` is a UUID into `vault.secrets`. Probed live:
+
+    supabase_vault 0.3.1 present.
+    grants on vault.secrets / vault.decrypted_secrets: service_role only (SELECT,DELETE);
+      anon/authenticated hold nothing.
+    (secret key) GET /rest/v1/decrypted_secrets -> 404   (vault is NOT a PostgREST-exposed schema)
+    (secret key) GET /rest/v1/secrets           -> 404
+
+So decryption needs `service_role` **and** a path that is not the REST data API. A leaked **API
+secret key** reads `site_credentials` over REST (21f) and gets the opaque `vault_ref` UUIDs, but
+**cannot decrypt them** — `decrypted_secrets` is 404 over PostgREST. Actual decryption requires a
+direct DB connection (server route via the pooler, or the DB password). This bounds 21f: the leak
+yields references, billing PII and full `public` read, not the Ghost admin secrets themselves — real,
+but not immediate site-takeover. The AD-10 decrypt chokepoint holds. Watch item: `pgsodium` is being
+replaced under `supabase_vault`; re-probe on the vault major bump.
+
+### 21k. The compiler as an injection channel — beyond AD-5 (5.2 item 1). Three findings, executed.
+Run against the real pipeline (`tools/stress/compile.js`, the decided AD-4/AD-5/R2-5 ordering).
+`full()` = renderSection then the R2-5 user-text substitution pass, i.e. what actually ships.
+
+**HELD first, because it bounds the rest.** AD-5's numeric-entity escaping and the AD-4 splice hold
+against every user-text vector tried: braces, block helpers and the marker shape all ship inert, and
+a user quote inside an attribute is escaped, so no attribute breakout:
+
+    user title = 'Notes on {{@site.title}} and {{#if @member}}x{{/if}}'
+      -> live mustache in output: false          (entities, as designed)
+    user href  = 'https://ok.example/" onclick="alert(1)'
+      -> <a href="https://ok.example/&quot; onclick=&quot;alert(1)">    (escaped, no breakout)
+    plain data-bind -> <div>{{html_field}}</div>   zero `{{{`
+
+**F7 (CONFIRMED, HIGH) — a user-supplied URL reaches `href` with no scheme validation.**
+
+    content.link = 'javascript:alert(document.domain)'
+    <a data-prop-attr="href:link">  ->  <a href="javascript:alert(document.domain)">x</a>
+
+The Conventions row promises *"every Ghost-sourced value is scheme-validated (`http`/`https` only)
+before reaching `href`, `src` or `srcset`"* — but that carve-out names **Ghost-sourced** values and
+lives in `ghost-shim`. A **user-typed link** (FR-D/AD-4's `marks[].href`, and any `data-prop-attr`
+image/link control) goes through `applyProps`, which HTML-escapes and never checks the scheme.
+Escaping is the wrong control for a URL: `javascript:` contains no escapable character. Actor B or a
+compromised design; the victim is a **visitor to the customer's deployed site** (actor D). The same
+gap covers `data:` and `vbscript:`.
+
+**F8b (CONFIRMED, HIGH, actor C) — helper arguments are unescaped string interpolation.**
+`bindExpr` builds Handlebars source by template literal:
+`` `{{img_url ${path} size="${arg}"}}` `` — neither `path` nor `arg` is validated. A design file
+(`packages/library`, 484 of them, actor C) that writes a crafted `data-bind-attr` breaks straight out
+of the mustache into raw theme text:
+
+    data-bind-attr='src:featureImage|img_url:800"}}<script>alert(1)</script>{{"'
+      ->  <img src="{{img_url featureImage size="800"}}<script>alert(1)</script>{{""}}">
+
+That is a live `<script>` in the emitted `.hbs`, on every customer site that deploys the design.
+AD-5 closes the *user-text* half of this class and nothing closes the *author* half — the same
+asymmetry AD-2/D13 already noted for the marker shape, arriving through the binding vocabulary.
+
+**F9 (CONFIRMED, MEDIUM, actor C) — a design may name any attribute, including an event handler.**
+
+    <div data-bind-attr="onload:featureImage">  ->  <div onload="{{featureImage}}">x</div>
+
+`applyProps`/`emitBindings` accept the attribute name verbatim. AD-34's gate asserts "no inline event
+handlers" over emitted files, so the gate is the only thing standing between this and a shipped
+theme — a single check, on the far side of the pipeline, with no authoring-time check in front of it
+(D13's CI lint is still unbuilt). Note the DOM does refuse a quote inside an attribute *name*
+(jsdom `InvalidCharacterError`), so the breakout is via the attribute-name whitelist, not via quoting.
+
+**One mechanism closes all three**: a binding vocabulary that is parsed and validated, not
+interpolated — attribute names from a fixed allowlist, helper args typed (`size` ∈ enum), and every
+URL-bearing attribute scheme-checked in `ghost-shim` for **user** values as well as Ghost values.
+
+### 21l. Actor G — cost and denial of service, computed from measured figures. Mostly HELD.
+Inputs are all measured, none assumed: compile 3.9 s / 486 MB peak (§14), upload+activate 8.8 s
+(§21h, this round), Fluid Active-CPU $0.128/CPU-hr and $0.0106/GB-hr at 2 cores (§17d), `memory:
+4096` (AD-11 after decision A), FR-J11 = 10 deploys/hour/site, a Pro account holds 25 projects.
+
+    one deploy               12.7 s wall  ->  $0.000427
+    1 site  at 10/hr          10/hr  = $0.004/hr  = $3.07/month
+    25 sites at 10/hr        250/hr  = $0.107/hr  = $76.84/month   <- a Pro account at full abuse
+    steady-state concurrency  250/hr x 12.7 s = 0.88 concurrent    <- no co-location pressure
+
+**The compute lever is not material.** A single account deploying flat-out costs the owner ~$77/month
+against a $15/month subscription — unpleasant, bounded, and visible in NFR-9's spend alarms long
+before it matters. FR-J11 is adequate as a compute control and no per-account concurrency limit is
+needed: at 4 GB, eight 486 MB compiles fit an instance and the worst case reaches 0.88 concurrent.
+
+**The storage meter is the real lever, and it is F3's consequence.** FR-K3 meters
+`assets.stored_bytes`, which §21c shows the client sets **at INSERT**. The meter can be written as
+1 byte per asset while the object bytes land in Storage for real, so the Free 100 MB / Pro 5 GB caps
+bound nothing — the true limit is Supabase's own storage bill. Closing F3 closes this too; it is one
+finding with two consequences, not two findings.
+
+### 21m. AD-10 / P8 — the write allowlist is code discipline, not a credential boundary (F10). Executed.
+P8 permits Inflozo **four** Admin writes: theme upload, theme activate, `routes.yaml` upload, and the
+consented announcement-bar clear. That allowlist lives in `apps/web/server/ghost-admin/*`. The
+question actor F asks is different: what does the **stored credential** permit if that code is
+bypassed — by a server-side bug, an SSRF into the proxy, or a Vault compromise? Executed against both
+live Ghosts with the Admin API key Inflozo stores:
+
+    ghost5 (5.130.6)                       ghost6 (6.58.0)
+      GET /admin/members/   200, incl. email   200, incl. email     <- subscriber PII
+      GET /admin/users/     200                200                  <- staff accounts
+      GET /admin/settings/  200 (99 rows)      200 (117 rows)       <- whole site config
+      POST /admin/posts/    201 CREATED        201 CREATED          <- arbitrary content write
+      GET /admin/themes/    501                403                  (§15h, integration tokens: HELD)
+
+So one Ghost Admin key is **full site control**: read every subscriber's email address, read staff,
+and publish content on the customer's site. The four-item allowlist is a good invariant and it holds
+*inside Inflozo's own code path*, but it bounds nothing about the credential. Nothing in the spine
+states this: AD-10 reads as though the allowlist were the boundary, and the blast radius of the thing
+`site_credentials` protects has never been written down. (The Staff Access Token's 400s are its
+different auth scheme in this probe, not a narrower scope — §15h already established it is *wider*,
+lifting `GET /themes/`.)
+
+**Consequence for the spine:** AD-10 should say plainly that the credential is all-or-nothing, that
+Ghost offers no scoped-integration mechanism to reduce it, and that the compensating controls are
+therefore the decrypt chokepoint (§21j, holds), key rotation (`admin_key_rotated_at` exists as a
+column and no policy uses it), and logging on the proxy (does not exist). This is the single largest
+item behind "would you put other people's website credentials behind this?"
+
+### 21n. ⚠️ The RLS harness is advisory, not a gate (F0). Executed — and this is the meta-finding.
+`RLS-TEST.sql` is E1's exit criterion and, under AD-26, the gate every future migration relies on.
+Its header says *"expect every line to read PASS"*. Counted in the file as shipped:
+
+    raise exception  : 2      (lines 443, 454 — the two storage.buckets checks only)
+    raise notice 'FAIL: 36
+
+`\set ON_ERROR_STOP on` aborts on a SQL **ERROR**. A `raise notice` is severity NOTICE, and the
+structural sentinels (§262–326) are plain `select … as finding` statements that return rows without
+raising. Executed, the exact shapes the file uses:
+
+    $ psql "$DB" -v ON_ERROR_STOP=1 -f fail-shape.sql   # a FAIL notice + a sentinel finding row
+    exit code: 0
+
+**So 36 of 38 assertions cannot fail the run.** Any CI keyed on the exit code is green while the
+output prints `FAIL:`. This is the finding that explains the others: §21a/b/c/d all describe holes in
+a schema whose proof has reported PASS for three rounds. It also means the *regression* half of this
+round's mandate — "every closed finding is a regression test now" — is not mechanically true. Two
+lines of change per assertion (`notice` → `exception`, and wrapping each sentinel in a `do` block
+that raises) converts the whole file from a report into a gate.
+
+### 21o. ⚠️ §19d fixed the instance, not the class — 12 more AD-8 tables are unreachable by the server (F11, CRITICAL for E7/E12)
+Round 3's §19d found `billing_events` and `site_credentials` held `REFERENCES, TRIGGER, TRUNCATE` and
+no SELECT/INSERT for `service_role`, and granted those two. **Every other AD-8 table still has the
+identical signature.** Read from the live project:
+
+    billing_events              INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed in R3
+    site_credentials            INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed in R3
+    deploys                     REFERENCES,TRIGGER,TRUNCATE
+    deploy_jobs                 REFERENCES,TRIGGER,TRUNCATE
+    entitlements                REFERENCES,TRIGGER,TRUNCATE
+    subscriptions               REFERENCES,TRIGGER,TRUNCATE
+    exports                     REFERENCES,TRIGGER,TRUNCATE
+    project_site_bindings       REFERENCES,TRIGGER,TRUNCATE
+    deployed_template_names     REFERENCES,TRIGGER,TRUNCATE
+    asset_usages                REFERENCES,TRIGGER,TRUNCATE
+    checkout_consents           REFERENCES,TRIGGER,TRUNCATE
+    notifications               REFERENCES,TRIGGER,TRUNCATE
+    template_binding_checklist  REFERENCES,TRIGGER,TRUNCATE
+    profiles                    REFERENCES,TRIGGER,TRUNCATE
+
+AD-8 says these tables *"are written by server routes under the service role"*. None of them can be.
+The first deploy, the first entitlement write, the first notification and FR-I6's checklist all fail
+with `42501` the moment E7/E12 run — the same failure §19d hit, in twelve more places. This is a
+build-stopper, not a security hole, and it is the exact pattern the round was warned about: a fix
+applied where it was found and not propagated to its siblings. **The durable form is a
+`RLS-TEST.sql` assertion that every AD-8 table holds SELECT+INSERT for `service_role`**, not thirteen
+more grant lines.
+
+### 21p. AD-9 is 3/4 implemented — `custom_settings` has no freeze trigger (F12, HIGH)
+AD-9 names four frozen columns and devotes a sentence to why `frozen_at` must be frozen alongside
+`key` ("freezing only `key` left a two-statement bypass: null the stamp, then rename"). The trigger
+was never created. Triggers actually present:
+
+    profiles                 profiles_privilege_frozen          <- present
+    deployed_template_names  deployed_template_names_frozen     <- present
+    projects                 projects_revision_monotonic, projects_slug_frozen  <- present
+    custom_settings          custom_settings_cap                <- the CAP only; NO freeze guard
+
+Executed as the table owner (AD-31 requires these to hold against the service role too):
+
+    update custom_settings set key='renamed_key' where …   -> OPEN: renamed despite frozen_at set
+    update custom_settings set frozen_at = null where …    -> OPEN: the two-statement bypass, by name
+    update profiles set is_admin=true where …              -> HELD (42501)   <- the control
+
+The column-level GRANT still stops a *client*, so this is not remotely exploitable today. What it
+breaks is FR-Q2's guarantee against a **server bug**: a renamed `custom_settings.key` erases the site
+owner's stored `@custom` value on their live Ghost, silently and unrecoverably.
+
+### 21q. Four more verified structural gaps
+**F13 (HIGH) — nothing creates a `profiles` row.** §11b provisions `entitlements` from an
+`auth.users` trigger; there is no equivalent for `profiles`, and `auth_user_entitlement` is the only
+non-internal trigger on `auth.users`. Live counts after this round's signups:
+
+    auth.users = 6    entitlements = 6    profiles = 2
+
+Four users have no profile. `is_admin`, `autosave_enabled` and `free_editable_project_id` read NULL
+for them — and AD-15 makes `autosave_enabled` load-bearing for data loss. §16a read "profiles = 2" as
+confirming the design; those two rows were seeded by `RLS-TEST.sql`, not by signup.
+
+**F14 (MEDIUM) — `site_snapshots` is fully client-writable.** `authenticated` holds
+`SELECT, INSERT, UPDATE, DELETE` (it sits in §10a's owner list and §11a(1)'s full-CRUD list), while
+AD-32 makes the `site-snapshots` *bucket* server-only with no policy at all, because "a snapshot a
+client could write defeats FR-J13 entirely". The bucket is governed and the table that points into it
+is not, so a client can forge or delete the pointer to its own pre-Inflozo theme backup.
+
+**F15 (MEDIUM) — the board's UPDATE path has the same hole as its INSERT path.** `authenticated`
+holds whole-row UPDATE on `suggestions` (`image_approved, status, vote_count, hidden, merged_into…`),
+and `suggestions_author_update` permits it while `status = 'open'`. So §21a's self-approval works by
+UPDATE as well as by INSERT — one fix must cover both verbs.
+
+**F16 (LOW) — `sync_vote_count` fires on `INSERT DELETE` only.** A client that UPDATEs its own
+`suggestion_votes.suggestion_id` from S1 to S2 desyncs the denormalized `vote_count` on both rows;
+the public board reads that column.
+
+### 21r. Pass 4 — red team and pre-mortem. The finding about the findings.
+Both methods converge on the same structural verdict, and it is not any single hole.
+
+**Red team's chain, built only from executed findings:** sign up → post to the public board with
+`image_approved: true` (§21a, HTTP 201, no admin) → the image is a raw SVG because the only sanitizer
+is client-side and was skipped (§16c) → it renders to every board visitor including the founder, on
+`app.inflozo.com` → same origin, so the session token is readable, with the `javascript:` href gap
+(§21k) as a second route through the editor iframe → the founder is `is_admin`.
+**Blue's rebuttal is fair** — the last step needs a script-execution sink the editor does not yet
+have, and `script-src 'self'` is specified. **Red's counter stands**: §18c states plainly that the
+canvas half of that CSP is a *requirement on E5, not a measured property*. The control that stops the
+chain is the one control never tested.
+
+**Pre-mortem, 2028, 500 customers.** The headline is not stolen cards or defaced sites — it is
+*"site builder leaked 40,000 newsletter subscriber emails"*, and it is news because the victims never
+heard of Inflozo. 500 customers × ~80 subscribers sit behind one all-or-nothing Ghost Admin key
+(§21m). Time exploitable: **since the schema was written, ~26 months.** Time to detection: until a
+customer asked why their subscribers were getting spam — there is no audit log on the Admin proxy, no
+log on Vault decryption, no alert on anomalous `site_credentials` reads. **Detection was external.**
+
+**Which of the 62 decisions enabled it: none.** Every one was individually sound. R1 d13 correctly
+narrowed UPDATE and nobody asked about INSERT. §19d correctly granted two tables and nobody asked
+about the other twelve. AD-6 correctly gave every policy one shape, and that shape authorizes the
+child rather than the parent. **The failure mode is fifteen good decisions each closing the instance
+in front of it, in a project whose own stated rule is to prefer the mechanism that closes the class.**
+The round-4 prompt named that pattern and counted five prior occurrences; this round found six more.
+
+**Prevention, ranked by what would actually have changed the outcome:**
+1. **A harness that fails** (§21n). Two of the six structural findings would have surfaced in Round 1.
+2. **An audit log on the credential paths.** Would not have prevented the breach; would have cut 26
+   months of dwell to days. **Only logging detects — everything else on this list only prevents.**
+3. **A written blast-radius statement in AD-10**, so the consent screen can tell the truth (§21m).
+4. **AD-36** — a named invariant for untrusted-value-into-interpreting-sink, so the next instance is
+   recognised as a member of a class rather than found by a fourth stress test.
+5. **Class-closing assertions rather than fixes** — every finding becomes an assertion over *all*
+   tables, never a grant line for one.
+
+The pre-mortem's question for the owner: *what would have to be true to find this in month 2 rather
+than month 26?* Exactly one item on that list answers it. The architecture has 35 invariants and not
+one of them is about knowing that something happened.

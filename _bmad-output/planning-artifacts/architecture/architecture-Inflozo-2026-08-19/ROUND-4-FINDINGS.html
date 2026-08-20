@@ -1,0 +1,514 @@
+<title>Inflozo — Round 4 Findings</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#12151a; --muted:#5b6472; --line:#e2e6ec;
+    --accent:#1f6feb; --accent-ink:#fff; --rec:#0f7b3f; --rec-bg:#e8f6ee;
+    --sev-crit:#b3261e; --sev-high:#c2410c; --sev-med:#8a6100; --sev-low:#4b5563; --sev-ok:#0f7b3f;
+    --code:#f2f4f7;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}}
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 200px}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px}
+  header h1{font-size:1.9rem;margin:0 0 6px;letter-spacing:-.02em}
+  header p{color:var(--muted);margin:0 0 6px}
+  .counts{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}
+  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;
+    padding:4px 12px;font-size:.82rem;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px;margin:20px 0}
+  .card.done{opacity:.72}
+  .head{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .sev{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:6px;border:1px solid currentColor;white-space:nowrap;margin-top:3px}
+  .sev.critical{color:var(--sev-crit)} .sev.high{color:var(--sev-high)}
+  .sev.medium{color:var(--sev-med)} .sev.low{color:var(--sev-low)} .sev.held{color:var(--sev-ok)}
+  h2{font-size:1.18rem;margin:0;letter-spacing:-.01em;flex:1 1 320px}
+  .tag{font-size:.74rem;color:var(--muted);border:1px solid var(--line);
+    border-radius:6px;padding:3px 8px;margin-top:3px}
+  .plain{margin:14px 0 0}
+  details{margin:12px 0 0;border-top:1px dashed var(--line);padding-top:10px}
+  summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+    padding:12px;overflow-x:auto;font-size:.82rem;line-height:1.5;margin:10px 0 0}
+  .opts{margin:16px 0 0;display:grid;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;background:transparent}
+  .opt.rec{border-color:var(--rec);background:var(--rec-bg)}
+  .opt.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .opt .body{flex:1}
+  .opt .lbl{font-weight:600}
+  .opt .why{color:var(--muted);font-size:.9rem;margin-top:3px}
+  .recflag{color:var(--rec);font-weight:700;font-size:.72rem;letter-spacing:.06em;
+    text-transform:uppercase;margin-left:6px}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);padding:7px 14px}
+  button:hover{border-color:var(--accent)}
+  button.pick{white-space:nowrap;align-self:center}
+  button.pick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  textarea{width:100%;margin-top:12px;min-height:62px;padding:10px 12px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);
+    border-top:1px solid var(--line);padding:14px 20px}
+  .bar .inner{max-width:920px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .bar .status{flex:1;color:var(--muted);font-size:.9rem;min-width:200px}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);
+    font-weight:600;padding:9px 20px}
+  #out{max-width:920px;margin:0 auto;white-space:pre-wrap}
+  @media (max-width:640px){.opt{flex-direction:column}button.pick{align-self:flex-start}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 id="title">Inflozo — Round 4 Findings</h1>
+  <p id="subtitle">Adversarial security &amp; performance review. Pick an option under each finding, add questions if you have them, then copy the reply at the bottom.</p>
+  <div class="counts" id="counts"></div>
+</header>
+<main id="findings"></main>
+</div>
+
+<div class="bar">
+  <div class="inner">
+    <div class="status" id="status">Nothing selected yet.</div>
+    <button id="copy" class="primary">Copy my reply</button>
+    <button id="show">Preview</button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   REPLACE THIS ARRAY. Everything else is machinery.
+
+   severity : "critical" | "high" | "medium" | "low" | "held"
+              "held" = something that was attacked and did NOT break. Include these;
+              knowing what held is as useful as knowing what broke.
+   status   : "CONFIRMED" (executed) | "SUSPECTED" (reasoned)
+   actor    : who could do it, in plain words. Omit for performance findings.
+   radius   : "one tenant" | "all tenants" | "customers' visitors" | "the owner's bill"
+   evidence : the command and its output, verbatim. This is what makes it real.
+   options  : [{label, why, recommended?}]  — always give a do-nothing option where honest.
+   ───────────────────────────────────────────────────────────────────────── */
+const FINDINGS = [
+  {
+    id: "F0",
+    severity: "critical",
+    status: "CONFIRMED",
+    title: "The safety check that is supposed to catch all of this never fails",
+    area: "Security",
+    actor: "Nobody — this is a flaw in our own testing",
+    radius: "all tenants",
+    plain: "We have a file whose whole job is to prove the database is locked down correctly. It prints PASS or FAIL for 38 different checks. The problem: 36 of those 38 checks print the word FAIL and then let the run finish successfully anyway. So if something breaks, the file says FAIL in the middle of the output and still reports overall success — and anything watching it automatically sees a green tick. This is why most of the other findings on this page survived three previous rounds of review: they were all sitting behind a test that was telling us they were fine.",
+    analogy: "A smoke alarm that lights up a small red word 'FIRE' on its underside instead of making a noise.",
+    evidence: "$ grep -c \"raise exception\" RLS-TEST.sql\n2\n$ grep -c \"raise notice 'FAIL\" RLS-TEST.sql\n36\n\n# and the proof it does not stop the run — using the file's own exact shapes:\n$ psql \"$DB\" -v ON_ERROR_STOP=1 -f fail-shape.sql\nNOTICE:  FAIL: this is exactly the shape RLS-TEST uses for a failed assertion\n$ echo $?\n0        <- success, after printing FAIL",
+    ad: "E1's exit criterion / AD-26",
+    options: [
+      { label: "Change the 36 checks so a failure actually stops the run", why: "It is a search-and-replace of one word plus wrapping a few queries. Half a day at most, and it makes every future round's regression testing real instead of decorative. Nothing else on this page is worth doing before this.", recommended: true },
+      { label: "Leave the file and add a separate script that reads its output for the word FAIL", why: "Also works and touches the original file less, but you now have two things to keep in step, and the reason we are here is that nobody re-read the original." },
+      { label: "Do nothing for now", why: "Honest cost: every future round of review re-discovers holes by hand instead of being told. Given you plan more rounds, this is the one place where doing nothing is measurably expensive." }
+    ]
+  },
+  {
+    id: "F11",
+    severity: "critical",
+    status: "CONFIRMED",
+    title: "Twelve database tables cannot be written by the server at all — deploys and billing will fail on day one",
+    area: "Security",
+    radius: "the owner's bill",
+    actor: "Nobody — this is a build-stopper, not an attack",
+    plain: "In the last round we found that two tables had been locked down so thoroughly that even our own server could not write to them, and we fixed those two. It turns out twelve more tables have exactly the same problem and nobody checked. These are the tables that record deploy history, subscriptions, entitlements (who is on the paid plan), notifications, and the export log. The moment you build the deploy feature or the billing feature, the very first write will be refused by the database. This is not a security hole — it is a wall you would hit in week one of building E7 or E12, and it is much cheaper to know now.",
+    analogy: "We locked the filing cabinet so well that the office manager cannot get in either — and we only checked two of the fourteen drawers.",
+    evidence: "# what the service (our own server) is allowed to do on each table:\nbilling_events              INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed last round\nsite_credentials            INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed last round\ndeploys                     REFERENCES,TRIGGER,TRUNCATE\ndeploy_jobs                 REFERENCES,TRIGGER,TRUNCATE\nentitlements                REFERENCES,TRIGGER,TRUNCATE\nsubscriptions               REFERENCES,TRIGGER,TRUNCATE\nexports                     REFERENCES,TRIGGER,TRUNCATE\nproject_site_bindings       REFERENCES,TRIGGER,TRUNCATE\ndeployed_template_names     REFERENCES,TRIGGER,TRUNCATE\nasset_usages                REFERENCES,TRIGGER,TRUNCATE\ncheckout_consents           REFERENCES,TRIGGER,TRUNCATE\nnotifications               REFERENCES,TRIGGER,TRUNCATE\nprofiles                    REFERENCES,TRIGGER,TRUNCATE\ntemplate_binding_checklist  REFERENCES,TRIGGER,TRUNCATE\n\n# none of those twelve has SELECT or INSERT. The architecture says all of them\n# are \"written by server routes under the service role\".",
+    ad: "AD-8 / AD-7",
+    options: [
+      { label: "Fix all twelve, and add one automated check that every such table stays writable", why: "The check is the important half. Adding twelve grant lines fixes today; the check is what stops the thirteenth table from repeating this in six months. This is the same shape of mistake as last round, and the fix that closes the pattern costs barely more than the fix that closes the instance.", recommended: true },
+      { label: "Just add the twelve grant lines", why: "Fifteen minutes, unblocks the build. But this is the third time this exact pattern has appeared and patching only what we found is how it came back." },
+      { label: "Do nothing until you actually build deploys", why: "Genuinely defensible — it costs nothing today because no code writes these tables yet. The risk is that it surfaces mid-feature as a confusing permissions error rather than as a known item." }
+    ]
+  },
+  {
+    id: "F1",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "Anyone can put an unreviewed image on the public suggestions board and fake its vote count",
+    area: "Security",
+    actor: "Any person who signs up for a free account",
+    radius: "customers' visitors",
+    plain: "The suggestions board is designed so that an image someone attaches only becomes publicly visible after you approve it. That approval is a simple true/false field on the row — and the person creating the row is allowed to set it themselves. So anyone can post a suggestion with the approval already switched on, and their image goes straight onto the public board without you ever seeing it. The same gap lets them set their own vote count to any number and mark their own suggestion as 'shipped'. Combined with a finding from last round — that image files are never actually checked for hidden code because the only check runs in the sender's own browser — this means a stranger can put a booby-trapped file on a page you and every visitor will load.",
+    analogy: "A comment form where the 'approved by moderator' checkbox is on the form itself.",
+    evidence: "# posting as an ordinary signed-up user, setting the approval flag ourselves:\nPOST /rest/v1/suggestions\n  {image_approved: true, vote_count: 99999, status: 'shipped',\n   image_path: 'suggestion-images/<me>/evil.svg'}\n  -> HTTP 201 Created\n\n# now reading the public board as a logged-OUT visitor:\nGET /rest/v1/suggestions_public\n  -> {\"status\":\"shipped\", \"vote_count\":99999,\n      \"image_path\":\"suggestion-images/<me>/evil.svg\"}\n\n# and from last round, still true today — the image file is stored exactly as sent,\n# hidden code and all:\n  <script> present: True   @import present: True   byte-identical",
+    ad: "AD-8 / FR-M3 / decision D4",
+    options: [
+      { label: "Lock the fields nobody but the server should set, on both create and edit, and clean images on the server when you approve them", why: "Two changes that between them close the whole thing: the person posting can no longer touch approval, votes or status, and the file gets checked by us rather than trusted. The second half (D4) was already decided last round and simply has not been built.", recommended: true },
+      { label: "Lock the fields, and drop image attachments from the board entirely for v1", why: "Cheaper and completely safe, because the risky part is the file rather than the text. You lose the ability for people to show you a screenshot of what they mean, which is genuinely useful on a suggestions board." },
+      { label: "Do nothing for now", why: "Not recommended, but here is the honest version: the board does not exist yet and neither does the code. If you build it with these fixes in place from the start, this finding costs nothing. It only becomes urgent if the board ships as currently specified." }
+    ]
+  },
+  {
+    id: "F10",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "Connecting a Ghost site hands over the full subscriber list — and nothing records when that key is used",
+    area: "Security",
+    actor: "Anyone who obtains the stored key: a leak, a server bug, or a future insider",
+    radius: "all tenants",
+    plain: "When a customer connects their Ghost site, they give Inflozo a key. Our architecture promises that we only ever use it for four things: upload a theme, activate a theme, upload a routes file, and clear the announcement bar. That promise is real and it is enforced in our own code. What it is not is a limit on the key. Ghost does not offer a restricted key, so the key we hold can read every one of that customer's newsletter subscribers and their email addresses, read their staff accounts, read every setting, and publish posts on their site. We tested this on both Ghost versions and all of it worked. On top of that, nothing anywhere writes down when that key gets used, so if it were ever misused we would not find out from our own systems — we would find out when a customer asked us why.",
+    analogy: "A house-sitter who promises to only use the kitchen. The promise is sincere; the key still opens every room, and there is no doorbell camera.",
+    evidence: "# using exactly the key Inflozo stores, on both live Ghost versions:\n                       ghost5 (5.130.6)      ghost6 (6.58.0)\nGET /admin/members/    200, incl. email      200, incl. email    <- subscriber emails\nGET /admin/users/      200                   200                 <- staff accounts\nGET /admin/settings/   200 (99 rows)         200 (117 rows)      <- every setting\nPOST /admin/posts/     201 CREATED           201 CREATED         <- publishes content\n\n# the good news, tested this round for the first time — the keys themselves\n# are properly protected at rest:\nGET /rest/v1/decrypted_secrets   -> 404   (not reachable over the web API)\nvault grants: service_role only; ordinary users hold nothing",
+    ad: "AD-10 / P8",
+    options: [
+      { label: "Write down what the key can do, log every single use of it, and say it plainly on the connect screen", why: "You cannot make the key smaller — Ghost has no such feature — so the three things you can do are be honest about it, notice if it is misused, and let the customer make an informed choice. The logging is the part that matters most: right now a problem here would go unnoticed for months. It is also the single highest-value item on this whole page for detection.", recommended: true },
+      { label: "Just add the logging", why: "Cheapest useful step and it buys the detection. Leaves the customer uninformed about what they handed over, which is a trust issue rather than a technical one." },
+      { label: "Do nothing for now", why: "Defensible only while you have no customers. The moment real sites are connected this becomes the most valuable thing in your database, and the absence of logging is what turns a small incident into an unbounded one." }
+    ]
+  },
+  {
+    id: "AD36",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "Four separate findings are the same missing rule: we escape text, but never check what it means",
+    area: "Security",
+    actor: "A person editing a site, a design author, or whoever controls the connected Ghost",
+    radius: "customers' visitors",
+    plain: "Four of this round's findings look unrelated and are actually one gap. In each, a value from outside gets carefully escaped — special characters made safe — and then handed to something that interprets it. Escaping is the wrong tool there. A web link reading 'javascript:...' contains no special character to escape, so it passes through untouched and then runs when a visitor clicks it. A colour value from Ghost can contain extra styling instructions and arrives verbatim on the customer's live site. A design file can break out of the template and write raw code into every theme built from it. And a design can attach a browser event handler to any element. The architecture already has this idea written down twice, for two specific cases, but never as a general rule — so each new instance has been found by hand, one stress test at a time.",
+    analogy: "We check every parcel for sharp edges, then hand it to someone who opens it and follows whatever instructions are inside.",
+    evidence: "# 1. a link a user typed, in the theme we ship:\ncontent.link = 'javascript:alert(document.domain)'\n  -> <a href=\"javascript:alert(document.domain)\">x</a>     <- survives intact\n\n# 2. a design author breaking out of a helper argument:\ndata-bind-attr='src:featureImage|img_url:800\"}}<script>alert(1)<\/script>{{\"'\n  -> <img src=\"{{img_url featureImage size=\"800\"}}<script>alert(1)<\/script>{{\"\"}}\">\n\n# 3. a design naming any attribute it likes:\ndata-bind-attr=\"onload:featureImage\"  ->  <div onload=\"{{featureImage}}\">x</div>\n\n# 4. a tag colour on both real Ghost versions, stored exactly as given:\n'red;}body{display:none'        -> 201 ACCEPTED verbatim\n'#fff;background:url(x)'        -> 201 ACCEPTED verbatim\n'#fff;width:100vw'              -> 201 ACCEPTED verbatim\n\n# what HELD, and it bounds all of the above:\nuser text with {{...}} braces   -> escaped correctly, never runs\nuser quote inside an attribute  -> escaped correctly, no break-out",
+    ad: "AD-3 decision B / AD-4 / AD-5 / AD-2 / proposed AD-36",
+    options: [
+      { label: "Add one new architecture rule covering all four, and build the single shared check it implies", why: "The four fixes are small and they are the same fix: a list of allowed link types, a list of allowed attribute names, proper parsing of colours, and helper arguments built from validated pieces instead of glued-together text. Doing it as one named rule means the fifth instance gets recognised rather than discovered by a future stress test. This project has been bitten by instance-fixes eleven times now.", recommended: true },
+      { label: "Fix the four instances without adding a rule", why: "Faster and each fix is genuinely small. The cost is that the next one — and the pattern says there will be one — gets found by a person rather than by a principle." },
+      { label: "Fix only the link one, defer the rest", why: "The link finding is the one that reaches a visitor's browser and also touches your own editor, so it is the highest value single fix. The colour and design-author ones are defacement rather than theft, and the design library is currently authored only by you." }
+    ]
+  },
+  {
+    id: "F2",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "A user can attach data to another user's project, and can probe which projects exist",
+    area: "Security",
+    actor: "Any signed-in user",
+    radius: "all tenants",
+    plain: "Every table in the database is protected by the same rule: you may only touch rows that are marked as yours. That rule works and we could not break it. But for tables that hang off a project — page designs, settings, custom templates — the rule only checks that the new row is marked as yours. It never checks that the project it is being attached to is also yours. So one user can create a row marked with their own name and attach it to a stranger's project. They cannot read anything back, and they would have to guess a long random project ID first, so this is not a data leak today. It matters because a server process reading a project's contents would pick up the foreign row and treat it as part of that project.",
+    analogy: "The mail room checks that your name is on the envelope, but not that the pigeonhole you are putting it in is yours.",
+    evidence: "# tenant A, using tenant B's project ID:\nPOST /rest/v1/project_templates\n  {project_id: <B's project>, user_id: <A>, template_key: 'home', doc: {}}\n  -> HTTP 201 Created        <- attached to B's project\n\n# control, to show it is a real check and not just a broken ID:\nPOST /rest/v1/project_templates {project_id: <random uuid>, ...}\n  -> HTTP 409  foreign_key_violation\n\n# so the difference between 201 and 409 also tells an attacker\n# which project IDs are real.",
+    ad: "AD-6",
+    options: [
+      { label: "Add a parent-ownership check to the shared rule, so it applies everywhere at once", why: "The rule is written once and applied to every table by a loop, so this is a single change that covers all of them. That is the same property that made the gap universal — it also makes the fix universal.", recommended: true },
+      { label: "Add the check only to the tables the compiler reads", why: "Smaller change, targets the case that actually causes harm. Leaves the probing behaviour in place on the other tables and creates two rule shapes where there is currently one." },
+      { label: "Do nothing for now", why: "The honest case: exploiting this needs a project ID that is a random 128-bit value, and nothing is readable back. It is a real gap in the model rather than a live danger, and it could reasonably wait until the compile path is built." }
+    ]
+  },
+  {
+    id: "F13",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "Signing up does not create the user's profile row",
+    area: "Security",
+    actor: "Nobody — a missing piece of setup",
+    radius: "all tenants",
+    plain: "When someone signs up, the system is supposed to create two rows for them: one recording their plan, and one holding their profile — display name, whether they are an admin, and their autosave preference. Only the first of those actually happens. We checked the live database: six users, six plan rows, two profile rows — and those two only exist because an old test script created them by hand. For everyone else the profile is simply missing, which means their autosave setting reads as blank. Autosave is the setting that decides whether their work is being saved, so this is a data-loss risk rather than a cosmetic one.",
+    analogy: "New starters get a payroll record but no personnel file, so nobody knows whether they opted into anything.",
+    evidence: "# live counts on the real project, after this round's signups:\nauth.users = 6    entitlements = 6    profiles = 2\n\n# triggers that run when a user signs up:\nauth_user_entitlement       <- the only one\n\n# note: last round read \"profiles = 2\" as confirming the design.\n# Those two rows were seeded by the test file, not by signing up.",
+    ad: "AD-28 / AD-15",
+    options: [
+      { label: "Add the matching signup step for profiles, and check both exist in the automated test", why: "It is the same five-line pattern that already works for the plan row, plus one assertion so it cannot silently disappear again. The assertion is worth as much as the fix — this went unnoticed because a count of 2 looked plausible.", recommended: true },
+      { label: "Create the profile row from the application when someone first signs in instead", why: "Also works and keeps the logic in code you can read more easily. Slightly riskier because anything that reads a profile before that first sign-in still sees nothing." },
+      { label: "Do nothing for now", why: "Not advisable. Unlike most items here this is not an attack — it is a piece of setup that is simply absent, and everything built on top of profiles will quietly misbehave until it exists." }
+    ]
+  },
+  {
+    id: "F3",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "The storage meter can be set to any number by the person being metered",
+    area: "Security",
+    actor: "Any signed-in user",
+    radius: "the owner's bill",
+    plain: "We carefully made sure users cannot edit the field that records how much storage they are using — that field is what enforces the 100 MB free limit and the 5 GB paid limit. What we did not do is stop them setting it when the row is first created. So a user can upload a large file and record it as one byte. The files themselves land in storage for real and you pay for them; only the number that is supposed to stop them is fake. This is the same underlying shape as the suggestions-board finding: we locked editing everywhere and left creating wide open.",
+    analogy: "A weighbridge where the driver fills in the weight, and we only stop them changing it afterwards.",
+    evidence: "# create a row claiming ten megabytes are one byte:\nPOST /rest/v1/assets  {bytes: 9999999, stored_bytes: 1, ...}\n  -> HTTP 201 Created\n\n# try to edit it afterwards — this part works correctly:\nPATCH /rest/v1/assets?id=eq.<id>  {stored_bytes: 500000000}\n  -> HTTP 403 Forbidden",
+    ad: "AD-8 / AD-31 / FR-K3",
+    options: [
+      { label: "Lock the create step the same way the edit step is locked, across every affected table", why: "Fixes this, the suggestions board, and the edit-lock counter in one change, because they are all the same gap. Doing it table by table would be three fixes for one cause.", recommended: true },
+      { label: "Have the database calculate the storage number itself rather than accepting one", why: "Stronger, because then the number cannot be wrong even by accident. More work, and it needs a decision about how the four image sizes are counted." },
+      { label: "Do nothing for now", why: "Reasonable while you have no paying users: the real ceiling is your storage bill, which you can see. It becomes worth fixing the moment the free tier is something people want to get around." }
+    ]
+  },
+  {
+    id: "F6",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "A leaked server key would expose Ghost key references and billing records — but not the Ghost keys themselves",
+    area: "Security",
+    actor: "Anyone who obtains the server's secret key",
+    radius: "all tenants",
+    plain: "Two tables are meant to be reachable only by our own server code, from inside a server route: one holds pointers to customers' Ghost keys, the other holds billing records. Ordinary signed-in users are correctly locked out — we tested and got a clean refusal. But the server key can read both of them straight over the web API, with no server route involved at all. So if that key ever leaked, whoever had it could read those tables directly. The good news, which we tested for the first time this round: the Ghost keys themselves are stored separately and properly, and could not be decrypted the same way. So a leak of this key exposes references and billing data, not the ability to take over customer websites.",
+    analogy: "The safe holding the keys is genuinely secure. The register listing which safe belongs to whom is readable from the lobby.",
+    evidence: "# as an ordinary signed-in user — correctly refused:\nGET /rest/v1/site_credentials  -> 403  (42501)\nGET /rest/v1/billing_events    -> 403  (42501)\n\n# with the server's secret key, no server route involved:\nGET /rest/v1/site_credentials  -> 200, rows=1\n\n# but the actual Ghost keys, tested this round for the first time:\nGET /rest/v1/decrypted_secrets -> 404   (not exposed on the web API at all)\nGET /rest/v1/secrets           -> 404\nvault grants: service_role only; anon and authenticated hold nothing",
+    ad: "AD-7",
+    options: [
+      { label: "Move both tables out of the area the web API can see", why: "It is a configuration change rather than a redesign, and it makes the architecture's own sentence — reachable only from inside a server route — actually true instead of aspirational. Also removes the most valuable thing a leaked key could reach.", recommended: true },
+      { label: "Leave them and rely on protecting the key", why: "The key is already the most sensitive secret you hold, so protecting it is required either way. This option accepts that one leak exposes more than it needs to." },
+      { label: "Do nothing for now", why: "Genuinely arguable given what we proved about the Ghost keys being separately protected — the blast radius of this specific gap is metadata and billing rows, not customer site takeover. Worth doing when convenient rather than urgently." }
+    ]
+  },
+  {
+    id: "F12",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "A theme setting that is supposed to be frozen forever can still be renamed",
+    area: "Security",
+    actor: "Nobody today — but a future bug in our own server could do it",
+    radius: "one tenant",
+    plain: "Once a theme setting has been deployed to a customer's live site, its internal name must never change, because that name is where the customer's chosen value is stored on their Ghost. Rename it and their value is gone, silently, with no way back. The architecture says four such fields are protected by a database-level guard. Three of them are. The fourth — the theme setting name — has no guard at all, and neither does the flag marking it as frozen. Users cannot reach this because a separate permission blocks them, so nobody can exploit it. What it means is that a mistake in our own code would go through unchallenged, and this is exactly the kind of mistake the guard exists to catch.",
+    analogy: "Three of the four emergency brakes were fitted. The fourth was specified in detail and then not installed.",
+    evidence: "# which of the four frozen fields actually have their guard:\nprofiles                 profiles_privilege_frozen           <- present\ndeployed_template_names  deployed_template_names_frozen      <- present\nprojects                 projects_revision_monotonic, ...    <- present\ncustom_settings          custom_settings_cap                 <- the CAP only, no guard\n\n# running as the database owner, which is what a server bug would be:\nupdate custom_settings set key='renamed_key'    -> renamed, no error\nupdate custom_settings set frozen_at = null     -> nulled, no error\nupdate profiles set is_admin = true             -> refused (42501)   <- the control",
+    ad: "AD-9 / AD-31 / FR-Q2",
+    options: [
+      { label: "Add the missing guard", why: "It is a copy of the three that already exist, applied to one more table. Small, and it closes the gap between what the architecture claims and what the database does — which is the gap this whole round keeps finding.", recommended: true },
+      { label: "Do nothing for now", why: "Fair: nobody can trigger this today, and the code that would trigger it does not exist yet. The counter-argument is that this costs about twenty minutes and the failure it prevents is silent and unrecoverable on a customer's live site." }
+    ]
+  },
+  {
+    id: "F4",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "Someone can take over an editing session without the other device noticing",
+    area: "Security",
+    actor: "A user with two devices, or two people sharing an account",
+    radius: "one tenant",
+    plain: "Only one device may edit a project at a time. When someone takes over, a counter goes up, and the other device watches that counter to know it has been displaced — that is how it warns you about unsaved work. It turns out the field naming the current device can be changed without touching the counter. So a takeover can happen while the counter stays where it was, and the displaced device carries on believing it still holds the session. Both then think they are the editor. This was noticed and written down in the last round, and it was left open deliberately because it needs a decision about how the protocol should work, not just a fix.",
+    analogy: "Signing your name over someone else's on the sign-in sheet without advancing the page number they are watching.",
+    evidence: "# take the lock, then reseat the holder without touching the counter:\nPOST  /rest/v1/edit_locks  {holder_session_id:'device-1', lock_generation:5}  -> 201\nPATCH /rest/v1/edit_locks  {holder_session_id:'device-2-SEIZED'}\n  -> HTTP 200, holder changed, counter STILL 5\n\n# the two guards that do exist both work correctly:\nPATCH {lock_generation: 1}     -> 403  (counter cannot go backwards)\nPATCH {user_id: <other user>}  -> 403  (cannot re-parent the lock)",
+    ad: "AD-15 / round 1 decision 32",
+    options: [
+      { label: "Decide the lock protocol properly before the editor is built", why: "This was already deferred once for exactly this reason: it is a design question about what should happen on takeover, not a missing line of code. The editor is not built yet, so deciding now costs nothing and deciding later means changing working code.", recommended: true },
+      { label: "Require the counter to go up whenever the holder changes", why: "The obvious small fix and it probably is the answer. Worth being sure it is right before it is set in stone, because the counter is also what wipes a device's undo history." },
+      { label: "Do nothing for now", why: "Consistent with the last round's decision to defer. The cost is that the editor gets built against an undecided protocol, which is how a small design question turns into a rewrite." }
+    ]
+  },
+  {
+    id: "F14",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "Users can edit and delete the record pointing at their pre-Inflozo site backup",
+    area: "Security",
+    actor: "Any signed-in user",
+    radius: "one tenant",
+    plain: "Before Inflozo changes anything on a customer's site, it takes a backup of their existing theme. The architecture is emphatic that this backup is the one thing that cannot be recreated, and the storage area holding the file is locked down so tightly that no user can touch it. But the database row that points at that file is fully editable and deletable by the user. So while the file is safe, the record of where it is can be lost or altered, which is enough to break the restore feature that the whole backup exists for.",
+    analogy: "The archive box is in a vault. The index card saying which vault is on the front desk.",
+    evidence: "# what an ordinary signed-in user can do to the backup record:\nsite_snapshots -> authenticated: DELETE, INSERT, SELECT, UPDATE\n\n# compare with the storage area holding the actual file, which is correct:\nsite-snapshots bucket -> server-only, no policy at all\n  (verified again this round: upload attempt denied by RLS)",
+    ad: "AD-8 / AD-32 / FR-J13",
+    options: [
+      { label: "Make the backup record readable but not writable by users, like the other server-owned records", why: "The list of read-only tables already exists and this table simply is not on it. Moving it is a one-line change and matches how every comparable record is already handled.", recommended: true },
+      { label: "Do nothing for now", why: "Low real risk — a user damaging their own backup pointer hurts only them, and they would have to do it deliberately via the API. The reason to fix it is consistency: every other server-owned record is already protected, so this one being different is more likely an oversight than a decision." }
+    ]
+  },
+  {
+    id: "P1",
+    severity: "medium",
+    status: "CONFIRMED",
+    title: "Most tables will get slower as you gain customers, in a way that is cheap to prevent now",
+    area: "Performance",
+    radius: "all tenants",
+    plain: "Every table filters rows by owner so people only see their own data. For that filter to stay fast, the database needs an index on the owner column — a lookup shortcut. Twenty-one of the twenty-nine tables do not have one. Right now nothing is slow because there is almost no data. As customers accumulate, those queries stop scanning one customer's rows and start scanning every customer's rows. We measured the difference on a realistic amount of data and it is fourteen times, and it grows with your success rather than staying put.",
+    analogy: "Every filing cabinet works fine while it holds twenty files. The problem arrives with the two hundredth customer, not the second.",
+    evidence: "# measured on the live database, 200,000 rows, 50,000 for the target tenant:\nwith an index on the owner column:   11.2 ms\nwithout one (a full scan):          320.9 ms      <- 14x\n\n# tables that HAVE the index (8):\nassets, entitlements, notifications, passkey_labels,\nprofiles, projects, sites, subscriptions\n\n# tables that do NOT (21): everything else, including\nproject_templates, deploys, custom_settings, suggestions, edit_locks\n\n# separately: the architecture's claim that wrapping the owner lookup\n# makes it run once instead of per row is TRUE and worth keeping —\n# it is what keeps the unindexed case at 320 ms instead of far worse.",
+    ad: "AD-6 / AD-26",
+    options: [
+      { label: "Add the index to every such table now, and add a check that new tables come with one", why: "Indexes on empty tables are instant to create and cost nothing to carry. Doing it now is a few minutes; doing it later is a migration against live customer data. The automated check matters because new tables get added every epic.", recommended: true },
+      { label: "Add indexes only to the tables you expect to grow large", why: "Slightly less to carry, and honestly most of these tables will stay small. The risk is guessing wrong about which ones grow — suggestions and deploys are the usual surprises." },
+      { label: "Do nothing until something is measurably slow", why: "A legitimate engineering position and the architecture already takes it elsewhere. The counter-argument here is unusually strong though: the fix is nearly free before launch and involves live-data migration afterwards." }
+    ]
+  },
+  {
+    id: "F16",
+    severity: "low",
+    status: "CONFIRMED",
+    title: "Moving a vote between suggestions leaves both counts wrong",
+    area: "Security",
+    actor: "Any signed-in user",
+    radius: "all tenants",
+    plain: "The public board shows a vote count that is kept up to date automatically whenever a vote is added or removed. It is not updated when an existing vote is moved from one suggestion to another, which a user can do. Doing so leaves the count too high on one suggestion and too low on the other. It is cosmetic — the votes themselves are recorded correctly — but the board is a thing you will use to decide what to build.",
+    analogy: "Moving your sticky note to a different column without updating either tally.",
+    evidence: "# when the count-keeping runs:\nsuggestion_votes_count  fires on: INSERT DELETE\n\n# an UPDATE that changes which suggestion the vote belongs to\n# is not covered, and users may perform that update.",
+    ad: "FR-M3",
+    options: [
+      { label: "Include the move case in the automatic count-keeping", why: "One extra word in the trigger definition plus handling both old and new suggestion. Small enough that deferring it costs more in tracking than in doing.", recommended: true },
+      { label: "Stop users from moving a vote; make them remove and re-add it", why: "Also correct and arguably simpler to reason about. Slightly worse for the person voting, though nobody would notice." },
+      { label: "Do nothing for now", why: "Perfectly fine. It is a cosmetic count on a feature that does not exist yet, and it will be obvious if it ever happens." }
+    ]
+  },
+  {
+    id: "S1",
+    severity: "medium",
+    status: "SUSPECTED",
+    title: "The theme's style block may accept a wider class of injected styling than the tag colour does",
+    area: "Security",
+    actor: "Whoever controls the connected Ghost site",
+    radius: "customers' visitors",
+    plain: "We confirmed that Ghost accepts arbitrary styling in a tag's colour field, which then lands on the customer's live site. There is a second place with the same shape but potentially worse consequences: the theme writes two Ghost theme-settings values into a style block in the page head. Values there can affect the whole page rather than a single element, so if Ghost accepts the same loose input in a theme setting, the damage would be wider. We could not test this: Ghost refuses theme-setting changes made with the kind of key we hold, and a valid, correct colour was refused in exactly the same way, so the refusal tells us nothing about what Ghost would accept. Marked as suspected rather than confirmed for that reason.",
+    analogy: "We found the side door unlocked. The front door has the same lock fitted, and we could not get close enough to try the handle.",
+    evidence: "# the two places in the generated theme:\n<style>\n  :root { --accent: {{@custom.accent_colour}}; }\n  {{#if @custom.dark_logo}}.scheme-dark .hdr__logo-img { content: url({{@custom.dark_logo}}); }{{/if}}\n</style>\n\n# attempting to set them with our key — and the control that shows why\n# this is inconclusive rather than a clean result:\nPUT /admin/settings/ {custom_accent_colour: '#fff; } body{display:none} .x{color:#fff'}\n  -> 403\nPUT /admin/settings/ {custom_accent_colour: '#1f6feb'}   <- a perfectly valid colour\n  -> 403  \"API tokens do not have permission to access this endpoint\"",
+    ad: "AD-3 decision B / FR-Q5",
+    options: [
+      { label: "Parse these values strictly in our own code, and stop trying to determine what Ghost allows", why: "This is the same fix as the tag-colour finding and it makes the question moot: if we only ever emit a value we have validated ourselves, it does not matter how permissive Ghost is. Cheaper than the investigation, and it is a fix you want regardless of the answer.", recommended: true },
+      { label: "Test it properly first with a staff login, then decide", why: "Gives you a definite answer and it belongs on the existing verification list. Costs a session with a real Ghost admin login, and you may well end up doing the fix above anyway." },
+      { label: "Do nothing for now", why: "Defensible: Ghost does validate colour-typed settings to some degree, and the worst realistic outcome is a customer's own site looking wrong because of a value that same customer set. It is not a route into anyone else's data." }
+    ]
+  },
+  {
+    id: "S2",
+    severity: "low",
+    status: "SUSPECTED",
+    title: "The export feature may not be covered by the deploy rate limit",
+    area: "Both",
+    actor: "Any signed-in user",
+    radius: "the owner's bill",
+    plain: "Deploys are limited to ten per hour per site, and that limit is worked out by counting recent deploys for that site. Exporting a theme runs the same expensive build but records itself without a site, so the counting method appears to miss it. Someone could then run the costly part repeatedly without hitting the limit. We could not test this because neither feature is built. Separately we did measure the actual cost, and it is small: a single account deploying flat out for a month costs about seventy-seven dollars.",
+    analogy: "The turnstile counts people going through the main gate; the side gate leads to the same room.",
+    evidence: "# measured this round, on real infrastructure:\none deploy = 3.9s compile + 7.3s upload + 1.5s activate = $0.000427\n25 sites at the 10/hour limit = $0.107/hour = $76.84/month\nsteady-state concurrency at full abuse = 0.88   <- no capacity problem\n\n# the structural gap, from the schema:\nexports.site_id  -> null for exports\nthe rate limit is counted from deploys, scoped by site.",
+    ad: "FR-J11 / FR-J12 / AD-11",
+    options: [
+      { label: "Note it against the deploy story so the limit covers both paths when it is built", why: "Nothing to fix today because nothing is built. Writing it into the story is the whole action, and it costs one line now versus rediscovering it after launch.", recommended: true },
+      { label: "Design a proper per-account budget covering every expensive operation", why: "More robust and probably where you end up eventually. Premature while the cost of the worst realistic abuse is under a hundred dollars a month and visible in your billing alerts." },
+      { label: "Do nothing for now", why: "Entirely reasonable. The measured cost of the worst case is small, you would see it in the spend alarms, and building a limiter for a feature that does not exist is speculative." }
+    ]
+  },
+  {
+    id: "H1",
+    severity: "held",
+    status: "CONFIRMED",
+    title: "What we attacked directly and could not break",
+    area: "Security",
+    radius: "all tenants",
+    plain: "This is the part that makes the rest of the page trustworthy. We attacked the core of the system with real accounts and real keys, and it held. One user could not read, edit or delete another user's projects or suggestions. The count of another tenant's rows came back as zero rather than leaking a number. Nobody could reach another user's uploaded files, or write to the two storage areas reserved for the server. The escaping that stops a user's typed text being treated as template code held against every variation we tried, including quotes inside attributes. The keys for customers' Ghost sites are properly protected at rest. And the deploy pipeline passed Ghost's own theme checker with zero errors and zero warnings on both Ghost versions.",
+    analogy: "The walls are sound. What this round found was mostly doors that were specified and never hung.",
+    evidence: "# nineteen previously-closed controls re-tested this round. All held:\nlock counter cannot go backwards             403\nlock ownership cannot be re-parented         403\nstorage meter cannot be edited after upload  403\nGhost key + billing tables denied to users   403 (both)\nanother tenant's projects                    0 rows\ncount of another tenant's rows               */0  (no leak)\nanother user's unapproved image              null\nediting or deleting another user's post      403\nanother user's storage folder                denied by policy\nserver-only storage areas (x2)               denied, no policy\nstorage area list / making a bucket public   not reachable\nuser braces and {{#if}} in typed text        never runs\nuser quote inside an attribute               escaped, no break-out\ntheme checker on real upload, both Ghosts    0 errors / 0 warnings",
+    ad: "AD-4 / AD-5 / AD-6 / AD-7 / AD-32 / AD-34"
+  },
+  {
+    id: "H2",
+    severity: "held",
+    status: "CONFIRMED",
+    title: "Speed: every numeric promise we could measure was met, comfortably",
+    area: "Performance",
+    radius: "all tenants",
+    plain: "The product makes several promises with numbers attached and almost none had ever been measured on real hardware. We measured them. The stylesheet budget is met with room to spare, though the test theme is artificial and compresses unusually well, so treat the margin as indicative rather than exact. The deploy half of the ten-minute promise takes about thirteen seconds end to end against a real Ghost. The memory decision from last round is comfortable. And a performance claim in the architecture that had never been checked — that a particular way of writing the owner filter makes it run once per query instead of once per row — turns out to be true and worth fourteen times on an unindexed table. The one caveat is the indexing finding above.",
+    analogy: "Everything we could put a stopwatch on came in well under time.",
+    evidence: "# stylesheet budget (limit is 40 KB compressed):\nscreen.css  1.36 KB brotli   (42 KB raw, 2.2 KB gzip)\n\n# the deploy half of the ten-minute promise, real Ghosts:\ncompile 3.9s + upload 7.3s + activate 1.5s = ~13s end to end\ntheme checker on upload: 0 errors / 0 warnings on both versions\n\n# memory, after last round's decision to raise it to 4 GB:\n486 MB per compile -> 8 fit per instance; worst-case abuse = 0.88 concurrent\n\n# the owner-filter claim, never previously checked:\nwrapped form   23.4 ms      <- runs once per query\nplain form    320.9 ms      <- runs once per row\n\n# what a visitor downloads from a real Ghost site:\nhomepage ~59 KB, post ~19 KB; Ghost's own scripts dominate, not our theme",
+    ad: "NFR-1 / NFR-2 / G1 / AD-6 / AD-11",
+    options: [
+      { label: "Accept these as the measured baseline and move on", why: "The numbers are comfortable and were taken on real infrastructure rather than estimated. The one thing genuinely unmeasured is the image-checking matrix for 484 designs, which needs tooling that does not exist yet and belongs with that work.", recommended: true },
+      { label: "Re-measure the stylesheet budget on real designs before trusting it", why: "More honest about the artificial test theme. Worth doing at the first category gate rather than now, since real designs do not exist yet either." }
+    ]
+  }
+];
+
+/* ── machinery ─────────────────────────────────────────────────────────── */
+const picks = new Map(), notes = new Map();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function render() {
+  const order = { critical: 0, high: 1, medium: 2, low: 3, held: 4 };
+  const list = [...FINDINGS].sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9));
+
+  const tally = {};
+  for (const f of FINDINGS) tally[f.severity] = (tally[f.severity] || 0) + 1;
+  document.getElementById('counts').innerHTML =
+    Object.entries(tally).map(([k, v]) =>
+      `<span class="pill">${v} ${k === 'held' ? 'held up' : esc(k)}</span>`).join('') +
+    `<span class="pill">${FINDINGS.filter(f => f.options?.length).length} need a decision</span>`;
+
+  document.getElementById('findings').innerHTML = list.map(f => `
+    <section class="card" id="card-${esc(f.id)}">
+      <div class="head">
+        <span class="sev ${esc(f.severity)}">${f.severity === 'held' ? 'held up' : esc(f.severity)}</span>
+        <h2>${esc(f.id)} · ${esc(f.title)}</h2>
+        ${f.area ? `<span class="tag">${esc(f.area)}</span>` : ''}
+        ${f.status ? `<span class="tag">${esc(f.status)}</span>` : ''}
+      </div>
+      ${(f.actor || f.radius) ? `<p class="plain"><strong>${f.actor ? 'Who: ' + esc(f.actor) : ''}${f.actor && f.radius ? ' · ' : ''}${f.radius ? 'Reaches: ' + esc(f.radius) : ''}</strong></p>` : ''}
+      <p class="plain">${esc(f.plain)}</p>
+      ${f.analogy ? `<p class="plain" style="color:var(--muted)"><em>${esc(f.analogy)}</em></p>` : ''}
+      ${f.evidence ? `<details><summary>How we know${f.ad ? ' · ' + esc(f.ad) : ''}</summary><pre>${esc(f.evidence)}</pre></details>` : ''}
+      ${f.options?.length ? `<div class="opts">${f.options.map((o, i) => `
+        <div class="opt ${o.recommended ? 'rec' : ''}" id="opt-${esc(f.id)}-${i}">
+          <div class="body">
+            <div class="lbl">${i + 1}. ${esc(o.label)}${o.recommended ? '<span class="recflag">recommended</span>' : ''}</div>
+            ${o.why ? `<div class="why">${esc(o.why)}</div>` : ''}
+          </div>
+          <button class="pick" aria-pressed="false" data-f="${esc(f.id)}" data-i="${i}">Choose</button>
+        </div>`).join('')}</div>` : ''}
+      <textarea data-note="${esc(f.id)}" placeholder="Counter-question or a note on ${esc(f.id)} — optional, and it goes into the reply."></textarea>
+    </section>`).join('');
+
+  document.querySelectorAll('button.pick').forEach(b => b.onclick = () => {
+    const { f, i } = b.dataset;
+    if (picks.get(f) === +i) picks.delete(f); else picks.set(f, +i);
+    document.querySelectorAll(`button.pick[data-f="${f}"]`).forEach(x => {
+      const on = picks.get(f) === +x.dataset.i;
+      x.setAttribute('aria-pressed', on);
+      x.textContent = on ? 'Chosen' : 'Choose';
+      x.closest('.opt').classList.toggle('sel', on);
+    });
+    document.getElementById('card-' + f).classList.toggle('done', picks.has(f));
+    status();
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(t =>
+    t.oninput = () => { notes.set(t.dataset.note, t.value.trim()); status(); });
+  status();
+}
+
+function status() {
+  const need = FINDINGS.filter(f => f.options?.length).length;
+  const q = [...notes.values()].filter(Boolean).length;
+  document.getElementById('status').textContent =
+    `${picks.size} of ${need} decided${q ? ` · ${q} question${q > 1 ? 's' : ''}` : ''}`;
+}
+
+function build() {
+  const lines = ['Round 4 decisions:', ''];
+  for (const f of FINDINGS) {
+    const p = picks.get(f.id), n = notes.get(f.id);
+    if (p === undefined && !n) continue;
+    if (p !== undefined) {
+      const o = f.options[p];
+      lines.push(`${f.id} — option ${p + 1}: ${o.label}${o.recommended ? ' (your recommendation)' : ''}`);
+    } else {
+      lines.push(`${f.id} — no option chosen yet`);
+    }
+    if (n) lines.push(`   Q: ${n}`);
+  }
+  const undecided = FINDINGS.filter(f => f.options?.length && !picks.has(f.id) && !notes.get(f.id));
+  if (undecided.length) {
+    lines.push('', `Not yet decided: ${undecided.map(f => f.id).join(', ')}`);
+  }
+  lines.push('', 'Apply the chosen options. Answer any questions above before applying the ones they attach to.');
+  return lines.join('\n');
+}
+
+document.getElementById('copy').onclick = async () => {
+  const text = build(), btn = document.getElementById('copy');
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch { show(text); btn.textContent = 'Select and copy below'; }
+  setTimeout(() => btn.textContent = 'Copy my reply', 2200);
+};
+document.getElementById('show').onclick = () => show(build());
+function show(text) {
+  let el = document.getElementById('out');
+  if (!el) { el = document.createElement('pre'); el.id = 'out';
+    document.querySelector('.wrap').appendChild(el); }
+  el.textContent = text;
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+render();
+</script>
