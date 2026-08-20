@@ -844,6 +844,21 @@ grant select on public.suggestion_votes to anon;
 --     deliberately and by omission. RLS-on-with-no-policy remains, but it is no longer the only
 --     thing standing between a client and the table.
 
+-- ⚠️ "NOTHING" MUST NOT INCLUDE service_role, and the first version of this file did.
+-- [Round 3, 2026-08-20 -- MEASUREMENTS §19d, executed against real hosted Supabase]
+--
+-- AD-7 reads "reachable only by the service role inside a server route". On real Supabase the
+-- service role could not reach them at all: it held REFERENCES, TRIGGER, TRUNCATE and no
+-- SELECT/INSERT, so FR-L2's Dodo webhook handler could not write the payload it exists to store
+-- and the entitlements state machine had no input. Executed with a real secret key:
+--     ERROR: permission denied for table billing_events (42501)
+-- RLS was never the obstacle -- service_role carries bypassrls = true. The missing TABLE GRANT was,
+-- which is Round 1's "a view is not access control while the table grant stands" from the other side.
+-- Invisible against PRELUDE.sql, which never creates a service_role.
+grant select, insert on public.billing_events, public.site_credentials to service_role;
+-- feature_flags is read server-side per request (the Feature-flags convention), so it needs SELECT.
+grant select on public.feature_flags to service_role;
+
 -- (8) suggestions_public: SELECT only.  [R1 decision 3, CORRECTED -- see the note in §10 above]
 revoke all on public.suggestions_public from anon, authenticated;
 grant  select on public.suggestions_public to anon, authenticated;

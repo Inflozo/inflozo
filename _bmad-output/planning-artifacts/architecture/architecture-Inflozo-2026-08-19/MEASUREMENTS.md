@@ -1006,3 +1006,108 @@ establish that the real editor runs under `script-src 'self'` with **no `'unsafe
 claim rests on §7.1's "there is no Handlebars runtime in the browser" and on nothing in the editor
 calling `new Function`, and it stays unproven until E5 has a canvas to test. The conventions row
 should be read as a requirement on E5, not as a verified property.
+
+---
+
+## 19. Dodo, executed in test mode · closes VERIFY 6 · **FR-L2 refuted, and AD-7 has a hole**
+
+Real Dodo test-mode account, real API, real webhooks delivered to a Vercel receiver that writes into
+the **actual `billing_events` table** — deliberately, so FR-L2's schema meets genuine payloads rather
+than invented ones. Base URL `https://test.dodopayments.com`.
+
+### 19a. The event catalogue — 47, not 7
+
+Read from the registered endpoint's own `filter_types`:
+
+| group | n | group | n |
+| --- | --- | --- | --- |
+| `subscription.*` | **11** | `credit.*` | 9 |
+| `dispute.*` | 7 | `payout.*` | 5 |
+| `payment.*` | 4 | `entitlement_grant.*` | 4 |
+| `abandoned_checkout.*` | 2 | `dunning.*` | **2** |
+| `refund.*` | 2 | `license_key.*` | 1 |
+
+**All seven events FR-L2 names exist.** The problem is the other forty.
+
+### 19b. ⚠️ `subscription.cancelled` EXISTS. FR-L2 says it does not.
+
+FR-L2 states, as normative text:
+
+> *"There is **no documented `subscription.cancelled`**: cancellation is detected from
+> `subscription.updated` plus a direct read of the subscription, never inferred from an event name
+> that does not exist."*
+
+Executed — a real subscription cancelled through the API, and Dodo delivered, signature-verified:
+
+    subscription.cancelled   sig_ok=true
+    subscription.updated     sig_ok=true
+
+**This is the project's named failure mode, fifth instance:** an unverified claim about an external
+platform entering as normative text, with a confident *reason* attached that stops anyone
+re-examining it. FR-L2's cancellation path does an extra API read it does not need, and the sentence
+asserting why must be struck rather than softened.
+
+### 19c. Three more gaps in FR-L2's state machine
+
+1. **`dunning.started` / `dunning.recovered` exist.** FR-L2 infers the 7-day grace and `pro_past_due`
+   from `payment.failed`. Explicit dunning events are a better signal, and `dunning.recovered` maps
+   directly onto the `pro_past_due → pro_active` transition currently derived by inference.
+2. **Five `subscription.*` events are unhandled:** `expired`, `paused`, `unpaused`, `plan_changed`,
+   `update_payment_method`. **`paused`/`unpaused` is the one that matters** — AD-28's resolver has
+   `free | pro_active | pro_past_due` and **no state for a paused subscription**, so a paused customer
+   resolves to whatever the last event left behind.
+3. **`dispute.*` has seven events, FR-L2 uses one.** It moves `pro_active → free` on dispute opened
+   and leaves restoration manual (`restored_by`, `restored_reason`). **`dispute.won` exists** and
+   could drive that restoration instead of a human.
+
+### 19d. ⚠️ AD-7's server-only tables are unreachable by the service role
+
+The receiver's write was refused with the **secret key**:
+
+    ERROR: permission denied for table billing_events   (42501)
+    HINT:  GRANT SELECT, INSERT ON public.billing_events TO service_role;
+
+    billing_events -> service_role:  REFERENCES, TRIGGER, TRUNCATE      <- no SELECT/INSERT
+
+AD-7 says these tables are *"reachable **only by the service role** inside a server route."* On real
+Supabase the service role **cannot reach them at all**. `SCHEMA.sql` §11a(7) grants AD-7's tables
+"NOTHING", and that "nothing" landed on `service_role` as well as on `anon`/`authenticated`.
+**FR-L2's webhook handler cannot store the payload it exists to store**, so the `entitlements` state
+machine has no input.
+
+Invisible until now because `PRELUDE.sql` never creates a `service_role`. Note RLS was never the
+obstacle — `service_role` carries `bypassrls = true`; the missing **table grant** was. Same shape as
+Round 1's "a view is not access control while the table grant stands", arriving from the other side.
+Fix applied to the live project and required in `SCHEMA.sql`:
+`grant select, insert on public.billing_events, public.site_credentials to service_role;`
+
+### 19e. A webhook handler that returns 200 on a failed store loses the event forever
+
+The receiver was written to always return 200 so Dodo would not retry indefinitely. Consequence:
+when 19d's grant error hit, `payment.succeeded` and `subscription.active` were **acknowledged and
+discarded**, and Dodo never redelivered them. Only the later cancellation was captured, after the
+grant was fixed.
+
+**Binding on E12:** FR-L2's handler must return a **non-2xx** when it cannot persist, so the
+provider retries. Idempotency is what makes that safe, and `billing_events.dodo_event_id` is already
+the unique key for it — the design was right and the handler's error path was wrong.
+
+### 19f. Merchant-of-record tax handling, observed
+
+A product priced **1500 USD** with a GB billing address was charged as:
+
+    recurring_pre_tax_amount  1100 GBP        tax  220 GBP        total  1319 GBP
+    settlement_amount         1319 GBP        settlement_currency GBP
+
+Dodo converted the currency **and computed 20% UK VAT itself** — 1100 x 0.20 = 220, exactly. That is
+FR-L1's "Dodo as merchant of record, taxes handled by Dodo", observed rather than assumed.
+**`settlement_amount` equals `total_amount` here, so the API does not expose Dodo's own fee at the
+payment level** — item 5's fee schedule is a dashboard/agreement fact, not an API one.
+
+### 19g. No renewal-reminder event exists
+
+Nothing among the 47 matches `remind`, `upcoming` or a pre-renewal notice; the nearest are
+`subscription.renewed` (after the fact) and the two `dunning.*` events (after a failure).
+**This is suggestive, not conclusive** — an email need not have a webhook. VERIFY item 6's statutory
+half still needs a written answer from Dodo support, and if the answer is no, FR-P1 grows a sixth
+email that E12 must build.
