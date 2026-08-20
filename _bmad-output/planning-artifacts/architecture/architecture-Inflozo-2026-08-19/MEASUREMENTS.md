@@ -502,3 +502,195 @@ defeats every backslash rule (§3). Compiled with Handlebars 4.7.9 against a con
 `site.title` and `title`: **zero live evaluations, zero parse failures**, and the browser's own
 parser decodes every one back to the exact characters the user typed. `grep` finds no live `{{title}}`,
 `{{@site.title}}` or `{{#if @member}}` anywhere in the emitted tree.
+
+---
+
+## 15. Executed against two real Ghosts · closes eleven §7.6 items · Round 3, real infra
+
+First runtime evidence in this project's history. Every prior Ghost claim came from source
+reading, gscan specs, or containers. `research-ghost-binding-contexts.md` §1179 states the gap
+plainly: *"Nothing was executed at runtime … No Ghost 5 or Ghost 6 instance was booted to
+observe actual rendering."* These are those instances.
+
+**Targets** (§4's T3 and T1), both Ghost-CLI production installs — nginx, MySQL 8.0.46, systemd,
+Let's Encrypt, Ubuntu 24.04.4, Node 22.23.2, 1 GB + 2 GB swap:
+
+| | host | ghost | gscan | nql |
+| --- | --- | --- | --- | --- |
+| **T3** | `ghost5.inflozo.com` | **5.130.6** | **4.49.7** | **0.12.7** (nql-lang 0.6.3) |
+| **T1** | `ghost6.inflozo.com` | **6.58.0** | **6.4.2** | **0.13.4** (nql-lang 0.7.0) |
+
+Both bundle exactly the gscan pair §13 measured, so these verdicts are comparable to Round 2's.
+Fixtures are identical on both boxes: 32 posts (12+12+8), 8 featured, 8 without a feature image,
+6 tags all above the 3-post floor, 3 authors at 11/11/10, 57 members.
+Harness: `tools/probe/` — `provision-ghost.sh`, `seed-ghost.py`, `run-verify-13.py`, `run-verify-all.py`.
+
+### 15a. Item 13 — the four docs-vs-code conflicts, at runtime. **Identical on both majors; the code wins every time.**
+
+**Conflict 1 — `@even`/`@odd` parity. The docs are wrong.** This is the one that blocks E9.
+
+    ROW|index=0|number=1|even=false|odd=true |first=true |last=false
+    ROW|index=1|number=2|even=true |odd=false|first=false|last=false
+    ROW|index=2|number=3|even=false|odd=true |first=false|last=false
+    ROW|index=3|number=4|even=true |odd=false|first=false|last=true
+
+Parity tracks the **1-based `@number`**, not the 0-based `@index` — so **the first item is `odd`**.
+`docs.ghost.org/themes/helpers/functional/foreach` says "`@even` — true if the `@index` is even",
+which would make the first item even. A library authored against the docs zebra-stripes backwards
+in every alternating design, and nothing but a human eye on a real site would catch it.
+
+**Conflict 2 — helpers in error templates are permitted.** Inside a real 404, `error-404.hbs` ran
+`{{statusCode}}`, `{{message}}`, `{{meta_title}}`, `{{@site.title}}`, `{{t}}`, `{{img_url}}` and a
+live `{{#get}}` that returned rows. The docs' prohibition is a robustness recommendation, not a
+constraint. *(The non-404 `error.hbs` path is still unexercised — triggering a genuine 5xx on a
+healthy Ghost needs a deliberately broken template. Recorded as still open rather than covered.)*
+
+**Conflict 3 — `@config` carries more than `posts_per_page`.** `@config.image_sizes.m.width` → `800`,
+traversable. `posts_per_page` echoed the theme's own `7` rather than a platform default, which is
+what proves the theme's config is being read.
+
+**Conflict 4 — nested partial directories resolve.** `{{> "deep/nested/thing"}}` rendered from
+`partials/deep/nested/thing.hbs`, three levels down.
+
+### 15b. Item 11 — the paywall override point. **CONFIRMED, and it has a condition nobody knew about.**
+
+`partials/content-cta.hbs` **does** replace Ghost's default `gh-post-upgrade-cta` at the
+`{{content}}` cutoff, on both majors. The register calls refutation here "the highest-cost in the
+list after 14(a)"; it did not happen.
+
+**But the override only takes effect if the theme also references that partial explicitly from a
+template.** Reproduced 2/2 each way, on both majors:
+
+| theme contains | CTA rendered from |
+| --- | --- |
+| `partials/content-cta.hbs` alone | **Ghost's core default** |
+| the same partial **plus** `{{> "content-cta"}}` in a template | **the theme's partial** |
+
+Ghost registers `partialsDir: [core helperTemplates, theme partials]` and
+`templates.execute('content-cta')` reads `handlebars.partials['content-cta']`, so the theme's copy
+should always win — and without an explicit reference it does not. Dropping the partial in and
+expecting it to work is the natural thing a theme author does, and it silently fails.
+**Library rule for E7 and A32: the compiler emits an explicit `{{> "content-cta"}}` reference
+whenever it emits the partial.** Not a convention — a compile assertion.
+
+### 15c. Item 15 — what a theme may style inside `{{comments}}`. **Almost nothing.** Blocks E10's A28.
+
+`{{comments}}` emits **exactly one element** and no DOM of its own:
+
+    <script defer src="https://cdn.jsdelivr.net/ghost/comments-ui@~1.6/umd/comments-ui.min.js"
+      data-ghost-comments="…" data-api="…" data-key="…" data-count="true" data-post-id="…"
+      data-color-scheme="auto" data-avatar-saturation="60" data-accent-color="#FF1A75"
+      data-comments-enabled="all" data-publication="Ghost6" crossorigin="anonymous"></script>
+
+Three consequences, all binding on A28's ten designs:
+
+1. **The thread is not server-rendered and not reachable by theme CSS.** A28 is confined to the
+   chrome *around* the thread, exactly as AD-23's entry anticipated — now with evidence.
+2. **It is third-party JavaScript from `cdn.jsdelivr.net`.** Any CSP a generated theme carries must
+   allow that origin or the comments silently never appear, and it sits outside NFR-2's JS budget
+   while still being on the page.
+3. **It carries its own `data-color-scheme="auto"` and `data-accent-color` from Ghost's settings** —
+   *not* from the Style Pack. So a dark-mode canvas and a live comment thread can disagree, and
+   FR-D7's mode handling cannot reach it. That belongs on §1.2's carve-out list.
+
+### 15d. Item 12 — API pagination. **The majors genuinely differ.**
+
+| request | Ghost 5.130.6 | Ghost 6.58.0 |
+| --- | --- | --- |
+| `?limit=all` | echoes `all` | **echoes `100`** |
+| `?limit=200` | echoes `200` | **echoes `100`** |
+
+Ghost 6 caps server-side at 100 and silently rewrites the request; Ghost 5 applies no cap.
+FR-H2's Count ceiling of 100 and its ban on `limit="all"` are both confirmed correct — and the
+Ghost 5 half is confirmed *permissive*, so a design that over-fetches is invisible on 5.x and
+capped on 6.x. The gate catches it either way: `GS090-NO-LIMIT-ALL-IN-GET-HELPER` and
+`GS090-NO-LIMIT-OVER-100-IN-GET-HELPER` fired on the v6 spec and were absent from v5, independently
+re-confirming VERIFY 33.
+
+### 15e. Item 14c — the Template dropdown's label transform. **Closed.**
+
+| filename | label Ghost derives | offered for |
+| --- | --- | --- |
+| `custom-member-home.hbs` | **`Member Home`** | `["page", "post"]` |
+| `custom-two-word.hbs` | **`Two Word`** | `["page", "post"]` |
+
+Strip `custom-`, split on hyphens, Title-Case each word, join with spaces. Identical on both majors.
+§7.4's live filename-and-label preview can now show the true label. **Also newly recorded:** custom
+templates are offered for **posts as well as pages**, which FR-I1's page-binding flow assumed was
+pages only.
+
+### 15f. Item 18 — `{{total_members}}`. **The PRD's rule is wrong below 51.**
+
+Executed at two counts on both majors:
+
+| members | renders |
+| --- | --- |
+| 45 | **`45`** — exact, no rounding, **no `+`** |
+| 57 | **`50+`** |
+
+`prd.md` says the value is "a string, always, since Ghost rounds it down and appends `+`". Read from
+`core/frontend/utils/member-count.js`, the brackets are: **≤ 50 exact**; 51–100 round to 10;
+101–1,000 to 50; 1,001–10,000 to 100; 10,001–100,000 to 1,000; above that `humanNumber` lowercased.
+Every Inflozo user starts under 51, so **the common case is the one the PRD gets wrong** — a design
+that hard-codes an "N+" shape is wrong for essentially every new site.
+
+**And the two majors compute the total differently:**
+
+| | Ghost 5 | Ghost 6 |
+| --- | --- | --- |
+| `total` | `free + paid + comped` | `free + paid + comped + **gift**` |
+| at ≤ 50 | returns a raw **number** | returns a comma-formatted **string** |
+
+A site with gift subscriptions reports a different member count on the two majors. `md5sum` of that
+file differs between the boxes — checking rather than assuming "same helper, same behaviour" is what
+surfaced it.
+
+### 15g. Item 20 — the NQL build Ghost resolves. **Neither major runs what FR-I2 was proved against.**
+
+`prd.md` records FR-I2's two normative rules as "proved against `@tryghost/nql@0.13.x`, not against
+Ghost's resolved build." Resolved builds:
+
+- **Ghost 5.130.6 → nql 0.12.7** (nql-lang 0.6.3)
+- **Ghost 6.58.0 → nql 0.13.4** (nql-lang 0.7.0)
+
+So the proof covers Ghost 6 and **never covered Ghost 5**, which NFR-7 supports publicly and T3
+tests permanently. This is AD-34's pattern for the third time — the version a major *bundles*
+differing from the version a claim was proved against, after gscan and `member-count.js`.
+
+**Executed at runtime, both majors, identical results — no defect reproduced:**
+
+    NQL|relative_date  filter="published_at:>=now-30d"                 -> 1 row
+    NQL|nested_parens  filter="(tag:craft+featured:true),(tag:systems)" -> 5 rows
+    NQL|inner_group    filter="tag:craft+(featured:true,featured:false)"-> 5 rows
+
+Both relative dates and nested parentheses work on 0.12.7 and 0.13.4. FR-I2's rules hold on both —
+but they now hold on *observed* grounds rather than on a version that neither major runs.
+
+### 15h. Items 2, 3, 9, 21 — closed in passing
+
+- **Item 2 · `hostSettings` is ABSENT on self-hosted**, both majors. `GET /admin/config/` returns
+  `clientExtensions, database, emailAnalytics, … , version` and no `hostSettings` key at all, so
+  FR-C2's probe must treat **absence** as "not Ghost(Pro)" rather than reading a flag. The
+  Ghost(Pro) half stays blocked behind the Starter trial, deliberately.
+- **Item 3 · the host's theme-upload ceiling is 1 GB, not 50 MB.** Ghost-CLI writes two different
+  values, and the operative one is on the SSL vhost every real deploy uses:
+  `ghost<N>.inflozo.com.conf → client_max_body_size 50m` but
+  `ghost<N>.inflozo.com-ssl.conf → client_max_body_size 1g`. ~100× headroom over the 10.09 MB stress
+  theme. This is the answer for a Ghost-CLI self-hosted box only; Ghost(Pro) will differ.
+- **Item 9 · the Owner's Staff Access Token DOES lift `GET /themes/`**, both majors — and the
+  integration token does not, with **different rejections per major: 501 on Ghost 5, 403 on Ghost 6.**
+  AD-24's mapping table must fold both into one Inflozo code, or the same cause produces "server
+  does not support this" on 5.x and "no permission" on 6.x. Confirmation is worth more than the
+  register expected: FR-J10's uniqueness no longer rests on `project_site_bindings` alone, and
+  FR-J13's snapshot and FR-J16's drift check both gain a working primary path.
+- **Item 21 · all three announcement settings are readable** through the Admin API with the staff
+  token — `announcement_content`, `announcement_visibility` (a JSON string, `"[\"visitors\"]"`),
+  `announcement_background`. FR-C4's seed is executable as designed.
+
+### 15i. Method note — creating authors without invitations
+
+Ghost's `/users/` endpoint cannot create staff, only invite them, which needs working email. **The
+Universal Import endpoint can:** `POST /db/` with a `users` payload creates staff users directly, no
+invitation and no acceptance, landing as `status=locked` with the role given. Plus-addressing
+(`umngkmr+priya@gmail.com`) satisfies the `users_email_unique` index from one real inbox. This
+unblocks A21 and A12 #9 fixtures far earlier than assumed.

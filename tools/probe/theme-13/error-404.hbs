@@ -1,0 +1,10 @@
+{{!< default}}
+<pre id="probe">
+=== CONFLICT 2 — helpers inside error-404.hbs ===
+ERR|status={{statusCode}}|message={{message}}
+ERR|meta_title=[{{meta_title}}]
+ERR|site_title=[{{@site.title}}]
+ERR|t_helper=[{{t "Page not found"}}]
+ERR|get_helper_ran={{#get "posts" limit="2"}}{{#foreach posts}}{{@number}},{{/foreach}}{{/get}}
+ERR|img_url=[{{img_url @site.cover_image size="s"}}]
+</pre>

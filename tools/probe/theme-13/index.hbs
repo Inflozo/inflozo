@@ -1,0 +1,20 @@
+{{!< default}}
+<pre id="probe">
+=== CONFLICT 1 — @even / @odd parity in {{!--}}foreach{{!--}} ===
+{{#foreach posts limit="4"}}
+ROW|index={{@index}}|number={{@number}}|even={{@even}}|odd={{@odd}}|first={{@first}}|last={{@last}}
+{{/foreach}}
+
+=== CONFLICT 3 — @config fields ===
+CFG|posts_per_page={{@config.posts_per_page}}
+CFG|image_sizes_present={{#if @config.image_sizes}}YES{{else}}NO{{/if}}
+CFG|image_sizes_m_width={{@config.image_sizes.m.width}}
+
+=== CONFLICT 4 — nested partial directories ===
+{{> "deep/nested/thing"}}
+
+=== item 18 — {{!--}}total_members{{!--}} shape, and content_api_key in a theme ===
+MEM|total_members={{total_members}}
+KEY|content_api_key_len={{#if @site.url}}{{/if}}[{{content_api_key}}]
+KEY|content_api_url=[{{content_api_url}}]
+</pre>

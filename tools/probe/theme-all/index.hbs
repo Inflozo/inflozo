@@ -1,0 +1,18 @@
+{{!< default}}
+<pre id="probe">
+=== item 18 — total_members at the current count ===
+MEM|total_members=[{{total_members}}]
+MEM|total_paid=[{{total_paid_members}}]
+
+=== item 20 — NQL at runtime: relative dates ===
+{{#get "posts" filter="published_at:>=now-30d" limit="3"}}NQL|relative_date|count={{posts.length}}{{else}}NQL|relative_date|BLOCK_DID_NOT_RUN{{/get}}
+{{#get "posts" filter="published_at:>=now-3650d" limit="3"}}NQL|relative_wide|count={{posts.length}}{{/get}}
+
+=== item 20 — NQL at runtime: nested parentheses ===
+{{#get "posts" filter="(tag:craft+featured:true),(tag:systems)" limit="5"}}NQL|nested_parens|count={{posts.length}}{{else}}NQL|nested_parens|BLOCK_DID_NOT_RUN{{/get}}
+{{#get "posts" filter="tag:craft+(featured:true,featured:false)" limit="5"}}NQL|inner_group|count={{posts.length}}{{else}}NQL|inner_group|BLOCK_DID_NOT_RUN{{/get}}
+
+=== item 12 — does limit="all" still work? (v6 removed it) ===
+{{#get "posts" limit="all"}}LIMIT|all|count={{posts.length}}{{else}}LIMIT|all|BLOCK_DID_NOT_RUN{{/get}}
+{{#get "posts" limit="200"}}LIMIT|200|count={{posts.length}}{{else}}LIMIT|200|BLOCK_DID_NOT_RUN{{/get}}
+</pre>

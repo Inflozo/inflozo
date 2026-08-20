@@ -1,0 +1,5 @@
+{ "name": "inflozo-probe-all", "description": "VERIFY items 11, 14c, 15, 18, 20 and the error.hbs half of conflict 2",
+  "version": "1.0.0", "engines": { "ghost": ">=5.0.0" }, "license": "MIT",
+  "keywords": ["ghost", "theme", "ghost-theme"],
+  "author": { "name": "Inflozo", "email": "hello@inflozo.com" },
+  "config": { "posts_per_page": 12, "card_assets": true } }

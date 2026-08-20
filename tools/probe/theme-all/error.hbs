@@ -1,0 +1,7 @@
+{{!< default}}
+<pre id="probe">
+ERRHBS|status={{statusCode}}|message={{message}}
+ERRHBS|meta_title=[{{meta_title}}]
+ERRHBS|site_title=[{{@site.title}}]
+ERRHBS|foreach_ran={{#get "posts" limit="2"}}{{#foreach posts}}{{@number}},{{/foreach}}{{/get}}
+</pre>

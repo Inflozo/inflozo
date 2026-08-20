@@ -1,0 +1,4 @@
+:root { --font-heading: var(--gh-font-heading, sans-serif); --font-body: var(--gh-font-body, serif); }
+body { font-family: var(--font-body); }
+h1 { font-family: var(--font-heading); }
+.kg-width-wide { max-inline-size: 1000px; } .kg-width-full { max-inline-size: 100%; }

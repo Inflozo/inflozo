@@ -1,0 +1,13 @@
+{
+  "name": "inflozo-probe-13",
+  "description": "VERIFY item 13 — the four docs-vs-code conflicts, observed at runtime",
+  "version": "1.0.0",
+  "engines": { "ghost": ">=5.0.0" },
+  "license": "MIT",
+  "author": { "name": "Inflozo", "email": "hello@inflozo.com" },
+  "config": {
+    "posts_per_page": 7,
+    "card_assets": true,
+    "image_sizes": { "s": { "width": 400 }, "m": { "width": 800 }, "l": { "width": 1600 } }
+  }
+}
