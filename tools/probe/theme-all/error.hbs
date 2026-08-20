@@ -1,7 +1,9 @@
 {{!< default}}
 <pre id="probe">
-ERRHBS|status={{statusCode}}|message={{message}}
-ERRHBS|meta_title=[{{meta_title}}]
-ERRHBS|site_title=[{{@site.title}}]
-ERRHBS|foreach_ran={{#get "posts" limit="2"}}{{#foreach posts}}{{@number}},{{/foreach}}{{/get}}
+ERRTPL|template=error.hbs|status={{statusCode}}|message={{message}}
+ERRTPL|meta_title=[{{meta_title}}]
+ERRTPL|site_title=[{{@site.title}}]
+ERRTPL|t_helper=[{{t "Page not found"}}]
+ERRTPL|img_url=[{{img_url @site.cover_image size="s"}}]
+ERRTPL|get_ran={{#get "posts" limit="2"}}{{#foreach posts}}{{@number}},{{/foreach}}{{/get}}
 </pre>

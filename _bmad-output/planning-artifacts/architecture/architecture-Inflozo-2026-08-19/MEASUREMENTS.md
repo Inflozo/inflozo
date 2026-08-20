@@ -694,3 +694,47 @@ Universal Import endpoint can:** `POST /db/` with a `users` payload creates staf
 invitation and no acceptance, landing as `status=locked` with the role given. Plus-addressing
 (`umngkmr+priya@gmail.com`) satisfies the `users_email_unique` index from one real inbox. This
 unblocks A21 and A12 #9 fixtures far earlier than assumed.
+
+### 15j. One `error.hbs` serves every error, and gscan is not advisory at upload
+
+**The error-template hierarchy, read from `core/frontend/services/rendering/templates.js:23-34`:**
+
+```js
+getErrorTemplateHierarchy(statusCode)  ->  ['error-' + code, 'error-' + code[0] + 'xx', 'error']
+```
+
+So `error.hbs` is Ghost's own final fallback for **every** status. A theme needs no
+`error-404.hbs` and no per-status variants unless it wants them.
+
+**Executed on both majors with a single `error.hbs` and no other error template:**
+
+| trigger | status | `error.hbs` rendered |
+| --- | --- | --- |
+| missing route | **404** | yes |
+| a partial missing at render time | **400** | yes |
+
+Helpers work in both cases and on both majors — `{{statusCode}}`, `{{message}}`, `{{meta_title}}`,
+`{{@site.title}}`, `{{t}}`, `{{img_url}}` and a live `{{#get}}` returning rows. This closes the half
+of item 13's conflict 2 that §15a left open: the docs' "error templates shouldn't use any theme
+helpers" is a recommendation on **every** error path, not only on `error-404.hbs`.
+
+**Note the status:** a render failure surfaces as **400, not 500** — Ghost classifies it as an
+`IncorrectUsageError`. `{{statusCode}}` therefore carries `400` and `{{message}}` carries the
+underlying template error verbatim: `[custom-boom.hbs] The partial boom could not be found`.
+**That message is shown to visitors**, so an emitted theme must never rely on a partial it does not
+ship — the failure is public, not silent. AD-34's orphan-partial assertion covers the reverse case;
+this is the one it does not.
+
+**And a correction to a Round 2 reading.** §13a records that Ghost 5 "activates the theme anyway"
+despite a gscan error, and that is true for `GS110`. It is **not** true in general. A theme carrying
+`GS005-TPL-ERR` was **rejected at upload**, on both majors:
+
+    HTTP 422  type=ThemeValidationError
+    message : Theme "inflozo-probe-all" is not compatible or contains errors.
+      error : GS005-TPL-ERR — Templates must contain valid Handlebars
+              ref=custom-boom.hbs  The partial this-partial-does-not-exist could not be found
+
+So gscan errors split into **fatal at upload** and **reported but activated**, and FR-J6 cannot
+treat "Ghost accepts it anyway" as a general property. This also answers the hard half of item 10:
+a theme that fails Ghost's own gscan is **not** always re-uploadable, so FR-J13's snapshot restore
+must assume rejection is possible and surface the 422 detail rather than retrying blindly.
