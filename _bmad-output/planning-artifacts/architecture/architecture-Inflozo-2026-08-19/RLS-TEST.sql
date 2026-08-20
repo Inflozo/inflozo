@@ -2,6 +2,9 @@
 -- E1's exit is "RLS verified on every table the schema story creates". This IS that check.
 -- Run:  docker run -d --name pg -e POSTGRES_PASSWORD=x postgres:17-alpine
 --       psql -f PRELUDE.sql -f SCHEMA.sql -f RLS-TEST.sql   (expect every line to read PASS)
+-- Against HOSTED Supabase, omit PRELUDE.sql -- the platform provides everything it stands in for,
+-- and its auth.uid() stub would overwrite the real one:
+--       psql "$SUPABASE_DB_URL" -f SCHEMA.sql -f RLS-TEST.sql
 -- Verified green on PostgreSQL 17.11, 2026-08-19: 0 tables without RLS, 34 policies over 26
 -- tables, exactly 2 deliberate server-only tables (site_credentials, billing_events).
 
@@ -10,14 +13,38 @@
 -- Behavioural RLS proof: two tenants, one impersonation attempt per surface.
 insert into auth.users(id) values
   ('11111111-1111-1111-1111-111111111111'),
-  ('22222222-2222-2222-2222-222222222222');
+  ('22222222-2222-2222-2222-222222222222')
+on conflict (id) do nothing;   -- re-runnable: on hosted Supabase the fixture users persist
 insert into public.profiles(user_id) values
   ('11111111-1111-1111-1111-111111111111'),
-  ('22222222-2222-2222-2222-222222222222');
+  ('22222222-2222-2222-2222-222222222222')
+on conflict do nothing;
 
-create or replace function auth.uid() returns uuid language sql stable as
-$$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;
-grant usage on schema auth to authenticated, anon;
+-- auth.uid() and the auth-schema grant are CONTAINER-ONLY. On real Supabase the
+-- `auth` schema is owned by supabase_admin, `postgres` holds USAGE but not CREATE,
+-- and both statements fail with "permission denied for schema auth".
+--
+-- They are also unnecessary there, and running them would be actively harmful:
+-- `create or replace function auth.uid()` would OVERWRITE Supabase's own. Read
+-- from a live project 2026-08-20, the platform's implementation is
+--     coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
+--              (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid
+-- whose FIRST branch is the exact setting this file already sets below. So the
+-- impersonation mechanism is identical on both, and the stub is a stand-in for a
+-- function the platform provides -- the same shape as PRELUDE.sql itself.
+--
+-- One file, both targets: apply the stand-ins only where we own the schema.
+do $$
+begin
+  if has_schema_privilege(current_user, 'auth', 'CREATE') then
+    execute 'create or replace function auth.uid() returns uuid language sql stable as '
+         || '$q$ select nullif(current_setting(''request.jwt.claim.sub'', true),'''')::uuid $q$';
+    execute 'grant usage on schema auth to authenticated, anon';
+    raise notice 'container target: auth.uid() stand-in installed';
+  else
+    raise notice 'hosted Supabase detected: using the platform auth.uid(); no stand-in installed';
+  end if;
+end $$;
 -- NOTE: no blanket grant here. PRELUDE.sql sets Supabase's default privileges before the migration,
 -- and SCHEMA.sql §11 narrows them afterwards. Re-granting here would mask exactly what is under test.
 grant select on public.suggestion_votes, public.suggestions_public to anon;
@@ -25,14 +52,18 @@ grant select on public.suggestion_votes, public.suggestions_public to anon;
 -- seed as the table owner (RLS is bypassed for the owner, which is what the server role is)
 insert into public.sites(id,user_id,url) values
   ('aaaaaaaa-0000-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','https://a.example'),
-  ('bbbbbbbb-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','https://b.example');
+  ('bbbbbbbb-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','https://b.example')
+on conflict do nothing;
 insert into public.projects(id,user_id,name,slug,style_pack) values
   ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111','A','a','{}'),
-  ('bbbbbbbb-1111-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','B','b','{}');
+  ('bbbbbbbb-1111-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','B','b','{}')
+on conflict do nothing;
 insert into public.site_credentials(site_id,user_id,admin_key_vault_ref) values
-  ('aaaaaaaa-0000-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',gen_random_uuid());
+  ('aaaaaaaa-0000-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',gen_random_uuid())
+on conflict do nothing;
 insert into public.suggestions(id,user_id,category,title,body,image_path,image_approved) values
-  ('cccccccc-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','feature','Bs idea','body','img/secret.png',false);
+  ('cccccccc-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','feature','Bs idea','body','img/secret.png',false)
+on conflict do nothing;
 
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
@@ -79,7 +110,8 @@ end $$;
 do $$ begin
   begin
     insert into public.projects(user_id,name,slug,style_pack)
-      values ('22222222-2222-2222-2222-222222222222','stolen','s','{}');
+      values ('22222222-2222-2222-2222-222222222222','stolen','s','{}')
+on conflict do nothing;
     raise notice 'FAIL: A inserted a project owned by B';
   exception when others then raise notice 'PASS: cross-tenant project insert blocked (%)', sqlstate; end;
 
