@@ -1869,3 +1869,109 @@ note and this gate are the same item, and neither has been actioned.
    §19e's webhook contract all describe what happens when something breaks; not one of them has been
    run against a real failure — a Ghost that 500s mid-upload, a dropped connection, an unreachable
    Supabase.
+
+---
+
+## 25. The reliability round · 2026-08-20 · **NFR-4's restore drill, run for the first time**
+
+Security and performance had both been executed hard. Reliability had never been tested at all.
+Three parts: the restore drill NFR-4 names as a launch gate, the storage-backup question AD-29
+leaves open, and a set of deliberate failures against a real Ghost.
+
+### 25a. ⚠️ R1 — the obvious backup is silently incomplete, and it looks fine
+The first drill ever run found a defect on the first attempt.
+
+    pg_dump --schema=public --schema=private   ->  22.9 s, 131 KB, 32 tables with data
+    pg_restore into a virgin target            ->   0.7 s
+
+It **looks** like a complete success: 29 public tables, 3 private tables, every row present —
+`profiles` 4, `custom_settings` 17, `sites` 2. Then:
+
+    foreign keys in the live project : 56
+    foreign keys after restore       : 43        <-- 13 missing
+
+**All 13 reference `auth.users`.** They failed with *"insert or update violates foreign key
+constraint"* because the users are in the `auth` schema, which was not in the dump — so the restored
+database contains every project, design and setting **belonging to users who do not exist**. Every
+row orphaned, no error at the end of the restore loud enough to notice, and a `pg_restore` exit that
+reads as success.
+
+**The fix, verified:** include `--schema=auth`. Our role *can* read it (`postgres`, non-superuser,
+`has_table_privilege(auth.users) = true`, 23 auth tables dumped). With it:
+
+    pg_dump --schema=public --schema=private --schema=auth  ->  26.2 s, 218 KB
+    pg_restore into a virgin target                          ->   1.1 s, 1 cosmetic error
+    foreign keys restored : 56 of 56
+    auth.users restored   : 4      profiles: 4      orphaned rows: 0
+
+### 25b. R2 — `--no-privileges` throws away the security model
+The conventional cross-account restore flags are `--no-owner --no-privileges`. The second one is
+wrong for this schema, and the harness caught it immediately:
+
+    harness against the restored copy  ->  ERROR: permission denied for table sites
+
+`SCHEMA.sql` §11a exists because **this schema grants IN and names every privilege** (R2-1). A dump
+that strips privileges restores the tables, the rows and the RLS policies, and drops **every grant** —
+so `authenticated` holds nothing and the application is dead. It **fails closed rather than open**,
+which is the safe direction and worth stating, but a restore that needs the grants re-applied by hand
+is not a restore. Dump with `--no-owner` **only**.
+
+### 25c. R3 — a restore target needs the platform roles created first
+Restoring *with* privileges produced **31 `ERROR: role … does not exist`**. Grants naming
+`anon`, `authenticated`, `service_role`, `supabase_auth_admin` and others cannot apply to a target
+that has never heard of them. Benign, and it means the runbook has an order: **create the roles,
+then restore.** `PRELUDE.sql` already does this for the container; the runbook must do it for any
+other target.
+
+### 25d. The restore runbook, as proved
+    1. create roles: anon, authenticated, service_role, supabase_auth_admin
+    2. pg_dump  --schema=public --schema=private --schema=auth --no-owner --format=custom
+    3. pg_restore --no-owner            (NOT --no-privileges)
+    4. re-create the storage buckets and their policies — storage is NOT in the dump
+    5. run RLS-TEST.sql against the restored copy. It is the acceptance test for the restore.
+
+**Step 5 is the point of the whole exercise.** The harness is what turned "the restore succeeded"
+into "the restore is missing 13 foreign keys and every grant", and no reading of a `pg_restore` exit
+code would have.
+
+**Timings at this scale are meaningless and are recorded so they are not mistaken for a measurement**:
+41 rows, dump 26 s (dominated by connection latency, not data), restore 1 s. **This is a
+correctness drill, not a capacity one** — re-run it against a realistic volume before launch.
+
+### 25e. What is still NOT tested, stated plainly
+**Supabase's own PITR restore has not been exercised and cannot be from here.** `wal_level=logical`,
+`archive_mode=on` and `archive_command=/usr/bin/admin-mgr wal-push` — so the physical WAL archiving
+machinery *is* running on this project. But triggering a point-in-time restore is a dashboard action
+gated on the paid add-on, and no management token exists in the probe environment. **NFR-4's gate is
+therefore half-closed:** the logical backup/restore path is now proved end to end; the platform PITR
+path is proved to be *running* and never proved to *restore*. That half stays an owner action, and
+Appendix F's `[NOTE FOR PM]` about the retention window is the same item.
+
+### 25f. Deliberate failures against a real Ghost — four clean, one not
+Every one of these was described by an AD and none had ever been run. Ghost 6.58.0.
+
+| what was done | result | verdict |
+|---|---|---|
+| upload a corrupt zip | `422 ValidationError` — *"Failed to read zip file"* | clean, typed, site untouched |
+| upload a valid zip that is not a theme | `422 ThemeValidationError` | clean, typed, site untouched |
+| activate a theme that does not exist | `422 ValidationError` — *"cannot be activated because it was not found"* | clean, typed, site untouched |
+| upload a theme with a fatal gscan error (unclosed `{{#foreach}}`) | `422 ThemeValidationError`, **upload refused outright** | confirms §15j — `GS005-TPL-ERR` is fatal at upload |
+| **upload the same theme name twice, concurrently** | **`500 InternalServerError` — `EEXIST: file already exists, mkdir '/var/…'`** | **⚠️ see below** |
+
+**⚠️ Ghost has no lock on theme upload, and the failure is a raw 500 with a filesystem path in it.**
+Two concurrent uploads of the same theme name: one returned 200, the other returned a **500** whose
+message leaks a server directory. Two consequences, and the first is a confirmation rather than a
+finding:
+
+1. **AD-19 is load-bearing, and this is what it prevents.** The per-site advisory lock over
+   upload-and-activate exists exactly so two deploys cannot interleave a globally stateful operation.
+   Until now that was reasoning; this is the failure it stops, executed. FR-J11's rate limit would
+   *not* have prevented it — a limit is not a mutex, which is the sentence AD-19 already carries.
+2. **AD-24's gscan mapping must handle a raw Ghost 500, and must not pass it through.** The
+   verbatim-passthrough fallback is wrong here: the message contains the server's directory layout,
+   and "an unexpected error occurred" tells the user nothing actionable. This is a second signature
+   for the same treatment §7.6's malformed-`visibility` cascade already gets.
+
+**Nothing broke the site.** After all five failures, both Ghosts served their homepage (HTTP 200,
+~59 KB) and their Content API. **No failure left a partially-applied theme**, which is FR-J11's
+promise and had never been checked.
