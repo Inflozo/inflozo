@@ -94,4 +94,25 @@ console.log('AD-36 — untrusted value into an interpreting sink\n');
   ok('AD-4 still holds — a quote in a user value cannot break the attribute');
 }
 
+// ── FR-H8 — a media guard is on the BOUND FIELD, never on a helper argument ──────
+// Not AD-36, but it lives in the same file because it is the same compiler and the same class of
+// mistake: a value pulled back out of a built string instead of being carried through. Named as a
+// known defect in build-sequence.md step 2, and still live when Round 4 checked.
+{
+  const g = (src) => renderSection(src, {}, new UserText()).template;
+
+  const dated = g('<time data-bind="published_at|date:YYYY" data-empty="hide">x</time>');
+  assert(/\{\{#if published_at\}\}/.test(dated), 'guard is not on the bound field: ' + dated);
+  assert(!/\{\{#if format/.test(dated), 'guard was built from the helper argument: ' + dated);
+  ok('a date-helper text binding guards on the field, not on "format"');
+
+  const img = g('<img data-bind-attr="src:feature_image|img_url:800" data-empty="hide">');
+  assert(/\{\{#if feature_image\}\}/.test(img), 'attribute guard regressed: ' + img);
+  ok('an img_url attribute binding still guards on the field');
+
+  const plain = g('<p data-bind="title" data-empty="hide">x</p>');
+  assert(/\{\{#if title\}\}/.test(plain), 'plain guard regressed: ' + plain);
+  ok('a plain field binding still guards correctly');
+}
+
 console.log(`\n${n} checks passed.`);

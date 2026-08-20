@@ -2,6 +2,7 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
+updated: 2026-08-20 — status refreshed after the architecture and four stress-test rounds landed
 covers: the six steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
@@ -11,15 +12,21 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 
 ## Where things stand
 
+> **Refreshed 2026-08-20.** The table below was written the day the PRD went final and was stale by
+> two steps. **The sequence in this document is still right; its status was not.** In particular the
+> ⚠️ "one real ask" — two droplets — **is already done**, so do not provision anything.
+
 | | |
 |---|---|
-| `prd.md` v4.0 | ✅ **final** — 130 FRs, 34 categories, 484 designs, 70 `[Free]`, zero open questions |
-| Normative companions | ✅ all present with `status` frontmatter, precedence order stated in the PRD preamble |
+| `prd.md` v4.1 | ✅ **final** — 130 FRs, 34 categories, 484 designs, 70 `[Free]` |
+| Normative companions | ✅ all present, precedence order stated in the PRD preamble |
 | Design prompt 1 | ✅ run — 27 mockups in `design/mockups/` |
 | Design prompt 2 | 🔵 **owner WIP** — responsive archetypes, ~25 missing surfaces, the paywall editor |
-| Design prompt 3 | 🔵 **owner WIP** — 34 category sessions producing 484 designs *and* their specifications |
-| Architecture | ⬜ not started — **step 1** |
-| E0 spikes | ⬜ not started — **step 2** |
+| Design prompt 3 | 🔵 **owner — NOT STARTED, and it is now the critical path** — 34 category sessions producing 484 designs *and* their specifications |
+| **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — **36 invariants** (AD-1..AD-36), full schema + RLS, and **four stress-test rounds** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` §1–§22 is the executed evidence |
+| **T1 / T3 droplets** | ✅ **PROVISIONED** — `ghost6.inflozo.com` (Ghost 6.58.0) is **T1**, `ghost5.inflozo.com` (Ghost 5.130.6) is **T3**. Both seeded, both credentialed in `tools/probe/.env`, both used by rounds 3 and 4 |
+| **E0(b) platform spike — step 2** | 🟢 **substantially done.** The register grew from 21 items to **37** and ~30 are closed **by execution against both real Ghosts**. What remains: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling), and 34–36 (added by round 4) |
+| **E0(a) mark-emission spike — step 2** | 🟠 **half done, and the open half is named below.** The **theme** emitter is proven end to end — AD-4, AD-5, the escaping, and 13 runnable checks in `tools/stress/`. The **canvas** emitter is not built, so §7.3's "canvas and shipped output agree by construction" is asserted rather than demonstrated |
 | Journeys & flows | ⬜ not started — **step 5** |
 | Stories | ⬜ not started — **step 6** |
 
@@ -146,16 +153,40 @@ Log to the memlog when you finish:
 **Needs from the owner:** ⚠️ **two DigitalOcean droplets** — see below.
 **Unblocks:** the shell block, every category gate, and (in risk terms) the design investment in step 3.
 
-### ⚠️ What this step needs from you, and it is the one real ask in this document
+### ✅ The one real ask in this document is DONE — do not provision anything
 
-**Provision T1 and T3 before this step starts:**
+**T1 and T3 exist and have been in use since round 3.**
 
-| Target | What | Why it cannot be skipped |
+| Target | What | Status |
 |---|---|---|
-| **T1** | self-hosted Ghost **6.x** on a droplet | Every category gate needs a real-Ghost comparison from the *first* category, not at hardening |
-| **T3** | self-hosted Ghost **5.x** on a droplet | The PRD advertises 5.x support (NFR-7) and gscan's rule sets genuinely differ between the v5 and v6 specs. §4 marks T3 **not droppable** |
+| **T1** | self-hosted Ghost **6.x** | ✅ `ghost6.inflozo.com` — Ghost **6.58.0**, gscan **6.4.2**, Ghost-CLI on Ubuntu 24.04, MySQL 8 |
+| **T3** | self-hosted Ghost **5.x** | ✅ `ghost5.inflozo.com` — Ghost **5.130.6**, gscan **4.49.7**, same stack |
 
-≈$9/month each. Inflozo needs an Admin API key and a Content API key from each, plus the site Owner's Staff Access Token if you want the snapshot and drift paths exercised (FR-C1 makes that token optional by design — the spike should test **both** the with-token and the declined-token paths).
+Both carry an identical seeded fixture — 32 posts, 8 featured, 6 tags, 3 authors, 57 members, a
+hidden tier, announcement bar, comments on — and both are credentialed in `tools/probe/.env`
+(Admin key, Content key, Staff Access Token). Rounds 3 and 4 executed against them extensively.
+
+**Still owed:** T2 (Ghost(Pro) Publisher, $29/mo) before the deploy paths are verified end to end,
+and T4 (Ghost(Pro) Starter) which is deferred but ⛔ **launch-blocking** — see the table at the
+end of this file.
+
+### What actually remains of this step
+
+Not the droplets, and not most of the register. Two things:
+
+1. **The canvas emitter.** AD-1 promises *two* emitters over one source and §7.3 rests the whole
+   product on them agreeing **by construction**. The original `spike-compiler/` has a
+   `renderCanvas`, but the rebuilt compiler the measurements are taken against
+   (`tools/stress/compile.js`) has only the theme emitter — so the agreement property is currently
+   asserted, not demonstrated. This is the last piece of E0(a) with real risk in it, and it is the
+   one that could still move FR-D4's model.
+2. **`spike-compiler/` does not run** — its dependencies are not installed, so this document's
+   instruction to "reproduce it first and confirm it still passes" fails immediately.
+   **Both defects this document names in it are still live**: `compile.js:36` discards the date
+   helper's format argument, and `wrapGuard` builds the guard from the helper's *argument* rather
+   than the bound field. The second was **fixed in `tools/stress/compile.js` on 2026-08-20 and
+   pinned by a test**; the spike copy still has it. Decide whether the spike is retired in favour
+   of `tools/stress/` or repaired — it should not stay as a second, wrong copy of the pipeline.
 
 T2 (Ghost(Pro) Publisher, $29/mo) is needed before the deploy paths are verified end to end. **T4 (Ghost(Pro) Starter) is deferred until after MVP by your decision** — but its gate is ⛔ launch-blocking, and you asked to be reminded before launch.
 
@@ -400,7 +431,9 @@ Two readiness conditions are specific to this project and are not the usual ones
 
 | When | What |
 |---|---|
-| **Before step 2** | Provision **T1** (Ghost 6.x droplet) and **T3** (Ghost 5.x droplet), ≈$9/mo each, with API keys |
+| ~~Before step 2~~ | ✅ **DONE** — T1 and T3 are provisioned, seeded and credentialed |
+| **Now — the critical path** | **Design prompt 3.** 34 category sessions, one per category, each producing that category's designs *and* their full per-design specifications. Nothing downstream can start without it: a category story cannot open until its specs are in `sections-inventory.md` (§4), and the library epics run strictly sequentially. This is the longest pole in the project and it needs no code to exist |
+| **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails. It is **off by default**. And confirm whether its ~2-day timing meets the annual-renewal requirement in the jurisdictions Inflozo sells into; if not, FR-P1 grows a sixth email and E12 builds it (register item 37) |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
 | During step 1 | Repo shape · Supabase org structure · accept the measured compile-function budget · owning epic per §7.6 item |
 | Step 3 | Prompt 2 and prompt 3 outputs, with complete per-design specifications |

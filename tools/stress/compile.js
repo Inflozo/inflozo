@@ -153,11 +153,14 @@ function bindExpr(spec) {
 function emitBindings(scope, tokens) {
   const all = (sel) => [...scope.querySelectorAll(sel), ...(scope.matches?.(sel) ? [scope] : [])];
   for (const el of all('[data-bind]')) {
-    const expr = bindExpr(el.getAttribute('data-bind'));
+    const spec = el.getAttribute('data-bind');
+    const expr = bindExpr(spec);
     const guard = el.getAttribute('data-empty');
     el.textContent = tokens.put(expr);
     el.removeAttribute('data-bind'); el.removeAttribute('data-empty');
-    if (guard === 'hide') wrapGuard(el, expr, tokens);
+    // the PATH, not the built expression — see wrapGuard. The attribute branch below always did
+    // this correctly, which is why the defect only ever showed on a text binding.
+    if (guard === 'hide') wrapGuard(el, spec.split('|')[0], tokens);
   }
   for (const el of all('[data-bind-attr]')) {
     const [rawAttr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
@@ -170,9 +173,17 @@ function emitBindings(scope, tokens) {
   }
 }
 
-// FR-H8: media guards wrap the ELEMENT, never the attribute.
-function wrapGuard(el, expr, tokens) {
-  const field = expr.replace(/^\{\{|\}\}$/g, '').split(' ').pop().replace(/"/g, '');
+// FR-H8: media guards wrap the ELEMENT, never the attribute — and the guard is on the BOUND
+// FIELD, never on a helper argument.
+//
+// This took a plain expression string and tried to parse the field back out of it with
+// `.split(' ').pop()`. For a bare `{{title}}` that happened to work; for a helper it took the LAST
+// token, which is the helper's argument. A `data-bind="published_at|date:YYYY"` with
+// `data-empty="hide"` emitted `{{#if format=YYYY}}` — a guard on an identifier that does not
+// exist, so the block NEVER renders and the content is silently and permanently gone.
+//
+// The fix is to stop parsing: the callers already know the field, so they pass it. [Round 4]
+function wrapGuard(el, field, tokens) {
   const doc = el.ownerDocument;
   el.parentNode.insertBefore(doc.createComment(tokens.put(`{{#if ${field}}}`)), el);
   el.parentNode.insertBefore(doc.createComment(tokens.put(`{{/if}}`)), el.nextSibling);
