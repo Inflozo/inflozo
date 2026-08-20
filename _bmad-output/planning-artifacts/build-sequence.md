@@ -2,7 +2,7 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
-updated: 2026-08-20 — status refreshed after the architecture and four stress-test rounds landed
+updated: 2026-08-20 (second pass) — steps 1 and 2 are COMPLETE; one prompt below contradicted executed evidence and is corrected
 covers: the six steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
@@ -12,9 +12,12 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 
 ## Where things stand
 
-> **Refreshed 2026-08-20.** The table below was written the day the PRD went final and was stale by
-> two steps. **The sequence in this document is still right; its status was not.** In particular the
-> ⚠️ "one real ask" — two droplets — **is already done**, so do not provision anything.
+> **Refreshed 2026-08-20, twice.** This table was written the day the PRD went final and was stale
+> by two whole steps. **The sequence is still right; the status was not.**
+>
+> **Steps 1 and 2 are now COMPLETE.** Do not provision droplets (they exist), do not run the step-2
+> prompts (they are done, and one of them is WRONG — see the ⚠️ in step 2 before reading it).
+> **The only thing on the critical path is design prompt 3, which is the owner's own work.**
 
 | | |
 |---|---|
@@ -25,9 +28,10 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | Design prompt 3 | 🔵 **owner — NOT STARTED, and it is now the critical path** — 34 category sessions producing 484 designs *and* their specifications |
 | **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — **36 invariants** (AD-1..AD-36), full schema + RLS, and **four stress-test rounds** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` §1–§22 is the executed evidence |
 | **T1 / T3 droplets** | ✅ **PROVISIONED** — `ghost6.inflozo.com` (Ghost 6.58.0) is **T1**, `ghost5.inflozo.com` (Ghost 5.130.6) is **T3**. Both seeded, both credentialed in `tools/probe/.env`, both used by rounds 3 and 4 |
-| **E0(b) platform spike — step 2** | 🟢 **substantially done.** The register grew from 21 items to **37** and ~30 are closed **by execution against both real Ghosts**. What remains: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling), and 34–36 (added by round 4) |
-| **E0(a) mark-emission spike — step 2** | 🟠 **half done, and the open half is named below.** The **theme** emitter is proven end to end — AD-4, AD-5, the escaping, and 13 runnable checks in `tools/stress/`. The **canvas** emitter is not built, so §7.3's "canvas and shipped output agree by construction" is asserted rather than demonstrated |
-| Journeys & flows | ⬜ not started — **step 5** |
+| **E0(b) platform spike — step 2** | ✅ **DONE to the limit of what is reachable.** The register grew from 21 items to **37**, and every item executable without a Ghost(Pro) site is closed **by execution against both real Ghosts**. What remains is blocked by choice, not by effort: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling, belongs to that epic), 34–36 (deferred by owner decision in round 4) |
+| **E0(a) mark-emission spike — step 2** | ✅ **DONE.** Both emitters exist and are proven to agree **node by node** — `tools/stress/test-renderer-agreement.js`, 8 checks — which is §7.3's exit criterion made runnable. Plus `test-ad36.js`, 13 checks. Both defects this document named are fixed. `spike-compiler/` is **retired**, not repaired |
+| **The live Supabase project** | ✅ **matches the schema.** Reset and re-applied by the owner 2026-08-20 in the dashboard: 67 assertions pass, 46 policies over 29 tables — container and hosted agree exactly. F13 confirmed on the real platform: 4 users → 4 profiles → 4 entitlements |
+| Journeys & flows | ⬜ not started — **step 5**, and it may be less blocked than this document assumes (see step 5) |
 | Stories | ⬜ not started — **step 6** |
 
 ## The BMAD skill for each step
@@ -66,6 +70,8 @@ These were each learned expensively. They are not style preferences.
 ## The critical path, and why it is ordered this way
 
 Steps 1 and 2 run **in parallel with the owner's design work (step 3)**, and that parallelism is the point. The FR-D4 mark-emission spike is the one result that could still invalidate the design investment: if text-plus-mark-ranges does not work end to end, FR-D4's model changes and what a design can express with inline text changes with it. **That answer is wanted while prompt 3 is on category three, not category thirty.**
+
+**That race has been won.** Steps 1 and 2 finished *before* prompt 3 started, so the design investment is now being made against a model that is proven rather than assumed — which is the outcome this ordering existed to produce. **The critical path is now design prompt 3 alone**, and nothing in this document blocks it.
 
 ```
 Step 1 /bmad-architecture ──► Step 2 /bmad-build (2 spikes) ──┐
@@ -149,9 +155,29 @@ Log to the memlog when you finish:
 
 # Step 2 — The two E0 spikes
 
-**Produces:** proof that the rich-text model works end to end, and executed results for all 21 verify-at-build items.
-**Needs from the owner:** ⚠️ **two DigitalOcean droplets** — see below.
+**Produces:** proof that the rich-text model works end to end, and executed results for the whole verify-at-build register.
+**Needs from the owner:** nothing. The droplets it used to ask for already exist.
 **Unblocks:** the shell block, every category gate, and (in risk terms) the design investment in step 3.
+
+# ✅ STEP 2 IS COMPLETE — 2026-08-20
+
+**Do not run the two prompts below.** They are kept for provenance and they are **historical**, not
+instructions. One of them is actively wrong (see the ⚠️ on spike (a)).
+
+**What was actually produced, and where it lives:**
+
+| | |
+|---|---|
+| Both emitters, sharing one code path | `tools/stress/compile.js` — the `users` parameter is the only difference between them, which is what makes §7.3's "agree by construction" a property of the code |
+| §7.3's exit criterion, runnable | `tools/stress/test-renderer-agreement.js` — 8 checks comparing canvas and theme **node by node** |
+| The escaping and injection invariants | `tools/stress/test-ad36.js` — 13 checks: AD-36's four vectors, AD-4/AD-5, FR-H8's guard rule |
+| The register | `architecture-.../VERIFY-AT-BUILD.md` — 37 items, everything reachable closed by execution |
+| The evidence | `architecture-.../MEASUREMENTS.md` §1–§23 |
+
+**Both defects this document named are fixed**, and one of them was silent data loss: `wrapGuard`
+built the `{{#if}}` from the date helper's *format argument*, so the guard tested an identifier that
+never exists, the block never rendered, and the user's content vanished without an error.
+`spike-compiler/` is **retired** rather than repaired — see `spike-compiler/RETIRED.md`.
 
 ### ✅ The one real ask in this document is DONE — do not provision anything
 
@@ -170,27 +196,36 @@ hidden tier, announcement bar, comments on — and both are credentialed in `too
 and T4 (Ghost(Pro) Starter) which is deferred but ⛔ **launch-blocking** — see the table at the
 end of this file.
 
-### What actually remains of this step
+### What remains, and it is blocked by choice rather than by effort
 
-Not the droplets, and not most of the register. Two things:
+T2 (Ghost(Pro) Publisher, $29/mo) is needed before the deploy paths are verified end to end.
+**T4 (Ghost(Pro) Starter) is deferred until after MVP by your decision** — but its gate is
+⛔ launch-blocking, and you asked to be reminded before launch.
 
-1. **The canvas emitter.** AD-1 promises *two* emitters over one source and §7.3 rests the whole
-   product on them agreeing **by construction**. The original `spike-compiler/` has a
-   `renderCanvas`, but the rebuilt compiler the measurements are taken against
-   (`tools/stress/compile.js`) has only the theme emitter — so the agreement property is currently
-   asserted, not demonstrated. This is the last piece of E0(a) with real risk in it, and it is the
-   one that could still move FR-D4's model.
-2. **`spike-compiler/` does not run** — its dependencies are not installed, so this document's
-   instruction to "reproduce it first and confirm it still passes" fails immediately.
-   **Both defects this document names in it are still live**: `compile.js:36` discards the date
-   helper's format argument, and `wrapGuard` builds the guard from the helper's *argument* rather
-   than the bound field. The second was **fixed in `tools/stress/compile.js` on 2026-08-20 and
-   pinned by a test**; the spike copy still has it. Decide whether the spike is retired in favour
-   of `tools/stress/` or repaired — it should not stay as a second, wrong copy of the pipeline.
+Register items 16–17 belong to E4's tooling and are that epic's to close. Items 34–36 were deferred
+by owner decision in round 4, each with its reason recorded.
 
-T2 (Ghost(Pro) Publisher, $29/mo) is needed before the deploy paths are verified end to end. **T4 (Ghost(Pro) Starter) is deferred until after MVP by your decision** — but its gate is ⛔ launch-blocking, and you asked to be reminded before launch.
+---
 
-### Prompt — spike (a), the mark-emission spike
+### ⚠️ Prompt — spike (a). HISTORICAL. **One instruction in it is REFUTED — do not follow it.**
+
+> **The bullet about backslash escaping below is FALSE and was proven false by execution.**
+> It survives here because deleting it would hide the lesson, and this project's standing rule 1
+> exists because exactly this kind of confident-sounding instruction has damaged it four times.
+>
+> The prompt says the escaping helper "must escape a **preceding backslash** too". That is §7.3's
+> original remedy, and **`AD-5` supersedes it**: Handlebars' backslash escape is **not composable** —
+> exactly one backslash escapes a mustache and is consumed, and **every count ≥ 2 evaluates live**.
+> There is no backslash count that renders a literal `\` followed by a literal `{{`.
+> `C:\{{@site.title}}` is the case no backslash rule can serve.
+>
+> **What is actually correct, and is built:** user text escapes by **HTML numeric entity** — every
+> `{` and `}` a user typed becomes `&#123;` / `&#125;`, after HTML-escaping `&` first. Handlebars
+> never sees a mustache and the browser decodes the exact characters back. Proven end to end on a
+> 70-section theme, and pinned in `test-ad36.js` and `test-renderer-agreement.js`.
+>
+> Anyone re-reading this prompt as an instruction would rebuild a defect that four rounds of
+> execution removed.
 
 ```
 /bmad-build
@@ -224,7 +259,13 @@ Report the result plainly. If the model does not hold, say so and stop — that 
 and it must be raised BEFORE the design sessions go deep, not after.
 ```
 
-### Prompt — spike (b), the platform-verification spike
+### Prompt — spike (b), the platform-verification spike. **HISTORICAL — this one ran and closed.**
+
+> Two corrections if it is ever re-read: the register is **37 items, not 21** (it grew as the PRD
+> rested on new external facts), and every item on it that does not need a Ghost(Pro) site is now
+> closed by execution. The five bullets it lists as "read from source but never run" have all been
+> run — several were **refuted**, and each refutation is recorded with its evidence rather than
+> worked around.
 
 ```
 /bmad-build
@@ -329,10 +370,32 @@ Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlo
 # Step 5 — Journeys and flows
 
 **Produces:** the four journeys and six flows the PRD mandates and does not itself author.
-**Needs from the owner:** nothing beyond step 4's output.
+**Needs from the owner:** less than this document originally assumed — see below.
 **Unblocks:** step 6.
 
 The PRD preamble delegates these explicitly. Keep this pass separate from step 4 — one verifies, this one authors, and combining them produces a document that half-checks and half-invents.
+
+### ⓘ This step is blocked on prompt **2**, not prompt **3** — which matters, because they are very different sizes
+
+Re-examined 2026-08-20. Nothing in the four journeys or the six flows is a *section* design: they
+are the product's own chrome — connecting a site, the snapshot gate, the edit-lock choreography, the
+routes-upload card. **None of them depends on the 484 designs prompt 3 produces.** What they do touch
+is prompt 2's territory — the ~25 missing surfaces and the paywall editor.
+
+So the real dependency is: **step 5 waits on prompt 2 (small), not on prompt 3 (34 sessions).** If
+prompt 2 lands early, this step can run months before the library is finished, and there is an
+argument it should run *first*: design artifacts are non-normative and the PRD wins, so a flow
+authored from the PRD is a better input to prompt 2 than the reverse. Raised as an option, not a
+change — the sequencing above is still the safe default.
+
+**One input this step now has that it did not when it was written** *(Round 4, finding F4)*: the
+FR-D18 edit-lock choreography has been **decided by the owner**, and the decision has a shape the
+flow must carry. **A takeover is allowed**, and the displaced device is then shown that its session
+was taken over and how much unsynced work went with it. That message reads `unsynced_edits` (AD-16:
+edits, never ops) and it must be **honest rather than reassuring** — a takeover is not a graceful
+hand-off, so work that had not synced is genuinely gone. The security half is already enforced in the
+schema: a holder change cannot happen without advancing `lock_generation`, which is the number the
+displaced device detects the takeover from. Appendix H governs the wording.
 
 ### Prompt
 
@@ -432,9 +495,10 @@ Two readiness conditions are specific to this project and are not the usual ones
 | When | What |
 |---|---|
 | ~~Before step 2~~ | ✅ **DONE** — T1 and T3 are provisioned, seeded and credentialed |
-| **Now — the critical path** | **Design prompt 3.** 34 category sessions, one per category, each producing that category's designs *and* their full per-design specifications. Nothing downstream can start without it: a category story cannot open until its specs are in `sections-inventory.md` (§4), and the library epics run strictly sequentially. This is the longest pole in the project and it needs no code to exist |
-| **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails. It is **off by default**. And confirm whether its ~2-day timing meets the annual-renewal requirement in the jurisdictions Inflozo sells into; if not, FR-P1 grows a sixth email and E12 builds it (register item 37) |
+| ~~During step 1~~ | ✅ **DONE** — repo shape, Supabase org structure, the measured compile budget, and an owning epic for every register item |
+| ~~The live Supabase project~~ | ✅ **DONE 2026-08-20** — reset and re-applied in the dashboard; 67 assertions pass, hosted and container agree exactly |
+| **① Now — the critical path, and it is yours alone** | **Design prompt 3.** 34 category sessions, each producing that category's designs *and* their full per-design specifications. Nothing downstream can start without it: a category story cannot open until its specs are in `sections-inventory.md` (§4), and the library epics run strictly sequentially. **This is the longest pole in the project and it needs no code to exist** |
+| **② Also yours, and much smaller** | **Design prompt 2** — the responsive archetypes, the ~25 missing surfaces and the paywall editor. Worth separating from ① because **step 5 is blocked on this one, not on the 34 sessions.** Landing it early unblocks the journeys-and-flows pass long before the library is finished |
+| **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
-| During step 1 | Repo shape · Supabase org structure · accept the measured compile-function budget · owning epic per §7.6 item |
-| Step 3 | Prompt 2 and prompt 3 outputs, with complete per-design specifications |
 | ⛔ **Before public launch** | **The Ghost(Pro) gate** — acquire a Ghost(Pro) **Starter** site, capture the real `GET /admin/config/` `hostSettings.limits` payload, and verify FR-C2's Preview-only detection against that recording. Until it clears, that path is a **KNOWN UNTESTED PATH** and no marketing may target Ghost(Pro) users. You asked to be reminded of this one |
