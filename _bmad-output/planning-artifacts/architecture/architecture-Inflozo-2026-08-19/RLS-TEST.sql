@@ -1,10 +1,26 @@
 -- Inflozo — runnable RLS + constraint proof for the E1 schema story.
 -- E1's exit is "RLS verified on every table the schema story creates". This IS that check.
--- Run:  docker run -d --name pg -e POSTGRES_PASSWORD=x postgres:17-alpine
---       psql -f PRELUDE.sql -f SCHEMA.sql -f RLS-TEST.sql   (expect every line to read PASS)
--- Against HOSTED Supabase, omit PRELUDE.sql -- the platform provides everything it stands in for,
--- and its auth.uid() stub would overwrite the real one:
---       psql "$SUPABASE_DB_URL" -f SCHEMA.sql -f RLS-TEST.sql
+--
+-- ── HOW TO RUN IT — three targets, and the file is PURE SQL so all three work ──
+--
+--   1. a bare container
+--        docker run -d --name pg -e POSTGRES_PASSWORD=x postgres:17-alpine
+--        psql -v ON_ERROR_STOP=1 -f PRELUDE.sql -f SCHEMA.sql -f RLS-TEST.sql
+--
+--   2. hosted Supabase over psql — OMIT PRELUDE.sql. The platform provides everything it stands
+--      in for, and its auth.uid() stub would overwrite the real one with a NULL-returning
+--      function, silently disabling every policy while this proof still said PASS.
+--        psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f SCHEMA.sql -f RLS-TEST.sql
+--
+--   3. the Supabase dashboard SQL editor — paste SCHEMA.sql, run it, then paste this, run it.
+--
+-- ⚠️ THIS FILE CONTAINS NO psql META-COMMANDS, AND THAT IS DELIBERATE.
+-- It used to open with `\set ON_ERROR_STOP on` and `\pset pager off`. Those are psql client
+-- directives, not SQL: the dashboard SQL editor sends raw SQL to the server, which rejects them
+-- with `42601: syntax error at or near "\"` on the very first line. ON_ERROR_STOP belongs on the
+-- psql COMMAND LINE (`-v ON_ERROR_STOP=1`, as shown above), where it works for targets 1 and 2 and
+-- is unnecessary for target 3 — the editor runs the script as one transaction and an exception
+-- aborts it outright, which is the same contract by a different mechanism.
 -- Verified green on PostgreSQL 17.11, 2026-08-19: 0 tables without RLS, 34 policies over 26
 -- tables, exactly 2 deliberate server-only tables (site_credentials, billing_events).
 --
@@ -23,8 +39,20 @@
 -- structural query is wrapped in a block that raises on a non-empty result. A non-zero exit is
 -- the contract; "expect every line to read PASS" was never enforceable and is no longer the test.
 
-\set ON_ERROR_STOP on
-\pset pager off
+-- ── The fixture cleans up after itself, so a second run is not a confusing failure ──
+-- Several assertions below are stateful: the FR-Q2 cap inserts 17 settings, the theme-name test
+-- claims a binding, the takeover test advances a lock generation. Re-run against a database that
+-- already has them and the first duplicate key aborts the whole script — which reads as "the schema
+-- is broken" when it means "the fixture is still here". The dashboard SQL editor makes an
+-- accidental re-run one click away, so the file removes its own fixture before laying it down.
+--
+-- These six ids are fixed, structured and obviously synthetic. Deleting the users cascades to
+-- everything they own — profiles, sites, projects and every child row of those.
+delete from auth.users where id in (
+  '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222',
+  '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444'
+);
+
 -- Behavioural RLS proof: two tenants, one impersonation attempt per surface.
 insert into auth.users(id) values
   ('11111111-1111-1111-1111-111111111111'),
@@ -288,7 +316,6 @@ begin
     raise exception 'FAIL: credit.* override accepted';
   exception when others then raise notice 'PASS: credit.* namespace locked (%)', sqlstate; end;
 end $$;
-\pset pager off
 -- ============================================================================
 -- 5. Structural invariants — every one of these RAISES.  [Round 4, F0]
 -- ============================================================================
@@ -496,7 +523,8 @@ begin
     else raise exception 'FAIL: deploys has no settings snapshot column'; end if;
 
   -- d14: AD-28's entitlements row has a writer.
-  insert into auth.users(id) values ('33333333-3333-3333-3333-333333333333');
+  insert into auth.users(id) values ('33333333-3333-3333-3333-333333333333')
+    on conflict (id) do nothing;   -- re-runnable: the editor has no fresh-container guarantee
   select count(*) into n from public.entitlements where user_id='33333333-3333-3333-3333-333333333333';
   if n = 1 then raise notice 'PASS: entitlements row provisioned at signup (AD-28)';
           else raise exception 'FAIL: no entitlements row created at signup'; end if;
@@ -683,7 +711,8 @@ end $$;
 do $$
 declare n int;
 begin
-  insert into auth.users(id) values ('44444444-4444-4444-4444-444444444444');
+  insert into auth.users(id) values ('44444444-4444-4444-4444-444444444444')
+    on conflict (id) do nothing;   -- re-runnable, same reason
   select count(*) into n from public.profiles where user_id='44444444-4444-4444-4444-444444444444';
   if n <> 1 then raise exception 'FAIL (F13): no profiles row was created at signup -- autosave_enabled reads NULL'; end if;
   select count(*) into n from public.entitlements where user_id='44444444-4444-4444-4444-444444444444';

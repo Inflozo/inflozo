@@ -1764,3 +1764,33 @@ E12 as its owner, and the schema still applies clean: **67 assertions, 0 failure
 
 **The consequence of owning it is stated in the AD rather than discovered later:** a silent failure
 of that job now means nobody is warned at all, so it belongs on the NFR-9 alerting path.
+
+### 23d. The harness is now pure SQL, and runs on three targets
+`RLS-TEST.sql` opened with `\set ON_ERROR_STOP on` and `\pset pager off`. Those are **psql client
+directives, not SQL** — the Supabase dashboard SQL editor sends raw SQL to the server, which
+rejected the very first line:
+
+    ERROR: 42601: syntax error at or near "\"
+    LINE 26: \set ON_ERROR_STOP on
+
+`SCHEMA.sql` and `PRELUDE.sql` were already clean, which is why the schema applied and only the
+proof failed. Removed; `ON_ERROR_STOP` belongs on the psql **command line** (`-v ON_ERROR_STOP=1`),
+where it serves the two psql targets, and the editor needs no equivalent — it runs the script as one
+transaction and an exception aborts it outright. Same contract, different mechanism.
+
+**The file is also self-cleaning now**, because the fix exposed a second problem. Several assertions
+are stateful — the FR-Q2 cap inserts 17 settings, the theme-name test claims a binding, the takeover
+test advances a generation — so a second run died on a duplicate key, which **reads as "the schema is
+broken" when it means "the fixture is still here"**. The editor makes an accidental re-run one click
+away. The file now deletes its own four fixture users first, cascading everything they own.
+
+Verified on a clean container:
+
+    psql -f, ON_ERROR_STOP on the command line   exit 0   67 PASS   0 FAIL
+    whole file as ONE query string (editor)      exit 0   67 PASS   0 FAIL
+    the same, run three times in a row           exit 0   67 PASS   0 FAIL   0 ERROR
+
+And it still bites, in editor mode, with no `ON_ERROR_STOP` anywhere:
+
+    drop trigger auth_user_profile      -> exit 1  ERROR: FAIL: missing guard trigger(s)
+    grant update (image_approved) …     -> exit 1  ERROR: FAIL (F3): suggestions.image_approved (UPDATE)
