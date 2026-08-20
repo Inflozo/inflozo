@@ -204,14 +204,14 @@ evidence — that is in scope and valuable — but it must not re-open one merel
 |---|---|
 | 1 | **AD-5: escape AFTER serialization**, via the opaque-token mechanic. |
 | 2 | **Fill in user text BEFORE extracting the repeat body** (reorder in `renderTheme`). |
-| 3 | **Make `suggestions_public` `security_invoker = true` and revoke write grants through it.** |
+| 3 | **Make `suggestions_public` `security_invoker = true` and revoke write grants through it.** **⚠️ HALF REFUTED by Round 2 (batch 1, executed).** The revoke is right and is what closes the hole. `security_invoker = true` breaks the view outright — permission denied on plain SELECT for both `anon` and `authenticated`, because §10 revokes `image_path` from the caller's column grant and an invoker view needs the caller to hold it. Shipped as: definer kept, verbs revoked. Transcripts inline in `SCHEMA.sql`. |
 | 4 | **Pin `typescript@6.0.3`** (corrected from "5.x/6.x line" — 6.0.3 verified as full compiler and inside typescript-eslint's peer range). |
 | 5 | **Two CSP policies** — nonce-based on `app.inflozo.com`, static on `inflozo.com`. |
 
 ### Tier 2 — before the compiler epic (E4/E7)
 | # | Decision |
 |---|---|
-| 6 | **Substitute user text LAST**, with an unforgeable marker shape (e.g. `{§0§}`) that escaped user text can never contain. No random nonce — it would break AD-14. |
+| 6 | **Substitute user text LAST**, with an unforgeable marker shape (e.g. `{§0§}`) that escaped user text can never contain. No random nonce — it would break AD-14. **⚠️ AMENDED by Round 2 (R2-5):** as written this cancels decision 2 — the marker is planted before the repeat body is extracted, the final pass runs over the main template only, and the emitted partial ships a raw `{§01§}` with the user's text lost. Substitution runs over the whole emitted **file tree**, template and every partial. See `ROUND-2-DECISIONS.md`. |
 | 7 | **A then B:** first assert no directive attribute (`data-repeat|bind|prop|partial|empty`) and no compiler token survives into the emitted tree; then support nested repeats. |
 | 8 | **Rebuild §7.3's missing-constructs list by walking the full 484-design inventory** before E4 starts. |
 | 9 | **AD-30: add an inverse colour pair to the token block.** Invariant survives; enumeration grows from three to four. |
@@ -242,7 +242,7 @@ evidence — that is in scope and valuable — but it must not re-open one merel
 ### Tier 5 — reasoned, decided at epic open
 | # | Decision |
 |---|---|
-| 25 | **Split `project_treatments`** into one table per owning epic. |
+| 25 | ~~**Split `project_treatments`** into one table per owning epic.~~ **⚠️ DROPPED by Round 2 (R2-16).** It contradicts decision 26's "nothing to build", and no driver for the split was found anywhere in the tree. Three tables each needing their own policy, `rls.sql` row and denormalized `user_id`, permanently, to separate three nullable text columns always read together. Decision 30 already carries the same cross-epic exemption for the shared notifications schema. Recorded in AD-27 corollary (a0). |
 | 26 | **Pagination is ONE project-level setting** (`project_treatments.pagination_design_id`, already in the schema — nothing to build). Both entry points — the main feed's control panel and Theme Settings — are two surfaces onto that one value. The 28 non-placeable treatments are project selections, not AD-3 controls. |
 | 27 | **Every design stylesheet's selectors are rooted at its own identity class** (`.d-{categoryId}-{n}`). Highest cost if deferred — one sentence now, a 484-file rewrite later. |
 | 28 | **`parkedControls` is keyed `{designId}.{controlKey}`.** |
