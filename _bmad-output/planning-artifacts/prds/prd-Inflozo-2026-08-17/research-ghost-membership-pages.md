@@ -883,3 +883,34 @@ GScan emits a `for` array on each custom template, and Ghost Admin's `gh-psm-tem
 | 5 | `members/account.hbs` as a theme path | `docs.ghost.org/themes/members` cites Lyra's `members/account.hbs` as a worked example | Lyra is **archived**, targets `ghost >=4.0.0`, its `members/` code is frozen at 2021-03-09, and its signup page uses removed Ghost 3.x APIs. There is no members template family; that path only ever worked because Lyra's own `routes.yaml` pointed at it. | §9 |
 
 Conflicts 1–3 and 5 are confirmed by direct code reading. Conflict 4 is flagged as unverified.
+
+---
+
+## ⚠️ Corrected by execution — 2026-08-20 (Round 2, VERIFY-AT-BUILD 14b)
+
+This companion and its counterpart disagreed on whether the tiers endpoint filters by `visibility`.
+**Both were half right**, and the disagreement is now closed by running it against Ghost **5.130.6**
+and **6.58.0**, with identical results on each.
+
+With one paid tier set to `visibility: none` alongside the public Free tier:
+
+| query | `tiers.length` | rows `{{#foreach}}` yields |
+| --- | --- | --- |
+| `{{#get "tiers" limit="all"}}` — no filter | **2** | **1** (the public tier only) |
+| `filter="visibility:public"` | 1 | 1 |
+| `filter="visibility:none"` | 1 | **0** |
+| `filter="type:paid"` | 1 | **0** |
+
+**The mechanism:** the visibility filter is applied to the **serialized rows**, after the count is
+taken. `tiers.length` is the pagination total and does not respect it. A companion that inspected the
+rows concluded "it filters"; one that inspected the count concluded "it does not". Neither
+generalisation holds, and neither reading is safe to carry forward on its own.
+
+**Consequences.** FR-H6's explicit `visibility:public` filter is safe — count and rows agree under it.
+The live hazard is emptiness-testing: `{{#if tiers.length}}` on an *unfiltered* get renders a pricing
+section with a heading and no cards on any site whose only paid tier is hidden. That is now a library
+authoring rule in `sections-inventory.md`.
+
+**Note on `limit="all"`,** used in the probe above: `GS090-NO-LIMIT-ALL-IN-GET-HELPER` is a **v6-spec
+warning** (absent from the v5 spec in both gscan majors), as is `GS090-NO-LIMIT-OVER-100-IN-GET-HELPER`.
+Emitted themes must not use it.
