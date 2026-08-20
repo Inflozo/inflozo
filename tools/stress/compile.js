@@ -189,11 +189,20 @@ function wrapGuard(el, field, tokens) {
   el.parentNode.insertBefore(doc.createComment(tokens.put(`{{/if}}`)), el.nextSibling);
 }
 
+// AD-1: ONE function, both emitters. `users` is a UserText on the theme path and NULL on the
+// canvas path — that single parameter is the whole difference, which is what makes §7.3's
+// "canvas and shipped output agree by construction" a property of the code rather than a promise.
+//
+// AD-4's half that reads backwards: on the canvas the value goes into a DOM, because the user must
+// see their own literal text. On the theme path it becomes a marker and is spliced into the STRING
+// later — never through a DOM, because an HTML parser decodes AD-5's numeric entities back into
+// live braces.
 function applyProps(scope, content, users) {
   const all = (sel) => [...scope.querySelectorAll(sel), ...(scope.matches?.(sel) ? [scope] : [])];
   for (const el of all('[data-prop]')) {
     const v = get(content, el.getAttribute('data-prop'));
-    el.textContent = v == null ? el.textContent : users.put(v);   // a marker, never markup
+    // canvas: the literal string into the DOM. theme: a marker, never markup.
+    el.textContent = v == null ? el.textContent : (users ? users.put(v) : String(v));
     el.removeAttribute('data-prop'); el.removeAttribute('data-empty');
   }
   for (const a of ['data-prop-attr', 'data-prop-attr2']) {
@@ -204,7 +213,12 @@ function applyProps(scope, content, users) {
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Doing it here
       // rather than in UserText.esc is deliberate -- esc() runs over every text prop and a scheme
       // is only meaningful in a URL context, so the check belongs where the context is known.
-      if (v != null) el.setAttribute(attr, users.put(URL_ATTRS.has(attr) ? safeUrl(v) : v));
+      // It runs on BOTH emitters: on the theme a `javascript:` link is the visitor's problem, and
+      // on the canvas it is a same-origin URL inside the owner's own authenticated session.
+      if (v != null) {
+        const safe = URL_ATTRS.has(attr) ? safeUrl(v) : v;
+        el.setAttribute(attr, users ? users.put(safe) : String(safe));
+      }
       el.removeAttribute(a);
     }
   }
@@ -251,5 +265,105 @@ function renderSection(src, content, users) {
   return { template, partials: out };
 }
 
-module.exports = { renderSection, Tokens, UserText, T0, T1, U0, U1,
+// ─────────────────────────────────────────────────────────────────────────────
+// Emitter 2 — the canvas.
+//
+// E0(a)'s missing half. The theme emitter has been measured and attacked for four rounds; this one
+// did not exist in the rebuilt pipeline, so §7.3's central claim was asserted rather than shown.
+// It shares `applyProps`, `safeUrl`, `bindExpr`'s grammar and `assertBindableAttr` with the theme
+// path — sharing them is the point, not an optimisation.
+//
+// The two emitters differ in exactly two places, and both differences are required:
+//   1. a repeat EXPANDS against real Ghost rows here, and becomes {{#foreach}} there
+//   2. a binding RESOLVES to a value here, and becomes a mustache there
+// Everything else — the element tree, the classes, the control attributes, the stripped
+// directives, the URL scheme check, the attribute allowlist — is identical, and
+// `test-renderer-agreement.js` asserts that node by node.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// AD-1 bans Intl, toLocale* and Date.toString/getHours because each reads the machine rather than
+// the argument, which would void AD-14 the first time two machines rendered the same date. UTC
+// getters are the safe form, so the formatter is written from them and is deliberately small.
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function formatDate(raw, fmt) {
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '';
+  const p2 = (x) => String(x).padStart(2, '0');
+  const map = {
+    YYYY: String(d.getUTCFullYear()),
+    MMMM: MONTHS[d.getUTCMonth()],
+    MMM:  MONTHS[d.getUTCMonth()],
+    MM:   p2(d.getUTCMonth() + 1),
+    DD:   p2(d.getUTCDate()),
+  };
+  // longest key first, so MMMM is not eaten by MM
+  return String(fmt || 'YYYY-MM-DD').replace(/YYYY|MMMM|MMM|MM|DD/g, (k) => map[k]);
+}
+
+// The canvas counterpart of bindExpr: same spec, same grammar, a value instead of a mustache.
+// It re-parses through bindExpr first so an invalid spec fails identically on both emitters —
+// a design that is refused by the compiler must not silently render on the canvas.
+function bindValue(spec, ctx) {
+  bindExpr(spec);                                   // validate: AD-36 (2), both sides
+  const [path, helper] = splitFirst(spec, '|');
+  const raw = get(ctx, path);
+  if (raw == null) return null;
+  if (!helper) return String(raw);
+  const [name, arg] = splitFirst(helper, ':');
+  if (name === 'date') return formatDate(raw, arg);           // the format argument is HONOURED
+  if (name === 'img_url') return String(raw);                 // size is a Ghost-side concern
+  return String(raw);
+}
+
+function renderCanvas(src, content, ghost) {
+  const dom = new JSDOM(`<body>${src}</body>`);
+  const doc = dom.window.document, root = doc.body;
+
+  // repeats expand against real rows. Deepest-first, matching the theme path (R1 decision 7B).
+  const repeats = [...root.querySelectorAll('[data-repeat]')].sort((a, b) => depth(b) - depth(a));
+  for (const el of repeats) {
+    if (!el.isConnected) continue;
+    const limit = +el.getAttribute('data-repeat-limit') || undefined;
+    const rows = (get(ghost, el.getAttribute('data-repeat')) || []).slice(0, limit);
+    const parent = el.parentNode;
+    for (const row of rows) {
+      const clone = el.cloneNode(true);
+      ['data-repeat', 'data-repeat-limit', 'data-partial'].forEach((a) => clone.removeAttribute(a));
+      applyCanvasBindings(clone, row);
+      applyProps(clone, content, null);
+      parent.insertBefore(clone, el);
+    }
+    el.remove();
+  }
+
+  applyCanvasBindings(root, ghost);
+  applyProps(root, content, null);
+  return root.innerHTML.replace(/^\s*[\r\n]/gm, '').trim();
+}
+
+function applyCanvasBindings(scope, ctx) {
+  const all = (sel) => [...scope.querySelectorAll(sel), ...(scope.matches?.(sel) ? [scope] : [])];
+  for (const el of all('[data-bind]')) {
+    const v = bindValue(el.getAttribute('data-bind'), ctx);
+    const guard = el.getAttribute('data-empty');
+    el.removeAttribute('data-bind'); el.removeAttribute('data-empty');
+    // FR-H8: the guard removes the ELEMENT, which is what {{#if}} does on the other side.
+    if (v == null) { if (guard === 'hide') el.remove(); continue; }
+    el.textContent = v;
+  }
+  for (const el of all('[data-bind-attr]')) {
+    const [rawAttr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
+    const attr = assertBindableAttr(rawAttr);        // AD-36 (3), both sides
+    const v = bindValue(spec, ctx);
+    const guard = el.getAttribute('data-empty');
+    el.removeAttribute('data-bind-attr'); el.removeAttribute('data-empty');
+    if (v == null) { if (guard === 'hide') el.remove(); continue; }
+    // AD-36 (1) on the canvas too: a javascript: URL here runs on Inflozo's own origin.
+    el.setAttribute(attr, URL_ATTRS.has(attr) ? safeUrl(v) : v);
+  }
+  for (const el of all('[data-module]')) el.removeAttribute('data-module');
+}
+
+module.exports = { renderSection, renderCanvas, bindValue, formatDate,
+                   Tokens, UserText, T0, T1, U0, U1,
                    safeUrl, bindExpr, assertBindableAttr, BINDABLE_ATTRS };
