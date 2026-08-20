@@ -1,0 +1,219 @@
+<title>Inflozo — Round 4 Findings</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#12151a; --muted:#5b6472; --line:#e2e6ec;
+    --accent:#1f6feb; --accent-ink:#fff; --rec:#0f7b3f; --rec-bg:#e8f6ee;
+    --sev-crit:#b3261e; --sev-high:#c2410c; --sev-med:#8a6100; --sev-low:#4b5563; --sev-ok:#0f7b3f;
+    --code:#f2f4f7;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}}
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 200px}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px}
+  header h1{font-size:1.9rem;margin:0 0 6px;letter-spacing:-.02em}
+  header p{color:var(--muted);margin:0 0 6px}
+  .counts{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}
+  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;
+    padding:4px 12px;font-size:.82rem;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px;margin:20px 0}
+  .card.done{opacity:.72}
+  .head{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .sev{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:6px;border:1px solid currentColor;white-space:nowrap;margin-top:3px}
+  .sev.critical{color:var(--sev-crit)} .sev.high{color:var(--sev-high)}
+  .sev.medium{color:var(--sev-med)} .sev.low{color:var(--sev-low)} .sev.held{color:var(--sev-ok)}
+  h2{font-size:1.18rem;margin:0;letter-spacing:-.01em;flex:1 1 320px}
+  .tag{font-size:.74rem;color:var(--muted);border:1px solid var(--line);
+    border-radius:6px;padding:3px 8px;margin-top:3px}
+  .plain{margin:14px 0 0}
+  details{margin:12px 0 0;border-top:1px dashed var(--line);padding-top:10px}
+  summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+    padding:12px;overflow-x:auto;font-size:.82rem;line-height:1.5;margin:10px 0 0}
+  .opts{margin:16px 0 0;display:grid;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;background:transparent}
+  .opt.rec{border-color:var(--rec);background:var(--rec-bg)}
+  .opt.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .opt .body{flex:1}
+  .opt .lbl{font-weight:600}
+  .opt .why{color:var(--muted);font-size:.9rem;margin-top:3px}
+  .recflag{color:var(--rec);font-weight:700;font-size:.72rem;letter-spacing:.06em;
+    text-transform:uppercase;margin-left:6px}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);padding:7px 14px}
+  button:hover{border-color:var(--accent)}
+  button.pick{white-space:nowrap;align-self:center}
+  button.pick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  textarea{width:100%;margin-top:12px;min-height:62px;padding:10px 12px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);
+    border-top:1px solid var(--line);padding:14px 20px}
+  .bar .inner{max-width:920px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .bar .status{flex:1;color:var(--muted);font-size:.9rem;min-width:200px}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);
+    font-weight:600;padding:9px 20px}
+  #out{max-width:920px;margin:0 auto;white-space:pre-wrap}
+  @media (max-width:640px){.opt{flex-direction:column}button.pick{align-self:flex-start}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 id="title">Inflozo — Round 4 Findings</h1>
+  <p id="subtitle">Adversarial security &amp; performance review. Pick an option under each finding, add questions if you have them, then copy the reply at the bottom.</p>
+  <div class="counts" id="counts"></div>
+</header>
+<main id="findings"></main>
+</div>
+
+<div class="bar">
+  <div class="inner">
+    <div class="status" id="status">Nothing selected yet.</div>
+    <button id="copy" class="primary">Copy my reply</button>
+    <button id="show">Preview</button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   REPLACE THIS ARRAY. Everything else is machinery.
+
+   severity : "critical" | "high" | "medium" | "low" | "held"
+              "held" = something that was attacked and did NOT break. Include these;
+              knowing what held is as useful as knowing what broke.
+   status   : "CONFIRMED" (executed) | "SUSPECTED" (reasoned)
+   actor    : who could do it, in plain words. Omit for performance findings.
+   radius   : "one tenant" | "all tenants" | "customers' visitors" | "the owner's bill"
+   evidence : the command and its output, verbatim. This is what makes it real.
+   options  : [{label, why, recommended?}]  — always give a do-nothing option where honest.
+   ───────────────────────────────────────────────────────────────────────── */
+const FINDINGS = [
+  {
+    id: "F1",
+    severity: "high",
+    status: "CONFIRMED",
+    title: "Example — replace me",
+    area: "Security",
+    actor: "Any signed-in user",
+    radius: "customers' visitors",
+    plain: "One short paragraph a non-engineer can act on. Say what breaks, for whom, and whether it is happening now or only after launch. No jargon; if a term is unavoidable, define it in the same sentence.",
+    analogy: "Optional one-line analogy. Concrete beats clever.",
+    evidence: "$ command that proves it\noutput, verbatim",
+    ad: "AD-32 / decision D4",
+    options: [
+      { label: "Do the thing", why: "What it costs and what it buys.", recommended: true },
+      { label: "Do the smaller thing", why: "Cheaper, leaves X open." },
+      { label: "Do nothing for now", why: "Honest when it is genuinely fine to defer — say why." }
+    ]
+  }
+];
+
+/* ── machinery ─────────────────────────────────────────────────────────── */
+const picks = new Map(), notes = new Map();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function render() {
+  const order = { critical: 0, high: 1, medium: 2, low: 3, held: 4 };
+  const list = [...FINDINGS].sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9));
+
+  const tally = {};
+  for (const f of FINDINGS) tally[f.severity] = (tally[f.severity] || 0) + 1;
+  document.getElementById('counts').innerHTML =
+    Object.entries(tally).map(([k, v]) =>
+      `<span class="pill">${v} ${k === 'held' ? 'held up' : esc(k)}</span>`).join('') +
+    `<span class="pill">${FINDINGS.filter(f => f.options?.length).length} need a decision</span>`;
+
+  document.getElementById('findings').innerHTML = list.map(f => `
+    <section class="card" id="card-${esc(f.id)}">
+      <div class="head">
+        <span class="sev ${esc(f.severity)}">${f.severity === 'held' ? 'held up' : esc(f.severity)}</span>
+        <h2>${esc(f.id)} · ${esc(f.title)}</h2>
+        ${f.area ? `<span class="tag">${esc(f.area)}</span>` : ''}
+        ${f.status ? `<span class="tag">${esc(f.status)}</span>` : ''}
+      </div>
+      ${(f.actor || f.radius) ? `<p class="plain"><strong>${f.actor ? 'Who: ' + esc(f.actor) : ''}${f.actor && f.radius ? ' · ' : ''}${f.radius ? 'Reaches: ' + esc(f.radius) : ''}</strong></p>` : ''}
+      <p class="plain">${esc(f.plain)}</p>
+      ${f.analogy ? `<p class="plain" style="color:var(--muted)"><em>${esc(f.analogy)}</em></p>` : ''}
+      ${f.evidence ? `<details><summary>How we know${f.ad ? ' · ' + esc(f.ad) : ''}</summary><pre>${esc(f.evidence)}</pre></details>` : ''}
+      ${f.options?.length ? `<div class="opts">${f.options.map((o, i) => `
+        <div class="opt ${o.recommended ? 'rec' : ''}" id="opt-${esc(f.id)}-${i}">
+          <div class="body">
+            <div class="lbl">${i + 1}. ${esc(o.label)}${o.recommended ? '<span class="recflag">recommended</span>' : ''}</div>
+            ${o.why ? `<div class="why">${esc(o.why)}</div>` : ''}
+          </div>
+          <button class="pick" aria-pressed="false" data-f="${esc(f.id)}" data-i="${i}">Choose</button>
+        </div>`).join('')}</div>` : ''}
+      <textarea data-note="${esc(f.id)}" placeholder="Counter-question or a note on ${esc(f.id)} — optional, and it goes into the reply."></textarea>
+    </section>`).join('');
+
+  document.querySelectorAll('button.pick').forEach(b => b.onclick = () => {
+    const { f, i } = b.dataset;
+    if (picks.get(f) === +i) picks.delete(f); else picks.set(f, +i);
+    document.querySelectorAll(`button.pick[data-f="${f}"]`).forEach(x => {
+      const on = picks.get(f) === +x.dataset.i;
+      x.setAttribute('aria-pressed', on);
+      x.textContent = on ? 'Chosen' : 'Choose';
+      x.closest('.opt').classList.toggle('sel', on);
+    });
+    document.getElementById('card-' + f).classList.toggle('done', picks.has(f));
+    status();
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(t =>
+    t.oninput = () => { notes.set(t.dataset.note, t.value.trim()); status(); });
+  status();
+}
+
+function status() {
+  const need = FINDINGS.filter(f => f.options?.length).length;
+  const q = [...notes.values()].filter(Boolean).length;
+  document.getElementById('status').textContent =
+    `${picks.size} of ${need} decided${q ? ` · ${q} question${q > 1 ? 's' : ''}` : ''}`;
+}
+
+function build() {
+  const lines = ['Round 4 decisions:', ''];
+  for (const f of FINDINGS) {
+    const p = picks.get(f.id), n = notes.get(f.id);
+    if (p === undefined && !n) continue;
+    if (p !== undefined) {
+      const o = f.options[p];
+      lines.push(`${f.id} — option ${p + 1}: ${o.label}${o.recommended ? ' (your recommendation)' : ''}`);
+    } else {
+      lines.push(`${f.id} — no option chosen yet`);
+    }
+    if (n) lines.push(`   Q: ${n}`);
+  }
+  const undecided = FINDINGS.filter(f => f.options?.length && !picks.has(f.id) && !notes.get(f.id));
+  if (undecided.length) {
+    lines.push('', `Not yet decided: ${undecided.map(f => f.id).join(', ')}`);
+  }
+  lines.push('', 'Apply the chosen options. Answer any questions above before applying the ones they attach to.');
+  return lines.join('\n');
+}
+
+document.getElementById('copy').onclick = async () => {
+  const text = build(), btn = document.getElementById('copy');
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch { show(text); btn.textContent = 'Select and copy below'; }
+  setTimeout(() => btn.textContent = 'Copy my reply', 2200);
+};
+document.getElementById('show').onclick = () => show(build());
+function show(text) {
+  let el = document.getElementById('out');
+  if (!el) { el = document.createElement('pre'); el.id = 'out';
+    document.querySelector('.wrap').appendChild(el); }
+  el.textContent = text;
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+render();
+</script>

@@ -1,20 +1,29 @@
 ---
-title: Inflozo Architecture Stress Test — Round 4 · ADVERSARIAL SECURITY
+title: Inflozo Architecture Stress Test — Round 4 · SECURITY & PERFORMANCE, ON REAL INFRASTRUCTURE
 type: stress-test prompt + round-3 handover
 status: ready to run in a fresh session
 created: 2026-08-20
 supersedes: STRESS-TEST-R3.md (round 3 — all four passes ran; 13 decisions applied; real infra provisioned)
-posture: break it, then harden it
+posture: break it, prove it is fast, then harden it
 ---
 
-# Break Inflozo. Then make it hard to break.
+# Break Inflozo. Measure it. Then make it hard to break.
 
-Rounds 1, 2 and 3 asked *"is this architecture correct?"* **Round 4 asks a different question: "what
-can an attacker do?"** Correctness bugs and security bugs are found by different reflexes, and three
-rounds of the first kind have not exercised the second.
+Rounds 1, 2 and 3 asked *"is this architecture correct?"* Round 4 asks **three different questions**,
+and they are found by three different reflexes:
 
-**Your job is to compromise this system on paper and, where the infrastructure exists, in fact.**
-Then say what to change. Not a checklist audit — an attack.
+1. **What can an attacker do?** — compromise it, as an adversary with a goal.
+2. **Is this secure enough?** — not "did I find bugs", but: would you put other people's website
+   credentials behind it? What is *missing* that no single finding reveals?
+3. **Is this fast enough?** — the product's own promises are numeric (NFR-1, NFR-2, G1) and almost
+   none of them has ever been measured on real hardware.
+
+Three rounds of correctness work have exercised none of the three.
+
+**Every test in this round runs against real infrastructure — Vercel, Supabase, Ghost, Dodo, Resend.**
+No containers standing in for platforms, no reasoning where a command would do. All of it is
+provisioned and credentialed already (Part 2). A reasoned finding is worth a tenth of a demonstrated
+one, and this round has no excuse for reasoning.
 
 Read this file whole before starting. It carries three rounds of established fact so you spend the
 session finding new things rather than rediscovering old ones.
@@ -44,6 +53,39 @@ every external claim it depends on has now been run against the real platform.
 Five claims have entered this codebase as confident normative text and been falsified by execution.
 The most recent, found in Round 3: **FR-L2 states "there is no documented `subscription.cancelled`"
 and there is.** Assume a sixth is present and that it is somewhere that looks like evidence.
+
+---
+
+## Part 0b — Re-test everything. Re-report nothing.
+
+Three rounds have closed 28 register items, applied 62 decisions and executed 20 sections of
+`MEASUREMENTS.md`. Two instructions follow, and they pull in opposite directions on purpose.
+
+**RE-TEST all of it.** Every closed finding is a regression test now. Code changed, grants changed,
+platforms move on their own schedules — Supabase withdraws automatic grants on **2026-10-30**, Ghost
+bumps its bundled gscan per minor, Dodo ships events. A closed item is a *claim that was true once*.
+Re-run the harness in `tools/probe/` and `tools/stress/`; it exists for exactly this.
+
+**Do NOT re-report what is already resolved.** Before you write up anything, check whether it is
+already known:
+
+    grep -rn "<the thing>" _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
+    # MEASUREMENTS.md · VERIFY-AT-BUILD.md · ROUND-2-DECISIONS.md · ROUND-3-DECISIONS.md
+    # ROUND-3-REPORT.md · STRESS-TEST-R2.md Part 3 · ARCHITECTURE-SPINE.md
+    git log --oneline --all           # every commit message states its evidence
+
+Then classify it, and the classification is the whole point:
+
+| what you found | how to report it |
+|---|---|
+| known, re-tested, **still true** | one line in a **regression table**. Not a finding. |
+| known, re-tested, **NO LONGER true** | **a finding, and a loud one** — the platform moved under us |
+| known, and the *fix* was never actually applied | **a finding** — say which decision, and that it drifted |
+| genuinely new | a finding |
+
+**A report that re-flags `@even`/`@odd` parity, or the backslash escape, or the gscan pairing, has
+wasted the round.** Those are settled. Prove they are *still* settled in one line each, and spend the
+session on what is not.
 
 ---
 
@@ -226,9 +268,10 @@ picking one.**
 
 ---
 
-## Part 5 — Where to attack
+## Part 5 — Where to aim
 
-This is the round's substance. Work as an attacker with a goal, not an auditor with a list.
+This is the round's substance. Work as an attacker with a goal and as an engineer with a stopwatch,
+not as an auditor with a checklist.
 
 ### 5.1 Threat actors — pick these up explicitly
 
@@ -293,15 +336,45 @@ New code and new grants are where new holes live.
 - **§19e**: the webhook handler must now return non-2xx on a failed store. Does that create a
   replay or amplification path?
 
+### 5.3b Performance — the third question, and it has never been measured
+
+The product makes **numeric** promises and almost none has been tested on real hardware. Every number
+below is measurable today on the live estate. Where a promise has no number, say so — an untestable
+promise is a finding.
+
+| Promise | Where | What to measure, on real infrastructure |
+|---|---|---|
+| **NFR-1** editor latency — a control change paints in one frame | §6 | No editor exists yet, so measure the *floor*: how long does the section-runtime render take for one control change? `tools/stress` renders 70 sections in ~1.0 s on 4 cores. One section is the unit that matters. |
+| **NFR-2** output performance — **≤ 40 KB CSS gzipped over the subset a template reaches**, and a JS budget | §6, AD-14's reachability record | The stress theme is checked in. Measure `screen.css` **brotli** (`size-limit`'s default metric, and what the 40 KB number means). Then deploy it to a real Ghost and measure what a *visitor* actually downloads. |
+| **G1** first deploy in ten minutes | §1 | Not measurable without the editor, but the **deploy half** is: compile → gscan → zip → upload → activate, end to end, against `ghost5` and `ghost6`. Round 3 measured compile at ~4 s; the upload and activate legs are unmeasured. |
+| **AD-11** compile budget | §7.1 | Re-run `tools/stress` on Vercel itself, not locally. Round 3 measured 486 MB peak and found `memory` is the **instance** budget with up to 4 co-located. **Decision A raised it to 4 GB — verify that actually applied and that the margin is what it claims.** |
+| **NFR-6(a)** the render matrix — 484 × 3 packs × 2 modes × 3 viewports | §6 | Nothing exists. Estimate the wall-clock honestly and say whether the stated cadence is achievable. |
+| Deployed-site performance | P5, FR-J1 | **Deploy the stress theme to a real Ghost and measure the page a visitor gets** — TTFB, transferred bytes, request count, and whether `{{comments}}`'s third-party script from `cdn.jsdelivr.net` (§15c) dominates. |
+| Supabase under RLS | AD-6 | AD-6 wraps every policy as `(select auth.uid())` "so the planner hoists it". **Prove it.** `EXPLAIN ANALYZE` a tenant-scoped query on the live project, with and without the wrapper, at a realistic row count. This is a claimed performance property that has never been checked. |
+| Cold starts | AD-11 | Fluid instance boot on a real deploy: how long before the first byte on a cold path? |
+
+**Two performance questions that are really security questions**, so do not separate them:
+
+- **Is any of this a denial-of-service lever?** A compile is ~4 s and ~486 MB. FR-J11 allows 10/hour
+  per site. What does a Pro account with 25 projects cost the owner in an hour of deliberate abuse?
+- **Does RLS degrade with tenant count?** Seed the live project to a realistic scale and measure. An
+  isolation mechanism that becomes unusably slow is an availability failure.
+
 ### 5.4 Then harden — this is half the round
 
 For every confirmed finding, say what to change, at the level of an AD or a decision. **Prefer one
 mechanism that closes a class over three that close instances** — this project has been bitten
 repeatedly by fixes applied in one place and not propagated to siblings (five occurrences).
 
-Ask specifically: **what is missing that no single finding will reveal?** There is no threat model, no
-stated trust boundary diagram, no incident response, no key-rotation policy, no dependency-integrity
-story for the 484 designs, and no security section in the spine at all.
+**Then answer question 2 directly: is this secure enough?** That is not the sum of the findings — it
+is a judgement, and the owner needs it stated plainly. Ask specifically: **what is missing that no
+single finding will reveal?** There is no threat model, no stated trust-boundary diagram, no incident
+response, no key-rotation policy, no dependency-integrity story for the 484 designs, no logging or
+alerting on the security-relevant paths, and **no security section in the spine at all** — 35 ADs and
+not one of them is named for security, though several carry it implicitly.
+
+Say whether you would put other people's live website credentials behind this architecture today, and
+what would have to change for the answer to be yes.
 
 ---
 
@@ -329,23 +402,76 @@ of the 62 decisions enabled it, and how long was it exploitable before anyone no
 
 ## Part 7 — Reporting
 
-One consolidated report, ranked by severity. For each finding:
+Three deliverables. The third is the one the owner actually uses.
 
-- **What an attacker does** — concretely. The actor, the steps, the outcome.
+### 7.1 The regression table — first, and short
+
+One line per previously-closed item you re-tested: **the item, and `holds` / `MOVED`**. This is how
+the owner knows the ground did not shift while attention was elsewhere. Anything that MOVED is a
+finding, not a table row.
+
+### 7.2 The technical report — markdown, ranked by severity
+
+For each finding:
+
+- **What an attacker does**, or **what is slow** — concretely. The actor, the steps, the outcome.
 - **How you know** — the command and its output, or the file and line. Neither means it is an opinion;
   mark it as one.
-- **Blast radius** — one tenant, all tenants, or the customers' visitors.
+- **Blast radius** — one tenant, all tenants, the customers' visitors, or the owner's bill.
 - **Which AD or decision** is missing, wrong or too loose.
 - **What you would change** — one sentence.
 
 Separate **CONFIRMED** (executed) from **SUSPECTED** (reasoned). **Do not inflate — a padded security
 report is worse than a short one, because it buries the real finding.** Say plainly what held; after
-three rounds a great deal has.
+three rounds a great deal has, and "held" findings belong in the HTML too.
 
-**Then a second section in layman terms**, numbered options, one marked **(RECOMMENDED)**, concrete
-analogies. The owner is not an engineer and will decide from that section. For security findings also
-state, in one line each: **who could do this**, **what they would get**, and **whether it is happening
-now or only after launch.**
+Then answer the three questions of Part 0 in their own short section: what an attacker can do, whether
+this is secure enough, and whether it is fast enough. Judgements, not lists.
+
+### 7.3 ⭐ The decision sheet — a self-contained HTML file the owner clicks through
+
+**A template already exists and works: `tools/probe/report-template.html`.** Copy it, replace the
+`FINDINGS` array, change nothing else. Write the result to
+`.../architecture-Inflozo-2026-08-19/ROUND-4-FINDINGS.html`.
+
+It renders every finding in **plain language**, with numbered options, the recommended one marked, a
+**Choose** button per option, and a **textarea per finding** for counter-questions. A **Copy my reply**
+button assembles every selection and question into one block the owner pastes straight back into chat.
+It is one file, no CDN, no build step, works by double-clicking, and follows the OS light/dark setting.
+
+The array shape, and every field earns its place:
+
+```js
+{
+  id: "F1",
+  severity: "critical|high|medium|low|held",   // "held" = attacked and did NOT break. Include these.
+  status: "CONFIRMED|SUSPECTED",
+  area: "Security|Performance|Both",
+  actor: "who could do this, in plain words",  // omit for pure performance findings
+  radius: "one tenant | all tenants | customers' visitors | the owner's bill",
+  plain: "One paragraph a non-engineer can act on. What breaks, for whom, and whether it is happening
+          now or only after launch. No jargon; if a term is unavoidable, define it in the sentence.",
+  analogy: "optional one-liner — concrete beats clever",
+  evidence: "the command and its verbatim output",
+  ad: "AD-32 / decision D4",
+  options: [
+    { label: "…", why: "what it costs and what it buys", recommended: true },
+    { label: "…", why: "…" },
+    { label: "Do nothing for now", why: "honest where deferring is genuinely fine — say why" }
+  ]
+}
+```
+
+**Rules for that file, because it is the one the owner reads:**
+
+- **Plain language throughout.** If a sentence needs the reader to know what RLS or a nonce is, rewrite
+  it. The technical detail belongs behind the "How we know" fold, not in `plain`.
+- **Always give a real option to do nothing** where deferring is defensible, and say what it costs.
+  A sheet where every option is "fix it" is not a decision sheet.
+- **Exactly one option per finding marked `recommended`**, and the `why` must say why *that* one.
+- **Include the "held" findings.** Knowing what was attacked and survived is what makes the rest
+  credible.
+- **Never put a secret in it.** It is a file on disk that may get shared.
 
 **Say explicitly which passes you ran.** Round 2's most useful admission was that three of its four
 did not.
