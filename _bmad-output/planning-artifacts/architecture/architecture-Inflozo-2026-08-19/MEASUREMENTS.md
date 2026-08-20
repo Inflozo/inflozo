@@ -824,3 +824,84 @@ and `delete` policies and **no `select` policy**, so the owner can write a file 
 it back. That is consistent with the design ("write your own; nobody reads directly"), but it means
 **the server route that mints the signed URL for the public board must use the service key**, and no
 AD says so. E13 builds that reader over this.
+
+---
+
+## 17. Vercel Fluid, executed · closes R1 decision 11 · **AD-11's memory headroom is wrong**
+
+Round 1 finding 5 — *"Vercel Fluid shares one instance across concurrent invocations; `memory: 2048`
+is the INSTANCE budget"* — was **read from Vercel's docs and never executed**. R1 decision 11 said to
+measure it during E0. This is that measurement, on a real Pro project (`inflozo-probe`, `iad1`).
+
+Probe: a Node function holding a module-scope instance id, an invocation counter, a live concurrency
+counter and an optional retained allocation. Two invocations reporting the same id ran in the same
+instance — that is the whole experiment. Runtime **Node v24.18.1**, matching the Stack table's pin.
+`AWS_LAMBDA_FUNCTION_MEMORY_SIZE` is unset, so Fluid is not classic Lambda.
+
+### 17a. Both halves of Round 1's claim, judged separately
+
+**Half one — "shares one instance across concurrent invocations": TRUE, but not as stated.**
+
+| burst | distinct instances | max co-located on one |
+| --- | --- | --- |
+| 5 concurrent | **4** | 2 |
+| 20 concurrent | **13** | 4 |
+| 40 concurrent (300 MB each) | **40** | 1 |
+
+Fluid **does** co-locate — up to **4** concurrent invocations on one instance were observed. But it
+also **scales out**, and under a 40-way burst it gave every invocation its own instance. So the
+pessimistic reading Round 1's wording invites — *all* concurrency landing on one instance — does not
+happen. Co-location is real, bounded, and load-dependent.
+
+**Half two — "`memory: 2048` is the INSTANCE budget": CONFIRMED, decisively.**
+
+Sequential invocations, each allocating 250 MB and **retaining** it at module scope, all landing on
+one warm instance:
+
+    invocation #2   RSS   608 MB
+    invocation #3   RSS   859 MB
+    invocation #4   RSS  1109 MB
+    invocation #5   RSS  1359 MB
+    invocation #6   RSS  1610 MB
+    invocation #7   RSS  1860 MB
+    invocation #8   HTTP 500  — killed, between 1860 MB and ~2110 MB
+
+Memory accumulates across invocations on a warm instance, is **not** reclaimed between them, and the
+instance dies at the 2 GB line. The platform recovers immediately on a fresh instance (next request:
+57 MB, invocation #1), so the failure is one lost request, not a lasting outage.
+
+### 17b. What this does to AD-11 — the headroom is not what §14 says
+
+§14 measures **486 MB peak RSS** for one compile of the 40-section stress fixture, and reads that as
+**~4.2× memory headroom** against `memory: 2048`. That number silently assumes one compile per
+instance. It is now measured that up to **4 concurrent invocations share one instance's 2 GB**:
+
+    4 concurrent compiles x 486 MB  =  1,944 MB  against a 2,048 MB instance budget  =  95%
+
+**The real headroom against concurrent deploys is roughly 4 compiles, not 4.2x of anything** — and
+the fifth co-located compile is an OOM, which §17a shows arrives as an HTTP 500 on a request that
+already told the user their deploy started.
+
+This is not hypothetical for this product. Deploys are exactly the bursty path: §4's Definition of
+Done runs **30 serialized starter deploys** across T1–T3, FR-J11 permits **10 deploys per hour per
+site**, and a Pro user holds **25 projects**. Three or four overlapping compiles is an ordinary
+Tuesday, not a stress case.
+
+**What is NOT concluded here:** that AD-11's decision is wrong. `maxDuration: 300` is confirmed as
+the real Pro default (`functionDefaultTimeout: 300`, read from the project's own resource config),
+Fluid is **on by default** for new projects (`fluid: true`), and §7.1's gscan-boundary split still
+buys nothing. What changes is that **memory headroom must be stated per instance under concurrency,
+not per compile** — and on that basis the margin is thin enough to need a decision rather than a
+footnote.
+
+**Also worth keeping:** memory is retained between invocations on a warm instance unless the code
+releases it. AD-1's ban on module-level mutable state in the core is what keeps the compile from
+accumulating across invocations — a rule adopted for determinism that turns out to carry a memory
+consequence nobody had connected to it.
+
+### 17c. Method note
+
+`peakConcurrentOnThisInstance` in the first probe was a **cumulative** counter and therefore reported
+stale peaks from earlier bursts; the co-location figures above are taken from live concurrency and
+from RSS, not from that counter. Recorded because the first reading of the 40-way burst looked like
+4-way co-location with 300 MB allocations, and it was not.
