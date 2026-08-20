@@ -738,3 +738,89 @@ So gscan errors split into **fatal at upload** and **reported but activated**, a
 treat "Ghost accepts it anyway" as a general property. This also answers the hard half of item 10:
 a theme that fails Ghost's own gscan is **not** always re-uploadable, so FR-J13's snapshot restore
 must assume rejection is possible and surface the 422 detail rather than retrying blindly.
+
+---
+
+## 16. Real hosted Supabase · E1's exit criterion, D6's open probe, and F8 · Round 3
+
+Project `adasbmxypwvnxznzzxwp`, PostgreSQL **17.6**, created with Supabase's **post-2026-05-30**
+grant default (`authenticated` holds **no** table privileges in `public`). A second, older project
+supplies the pre-cutover half. Reproduction:
+
+    psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f SCHEMA.sql -f RLS-TEST.sql
+
+**`PRELUDE.sql` is omitted, and that is not optional.** It is a stand-in for a bare container, and
+against a real project its `create or replace function auth.uid()` would **overwrite Supabase's own
+implementation with one returning `NULL`** — silently disabling every policy in the schema while the
+proof still reported PASS. Read from the live project before anything was applied, the platform's
+own function is:
+
+```sql
+coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
+         (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid
+```
+
+Its **first branch is the exact setting `RLS-TEST.sql` already sets**, so impersonation is identical
+on both targets and the stub was never needed. `RLS-TEST.sql` is now **dual-target rather than
+forked** — it tests `has_schema_privilege(current_user, 'auth', 'CREATE')` and installs the
+stand-ins only where it owns the schema — because two copies of one proof is the divergence this
+project keeps finding.
+
+### 16a. The result
+
+| | container (Round 2) | **hosted (this run)** |
+| --- | --- | --- |
+| `SCHEMA.sql` | applies clean | **applies clean, `ON_ERROR_STOP`, 0 errors** |
+| tables / policies | 30 / 34 | **30 / 34** |
+| assertions | 36 PASS | **38 PASS, 0 FAIL, 0 psql errors** |
+
+**Two things confirmed live that were previously only designed.** `auth.users = 2 → entitlements = 2,
+profiles = 2`: R1 decision 14's `auth_user_entitlement` trigger fires on the real platform, so
+AD-28's "an entitlements row is created at signup" stops being aspirational. And the four buckets of
+§12 exist with `public = false`, carrying exactly the three policies the file installs.
+
+### 16b. D6's open probe — answered, and the finding holds
+
+`SCHEMA.sql` §12 printed, during the hosted apply:
+
+    WARNING:  D6 NOT APPLIED: TRUNCATE remains granted on 4 storage grants. The grantor is
+              supabase_storage_admin and this role cannot revoke it.
+
+**Hosted `postgres` cannot perform the revoke either.** D6 was written to *attempt and report* rather
+than assume, which is the only reason this surfaced as a visible warning instead of a migration that
+looks clean and protects nothing. The control that actually holds is the one `RLS-TEST.sql` now
+asserts, independently confirmed over HTTP: **`storage` is not a PostgREST-exposed schema** —
+`GET /rest/v1/buckets` with the publishable key returns **404**, which also refutes the reachability
+half of Round 3's **F3** on the real platform.
+
+### 16c. F8 — CONFIRMED. The only sanitizer in the product is advisory.
+
+Executed with a **real end-user JWT** (publishable key + password grant), never the secret key:
+
+| target | result |
+| --- | --- |
+| `assets/{own}/evil.svg` | **ACCEPTED — HTTP 200** |
+| served back through a signed URL | **`<script>` present: true · `@import` present: true · byte-identical** |
+| `assets/{another user}/evil.svg` | denied — *new row violates row-level security policy* |
+| `suggestion-images/{own}/evil.svg` | **ACCEPTED — HTTP 200** |
+| `deploy-artifacts/{own}/evil.svg` | denied — RLS, no policy |
+| `site-snapshots/{own}/evil.svg` | denied — RLS, no policy |
+
+The conventions row says "an uploaded SVG is sanitized with DOMPurify". AD-12 puts that pass **in the
+browser**; AD-32 lets the browser write the bucket **directly**. A client that declines to run it
+uploads raw bytes and **nothing server-side ever sees the file**. Sanitizer placement is not a
+hardening detail — it is the entire property.
+
+**The containment holds, and that bounds the severity.** Folder scoping and the no-policy deny
+mechanism both work on real Supabase, so `assets/` is self-XSS on the storage origin rather than a
+cross-tenant hole. **`suggestion-images/` is the exception** — FR-M3 approves those onto a public
+board, so one user's unsanitized file reaches every visitor. Round 3 decision **D4** already puts
+server-side re-sanitization on exactly that bucket; this is the evidence it was the right call
+rather than a precaution.
+
+**One unplanned finding, and it needs writing down before E13.** Signing a URL for
+`suggestion-images` returns **HTTP 400** while `assets` signs fine: §12 gives that bucket `insert`
+and `delete` policies and **no `select` policy**, so the owner can write a file and then cannot read
+it back. That is consistent with the design ("write your own; nobody reads directly"), but it means
+**the server route that mints the signed URL for the public board must use the service key**, and no
+AD says so. E13 builds that reader over this.
