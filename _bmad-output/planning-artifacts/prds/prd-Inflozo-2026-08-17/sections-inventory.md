@@ -175,6 +175,9 @@ Content: heading, subtext?, primary cta, secondary cta?, image?. Controls: align
 15. **Emoji Punch** — playful oversized emoji beside short ask.
 
 **A7. Pricing & Tiers (15)** — Home, custom pages, A30's membership pages (page-backed `custom-{name}.hbs`). **Binds live Ghost tiers** (`{{#get "tiers"}}`: names, monthly/yearly prices, currency, benefits).
+**Authoring rule, normative for every design that binds tiers — A7's 15, A22 #8, and A32's paywall designs under FR-H6.** Two constraints, both executed against Ghost 5.130.6 and 6.58.0 (VERIFY-AT-BUILD 14b, 33):
+1. **Emptiness is tested on a *filtered* get, never on `tiers.length`.** The visibility filter is applied to the serialized rows *after* the count is taken, so an unfiltered `{{#get "tiers"}}` on a site whose only paid tier is hidden reports `length` = 2 and yields **one** row — and `{{#if tiers.length}}` around a pricing section then renders a heading with no cards. Always carry `filter="visibility:public"`, under which count and rows agree.
+2. **No emitted `{{#get}}` uses `limit="all"`, and none exceeds `limit="100"`.** `GS090-NO-LIMIT-ALL-IN-GET-HELPER` and `GS090-NO-LIMIT-OVER-100-IN-GET-HELPER` are v6-spec warnings — invisible on Ghost 5, standing warnings on Ghost 6 against FR-J6's 0/0 target.
 Content: heading?, intro?, per-tier cta labels, footnote?, member-count line? (#12). Controls: billing toggle (Monthly/Yearly/Toggle), highlight tier select, benefit display (Checks/Plain), free-tier visibility, member-count line toggle (#12). Data: live tiers or sample; the member count on #12 comes from `{{total_members}}` — **a string, always**, since Ghost rounds it down and appends `+`, so no design may format, compare or compute on it.
 1. **Card Trio** [Free] — classic side-by-side tier cards.
 2. **Minimal Table** [Free] — rule-lined table, prices right-aligned.

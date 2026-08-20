@@ -1181,3 +1181,34 @@ Everything below is either unconfirmed or deliberately out of scope. Nothing in 
 **Deliberately out of scope:** `routes.yaml` dynamic routing beyond how it selects templates and overrides `@config.posts_per_page`; the `{{#collection}}` helper (present in `helpers/collection.js`, undocumented on the theme docs site); RSS/AMP/email-post/preview/unsubscribe render paths; GScan's full rule set; i18n/`{{t}}` and the `locales/` directory.
 
 **Known-stable, verified:** template resolution order, context derivation, the `@site` allowlist and its fresh-install defaults, `@member` shape and null-ness, `@page`'s single field, missing-variable semantics, SafeString/escaping, nested partials, and partial hash-param limits. Each is cited to a specific file and, where possible, corroborated by both official themes.
+
+---
+
+## ⚠️ Corrected by execution — 2026-08-20 (Round 2, VERIFY-AT-BUILD 14b)
+
+This companion and its counterpart disagreed on whether the tiers endpoint filters by `visibility`.
+**Both were half right**, and the disagreement is now closed by running it against Ghost **5.130.6**
+and **6.58.0**, with identical results on each.
+
+With one paid tier set to `visibility: none` alongside the public Free tier:
+
+| query | `tiers.length` | rows `{{#foreach}}` yields |
+| --- | --- | --- |
+| `{{#get "tiers" limit="all"}}` — no filter | **2** | **1** (the public tier only) |
+| `filter="visibility:public"` | 1 | 1 |
+| `filter="visibility:none"` | 1 | **0** |
+| `filter="type:paid"` | 1 | **0** |
+
+**The mechanism:** the visibility filter is applied to the **serialized rows**, after the count is
+taken. `tiers.length` is the pagination total and does not respect it. A companion that inspected the
+rows concluded "it filters"; one that inspected the count concluded "it does not". Neither
+generalisation holds, and neither reading is safe to carry forward on its own.
+
+**Consequences.** FR-H6's explicit `visibility:public` filter is safe — count and rows agree under it.
+The live hazard is emptiness-testing: `{{#if tiers.length}}` on an *unfiltered* get renders a pricing
+section with a heading and no cards on any site whose only paid tier is hidden. That is now a library
+authoring rule in `sections-inventory.md`.
+
+**Note on `limit="all"`,** used in the probe above: `GS090-NO-LIMIT-ALL-IN-GET-HELPER` is a **v6-spec
+warning** (absent from the v5 spec in both gscan majors), as is `GS090-NO-LIMIT-OVER-100-IN-GET-HELPER`.
+Emitted themes must not use it.
