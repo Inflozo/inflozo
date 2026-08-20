@@ -35,6 +35,30 @@ alter default privileges in schema public revoke all on functions from anon, aut
 create extension if not exists "pgcrypto";
 
 -- ============================================================================
+-- 0b. The `private` schema — off the data API entirely.  [Round 4, F6]
+-- ============================================================================
+--
+-- AD-7 reads "reachable only by the service role INSIDE A SERVER ROUTE". Round 4 executed that
+-- claim and it was false in its second half: the secret key reads these tables straight over
+-- /rest/v1/, no route involved, because `public` is what PostgREST exposes.
+--
+--     (authenticated) GET /rest/v1/site_credentials -> 403 42501     <- the half that held
+--     (secret key)    GET /rest/v1/site_credentials -> 200, rows=1   <- the half that did not
+--
+-- A schema PostgREST does not expose cannot be reached by ANY key, which is what makes the
+-- "inside a server route" half true rather than aspirational: a server route holds a direct
+-- database connection, the data API does not reach here at all.
+--
+-- `private` MUST NOT be added to PGRST_DB_SCHEMAS. RLS-TEST.sql asserts that, because this
+-- control is a configuration value and configuration drifts.
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to service_role;
+alter default privileges in schema private revoke all on tables    from anon, authenticated;
+alter default privileges in schema private revoke all on sequences from anon, authenticated;
+alter default privileges in schema private revoke all on functions from anon, authenticated;
+
+-- ============================================================================
 -- 0. helpers
 -- ============================================================================
 
@@ -52,6 +76,32 @@ begin
       raise exception 'column %.% is immutable', tg_table_name, col using errcode = '42501';
     end if;
   end loop;
+  return new;
+end $$;
+
+-- FR-Q2's freeze, which AD-9 names and which was never created.  [Round 4, F12]
+--
+-- AD-9 lists four frozen columns. Three had their trigger; custom_settings had only the cap.
+-- Executed as the TABLE OWNER -- i.e. what a server bug is -- `key` renamed and `frozen_at` nulled,
+-- while profiles.is_admin correctly refused. The column GRANT already stops a client, so this
+-- closes the server-side half AD-31 requires ("they hold against the service role too").
+--
+-- The semantics are not freeze_columns(): frozen_at must be settable ONCE, null -> timestamp, when
+-- the project first deploys or exports. What must never happen is a change AFTER it is set --
+-- including back to null, which is the two-statement bypass AD-9 names by name.
+create or replace function public.guard_custom_setting_freeze() returns trigger
+language plpgsql as $$
+begin
+  if old.frozen_at is not null then
+    if new.key is distinct from old.key then
+      raise exception 'custom_settings.key is frozen once the setting has been deployed or exported (% -> %)', old.key, new.key
+        using errcode = '42501';
+    end if;
+    if new.frozen_at is distinct from old.frozen_at then
+      raise exception 'custom_settings.frozen_at is immutable once set -- nulling it would reopen the key rename'
+        using errcode = '42501';
+    end if;
+  end if;
   return new;
 end $$;
 
@@ -127,7 +177,7 @@ create index on public.sites (last_checked_at) where disconnected_at is null;
 -- SERVER-ONLY (no RLS policy, ever). NFR-3: Admin key and Staff token are never sent to
 -- any client. Keeping the Vault refs off `sites` makes that structural rather than a
 -- column-list discipline every future SELECT has to remember.
-create table public.site_credentials (
+create table private.site_credentials (
   site_id                uuid primary key references public.sites(id) on delete cascade,
   user_id                uuid not null references auth.users(id) on delete cascade,
   admin_key_vault_ref    uuid,                            -- vault.secrets(id)
@@ -445,6 +495,31 @@ create table public.edit_locks (
 );
 create index on public.edit_locks (heartbeat_at);
 
+-- FR-D18's takeover protocol, decided in Round 4 by the owner.  [F4]
+--
+-- The ruling: a takeover is ALLOWED, and the displaced device is then told it lost the session and
+-- how much unsynced work went with it. That ruling is what closes the security hole, because the
+-- displaced device can only be told if it can DETECT the takeover -- and AD-15's detection signal is
+-- lock_generation advancing. Executed in Round 4: the holder could be reseated at an unchanged
+-- generation, so the displaced device saw nothing and both sides believed they held the lock.
+--
+-- So: changing holder_session_id REQUIRES advancing lock_generation, in the same statement. The UX
+-- decision and the invariant are the same rule, which is why this is a trigger and not a convention.
+-- `unsynced_edits` is read by the displaced device for the count in that message (AD-16: EDITS,
+-- never ops), so a takeover must not silently reset it -- the incoming holder writes its own count
+-- on its own heartbeats afterwards.
+create or replace function public.guard_lock_takeover() returns trigger
+language plpgsql as $$
+begin
+  if new.holder_session_id is distinct from old.holder_session_id
+     and new.lock_generation <= old.lock_generation then
+    raise exception 'a takeover must advance lock_generation (holder % -> %, generation % -> %); the displaced device detects takeover from that number and would otherwise never be told it lost the session',
+      old.holder_session_id, new.holder_session_id, old.lock_generation, new.lock_generation
+      using errcode = '42501';
+  end if;
+  return new;
+end $$;
+
 -- ============================================================================
 -- 7. billing — FR-L1..L5
 -- ============================================================================
@@ -480,7 +555,7 @@ create table public.entitlements (
 );
 
 -- SERVER-ONLY. FR-L2: idempotent, signature-verified webhooks.
-create table public.billing_events (
+create table private.billing_events (
   id             uuid primary key default gen_random_uuid(),
   dodo_event_id  text not null unique,                    -- the idempotency key
   type           text not null,
@@ -603,13 +678,64 @@ insert into public.feature_flags(key, enabled, note) values
   ('ghostpro_preview_probe', false, 'FR-C2 — hostSettings.limits shape is unobserved until the §4 T4 gate');
 
 -- ============================================================================
+-- 9b. The credential audit log — server-only, append-only.  [Round 4, F10]
+-- ============================================================================
+--
+-- Round 4 executed what a stored Ghost Admin key actually permits, on both live majors: it reads
+-- every subscriber's EMAIL, reads staff, reads all settings, and creates posts. Ghost has no scoped
+-- integration -- the Admin JWT carries no scope claim -- so P8's four-write allowlist is a real
+-- invariant about Inflozo's own behaviour and NOT a boundary on the credential.
+--
+-- The blast radius therefore cannot be reduced. What was missing is the other half: nothing recorded
+-- that the credential had been used at all. The pre-mortem's answer to "how long before anyone
+-- noticed" was "until a customer asked why their subscribers were getting spam" -- external
+-- detection, unbounded dwell. Of every fix Round 4 produced, this is the only one that DETECTS
+-- rather than prevents.
+--
+-- It lives in `private` for the same reason site_credentials does: an audit log readable over the
+-- data API is a map of which sites are worth attacking.
+create type public.credential_action as enum (
+  'admin_write','admin_read','vault_decrypt','entitlement_change','admin_flag_change','moderation');
+
+create table private.credential_audit (
+  id             bigint generated always as identity primary key,
+  occurred_at    timestamptz not null default now(),
+  action         public.credential_action not null,
+  user_id        uuid,                                   -- no FK: the log outlives the account (FR-A5)
+  site_id        uuid,
+  route          text not null,                          -- the server route that acted
+  allowlist_item text,                                   -- P8's item, for action = 'admin_write'
+  outcome        text not null,                          -- 'ok' | 'denied' | 'error'
+  detail         jsonb not null default '{}'::jsonb      -- never a secret, never a credential
+);
+create index on private.credential_audit (occurred_at desc);
+create index on private.credential_audit (site_id, occurred_at desc);
+alter table private.credential_audit enable row level security;   -- no policy: server-only
+
+-- AD-6's parent-ownership term.  [Round 4, F2]
+--
+-- The uniform owner policy authorises by the CHILD row's own user_id and never asked whether the
+-- parent belongs to the caller. Executed: tenant A inserted a project_templates row carrying its own
+-- user_id and tenant B's project_id and got HTTP 201, while a random project_id returned 23503 --
+-- which also made the FK error a cross-tenant existence oracle.
+--
+-- This function is deliberately NOT `security definer`. Read as `authenticated`, `public.projects`
+-- is itself RLS-scoped, so a project the caller does not own is simply not visible and `exists`
+-- returns false. "Can I see it" and "do I own it" are the same question, so the check needs no
+-- privilege of its own and cannot leak one.
+create or replace function public.owns_project(pid uuid) returns boolean
+language sql stable as $$ select exists (select 1 from public.projects p where p.id = pid) $$;
+revoke execute on function public.owns_project(uuid) from public;
+grant  execute on function public.owns_project(uuid) to authenticated;
+
+-- ============================================================================
 -- 10. RLS — every table, every policy shaped identically (AD-6/AD-7)
 -- ============================================================================
 
 alter table public.profiles                  enable row level security;
 alter table public.passkey_labels            enable row level security;
 alter table public.sites                     enable row level security;
-alter table public.site_credentials          enable row level security;  -- no policy: server-only
+alter table private.site_credentials         enable row level security;  -- no policy: server-only (and off the data API, §0b)
 alter table public.site_snapshots            enable row level security;
 alter table public.projects                  enable row level security;
 alter table public.project_templates         enable row level security;
@@ -629,7 +755,7 @@ alter table public.template_binding_checklist enable row level security;
 alter table public.edit_locks                enable row level security;
 alter table public.subscriptions             enable row level security;
 alter table public.entitlements              enable row level security;
-alter table public.billing_events            enable row level security;  -- no policy: server-only
+alter table private.billing_events           enable row level security;  -- no policy: server-only (and off the data API, §0b)
 alter table public.checkout_consents         enable row level security;
 alter table public.suggestions               enable row level security;
 alter table public.suggestion_votes          enable row level security;
@@ -643,13 +769,38 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'passkey_labels','sites','site_snapshots','projects','project_templates',
+    'passkey_labels','sites','projects','project_templates',
     'project_template_prefs','custom_templates','custom_settings','translation_overrides',
     'routes_config','assets','edit_locks','project_treatments'
   ] loop
     execute format(
       'create policy %1$s_owner on public.%1$s for all to authenticated
          using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()))', t);
+  end loop;
+end $$;
+
+-- 10a-ii. The parent-ownership term. One shape, added in one place.  [Round 4, F2]
+--
+-- AD-6 said "no policy traverses a foreign key", and that rule is AMENDED rather than broken here:
+-- the whole point of the uniform policy is that a reviewer checks ONE shape instead of N policies,
+-- and that property survives, because every project-child table gets exactly the same extra term
+-- from the same loop. What does not survive is the claim that ownership of the child implies
+-- ownership of the parent -- executed in Round 4, it does not.
+--
+-- Cost is one primary-key lookup on `projects` per row, which is why the traversal ban existed
+-- (planner cost) and why it is affordable here. owns_project() is stable and non-definer, so it
+-- reads `projects` under the caller's own RLS.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'project_templates','project_template_prefs','custom_templates','custom_settings',
+    'translation_overrides','routes_config','edit_locks','project_treatments'
+  ] loop
+    execute format(
+      'create policy %1$s_parent_owned on public.%1$s as restrictive for all to authenticated
+         using (public.owns_project(project_id))
+         with check (public.owns_project(project_id))', t);
   end loop;
 end $$;
 
@@ -660,7 +811,13 @@ declare t text;
 begin
   foreach t in array array[
     'deploy_jobs','deploys','project_site_bindings','exports','deployed_template_names',
-    'asset_usages','subscriptions','entitlements','checkout_consents','template_binding_checklist'
+    'asset_usages','subscriptions','entitlements','checkout_consents','template_binding_checklist',
+    -- site_snapshots joins the read-only set.  [Round 4, F14]
+    -- AD-32 makes the site-snapshots BUCKET server-only with no policy at all, because "a snapshot
+    -- the client could write defeats FR-J13 entirely". The bucket was governed and the row pointing
+    -- into it was not: `authenticated` held SELECT, INSERT, UPDATE and DELETE. A user could not
+    -- touch the bytes and could still destroy the record of where they are.
+    'site_snapshots'
   ] loop
     execute format(
       'create policy %1$s_owner_read on public.%1$s for select to authenticated
@@ -723,7 +880,22 @@ create policy votes_public_count on public.suggestion_votes for select to anon u
 revoke select on public.suggestions from anon, authenticated;
 grant  select (id, user_id, category, title, body, status, vote_count, created_at, image_approved)
   on public.suggestions to anon, authenticated;
-grant  insert, update on public.suggestions to authenticated;
+
+-- INSERT and UPDATE are column-narrowed, not whole-row.  [Round 4, F1]
+--
+-- This file narrowed UPDATE carefully on eight tables in §11 and left INSERT whole-row everywhere,
+-- which handed back exactly what §11 had taken away. Executed in Round 4:
+--
+--     POST /rest/v1/suggestions {image_approved:true, vote_count:99999, status:'shipped'}
+--       -> HTTP 201, and an ANONYMOUS read of suggestions_public returned all three.
+--
+-- So FR-M3's admin approval gate, the vote count and the roadmap status were all set by the person
+-- posting. `image_approved` is the one that matters most: combined with the client-side-only
+-- sanitizer (§16c/F8), it puts an unreviewed file in front of every board visitor.
+-- The same hole existed on UPDATE, reachable while status = 'open' via suggestions_author_update.
+revoke insert, update on public.suggestions from authenticated;
+grant  insert (id, user_id, category, title, body, image_path) on public.suggestions to authenticated;
+grant  update (title, body, category, image_path)              on public.suggestions to authenticated;
 
 -- (2) A SECURITY DEFINER view is the only path to image_path. Definer, deliberately: it must read
 --     a column its callers cannot, so it carries its own row filter rather than inheriting RLS.
@@ -762,7 +934,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'profiles','sites','site_credentials','projects','project_templates','project_template_prefs',
+    'profiles','sites','projects','project_templates','project_template_prefs',
     'custom_settings','translation_overrides','routes_config','asset_usages','deploy_jobs',
     'subscriptions','entitlements'
   ] loop
@@ -770,6 +942,9 @@ begin
                     for each row execute function public.touch_updated_at()', t);
   end loop;
 end $$;
+-- site_credentials moved to `private` in §0b and keeps its touch trigger there.  [Round 4, F6]
+create trigger site_credentials_touch before update on private.site_credentials
+  for each row execute function public.touch_updated_at();
 
 -- ============================================================================
 -- 11a. Table-level grants — the schema grants IN, and names every privilege  [R2-1]
@@ -793,7 +968,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'passkey_labels','site_snapshots','project_templates','project_template_prefs',
+    'passkey_labels','project_templates','project_template_prefs',
     'custom_templates','translation_overrides','routes_config','project_treatments'
   ] loop
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
@@ -802,13 +977,68 @@ end $$;
 
 -- (2) Owner read/write, but UPDATE is column-narrowed in §11 below. INSERT and DELETE are whole-row
 --     and stay here; the UPDATE grant is deliberately absent so §11 is the only place that confers it.
+-- INSERT is column-narrowed on these four for the same reason UPDATE is in §11.  [Round 4, F3]
+--
+-- The class assertion added to RLS-TEST.sql found these three the moment it existed: §11 revoked
+-- UPDATE on sites, projects and custom_settings and named the exact columns a client may write,
+-- and then §11a granted whole-row INSERT beside it -- so `capability`, `deploy_rate_limit_exempt`,
+-- `revision` and `frozen_at` were all settable at creation, which is the whole of what §11 forbade,
+-- available one verb over. A client creates these rows legitimately; what it does not do is assert
+-- the server's facts about them.
 do $$
 declare t text;
 begin
-  foreach t in array array['sites','projects','custom_settings','assets','edit_locks'] loop
-    execute format('grant select, insert, delete on public.%I to authenticated', t);
+  foreach t in array array['sites','projects','custom_settings','edit_locks'] loop
+    execute format('grant select, delete on public.%I to authenticated', t);
   end loop;
 end $$;
+
+-- sites: the client supplies the connection and its presentation. The SERVER asserts capability,
+-- health, credential presence, the routes verification result and the rate-limit exemption.
+grant insert (id, user_id, url, title, favicon_url) on public.sites to authenticated;
+
+-- projects: `revision` is AD-15's lineage marker and starts at 0 by default -- a client that chose
+-- its opening value could start above any revision a legitimate sync would produce.
+grant insert (id, user_id, name, slug, style_pack, dark_enabled, language, posts_per_page,
+              credit_enabled, linked_site_id, rtl_ack_at)
+  on public.projects to authenticated;
+
+-- custom_settings: `frozen_at` is FR-Q2's stamp and is the server's to set, at the moment the
+-- project first deploys or exports. The guard trigger above makes it immutable once set; this
+-- keeps a client from arriving with it already set.
+grant insert (id, project_id, user_id, key, label, type, options, default_value, group_name,
+              visibility_condition, bound_to, position)
+  on public.custom_settings to authenticated;
+
+-- assets: the client may read and delete its own rows, but does NOT create them.  [Round 4, F3]
+--
+-- §11 below locks `stored_bytes` against UPDATE because "a writable meter is not a meter", and the
+-- comment there already admitted the hole this closes: the row is INSERTed by the client, so the
+-- meter could simply be understated at creation. Executed:
+--
+--     POST /rest/v1/assets {bytes: 9999999, stored_bytes: 1}  -> HTTP 201
+--     PATCH .. {stored_bytes: 5e8}                            -> HTTP 403
+--
+-- Locked afterwards, wide open at the start. This is also FR-K3's quota lever: the objects land in
+-- Storage for real and only the number meant to stop them is fiction.
+--
+-- Column-narrowing INSERT is the fix everywhere else in this section and it CANNOT express the rule
+-- here, which is worth stating rather than hiding: `stored_bytes` has no server-side source at
+-- insert time -- every value in the request is client-supplied, so no trigger over the row can
+-- correct it. The only trustworthy source is Storage itself. So the row becomes a server write:
+-- FR-K2's browser upload still goes DIRECT to the bucket (AD-32 and P5 are untouched, the bytes
+-- never round-trip), and is followed by a small server route that stats the uploaded objects and
+-- writes this row with a true stored_bytes. That is one extra request per upload, not one extra
+-- copy of the bytes.
+grant select, delete on public.assets to authenticated;
+
+-- edit_locks: lock_generation is not client-set AT INSERT either.  [Round 4, F3]
+-- It defaults to 1 and only ever advances through the takeover guard above; a client that could
+-- choose its opening value could start at a number no legitimate takeover would beat.
+revoke insert on public.edit_locks from authenticated;
+grant  insert (project_id, user_id, holder_session_id, heartbeat_at, unsynced_edits,
+               nudge_requested_by, nudge_requested_at)
+  on public.edit_locks to authenticated;
 
 -- (3) profiles: the row is created at signup and never deleted by the client (FR-A5 is a soft
 --     delete performed by a server route). SELECT here; UPDATE is column-narrowed in §11.
@@ -821,7 +1051,8 @@ declare t text;
 begin
   foreach t in array array[
     'deploys','project_site_bindings','exports','deployed_template_names','asset_usages',
-    'subscriptions','entitlements','checkout_consents','deploy_jobs','template_binding_checklist'
+    'subscriptions','entitlements','checkout_consents','deploy_jobs','template_binding_checklist',
+    'site_snapshots'                                            -- [Round 4, F14]
   ] loop
     execute format('grant select on public.%I to authenticated', t);
   end loop;
@@ -837,12 +1068,18 @@ grant update (read_at) on public.notifications to authenticated;
 
 -- (6) FR-M3's public board. `suggestions` already has its explicit column grant in §10 (the
 --     image_path gate); votes are owner-writable and publicly countable.
-grant select, insert, update, delete on public.suggestion_votes to authenticated;
+-- A vote is cast or withdrawn, never moved.  [Round 4, F16 -- owner chose option 2]
+-- sync_vote_count() fires on INSERT and DELETE only, so an UPDATE that changed suggestion_id left
+-- both counts wrong. The table has no column a user could legitimately edit -- it is
+-- (suggestion_id, user_id, created_at) -- so removing UPDATE closes the desync at the grant layer
+-- rather than growing the trigger.
+grant select, insert, delete on public.suggestion_votes to authenticated;
 grant select on public.suggestion_votes to anon;
 
--- (7) AD-7 server-only -- site_credentials, billing_events, feature_flags -- are granted NOTHING,
---     deliberately and by omission. RLS-on-with-no-policy remains, but it is no longer the only
---     thing standing between a client and the table.
+-- (7) AD-7 server-only. site_credentials and billing_events now live in `private` (§0b), which
+--     PostgREST does not expose at all, so no key of any kind reaches them over the data API.
+--     feature_flags stays in `public` and is granted NOTHING, deliberately and by omission.
+--     RLS-on-with-no-policy remains behind both, as defence in depth.
 
 -- ⚠️ "NOTHING" MUST NOT INCLUDE service_role, and the first version of this file did.
 -- [Round 3, 2026-08-20 -- MEASUREMENTS §19d, executed against real hosted Supabase]
@@ -855,7 +1092,41 @@ grant select on public.suggestion_votes to anon;
 -- RLS was never the obstacle -- service_role carries bypassrls = true. The missing TABLE GRANT was,
 -- which is Round 1's "a view is not access control while the table grant stands" from the other side.
 -- Invisible against PRELUDE.sql, which never creates a service_role.
-grant select, insert on public.billing_events, public.site_credentials to service_role;
+-- ⚠️ AND ROUND 3 FIXED THE INSTANCE, NOT THE CLASS.  [Round 4, F11 -- MEASUREMENTS §21o]
+--
+-- The two tables below were granted in Round 3. Round 4 read the same catalogue for every OTHER
+-- AD-8 table and found the identical signature -- REFERENCES, TRIGGER, TRUNCATE and no
+-- SELECT/INSERT -- on twelve more:
+--
+--     deploys, deploy_jobs, entitlements, subscriptions, exports, project_site_bindings,
+--     deployed_template_names, asset_usages, checkout_consents, notifications,
+--     template_binding_checklist, profiles
+--
+-- AD-8 says these are "written by server routes under the service role". None of them could be.
+-- E7's first deploy and E12's first entitlement write both fail with 42501 -- a build-stopper that
+-- was invisible because nothing asserted it. RLS-TEST.sql now asserts the CLASS, so a thirteenth
+-- table cannot repeat this: that assertion, not this grant list, is the actual fix.
+--
+-- DELETE is included deliberately: AD-33's crons prune notifications, purge accounts and enforce
+-- FR-J7's artifact retention, and every one of those deletes rows under this role.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'deploys','deploy_jobs','entitlements','subscriptions','exports','project_site_bindings',
+    'deployed_template_names','asset_usages','checkout_consents','notifications',
+    'template_binding_checklist','profiles','site_snapshots','assets','suggestions',
+    'suggestion_votes','projects','sites','custom_settings','custom_templates',
+    'project_templates','project_template_prefs','translation_overrides','routes_config',
+    'project_treatments','passkey_labels'
+  ] loop
+    execute format('grant select, insert, update, delete on public.%I to service_role', t);
+  end loop;
+end $$;
+
+grant select, insert, update, delete on private.site_credentials, private.billing_events
+  to service_role;
+grant select, insert on private.credential_audit to service_role;   -- append-only: no update, no delete
 -- feature_flags is read server-side per request (the Feature-flags convention), so it needs SELECT.
 grant select on public.feature_flags to service_role;
 
@@ -1009,6 +1280,14 @@ end $$;
 create trigger edit_locks_generation_monotonic before update on public.edit_locks
   for each row execute function public.guard_lock_generation();
 
+-- FR-D18's takeover rule, from the function defined beside the table.  [Round 4, F4]
+create trigger edit_locks_takeover_advances before update on public.edit_locks
+  for each row execute function public.guard_lock_takeover();
+
+-- AD-9's fourth frozen column, which never had its trigger.  [Round 4, F12]
+create trigger custom_settings_key_frozen before update on public.custom_settings
+  for each row execute function public.guard_custom_setting_freeze();
+
 -- ============================================================================
 -- 11b. Signup — AD-28's entitlements row has a writer  [R1 decision 14]
 -- ============================================================================
@@ -1027,6 +1306,30 @@ revoke execute on function public.provision_entitlement() from public;
 create trigger auth_user_entitlement after insert on auth.users
   for each row execute function public.provision_entitlement();
 
+-- ...and the profiles row, which nothing created at all.  [Round 4, F13]
+--
+-- The entitlement half above was added in Round 1 and the profile half was never noticed, because
+-- the only evidence anyone looked at was a row count that happened to look right. Executed against
+-- the live project in Round 4:
+--
+--     auth.users = 6    entitlements = 6    profiles = 2
+--
+-- Six signups, two profiles -- and those two exist only because RLS-TEST.sql seeds them by hand.
+-- Round 3's §16a read "profiles = 2" as confirming the design; it was confirming the fixture.
+--
+-- This is not cosmetic. `autosave_enabled` defaults to true ON THE ROW, so with no row at all the
+-- editor reads NULL for the setting AD-15 uses to decide whether a user's work is being saved --
+-- and `is_admin` and `free_editable_project_id` are equally absent.
+create or replace function public.provision_profile() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (user_id) values (new.id) on conflict (user_id) do nothing;
+  return new;
+end $$;
+revoke execute on function public.provision_profile() from public;
+create trigger auth_user_profile after insert on auth.users
+  for each row execute function public.provision_profile();
+
 -- ============================================================================
 -- 11c. Function EXECUTE — the same grant-in rule, applied to callables
 -- ============================================================================
@@ -1044,7 +1347,10 @@ begin
   foreach f in array array[
     'public.touch_updated_at()','public.freeze_columns()','public.guard_revision()',
     'public.guard_slug()','public.guard_custom_template_name()','public.guard_lock_generation()',
-    'public.sync_vote_count()','public.enforce_custom_setting_cap()'
+    'public.sync_vote_count()','public.enforce_custom_setting_cap()',
+    -- Round 4's three new guards. RLS-TEST asserts this list against the catalogue, which is how
+    -- the first two were caught here rather than in a later round.
+    'public.guard_lock_takeover()','public.guard_custom_setting_freeze()','public.provision_profile()'
   ] loop
     execute format('revoke execute on function %s from public, anon, authenticated', f);
   end loop;
@@ -1056,6 +1362,41 @@ end $$;
 -- deliberately: moving the extension to its own schema changes the search_path every migration and
 -- every server route resolves against, which is a bigger change than this batch should make. Raised
 -- rather than done.
+
+-- ============================================================================
+-- 11d. RLS needs an index to stand on.  [Round 4, P1 -- MEASUREMENTS §21g]
+-- ============================================================================
+--
+-- Every policy in §10 is `user_id = (select auth.uid())`, so RLS rewrites every tenant-scoped query
+-- into a filter on user_id. Round 4 found 21 of 29 RLS tables had no index whose first key is
+-- user_id, which turns "list my rows" into a scan of EVERY tenant's rows. Measured on the live
+-- project, 200k rows with 50k for the target tenant:
+--
+--     with a user_id index :  11.2 ms
+--     without one          : 320.9 ms      <- 14x, and it grows with total rows, not the tenant's
+--
+-- The same run also settled AD-6's other claim, which had never been checked: the `(select ...)`
+-- wrapper really does hoist -- it emits `Index Cond: (user_id = (InitPlan 1).col1)` and evaluates
+-- auth.uid() ONCE, where the bare form re-evaluates it per row. Keep the wrapper; it is what holds
+-- the unindexed case to 320 ms instead of far worse. But hoisting removes the per-row CALL, not the
+-- scan, and only an index removes the scan.
+--
+-- Indexes on empty tables are instant and cost nothing to carry, which is why this is done before
+-- launch rather than as a migration against live customer data.
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'asset_usages','checkout_consents','custom_settings','custom_templates','deploy_jobs',
+    'deployed_template_names','deploys','edit_locks','exports','project_site_bindings',
+    'project_template_prefs','project_templates','project_treatments','routes_config',
+    'site_snapshots','suggestion_votes','suggestions','template_binding_checklist',
+    'translation_overrides'
+  ] loop
+    execute format('create index if not exists %1$s_user_id_idx on public.%1$s (user_id)', t);
+  end loop;
+end $$;
+create index if not exists site_credentials_user_id_idx on private.site_credentials (user_id);
 
 -- ============================================================================
 -- 12. Storage — four buckets, and RLS on storage.objects is a separate system

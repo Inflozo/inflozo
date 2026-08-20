@@ -1585,3 +1585,114 @@ The round-4 prompt named that pattern and counted five prior occurrences; this r
 The pre-mortem's question for the owner: *what would have to be true to find this in month 2 rather
 than month 26?* Exactly one item on that list answers it. The architecture has 35 invariants and not
 one of them is about knowing that something happened.
+
+---
+
+## 22. Round 4 decisions APPLIED, and proved · 2026-08-20
+
+The owner took 14 of 17 recommendations and deviated on three (F16 → remove-and-re-add, S1 → test
+first, H2 → re-measure on real designs), plus two directions: **F4's takeover is allowed with a
+"you were taken over and lost these changes" message to the displaced device**, and **S2's story
+must also design a per-account budget**. Everything below is executed, not asserted.
+
+### 22a. Two breaks found while applying, both pre-existing
+**`SCHEMA.sql` had not applied to a bare container since Round 3.** §19d's fix added
+`grant ... to service_role` and `PRELUDE.sql` never created that role:
+
+    psql:/s.sql:858: ERROR:  role "service_role" does not exist
+
+The hosted path kept working because Supabase provides the role, so the break was invisible to the
+run everyone was doing. `PRELUDE.sql` now creates it `bypassrls`, matching the platform — which is
+also what makes the new AD-7/AD-8 service-role assertions mean the same thing on both targets.
+
+**`PRELUDE.sql` did not model `storage.buckets`' real default.** Round 3 §16b established that the
+platform ships it **RLS on, zero policies**; the stand-in shipped it with RLS off, so RLS-TEST's
+`storage.buckets` assertion — one of only two that could ever abort — failed on **every** container
+run. Fixed in the stand-in rather than weakened in the test.
+
+### 22b. F0 — the harness is a gate now, and that is proved by mutation
+36 `raise notice 'FAIL` → `raise exception`; the structural sentinels, which returned findings as
+**rows**, are wrapped in blocks that raise. Then every fix was reverted one at a time against a
+freshly built database, and the gate had to catch it:
+
+    revert F1  (grant update (image_approved))         -> exit 3   FAIL (F3): suggestions.image_approved
+    revert F2  (drop the parent-ownership policy)      -> exit 3   FAIL (F2): project_templates
+    revert F3  (grant insert (stored_bytes) on assets) -> exit 3   FAIL (F3): assets.stored_bytes
+    revert F11 (revoke insert on deploys)              -> exit 3   FAIL (F11): deploys
+    revert F12 (drop custom_settings_key_frozen)       -> exit 3   FAIL: missing guard trigger(s)
+    revert F13 (drop auth_user_profile)                -> exit 3   FAIL: missing guard trigger(s)
+    revert F4  (drop edit_locks_takeover_advances)     -> exit 3   FAIL: missing guard trigger(s)
+    revert P1  (drop deploys_user_id_idx)              -> exit 3   FAIL (P1): deploys
+    revert F16 (grant update on suggestion_votes)      -> exit 3   FAIL (F16): a vote was moved
+    unmutated control                                  -> exit 0
+
+**9 of 9 caught.** Clean run on a brand-new container: **67 assertions, 0 failures, exit 0**, 45
+policies over 28 tables — up from 38 assertions that could not fail.
+
+### 22c. Writing the assertions found four more instances of the same class
+This is the argument for class assertions over per-table fixes, and it happened while the work ran.
+The F3 catalogue check went red on its first execution against tables nobody had flagged:
+
+    FAIL (F3): sites.deploy_rate_limit_exempt (INSERT), sites.capability (INSERT),
+               projects.revision (INSERT), custom_settings.frozen_at (INSERT)
+
+§11 had revoked UPDATE on all three and named the writable columns, and §11a granted **whole-row
+INSERT** beside it — so everything §11 forbade was available one verb over. Round 4's attack pass
+found this class on `suggestions`, `assets` and `edit_locks`; the assertion found the other four for
+free. INSERT is now column-narrowed on all seven.
+
+Two further self-corrections worth recording, because both were the gate working on its author:
+`role_table_grants` lists **table-level grants only**, so the first reachability assertion called
+`suggestions` unreachable the moment F1 moved it to column-level grants — fixed by using
+`has_any_column_privilege`. And building `'public.'||tablename` inside a qual let the planner
+evaluate the privilege test **before** the schema filter, failing on `public.pg_statistic`; passing
+the OID removes the possibility.
+
+### 22d. AD-36 implemented and proved — `tools/stress/test-ad36.js`, 10 checks
+All four vectors are inert and every legitimate case still works:
+
+    ok  javascript: in a user link is neutralised
+    ok  data:, vbscript:, case, control-char and whitespace evasions all neutralised
+    ok  ordinary and relative links are untouched
+    ok  a crafted helper argument is refused at compile time
+    ok  quote-in-arg, brace-in-path and unknown-helper are all refused
+    ok  the legitimate binding vocabulary is unchanged
+    ok  event handlers, style and formaction are not bindable
+    ok  legitimate attribute bindings still emit
+    ok  AD-5 still holds — user braces ship as entities, never as a mustache
+    ok  AD-4 still holds — a quote in a user value cannot break the attribute
+
+**The first draft of the path grammar was wrong and the fixture caught it**: it refused
+`@site.logo`, because it had been written against dotted identifiers rather than against
+Handlebars' actual vocabulary. A grammar that rejects the language it parses is a broken parser, not
+a strict one — the "legitimate case still works" half of each check is what caught it, and that is
+why it is part of the invariant rather than a courtesy.
+
+### 22e. The hardened compiler still ships
+Nothing regressed on the real pipeline or the real Ghosts:
+
+    70 sections over 7 templates, 197 files, 10.20 MB   (render 983 ms, gate 900 ms, total 2.16 s)
+    gscan 4.49.7 (v5): 0 errors 0 warnings  ·  gscan 6.4.2 (v6): 0 errors 0 warnings
+    AD-14 determinism: two builds byte-identical (aede7be372ed0950)
+    live upload+activate: ghost5 5.95 s + 1.53 s · ghost6 5.60 s + 2.40 s, 0/0 on upload both
+
+### 22f. What was applied, by decision
+| | Decision | Mechanism | Proof |
+|---|---|---|---|
+| F0 | make the harness fail | 36 notices → exceptions; sentinels raise | 9/9 mutation test |
+| F11 | fix twelve + assert the class | `service_role` CRUD loop + catalogue assertion | revert `deploys` → caught |
+| F1 | lock create **and** edit; sanitize on approval | column-narrowed INSERT+UPDATE on `suggestions` | 3 behavioural regressions |
+| F10 | write the radius down, log every use | AD-10 rewritten; `private.credential_audit` | table + deny assertion |
+| AD36 | one rule, one shared check | `AD-36` + `compile.js` + `test-ad36.js` | 10 checks |
+| F2 | parent-ownership on the shared rule | `owns_project()` + restrictive policy loop | cross-tenant insert now 42501 |
+| F13 | signup provisions the profile | `provision_profile()` + trigger | 6 users → 6 profiles |
+| F3 | lock create like edit, everywhere | INSERT narrowed on 7 tables | catalogue assertion, both verbs |
+| F6 | move off the data API | `private` schema | assertion: not in `public` |
+| F12 | add the missing guard | `guard_custom_setting_freeze()` | rename + null both 42501 |
+| F4 | decide the protocol *(owner: allow, then notify)* | `guard_lock_takeover()` | reseat blocked, real takeover works |
+| F14 | backup record read-only | `site_snapshots` → AD-8 select-only | grant assertion |
+| P1 | index now, assert for new tables | 19 indexes + catalogue assertion | revert one → caught |
+| F16 | remove-and-re-add *(owner deviation)* | UPDATE grant removed | move now 42501 |
+| S1 | test with a staff login first *(deferred)* | register item 34 | — |
+| S2 | note on the story + per-account budget *(owner)* | register item 35 | — |
+| H2 | re-measure on real designs *(deferred)* | register item 36 | — |

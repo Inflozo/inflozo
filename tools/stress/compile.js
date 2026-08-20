@@ -65,13 +65,89 @@ class UserText {
 const splitFirst = (s, ch) => { const i = s.indexOf(ch); return i === -1 ? [s, undefined] : [s.slice(0, i), s.slice(i + 1)]; };
 const get = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AD-36 — an untrusted value never reaches an interpreting sink un-validated.
+//
+// Round 4 found four separate defects that are one missing idea. In each, a value from outside was
+// carefully ESCAPED and then handed to something that INTERPRETS it, and escaping is the wrong tool
+// for that job. AD-5 is this same idea applied to braces and AD-4 to marks; neither generalised.
+//
+//   1. a user's link `javascript:alert(1)` reached href untouched -- there is no character in it
+//      to escape, so every escaper passes it through intact
+//   2. a design author's helper argument broke out of the mustache into raw theme text, because
+//      bindExpr built Handlebars SOURCE by string concatenation
+//   3. a design could bind any attribute name it liked, including `onload`
+//   4. a Ghost tag colour carried extra CSS declarations onto the customer's live site
+//
+// The mechanism is the same in all four: PARSE, then rebuild from validated parts. Never
+// interpolate an untrusted string into a syntax.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// (1) URL schemes. The Conventions row promised this for GHOST-sourced values only, and lives in
+//     ghost-shim. A user-typed link is equally a stranger to the visitor who clicks it, and on the
+//     canvas the same value is a same-origin URL inside the owner's authenticated session -- so the
+//     check belongs in the shared core, over BOTH sources.
+const SAFE_SCHEME = /^(https?:|mailto:|tel:)/i;
+// A value with no scheme at all is relative and therefore same-origin: '/about', '#top', 'x.png'.
+// The colon test is what separates 'foo/bar:baz' (a path) from 'javascript:...' (a scheme).
+function safeUrl(value) {
+  const v = String(value == null ? '' : value).trim();
+  // Control characters and whitespace inside a scheme are how `java\nscript:` slips past a naive
+  // prefix test; strip them before deciding, and reject rather than repair.
+  const probe = v.replace(/[\u0000-\u0020]/g, '').toLowerCase();
+  const scheme = probe.match(/^([a-z0-9+.-]*):/);
+  if (!scheme) return v;                       // relative — no scheme to abuse
+  return SAFE_SCHEME.test(probe) ? v : '#';    // '#' is inert and visible; never silently dropped
+}
+
+// (2)+(3) The binding vocabulary is a grammar, not a template. Every part is validated and the
+//     mustache is rebuilt from the validated parts.
+// Handlebars' real path vocabulary, not a narrower invention: an optional `@` prefix (@site.logo,
+// @custom.accent_colour, @member), optional `../` ascents, then dotted identifiers. Widened after
+// the first run refused `@site.logo` -- a grammar that rejects the language it is parsing is a
+// broken parser, not a strict one. What it still refuses is every character the breakout needed:
+// braces, quotes, whitespace, backslash.
+const PATH_RE   = /^(\.\.\/)*@?[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+const HELPERS   = {
+  // arg is constrained per helper, by enum where the vocabulary is closed
+  img_url: { param: 'size',   ok: (a) => /^[a-z0-9_]+$/i.test(a) },
+  date:    { param: 'format', ok: (a) => /^[A-Za-z0-9 ,:/.\-]+$/.test(a) },
+};
+// The attributes a design may bind. An event handler is not on it, and neither is `style` --
+// AD-3's carve-out emits its custom property through the stylesheet path, not through a binding.
+const BINDABLE_ATTRS = new Set([
+  'href', 'src', 'srcset', 'alt', 'title', 'id', 'datetime', 'value', 'poster',
+  'aria-label', 'aria-labelledby', 'aria-describedby', 'aria-hidden', 'width', 'height',
+]);
+// The subset of those whose value the browser resolves as a URL.
+const URL_ATTRS = new Set(['href', 'src', 'srcset', 'poster']);
+
+function assertBindableAttr(attr) {
+  const a = String(attr).toLowerCase();
+  if (!BINDABLE_ATTRS.has(a)) {
+    throw new Error(`AD-36: attribute "${attr}" is not bindable. ` +
+      `A design may bind only: ${[...BINDABLE_ATTRS].join(', ')}.`);
+  }
+  return a;
+}
+
 function bindExpr(spec) {
   const [path, helper] = splitFirst(spec, '|');
+  if (!PATH_RE.test(path)) {
+    throw new Error(`AD-36: "${path}" is not a valid binding path. ` +
+      `A path is dotted identifiers only -- this is what stopped a crafted design emitting raw ` +
+      `theme text through the mustache it was being concatenated into.`);
+  }
   if (!helper) return `{{${path}}}`;
   const [name, arg] = splitFirst(helper, ':');
-  if (name === 'img_url') return `{{img_url ${path} size="${arg}"}}`;
-  if (name === 'date') return `{{date ${path} format="${arg}"}}`;
-  throw new Error(`unknown helper: ${name}`);
+  const h = Object.prototype.hasOwnProperty.call(HELPERS, name) ? HELPERS[name] : null;
+  if (!h) throw new Error(`AD-36: unknown helper "${name}"`);
+  if (arg === undefined || !h.ok(arg)) {
+    throw new Error(`AD-36: helper "${name}" got an invalid ${h.param} argument ${JSON.stringify(arg)}. ` +
+      `The argument is validated, never interpolated -- a quote here used to close the parameter ` +
+      `and reopen as raw theme text.`);
+  }
+  return `{{${name} ${path} ${h.param}="${arg}"}}`;
 }
 
 function emitBindings(scope, tokens) {
@@ -84,7 +160,8 @@ function emitBindings(scope, tokens) {
     if (guard === 'hide') wrapGuard(el, expr, tokens);
   }
   for (const el of all('[data-bind-attr]')) {
-    const [attr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
+    const [rawAttr, spec] = splitFirst(el.getAttribute('data-bind-attr'), ':');
+    const attr = assertBindableAttr(rawAttr);           // AD-36 (3)
     const expr = bindExpr(spec);
     const guard = el.getAttribute('data-empty');
     el.setAttribute(attr, tokens.put(expr));
@@ -110,9 +187,13 @@ function applyProps(scope, content, users) {
   }
   for (const a of ['data-prop-attr', 'data-prop-attr2']) {
     for (const el of all(`[${a}]`)) {
-      const [attr, path] = splitFirst(el.getAttribute(a), ':');
+      const [rawAttr, path] = splitFirst(el.getAttribute(a), ':');
+      const attr = assertBindableAttr(rawAttr);         // AD-36 (3)
       const v = get(content, path);
-      if (v != null) el.setAttribute(attr, users.put(v));
+      // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Doing it here
+      // rather than in UserText.esc is deliberate -- esc() runs over every text prop and a scheme
+      // is only meaningful in a URL context, so the check belongs where the context is known.
+      if (v != null) el.setAttribute(attr, users.put(URL_ATTRS.has(attr) ? safeUrl(v) : v));
       el.removeAttribute(a);
     }
   }
@@ -159,4 +240,5 @@ function renderSection(src, content, users) {
   return { template, partials: out };
 }
 
-module.exports = { renderSection, Tokens, UserText, T0, T1, U0, U1 };
+module.exports = { renderSection, Tokens, UserText, T0, T1, U0, U1,
+                   safeUrl, bindExpr, assertBindableAttr, BINDABLE_ATTRS };
