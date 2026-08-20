@@ -10,3 +10,5 @@ node_modules/
 tools/stress/theme/
 tools/stress/theme.zip
 tools/probe/out/
+__pycache__/
+*.pyc
