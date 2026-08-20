@@ -1111,3 +1111,50 @@ Nothing among the 47 matches `remind`, `upcoming` or a pre-renewal notice; the n
 **This is suggestive, not conclusive** — an email need not have a webhook. VERIFY item 6's statutory
 half still needs a written answer from Dodo support, and if the answer is no, FR-P1 grows a sixth
 email that E12 must build.
+
+### 19h. The fee schedule, from one real transaction · VERIFY item 5
+
+Owner-supplied, from the Dodo payment record for the test subscription:
+
+    charged to the customer   £13.19
+    VAT (Dodo remits)         £2.20     = exactly 20% of the £10.99 pre-tax -> UK VAT
+    Dodo fee                  £1.09
+    net to the merchant       £9.90
+
+    fee as % of PRE-TAX revenue   9.92%
+    fee as % of gross charged     8.26%
+    merchant keeps                90.1% of pre-tax revenue
+
+**Merchant of record confirmed by the owner**, consistent with §19f's observation that Dodo computed
+and collected the VAT itself.
+
+**What one data point cannot establish, stated because it is the load-bearing unknown.** A fee of
+`rate x amount + fixed` has many solutions through a single observation — £0.20 fixed implies 8.10%,
+£0.40 implies 6.28%, £0.60 implies 4.46%. **The fixed component is exactly what makes Appendix F's
+60/40 yearly/monthly mix matter**, because a yearly customer pays it once and a monthly customer pays
+it twelve times. It is undetermined and a second observation at the annual price would settle it.
+
+### 19i. Appendix F recomputed — the break-even is robust to that uncertainty
+
+Appendix F assumes Pro at **$15/mo or $150/yr**, a **60/40 yearly/monthly** mix, and a blended net of
+**$12.61/mo** per Pro customer.
+
+| fee structure | monthly net | yearly net /mo | **blended** |
+| --- | --- | --- | --- |
+| Appendix F's assumption | — | — | **$12.61** |
+| observed 9.92% applied flat to both *(worst case)* | $13.51 | $11.26 | **$12.16** |
+| 5.5% + $0.50 | $13.68 | $11.77 | **$12.53** |
+| 6.3% + $0.40 | $13.65 | $11.68 | **$12.47** |
+| 4.5% + $0.60 | $13.72 | $11.89 | **$12.62** |
+
+Applying the observed rate flat to both plans is the **pessimistic** reading — it charges any fixed
+component twelve times over on the annual plan — and even then the blended figure is **$12.16, only
+3.6% below** Appendix F's number. Every plausible rate/fixed split lands between **$12.16 and $12.62**.
+
+**Cash break-even moves from 11–15 Pro subscribers to ~11–16.** G7's payback range of 160–180 shifts
+by well under one subscriber. **Appendix F stands, and the fee-structure ambiguity does not need
+resolving before E12** — it should be settled with a second observation at the annual price when one
+naturally occurs, not chased now.
+
+**Recorded as provisional:** one transaction, GBP, credit card, UK VAT, on a USD-priced product that
+Dodo currency-converted. A US or EU card, or a same-currency charge, may differ.
