@@ -1,0 +1,2 @@
+{ "name":"inflozo-gate-probe","private":true,
+  "dependencies":{ "gscan6":"npm:gscan@6.4.2", "gscan4":"npm:gscan@4.49.7" } }

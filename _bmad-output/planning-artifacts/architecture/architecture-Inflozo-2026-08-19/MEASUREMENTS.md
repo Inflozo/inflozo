@@ -175,8 +175,10 @@ the proof that the fix is sufficient at scale.
 
 ## 7. Excluding a Koenig card restores gscan's rules for it · confirms FR-Q7
 
-Setting `card_assets: { exclude: ['callout'] }` produced **10 new warnings**, each demanding a
-`.kg-callout-*` class the theme must now style. FR-Q7 states this ("Excluding a card also
+Setting `card_assets: { exclude: ['callout'] }` produced **12 new warnings**, each demanding a
+`.kg-callout-*` class the theme must now style. **[Corrected 2026-08-20: this section previously
+said 10. Re-run under both checkers, the number is 12 on each — `GS050-CSS-KGCO`, `-KGCOE`,
+`-KGCOT` and nine `-KGCOBG*` background variants. The count is quantified again per card in §13.]** FR-Q7 states this ("Excluding a card also
 restores gscan's Koenig rules for it, so checking scales with what Inflozo actually wrote") —
 confirmed, and now quantified. It is a build obligation on E7 and on E10's A33 category gate:
 designing a card means styling **every** class gscan checks for it, or the 0/0 target breaks.
@@ -324,3 +326,83 @@ One further correction: **`size-limit` has no engine of its own** and measures n
 preset — `@size-limit/file` is required — and its default metric is **brotli**, which is what NFR-2's
 40 KB budget therefore means. And the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, not
 2.105.0, so the PRD's floor is a safe over-pin rather than a capability boundary.
+
+
+---
+
+## 13. Two gscan majors, not one gscan twice · behind AD-34 · **corrects §2 and §11**
+
+`ghost:5-alpine` → Ghost **5.130.6**, bundling gscan **4.49.7**.
+`ghost:6-alpine` → Ghost **6.58.0**, bundling gscan **6.4.2**.
+Image digests: `ghost@sha256:a0506f3f…48bdb5` (5-alpine), `ghost@sha256:c917e2a3…a70a3f2` (6-alpine).
+
+    docker exec iz-ghost5 cat /var/lib/ghost/versions/*/node_modules/gscan/package.json | grep version
+
+### 13a. The same theme, three verdicts
+
+The theme is the probe theme (a `page.hbs` with no `@page.show_title_and_feature_image` guard, and
+one `{{#get}}` using `limit="all"`), chosen because it discriminates. Verdicts as reported by the
+Admin theme-upload endpoint on each real Ghost, against the local checkers:
+
+| checker | errors | warnings |
+| --- | --- | --- |
+| gscan 6.4.2 at `checkVersion: 'v5'` — **what the gate used to run** | **0** | 1 |
+| **real Ghost 5.130.6** (gscan 4.49.7) | **1** | 0 |
+| gscan 4.49.7 at `checkVersion: 'v5'` — **what the gate runs now** | **1** | 0 |
+| gscan 6.4.2 at `checkVersion: 'v6'` | 0 | 2 |
+| **real Ghost 6.58.0** (gscan 6.4.2) | 0 | 2 |
+
+The corrected pairing reproduces both real Ghosts exactly — error counts **and** rule codes
+(`GS110-NO-MISSING-PAGE-BUILDER-USAGE` on 5.x; that plus `GS090-NO-LIMIT-ALL-IN-GET-HELPER` on 6.x).
+The spike theme scores **0 errors / 0 warnings under both checkers**, so nothing regressed.
+
+### 13b. Where the two v5 specs actually differ
+
+    261 rules in gscan 4.49.7's v5 spec; 259 in gscan 6.4.2's.
+
+| rule | 4.49.7 | 6.4.2 |
+| --- | --- | --- |
+| `GS110-NO-MISSING-PAGE-BUILDER-USAGE` | **error** | warning |
+| `GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE` | **error** | warning |
+| `GS050-CSS-KGVIDTHUMB` · `-KGVIDTHUMBPL` · `-KGVIDTI` | warning | **absent** |
+| `GS005-NO-INLINE-DYNAMIC-PARTIAL` | absent | error |
+
+`GS100` and `GS051-CUSTOM-FONTS` exist in **both** with identical regexes; the `config.custom` cap is
+**20** in both and the allowed types (`select|boolean|color|image|text`) are unchanged. **AD-17 and
+AD-18 therefore survive the version split unchanged** — only the GS110 pair and the three GS050
+video rules moved.
+
+### 13c. Cost — the split does not buy a second gscan's worth of time
+
+Five runs each on the spike theme, medians (the first call of each process is module load and is
+excluded as cold):
+
+| checker | median |
+| --- | --- |
+| gscan 4.49.7 (Ghost 5 verdict) | **27.9 ms** |
+| gscan 6.4.2 (Ghost 6 verdict) | **29.6 ms** |
+| both | **57.5 ms** |
+
+**Scope limit, stated because it matters:** this is the two-section spike theme, **not** AD-11's
+40-section stress fixture — which Round 1 established is not checked in anywhere in the repo and
+which Round 1 decision 10 is still open against. §2's `217 + 88 = 305 ms` was measured on that
+fixture and is **not** comparable to the numbers above. What these numbers do establish is that
+running two gscan *majors* costs about the same per pass as running one twice, so the split is not a
+new budget risk. **The authoritative re-measure against AD-11 waits on decision 10's rebuilt fixture.**
+
+### 13d. A33 Koenig card treatments, quantified under both checkers
+
+`card_assets.exclude` restores gscan's rules for each excluded card (§7). Measured on the spike theme:
+
+| excluded | gscan 4.49.7 (Ghost 5) | gscan 6.4.2 (Ghost 6) |
+| --- | --- | --- |
+| none (`card_assets: true`) | 0 | 0 |
+| one — `callout` | **12** | **12** |
+| six — `callout, button, header, product, toggle, video` | **53** | **50** |
+
+**A33 is six designs.** So the category's full styling obligation is **53 classes on Ghost 5 and 50
+on Ghost 6**, and the **3-warning delta is exactly** `GS050-CSS-KGVIDTHUMB`, `-KGVIDTHUMBPL` and
+`-KGVIDTI` — the video-thumbnail rules that exist only in 4.49.7 and that the previous gate could
+never see. This lands on **E7** and **E10's A33 category gate** simultaneously: designing a Koenig
+card means styling every class gscan checks for it, on **both** majors, or FR-J6's 0/0 target breaks
+on Ghost 5 only — the harder failure to notice.
