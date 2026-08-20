@@ -1059,6 +1059,63 @@ on conflict (id) do nothing;
 -- No bucket is public. Every read the browser performs is a short-lived signed URL minted by a
 -- server route (AD-13), which is also the only thing that can be revoked.
 
+-- ── Round 3, decision D6 ──────────────────────────────────────────────────────
+-- Supabase's OWN storage migration grants more than its docs describe. Read verbatim
+-- from storage-api v1.61.7, migrations/tenant/0046-buckets-objects-grants.sql:
+--
+--     grant all on storage.buckets, storage.objects
+--       to <service_role>, <authenticated_role>, <anon_role>
+--
+-- `grant all` confers TRUNCATE, and TRUNCATE is not subject to RLS -- the same trap
+-- R2-3 found in PRELUDE.sql, this time in the real platform, on the two tables AD-32
+-- governs. Executed 2026-08-20 (storage-api v1.61.7 over supabase/postgres 17.6.1.140),
+-- as `authenticated`:  `truncate storage.objects cascade;`  -- SUCCEEDED.
+--
+-- What HELD: `storage.buckets` ships RLS enabled with ZERO policies, so `select`
+-- returns 0 rows and `update storage.buckets set public = true` affects 0 rows. A
+-- client cannot list buckets or flip `public` on site-snapshots. **AD-32's "no bucket
+-- is public" holds by default and needs no policy of its own.** (VERIFY-AT-BUILD 29.)
+--
+-- ⚠️ AND THE INTUITIVE FIX IS A SILENT NO-OP -- the third time this project has hit
+-- that shape, after the column-level REVOKE (MEASUREMENTS §10) and PRELUDE's grants.
+-- Executed: run from a migration as `postgres`,
+--
+--     revoke truncate on storage.buckets, storage.objects from anon, authenticated;
+--
+-- reports success and changes NOTHING. Postgres only lets a role revoke grants it
+-- itself made, and the grantor here is `supabase_storage_admin`:
+--
+--     supabase_storage_admin granted TRUNCATE on objects to authenticated
+--
+-- On the local image `postgres` is not a superuser (rolsuper = f), is not a member of
+-- supabase_storage_admin, and `REVOKE ... GRANTED BY supabase_storage_admin` fails
+-- with "grantor must be current user". After the revoke "succeeded", TRUNCATE still
+-- succeeded as `authenticated`.
+--
+-- So this block ATTEMPTS the revoke and REPORTS whether it took, rather than assuming
+-- it. Whether hosted Supabase grants `postgres` the membership that makes it work is
+-- unverified and is an open probe item -- do not treat a clean migration run as proof.
+do $$
+declare still_granted int;
+begin
+  begin
+    execute 'revoke truncate on storage.buckets, storage.objects from anon, authenticated';
+  exception when others then
+    raise notice 'D6: revoke raised % -- expected where postgres is not the grantor', sqlerrm;
+  end;
+  select count(*) into still_granted from information_schema.role_table_grants
+   where table_schema = 'storage' and table_name in ('buckets','objects')
+     and grantee in ('anon','authenticated') and privilege_type = 'TRUNCATE';
+  if still_granted > 0 then
+    raise warning 'D6 NOT APPLIED: TRUNCATE remains granted on % storage grants. The grantor is supabase_storage_admin and this role cannot revoke it. The control that holds today is that `storage` is not an exposed PostgREST schema -- keep it that way, and never add a SECURITY INVOKER function in `public` that touches storage.', still_granted;
+  else
+    raise notice 'D6 applied: TRUNCATE revoked on both storage tables.';
+  end if;
+end $$;
+
+-- MUST BE RE-CHECKED AFTER ANY SUPABASE STORAGE UPGRADE: migration 0046 re-runs and
+-- re-grants. `RLS-TEST.sql` asserts the OUTCOME so a regression is caught, not assumed.
+
 -- assets/{userId}/… — the one bucket the client writes directly, because FR-K2's optimization
 -- happens in the browser and a server round-trip would double the egress P5 exists to avoid.
 create policy assets_owner on storage.objects for all to authenticated
