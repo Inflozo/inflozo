@@ -221,7 +221,7 @@ evidence — that is in scope and valuable — but it must not re-open one merel
 ### Tier 3 — database and deploy safety
 | # | Decision |
 |---|---|
-| 12 | **Replace AD-19's advisory lock with a lease record** — a "who's deploying" row with a timestamp and expiry. Survives all three defects (null key, one-transaction-per-request, unbounded blocking) instead of patching each. |
+| 12 | ~~**Replace AD-19's advisory lock with a lease record** — a "who's deploying" row with a timestamp and expiry.~~ **⚠️ STRUCK by Round 3 (decision D1).** Never applied — no lease record exists anywhere in `SCHEMA.sql`, and AD-19 still reads `pg_advisory_xact_lock`. Round 3 found it in **direct contradiction** with Round 2's survivals list ("AD-19's transaction-scoped lock variant is the right choice") and stopped rather than picking; the owner ruled for the advisory lock. **Reasons of record:** the lock is one line, needs no table, no RLS policy, no denormalized `user_id`, no expiry to tune and no stuck-lease cleanup path — and it releases itself when the transaction ends, including when the server dies mid-deploy, which is the failure mode a lease has to handle explicitly. Round 1's three objections are real and are judged not to bind at v1 scale. **AD-19 is unchanged.** |
 | 13 | **Column-lock `edit_locks`, `profiles`, `assets`** via revoke-then-grant, and add the `lock_generation` monotonic trigger AD-31 already promises. |
 | 14 | **Create the `entitlements` row at signup via a trigger, owned by E1's schema story.** |
 | 15 | **Add the settings-snapshot column to `deploys`.** |
@@ -237,7 +237,7 @@ evidence — that is in scope and valuable — but it must not re-open one merel
 | 21 | **Fidelity rotation (NFR-6(c3)) runs on a container schedule, not a Vercel cron.** AD-33's "one home" rule gets a stated carve-out. |
 | 22 | **Capture three recordings into `fixtures/`:** the malformed-`visibility` gscan cascade, the Ghost CORS transcripts, the rebuilt stress fixture. |
 | 23 | **Add "reconcile `storage.objects` against each bucket" to NFR-4's restore drill.** |
-| 24 | **Quote MEASUREMENTS verbatim in the spine; stop restating numbers in two places.** |
+| 24 | **Quote MEASUREMENTS verbatim in the spine; stop restating numbers in two places.** **✅ APPLIED 2026-08-20 (Round 3, decision D8)** — approved in Round 1, never done, and Round 3 found both halves still open: AD-11 restated seven numbers, and `MEASUREMENTS.md` §8's "34 policies across 26 tables" still disagreed with the shipped proof's 37 / 28. AD-11 now cites `MEASUREMENTS.md` §14 rather than carrying the figures, and §8's counts are marked as needing re-derivation from the proof rather than restated. |
 
 ### Tier 5 — reasoned, decided at epic open
 | # | Decision |

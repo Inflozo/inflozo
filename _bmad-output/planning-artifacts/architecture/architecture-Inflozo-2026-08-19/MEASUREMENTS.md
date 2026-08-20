@@ -193,7 +193,7 @@ designing a card means styling **every** class gscan checks for it, or the 0/0 t
 `SCHEMA.sql` applies clean to PostgreSQL 17.11 on the first run. The static sweep reports:
 
 - **0** public tables with RLS disabled
-- **34** policies across **26** tables
+- **policies across tables — re-derive from the proof, do not quote this line.** It read "34 policies across 26 tables"; the shipped `RLS-TEST.sql` prints **37 / 28**. The drift is Round 1 decision 24's whole point: a number restated by hand in a second place goes stale the first time the schema moves. *(Round 3, decision D8 — the count is now read from the proof's own output, and this line exists only to record why it is not a number.)*
 - exactly **2** deliberate server-only tables (`site_credentials`, `billing_events`) — both
   RLS-enabled with zero policies, which is AD-7's deny mechanism
 - **0** tables carrying `user_id` without a policy that scopes on it
