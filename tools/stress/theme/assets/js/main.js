@@ -1,0 +1,33 @@
+// FR-G7 behaviour modules, bundled
+function mod0(root){const t=root.querySelectorAll('[data-mod="0"]');for(const e of t){e.dataset.ready='1';}}
+function mod1(root){const t=root.querySelectorAll('[data-mod="1"]');for(const e of t){e.dataset.ready='1';}}
+function mod2(root){const t=root.querySelectorAll('[data-mod="2"]');for(const e of t){e.dataset.ready='1';}}
+function mod3(root){const t=root.querySelectorAll('[data-mod="3"]');for(const e of t){e.dataset.ready='1';}}
+function mod4(root){const t=root.querySelectorAll('[data-mod="4"]');for(const e of t){e.dataset.ready='1';}}
+function mod5(root){const t=root.querySelectorAll('[data-mod="5"]');for(const e of t){e.dataset.ready='1';}}
+function mod6(root){const t=root.querySelectorAll('[data-mod="6"]');for(const e of t){e.dataset.ready='1';}}
+function mod7(root){const t=root.querySelectorAll('[data-mod="7"]');for(const e of t){e.dataset.ready='1';}}
+function mod8(root){const t=root.querySelectorAll('[data-mod="8"]');for(const e of t){e.dataset.ready='1';}}
+function mod9(root){const t=root.querySelectorAll('[data-mod="9"]');for(const e of t){e.dataset.ready='1';}}
+function mod10(root){const t=root.querySelectorAll('[data-mod="10"]');for(const e of t){e.dataset.ready='1';}}
+function mod11(root){const t=root.querySelectorAll('[data-mod="11"]');for(const e of t){e.dataset.ready='1';}}
+function mod12(root){const t=root.querySelectorAll('[data-mod="12"]');for(const e of t){e.dataset.ready='1';}}
+function mod13(root){const t=root.querySelectorAll('[data-mod="13"]');for(const e of t){e.dataset.ready='1';}}
+function mod14(root){const t=root.querySelectorAll('[data-mod="14"]');for(const e of t){e.dataset.ready='1';}}
+function mod15(root){const t=root.querySelectorAll('[data-mod="15"]');for(const e of t){e.dataset.ready='1';}}
+function mod16(root){const t=root.querySelectorAll('[data-mod="16"]');for(const e of t){e.dataset.ready='1';}}
+function mod17(root){const t=root.querySelectorAll('[data-mod="17"]');for(const e of t){e.dataset.ready='1';}}
+function mod18(root){const t=root.querySelectorAll('[data-mod="18"]');for(const e of t){e.dataset.ready='1';}}
+function mod19(root){const t=root.querySelectorAll('[data-mod="19"]');for(const e of t){e.dataset.ready='1';}}
+function mod20(root){const t=root.querySelectorAll('[data-mod="20"]');for(const e of t){e.dataset.ready='1';}}
+function mod21(root){const t=root.querySelectorAll('[data-mod="21"]');for(const e of t){e.dataset.ready='1';}}
+function mod22(root){const t=root.querySelectorAll('[data-mod="22"]');for(const e of t){e.dataset.ready='1';}}
+function mod23(root){const t=root.querySelectorAll('[data-mod="23"]');for(const e of t){e.dataset.ready='1';}}
+function mod24(root){const t=root.querySelectorAll('[data-mod="24"]');for(const e of t){e.dataset.ready='1';}}
+function mod25(root){const t=root.querySelectorAll('[data-mod="25"]');for(const e of t){e.dataset.ready='1';}}
+function mod26(root){const t=root.querySelectorAll('[data-mod="26"]');for(const e of t){e.dataset.ready='1';}}
+function mod27(root){const t=root.querySelectorAll('[data-mod="27"]');for(const e of t){e.dataset.ready='1';}}
+function mod28(root){const t=root.querySelectorAll('[data-mod="28"]');for(const e of t){e.dataset.ready='1';}}
+function mod29(root){const t=root.querySelectorAll('[data-mod="29"]');for(const e of t){e.dataset.ready='1';}}
+function mod30(root){const t=root.querySelectorAll('[data-mod="30"]');for(const e of t){e.dataset.ready='1';}}
+document.addEventListener('DOMContentLoaded',()=>{mod0(document);mod1(document);mod2(document);mod3(document);mod4(document);mod5(document);mod6(document);mod7(document);mod8(document);mod9(document);mod10(document);mod11(document);mod12(document);mod13(document);mod14(document);mod15(document);mod16(document);mod17(document);mod18(document);mod19(document);mod20(document);mod21(document);mod22(document);mod23(document);mod24(document);mod25(document);mod26(document);mod27(document);mod28(document);mod29(document);mod30(document)});

@@ -1,0 +1,30 @@
+{{!-- header-9 --}}
+<section class="d-a1-9 hdr" data-bg="surface" data-spacing="comfortable" data-divider="line" data-sticky="sticky-shrink" data-nav-align="end" data-cta="on" data-search="on" data-member-links="on" data-density="regular" data-border="hairline" data-logo-size="md" data-shadow="soft" data-width="wide" data-mobile="drawer" data-caps="off">
+  <div class="hdr__util">
+    <ul class="hdr__social">
+      <li class="hdr__social-item"><a class="hdr__social-link" href="#s1" aria-label="Social 1"><svg class="ico ico--1" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M1 2 L22 3 L12 22 L2 12 Z"></path><circle cx="12" cy="12" r="4"></circle><rect x="1" y="4" width="6" height="6" rx="1"></rect></svg></a></li>
+      <li class="hdr__social-item"><a class="hdr__social-link" href="#s2" aria-label="Social 2"><svg class="ico ico--2" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M2 2 L22 4 L12 22 L2 12 Z"></path><circle cx="12" cy="12" r="5"></circle><rect x="2" y="4" width="6" height="6" rx="1"></rect></svg></a></li>
+      <li class="hdr__social-item"><a class="hdr__social-link" href="#s3" aria-label="Social 3"><svg class="ico ico--3" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M3 2 L22 5 L12 22 L2 12 Z"></path><circle cx="12" cy="12" r="6"></circle><rect x="3" y="4" width="6" height="6" rx="1"></rect></svg></a></li>
+      <li class="hdr__social-item"><a class="hdr__social-link" href="#s4" aria-label="Social 4"><svg class="ico ico--4" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 2 L22 6 L12 22 L2 12 Z"></path><circle cx="12" cy="12" r="7"></circle><rect x="4" y="4" width="6" height="6" rx="1"></rect></svg></a></li>
+    </ul>
+    <p class="hdr__tag">Free weekly issue</p>
+  </div>
+  <div class="hdr__bar">
+    <a class="hdr__logo" href="{{@site.url}}" title="Orbit Weekly home">
+      {{#if @site.logo}}<img class="hdr__logo-img" src="{{img_url @site.logo size="m"}}" alt="">{{/if}}
+      <span class="hdr__logo-text">Orbit Weekly</span>
+    </a>
+    <nav class="hdr__nav" aria-label="Main">
+      <ul class="hdr__list">
+        {{#foreach navigation}}
+  {{> "nav-item-9"}}
+{{/foreach}}
+      </ul>
+    </nav>
+    <div class="hdr__actions">
+      <button class="hdr__search" type="button" aria-label="Search"><svg class="ico ico--3" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M3 2 L22 5 L12 22 L2 12 Z"></path><circle cx="12" cy="12" r="6"></circle><rect x="3" y="4" width="6" height="6" rx="1"></rect></svg></button>
+      <a class="hdr__signin" href="/signin/">Sign in</a>
+      <a class="hdr__cta button button--primary" href="/start/">Get started</a>
+    </div>
+  </div>
+</section>

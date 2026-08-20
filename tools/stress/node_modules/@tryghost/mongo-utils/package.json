@@ -1,0 +1,32 @@
+{
+  "name": "@tryghost/mongo-utils",
+  "version": "0.6.6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/NQL.git",
+    "directory": "packages/mongo-utils"
+  },
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --check-coverage mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "12.0.0",
+    "eslint": "8.57.1",
+    "eslint-plugin-ghost": "3.5.0",
+    "mocha": "11.8.0",
+    "should": "13.2.3",
+    "sinon": "22.1.0"
+  },
+  "dependencies": {
+    "lodash": "4.18.1"
+  }
+}

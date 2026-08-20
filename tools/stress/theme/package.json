@@ -1,0 +1,59 @@
+{
+  "name": "inflozo-stress",
+  "description": "AD-11 stress fixture",
+  "version": "1.0.0",
+  "engines": {
+    "ghost": ">=5.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ghost-theme"
+  ],
+  "author": {
+    "name": "Inflozo",
+    "email": "hello@inflozo.com"
+  },
+  "config": {
+    "posts_per_page": 12,
+    "card_assets": true,
+    "image_sizes": {
+      "xs": {
+        "width": 150
+      },
+      "s": {
+        "width": 400
+      },
+      "m": {
+        "width": 800
+      },
+      "l": {
+        "width": 1600
+      },
+      "xl": {
+        "width": 2400
+      }
+    },
+    "custom": {
+      "color_scheme": {
+        "type": "select",
+        "options": [
+          "Auto",
+          "Light",
+          "Dark"
+        ],
+        "default": "Auto"
+      },
+      "dark_accent_colour": {
+        "type": "color",
+        "default": "#8ab4f8"
+      },
+      "dark_logo": {
+        "type": "image"
+      },
+      "accent_colour": {
+        "type": "color",
+        "default": "#1f6feb"
+      }
+    }
+  }
+}
