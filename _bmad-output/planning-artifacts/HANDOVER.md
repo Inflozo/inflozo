@@ -47,15 +47,29 @@ by root cause at the top of that file — a handful of owner answers (the shared
 JavaScript, the disclosure fallback for headers and footers, A7's resting billing cadence, the
 rails and the marquee, plus a short singles list) resolves the lot.
 
+**Repeating items now have controls specified.** The owner asked for FAQ questions, stats and team
+cards to share one design control and for a way to add more items. Half was already guaranteed —
+AD-3 writes control values onto the *section root*, so per-item design is impossible by
+construction — and half was genuinely missing: no control in FR-F1's vocabulary adds, removes or
+reorders an item. That is **item 44 in `VERIFY-AT-BUILD.md`**, and all 34 prompts in
+`CATEGORY-PROMPTS.html` now carry the right block: 12 categories author their own items and get
+add/remove/reorder, 11 pull from Ghost and are told explicitly **not** to show an Add button, 11 do
+not repeat. Item 44 also records that §7.3's list of 11 disagrees with the content-model scan on
+A3, A22 and A23 — reconcile before E4 opens rather than picking one.
+
 **Next actions, in order:**
 
-1. Get the owner's answers to `derived-fields-A1-A12.md` §"What needs a design answer", and edit
+1. The owner re-copies **8 of the 12** already-designed categories' patch prompts, which changed
+   when the repeat blocks were added: **A3, A5, A8, A9, A10, A11, A12** (add/remove/reorder) and
+   **A7** (Ghost tiers, count rules). A1, A2, A4 and A6 are unchanged. The 22 build prompts already
+   carry the right block.
+2. Get the owner's answers to `derived-fields-A1-A12.md` §"What needs a design answer", and edit
    those entries in place as answers arrive.
-2. Decide with the owner whether the export's frames belong in git — `.gitignore` already ignores
+3. Decide with the owner whether the export's frames belong in git — `.gitignore` already ignores
    `unpacked/`, but the files were committed in the same commit that added the rule, so intent and
    repo disagree; the zip alone carries the full export — and when the specs plus derived fields
    merge into `sections-inventory.md`, which is where the build reads them from.
-3. Once two or three more categories exist, run **step 4** (`/bmad-review` — the prompt is in
+4. Once two or three more categories exist, run **step 4** (`/bmad-review` — the prompt is in
    `build-sequence.md`). Do not wait for all 34.
 
 ## Also outstanding
