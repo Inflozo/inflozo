@@ -74,6 +74,13 @@ A3, A22 and A23 — reconcile before E4 opens rather than picking one.
 
 ## Also outstanding
 
+- **Supersede `design/derived-fields-A1-A12.md` with the authored specs — wholesale.** All 12
+  categories were re-run in Claude Design with the corrected prompts, so every spec in the export
+  zip now carries native six-slot tuples that outrank the derived ones everywhere. The session that
+  owned that file has ended; the rule it recorded in the file (supersede, never merge; re-prove
+  uniqueness with `tools/tuple-check.py` after) still governs. Registers 45 and 46 in
+  `VERIFY-AT-BUILD.md` list what the re-run found.
+
 - **Design prompt 2 is run but not exported.** Once it is on disk, **step 5** (journeys and flows)
   can run alongside the remaining categories instead of after them.
 - Three gates with triggers, all in `VERIFY-AT-BUILD.md`: Supabase **Pro** before the live project
