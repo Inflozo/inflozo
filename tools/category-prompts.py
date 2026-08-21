@@ -15,7 +15,7 @@ Everything is extracted from the prompt file and from the export. Nothing is ret
 a second copy of a prompt is a second place for it to go stale — which is the defect that produced
 the twelve half-specified categories in the first place.
 """
-import os, re, sys, html, glob, subprocess
+import os, re, sys, html, glob, zipfile, subprocess
 
 ROOT   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN   = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
@@ -38,6 +38,9 @@ OUT    = os.path.join(PLAN, 'CATEGORY-PROMPTS.html')
 # because its only repeat is a {{#get}}-driven issue preview. That discrepancy is recorded in
 # VERIFY-AT-BUILD rather than silently resolved here.
 AUTHORED_REPEATS = {
+ 'A2':  'messages[] — Ticker, Rotator and Triple share one 2–6 item list',
+ 'A4':  'proof[]',
+ 'A6':  'reasons[]',
  'A3':  'link columns[] and social links[]',
  'A5':  'items[] {icon?, image?, title, body, link?}',
  'A8':  'items[] {quote, name, role?, avatar?, rating?, link?}',
@@ -59,14 +62,26 @@ GHOST_REPEATS = {
 }
 
 def repeat_block(cid):
-    """The instruction for whichever kind of repeat this category has, or nothing."""
-    if cid in AUTHORED_REPEATS:
+    """The item-control instruction. EVERY category gets one.
+
+    The first version classified categories into authored / Ghost-bound / neither, and the
+    "neither" bucket was wrong three times out of eleven -- A2's messages[], A4's proof[] and
+    A6's reasons[] are all authored arrays, and all three specs came back with no item controls
+    at all because the prompt told them they had none. A category that genuinely has no array
+    costs one sentence to say so; a category wrongly told it has none costs a re-run."""
+    named = AUTHORED_REPEATS.get(cid)
+    if cid not in GHOST_REPEATS:
+        what = (f"This category repeats **{named}**." if named else
+                "**First, find them.** Read your own content model for this category and list every "
+                "field that is an array the user authors — anything a design draws more than one of. "
+                "If after checking there is genuinely no such field in any design, say that in one "
+                "line and skip the rest of this section. Do not skip it silently.")
         return f"""
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **{AUTHORED_REPEATS[cid]}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+{what} Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -225,8 +240,13 @@ def categories():
 def done_designs():
     """{category id: [design names]} from the export, so a patch prompt can name them."""
     out = {}
-    for f in glob.glob(os.path.join(EXPORT, '*.dc.html')):
-        b = os.path.basename(f)[:-len('.dc.html')]
+    names = [os.path.basename(f) for f in glob.glob(os.path.join(EXPORT, '*.dc.html'))]
+    if not names:                       # the owner may ship the export as a zip and no unpacked/
+        for z in glob.glob(os.path.join(os.path.dirname(EXPORT), '*.zip')):
+            with zipfile.ZipFile(z) as zf:
+                names += [os.path.basename(n) for n in zf.namelist() if n.endswith('.dc.html')]
+    for b in names:
+        b = b[:-len('.dc.html')]
         m = re.match(r'(A\d+)-(\d+) (.+)', b)
         if not m or m[2] == '0':          # "0 Category Proof" is not a design
             continue
@@ -442,5 +462,9 @@ if __name__ == '__main__':
             print('  FAIL  CATEGORY-PROMPTS.html was stale and has been regenerated'); sys.exit(1)
         print('category prompts: current'); sys.exit(0)
     assert_tuple_vocab_matches_gate()
+    if not done_designs() and glob.glob(os.path.join(os.path.dirname(EXPORT), '*')):
+        sys.exit('REFUSING: the export directory has files but no designs were found. '
+                 'Emitting build prompts for already-designed categories would tell '
+                 'Claude Design to redraw them. Check EXPORT in this script.')
     p, b, t = build()
     print(f'CATEGORY-PROMPTS.html regenerated — {p} patch + {b} build = {t} categories')

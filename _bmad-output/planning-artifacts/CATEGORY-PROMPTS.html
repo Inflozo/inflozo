@@ -201,10 +201,39 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.">Copy prompt</button>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (8,383 characters)</summary><pre>This is a follow-up on A1 · Headers &amp; Navigation, which you have already designed.
+  <details><summary>Show the prompt (10,511 characters)</summary><pre>This is a follow-up on A1 · Headers &amp; Navigation, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -329,7 +358,36 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.</pre></details>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat patch" id="A2">
   <div class="chead">
     <span class="cid">A2</span>
@@ -459,10 +517,39 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.">Copy prompt</button>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **messages[] — Ticker, Rotator and Triple share one 2–6 item list**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (8,302 characters)</summary><pre>This is a follow-up on A2 · Announcement Bars, which you have already designed.
+  <details><summary>Show the prompt (10,207 characters)</summary><pre>This is a follow-up on A2 · Announcement Bars, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -586,7 +673,36 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.</pre></details>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **messages[] — Ticker, Rotator and Triple share one 2–6 item list**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat patch" id="A3">
   <div class="chead">
     <span class="cid">A3</span>
@@ -719,10 +835,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **link columns[] and social links[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **link columns[] and social links[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -749,7 +865,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,241 characters)</summary><pre>This is a follow-up on A3 · Footers, which you have already designed.
+  <details><summary>Show the prompt (10,229 characters)</summary><pre>This is a follow-up on A3 · Footers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -876,10 +992,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **link columns[] and social links[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **link columns[] and social links[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -1036,10 +1152,39 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.">Copy prompt</button>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **proof[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (8,388 characters)</summary><pre>This is a follow-up on A4 · Heroes, which you have already designed.
+  <details><summary>Show the prompt (10,237 characters)</summary><pre>This is a follow-up on A4 · Heroes, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1166,7 +1311,36 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.</pre></details>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **proof[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat patch" id="A5">
   <div class="chead">
     <span class="cid">A5</span>
@@ -1299,10 +1473,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {icon?, image?, title, body, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {icon?, image?, title, body, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -1329,7 +1503,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,230 characters)</summary><pre>This is a follow-up on A5 · Features, which you have already designed.
+  <details><summary>Show the prompt (10,218 characters)</summary><pre>This is a follow-up on A5 · Features, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1456,10 +1630,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {icon?, image?, title, body, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {icon?, image?, title, body, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -1613,10 +1787,39 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.">Copy prompt</button>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **reasons[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (8,326 characters)</summary><pre>This is a follow-up on A6 · CTA Banners, which you have already designed.
+  <details><summary>Show the prompt (10,177 characters)</summary><pre>This is a follow-up on A6 · CTA Banners, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1740,7 +1943,36 @@ sentence with the registry&#x27;s. That correction is in scope for this pass eve
 about the behaviour section is.**
 
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
-existing one wholesale rather than merge by hand.</pre></details>
+existing one wholesale rather than merge by hand.
+
+## Repeating items — the controls for them
+
+This category repeats **reasons[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat patch" id="A7">
   <div class="chead">
     <span class="cid">A7</span>
@@ -2163,10 +2395,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {quote, name, role?, avatar?, rating?, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {quote, name, role?, avatar?, rating?, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -2193,7 +2425,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,219 characters)</summary><pre>This is a follow-up on A8 · Testimonials, which you have already designed.
+  <details><summary>Show the prompt (10,207 characters)</summary><pre>This is a follow-up on A8 · Testimonials, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2319,10 +2551,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {quote, name, role?, avatar?, rating?, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {quote, name, role?, avatar?, rating?, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -2478,10 +2710,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {question, answer}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {question, answer}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -2508,7 +2740,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,185 characters)</summary><pre>This is a follow-up on A9 · FAQ, which you have already designed.
+  <details><summary>Show the prompt (10,173 characters)</summary><pre>This is a follow-up on A9 · FAQ, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2634,10 +2866,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {question, answer}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {question, answer}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -2793,10 +3025,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {value, label, sublabel?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {value, label, sublabel?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -2823,7 +3055,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,197 characters)</summary><pre>This is a follow-up on A10 · Stats &amp; Numbers, which you have already designed.
+  <details><summary>Show the prompt (10,185 characters)</summary><pre>This is a follow-up on A10 · Stats &amp; Numbers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2949,10 +3181,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **items[] {value, label, sublabel?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **items[] {value, label, sublabel?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3108,10 +3340,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **logos[] {image, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **logos[] {image, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3138,7 +3370,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,174 characters)</summary><pre>This is a follow-up on A11 · Logo Walls, which you have already designed.
+  <details><summary>Show the prompt (10,162 characters)</summary><pre>This is a follow-up on A11 · Logo Walls, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -3264,10 +3496,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **logos[] {image, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **logos[] {image, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3423,10 +3655,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **images[], team[] {name, role, image, link?}, values[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **images[], team[] {name, role, image, link?}, values[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3453,7 +3685,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Specification only — no redesign, no frames touched.</p>
-  <details><summary>Show the prompt (10,220 characters)</summary><pre>This is a follow-up on A12 · About &amp; Team, which you have already designed.
+  <details><summary>Show the prompt (10,208 characters)</summary><pre>This is a follow-up on A12 · About &amp; Team, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -3579,10 +3811,10 @@ about the behaviour section is.**
 Return the result as an updated version of this category&#x27;s specification file, so I can replace the
 existing one wholesale rather than merge by hand.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **images[], team[] {name, role, image, link?}, values[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **images[], team[] {name, role, image, link?}, values[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3825,10 +4057,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **steps[] {title, body, icon?/image?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **steps[] {title, body, icon?/image?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -3855,7 +4087,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (17,010 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (16,998 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -4065,10 +4297,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **steps[] {title, body, icon?/image?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **steps[] {title, body, icon?/image?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -4308,10 +4540,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **images[] {image, caption?, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **images[] {image, caption?, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -4338,7 +4570,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (16,995 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (16,983 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -4548,10 +4780,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **images[] {image, caption?, link?}**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **images[] {image, caption?, link?}**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -4791,10 +5023,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **embed url(s) — where a design takes more than one**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **embed url(s) — where a design takes more than one**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -4821,7 +5053,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (17,016 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,004 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -5031,10 +5263,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **embed url(s) — where a design takes more than one**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **embed url(s) — where a design takes more than one**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -5274,10 +5506,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **socials[] and locations[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **socials[] and locations[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -5304,7 +5536,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (16,985 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (16,973 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -5514,10 +5746,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **socials[] and locations[]**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **socials[] and locations[]**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -8511,10 +8743,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **popular tag chips[] — design #5 only**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **popular tag chips[] — design #5 only**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -8541,7 +8773,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (16,995 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (16,983 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -8751,10 +8983,10 @@ When the category is complete, finish with two blocks I can carry into the next 
 
 2. **Shared field list** — the union of every content field this category&#x27;s designs need.
 
-## Repeating items — this category has them, and they need controls it does not yet have
+## Repeating items — the controls for them
 
-This category repeats **popular tag chips[] — design #5 only**. The user authors those items themselves, so the
-sidebar must let them manage the list. Specify all of this, per design:
+This category repeats **popular tag chips[] — design #5 only**. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
 
 - **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
   content, never an empty shell), and where it lands in the order.
@@ -8992,10 +9224,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,111 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,239 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -9203,7 +9464,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A25">
   <div class="chead">
     <span class="cid">A25</span>
@@ -9417,10 +9707,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,271 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,399 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -9628,7 +9947,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A26">
   <div class="chead">
     <span class="cid">A26</span>
@@ -10760,10 +11108,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,187 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,315 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -10971,7 +11348,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A29">
   <div class="chead">
     <span class="cid">A29</span>
@@ -11185,10 +11591,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,114 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,242 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -11396,7 +11831,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A30">
   <div class="chead">
     <span class="cid">A30</span>
@@ -12069,10 +12533,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,142 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,270 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -12280,7 +12773,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A32">
   <div class="chead">
     <span class="cid">A32</span>
@@ -12953,10 +13475,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,218 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,346 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -13164,7 +13715,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div><div class="cat build" id="A34">
   <div class="chead">
     <span class="cid">A34</span>
@@ -13378,10 +13958,39 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.">Copy prompt</button>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Self-contained. Paste this alone — nothing else needed.</p>
-  <details><summary>Show the prompt (15,138 characters)</summary><pre>## 1. What this is, and why it is different
+  <details><summary>Show the prompt (17,266 characters)</summary><pre>## 1. What this is, and why it is different
 
 The Inflozo section library is **485 designs across 34 categories**. Every one is being designed here before any is built.
 
@@ -13589,7 +14198,36 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category&#x27;s designs need.</pre></details>
+2. **Shared field list** — the union of every content field this category&#x27;s designs need.
+
+## Repeating items — the controls for them
+
+**First, find them.** Read your own content model for this category and list every field that is an array the user authors — anything a design draws more than one of. If after checking there is genuinely no such field in any design, say that in one line and skip the rest of this section. Do not skip it silently. Where the user authors items themselves, the sidebar must let them manage the list.
+Specify all of this, per design that draws more than one of anything:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so &quot;make card 3 bigger&quot; is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty.</pre></details>
 </div>
 
 <footer>Generated 2026-08-21 from <code>design/claude-design-prompt-3-library.md</code> and the design
