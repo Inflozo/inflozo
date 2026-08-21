@@ -134,7 +134,29 @@ Three deferred by the owner's decision sheet, each with the reason it was deferr
 
 | # | Item | Standing owner | Status |
 | --- | --- | --- | --- |
-| 34 | **What Ghost accepts in a `color`- and `image`-typed custom setting**, which lands in the theme's `<style>` block | **E0(b)** (execute) · **E7** (FR-Q5 emission) · **E5** (ghost-shim parsing) | **OPEN — deferred deliberately (Round 4, S1; owner chose "test it properly first").** `default.hbs` emits `--accent: {{@custom.accent_colour}}` inside a `<style>` element and `url({{@custom.dark_logo}})` unquoted. Unlike AD-3's inline-`style` carve-out, that context permits **selectors**, so the payload class is strictly larger than the tag-`accent_color` finding AD-36(4) closes. **Could not be executed in Round 4 and the reason matters:** Ghost refuses `PUT /admin/settings/` to an integration token — `403 API tokens do not have permission to access this endpoint` — and the **control write with a valid `#1f6feb` was refused identically**, so the 403 says nothing about validation. Needs a staff session. **Note the dependency direction:** AD-36 already parses these values in `ghost-shim` regardless of the answer, so this item determines how much Ghost's own validation was ever contributing, not whether Inflozo needs the check. |
+| 34 | ~~**What Ghost accepts in a `color`- and `image`-typed custom setting**~~ **CLOSED 2026-08-21 — HELD** | **E0(b)** (execute) · **E7** (FR-Q5 emission) · **E5** (ghost-shim parsing) | **CLOSED BY EXECUTION 2026-08-21 — the `<style>` block context HOLDS, and Round 4's S1 is refuted.**
+Two probe defects had to be cleared first, and both are worth recording because each produced a
+convincing false result. (1) Round 4 used an **integration token**, which Ghost refuses for settings
+writes — and the *control* write of a valid `#1f6feb` was refused identically, which is why it was
+marked SUSPECTED rather than held. (2) This round's first attempt used a **staff token passed raw**;
+a Staff Access Token is `id:secret` and must be minted into a JWT exactly like an Admin API key.
+The corrected attempt then hit a third: theme settings do **not** live on `/settings/` — writes there
+return `200` and silently do nothing, control included. They live on
+**`/ghost/api/admin/custom_theme_settings/`**. Executed there, with a real staff session, against the
+stress theme's own `config.custom`:
+
+    #ff0000                                       -> 200, stored          <- THE CONTROL, works
+    '#fff; } body{display:none} .x{color:#fff'    -> 422 Validation error
+    '#fff;background:url(https://evil.example/…)' -> 422 Validation error
+    'notacolour'                                  -> 422 Validation error
+
+**Ghost validates `color`-typed custom settings strictly**, so the `<style>` block — which unlike an
+inline `style` attribute *can* carry selectors — is not reachable this way. **Note what this does NOT
+change:** a tag's `accent_color` is a different field on a different endpoint and remains loose
+(§21e, AD-36(4)), so `ghost-shim` still parses every bound colour. This result removes a suspected
+escalation; it does not remove the rule. **The lesson that generalises:** three separate probes
+returned a plausible "held" that was really a broken control — *a result whose control did not pass
+is not a result*. ~~OPEN — deferred deliberately (Round 4, S1; owner chose "test it properly first").** `default.hbs` emits `--accent: {{@custom.accent_colour}}` inside a `<style>` element and `url({{@custom.dark_logo}})` unquoted. Unlike AD-3's inline-`style` carve-out, that context permits **selectors**, so the payload class is strictly larger than the tag-`accent_color` finding AD-36(4) closes. **Could not be executed in Round 4 and the reason matters:** Ghost refuses `PUT /admin/settings/` to an integration token — `403 API tokens do not have permission to access this endpoint` — and the **control write with a valid `#1f6feb` was refused identically**, so the 403 says nothing about validation. Needs a staff session. **Note the dependency direction:** AD-36 already parses these values in `ghost-shim` regardless of the answer, so this item determines how much Ghost's own validation was ever contributing, not whether Inflozo needs the check. |
 | 35 | **FR-J11's rate limit must cover the export path, and a per-account compile budget** | **E7** (FR-J11, FR-J12) | **OPEN — a story requirement, not a schema change (Round 4, S2).** The limit is derived from `deploys.created_at` scoped by site; FR-J12's export runs the same compile pipeline and writes `exports` with `site_id` null, so the counting method appears to miss it. Unexecutable today — neither route exists. **The owner additionally directed that the same story design a proper per-account compile budget**, not merely extend the per-site count. Round 4 measured the ceiling this is defending against: one deploy costs **$0.000427** (3.9 s compile + 8.8 s upload/activate), a Pro account at 25 sites deploying flat out reaches **$76.84/month** and **0.88 concurrent invocations** — so this is a billing-hygiene item, not a capacity one, and the budget should be designed with that number in view rather than against an imagined worst case. |
 | 36 | **NFR-2's CSS budget re-measured on real designs** | **E9/E10** (first category gate) · **E7** (the gate itself) | **OPEN — deferred to the first category gate (Round 4, H2; owner chose "re-measure before trusting it").** Round 4 measured `screen.css` at **1.36 KB brotli** (42 KB raw, 2.2 KB gzip) against NFR-2's 40 KB — a margin so large it is more likely to be an artifact of the fixture than a property of the product. The stress theme's CSS is synthetic and highly repetitive, which is close to the best case for a compression ratio. Real designs exist only from E9 onward, so the honest reading is that **the mechanism is proven and the number is not yet meaningful**; re-measure at the first category gate against authored stylesheets, and treat that figure as the baseline. |
 

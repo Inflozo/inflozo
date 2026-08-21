@@ -2127,3 +2127,47 @@ against exactly that. Now derived.
 **Nothing else moved:** schema applies clean, **70 assertions / 0 failures**, compiler 13 + 8. Every
 finding from both audits now resolves to an owning invariant — verified mechanically rather than by
 recollection, which is the only reason the first two passes found anything.
+
+---
+
+## 28. Register item 34 / Round 4's S1 — closed by execution · 2026-08-21 · **HELD**
+
+S1 was Round 4's only SUSPECTED security finding: the theme's `<style>` block emits
+`--accent: {{@custom.accent_colour}}` and an unquoted `url({{@custom.dark_logo}})`, and unlike an
+inline `style` attribute that context **can carry selectors** — so if Ghost accepted loose values in
+a custom setting the payload class would be strictly larger than the tag-`accent_color` finding.
+The owner chose "test it properly with a staff login, then decide". Done.
+
+**Three probe defects, each of which produced a convincing false result.** Recording all three,
+because every one of them looked like an answer:
+
+1. **Round 4 used an integration token.** Ghost refuses those for settings writes — and the *control*
+   write of a valid `#1f6feb` was refused **identically**, which is exactly why it was marked
+   SUSPECTED rather than held. Correct call at the time.
+2. **This round's first attempt passed the staff token raw.** A Staff Access Token is `id:secret` and
+   must be minted into a JWT the same way an Admin API key is. Raw → `400 Invalid token`.
+3. **Theme settings are not on `/settings/`.** Writes there return **`200` and silently do nothing** —
+   every value read back as `None`, *including the control*. They live on
+   `/ghost/api/admin/custom_theme_settings/`, whose payload is the whole settings array.
+
+Executed on the right endpoint with a real staff session, against the stress theme's own
+`config.custom`, on Ghost 6.58.0:
+
+    #ff0000                                        -> 200, stored          <- control passes
+    '#fff; } body{display:none} .x{color:#fff'     -> 422 Validation error
+    '#fff;background:url(https://evil.example/…)'  -> 422 Validation error
+    'notacolour'                                   -> 422 Validation error
+
+**Ghost validates `color`-typed custom settings strictly. S1 is refuted and the `<style>` block holds.**
+
+**What it does not change.** A tag's `accent_color` is a *different field on a different endpoint*
+and is still loose — `red;}body{display:none}`, `#fff;background:url(x)` and `#fff;width:100vw` were
+all accepted verbatim on both majors (§21e). AD-36(4) stands: `ghost-shim` parses every bound colour,
+and it must, because the value that *is* loose reaches an inline `style` on the customer's live site.
+This closes a suspected **escalation**, not the rule.
+
+**The lesson worth keeping, and it is the third time this session:** *a result whose control did not
+pass is not a result.* All three defects above were caught by the control failing alongside the
+payloads — a 403 for everything, a 400 for everything, a silent null for everything. Without a
+control in every probe, each would have been recorded as "Ghost rejects it — held", and the last one
+would have been a **false negative on a real security question**.
