@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A2 ANNOUNCEMENT BARS · DESIGN 9 OF 15 · PAPER PACK</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Rotator</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">The same message list as Ticker, one at a time, with dots at the right end. Nothing moves horizontally: a message crossfades into the next every few seconds, and pressing a dot stops the rotation for the rest of the session. It is the quieter answer to having three things to say, and on <code style="font-family:'JetBrains Mono',monospace;font-size:14px">surface</code> it is the only multi-message bar that does not read as a news channel.</p>
+</section>
+
+<section data-screen-label="A2-9 desktop resting" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · message 1 of 3 · bar above A1·1 Rail</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="position:relative;height:52px;background:#FFFFFF;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read her first entry<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#232019"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span>
+          </div>
+          <span style="width:1px;height:16px;background:#EBE5DB"></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+        </div>
+      </div>
+      <div style="height:76px;display:flex;align-items:center;gap:40px;padding:0 72px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#232019">Orbit Weekly</span></div>
+        <div style="display:flex;align-items:center;gap:28px">
+          <span style="font-size:15px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:15px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span>
+          <span style="font-size:15px;color:#6B6459">Interviews</span>
+          <span style="font-size:15px;color:#6B6459">Archive</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <span style="font-size:14px;color:#6B6459">Sign in</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+        </div>
+      </div>
+      <div style="padding:52px 72px 64px;display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019;max-width:760px">The slow return of the personal homepage</h2>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:#6B6459;max-width:560px">Why writers are leaving the feed — and coming home to a page of their own.</p>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">52 px at Comfortable, on surface with a hairline under. The message is centred on the full width with 200 px of padding either side, so the longest of the three messages still centres without touching the dots; the dots sit at the right end with the same hairline divider and close as A2·7. Each message carries its own optional link. Height is fixed by the control, not by the longest message — a bar that changed height every six seconds would move the page under the reader.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">SEQUENCE · the three messages · desktop 1440 · same authored content, same bar</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read her first entry<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+      </div>
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Issue 47 is out — the slow return of the personal homepage.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read it<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+      </div>
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">See the details<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span></div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ the full cycle at Medium, 6 s per message. Close omitted from these three so the dots read clearly; it is present in every state.</span>
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;padding:0 200px;box-sizing:border-box">
+        <span style="position:absolute;left:0;right:0;text-align:center;font-size:14px;color:rgba(35,32,25,.35)">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="position:absolute;left:0;right:0;text-align:center;font-size:14px;color:rgba(35,32,25,.55)">Issue 47 is out — the slow return of the personal homepage.</span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#8E877C"></span><span style="width:7px;height:7px;border-radius:50%;background:#8E877C"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ mid-crossfade, 80 ms into a 160 ms transition · both messages are drawn because both are on screen. Two overlapping sentences are unreadable for that eighth of a second, which is why 160 ms is the ceiling here and why Transition: None exists.</span>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">STATES · desktop 1440 · dot hover, dot focus-visible, link hover</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read her first entry<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#8E877C"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+          <span style="width:1px;height:16px;background:#EBE5DB"></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ dot 2 hover · an inactive dot goes from border colour to muted; it does not grow. Each dot is 7 px inside a 24 px target at desktop — 17 px gap, 24 px pitch — and a 32 px-wide target at ≤ 767. Hovering anywhere in the bar also pauses the rotation.</span>
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read her first entry<span style="color:#6B6459">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #D96C3F"><span style="width:7px;height:7px;border-radius:50%;background:#8E877C"></span></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+          <span style="width:1px;height:16px;background:#EBE5DB"></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ dot 2 focus-visible · the library ring at 2 px offset, drawn round the dot rather than the whole 24 px target so the three dots keep even spacing. Pressing it moves to message 2 <strong style="font-weight:600">and stops the rotation for the session</strong>.</span>
+      <div style="width:1440px;height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#232019;border-bottom:1px solid #232019;padding-bottom:1px">Read her first entry<span style="color:#232019">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+          <span style="width:1px;height:16px;background:#EBE5DB"></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ link hover · A2·3's arrow link verbatim: underline in text colour, arrow travels 2 px. Hovering the link pauses the rotation, so the thing you are reaching for cannot leave.</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">CONTROL · Indicators · three values · desktop 1440 crops</div>
+      <div style="width:900px;display:flex;flex-direction:column;gap:8px">
+        <div style="height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;padding:0 140px;box-sizing:border-box">
+          <span style="font-size:14px;color:#232019">Issue 47 is out — the slow return of the personal homepage.</span>
+          <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">2 / 3</span><span style="width:1px;height:16px;background:#EBE5DB"></span><span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span></div>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ Numbers · 13 px muted, tabular. Not interactive, and honest about it: with Numbers the rotation cannot be stopped by pressing anything, so hover, focus and reduced-motion carry the whole burden. The sidebar says so under the control.</span>
+        <div style="height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;padding:0 140px;box-sizing:border-box">
+          <span style="font-size:14px;color:#232019">Issue 47 is out — the slow return of the personal homepage.</span>
+          <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px"><span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span></div>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ None · no indicator at all. Permitted only with Interval: Slow, and the sidebar disables the faster values: a bar that changes every four seconds with nothing to show where you are is a bar readers distrust.</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · reduced motion</div>
+      <div style="width:492px;display:flex;flex-direction:column;gap:8px">
+        <div style="height:52px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;position:relative;display:flex;align-items:center;padding:0 100px 0 24px;box-sizing:border-box">
+          <span style="font-size:14px;color:#232019">Mara Ellison joins as columnist.</span>
+          <div style="position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px"><div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div><span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span></div>
+        </div>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459">Under <code style="font-family:'JetBrains Mono',monospace;font-size:12px">prefers-reduced-motion</code> there is no auto-advance and no crossfade: message 1, dots, and an instant swap when a dot is pressed. Indicators: None is overridden to Dots in that case — with no rotation and no dots there would be no way to reach messages 2 and 3 at all. This is the state that makes Ticker and Rotator identical for these readers, flagged in A2-0.</p>
+        <div style="background:#FFF9E9;border:1px solid #F0E2BC;border-radius:12px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:600">The stop mechanism, and my reading of it</span>
+          <span style="font-size:12.5px;line-height:1.6;color:#3A3835">Auto-updating content needs a way to pause, stop or hide it. Here that is: hover pauses, focus pauses, pressing a dot stops the rotation for the session, and the close hides the bar entirely. <strong style="font-weight:600">Flagged:</strong> treating the dots as the stop control is my interpretation — it is discoverable and it is what readers already reach for, but it is not a labelled “pause” button like Ticker's. If you would rather Rotator carried an explicit pause, it costs the Indicators control.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · re-tuned, not inverted</div>
+    <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+      <div style="position:relative;height:52px;background:#211D17;border-bottom:1px solid #332E27;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 200px;box-sizing:border-box">
+        <span style="font-size:14px;color:#F2EDE4">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#F2EDE4">Read her first entry<span style="color:#A79E8F">→</span></span>
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#F2EDE4"></span><span style="width:7px;height:7px;border-radius:50%;background:#453E35"></span><span style="width:7px;height:7px;border-radius:50%;background:#453E35"></span></div>
+          <span style="width:1px;height:16px;background:#332E27"></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#A79E8F">×</span>
+        </div>
+      </div>
+      <div style="height:76px;display:flex;align-items:center;gap:40px;padding:0 72px;border-bottom:1px solid #332E27;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#E0805A;color:#1A120C;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#F2EDE4">Orbit Weekly</span></div>
+        <div style="display:flex;align-items:center;gap:28px">
+          <span style="font-size:15px;color:#F2EDE4;font-weight:500;padding-bottom:2px;border-bottom:2px solid #E0805A">Essays</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:15px;color:#A79E8F">Sections<span style="font-size:9px">▾</span></span>
+          <span style="font-size:15px;color:#A79E8F">Interviews</span>
+          <span style="font-size:15px;color:#A79E8F">Archive</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <span style="font-size:14px;color:#A79E8F">Sign in</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#E0805A;color:#1A120C;font-size:14px;font-weight:600">Subscribe</span>
+        </div>
+      </div>
+      <div style="padding:44px 72px 52px;display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#E0805A;text-transform:uppercase">Issue 47 · Essays</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-size:44px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#F2EDE4;max-width:720px">The slow return of the personal homepage</h2>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">Inactive dots cannot use the border token in dark — <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#332E27</code> against a lifted surface is almost invisible at 7 px — so they take a step between border and muted, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#453E35</code>. Flagged: that value is mine, and it is the one place in A2 where a pack needs a token it does not currently define. The active dot is plain <code style="font-family:'JetBrains Mono',monospace;font-size:12px">text</code> in both modes.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · simple narrowing</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;height:52px;background:#FFFFFF;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 120px;box-sizing:border-box">
+          <span style="font-size:14px;color:#232019">Mara Ellison joins as our Field Notes columnist.</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read it<span style="color:#6B6459">→</span></span>
+          <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px"><div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div><span style="width:1px;height:14px;background:#EBE5DB"></span><span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span></div>
+        </div>
+        <div style="height:76px;display:flex;align-items:center;gap:24px;padding:0 40px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="display:flex;align-items:center;gap:20px"><span style="font-size:14px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span><span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span><span style="font-size:14px;color:#6B6459">Interviews</span><span style="font-size:14px;color:#6B6459">Archive</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:13px"><span style="font-size:14px;color:#6B6459">Sign in</span><span style="padding:8px 15px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span></div>
+        </div>
+        <div style="padding:30px 40px 36px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:34px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019;max-width:520px">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px">834: side padding 200 → 120 and each message uses its short form where the author wrote one. The dots hold their 24 px targets and the divider shortens 16 → 14 with the close. Because every message must fit one centred line at every width above 767, the editor shows the longest message's measured width against the available space rather than letting one item wrap where the others do not.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · dots under the message</div>
+      <div style="width:390px;height:430px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;background:#FFFFFF;border-bottom:1px solid #EBE5DB;padding:11px 44px 8px 20px;display:flex;flex-direction:column;gap:4px;box-sizing:border-box">
+          <span style="font-size:14px;line-height:1.4;color:#232019">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <div style="display:flex;align-items:center;gap:25px;height:32px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#232019"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span>
+          </div>
+          <span style="position:absolute;right:0;top:2px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#6B6459">×</span>
+        </div>
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="padding:7px 13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span><span style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></span></div>
+        </div>
+        <div style="padding:24px 20px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">≤ 767 the message goes left-aligned and the dots move below it, spaced 25 px apart so each 7 px dot sits in a 32 px-wide target on a 32 px pitch — 44 px targets would need 132 px of row and the bar is 350 px wide inside its padding. Flagged: <strong style="font-weight:600">32 px is under the 44 px floor</strong>, and it is here because the alternative — dots at the right end of a wrapped two-line message — puts them where no thumb reaches. Swiping the bar left and right does the same job with no target at all. Bar 95 px. The message link is dropped at this width and the whole bar becomes the link, as A2·3.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · Indicators: Numbers</div>
+      <div style="width:390px;height:430px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;background:#FFFFFF;border-bottom:1px solid #EBE5DB;padding:12px 44px 14px 20px;display:flex;align-items:flex-start;gap:10px;box-sizing:border-box">
+          <span style="font-size:14px;line-height:1.4;color:#232019;flex:1">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums;padding-top:1px">1/3</span>
+          <span style="position:absolute;right:0;top:4px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#6B6459">×</span>
+        </div>
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="padding:7px 13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span><span style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></span></div>
+        </div>
+        <div style="padding:24px 20px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">With Numbers there is no target to place, so the counter sits inline at the end of the message's first line in its short form, “1/3”, and the bar is 66 px instead of 95. Swipe still advances. This is the value to choose when the bar shares a phone screen with anything else that matters.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">ACCESSIBILITY · annotated · desktop 1440 crop</div>
+      <div style="width:940px;display:flex;flex-direction:column;gap:12px">
+        <div style="border-radius:8px;overflow:hidden;border:1px solid #EBE5DB">
+          <div style="height:26px;background:#FBF9F5;border-bottom:1px dashed #D6CFC2;display:flex;align-items:center;padding:0 16px;box-sizing:border-box"><span style="font-size:11px;color:#6B6459">Skip to content</span><span style="margin-left:8px;width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">1</span></div>
+          <div style="position:relative;height:52px;background:#FFFFFF;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;gap:10px;padding:0 16px;box-sizing:border-box">
+            <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">2</span>
+            <span style="font-size:14px;color:#232019">Mara Ellison joins as our Field Notes columnist.</span>
+            <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">3</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#232019">Read her first entry<span style="color:#6B6459">→</span></span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">4</span>
+              <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#232019"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span><span style="width:7px;height:7px;border-radius:50%;background:#DED7CB"></span></div>
+              <span style="width:1px;height:16px;background:#EBE5DB"></span>
+              <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">5</span>
+              <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+            </div>
+          </div>
+          <div style="height:52px;background:#FBF9F5;display:flex;align-items:center;gap:16px;padding:0 16px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">6</span><span style="font-size:12.5px;color:#6B6459">&lt;header&gt; — A1·1 Rail, unchanged</span></div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.6;color:#3A3835">
+          <span><strong style="font-weight:600">1</strong> · Skip link first, ahead of the bar.</span>
+          <span><strong style="font-weight:600">2</strong> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;aside aria-label="Announcements"&gt;</code> containing a <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;ul&gt;</code> with all three messages in the DOM. <strong style="font-weight:600">The inactive two are visually hidden but present and readable</strong> — not <code style="font-family:'JetBrains Mono',monospace;font-size:12px">display:none</code> — so a screen-reader user gets all three announcements in order without waiting for a rotation. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-live="off"</code>; the crossfade is never announced.</span>
+          <span><strong style="font-weight:600">3</strong> · Each message carries its own link with its own visible text. Only the active message's link is focusable, so tabbing never lands on something invisible; the hidden messages' links are removed from the tab order and their text remains readable.</span>
+          <span><strong style="font-weight:600">4</strong> · Dots are buttons: “Show announcement 2 of 3”, with <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-current</code> on the active one. 7 px dot in a 24 px target at desktop (17 px gap, 24 px pitch), 32 px wide at ≤ 767 (25 px gap) — under the 44 px floor, stated on that frame, with swipe as the alternative. Pressing a dot stops the rotation for the session; that, plus hover-pause, focus-pause and the close, is this design's answer to WCAG 2.2.2, and the reading is flagged.</span>
+          <span><strong style="font-weight:600">5</strong> · Close is last in focus order: active message link, dots in order, close.</span>
+          <span><strong style="font-weight:600">6</strong> · On surface: message 13.2:1, active dot 13.2:1, inactive dot on surface 1.9:1 — decorative, and the reason the active state is not carried by colour alone but by the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-current</code> state and the message itself. In dark, inactive dots need a value between border and muted; the packs do not define one.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:6px;box-sizing:border-box"><span style="width:34px;height:4px;background:#C9C2B6"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;gap:4px;padding:6px;box-sizing:border-box"><span style="width:16px;height:3px;background:#C9C2B6"></span><span style="width:3px;height:3px;border-radius:50%;background:#FF5941"></span><span style="width:16px;height:3px;background:#C9C2B6"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;box-sizing:border-box"><span style="width:30px;height:4px;background:#C9C2B6"></span><span style="display:flex;gap:3px"><span style="width:3px;height:3px;border-radius:50%;background:#FF5941"></span><span style="width:3px;height:3px;border-radius:50%;background:#DED7CB"></span><span style="width:3px;height:3px;border-radius:50%;background:#DED7CB"></span></span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Messages</span><div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">01</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Mara Ellison joins Orbit…</span></div>
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">02</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Issue 47 is out — the slow…</span></div>
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">03</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Live in Lisbon on 4 April…</span></div>
+        <span style="font-size:11px;color:#6E6A64">Up to 6 · drag to reorder · shared with Ticker</span>
+      </div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Interval</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Slow</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Medium</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Fast</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Slow 8 s · Medium 6 s · Fast 4 s per message.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Transition</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Crossfade</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Slide up</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">None</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Indicators</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Dots</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Numbers</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">None</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Only Dots can be pressed to stop the rotation. None requires Interval: Slow.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Ground</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Contrast</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Background</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Height</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">VISIBILITY · shared by all 15</span>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Audience</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">Everyone</span><span style="font-size:9px;color:#6E6A64">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Comes back after</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">30 days</span><span style="font-size:9px;color:#6E6A64">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Preview as</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 4px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Everyone</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 4px;border-radius:24px;color:#6E6A64">Logged out</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 4px;border-radius:24px;color:#6E6A64">Free</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 4px;border-radius:24px;color:#6E6A64">Paid</span></div></div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border-top:1px solid #E7E2DB;padding-top:10px">6 controls + the message list · Placement omitted: this design is In flow only</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+  <div style="width:1440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A2·9 ROTATOR · full text in “A2 Announcement Bars — Spec.md”</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Content fields</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">messages[] (list of { message ≤ 120, messageShort ≤ 48, linkLabel ≤ 24, linkUrl }, req, 2–6 items — the same list Ticker uses, so switching between the two keeps everything) · dismissible · audience · dismissMemory. Every message must fit one centred line above 767; the editor measures the longest against the available width rather than letting one item wrap where the others do not.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Controls · data</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Interval: Slow 8 s · Medium 6 s · Fast 4 s. Transition: Crossfade · Slide up · None. Indicators: Dots · Numbers · None (None requires Interval: Slow; only Dots can be pressed to stop the rotation, and the sidebar says so). Ground: Surface · Contrast · Background. Height: Compact 44 · Comfortable 52 · Spacious 64. <strong style="font-weight:600">No Placement control</strong> — this design is In flow only: a bar that changes its text every six seconds should not follow the reader down the page.<br><strong style="font-weight:600">Data:</strong> member state only. Fewer than two messages → renders as A2·1 Rule with item 1.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Responsive · motion · a11y · flagged</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">1440–768 centred message, dots at the right end, side padding 200 → 120, short forms used where authored. ≤ 767 message left-aligned, dots below at 25 px spacing in 32 px-wide targets, link label dropped and the whole bar becomes the link; bar 95 px, or 66 px with Numbers, which sits inline as “1/3”. Swipe advances at every mobile width. Motion: rotation pauses on hover and on focus entering the bar, stops for the session when a dot is pressed, and does not run at all under prefers-reduced-motion, where dots are forced on and the swap is instant. Height is fixed by the control, never by the longest message.<br><strong style="font-weight:600">a11y:</strong> all messages in the DOM and readable, only the active one focusable, dots are buttons with aria-current, aria-live off.<br><strong style="font-weight:600">Flagged as mine:</strong> the 32 px-wide mobile dot target (under the 44 px floor, with swipe as the alternative), reading the dots as the WCAG 2.2.2 stop mechanism, the dark inactive-dot value #453E35 that no pack defines, the 160 ms crossfade ceiling, and dropping the Placement control.</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showSpec: this.props.showSpec ?? true };
+  }
+}
+
+</script>
+</body>
+</html>

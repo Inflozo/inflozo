@@ -203,6 +203,10 @@ DOCS = [
   'picking up the project cold.'),
  ('planning-artifacts/INDEX.html', 'live', 'Document index (for humans)',
   'The same index, browsable and grouped by status.'),
+ ('planning-artifacts/HANDOVER.md', 'live', 'Handover for a fresh session',
+  'Everything a new chat needs to continue without reading the previous conversation: where the '
+  'project stands, the immediate task, the standing rules, and how the owner wants to work. Update '
+  'it whenever the immediate task changes.'),
  ('planning-artifacts/BUILD-BOARD.html', 'live', 'Build board',
   'Where the project stands, what to do next, and every prompt with a copy button. The prompts are '
   'EXTRACTED from build-sequence.md rather than retyped, so the two cannot drift. Historical prompts '

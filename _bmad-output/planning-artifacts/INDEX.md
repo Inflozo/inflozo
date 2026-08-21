@@ -6,7 +6,7 @@ updated: 2026-08-21
 
 # Document index
 
-**69 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**70 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -40,6 +40,7 @@ points at a file that is gone, or if this file is out of date.
 | **[External-facts register](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md)**<br>`_bmad-output/planning-artifacts/architecture/.../VERIFY-AT-BUILD.md` | Every claim about Ghost, Supabase, Vercel or Dodo that code depends on, each with an owning epic and a status. Started at 21 items and grows whenever the project rests on a new external fact. Two items are launch-blocking. |
 | **[Ghost claims, mechanically checked](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/verify-mechanical-ghost-claims.md)**<br>`_bmad-output/planning-artifacts/prds/.../verify-mechanical-ghost-claims.md` | Highest precedence in the whole project on any Ghost fact — above the research companions and far above the PRD body. Exists because four confident assertions about Ghost entered the PRD as normative text and were later proven false. |
 | **[Ghost template contexts](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/appendix-b1-template-contexts.md)**<br>`_bmad-output/planning-artifacts/prds/.../appendix-b1-template-contexts.md` | Which Ghost helpers and variables are available inside which template, recorded per context. The reference the binding vocabulary is built against. |
+| **[Handover for a fresh session](_bmad-output/planning-artifacts/HANDOVER.md)**<br>`_bmad-output/planning-artifacts/HANDOVER.md` | Everything a new chat needs to continue without reading the previous conversation: where the project stands, the immediate task, the standing rules, and how the owner wants to work. Update it whenever the immediate task changes. |
 | **[How to restore the database](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RESTORE-RUNBOOK.md)**<br>`_bmad-output/planning-artifacts/architecture/.../RESTORE-RUNBOOK.md` | The procedure, written down because the first drill FAILED: a public-only dump orphans every row behind 13 broken foreign keys while reporting success, and the conventional restore flags throw away every grant. Step 5 is the point — a restore is complete when RLS-TEST passes, not when pg_restore exits. |
 | **[Normative for mechanism](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/addendum.md)**<br>`_bmad-output/planning-artifacts/prds/.../addendum.md` | Two mechanisms the PRD body states too loosely to build from: AD1 local-first persistence (the op-log, the revision comparison) and AD2 the edit-lock protocol. Outranks the PRD body on both. |
 | **[Normative for scope](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/sections-inventory.md)**<br>`_bmad-output/planning-artifacts/prds/.../sections-inventory.md` | The 484 designs: 34 category declarations, per-category counts, which 70 are free, and the two-layer schema each design specification slots into. Every count in the project derives from here rather than being restated. |
