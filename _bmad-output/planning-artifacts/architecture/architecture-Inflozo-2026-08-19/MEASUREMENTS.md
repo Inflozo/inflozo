@@ -1975,3 +1975,60 @@ finding:
 **Nothing broke the site.** After all five failures, both Ghosts served their homepage (HTTP 200,
 ~59 KB) and their Content API. **No failure left a partially-applied theme**, which is FR-J11's
 promise and had never been checked.
+
+---
+
+## 26. FR-J7 rollback retention, built · 2026-08-21
+
+Owner decision: **at most 10 stored versions per project on Pro and 3 on Free, pinned included in
+that count**, stated in the UI rather than implied. A version may be **pinned** to survive pruning.
+
+### 26a. The N−1 cap could not live in the database, and the split follows AD-9's shape
+The owner's rule is "at most N−1 pinned", so a customer who pins every slot is never left unable to
+deploy. **N is plan-dependent**, and AD-28 makes `resolveEntitlement` the *only* thing that decides
+plan state — a trigger reading `entitlements` to find the limit would be a second decider, which is
+the exact divergence AD-28 exists to prevent.
+
+So the rule splits the way AD-9 already splits its own ("the trigger is the floor under the UI, not a
+substitute for it"):
+
+| where | what it enforces | why there |
+|---|---|---|
+| server route | the plan-specific cap, **N−1** | it is the only place allowed to ask what plan someone is on |
+| `guard_pin_leaves_a_slot()` | **at least one version stays unpinned** | plan-independent, so it can live in the database and hold against the service role too (AD-31) |
+
+The floor is the same rule stated without reference to a plan: a project whose every version is
+pinned has nowhere to put its next build, and the only ways out are refusing the deploy or silently
+unpinning something the customer explicitly asked to keep. Refusing the *pin* is the least bad of
+the three, and it is the one the customer can act on.
+
+`deploys.pinned` is **not granted to the client** — `deploys` is select-only under AD-8, so a pin is
+set by a server route like every other server-asserted fact.
+
+### 26b. Verified on a clean container
+    harness: exit 0, 70 assertions, 0 failures     (was 67 before this change)
+
+    PASS (FR-J7): a version can be pinned while an unpinned slot remains
+    PASS (FR-J7): the last unpinned version cannot be pinned (42501)
+    PASS (FR-J7): unpinning is always allowed
+
+The third matters as much as the second: **unpinning is unconditional**, or a customer could pin
+their way into a state they cannot get out of.
+
+### 26c. Mutation-tested, per AD-26
+    drop trigger deploys_pin_leaves_a_slot        -> exit 3  FAIL: missing guard trigger(s)
+    grant update (pinned) … to authenticated      -> exit 3  FAIL (F3): deploys.pinned (UPDATE)
+    control (unmutated)                           -> exit 0
+
+Both new guards are caught by an assertion written over a **catalogue** rather than over a name —
+`pinned` was added to the server-asserted column list and the trigger to the required-guard list, so
+neither needed a bespoke check. That is AD-26's "prefer an assertion over a catalogue" paying off on
+the first change made after it was written down.
+
+### 26d. Still owed to this decision, and it is not a database concern
+- **The UI must state the limit** — a history list that silently drops its oldest entry reads as
+  complete when it is not (E7/E13).
+- **The history must never show a version it cannot restore.** A dead Restore button is worse than a
+  short list.
+- **The pruning job skips pinned rows** and applies 10/3 through `resolveEntitlement` (E7, AD-33's
+  artifact-retention cron).

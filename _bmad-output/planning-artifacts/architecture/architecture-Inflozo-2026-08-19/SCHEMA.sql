@@ -439,6 +439,13 @@ create table public.deploys (
   -- re-fetching it, so the value it was handed has to be recorded here or the deploy is not
   -- reproducible and FR-J9's rollback replays against settings that have since moved. [R1 decision 15]
   settings_snapshot jsonb,
+  -- FR-J7 retention, owner decision 2026-08-21: at most 10 stored versions per project on Pro and
+  -- 3 on Free, PINNED INCLUDED IN THAT COUNT. A pin is "keep this one, it was good" — it survives
+  -- pruning. Server-asserted: `deploys` is select-only to the client (AD-8), so a pin is set by a
+  -- server route, never by the browser. The route is where the plan-specific cap lives, because
+  -- AD-28 makes resolveEntitlement the ONLY thing that decides plan state and a trigger that read
+  -- `entitlements` to find the limit would be a second decider.
+  pinned        boolean not null default false,
   created_at    timestamptz not null default now(),
   activated_at  timestamptz
 );
@@ -1239,6 +1246,35 @@ grant  update (holder_session_id, lock_generation, heartbeat_at, unsynced_edits,
 revoke update on public.template_binding_checklist from authenticated;
 grant  update (marked_done_at) on public.template_binding_checklist to authenticated;
 
+-- FR-J7's pin floor.  [owner decision 2026-08-21]
+--
+-- The rule the owner set is "at most N-1 pinned", N being 10 on Pro and 3 on Free — so a customer
+-- who pins every slot can never be left unable to deploy. N is plan-dependent and AD-28 reserves
+-- plan decisions to one resolver, so the split follows AD-9's established shape: **the server route
+-- enforces the plan-specific cap, and this trigger is the floor underneath it.**
+--
+-- The floor is stated plan-independently, which is what lets it live in the database at all:
+-- **at least one version must remain unpinned.** A project whose every version is pinned has
+-- nowhere to put its next build, and the only ways out would be refusing the deploy or silently
+-- unpinning something the customer explicitly asked to keep. Both are worse than refusing the pin.
+create or replace function public.guard_pin_leaves_a_slot() returns trigger
+language plpgsql as $$
+declare unpinned_left int;
+begin
+  if new.pinned and not old.pinned then
+    select count(*) into unpinned_left
+      from public.deploys d
+     where d.project_id = new.project_id and not d.pinned and d.id <> new.id;
+    if unpinned_left = 0 then
+      raise exception 'cannot pin every version of a project: at least one must stay unpinned so the next deploy has a slot (project %)', new.project_id
+        using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end $$;
+create trigger deploys_pin_leaves_a_slot before update on public.deploys
+  for each row execute function public.guard_pin_leaves_a_slot();
+
 -- AD-15 depends on `revision` being monotonic and server-asserted. A trigger, not a convention.
 create or replace function public.guard_revision() returns trigger
 language plpgsql as $$
@@ -1381,7 +1417,8 @@ begin
     'public.sync_vote_count()','public.enforce_custom_setting_cap()',
     -- Round 4's three new guards. RLS-TEST asserts this list against the catalogue, which is how
     -- the first two were caught here rather than in a later round.
-    'public.guard_lock_takeover()','public.guard_custom_setting_freeze()','public.provision_profile()'
+    'public.guard_lock_takeover()','public.guard_custom_setting_freeze()','public.provision_profile()',
+    'public.guard_pin_leaves_a_slot()'
   ] loop
     execute format('revoke execute on function %s from public, anon, authenticated', f);
   end loop;

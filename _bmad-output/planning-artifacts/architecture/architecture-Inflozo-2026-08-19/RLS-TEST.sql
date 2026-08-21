@@ -457,6 +457,7 @@ begin
     ('projects','revision','BOTH'),
     ('custom_settings','frozen_at','BOTH'),
     ('deploy_jobs','stage','BOTH'),('deploy_jobs','error','BOTH'),
+    ('deploys','pinned','BOTH'),
     ('template_binding_checklist','filename','BOTH')
   ) as v(t,c,verbs)
   cross join lateral (values ('INSERT'),('UPDATE')) as p(priv)
@@ -503,7 +504,8 @@ begin
   select string_agg(x.want, ', ') into bad from (values
     ('custom_settings_key_frozen'),     -- AD-9's fourth frozen column
     ('edit_locks_takeover_advances'),   -- FR-D18's takeover must advance the generation
-    ('auth_user_profile')               -- a profiles row at signup
+    ('auth_user_profile'),              -- a profiles row at signup
+    ('deploys_pin_leaves_a_slot')       -- FR-J7: a project cannot pin away its last free slot
   ) as x(want)
   where not exists (select 1 from pg_trigger g where g.tgname = x.want and not g.tgisinternal);
   if bad is not null then raise exception 'FAIL: missing guard trigger(s): %', bad; end if;
@@ -689,6 +691,35 @@ begin
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
   if gen <> 6 then raise exception 'FAIL (F4): a legitimate takeover was blocked'; end if;
   raise notice 'PASS (F4): a takeover that advances the generation succeeds (gen now %)', gen;
+end $$;
+
+-- FR-J7's pin floor, against the OWNER — the plan-specific cap lives in the server route, so this
+-- is the database floor underneath it and must hold even against the service role (AD-31).
+do $$
+declare d1 uuid; d2 uuid;
+begin
+  insert into public.deploys(project_id,user_id,site_id,version,theme_name,status)
+    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
+            'aaaaaaaa-0000-0000-0000-000000000001','1.0.0','inflozo-a','live') returning id into d1;
+  insert into public.deploys(project_id,user_id,site_id,version,theme_name,status)
+    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
+            'aaaaaaaa-0000-0000-0000-000000000001','1.0.1','inflozo-a','live') returning id into d2;
+
+  -- pinning one of two is fine: one unpinned slot remains
+  update public.deploys set pinned = true where id = d1;
+  raise notice 'PASS (FR-J7): a version can be pinned while an unpinned slot remains';
+
+  -- pinning the LAST unpinned one must be refused
+  begin
+    update public.deploys set pinned = true where id = d2;
+    raise exception 'FAIL (FR-J7): every version was pinned — the next deploy has nowhere to go';
+  exception when insufficient_privilege then
+    raise notice 'PASS (FR-J7): the last unpinned version cannot be pinned (42501)'; end;
+
+  -- and unpinning must always work, or a customer could trap themselves
+  update public.deploys set pinned = false where id = d1;
+  raise notice 'PASS (FR-J7): unpinning is always allowed';
+  delete from public.deploys where id in (d1,d2);
 end $$;
 
 -- F12: AD-9's fourth frozen column, against the OWNER -- a server bug is what this guards.
