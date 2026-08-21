@@ -78,13 +78,36 @@ For **each design** in the category:
 
 **The control panel** — the sidebar as the user sees it for *this* design: the Design picker at the top, then this design's own 4–7 controls with their exact named values (Compact / Comfortable / Spacious — never px or hex). Designs in the same category will have *different* control sets; that is correct and expected.
 
-**The written spec**, beside the frames:
-- **Content fields** — exact names, types, whether optional, any limits.
-- **Controls** — each with its complete list of allowed values.
-- **Data** — what it pulls from Ghost, if anything, and what happens when that data is missing or empty.
-- **Responsive rule** — in words, what happens at each width.
+**The written spec**, beside the frames. **All ten fields, every time** — this list is normative and
+is the exact list the reconciliation pass checks each design against (`sections-inventory.md` §"What
+each design carries"). A design missing any of them is half-delivered and will come back.
+
+- **Descriptor** — the one-line structural identity: what makes this design *this* design.
+- **Structural descriptor (the tuple)** — `archetype · primary axis · item-count class · media
+  placement · emphasis mechanism`. ⚠️ **This is machine-checked, and free prose is not.** The
+  uniqueness rule runs on the *tuple*, because two designs can be described differently in English
+  and still be the same design. **It must stay unique within its category once every design's
+  control list is written** — controls stop distinguishing designs at that point, so the tuple is
+  the only thing left that does.
+- **Archetype** — which responsive archetype it collapses under: grid-of-N, split, stack, bar, nav,
+  edge rail, overlay, feed, form, carousel, table, media frame, sticky, or article body. This
+  supplies its default collapse ladder, so the responsive rule below only has to state the
+  *departures* from it.
+- **Responsive rule** — in words, what happens at each width; and where it cannot follow its
+  archetype, the bespoke behaviour.
+- **Content fields** — the subset of the category union it uses: exact names, types, optionality, limits.
+- **Controls** — its own list **in sidebar order**, each with its complete closed value set, Quick
+  Controls first.
+- **Data** — what it binds from Ghost, and its behaviour at **0, 1 and many** items.
 - **Empty state** — what renders when optional content is absent.
+- **Behaviour module** — which module it declares, if any; whether that module is **edit-safe**; and
+  ⚠️ **its no-JS degradation, written out.** That is an acceptance criterion, not a footnote — a
+  design whose module is missing its degradation statement is not done.
 - **Accessibility notes** — heading level, focus order, anything needing a label.
+
+**Where the specs go:** into `prds/prd-Inflozo-2026-08-17/sections-inventory.md`, which already
+carries this schema and the two-layer structure (category union, then per-design) they slot into.
+**The frames go in `design/`; the specifications do not.** They are the half that the build reads.
 
 **Per category, additionally:**
 - **One design rendered in three packs, light and dark** (6 frames) — the tokenisation proof.

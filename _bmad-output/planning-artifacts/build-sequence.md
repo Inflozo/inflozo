@@ -371,7 +371,8 @@ Three questions, kept separate in the report:
      vocabulary, a binding rule, a plan gate or a count.
   2. GAPS — surfaces the PRD requires that no design covers. Check against: the section
      inventory's 34 categories, section 8's epics, Appendix F.1's plan matrix, and the six
-     flows and four journeys named in the PRD preamble.
+     flows and four journeys named in the PRD preamble, PLUS the two flows added 2026-08-21 —
+     the pre-deploy backup gate and deploy history with pinning (eight flows in total).
   3. SPEC COMPLETENESS — every design carries all ten fields of the per-design specification
      schema in sections-inventory.md. Two are newly load-bearing and easy to omit: the
      structural descriptor TUPLE (which FR-G5's uniqueness assertion runs over, and which must
@@ -388,7 +389,7 @@ Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlo
 
 # Step 5 — Journeys and flows
 
-**Produces:** the four journeys and six flows the PRD mandates and does not itself author.
+**Produces:** the four journeys and **eight** flows — the PRD's six, plus the two decided 2026-08-21.
 **Needs from the owner:** less than this document originally assumed — see below.
 **Unblocks:** step 6.
 
@@ -396,7 +397,8 @@ The PRD preamble delegates these explicitly. Keep this pass separate from step 4
 
 ### ⓘ This step is blocked on prompt **2**, not prompt **3** — which matters, because they are very different sizes
 
-Re-examined 2026-08-20. Nothing in the four journeys or the six flows is a *section* design: they
+Re-examined 2026-08-20, and it holds for the two flows added since. Nothing in the four journeys or
+the eight flows is a *section* design: they
 are the product's own chrome — connecting a site, the snapshot gate, the edit-lock choreography, the
 routes-upload card. **None of them depends on the 484 designs prompt 3 produces.** What they do touch
 is prompt 2's territory — the ~25 missing surfaces and the paywall editor.
