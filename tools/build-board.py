@@ -75,101 +75,55 @@ PROMPTS = [
 #     correction pasted into a session. The paste is only for a category already in flight.
 # (2) The prompt tells each session to reuse components established in earlier categories, and a
 #     fresh chat cannot see them. That continuity has to be carried by hand.
-FIX_PROMPT = """A correction to the specification requirements for this category.
+FIX_PROMPT = """Correction: each design's spec needs TEN fields, not six.
 
-Each design's written spec must carry TEN fields. This session was started with a version asking for
-only six, so please include all ten from here on, and add the missing four to any design already
-produced in this session:
+Add these four to every design in this session, including the ones already done:
 
-1. Descriptor — the one-line structural identity: what makes this design THIS design.
+1. Descriptor — one line: what makes this design different from the others in this category.
+2. Structural descriptor — a tuple: archetype · primary axis · item-count class · media placement ·
+   emphasis mechanism. It must be unique within this category.
+3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
+   carousel, table, media frame, sticky, article body.
+4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
+   does with JavaScript switched off.
 
-2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
-   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
-   be described differently in English and still be the same design. It must stay unique within this
-   category once every design's control list is written, since controls stop distinguishing designs
-   at that point.
+Keep the six you are already producing: responsive rule, content fields, controls, data binding,
+empty state, accessibility notes."""
 
-3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
-   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
-   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
-   the departures from it.
+HANDOFF_PROMPT = """Before we finish, give me two blocks I can paste into the next category's chat.
 
-4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
-   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
-   design whose module has no degradation statement is not finished.
+1. COMPONENT INVENTORY — every reusable component this category used or created.
+   One line each:  name — what it is — which category it came from.
+   Include ones reused from earlier categories, so the list keeps growing.
 
-The six fields already being produced stay exactly as they are: responsive rule, content fields,
-controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
-accessibility notes.
+2. SHARED FIELD LIST — the union of every content field this category's designs need."""
 
-Also: the specifications belong in sections-inventory.md, not alongside the frames. The frames go in
-the design folder; the specs do not. They are the half the build reads."""
+CARRY_PROMPT = """Components already built in earlier categories. Reuse these exactly. Do not invent
+replacements for them.
 
-# Asked at the END of each category session. A fresh chat has no memory of the components earlier
-# categories established, and the prompt requires reusing them verbatim ("by category ten you should
-# be reusing far more than you invent"). Without this the library drifts one category at a time.
-HANDOFF_PROMPT = """Before we close this category, produce a COMPONENT INVENTORY for me to carry into
-the next session.
+<paste the component inventory from the last category here — for category 1, write: none yet>
 
-List every reusable component this category established or reused — button, card, avatar, meta row,
-badge, input, tab, whatever it turned out to be. One line each:
+If a design needs something none of these cover, say so and explain why an existing one would not work.
 
-    component name — what it is, in a few words — first established in category X
-
-Include the ones this category REUSED from earlier categories, not only the new ones, so the list
-stays cumulative rather than resetting. Keep it tight enough to paste at the top of the next session.
-
-Then give me this category's shared field list as a separate block — the union of every field its
-designs need, which is the contract that makes design-switching safe."""
-
-# Pasted at the START of each new category session, above the master brief.
-CARRY_PROMPT = """These components already exist from earlier categories and carry forward VERBATIM.
-Reuse them rather than inventing equivalents — consistency outranks novelty, and by the tenth
-category you should be reusing far more than you invent.
-
-<paste the component inventory from the previous session here>
-
-If a design genuinely needs something none of these covers, say so explicitly and explain why the
-existing component could not be adapted."""
+The brief follows below."""
 
 ACTIONS = [
- ('now', 'Use the CORRECTED prompt file for every new category chat',
-  'One chat per category is exactly what prompt 3 intends — it says so, and it is self-contained by '
-  'design. That makes the fix simple: the file on disk is already corrected, so from the next '
-  'category onward you just paste the current version of §1–§4. Nothing else to do. '
-  'design/claude-design-prompt-3-library.md.'),
- ('now', 'Only if a category is mid-flight right now: paste the correction into THAT chat',
-  'Not needed for future chats — they get the corrected file. This is purely to rescue a session '
-  'already in progress, and it asks for the four missing fields to be added to designs already '
-  'produced in that session.'),
- ('now', 'Carry a component inventory between chats — the prompt assumes it and a fresh chat cannot',
-  'Prompt 3 tells each session to reuse components established in earlier categories, verbatim, and '
-  'says that by category ten you should be reusing far more than you invent. A new chat has no way '
-  'to see them. So end each session by asking for a component inventory, and paste it at the top of '
-  'the next. Without this the library drifts one category at a time and the reconciliation pass '
-  'finds thirty variants of a button.'),
- ('soon', 'Decide what to do about categories finished before the correction',
-  'Descriptor and archetype back-fill cheaply — both are readable off a finished frame. The '
-  'structural tuple and the no-JS degradation do not: the tuple must be unique across a whole '
-  'category, and the degradation is a design question rather than a documentation one. One or two '
-  'categories: re-run. More: back-fill the easy two and do a dedicated pass for the hard two while '
-  'the designs are fresh.'),
+ ('now', 'For every new category chat, follow the five steps',
+  '1. Open a new chat.  2. Paste the START block below.  3. Paste sections 1 to 4 of '
+  'design/claude-design-prompt-3-library.md plus that category block.  4. Paste the END block below. '
+  '5. Save the frames to design/ and the specs to sections-inventory.md.'),
+ ('now', 'If a chat is running right now, paste the one-off correction into it',
+  'Only that chat. New chats get the corrected file automatically.'),
+ ('soon', 'Categories finished before the correction need four fields added',
+  'Tell me how many and I will say whether to re-run them or patch them.'),
  ('soon', 'Export design prompt 2 to design/',
-  'It has already been run; it is simply not on disk. The moment it is, step 5 unblocks and can run '
-  'alongside the 34 category sessions instead of queuing behind them.'),
- ('soon', 'Send category one\'s specs for a ten-field check',
-  'Minutes of work, and it either confirms the format for the remaining 33 or catches a systematic '
-  'problem while it is still cheap.'),
- ('gate', 'Supabase Pro before the Live project holds real customer data',
-  'The Free plan has NO automatic backups at all. Live is provisioned as a FRESH project at go-live, '
-  'so this is a step someone performs rather than inherits. The gate includes one real restore — a '
-  'backup nobody has restored from is a hypothesis. Register 42.'),
- ('gate', 'Ghost(Pro) Starter before public launch',
-  'One Ghost hosting tier forbids custom themes, and that path is untested until an account on it '
-  'exists. Launch-blocking. Surfaces at the end of E13.'),
- ('gate', 'Enable Dodo\'s renewal reminder — Settings → Communication',
-  'Off by default, and it is a backstop rather than the mechanism: Inflozo sends its own at 30 days '
-  '(annual) and 7 days (monthly), because the exposure was always the timing.'),
+  'Already run, just not on disk. Once it is there, step 5 can start.'),
+ ('soon', 'Send category one\'s specs so I can check them',
+  'Confirms the format is right before you do the other 33.'),
+ ('gate', 'Supabase Pro before the live site has real customers',
+  'Free has no backups at all. Includes doing one real restore.'),
+ ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),
+ ('gate', 'Turn on Dodo renewal reminder', 'Settings, Communication. Off by default.'),
 ]
 
 def fenced(md):
@@ -312,18 +266,18 @@ drift apart.</p>
 <div class="acts">
   <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol>
     <div class="prompt live" style="margin-top:4px">
-      <div class="phead"><h4>Rescue a category already in flight</h4>
-        <span class="ptag live">only if mid-category</span>
+      <div class="phead"><h4>ONLY IF a chat is running right now</h4>
+        <span class="ptag live">one-off</span>
         <button class="copy" data-t="{e(FIX_PROMPT)}">Copy</button></div>
       <pre>{e(FIX_PROMPT)}</pre></div>
     <div class="prompt live">
-      <div class="phead"><h4>Ask for this at the END of every category</h4>
-        <span class="ptag live">every session</span>
+      <div class="phead"><h4>STEP 4 — paste at the END of every category</h4>
+        <span class="ptag live">every category</span>
         <button class="copy" data-t="{e(HANDOFF_PROMPT)}">Copy</button></div>
       <pre>{e(HANDOFF_PROMPT)}</pre></div>
     <div class="prompt live">
-      <div class="phead"><h4>Paste this at the START of every category, above the brief</h4>
-        <span class="ptag live">every session</span>
+      <div class="phead"><h4>STEP 2 — paste at the START of every category</h4>
+        <span class="ptag live">every category</span>
         <button class="copy" data-t="{e(CARRY_PROMPT)}">Copy</button></div>
       <pre>{e(CARRY_PROMPT)}</pre></div>
   </div>

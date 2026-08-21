@@ -88,119 +88,77 @@ drift apart.</p>
 </div>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Use the CORRECTED prompt file for every new category chat</b><span>One chat per category is exactly what prompt 3 intends — it says so, and it is self-contained by design. That makes the fix simple: the file on disk is already corrected, so from the next category onward you just paste the current version of §1–§4. Nothing else to do. design/claude-design-prompt-3-library.md.</span></li><li><b>Only if a category is mid-flight right now: paste the correction into THAT chat</b><span>Not needed for future chats — they get the corrected file. This is purely to rescue a session already in progress, and it asks for the four missing fields to be added to designs already produced in that session.</span></li><li><b>Carry a component inventory between chats — the prompt assumes it and a fresh chat cannot</b><span>Prompt 3 tells each session to reuse components established in earlier categories, verbatim, and says that by category ten you should be reusing far more than you invent. A new chat has no way to see them. So end each session by asking for a component inventory, and paste it at the top of the next. Without this the library drifts one category at a time and the reconciliation pass finds thirty variants of a button.</span></li></ol>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>For every new category chat, follow the five steps</b><span>1. Open a new chat.  2. Paste the START block below.  3. Paste sections 1 to 4 of design/claude-design-prompt-3-library.md plus that category block.  4. Paste the END block below. 5. Save the frames to design/ and the specs to sections-inventory.md.</span></li><li><b>If a chat is running right now, paste the one-off correction into it</b><span>Only that chat. New chats get the corrected file automatically.</span></li></ol>
     <div class="prompt live" style="margin-top:4px">
-      <div class="phead"><h4>Rescue a category already in flight</h4>
-        <span class="ptag live">only if mid-category</span>
-        <button class="copy" data-t="A correction to the specification requirements for this category.
+      <div class="phead"><h4>ONLY IF a chat is running right now</h4>
+        <span class="ptag live">one-off</span>
+        <button class="copy" data-t="Correction: each design&#x27;s spec needs TEN fields, not six.
 
-Each design&#x27;s written spec must carry TEN fields. This session was started with a version asking for
-only six, so please include all ten from here on, and add the missing four to any design already
-produced in this session:
+Add these four to every design in this session, including the ones already done:
 
-1. Descriptor — the one-line structural identity: what makes this design THIS design.
+1. Descriptor — one line: what makes this design different from the others in this category.
+2. Structural descriptor — a tuple: archetype · primary axis · item-count class · media placement ·
+   emphasis mechanism. It must be unique within this category.
+3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
+   carousel, table, media frame, sticky, article body.
+4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
+   does with JavaScript switched off.
 
-2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
-   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
-   be described differently in English and still be the same design. It must stay unique within this
-   category once every design&#x27;s control list is written, since controls stop distinguishing designs
-   at that point.
+Keep the six you are already producing: responsive rule, content fields, controls, data binding,
+empty state, accessibility notes.">Copy</button></div>
+      <pre>Correction: each design&#x27;s spec needs TEN fields, not six.
 
-3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
-   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
-   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
-   the departures from it.
+Add these four to every design in this session, including the ones already done:
 
-4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
-   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
-   design whose module has no degradation statement is not finished.
+1. Descriptor — one line: what makes this design different from the others in this category.
+2. Structural descriptor — a tuple: archetype · primary axis · item-count class · media placement ·
+   emphasis mechanism. It must be unique within this category.
+3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
+   carousel, table, media frame, sticky, article body.
+4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
+   does with JavaScript switched off.
 
-The six fields already being produced stay exactly as they are: responsive rule, content fields,
-controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
-accessibility notes.
-
-Also: the specifications belong in sections-inventory.md, not alongside the frames. The frames go in
-the design folder; the specs do not. They are the half the build reads.">Copy</button></div>
-      <pre>A correction to the specification requirements for this category.
-
-Each design&#x27;s written spec must carry TEN fields. This session was started with a version asking for
-only six, so please include all ten from here on, and add the missing four to any design already
-produced in this session:
-
-1. Descriptor — the one-line structural identity: what makes this design THIS design.
-
-2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
-   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
-   be described differently in English and still be the same design. It must stay unique within this
-   category once every design&#x27;s control list is written, since controls stop distinguishing designs
-   at that point.
-
-3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
-   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
-   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
-   the departures from it.
-
-4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
-   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
-   design whose module has no degradation statement is not finished.
-
-The six fields already being produced stay exactly as they are: responsive rule, content fields,
-controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
-accessibility notes.
-
-Also: the specifications belong in sections-inventory.md, not alongside the frames. The frames go in
-the design folder; the specs do not. They are the half the build reads.</pre></div>
+Keep the six you are already producing: responsive rule, content fields, controls, data binding,
+empty state, accessibility notes.</pre></div>
     <div class="prompt live">
-      <div class="phead"><h4>Ask for this at the END of every category</h4>
-        <span class="ptag live">every session</span>
-        <button class="copy" data-t="Before we close this category, produce a COMPONENT INVENTORY for me to carry into
-the next session.
+      <div class="phead"><h4>STEP 4 — paste at the END of every category</h4>
+        <span class="ptag live">every category</span>
+        <button class="copy" data-t="Before we finish, give me two blocks I can paste into the next category&#x27;s chat.
 
-List every reusable component this category established or reused — button, card, avatar, meta row,
-badge, input, tab, whatever it turned out to be. One line each:
+1. COMPONENT INVENTORY — every reusable component this category used or created.
+   One line each:  name — what it is — which category it came from.
+   Include ones reused from earlier categories, so the list keeps growing.
 
-    component name — what it is, in a few words — first established in category X
+2. SHARED FIELD LIST — the union of every content field this category&#x27;s designs need.">Copy</button></div>
+      <pre>Before we finish, give me two blocks I can paste into the next category&#x27;s chat.
 
-Include the ones this category REUSED from earlier categories, not only the new ones, so the list
-stays cumulative rather than resetting. Keep it tight enough to paste at the top of the next session.
+1. COMPONENT INVENTORY — every reusable component this category used or created.
+   One line each:  name — what it is — which category it came from.
+   Include ones reused from earlier categories, so the list keeps growing.
 
-Then give me this category&#x27;s shared field list as a separate block — the union of every field its
-designs need, which is the contract that makes design-switching safe.">Copy</button></div>
-      <pre>Before we close this category, produce a COMPONENT INVENTORY for me to carry into
-the next session.
-
-List every reusable component this category established or reused — button, card, avatar, meta row,
-badge, input, tab, whatever it turned out to be. One line each:
-
-    component name — what it is, in a few words — first established in category X
-
-Include the ones this category REUSED from earlier categories, not only the new ones, so the list
-stays cumulative rather than resetting. Keep it tight enough to paste at the top of the next session.
-
-Then give me this category&#x27;s shared field list as a separate block — the union of every field its
-designs need, which is the contract that makes design-switching safe.</pre></div>
+2. SHARED FIELD LIST — the union of every content field this category&#x27;s designs need.</pre></div>
     <div class="prompt live">
-      <div class="phead"><h4>Paste this at the START of every category, above the brief</h4>
-        <span class="ptag live">every session</span>
-        <button class="copy" data-t="These components already exist from earlier categories and carry forward VERBATIM.
-Reuse them rather than inventing equivalents — consistency outranks novelty, and by the tenth
-category you should be reusing far more than you invent.
+      <div class="phead"><h4>STEP 2 — paste at the START of every category</h4>
+        <span class="ptag live">every category</span>
+        <button class="copy" data-t="Components already built in earlier categories. Reuse these exactly. Do not invent
+replacements for them.
 
-&lt;paste the component inventory from the previous session here&gt;
+&lt;paste the component inventory from the last category here — for category 1, write: none yet&gt;
 
-If a design genuinely needs something none of these covers, say so explicitly and explain why the
-existing component could not be adapted.">Copy</button></div>
-      <pre>These components already exist from earlier categories and carry forward VERBATIM.
-Reuse them rather than inventing equivalents — consistency outranks novelty, and by the tenth
-category you should be reusing far more than you invent.
+If a design needs something none of these cover, say so and explain why an existing one would not work.
 
-&lt;paste the component inventory from the previous session here&gt;
+The brief follows below.">Copy</button></div>
+      <pre>Components already built in earlier categories. Reuse these exactly. Do not invent
+replacements for them.
 
-If a design genuinely needs something none of these covers, say so explicitly and explain why the
-existing component could not be adapted.</pre></div>
+&lt;paste the component inventory from the last category here — for category 1, write: none yet&gt;
+
+If a design needs something none of these cover, say so and explain why an existing one would not work.
+
+The brief follows below.</pre></div>
   </div>
-  <div class="act soon"><h3>Do soon</h3><ol><li><b>Decide what to do about categories finished before the correction</b><span>Descriptor and archetype back-fill cheaply — both are readable off a finished frame. The structural tuple and the no-JS degradation do not: the tuple must be unique across a whole category, and the degradation is a design question rather than a documentation one. One or two categories: re-run. More: back-fill the easy two and do a dedicated pass for the hard two while the designs are fresh.</span></li><li><b>Export design prompt 2 to design/</b><span>It has already been run; it is simply not on disk. The moment it is, step 5 unblocks and can run alongside the 34 category sessions instead of queuing behind them.</span></li><li><b>Send category one&#x27;s specs for a ten-field check</b><span>Minutes of work, and it either confirms the format for the remaining 33 or catches a systematic problem while it is still cheap.</span></li></ol></div>
-  <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the Live project holds real customer data</b><span>The Free plan has NO automatic backups at all. Live is provisioned as a FRESH project at go-live, so this is a step someone performs rather than inherits. The gate includes one real restore — a backup nobody has restored from is a hypothesis. Register 42.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>One Ghost hosting tier forbids custom themes, and that path is untested until an account on it exists. Launch-blocking. Surfaces at the end of E13.</span></li><li><b>Enable Dodo&#x27;s renewal reminder — Settings → Communication</b><span>Off by default, and it is a backstop rather than the mechanism: Inflozo sends its own at 30 days (annual) and 7 days (monthly), because the exposure was always the timing.</span></li></ol></div>
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>Categories finished before the correction need four fields added</b><span>Tell me how many and I will say whether to re-run them or patch them.</span></li><li><b>Export design prompt 2 to design/</b><span>Already run, just not on disk. Once it is there, step 5 can start.</span></li><li><b>Send category one&#x27;s specs so I can check them</b><span>Confirms the format is right before you do the other 33.</span></li></ol></div>
+  <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
 <section class="step done" id="s1">
