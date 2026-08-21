@@ -309,22 +309,66 @@ When the category is complete, finish with two blocks I can carry into the next 
 2. **Shared field list** — the union of every content field this category's designs need.{repeat_block(cat['id'])}"""
 
 
+# The recommended run order for categories not yet designed, with the reason shown on the
+# board. Reuse-first: A17's post card is the most reused component left (A18, A19, A27 and
+# A22's issue preview all draw it), the way A1's nav components seeded the library. After the
+# first three, build-sequence step 4 (/bmad-review) should run -- the handover says two or
+# three new categories, not all 22.
+BUILD_ORDER = [
+ ('A17', 'first — designs the post card, the most reused component left'),
+ ('A18', 'reuses A17\u2019s card while it is fresh'),
+ ('A13', 'first authored build — proves the item controls in a build prompt'),
+ ('A19', 'completes the post-card family — RUN STEP-4 REVIEW BEFORE THIS ONE'),
+ ('A34', 'pagination closes the loop on grids and lists'),
+ ('A24', 'starts the article page'),
+ ('A25', 'the article body'),
+ ('A26', 'ends the article page'),
+ ('A27', 'the post card again, on the article page'),
+ ('A28', 'comments, on the article page'),
+ ('A20', 'tag archives'),
+ ('A29', 'archive headers pair with tags'),
+ ('A21', 'author archives'),
+ ('A22', 'newsletter — the member form'),
+ ('A16', 'contact — the form muscle from A22'),
+ ('A14', 'galleries'),
+ ('A15', 'video and embeds'),
+ ('A23', 'search'),
+ ('A30', 'members pages reuse A7\u2019s tiers'),
+ ('A32', 'paywall pairs with members'),
+ ('A31', 'error and utility'),
+ ('A33', 'Koenig cards need A25 settled'),
+]
+
+
+def ordinal(n):
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1:'st',2:'nd',3:'rd'}.get(n % 10, 'th')}"
+
+
 def build():
     brief, cats, done = master_brief(), categories(), done_designs()
     e = html.escape
     date = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
                           capture_output=True, text=True).stdout.strip()
     rows, n_patch, n_build = [], 0, 0
+    seq = {cid: i for i, (cid, _) in enumerate(BUILD_ORDER)}
+    why = dict(BUILD_ORDER)
+    missing = [c['id'] for c in cats if c['id'] not in done and c['id'] not in seq]
+    assert not missing, f'BUILD_ORDER is missing categories: {missing}'
+    # not-yet-designed first, in the recommended order; the verified 12 last
+    cats = sorted(cats, key=lambda c: (c['id'] in done, seq.get(c['id'], 0)))
     for c in cats:
         ds = done.get(c['id'])
         if ds:
             n_patch += 1
-            kind, label = 'patch', f'{len(ds)} designs · needs 4 fields'
-            body, note = patch_prompt(c, ds), 'Specification only — no redesign, no frames touched.'
+            kind, label = 'patch', f'{len(ds)} designs · run and verified'
+            body = patch_prompt(c, ds)
+            note = ('Done — this prompt was run and its output verified against the gates. '
+                    'Kept for re-runs only; you do not need to run it again.')
         else:
             n_build += 1
-            kind, label = 'build', f"{c['n']} designs · not started"
-            body, note = build_prompt(c, brief), 'Self-contained. Paste this alone — nothing else needed.'
+            kind, label = 'build', f"{c['n']} designs · run {ordinal(n_build)}"
+            body = build_prompt(c, brief)
+            note = f'Run {ordinal(n_build)}: {why[c["id"]]}. Self-contained — paste this alone.'
         rows.append(f'''<div class="cat {kind}" id="{c['id']}">
   <div class="chead">
     <span class="cid">{e(c['id'])}</span>
@@ -404,15 +448,16 @@ Claude Design chat, paste, done.</p>
 <li><b>Copy that category's prompt</b> with its button and paste it in. Nothing else to paste.</li>
 <li><b>Save the output</b> — frames to <code>design/</code>, the specification file to
     <code>sections-inventory.md</code>.</li>
-<li><b>The patches are specification-only.</b> They do not touch a single frame, so they are quick
-    and cannot damage work you have already approved.</li>
+<li><b>Follow the order.</b> Each card says why it sits where it sits. After the first three
+    (A17, A18, A13), run step 4 — the review prompt in <code>build-sequence.md</code> — before
+    continuing.</li>
 </ol></div>
 
-<h2 class="grp">Already designed — patch the four missing fields</h2>
-{''.join(r for r in rows if 'class="cat patch"' in r)}
-
-<h2 class="grp">Not yet started — build the category</h2>
+<h2 class="grp">Run these, in this order — 22 categories to build</h2>
 {''.join(r for r in rows if 'class="cat build"' in r)}
+
+<h2 class="grp">Done and verified — the 12 patch prompts, kept only for re-runs</h2>
+{''.join(r for r in rows if 'class="cat patch"' in r)}
 
 <footer>Generated {e(date)} from <code>design/claude-design-prompt-3-library.md</code> and the design
 export. The master brief inside every build prompt is extracted from that file, never retyped, so
