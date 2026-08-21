@@ -22,7 +22,7 @@ sources:
 companions:
   - 'SCHEMA.sql — the full schema and RLS, applied clean to PostgreSQL 17.11'
   - 'RLS-TEST.sql + PRELUDE.sql — E1''s exit criterion, runnable'
-  - 'VERIFY-AT-BUILD.md — §7.6''s 21 items, each with an owning epic'
+  - 'VERIFY-AT-BUILD.md — the external-facts register, each item with an owning epic. Started as §7.6''s 21 and grows whenever this project rests on a new external fact; the file is the count, never a number quoted here'
   - 'MEASUREMENTS.md — the executed findings behind AD-5, AD-11, AD-17, AD-18'
 ---
 

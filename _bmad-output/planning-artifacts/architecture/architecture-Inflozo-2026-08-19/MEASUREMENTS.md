@@ -2032,3 +2032,73 @@ the first change made after it was written down.
   short list.
 - **The pruning job skips pinned rows** and applies 10/3 through `resolveEntitlement` (E7, AD-33's
   artifact-retention cron).
+
+---
+
+## 27. Second propagation audit · 2026-08-21 · **the class assertions were not class assertions**
+
+The first audit (§24a) asked "does each finding reach an owning document". This one looked in
+different directions — restated counts, dangling references, and whether the *assertions themselves*
+had kept pace with the schema. The third direction found the real defect.
+
+### 27a. ⚠️ Two "class" assertions had hardcoded their own member lists, and both had already drifted
+`RLS-TEST.sql`'s F11 check is the assertion written in Round 4 specifically because §19d had fixed an
+instance and left twelve siblings. **It hardcoded its own list of tables** — and by the time this
+audit ran, two tables had joined the class it guards and neither was being checked:
+
+    in the AD-8 class (SCHEMA §10b) : … renewal_reminders  site_snapshots
+    actually asserted by F11        : … (neither)
+
+`site_snapshots` joined in Round 4 (F14); `renewal_reminders` was added a day later. **A class
+assertion that names its members is an instance assertion wearing a class costume** — the exact
+defect it exists to catch, occurring inside the assertion itself. The same audit found the function
+check had the same shape and had already lost `guard_pin_leaves_a_slot()`.
+
+**Both now derive from the catalogue**, and the derivations are self-evidently true rather than
+lists to maintain:
+
+- **F11:** *if the client can read a table but cannot insert into it, the server must be able to
+  insert — or no row can ever come into existence.*
+- **5d:** *every function in `public` that returns `trigger` must not be executable by a client.*
+
+Proved against a table that **does not exist in the schema at all** — a brand-new AD-8-shaped table
+created on the fly was caught immediately, which is the only real test of a derived assertion:
+
+    revoke insert on renewal_reminders from service_role  -> CAUGHT
+    revoke insert on site_snapshots    from service_role  -> CAUGHT
+    a brand-new client-readable table nobody declared     -> CAUGHT
+
+### 27b. ⚠️ And the function check was testing a proxy, not the property — a hole that pre-dates Round 4
+Mutation-testing the de-hardcoded version exposed something worse than drift. The check asked
+`proacl is null` — *"has this function never been granted or revoked?"* — as a stand-in for *"can a
+client execute it?"*. **Those are not the same question.** An explicit `grant execute … to public`
+sets a non-null ACL, so the function becomes world-executable **and the assertion goes quiet**:
+
+    grant execute on function guard_pin_leaves_a_slot() to public   -> MISSED by the old form
+
+This is not a Round 4 regression; the `proacl is null` form dates from R1 d16/R2-11 and has been
+green over this hole ever since. It now asks the real question — `has_function_privilege` for `anon`
+and `authenticated`, which between them cover a null ACL, an explicit grant to PUBLIC, and a direct
+grant to either role. Re-tested:
+
+    grant execute … to public          -> CAUGHT
+    grant execute … to authenticated   -> CAUGHT
+
+**The general lesson, and it is worth more than the two fixes:** an assertion that tests a *proxy*
+for the property it cares about inherits every gap between the two. Test the property.
+
+### 27c. Restated counts, again
+Standing rule 3 says counts are derived, not restated, and three **live** documents still stated one:
+the spine's frontmatter ("§7.6's 21 items"), and `build-sequence.md` twice ("37 items"). All three
+now describe the register as *the* count rather than quoting a number. The round records
+(`STRESS-TEST-R2/R3/R4`, the decision files) also carry old figures and were **left alone
+deliberately** — they are dated records of what was true then, and editing them would falsify the
+history the project relies on.
+
+Also found: **step 1's prompt was not marked historical** the way step 2's was, and it instructs
+against "21 verify-at-build items". Marked.
+
+### 27d. Clean
+Dangling file references: none — the ten unresolved names are library files not yet authored, the
+future repo's own harness, or files belonging to Supabase and Ghost. Dangling `§` references: none.
+Final state: **schema applies clean, 70 assertions, 0 failures.**

@@ -85,6 +85,10 @@ Step 3 Design prompts 2 & 3  (owner, Claude Design) ─────────�
 
 # Step 1 — Architecture
 
+> ✅ **COMPLETE.** The prompt below is **historical**, kept for provenance. Like step 2's, it carries
+> figures that were true when written and are not now — it says §7.6 has "21 verify-at-build items",
+> and the register has grown every round since. Do not run it; read `ARCHITECTURE-SPINE.md` instead.
+
 **Produces:** the architecture spine — the invariants everything else is built from.
 **Needs from the owner:** nothing to start. Decisions **will** surface mid-way (see below).
 **Unblocks:** step 2, and every line of code in the project.
@@ -171,7 +175,7 @@ instructions. One of them is actively wrong (see the ⚠️ on spike (a)).
 | Both emitters, sharing one code path | `tools/stress/compile.js` — the `users` parameter is the only difference between them, which is what makes §7.3's "agree by construction" a property of the code |
 | §7.3's exit criterion, runnable | `tools/stress/test-renderer-agreement.js` — 8 checks comparing canvas and theme **node by node** |
 | The escaping and injection invariants | `tools/stress/test-ad36.js` — 13 checks: AD-36's four vectors, AD-4/AD-5, FR-H8's guard rule |
-| The register | `architecture-.../VERIFY-AT-BUILD.md` — 37 items, everything reachable closed by execution |
+| The register | `architecture-.../VERIFY-AT-BUILD.md` — everything reachable closed by execution. **The file is the count**; it has grown every round and any number written here goes stale (standing rule 3) |
 | The evidence | `architecture-.../MEASUREMENTS.md` §1–§23 |
 
 **Both defects this document named are fixed**, and one of them was silent data loss: `wrapGuard`
@@ -261,7 +265,7 @@ and it must be raised BEFORE the design sessions go deep, not after.
 
 ### Prompt — spike (b), the platform-verification spike. **HISTORICAL — this one ran and closed.**
 
-> Two corrections if it is ever re-read: the register is **37 items, not 21** (it grew as the PRD
+> Two corrections if it is ever re-read: the register is **much larger than 21 and still growing** (it grew as the PRD
 > rested on new external facts), and every item on it that does not need a Ghost(Pro) site is now
 > closed by execution. The five bullets it lists as "read from source but never run" have all been
 > run — several were **refuted**, and each refutation is recorded with its evidence rather than

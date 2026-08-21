@@ -406,14 +406,26 @@ begin
   raise notice 'PASS: no server-only table holds a client grant';
 
   -- 5d. A function with a null ACL is EXECUTE to PUBLIC, which includes anon.
+  --
+  -- ⚠️ Also de-hardcoded 2026-08-21, for the same reason and found by the same audit:
+  -- `guard_pin_leaves_a_slot()` was revoked in SCHEMA.sql and never added here, so a guard could
+  -- have been left world-executable with the harness green. Derived now: **every function in
+  -- `public` that RETURNS TRIGGER** must not be EXECUTE to PUBLIC. That covers every guard, freeze
+  -- and provisioning function automatically, and correctly excludes `pgcrypto`'s ~40 functions,
+  -- which SCHEMA.sql §11c leaves alone deliberately and explains why.
+  -- ⚠️ AND THE TEST ITSELF WAS TESTING THE WRONG THING, which the same audit surfaced.
+  -- It asked `proacl is null` — "has this function never been granted or revoked?" — as a PROXY for
+  -- "can a client execute it?". The proxy has a hole: an EXPLICIT `grant execute … to public` sets a
+  -- non-null ACL, so the function becomes world-executable and the assertion goes quiet. Proved by
+  -- mutation: granting the pin guard to PUBLIC was NOT caught by the old form.
+  -- Ask the real question instead. anon and authenticated inherit PUBLIC's grants, so testing those
+  -- two covers a null ACL, an explicit grant to PUBLIC, and a direct grant to either role.
   select string_agg(p.proname, ', ' order by p.proname) into bad
-  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-  where n.nspname='public' and p.proacl is null
-    and p.proname in ('touch_updated_at','freeze_columns','guard_revision','guard_slug',
-                      'guard_custom_template_name','guard_lock_generation','sync_vote_count',
-                      'enforce_custom_setting_cap','provision_entitlement','provision_profile',
-                      'guard_lock_takeover','guard_custom_setting_freeze');
-  if bad is not null then raise exception 'FAIL: function(s) executable by PUBLIC: %', bad; end if;
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.prorettype = 'trigger'::regtype
+    and (has_function_privilege('anon', p.oid, 'EXECUTE')
+      or has_function_privilege('authenticated', p.oid, 'EXECUTE'));
+  if bad is not null then raise exception 'FAIL: trigger function(s) a client can execute: %', bad; end if;
   raise notice 'PASS: no guard function is executable by PUBLIC';
 end $$;
 
@@ -427,17 +439,26 @@ do $$
 declare bad text;
 begin
   -- F11: AD-8 says these tables are written by server routes under the service role. Round 3
-  --      granted two of fourteen and Round 4 found the other twelve still unreachable. Asserting
-  --      the class is the fix; the grant list in SCHEMA.sql §11a(7) is just today's instance of it.
-  select string_agg(t.tablename, ', ' order by t.tablename) into bad
-  from pg_tables t
-  where t.schemaname='public'
-    and t.tablename in ('deploys','deploy_jobs','entitlements','subscriptions','exports',
-                        'project_site_bindings','deployed_template_names','asset_usages',
-                        'checkout_consents','notifications','template_binding_checklist','profiles')
-    and not (has_table_privilege('service_role', 'public.'||t.tablename, 'SELECT')
-         and has_table_privilege('service_role', 'public.'||t.tablename, 'INSERT'));
-  if bad is not null then raise exception 'FAIL (F11): AD-8 table(s) the server cannot write: %', bad; end if;
+  --      granted two of fourteen and Round 4 found the other twelve still unreachable.
+  --
+  -- ⚠️ THIS ASSERTION USED TO HARDCODE ITS OWN MEMBER LIST, and a second audit (2026-08-21) found
+  -- it had already drifted: `site_snapshots` joined the class in Round 4 (F14) and
+  -- `renewal_reminders` was added a day later, and NEITHER was being checked. A class assertion
+  -- that names its members is an instance assertion wearing a class costume — the exact defect
+  -- this assertion exists to catch, occurring inside the assertion itself.
+  --
+  -- It is now DERIVED, and the derivation is self-evidently true rather than a list to maintain:
+  -- **if the client can read a table but cannot insert into it, the server must be able to insert,
+  -- or no row can ever come into existence.** Any table that joins the class in future is covered
+  -- the moment it is created, with no edit here.
+  select string_agg(c.relname, ', ' order by c.relname) into bad
+  from pg_class c join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public' and c.relkind = 'r'
+    and has_any_column_privilege('authenticated', c.oid, 'SELECT')
+    and not has_any_column_privilege('authenticated', c.oid, 'INSERT')
+    and not (has_table_privilege('service_role', c.oid, 'SELECT')
+         and has_table_privilege('service_role', c.oid, 'INSERT'));
+  if bad is not null then raise exception 'FAIL (F11): client-readable but neither client- nor server-insertable: %', bad; end if;
   raise notice 'PASS: every AD-8 server-written table is reachable by service_role';
 
   -- F3/F1: §11 narrows UPDATE column-by-column and INSERT was left whole-row everywhere, which
