@@ -68,11 +68,51 @@ PROMPTS = [
  ('s6b', 'Readiness gate', 'live', None),
 ]
 
+# A correction the owner pastes into the RUNNING Claude Design conversation. It lives here so the
+# board can offer it with a copy button — "paste the corrected block" is not an instruction anyone
+# can act on without the block itself in front of them.
+FIX_PROMPT = """A correction to the specification requirements, effective from the next batch onward.
+
+Each design's written spec must carry TEN fields. Earlier batches were asked for only six, so please
+include all ten from now on. The four that were missing are:
+
+1. Descriptor — the one-line structural identity: what makes this design THIS design.
+
+2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
+   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
+   be described differently in English and still be the same design. It must stay unique within its
+   category once every design's control list is written, since controls stop distinguishing designs
+   at that point.
+
+3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
+   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
+   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
+   the departures from it.
+
+4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
+   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
+   design whose module has no degradation statement is not finished.
+
+The six fields already being produced stay exactly as they are: responsive rule, content fields,
+controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
+accessibility notes.
+
+Two more things:
+
+- The specifications belong in sections-inventory.md, not alongside the frames. The frames go in the
+  design folder; the specs do not. They are the half the build reads.
+
+- Please list which categories you have already completed in earlier batches, so I know which ones
+  need these four fields back-filled."""
+
 ACTIONS = [
- ('now', 'Paste the corrected spec block into the running prompt 3 session',
-  'Before the next batch. Batching is what makes this recoverable — the prompt can be fixed between '
-  'batches rather than restarted. The corrected file is design/claude-design-prompt-3-library.md.'),
- ('now', 'Decide what to do about the batches already finished',
+ ('now', 'In Claude Design, paste this correction into the conversation that is running prompt 3',
+  'Do it before the next batch starts. Prompt 3 asks each design for a written spec, and the version '
+  'you started with asked for six of the ten fields the reconciliation step checks. Pasting this '
+  'tells the running session to include all ten from here on — you do not need to stop or restart '
+  'anything, which is exactly why running in batches saved you. It also asks which categories are '
+  'already done, which answers the next question below. Copy it with the button.'),
+ ('now', 'Then decide what to do about the batches that already finished',
   'Descriptor and archetype back-fill cheaply. The structural tuple and the no-JS degradation do '
   'not — the tuple must be unique across a whole category and the degradation is a design question, '
   'not a documentation one. One or two batches: re-run them. More than that: back-fill the easy two '
@@ -234,7 +274,13 @@ drift apart.</p>
 </div>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol>
+    <div class="prompt live" style="margin-top:4px">
+      <div class="phead"><h4>Paste this into Claude Design</h4>
+        <span class="ptag live">ready</span>
+        <button class="copy" data-t="{e(FIX_PROMPT)}">Copy correction</button></div>
+      <pre>{e(FIX_PROMPT)}</pre></div>
+  </div>
   <div class="act soon"><h3>Do soon</h3><ol>{''.join(acts['soon'])}</ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol>{''.join(acts['gate'])}</ol></div>
 </div>

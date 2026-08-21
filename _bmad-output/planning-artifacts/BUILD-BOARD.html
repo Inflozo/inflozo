@@ -88,7 +88,77 @@ drift apart.</p>
 </div>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Paste the corrected spec block into the running prompt 3 session</b><span>Before the next batch. Batching is what makes this recoverable — the prompt can be fixed between batches rather than restarted. The corrected file is design/claude-design-prompt-3-library.md.</span></li><li><b>Decide what to do about the batches already finished</b><span>Descriptor and archetype back-fill cheaply. The structural tuple and the no-JS degradation do not — the tuple must be unique across a whole category and the degradation is a design question, not a documentation one. One or two batches: re-run them. More than that: back-fill the easy two and do a dedicated pass per category for the hard two while the designs are fresh.</span></li></ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>In Claude Design, paste this correction into the conversation that is running prompt 3</b><span>Do it before the next batch starts. Prompt 3 asks each design for a written spec, and the version you started with asked for six of the ten fields the reconciliation step checks. Pasting this tells the running session to include all ten from here on — you do not need to stop or restart anything, which is exactly why running in batches saved you. It also asks which categories are already done, which answers the next question below. Copy it with the button.</span></li><li><b>Then decide what to do about the batches that already finished</b><span>Descriptor and archetype back-fill cheaply. The structural tuple and the no-JS degradation do not — the tuple must be unique across a whole category and the degradation is a design question, not a documentation one. One or two batches: re-run them. More than that: back-fill the easy two and do a dedicated pass per category for the hard two while the designs are fresh.</span></li></ol>
+    <div class="prompt live" style="margin-top:4px">
+      <div class="phead"><h4>Paste this into Claude Design</h4>
+        <span class="ptag live">ready</span>
+        <button class="copy" data-t="A correction to the specification requirements, effective from the next batch onward.
+
+Each design&#x27;s written spec must carry TEN fields. Earlier batches were asked for only six, so please
+include all ten from now on. The four that were missing are:
+
+1. Descriptor — the one-line structural identity: what makes this design THIS design.
+
+2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
+   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
+   be described differently in English and still be the same design. It must stay unique within its
+   category once every design&#x27;s control list is written, since controls stop distinguishing designs
+   at that point.
+
+3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
+   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
+   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
+   the departures from it.
+
+4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
+   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
+   design whose module has no degradation statement is not finished.
+
+The six fields already being produced stay exactly as they are: responsive rule, content fields,
+controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
+accessibility notes.
+
+Two more things:
+
+- The specifications belong in sections-inventory.md, not alongside the frames. The frames go in the
+  design folder; the specs do not. They are the half the build reads.
+
+- Please list which categories you have already completed in earlier batches, so I know which ones
+  need these four fields back-filled.">Copy correction</button></div>
+      <pre>A correction to the specification requirements, effective from the next batch onward.
+
+Each design&#x27;s written spec must carry TEN fields. Earlier batches were asked for only six, so please
+include all ten from now on. The four that were missing are:
+
+1. Descriptor — the one-line structural identity: what makes this design THIS design.
+
+2. Structural descriptor (the tuple) — archetype · primary axis · item-count class · media placement
+   · emphasis mechanism. This one is machine-checked and free prose is not, because two designs can
+   be described differently in English and still be the same design. It must stay unique within its
+   category once every design&#x27;s control list is written, since controls stop distinguishing designs
+   at that point.
+
+3. Archetype — which responsive archetype it collapses under, from this closed list: grid-of-N,
+   split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky,
+   article body. It supplies the default collapse ladder, so the responsive rule only needs to state
+   the departures from it.
+
+4. Behaviour module — which module the design declares (if any), whether that module is edit-safe,
+   and its no-JS degradation written out. The degradation is an acceptance criterion, not a note: a
+   design whose module has no degradation statement is not finished.
+
+The six fields already being produced stay exactly as they are: responsive rule, content fields,
+controls (sidebar order, closed value sets), data binding with 0/1/many behaviour, empty state, and
+accessibility notes.
+
+Two more things:
+
+- The specifications belong in sections-inventory.md, not alongside the frames. The frames go in the
+  design folder; the specs do not. They are the half the build reads.
+
+- Please list which categories you have already completed in earlier batches, so I know which ones
+  need these four fields back-filled.</pre></div>
+  </div>
   <div class="act soon"><h3>Do soon</h3><ol><li><b>Export design prompt 2 to design/</b><span>It has already been run; it is simply not on disk. The moment it is, step 5 unblocks and can run alongside the 34 category sessions instead of queuing behind them.</span></li><li><b>Send category one&#x27;s specs for a ten-field check</b><span>Minutes of work, and it either confirms the format for the remaining 33 or catches a systematic problem while it is still cheap.</span></li></ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the Live project holds real customer data</b><span>The Free plan has NO automatic backups at all. Live is provisioned as a FRESH project at go-live, so this is a step someone performs rather than inherits. The gate includes one real restore — a backup nobody has restored from is a hypothesis. Register 42.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>One Ghost hosting tier forbids custom themes, and that path is untested until an account on it exists. Launch-blocking. Surfaces at the end of E13.</span></li><li><b>Enable Dodo&#x27;s renewal reminder — Settings → Communication</b><span>Off by default, and it is a backstop rather than the mechanism: Inflozo sends its own at 30 days (annual) and 7 days (monthly), because the exposure was always the timing.</span></li></ol></div>
 </div>
