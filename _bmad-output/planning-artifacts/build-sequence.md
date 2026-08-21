@@ -388,6 +388,31 @@ argument it should run *first*: design artifacts are non-normative and the PRD w
 authored from the PRD is a better input to prompt 2 than the reverse. Raised as an option, not a
 change — the sequencing above is still the safe default.
 
+### ⚠️ TWO NEW FLOWS to author, decided after this document's flow list was written
+
+The six flows named below are no longer the whole set. Two more were decided by the owner on
+2026-08-21 and **both are blocking, user-facing surfaces** rather than notices:
+
+**(a) The pre-deploy backup gate** — specification in
+`architecture-.../BACKUP-GATE.md`, read it before designing. It fires **once per site at first
+deploy**, not at connect, and it **blocks the deploy button** until confirmed. It is a checklist —
+one checkbox per backup item, then a master confirm — and it opens by stating what Inflozo actually
+writes (the theme and `routes.yaml`) *before* recommending a full backup, because a warning that
+overstates gets clicked through and a gate everyone clicks through is not a gate. **Three things the
+design must not soften:** Ghost's JSON content export does **not** include images and the gate has to
+say so; `ghost backup` covers everything in one command for self-hosted customers and should be
+offered as the shortcut it is; and **Ghost(Pro) customers cannot bulk-download their images at all**,
+which Inflozo cannot fix and must not paper over. Appendix H governs the wording, and the honest
+register matters more here than anywhere else in the product.
+
+**(b) Deploy history with pinning** — FR-J7's retention, owner decision 2026-08-21. At most **10
+stored versions per project on Pro and 3 on Free, pinned included in that count**. Three rules the
+surface has to carry: **the limit is stated, not implied** — a list that silently drops its oldest
+entry reads as complete when it is not; **the history must never show a version it cannot restore**,
+because a dead Restore button is worse than a shorter list; and **at least one version must stay
+unpinned**, enforced in the database, so the pin control needs a clear refusal state rather than a
+silent failure. Unpinning is always allowed, by design, so nobody can trap themselves.
+
 **One input this step now has that it did not when it was written** *(Round 4, finding F4)*: the
 FR-D18 edit-lock choreography has been **decided by the owner**, and the decision has a shape the
 flow must carry. **A takeover is allowed**, and the displaced device is then shown that its session
