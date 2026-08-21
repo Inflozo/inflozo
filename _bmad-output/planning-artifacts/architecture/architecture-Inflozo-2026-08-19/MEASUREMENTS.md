@@ -2102,3 +2102,28 @@ against "21 verify-at-build items". Marked.
 Dangling file references: none — the ten unresolved names are library files not yet authored, the
 future repo's own harness, or files belonging to Supabase and Ghost. Dangling `§` references: none.
 Final state: **schema applies clean, 70 assertions, 0 failures.**
+
+### 27e. Completeness pass — the audits' own findings, propagated in full
+Both audits' *fixes* were applied when they were found. This pass asked the harder question: were
+they propagated **everywhere they belong**, including documents neither audit had opened. Three gaps.
+
+**The second audit's most valuable lesson had no owning rule.** AD-26 carried "prefer an assertion
+over a catalogue to an assertion over a name" — written 2026-08-20 and **violated the same day** —
+but nothing recorded *why* it had failed, and nothing at all recorded the sharper finding: that an
+assertion testing a **proxy** for the property it cares about inherits every gap between the two. The
+`proacl is null` form had been green over its hole through **all four rounds**. AD-26 now carries
+both as numbered invariants, with the evidence that the softer version of the rule did not hold.
+
+**The plain-English document was materially out of date**, and it is the one a human actually reads.
+Written before the backup decision, it still told the reader the storage question was "the open
+question, deliberately still open", listed file backups as an open decision, and described uploaded
+images as possibly the customer's only copy — which the compile-pipeline finding had since disproved
+(a deployed image ships **inside** the theme package, so it also exists on the customer's own Ghost).
+All three corrected, plus its check count (67 → 70) and a new row for rollback retention.
+
+**A live count was still restated in three places** (§27c) after standing rule 3 had been cited
+against exactly that. Now derived.
+
+**Nothing else moved:** schema applies clean, **70 assertions / 0 failures**, compiler 13 + 8. Every
+finding from both audits now resolves to an owning invariant — verified mechanically rather than by
+recollection, which is the only reason the first two passes found anything.

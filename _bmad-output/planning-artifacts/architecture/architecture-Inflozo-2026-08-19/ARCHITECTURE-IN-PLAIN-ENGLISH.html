@@ -416,21 +416,41 @@
       </tr>
       <tr>
         <td><strong>Their uploaded images</strong></td>
-        <td>Possibly their only copy, depending on whether they kept the originals.</td>
-        <td><span class="pill a">maybe unrecoverable</span></td>
+        <td>Less serious than it first looks. Once a page is deployed, its images are packed
+            <em>inside</em> the theme sitting on the customer's own Ghost — so they exist in two
+            places. Only images uploaded and not yet deployed live solely in Inflozo.</td>
+        <td><span class="pill g">mostly safe</span></td>
       </tr>
     </tbody>
   </table>
 
+  <div class="callout good">
+    <p><strong>Decided: Inflozo is not a backup tool, and does not try to be.</strong> It keeps no
+    copy of the customer's Ghost data. Instead, before the first deploy to a site, the customer is
+    <strong>blocked</strong> until they confirm they hold their own backup — with a checklist showing
+    exactly where each thing lives in Ghost and how to save it.</p>
+    <p>The gate says plainly what Inflozo changes — <strong>the theme, and the routes file</strong> —
+    and then recommends a full backup anyway. Accurate first, because a warning that exaggerates gets
+    clicked through, and a gate everybody clicks through isn't a gate.</p>
+  </div>
+
+  <p>Two details from Ghost's own documentation that the checklist has to be honest about, because
+  both are easy to get wrong:</p>
+
+  <ul>
+    <li><strong>Ghost's content export does not include images.</strong> People export their content,
+    see a file, and assume they're covered. They aren't. This is the single most important line on
+    the checklist.</li>
+    <li><strong>Ghost's own hosting customers cannot download their images at all.</strong> There's no
+    export for it and no server to copy them from. Inflozo can't fix that — so the gate says so
+    rather than implying they're safe.</li>
+  </ul>
+
   <div class="callout warn">
-    <p><strong>The real danger isn't a disaster — it's an ordinary bug.</strong> Hosting providers
-    don't lose files; that essentially doesn't happen any more. What does happen is that a piece of
-    housekeeping code deletes the wrong thing. Inflozo will have <strong>five</strong> different
-    places in its code that are allowed to delete files, spread across four separate pieces of work.
-    That's five chances for a mistake, and right now there is <strong>no undo</strong> behind any of
-    them.</p>
-    <p>The database has an undo — a "rewind to before the mistake" feature. The files have nothing.
-    That gap is the open question, and it is deliberately still open rather than quietly decided.</p>
+    <p><strong>Being straight about what this is:</strong> a consent gate moves responsibility, it
+    doesn't reduce risk. Someone who ticks the box without actually backing up still loses their old
+    theme. That's a deliberate trade — the same one every tool of this kind makes — and it's recorded
+    as a decision rather than left to be discovered later.</p>
   </div>
 
   <h3>What was found when this was actually tested</h3>
@@ -514,7 +534,7 @@
       <p>A full deploy, start to finish, on a deliberately oversized page. The target was ten minutes.</p></div>
     <div class="mini"><div class="big">0<span class="unit"> errors</span></div>
       <p>Ghost's own theme validator, on both supported Ghost versions. Zero warnings too.</p></div>
-    <div class="mini"><div class="big">67<span class="unit"> checks</span></div>
+    <div class="mini"><div class="big">70<span class="unit"> checks</span></div>
       <p>Security tests that run against the database. All passing — and proven to actually fail when
       something breaks.</p></div>
     <div class="mini"><div class="big">1.4<span class="unit"> KB</span></div>
@@ -529,6 +549,11 @@
     anyway, so anything watching it saw a green tick. Six real problems had been hiding behind it.</p>
     <p>It's now a genuine gate, and that was verified the only honest way: by deliberately breaking
     nine things one at a time and confirming it caught all nine.</p>
+    <p><strong>A later audit found the same disease one level up.</strong> Two of the new checks were
+    written to guard a whole <em>category</em> of mistake — and then listed the specific items they
+    guarded, so anything added afterwards went unchecked. Within a day, two had. And one check was
+    asking a nearly-right question that had a hole in it, quietly, since the very first round. Both
+    now work off a live list the database generates, so nothing can be forgotten into them.</p>
   </div>
 
   <p>That finding is also the reason for a habit that now runs through everything here: <strong>a test
@@ -555,11 +580,17 @@
         themes. Handling that needs an account on it to test against — deferred, and it blocks
         public launch.</td></tr>
       <tr><td><strong>File backups</strong></td>
-        <td><span class="pill r">open decision</span> No backup of uploaded files or original themes
-        exists yet. See section 5.</td></tr>
+        <td><span class="pill g">decided</span> Inflozo keeps no copy of customer data. The customer
+        is gated at first deploy instead — see section 5. The checklist itself still needs building,
+        and its Ghost menu paths need checking against both supported Ghost versions.</td></tr>
       <tr><td><strong>Database rewind</strong></td>
-        <td><span class="pill a">half proven</span> The machinery is running; the "rewind" feature
-        itself has never been used in anger. The manual backup route is now proven.</td></tr>
+        <td><span class="pill a">half proven</span> The manual backup route is now proven end to end
+        and written up as a procedure — the first practice run found two defects that would have made
+        a real recovery fail. Ghost's paid "rewind to a moment in time" feature is confirmed running
+        but has never been used in anger.</td></tr>
+      <tr><td><strong>Rollback history</strong></td>
+        <td><span class="pill g">designed</span> Last 10 versions kept on the paid plan, 3 on free,
+        with the option to pin ones worth keeping. Built and tested; the interface is not.</td></tr>
     </tbody>
   </table>
 </section>
