@@ -35,35 +35,27 @@ Claude Design. That is the only thing gating everything downstream.
 
 **12 of 34 categories are done.** The export is at
 `design/claude-design-export/` (a zip plus `unpacked/`): **12 spec files, 225 design frames**,
-covering A1 Headers through A12 About and Team.
+covering A1 Headers through A12 About and Team. The specs are good — detailed and per-design — and
+the corrected prompt at `design/claude-design-prompt-3-library.md` means categories 13 onward carry
+all ten required fields natively.
 
-**The specs are good** — detailed and per-design, carrying content fields, controls, data binding,
-responsive rules, behaviour, empty states and accessibility. The category files also record
-"shared components established here, reused verbatim", so component continuity across categories is
-already being handled inside the design work.
-
-**Four fields are missing from all 12**, because the prompt they were produced with asked for six of
-the ten the reconciliation step checks:
-
-| Missing field | Recoverable? |
-|---|---|
-| **Descriptor** — one line: what makes this design *this* design | Yes, from the frame and its existing spec |
-| **Archetype** — one of: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky, article body | Yes, from the responsive rule already written |
-| **Structural descriptor (tuple)** — `archetype · primary axis · item-count class · media placement · emphasis mechanism` | Mostly. Must be **unique within its category** — check after deriving |
-| **no-JS degradation** — what the design does with JavaScript off | Only where a behaviour module exists. Some may need an actual design answer |
-
-**The prompt is already corrected** at `design/claude-design-prompt-3-library.md`, so categories 13
-onward will carry all ten.
+**The four fields the 12 were missing are now derived** — `design/derived-fields-A1-A12.md`, one
+entry per design across all 186. Every structural tuple is unique within its category, verified by
+`python3 tools/tuple-check.py`, which `doc-audit.py --check` now runs. Nothing was invented: where
+the spec's text could not answer, the entry says **NEEDS DESIGN ANSWER**, and the gaps are rolled up
+by root cause at the top of that file — a handful of owner answers (the shared email form without
+JavaScript, the disclosure fallback for headers and footers, A7's resting billing cadence, the
+rails and the marquee, plus a short singles list) resolves the lot.
 
 **Next actions, in order:**
 
-1. Read the 12 spec files and **derive the four missing fields** where they are recoverable. Report
-   which ones genuinely are not, rather than inventing them.
-2. Check the **structural tuples are unique within each category** — FR-G5's whole uniqueness
-   guarantee runs on the tuple, not on prose.
-3. Decide with the owner whether the export's frames belong in git (13 MB unpacked) and where the
-   specs land — `sections-inventory.md` is where the build reads them from.
-4. Once two or three more categories exist, run **step 4** (`/bmad-review` — the prompt is in
+1. Get the owner's answers to `derived-fields-A1-A12.md` §"What needs a design answer", and edit
+   those entries in place as answers arrive.
+2. Decide with the owner whether the export's frames belong in git — `.gitignore` already ignores
+   `unpacked/`, but the files were committed in the same commit that added the rule, so intent and
+   repo disagree; the zip alone carries the full export — and when the specs plus derived fields
+   merge into `sections-inventory.md`, which is where the build reads them from.
+3. Once two or three more categories exist, run **step 4** (`/bmad-review` — the prompt is in
    `build-sequence.md`). Do not wait for all 34.
 
 ## Also outstanding

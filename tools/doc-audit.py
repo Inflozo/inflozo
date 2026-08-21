@@ -234,6 +234,10 @@ DOCS = [
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
+ ('tools/tuple-check.py', 'tool', 'FR-G5 tuple gate',
+  'Verifies the structural tuples in derived-fields-A1-A12.md: five slots, closed vocabulary, '
+  'unique within each category, contiguous numbering. Mutation-tested: a forced collision turns '
+  'it red. Run by doc-audit --check.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift.'),
 ]
@@ -337,6 +341,12 @@ def check():
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
                    capture_output=True).returncode != 0:
             fails.append(f'STALE: {art} does not match {src} — run python3 tools/{tool}')
+
+    # 3c. the structural tuples must stay unique and in vocabulary (FR-G5)
+    if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'tuple-check.py')],
+               capture_output=True).returncode != 0:
+        fails.append('TUPLE DRIFT: derived-fields-A1-A12.md fails tools/tuple-check.py — '
+                     'a tuple collided or left the closed vocabulary')
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()
