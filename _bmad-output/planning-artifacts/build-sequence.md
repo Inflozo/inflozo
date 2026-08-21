@@ -2,13 +2,18 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
-updated: 2026-08-20 (second pass) — steps 1 and 2 are COMPLETE; one prompt below contradicted executed evidence and is corrected
+updated: 2026-08-21 (third pass) — steps 1 and 2 COMPLETE; a reliability round, two propagation audits and a documentation gate have landed since. One prompt below contradicts executed evidence and is flagged in place rather than deleted
 covers: the six steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
 # Build Sequence
 
 Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This file exists so no step has to be reconstructed from conversation, and so each one can be started cold.
+
+> **Starting cold? Read `INDEX.md` first.** Every document in the project with a one-line brief on
+> what it is and whether it is still authoritative — generated from disk, so it cannot drift. Its
+> four statuses matter: **live** (edit these), **tool** (runnable), **record** (dated — *do not
+> edit*), **retired** (kept for provenance only). `INDEX.html` is the same thing for a human.
 
 ## Where things stand
 
@@ -26,11 +31,14 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | Design prompt 1 | ✅ run — 27 mockups in `design/mockups/` |
 | Design prompt 2 | 🔵 **owner WIP** — responsive archetypes, ~25 missing surfaces, the paywall editor |
 | Design prompt 3 | 🔵 **owner — NOT STARTED, and it is now the critical path** — 34 category sessions producing 484 designs *and* their specifications |
-| **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — **36 invariants** (AD-1..AD-36), full schema + RLS, and **four stress-test rounds** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` §1–§22 is the executed evidence |
+| **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — the invariants (AD-1 upward, and the file is the count), full schema + RLS, and **four stress-test rounds plus a reliability round** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` is the executed evidence, and it has grown every round since |
 | **T1 / T3 droplets** | ✅ **PROVISIONED** — `ghost6.inflozo.com` (Ghost 6.58.0) is **T1**, `ghost5.inflozo.com` (Ghost 5.130.6) is **T3**. Both seeded, both credentialed in `tools/probe/.env`, both used by rounds 3 and 4 |
-| **E0(b) platform spike — step 2** | ✅ **DONE to the limit of what is reachable.** The register grew from 21 items to **37**, and every item executable without a Ghost(Pro) site is closed **by execution against both real Ghosts**. What remains is blocked by choice, not by effort: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling, belongs to that epic), 34–36 (deferred by owner decision in round 4) |
+| **E0(b) platform spike — step 2** | ✅ **DONE to the limit of what is reachable.** The register has grown every round and every item executable without a Ghost(Pro) site is closed **by execution against both real Ghosts** — **the file is the count, not a number written here** (standing rule 3). What remains is blocked by choice, not by effort: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling, belongs to that epic), 35–36 (deferred by owner decision in round 4). **Item 34 was closed by execution on 2026-08-21** — Round 4's only SUSPECTED security finding, refuted |
 | **E0(a) mark-emission spike — step 2** | ✅ **DONE.** Both emitters exist and are proven to agree **node by node** — `tools/stress/test-renderer-agreement.js`, 8 checks — which is §7.3's exit criterion made runnable. Plus `test-ad36.js`, 13 checks. Both defects this document named are fixed. `spike-compiler/` is **retired**, not repaired |
 | **The live Supabase project** | ✅ **matches the schema.** Reset and re-applied by the owner 2026-08-20 in the dashboard: every assertion passes and container and hosted agree exactly on the policy count (the harness prints both; this file does not restate them). F13 confirmed on the real platform: 4 users → 4 profiles → 4 entitlements |
+| **Reliability** | ✅ **NFR-4's restore drill run for the first time — and the backup did not work.** Two silent defects, both fixed and written up as `RESTORE-RUNBOOK.md`. Deliberate failures were also run against a real Ghost: four behaved, one did not (register 39) |
+| **Documentation gate** | ✅ **`tools/doc-audit.py`** — three propagation audits were run by hand and every one found something, always in the most recently added thing. Now a script with the harness's contract: **it exits non-zero on drift.** Run `--check` at the end of every round and before any commit that adds a document (AD-36b) |
+| **For a human** | ✅ `ARCHITECTURE-IN-PLAIN-ENGLISH.html` — the whole system without jargon, 12 sections and 7 diagrams. The document to hand a designer, an investor or a first engineer |
 | Journeys & flows | ⬜ not started — **step 5**, and it may be less blocked than this document assumes (see step 5) |
 | Stories | ⬜ not started — **step 6** |
 
@@ -48,7 +56,7 @@ Every step below runs through a BMAD skill. Paste the prompt **including its lea
 | 6 — Epics & stories | `/bmad-create-epics-and-stories` | Scrum Master |
 | 6b — Readiness gate | `/bmad-sprint-planning` | Scrum Master |
 
-The PM stage is already complete — `prd.md` v4.0 is its output. **Two deprecations to avoid:** `bmad-create-architecture` forwards to `bmad-architecture`, and `bmad-create-story` / `bmad-dev-story` are superseded by `bmad-build`. Use the current names.
+The PM stage is already complete — `prd.md` **v4.1** is its output. **Two deprecations to avoid:** `bmad-create-architecture` forwards to `bmad-architecture`, and `bmad-create-story` / `bmad-dev-story` are superseded by `bmad-build`. Use the current names.
 
 Once stories exist, the development loop is `/bmad-build` per story, with `/bmad-code-review` and the `/bmad-testarch-*` skills on the QA side — but that is beyond this document, which ends at the first story.
 
@@ -59,9 +67,10 @@ These were each learned expensively. They are not style preferences.
 1. **A claim about an external platform is a hypothesis until read in that platform's source or executed against it.** Four assertions about Ghost entered this PRD as normative text and were later verified **false** — each had deleted or damaged something real, and each carried a confident-sounding reason that stopped anyone re-examining it. New external claims arrive with a citation or a fixture, or they do not arrive.
 2. **Propagate, never localise.** Three independent reviewers named "fixed it in its home requirement and stopped" as the single root cause of ~25 defects. A change is not done until every place that depends on it has been visited and either changed or explicitly ticked.
 3. **Counts are derived, not restated.** Every count in this project has gone stale at least once. Prefer "as many gates as there are categories" to a literal number whose source lives elsewhere.
-4. **Flag, do not guess.** If two approved decisions contradict, or an instruction cannot be followed without inventing a decision the owner never made, **stop and ask**. Guessing has hurt this project before.
-5. **Precedence, highest first** (stated in full in the PRD preamble): the two `verify-mechanical-*.md` files → the research companions (on any Ghost fact) → the normative companions → `prd.md` → `addendum.md` → `spike-compiler/`. **Design artifacts are non-normative and never override the PRD.**
-6. **Log every meaningful step to the memlog:**
+4. **A finding is not done until it reaches an owning document** *(AD-36b, added 2026-08-21)*. `MEASUREMENTS.md` is where a finding is **proved**, never where it **lives** — it must also reach an invariant in the spine, a row in the register, or a comment beside the code it governs. Three audits found the same failure and **each time it was in the most recently added thing**, because a big finding gets a long write-up that feels like the work is finished. Enforced, not remembered: `python3 tools/doc-audit.py --check` exits non-zero on drift. **Never edit a document marked `record` in `INDEX.md`** — correcting its figures falsifies the history this project relies on to know which claims were tested when.
+5. **Flag, do not guess.** If two approved decisions contradict, or an instruction cannot be followed without inventing a decision the owner never made, **stop and ask**. Guessing has hurt this project before.
+6. **Precedence, highest first** (stated in full in the PRD preamble): the two `verify-mechanical-*.md` files → the research companions (on any Ghost fact) → the normative companions → `prd.md` → `addendum.md` → `spike-compiler/`. **Design artifacts are non-normative and never override the PRD.**
+7. **Log every meaningful step to the memlog:**
    ```bash
    cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
    uv run /home/ghost/Dev/Inflozo/_bmad/scripts/memlog.py append --workspace . --type change --text "…"
@@ -74,12 +83,16 @@ Steps 1 and 2 run **in parallel with the owner's design work (step 3)**, and tha
 **That race has been won.** Steps 1 and 2 finished *before* prompt 3 started, so the design investment is now being made against a model that is proven rather than assumed — which is the outcome this ordering existed to produce. **The critical path is now design prompt 3 alone**, and nothing in this document blocks it.
 
 ```
-Step 1 /bmad-architecture ──► Step 2 /bmad-build (2 spikes) ──┐
-                                                               ├──► Step 4 /bmad-review
-Step 3 Design prompts 2 & 3  (owner, Claude Design) ───────────┘             │
-                                                                             ▼
-                                              Step 6 /bmad-create-epics-and-stories ◄── Step 5 /bmad-ux
+✅ Step 1 /bmad-architecture ──► ✅ Step 2 /bmad-build (2 spikes) ──┐
+                                                                    ├──► Step 4 /bmad-review
+🔵 Step 3 Design prompts 2 & 3  (owner, Claude Design) ─────────────┘             │
+   └─ prompt 2 (small) also unblocks step 5 directly ──────────┐                  ▼
+                                                               └──► Step 5 /bmad-ux ──► Step 6 stories
 ```
+
+**Read that second line.** Step 5 waits on design prompt **2**, not prompt **3** — a small piece of
+work rather than 34 sessions. Landing prompt 2 early lets the journeys-and-flows pass run in parallel
+with the library instead of after it. See step 5.
 
 ---
 
@@ -176,7 +189,7 @@ instructions. One of them is actively wrong (see the ⚠️ on spike (a)).
 | §7.3's exit criterion, runnable | `tools/stress/test-renderer-agreement.js` — 8 checks comparing canvas and theme **node by node** |
 | The escaping and injection invariants | `tools/stress/test-ad36.js` — 13 checks: AD-36's four vectors, AD-4/AD-5, FR-H8's guard rule |
 | The register | `architecture-.../VERIFY-AT-BUILD.md` — everything reachable closed by execution. **The file is the count**; it has grown every round and any number written here goes stale (standing rule 3) |
-| The evidence | `architecture-.../MEASUREMENTS.md` §1–§23 |
+| The evidence | `architecture-.../MEASUREMENTS.md` — every claim with the command that produced it. **The file is the count** |
 
 **Both defects this document named are fixed**, and one of them was silent data loss: `wrapGuard`
 built the `{{#if}}` from the date helper's *format argument*, so the guard tested an identifier that
@@ -206,8 +219,10 @@ T2 (Ghost(Pro) Publisher, $29/mo) is needed before the deploy paths are verified
 **T4 (Ghost(Pro) Starter) is deferred until after MVP by your decision** — but its gate is
 ⛔ launch-blocking, and you asked to be reminded before launch.
 
-Register items 16–17 belong to E4's tooling and are that epic's to close. Items 34–36 were deferred
-by owner decision in round 4, each with its reason recorded.
+Register items 16–17 belong to E4's tooling and are that epic's to close. Items 35–36 were deferred
+by owner decision in round 4, each with its reason recorded. **Item 34 is closed** — it was Round 4's
+only SUSPECTED security finding and it was refuted by execution on 2026-08-21, once a probe defect
+that had produced three convincing false results was cleared.
 
 ---
 
@@ -442,11 +457,14 @@ Staff Access Token at all, which is precisely the case FR-C1's graceful no-token
 Four journeys:
   connect → first deploy · blank-canvas build · Free-plan ship · downgrade recovery
 
-Six flows, each specified in the PRD as a designed surface rather than a warning toast:
+EIGHT flows — the PRD's six, plus two decided in 2026-08-21 and described in the section above
+this prompt. Each is a designed surface, never a warning toast:
   FR-J13 pre-deploy snapshot gate · FR-D18's three-party edit-lock choreography ·
   FR-I4's guided routes-upload card · FR-J14's library-update confirm ·
   FR-C2's Preview-only explanation with its clearing conditions ·
-  FR-I6's post-deploy template-binding checklist
+  FR-I6's post-deploy template-binding checklist ·
+  the pre-deploy BACKUP GATE (see architecture-.../BACKUP-GATE.md) ·
+  DEPLOY HISTORY with pinning (10 versions Pro / 3 Free, pinned included)
 
 Two things the connect → first deploy journey must carry, because they are recent and easy to
 miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PERMANENTLY, so the
@@ -530,4 +548,6 @@ Two readiness conditions are specific to this project and are not the usual ones
 | **② Also yours, and much smaller** | **Design prompt 2** — the responsive archetypes, the ~25 missing surfaces and the paywall editor. Worth separating from ① because **step 5 is blocked on this one, not on the 34 sessions.** Landing it early unblocks the journeys-and-flows pass long before the library is finished |
 | **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
+| ⛔ **Before the Live project takes real customer data** | **Put Live on the Supabase Pro plan** *(register 42)*. The **Free plan has NO automatic backups at all** — that gap, not the point-in-time question, is the real cliff, and AD-26 provisions Live as a **fresh project** at go-live, so this is a step someone must perform rather than inherit. The gate is: Pro active, daily backups visible in the dashboard, **and one real restore performed** using `RESTORE-RUNBOOK.md` — a backup nobody has restored from is a hypothesis, which is exactly how the first drill found two defects |
+| Deliberately NOT bought yet | **Point-in-time recovery**, at $100/month per 7 days of retention — roughly eight Pro subscribers of margin against an 11–16 subscriber break-even, buying 2-minute recovery over 24-hour. It is also worth less here than to a typical product: **a database rewind cannot rewind the customer's Ghost site**, so the most consequential state is out of its reach. **Revisit trigger:** ~50 paying customers, or the first time any customer loses work for any reason. Until then a scheduled `pg_dump` gives most of the value for a few dollars |
 | ⛔ **Before public launch** | **The Ghost(Pro) gate** — acquire a Ghost(Pro) **Starter** site, capture the real `GET /admin/config/` `hostSettings.limits` payload, and verify FR-C2's Preview-only detection against that recording. Until it clears, that path is a **KNOWN UNTESTED PATH** and no marketing may target Ghost(Pro) users. You asked to be reminded of this one |
