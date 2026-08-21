@@ -203,6 +203,11 @@ DOCS = [
   'picking up the project cold.'),
  ('planning-artifacts/INDEX.html', 'live', 'Document index (for humans)',
   'The same index, browsable and grouped by status.'),
+ ('tools/svg-check.py', 'tool', 'Diagram geometry checker',
+  'The architecture diagrams are hand-written SVG, and a browser will draw text straight through a '
+  'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
+  'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
+  'reported — and its first version missed the worst case by only parsing two-point paths.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift.'),
 ]

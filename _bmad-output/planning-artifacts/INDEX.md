@@ -6,7 +6,7 @@ updated: 2026-08-21
 
 # Document index
 
-**66 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**67 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -69,6 +69,7 @@ points at a file that is gone, or if this file is out of date.
 |---|---|
 | **[Credential check](tools/probe/check-access.py)**<br>`tools/probe/check-access.py` | Verifies every live credential works. Prints verdicts only — it has no code path that can reach a secret, written that way after two keys leaked into a transcript. |
 | **[Decision-sheet template](tools/probe/report-template.html)**<br>`tools/probe/report-template.html` | Copy it, replace the findings array, change nothing else. |
+| **[Diagram geometry checker](tools/svg-check.py)**<br>`tools/svg-check.py` | The architecture diagrams are hand-written SVG, and a browser will draw text straight through a box without complaining. Finds text that overflows its frame, text crossing a shape it does not belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was reported — and its first version missed the worst case by only parsing two-point paths. |
 | **[Fixture sections](tools/stress/sections.js)**<br>`tools/stress/sections.js` | The annotated HTML the fixture compiles. |
 | **[Ghost fixture seeder](tools/probe/seed-ghost.py)**<br>`tools/probe/seed-ghost.py` | Seeds both Ghosts identically. |
 | **[Ghost provisioning](tools/probe/provision-ghost.sh)**<br>`tools/probe/provision-ghost.sh` | Builds a probe Ghost from scratch. |

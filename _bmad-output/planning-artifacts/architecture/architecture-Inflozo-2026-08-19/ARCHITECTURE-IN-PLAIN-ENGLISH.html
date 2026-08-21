@@ -247,57 +247,57 @@
   the work is done.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 720 440" role="img" aria-label="System diagram: browser, Inflozo, database, the customer's Ghost, and visitors">
-      <rect x="24" y="18" width="182" height="78" rx="12" class="s-a"/>
-      <text x="115" y="45" text-anchor="middle" class="tb">The customer</text>
-      <text x="115" y="65" text-anchor="middle" class="ts">in their browser,</text>
-      <text x="115" y="81" text-anchor="middle" class="ts">designing a page</text>
+    <svg viewBox="0 0 720 448" role="img" aria-label="System diagram: the browser talks to Inflozo, Inflozo installs a theme on the customer's Ghost, and visitors are served by Ghost alone">
+      <rect x="20" y="24" width="180" height="84" rx="12" class="s-a"/>
+      <text x="110" y="52" text-anchor="middle" class="tb">The customer</text>
+      <text x="110" y="74" text-anchor="middle" class="ts">in their browser,</text>
+      <text x="110" y="92" text-anchor="middle" class="ts">designing a page</text>
 
-      <rect x="270" y="18" width="182" height="78" rx="12" class="s-box"/>
-      <text x="361" y="45" text-anchor="middle" class="tb">Inflozo</text>
-      <text x="361" y="65" text-anchor="middle" class="ts">the app + the compiler</text>
-      <text x="361" y="81" text-anchor="middle" class="tm">Vercel · one region</text>
+      <rect x="270" y="24" width="180" height="84" rx="12" class="s-box"/>
+      <text x="360" y="52" text-anchor="middle" class="tb">Inflozo</text>
+      <text x="360" y="74" text-anchor="middle" class="ts">the app + the compiler</text>
+      <text x="360" y="93" text-anchor="middle" class="tm">Vercel · one region</text>
 
-      <rect x="516" y="18" width="180" height="78" rx="12" class="s-g"/>
-      <text x="606" y="45" text-anchor="middle" class="tb">Their Ghost site</text>
-      <text x="606" y="65" text-anchor="middle" class="ts">posts, subscribers,</text>
-      <text x="606" y="81" text-anchor="middle" class="ts">the live website</text>
+      <rect x="520" y="24" width="180" height="84" rx="12" class="s-g"/>
+      <text x="610" y="52" text-anchor="middle" class="tb">Their Ghost site</text>
+      <text x="610" y="74" text-anchor="middle" class="ts">posts, subscribers,</text>
+      <text x="610" y="92" text-anchor="middle" class="ts">the live website</text>
 
-      <rect x="270" y="150" width="182" height="86" rx="12" class="s-box"/>
-      <text x="361" y="176" text-anchor="middle" class="tb">Supabase</text>
-      <text x="361" y="196" text-anchor="middle" class="ts">database · file storage</text>
-      <text x="361" y="212" text-anchor="middle" class="ts">sign-in</text>
-      <text x="361" y="229" text-anchor="middle" class="tm">their designs live here</text>
+      <rect x="270" y="152" width="180" height="80" rx="12" class="s-box"/>
+      <text x="360" y="180" text-anchor="middle" class="tb">Supabase</text>
+      <text x="360" y="202" text-anchor="middle" class="ts">database · file storage</text>
+      <text x="360" y="221" text-anchor="middle" class="tm">their designs live here</text>
 
-      <rect x="516" y="150" width="180" height="62" rx="12" class="s-g"/>
-      <text x="606" y="177" text-anchor="middle" class="tb">Their visitors</text>
-      <text x="606" y="195" text-anchor="middle" class="ts">the reading public</text>
+      <rect x="520" y="152" width="180" height="70" rx="12" class="s-g"/>
+      <text x="610" y="180" text-anchor="middle" class="tb">Their visitors</text>
+      <text x="610" y="202" text-anchor="middle" class="ts">the reading public</text>
 
-      <rect x="24" y="150" width="182" height="62" rx="12" class="s-box"/>
-      <text x="115" y="177" text-anchor="middle" class="t">Dodo · Resend</text>
-      <text x="115" y="195" text-anchor="middle" class="ts">payments · email</text>
+      <path d="M200 60 L266 60" class="ln-a" marker-end="url(#a)"/>
+      <path d="M450 58 L516 58" class="ln-a" marker-end="url(#a)"/>
+      <text x="483" y="40" text-anchor="middle" class="tm">installs</text>
+      <text x="483" y="78" text-anchor="middle" class="tm">the theme</text>
 
-      <path d="M206 46 L268 46" class="ln-a" marker-end="url(#a)"/>
-      <path d="M361 96 L361 148" class="ln-a" marker-end="url(#a)"/>
-      <path d="M452 40 L514 40" class="ln-a" marker-end="url(#a)"/>
-      <text x="483" y="28" text-anchor="middle" class="tm">installs</text>
-      <text x="483" y="60" text-anchor="middle" class="tm">the theme</text>
-      <path d="M206 176 L268 176" class="ln" marker-end="url(#a)"/>
-      <path d="M606 96 L606 148" class="ln-g" marker-end="url(#a)"/>
-      <text x="646" y="126" text-anchor="middle" class="tm">serves</text>
+      <path d="M360 108 L360 148" class="ln-a" marker-end="url(#a)"/>
+      <text x="378" y="134" class="tm">stores their work</text>
 
-      <path d="M115 96 L115 282 Q115 296 129 296 L592 296 Q606 296 606 282 L606 214" class="ln-g" marker-end="url(#a)"/>
-      <text x="360" y="316" text-anchor="middle" class="ts">while designing, the browser reads their posts <tspan font-weight="700">straight from their own Ghost</tspan> — never through Inflozo</text>
+      <path d="M610 108 L610 148" class="ln-g" marker-end="url(#a)"/>
+      <text x="628" y="134" class="tm">serves</text>
 
-      <rect x="24" y="348" width="672" height="72" rx="13" class="s-g"/>
-      <text x="360" y="378" text-anchor="middle" class="tb">Once the theme is installed, Inflozo is out of the picture</text>
-      <text x="360" y="400" text-anchor="middle" class="ts">If Inflozo went offline tomorrow, every customer's website would keep working exactly as it is</text>
+      <path d="M110 108 L110 300 Q110 314 124 314 L596 314 Q610 314 610 300 L610 222" class="ln-g" marker-end="url(#a)"/>
+      <text x="360" y="338" text-anchor="middle" class="ts">while designing, the browser reads their posts</text>
+      <text x="360" y="356" text-anchor="middle" class="ts">straight from their own Ghost — never through Inflozo</text>
+
+      <rect x="20" y="374" width="680" height="62" rx="13" class="s-g"/>
+      <text x="360" y="400" text-anchor="middle" class="tb">Once the theme is installed, Inflozo is out of the picture</text>
+      <text x="360" y="421" text-anchor="middle" class="ts">If Inflozo went offline tomorrow, every customer's site would keep working</text>
 
       <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
     </svg>
     <p class="cap">Inflozo is a workshop, not a host. It builds the thing, hands it over, and walks
-    away. That single choice shapes almost every other decision in this document.</p>
+    away. That single choice shapes almost every other decision in this document. Two further
+    services sit behind Inflozo and never touch a customer's site — Dodo for payments and Resend
+    for email — so they are left out of the picture rather than cluttering it.</p>
   </div>
 
   <div class="co">
@@ -341,7 +341,7 @@
   <p class="lead-in">Follow one piece of one page from the design team's hands to a visitor's screen.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 720 300" role="img" aria-label="A section travels from design file to visitor screen">
+    <svg viewBox="0 0 720 300" role="img" aria-label="A section travels from design file to visitor screen, with the preview and the compiler sharing their code">
       <rect x="14" y="30" width="128" height="94" rx="11" class="s-p"/>
       <text x="78" y="55" text-anchor="middle" class="t">1 · Authored</text>
       <text x="78" y="76" text-anchor="middle" class="ts">a designer writes</text>
@@ -377,15 +377,14 @@
       <path d="M438 77 L456 77" class="ln" marker-end="url(#b)"/>
       <path d="M586 77 L604 77" class="ln" marker-end="url(#b)"/>
 
-      <rect x="310" y="164" width="276" height="76" rx="11" class="s-box"/>
-      <text x="448" y="190" text-anchor="middle" class="t">Steps 3 and 4 share their code</text>
-      <text x="448" y="211" text-anchor="middle" class="ts">which is what makes the preview honest —</text>
-      <text x="448" y="227" text-anchor="middle" class="ts">they cannot drift apart without a test failing</text>
+      <rect x="290" y="160" width="316" height="78" rx="11" class="s-box"/>
+      <text x="448" y="187" text-anchor="middle" class="t">Steps 3 and 4 share their code</text>
+      <text x="448" y="209" text-anchor="middle" class="ts">which is what makes the preview honest —</text>
+      <text x="448" y="227" text-anchor="middle" class="ts">they cannot drift apart unnoticed</text>
       <path d="M374 124 L374 162" class="ln-d"/><path d="M522 124 L522 162" class="ln-d"/>
 
-      <text x="160" y="196" class="ts">The customer's own words and images</text>
-      <text x="160" y="214" class="ts">travel with it and are never</text>
-      <text x="160" y="230" class="ts">treated as instructions — see §7.</text>
+      <text x="360" y="266" text-anchor="middle" class="ts">The customer's own words and images travel with it —</text>
+      <text x="360" y="284" text-anchor="middle" class="ts">and are never treated as instructions. See section 7.</text>
       <defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
     </svg>
