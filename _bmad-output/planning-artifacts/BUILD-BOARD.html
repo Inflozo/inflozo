@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Build Board</title><style>
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--done:#12784a;--done-s:#e2f5ec;--run:#96650a;--run-s:#fff4d9;
+--next:#1f6feb;--wait:#8b8b93;--red:#b42318;--red-s:#fdeceb;
+--sh:0 1px 2px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.055)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--done:#5ed6a0;--done-s:#112f20;--run:#e8bd57;--run-s:#33280d;--next:#6ea8fe;--wait:#75757e;
+--red:#f08b80;--red-s:#3a1a17;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.36)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.62 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:52px 22px 120px}
+.kick{color:var(--accent);font-weight:660;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
+h1{font-size:clamp(1.9rem,4.4vw,2.7rem);letter-spacing:-.023em;margin:.28em 0 .3em;font-weight:730}
+.lede{color:var(--muted);font-size:1.1rem;max-width:66ch;margin:0}
+/* rail */
+.rail{display:flex;gap:6px;margin:30px 0 6px;flex-wrap:wrap}
+.rail a{flex:1;min-width:96px;text-decoration:none;background:var(--card);border:1px solid var(--line);
+border-radius:11px;padding:11px 12px;box-shadow:var(--sh);transition:transform .12s,border-color .12s}
+.rail a:hover{transform:translateY(-2px);border-color:var(--accent)}
+.rail .n{font-size:.72rem;color:var(--muted);font-weight:650;letter-spacing:.06em}
+.rail .t{display:block;color:var(--ink);font-size:.86rem;font-weight:640;margin-top:2px;line-height:1.3}
+.rail .b{display:inline-block;margin-top:7px;height:4px;width:100%;border-radius:2px;background:var(--line)}
+.rail a.done .b{background:var(--done)}.rail a.running .b{background:var(--run)}
+.rail a.next .b{background:var(--next)}.rail a.ready .b{background:var(--next);opacity:.5}
+/* actions */
+.acts{margin:34px 0 0}
+.act{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px 24px;
+box-shadow:var(--sh);margin-bottom:14px}
+.act.now{border-left:3px solid var(--red)}
+.act.soon{border-left:3px solid var(--accent)}
+.act.gate{border-left:3px solid var(--run)}
+.act h3{margin:0 0 .55em;font-size:1.02rem;font-weight:680}
+.act ol{margin:0;padding-left:1.2em}
+.act li{margin-bottom:.75em}
+.act li b{display:block;font-weight:645}
+.act li span{display:block;color:var(--muted);font-size:.9rem;margin-top:.15em}
+/* steps */
+.step{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:22px 25px;
+box-shadow:var(--sh);margin:14px 0;scroll-margin-top:16px}
+.step.done{opacity:.72}
+.step.running{border-color:var(--run)}
+.shead{display:flex;align-items:center;gap:13px;margin-bottom:10px}
+.snum{width:34px;height:34px;border-radius:10px;background:var(--accent-s);color:var(--accent);
+display:flex;align-items:center;justify-content:center;font-weight:720;font-size:.9rem;flex:none}
+.step.done .snum{background:var(--done-s);color:var(--done)}
+.step.running .snum{background:var(--run-s);color:var(--run)}
+.stitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stitle h2{margin:0;font-size:1.22rem;font-weight:690;letter-spacing:-.012em}
+.badge{font-size:.72rem;font-weight:660;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.badge.done{background:var(--done-s);color:var(--done)}
+.badge.running{background:var(--run-s);color:var(--run)}
+.badge.next,.badge.ready{background:var(--accent-s);color:var(--accent)}
+.badge.later{background:var(--code);color:var(--wait)}
+.stands{margin:0 0 12px;max-width:74ch}
+dl{margin:0 0 6px;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:.92rem}
+dt{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.055em;font-weight:660;padding-top:3px}
+dd{margin:0}
+/* prompts */
+.prompt{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.prompt.refuted{border-color:var(--red)}
+.phead{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--code);flex-wrap:wrap}
+.phead h4{margin:0;font-size:.93rem;font-weight:660;flex:1}
+.ptag{font-size:.68rem;font-weight:680;padding:2px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.ptag.live{background:var(--done-s);color:var(--done)}
+.ptag.historical{background:var(--code);color:var(--wait);border:1px solid var(--line)}
+.ptag.refuted{background:var(--red-s);color:var(--red)}
+.pnote{margin:0;padding:11px 14px;font-size:.87rem;color:var(--muted);border-bottom:1px solid var(--line)}
+.pnote.refuted{background:var(--red-s);color:var(--red)}
+pre{margin:0;padding:14px;background:var(--card);overflow-x:auto;font-size:.79rem;line-height:1.5;
+font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.prompt.historical pre,.prompt.refuted pre{opacity:.6}
+button.copy{font:inherit;font-size:.8rem;font-weight:640;cursor:pointer;border:1px solid var(--accent);
+background:var(--accent);color:#fff;border-radius:8px;padding:5px 13px}
+button.copy:hover{opacity:.9}button.copy.ok{background:var(--done);border-color:var(--done)}
+footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
+</style></head><body><div class="wrap">
+<div class="kick">Inflozo</div><h1>Build board</h1>
+<p class="lede">Where the project is, what is next, and every prompt ready to copy. Generated from
+<code>build-sequence.md</code> — the prompts are extracted from it, never retyped, so the two cannot
+drift apart.</p>
+
+<div class="rail">
+<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="running" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="next" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD</span><span class="b"></span></a><a class="ready" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
+</div>
+
+<div class="acts">
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Paste the corrected spec block into the running prompt 3 session</b><span>Before the next batch. Batching is what makes this recoverable — the prompt can be fixed between batches rather than restarted. The corrected file is design/claude-design-prompt-3-library.md.</span></li><li><b>Decide what to do about the batches already finished</b><span>Descriptor and archetype back-fill cheaply. The structural tuple and the no-JS degradation do not — the tuple must be unique across a whole category and the degradation is a design question, not a documentation one. One or two batches: re-run them. More than that: back-fill the easy two and do a dedicated pass per category for the hard two while the designs are fresh.</span></li></ol></div>
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>Export design prompt 2 to design/</b><span>It has already been run; it is simply not on disk. The moment it is, step 5 unblocks and can run alongside the 34 category sessions instead of queuing behind them.</span></li><li><b>Send category one&#x27;s specs for a ten-field check</b><span>Minutes of work, and it either confirms the format for the remaining 33 or catches a systematic problem while it is still cheap.</span></li></ol></div>
+  <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the Live project holds real customer data</b><span>The Free plan has NO automatic backups at all. Live is provisioned as a FRESH project at go-live, so this is a step someone performs rather than inherits. The gate includes one real restore — a backup nobody has restored from is a hypothesis. Register 42.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>One Ghost hosting tier forbids custom themes, and that path is untested until an account on it exists. Launch-blocking. Surfaces at the end of E13.</span></li><li><b>Enable Dodo&#x27;s renewal reminder — Settings → Communication</b><span>Off by default, and it is a backstop rather than the mechanism: Inflozo sends its own at 30 days (annual) and 7 days (monthly), because the exposure was always the timing.</span></li></ol></div>
+</div>
+
+<section class="step done" id="s1">
+  <div class="shead">
+    <span class="snum">1</span>
+    <div class="stitle"><h2>Architecture</h2>
+      <span class="badge done">complete</span></div>
+  </div>
+  <p class="stands">The 36 invariants, the schema, and its runnable proof. Four stress rounds and a reliability round applied on top.</p>
+  <dl><dt>Produces</dt><dd>The architecture spine — the rules everything else is built from.</dd>
+  </dl>
+  <div class="prompt historical"><div class="phead"><h4>Architecture</h4><span class="ptag historical">historical</span></div><p class="pnote historical">Complete. Kept for provenance. It states figures that were true when written and are not now.</p><pre>/bmad-architecture
+
+Create the architecture for Inflozo.
+
+The PRD is final and normative:
+/home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+
+Read its preamble first. It names every normative companion in the same folder and states
+the precedence order between them — follow that order exactly, and note especially that the
+research companions outrank the PRD body on any fact about Ghost, because the regression risk
+in this project has always lived in the distillation step rather than the research step.
+
+Section 7 is addressed to you specifically:
+  7.1 Stack · 7.2 Content &amp; data flow · 7.3 Single-source section runtime (mandated)
+  7.4 Generated theme structure · 7.5 Data model sketch · 7.6 Key risks &amp; 21 verify-at-build items
+
+Four things are mandated and are not yours to re-open — design against them, not around them:
+  - The single-source section runtime: annotated HTML, two renderers over one source, no
+    Handlebars runtime in the browser, no `new Function`, so the CSP needs no &#x27;unsafe-eval&#x27;.
+  - The compiler mechanism of section 7.3, empirically validated in spike-compiler/.
+  - The generated theme structure of section 7.4.
+  - `addendum.md`, which is normative for mechanism: AD1 local-first persistence, AD2 the
+    edit-lock protocol.
+
+Where the PRD is explicitly incomplete, it says so and it is yours to complete:
+  - 7.5 is a sketch, not a specification. Build the full schema and its RLS from section 5.
+  - The compile function&#x27;s duration and memory come from a measurement against the 40-section
+    stress fixture, not from a platform default.
+  - Section 7.6&#x27;s 21 verify-at-build items each need an owning epic.
+
+Standing rules, each learned expensively in this project:
+  - A claim about an external platform is a hypothesis until read in that platform&#x27;s source or
+    executed against it. Four such claims entered this PRD as normative text and were verified
+    FALSE. Cite or execute; do not assert.
+  - Propagate, never localise. A decision is not done until everything that depends on it has
+    been visited.
+  - Counts are derived, not restated.
+  - Flag, do not guess. If two approved decisions contradict, stop and ask.
+
+Section 8 already fixes the epic sequence and every FR&#x27;s owning epic — architect against that
+sequence rather than proposing a different one. Section 4&#x27;s build order is binding: the FR-D4
+mark-emission spike first, then the E0 platform-verification spike, then the complete shell
+block, then the gated categories beginning with Heroes.
+
+Log to the memlog when you finish:
+  cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
+  uv run /home/ghost/Dev/Inflozo/_bmad/scripts/memlog.py append --workspace . --type change --text &quot;…&quot;</pre></div>
+</section><section class="step done" id="s2">
+  <div class="shead">
+    <span class="snum">2</span>
+    <div class="stitle"><h2>The two E0 spikes</h2>
+      <span class="badge done">complete</span></div>
+  </div>
+  <p class="stands">Both emitters exist and are proven to agree node by node. The platform register is closed to the limit of what is reachable without a Ghost(Pro) site.</p>
+  <dl><dt>Produces</dt><dd>Proof the rich-text model works end to end, and executed results for the whole register.</dd>
+  </dl>
+  <div class="prompt refuted"><div class="phead"><h4>Spike (a) — mark emission</h4><span class="ptag refuted">refuted</span></div><p class="pnote refuted">Complete, AND one instruction in it is FALSE — it tells you to escape a preceding backslash, which was executed and disproved. Following it would rebuild a defect four rounds removed. Read the warning in build-sequence.md before this prompt, never the prompt alone.</p><pre>/bmad-build
+
+Build the FR-D4 mark-emission spike. It is step 1 of the PRD&#x27;s binding build order and it runs
+before anything else, because every path by which user text becomes markup depends on it and a
+reviewer judged that path unimplemented.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Read FR-D4, section 7.3, FR-J1 and E0 in section 8. The existing spike is in spike-compiler/ —
+reproduce it first and confirm it still passes before extending it.
+
+What must be demonstrated end to end, with a runnable test:
+  - Rich text stored as characters plus mark ranges, NEVER as an HTML string.
+  - All four inline marks: bold, italic, underline, link.
+  - Paste normalization into that model.
+  - The compiler as the single place ranges become markup.
+  - Every escaping case, including the one the verification caught: the escaping helper must
+    escape a PRECEDING BACKSLASH too, or `\{{x}}` renders as `\VALUE` and FR-J1&#x27;s
+    inert-emission guarantee is functionally broken, not cosmetically.
+
+Two known spike defects must be fixed as part of this, both invisible to the existing test.js
+because its assertions compare class skeletons and its date helper is a passthrough stub:
+  - compile.js:36 — the canvas date renderer discards its format argument.
+  - compile.js:154 — wrapGuard derives the guard identifier from a date helper&#x27;s FORMAT
+    argument and emits `{{#if YYYY}}`, a guard on an identifier that does not exist, so the
+    block never renders and the content is silently and permanently lost. Guard on the BOUND
+    FIELD, never on a helper argument (FR-H8), and add a helper-bound test that would catch it.
+
+Report the result plainly. If the model does not hold, say so and stop — that is a scope change
+and it must be raised BEFORE the design sessions go deep, not after.</pre></div><div class="prompt historical"><div class="phead"><h4>Spike (b) — platform verification</h4><span class="ptag historical">historical</span></div><p class="pnote historical">Complete. Its &quot;21 items&quot; is long out of date; the register has grown every round.</p><pre>/bmad-build
+
+Run the E0 platform-verification spike: execute EVERY verify-at-build item in section 7.6 of
+the Inflozo PRD against a real Ghost, and record each result.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Targets: T1 (self-hosted Ghost 6.x) and T3 (self-hosted Ghost 5.x). Several items differ
+between the v5 and v6 gscan specs, so run both.
+
+There are 21 items. Two are marked ⛔ LAUNCH-BLOCKING and cannot be cleared without a Ghost(Pro)
+Starter site, which is deferred until after MVP — record those as still-blocked rather than
+guessing. The rest are executable now, and several were read from source but never run:
+  - GS100&#x27;s exact trigger on a fixture (three @custom keys in every emitted theme depend on
+    &quot;declared AND referenced never fires&quot;).
+  - `{{total_members}}`&#x27;s rounding and `+` suffix, and that `{{content_api_key}}` renders in a
+    theme context — six designs and the whole zero-custom-setting result rest on these.
+  - The announcement-bar seed: that an Admin API integration returns announcement_content,
+    _background and _visibility, and that clearing the content stops Ghost emitting its bar
+    script at all.
+  - The NQL build Ghost actually resolves at runtime — two normative rules in FR-I2 are proven
+    against @tryghost/nql 0.13.x, but Ghost&#x27;s package.json declares &quot;catalog:&quot; so its resolved
+    build was never verified.
+  - What a theme may style INSIDE {{comments}}&#x27;s native output — A28&#x27;s ten designs are scoped to
+    thread chrome until this is answered.
+
+Record each item as confirmed, refuted or still-open. A REFUTED item is a scope change and must
+be raised as one before the epic that depends on it starts — do not quietly work around it.
+This project has been damaged four times by an unverified platform claim entering as fact.</pre></div>
+</section><section class="step running" id="s3">
+  <div class="shead">
+    <span class="snum">3</span>
+    <div class="stitle"><h2>Design prompts 2 and 3</h2>
+      <span class="badge running">running now</span></div>
+  </div>
+  <p class="stands">Prompt 2 is RUN but not yet exported to disk. Prompt 3 is RUNNING in batches — and its first batches used a prompt that asked for only six of the ten required spec fields.</p>
+  <dl><dt>Produces</dt><dd>The archetype system and missing surfaces (prompt 2); then 484 designs AND their specifications (prompt 3, run 34 times).</dd>
+  </dl>
+  
+</section><section class="step next" id="s4">
+  <div class="shead">
+    <span class="snum">4</span>
+    <div class="stitle"><h2>Reconcile designs against the PRD</h2>
+      <span class="badge next">next up</span></div>
+  </div>
+  <p class="stands">Runnable as soon as the first two or three categories land — do NOT wait for all 34.</p>
+  <dl><dt>Produces</dt><dd>A reconciliation report: contradictions, gaps, and spec completeness.</dd>
+  <dt>Waiting on</dt><dd>the first categories from prompt 3</dd></dl>
+  <div class="prompt live"><div class="phead"><h4>Reconcile designs against the PRD</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-review
+
+Reconcile the Inflozo design output against the PRD.
+Run the verification-gap and adversarial lenses together — this pass is looking for what is
+MISSING and what CONTRADICTS, not for prose quality.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Designs: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/
+Precedent for the format and the bar: reconcile-mockups.md in the same folder, which did this
+for prompt 1 and found ~31 disagreements.
+
+DESIGN ARTIFACTS ARE NON-NORMATIVE. Where a design and the PRD disagree, the PRD wins and the
+design moves — unless the design reveals that the PRD specified something unbuildable or
+incoherent, in which case flag it as a PRD defect and do not silently pick a side.
+
+Three questions, kept separate in the report:
+  1. CONTRADICTIONS — where a design shows something the PRD forbids, or contradicts a control
+     vocabulary, a binding rule, a plan gate or a count.
+  2. GAPS — surfaces the PRD requires that no design covers. Check against: the section
+     inventory&#x27;s 34 categories, section 8&#x27;s epics, Appendix F.1&#x27;s plan matrix, and the six
+     flows and four journeys named in the PRD preamble, PLUS the two flows added 2026-08-21 —
+     the pre-deploy backup gate and deploy history with pinning (eight flows in total).
+  3. SPEC COMPLETENESS — every design carries all ten fields of the per-design specification
+     schema in sections-inventory.md. Two are newly load-bearing and easy to omit: the
+     structural descriptor TUPLE (which FR-G5&#x27;s uniqueness assertion runs over, and which must
+     stay unique within its category after per-design control lists are written) and the no-JS
+     degradation statement for any design declaring an FR-G7 behaviour module.
+
+Verify counts rather than trusting them: 34 categories, 484 designs, per-category counts summing
+to 484, 70 [Free] on variant lines only.
+
+Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlog.">Copy prompt</button></div><pre>/bmad-review
+
+Reconcile the Inflozo design output against the PRD.
+Run the verification-gap and adversarial lenses together — this pass is looking for what is
+MISSING and what CONTRADICTS, not for prose quality.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Designs: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/
+Precedent for the format and the bar: reconcile-mockups.md in the same folder, which did this
+for prompt 1 and found ~31 disagreements.
+
+DESIGN ARTIFACTS ARE NON-NORMATIVE. Where a design and the PRD disagree, the PRD wins and the
+design moves — unless the design reveals that the PRD specified something unbuildable or
+incoherent, in which case flag it as a PRD defect and do not silently pick a side.
+
+Three questions, kept separate in the report:
+  1. CONTRADICTIONS — where a design shows something the PRD forbids, or contradicts a control
+     vocabulary, a binding rule, a plan gate or a count.
+  2. GAPS — surfaces the PRD requires that no design covers. Check against: the section
+     inventory&#x27;s 34 categories, section 8&#x27;s epics, Appendix F.1&#x27;s plan matrix, and the six
+     flows and four journeys named in the PRD preamble, PLUS the two flows added 2026-08-21 —
+     the pre-deploy backup gate and deploy history with pinning (eight flows in total).
+  3. SPEC COMPLETENESS — every design carries all ten fields of the per-design specification
+     schema in sections-inventory.md. Two are newly load-bearing and easy to omit: the
+     structural descriptor TUPLE (which FR-G5&#x27;s uniqueness assertion runs over, and which must
+     stay unique within its category after per-design control lists are written) and the no-JS
+     degradation statement for any design declaring an FR-G7 behaviour module.
+
+Verify counts rather than trusting them: 34 categories, 484 designs, per-category counts summing
+to 484, 70 [Free] on variant lines only.
+
+Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlog.</pre></div>
+</section><section class="step ready" id="s5">
+  <div class="shead">
+    <span class="snum">5</span>
+    <div class="stitle"><h2>Journeys and flows</h2>
+      <span class="badge ready">ready when unblocked</span></div>
+  </div>
+  <p class="stands">Blocked only on prompt 2 being EXPORTED — the work itself is already done. Nothing here depends on the 484 designs, so this can run alongside them rather than after.</p>
+  <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified.</dd>
+  <dt>Waiting on</dt><dd>prompt 2 landing in design/</dd></dl>
+  <div class="prompt live"><div class="phead"><h4>Journeys and flows</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-ux
+
+Create the UX specifications for Inflozo: the mandated journeys and flows.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+The preamble delegates this work explicitly and names the mandated floor. Personas are in
+section 3 and each carries its GHOST CREDENTIAL REACH, which is what decides how a journey
+actually plays out — the multi-site operator frequently is NOT the site Owner and cannot mint a
+Staff Access Token at all, which is precisely the case FR-C1&#x27;s graceful no-token path serves.
+
+Four journeys:
+  connect → first deploy · blank-canvas build · Free-plan ship · downgrade recovery
+
+EIGHT flows — the PRD&#x27;s six, plus two decided in 2026-08-21 and described in the section above
+this prompt. Each is a designed surface, never a warning toast:
+  FR-J13 pre-deploy snapshot gate · FR-D18&#x27;s three-party edit-lock choreography ·
+  FR-I4&#x27;s guided routes-upload card · FR-J14&#x27;s library-update confirm ·
+  FR-C2&#x27;s Preview-only explanation with its clearing conditions ·
+  FR-I6&#x27;s post-deploy template-binding checklist ·
+  the pre-deploy BACKUP GATE (see architecture-.../BACKUP-GATE.md) ·
+  DEPLOY HISTORY with pinning (10 versions Pro / 3 Free, pinned included)
+
+Two things the connect → first deploy journey must carry, because they are recent and easy to
+miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PERMANENTLY, so the
+journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
+target excludes the token step, which is what makes it reachable.
+
+Existing design surfaces are in design/mockups/ (27 from prompt 1) plus prompt 2&#x27;s output.
+Design artifacts are non-normative; the PRD wins on any conflict.
+
+Appendix H is the voice canon and governs every string you write.">Copy prompt</button></div><pre>/bmad-ux
+
+Create the UX specifications for Inflozo: the mandated journeys and flows.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+The preamble delegates this work explicitly and names the mandated floor. Personas are in
+section 3 and each carries its GHOST CREDENTIAL REACH, which is what decides how a journey
+actually plays out — the multi-site operator frequently is NOT the site Owner and cannot mint a
+Staff Access Token at all, which is precisely the case FR-C1&#x27;s graceful no-token path serves.
+
+Four journeys:
+  connect → first deploy · blank-canvas build · Free-plan ship · downgrade recovery
+
+EIGHT flows — the PRD&#x27;s six, plus two decided in 2026-08-21 and described in the section above
+this prompt. Each is a designed surface, never a warning toast:
+  FR-J13 pre-deploy snapshot gate · FR-D18&#x27;s three-party edit-lock choreography ·
+  FR-I4&#x27;s guided routes-upload card · FR-J14&#x27;s library-update confirm ·
+  FR-C2&#x27;s Preview-only explanation with its clearing conditions ·
+  FR-I6&#x27;s post-deploy template-binding checklist ·
+  the pre-deploy BACKUP GATE (see architecture-.../BACKUP-GATE.md) ·
+  DEPLOY HISTORY with pinning (10 versions Pro / 3 Free, pinned included)
+
+Two things the connect → first deploy journey must carry, because they are recent and easy to
+miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PERMANENTLY, so the
+journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
+target excludes the token step, which is what makes it reachable.
+
+Existing design surfaces are in design/mockups/ (27 from prompt 1) plus prompt 2&#x27;s output.
+Design artifacts are non-normative; the PRD wins on any conflict.
+
+Appendix H is the voice canon and governs every string you write.</pre></div>
+</section><section class="step later" id="s6">
+  <div class="shead">
+    <span class="snum">6</span>
+    <div class="stitle"><h2>Epics and stories</h2>
+      <span class="badge later">later</span></div>
+  </div>
+  <p class="stands">Expands section 8 into stories. It does not re-plan anything.</p>
+  <dl><dt>Produces</dt><dd>The story breakdown.</dd>
+  <dt>Waiting on</dt><dd>steps 4 and 5</dd></dl>
+  <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
+
+Create the epics and stories list for Inflozo.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Architecture: (path from step 1)
+
+Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
+owning epic — 130 FRs, each owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
+it into stories; do not re-plan it and do not renumber anything.
+
+Three rules from section 8 that shape the story list and are easy to get wrong:
+  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
+    category. A category story delivers every design in that category against one shared content
+    model and one stylesheet, plus that category&#x27;s behaviour modules.
+  - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
+    the next category from starting.
+  - There are as many owner gates as there are categories, the shell block&#x27;s three included.
+
+Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
+platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+minimal shell), then the gated categories in inventory order beginning with Heroes.
+
+A category story cannot open until that category&#x27;s design-and-specification session has landed
+its specs in sections-inventory.md (§4).">Copy prompt</button></div><pre>/bmad-create-epics-and-stories
+
+Create the epics and stories list for Inflozo.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Architecture: (path from step 1)
+
+Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
+owning epic — 130 FRs, each owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
+it into stories; do not re-plan it and do not renumber anything.
+
+Three rules from section 8 that shape the story list and are easy to get wrong:
+  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
+    category. A category story delivers every design in that category against one shared content
+    model and one stylesheet, plus that category&#x27;s behaviour modules.
+  - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
+    the next category from starting.
+  - There are as many owner gates as there are categories, the shell block&#x27;s three included.
+
+Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
+platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+minimal shell), then the gated categories in inventory order beginning with Heroes.
+
+A category story cannot open until that category&#x27;s design-and-specification session has landed
+its specs in sections-inventory.md (§4).</pre></div>
+</section><section class="step later" id="s6b">
+  <div class="shead">
+    <span class="snum">6b</span>
+    <div class="stitle"><h2>Readiness gate</h2>
+      <span class="badge later">later</span></div>
+  </div>
+  <p class="stands">Two readiness conditions specific to this project, both about the library running sequentially.</p>
+  <dl><dt>Produces</dt><dd>Sprint status tracking, and a go/no-go on opening any story.</dd>
+  <dt>Waiting on</dt><dd>step 6</dd></dl>
+  <div class="prompt live"><div class="phead"><h4>Readiness gate</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-sprint-planning
+
+Check implementation readiness for Inflozo and generate the sprint status tracking from the
+epics.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+
+Two readiness conditions are specific to this project and are not the usual ones:
+  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
+    session has landed its per-design specs in sections-inventory.md (§4). A category whose
+    designs still carry only their one-line descriptor has not been through that session.
+  - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
+    gate, so the sprint plan must not show library categories running in parallel.">Copy prompt</button></div><pre>/bmad-sprint-planning
+
+Check implementation readiness for Inflozo and generate the sprint status tracking from the
+epics.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+
+Two readiness conditions are specific to this project and are not the usual ones:
+  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
+    session has landed its per-design specs in sections-inventory.md (§4). A category whose
+    designs still carry only their one-line descriptor has not been through that session.
+  - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
+    gate, so the sprint plan must not show library categories running in parallel.</pre></div>
+</section>
+
+<footer>Generated 2026-08-21 from <code>build-sequence.md</code>, which governs on any conflict.
+Regenerate with <code>python3 tools/build-board.py</code>. A prompt marked <b>historical</b> has no
+copy button on purpose — one of them contains an instruction that execution disproved.</footer>
+</div>
+<script>
+document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {
+  try { await navigator.clipboard.writeText(b.dataset.t); } catch (e) {
+    const ta = document.createElement('textarea'); ta.value = b.dataset.t;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const was = b.textContent; b.textContent = 'Copied'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = was; b.classList.remove('ok'); }, 1800);
+});
+</script></body></html>

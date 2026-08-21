@@ -6,7 +6,7 @@ updated: 2026-08-21
 
 # Document index
 
-**67 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**69 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -30,6 +30,7 @@ points at a file that is gone, or if this file is out of date.
 
 | Document | What it is |
 |---|---|
+| **[Build board](_bmad-output/planning-artifacts/BUILD-BOARD.html)**<br>`_bmad-output/planning-artifacts/BUILD-BOARD.html` | Where the project stands, what to do next, and every prompt with a copy button. The prompts are EXTRACTED from build-sequence.md rather than retyped, so the two cannot drift. Historical prompts deliberately have no copy button — one of them contains an instruction execution disproved. |
 | **[Container stand-ins](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/PRELUDE.sql)**<br>`_bmad-output/planning-artifacts/architecture/.../PRELUDE.sql` | Fakes the Supabase-provided objects (auth, storage, the roles) so the schema and its proof run against a bare Postgres container. NEVER run against hosted Supabase — its auth.uid() stub would overwrite the real one with a NULL-returning function and silently disable every policy. |
 | **[Design prompt 2 — outstanding](_bmad-output/planning-artifacts/design/claude-design-prompt-2.md)**<br>`_bmad-output/planning-artifacts/design/claude-design-prompt-2.md` | Responsive archetypes, ~25 missing surfaces, the paywall editor. Small, and it is what unblocks the journeys-and-flows step. |
 | **[Design prompt 3 — the critical path](_bmad-output/planning-artifacts/design/claude-design-prompt-3-library.md)**<br>`_bmad-output/planning-artifacts/design/claude-design-prompt-3-library.md` | Run once per category, 34 times, producing that category's designs AND their full specifications in one pass. The longest pole in the project; nothing downstream can start without it. |
@@ -67,6 +68,7 @@ points at a file that is gone, or if this file is out of date.
 
 | Document | What it is |
 |---|---|
+| **[Build board generator](tools/build-board.py)**<br>`tools/build-board.py` | Reads build-sequence.md and emits BUILD-BOARD.html. Status is declared in the script rather than parsed, because "is this step done" is a judgement about the world, not a string in a document. |
 | **[Credential check](tools/probe/check-access.py)**<br>`tools/probe/check-access.py` | Verifies every live credential works. Prints verdicts only — it has no code path that can reach a secret, written that way after two keys leaked into a transcript. |
 | **[Decision-sheet template](tools/probe/report-template.html)**<br>`tools/probe/report-template.html` | Copy it, replace the findings array, change nothing else. |
 | **[Diagram geometry checker](tools/svg-check.py)**<br>`tools/svg-check.py` | The architecture diagrams are hand-written SVG, and a browser will draw text straight through a box without complaining. Finds text that overflows its frame, text crossing a shape it does not belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was reported — and its first version missed the worst case by only parsing two-point paths. |

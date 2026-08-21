@@ -203,6 +203,13 @@ DOCS = [
   'picking up the project cold.'),
  ('planning-artifacts/INDEX.html', 'live', 'Document index (for humans)',
   'The same index, browsable and grouped by status.'),
+ ('planning-artifacts/BUILD-BOARD.html', 'live', 'Build board',
+  'Where the project stands, what to do next, and every prompt with a copy button. The prompts are '
+  'EXTRACTED from build-sequence.md rather than retyped, so the two cannot drift. Historical prompts '
+  'deliberately have no copy button — one of them contains an instruction execution disproved.'),
+ ('tools/build-board.py', 'tool', 'Build board generator',
+  'Reads build-sequence.md and emits BUILD-BOARD.html. Status is declared in the script rather than '
+  'parsed, because "is this step done" is a judgement about the world, not a string in a document.'),
  ('tools/svg-check.py', 'tool', 'Diagram geometry checker',
   'The architecture diagrams are hand-written SVG, and a browser will draw text straight through a '
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
@@ -298,6 +305,13 @@ def check():
             n = len([f for f in files if describe(f) and describe(f)[3]])
             if f'{n} catalogued' not in body:
                 fails.append(f'STALE: {name} does not match disk — run --generate')
+
+    # 3b. the build board must match build-sequence.md
+    import subprocess as _sp
+    if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'build-board.py'), '--check'],
+               capture_output=True).returncode != 0:
+        fails.append('STALE: BUILD-BOARD.html does not match build-sequence.md — '
+                     'run python3 tools/build-board.py')
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()
