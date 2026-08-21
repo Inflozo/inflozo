@@ -6,7 +6,7 @@ updated: 2026-08-21
 
 # Document index
 
-**72 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**73 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -33,6 +33,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Build board](_bmad-output/planning-artifacts/BUILD-BOARD.html)**<br>`_bmad-output/planning-artifacts/BUILD-BOARD.html` | Where the project stands, what to do next, and every prompt with a copy button. The prompts are EXTRACTED from build-sequence.md rather than retyped, so the two cannot drift. Historical prompts deliberately have no copy button — one of them contains an instruction execution disproved. |
 | **[Category prompts — 34 copy buttons](_bmad-output/planning-artifacts/CATEGORY-PROMPTS.html)**<br>`_bmad-output/planning-artifacts/CATEGORY-PROMPTS.html` | One paste-ready Claude Design prompt per category. PATCH prompts fix a category already designed (specification only, no frames touched, designs named individually). BUILD prompts are fully self-contained — the master brief plus that category. Generated, so the brief inside them cannot drift from the prompt file. |
 | **[Container stand-ins](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/PRELUDE.sql)**<br>`_bmad-output/planning-artifacts/architecture/.../PRELUDE.sql` | Fakes the Supabase-provided objects (auth, storage, the roles) so the schema and its proof run against a bare Postgres container. NEVER run against hosted Supabase — its auth.uid() stub would overwrite the real one with a NULL-returning function and silently disable every policy. |
+| **[Derived fields — A1 through A12](_bmad-output/planning-artifacts/design/derived-fields-A1-A12.md)**<br>`_bmad-output/planning-artifacts/design/derived-fields-A1-A12.md` | The four fields the first 12 exported categories were missing — descriptor, archetype, structural tuple, no-JS degradation — derived per design from the export's own text, never invented: every underivable gap is marked NEEDS DESIGN ANSWER and rolled up by root cause. Tuple uniqueness is machine-checked by tools/tuple-check.py. Merges into sections-inventory.md when the specs land there. |
 | **[Design prompt 2 — outstanding](_bmad-output/planning-artifacts/design/claude-design-prompt-2.md)**<br>`_bmad-output/planning-artifacts/design/claude-design-prompt-2.md` | Responsive archetypes, ~25 missing surfaces, the paywall editor. Small, and it is what unblocks the journeys-and-flows step. |
 | **[Design prompt 3 — the critical path](_bmad-output/planning-artifacts/design/claude-design-prompt-3-library.md)**<br>`_bmad-output/planning-artifacts/design/claude-design-prompt-3-library.md` | Run once per category, 34 times, producing that category's designs AND their full specifications in one pass. The longest pole in the project; nothing downstream can start without it. |
 | **[Document index (for AI)](_bmad-output/planning-artifacts/INDEX.md)**<br>`_bmad-output/planning-artifacts/INDEX.md` | Every document in the project with a one-line brief, generated from disk. Read this first when picking up the project cold. |

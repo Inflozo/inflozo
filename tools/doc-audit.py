@@ -136,6 +136,12 @@ DOCS = [
   'Run once per category, 34 times, producing that category\'s designs AND their full '
   'specifications in one pass. The longest pole in the project; nothing downstream can start '
   'without it.'),
+ ('design/derived-fields-A1-A12.md', 'live', 'Derived fields — A1 through A12',
+  'The four fields the first 12 exported categories were missing — descriptor, archetype, '
+  'structural tuple, no-JS degradation — derived per design from the export\'s own text, never '
+  'invented: every underivable gap is marked NEEDS DESIGN ANSWER and rolled up by root cause. '
+  'Tuple uniqueness is machine-checked by tools/tuple-check.py. Merges into sections-inventory.md '
+  'when the specs land there.'),
 
  # ── round records ────────────────────────────────────────────────────────────
  ('architecture/.../STRESS-TEST-PROMPT.md', 'record', 'Round 1 brief', 'The first stress test.'),
@@ -235,9 +241,8 @@ DOCS = [
 GROUPS = [
  ('design/claude-design-export/', 'live', 'Design library export — 12 of 34 categories',
   'Claude Design\'s export: 12 per-category spec files and 225 design frames, A1 Headers through '
-  'A12 About and Team. The specs are detailed and per-design but predate the prompt correction, so '
-  'all 12 are missing four of the ten required fields — descriptor, archetype, structural tuple and '
-  'the no-JS degradation. See HANDOVER.md for which are recoverable.'),
+  'A12 About and Team. The specs predate the prompt correction and carry six of the ten required '
+  'fields; the other four are derived in design/derived-fields-A1-A12.md.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '
   'Design artifacts are non-normative — where one disagrees with the PRD, the PRD wins.'),

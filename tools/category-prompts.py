@@ -24,6 +24,95 @@ PROMPT = os.path.join(DESIGN, 'claude-design-prompt-3-library.md')
 EXPORT = os.path.join(DESIGN, 'claude-design-export', 'unpacked')
 OUT    = os.path.join(PLAN, 'CATEGORY-PROMPTS.html')
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Repeating content. Two kinds, and they need OPPOSITE controls — which is why they are
+# listed separately rather than lumped together as "repeats".
+#
+#   AUTHORED  the user types the items. Needs add / remove / reorder.
+#   GHOST     the count comes from the customer's Ghost site. There is nothing to add — the
+#             control is how MANY to show, and an Add button here would be a lie.
+#
+# Derived from each category's content model in sections-inventory.md. The PRD's own gap list
+# (§7.3 item 1, "the largest single gap in the library") names 11 categories; this scan of the
+# content models finds A3 and A23 as well, and treats A22 as Ghost-bound rather than authored
+# because its only repeat is a {{#get}}-driven issue preview. That discrepancy is recorded in
+# VERIFY-AT-BUILD rather than silently resolved here.
+AUTHORED_REPEATS = {
+ 'A3':  'link columns[] and social links[]',
+ 'A5':  'items[] {icon?, image?, title, body, link?}',
+ 'A8':  'items[] {quote, name, role?, avatar?, rating?, link?}',
+ 'A9':  'items[] {question, answer}',
+ 'A10': 'items[] {value, label, sublabel?}',
+ 'A11': 'logos[] {image, link?}',
+ 'A12': 'images[], team[] {name, role, image, link?}, values[]',
+ 'A13': 'steps[] {title, body, icon?/image?}',
+ 'A14': 'images[] {image, caption?, link?}',
+ 'A15': 'embed url(s) — where a design takes more than one',
+ 'A16': 'socials[] and locations[]',
+ 'A23': 'popular tag chips[] — design #5 only',
+}
+GHOST_REPEATS = {
+ 'A7':  'tiers, from {{#get "tiers"}}',
+ 'A17': 'posts', 'A18': 'posts', 'A19': 'posts', 'A20': 'tags', 'A21': 'authors',
+ 'A22': 'posts, on the issue-preview design only',
+ 'A26': 'authors and tags', 'A27': 'posts', 'A30': 'tiers', 'A32': 'tiers',
+}
+
+def repeat_block(cid):
+    """The instruction for whichever kind of repeat this category has, or nothing."""
+    if cid in AUTHORED_REPEATS:
+        return f"""
+
+## Repeating items — this category has them, and they need controls it does not yet have
+
+This category repeats **{AUTHORED_REPEATS[cid]}**. The user authors those items themselves, so the
+sidebar must let them manage the list. Specify all of this, per design:
+
+- **Add an item.** Where the control sits, what a newly added item contains (sensible placeholder
+  content, never an empty shell), and where it lands in the order.
+- **Remove an item.** Including what happens when the user removes down to the minimum.
+- **Reorder items**, if order is meaningful for this design — say so plainly if it is not.
+- **Minimum and maximum item count**, and what the design does at each end. A design laid out as a
+  three-column grid behaves differently at 1 item than at 7; say which counts it is designed for and
+  what happens outside that range.
+- **What the section renders at zero items** — this is the empty state you have already specified,
+  but state it again here in terms of the item list specifically.
+
+**Two rules about item controls, and they are architectural rather than stylistic:**
+
+1. **Design controls apply to EVERY item at once, never to one item.** A control writes a single
+   value onto the section, and the stylesheet reads it — so "make card 3 bigger" is not
+   expressible, by construction. If a design seems to need per-item styling, that is a signal it
+   should be two designs, and you should say so rather than inventing a per-item control.
+
+2. **Inside an item the user edits CONTENT only** — its text, its image, its link. Never its
+   layout, spacing, alignment or emphasis. Selecting an item on the canvas gives them the text and
+   image fields for that item and nothing else.
+
+State for each design: which fields inside an item are editable, which are optional and may be left
+empty, and what the item looks like when an optional field is empty."""
+    if cid in GHOST_REPEATS:
+        return f"""
+
+## Repeating items — this category repeats {GHOST_REPEATS[cid]}, which comes from Ghost
+
+The user does **not** author these items and cannot add or remove them — they are their own posts,
+tags, authors or tiers. **No design in this category may show an Add or Remove control for them.**
+
+Specify instead, per design:
+
+- **How many to show**, and which counts the layout is designed for.
+- **What the design does when there are fewer than expected**, including exactly one, and exactly
+  zero — a real site will hit all three.
+- **Whether order is selectable**, and from what.
+- Which fields of each item the design displays, and what it does when an optional one is missing
+  on a particular post or author.
+
+Design controls apply to every item at once, never to one item — a control writes a single value
+onto the section and the stylesheet reads it, so per-item styling is not expressible."""
+    return ''
+
+
 MISSING_FIELDS = """1. Descriptor — one line: what makes this design different from every other design
    in this category.
 
@@ -102,7 +191,7 @@ Leave every field you already wrote exactly as it is: responsive rule, content f
 data binding, empty state, behaviour and accessibility notes are all correct and stay.
 
 Return the result as an updated version of this category's specification file, so I can replace the
-existing one wholesale rather than merge by hand."""
+existing one wholesale rather than merge by hand.{repeat_block(cat['id'])}"""
 
 
 def build_prompt(cat, brief):
@@ -126,7 +215,7 @@ When the category is complete, finish with two blocks I can carry into the next 
    each: name — what it is — which category it first came from. Include reused ones, so the list
    stays cumulative.
 
-2. **Shared field list** — the union of every content field this category's designs need."""
+2. **Shared field list** — the union of every content field this category's designs need.{repeat_block(cat['id'])}"""
 
 
 def build():
