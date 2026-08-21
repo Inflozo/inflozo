@@ -45,7 +45,12 @@ categories 13+ should use:
 
 A tuple must be unique within its category. `python3 tools/tuple-check.py` verifies uniqueness,
 vocabulary and per-category numbering for this file and exits non-zero on drift; `doc-audit.py
---check` runs it.
+--check` runs it. **The closed sets in tuple-check.py are the authority; this table describes
+them.** The category prompts teach the same sets and their generator refuses to emit prompts that
+disagree with the gate — so changing a set is a two-file change: edit tuple-check.py, regenerate
+the prompts. The first four slots take the closed values bare — `few`, never `few (2–4)`; the
+glosses in the table are explanation, not tuple text. The fifth slot (emphasis) is deliberately
+open.
 
 ## What needs a design answer
 
