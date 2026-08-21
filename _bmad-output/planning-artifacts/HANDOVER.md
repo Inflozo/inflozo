@@ -81,8 +81,9 @@ A3, A22 and A23 — reconcile before E4 opens rather than picking one.
   uniqueness with `tools/tuple-check.py` after) still governs. Registers 45 and 46 in
   `VERIFY-AT-BUILD.md` list what the re-run found.
 
-- **Design prompt 2 is run but not exported.** Once it is on disk, **step 5** (journeys and flows)
-  can run alongside the remaining categories instead of after them.
+- **Design prompt 2's output is now on disk** — the S1–S13 app screens and M1–M9 pages are in the
+  export zip (verified 2026-08-21). **Step 5** (journeys and flows) can therefore run alongside the
+  remaining categories instead of after them.
 - Three gates with triggers, all in `VERIFY-AT-BUILD.md`: Supabase **Pro** before the live project
   holds customer data (Free has no backups at all); **Ghost(Pro) Starter** before public launch;
   turn on Dodo's renewal reminder.
