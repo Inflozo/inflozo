@@ -20,6 +20,13 @@ first-listed control value taken as the default, an icon position implied by a s
 vocabulary), a Notes line says so. When a design answer arrives, replace the NEEDS DESIGN ANSWER
 entry in place.
 
+**Supersede rule.** When the owner re-runs a category's patch prompt and Claude Design writes the
+four fields at the source, those authored entries **replace this file's derived ones for that whole
+category** — the source has design context a derivation does not. On landing: normalise the incoming
+tuples into the closed vocabulary below (same meaning, this file's words), then re-run
+`tools/tuple-check.py` — uniqueness must be re-proven for a re-authored category, never assumed to
+carry over.
+
 These fields merge into `sections-inventory.md` with the rest of each design's specification when
 the specs land there (build-sequence step 3→4). Until then this file is their home.
 
