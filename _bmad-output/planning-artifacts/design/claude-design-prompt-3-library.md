@@ -84,11 +84,27 @@ each design carries"). A design missing any of them is half-delivered and will c
 
 - **Descriptor** — the one-line structural identity: what makes this design *this* design.
 - **Structural descriptor (the tuple)** — `archetype · primary axis · item-count class · media
-  placement · emphasis mechanism`. ⚠️ **This is machine-checked, and free prose is not.** The
-  uniqueness rule runs on the *tuple*, because two designs can be described differently in English
-  and still be the same design. **It must stay unique within its category once every design's
-  control list is written** — controls stop distinguishing designs at that point, so the tuple is
-  the only thing left that does.
+  placement · emphasis mechanism`, the five slots separated by a space, a middle dot, and a space.
+  ⚠️ **This is machine-checked, and free prose is not.** The uniqueness rule runs on the *tuple*,
+  because two designs can be described differently in English and still be the same design. **It
+  must stay unique within its category once every design's control list is written** — controls
+  stop distinguishing designs at that point, so the tuple is the only thing left that does.
+
+  **The first four slots are closed sets.** Write the exact word on its own — no parenthetical, no
+  qualifier, no synonym, nothing appended. The check is a literal match, so `few (2–4)` **fails**
+  where `few` passes.
+
+  | Slot | Allowed values |
+  |---|---|
+  | archetype | the fourteen in the next bullet |
+  | primary axis | `horizontal` · `vertical` · `layered` |
+  | item-count class | `none` · `one` · `few` · `many` · `variable` |
+  | media placement | `none` · `left` · `right` · `top` · `bottom` · `background` · `inline` · `edge` · `full-bleed` |
+
+  What the count values *mean* — a gloss, never write it into the tuple: `none` = no repeating
+  unit · `one` = exactly one · `few` = 2–4 · `many` = 5 or more · `variable` = the author decides
+  how many. The fifth slot, **emphasis mechanism**, is the only open one: a free phrase of at most
+  four words naming the single device that distinguishes this design.
 - **Archetype** — which responsive archetype it collapses under: grid-of-N, split, stack, bar, nav,
   edge rail, overlay, feed, form, carousel, table, media frame, sticky, or article body. This
   supplies its default collapse ladder, so the responsive rule below only has to state the

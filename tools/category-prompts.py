@@ -116,11 +116,29 @@ onto the section and the stylesheet reads it, so per-item styling is not express
 MISSING_FIELDS = """1. Descriptor — one line: what makes this design different from every other design
    in this category.
 
-2. Structural descriptor — a tuple, written exactly in this shape:
+2. Structural descriptor — a tuple, written exactly in this shape, the five slots separated
+   by a space, a middle dot, and a space:
        archetype · primary axis · item-count class · media placement · emphasis mechanism
-   It must be UNIQUE within this category. Two designs may be described differently in words and
-   still be the same design; this tuple is what that is checked against, so check it yourself
-   across the whole category before you finish.
+
+   The first four slots are CLOSED sets. Write the exact word on its own — no parenthetical,
+   no qualifier, no synonym, nothing appended. A script checks these by literal match, so
+   "few (2–4)" FAILS where "few" passes.
+
+       archetype        the closed list in field 3 below
+       primary axis     horizontal | vertical | layered
+       item-count class none | one | few | many | variable
+       media placement  none | left | right | top | bottom | background | inline | edge | full-bleed
+
+   What those count values mean — this is a gloss, never write it into the tuple: none = no
+   repeating unit · one = exactly one · few = 2–4 · many = 5 or more · variable = the author
+   decides how many.
+
+   The fifth slot, emphasis mechanism, is the only open one: a free phrase of at most four
+   words naming the single device that distinguishes this design.
+
+   The whole tuple must be UNIQUE within this category. Two designs may be described differently
+   in words and still be the same design; this tuple is what that is checked against, so check it
+   yourself across the whole category before you finish.
 
 3. Archetype — pick exactly one from this closed list: grid-of-N, split, stack, bar, nav,
    edge rail, overlay, feed, form, carousel, table, media frame, sticky, article body.
@@ -340,14 +358,36 @@ document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {{
     return n_patch, n_build, len(cats)
 
 
+def assert_tuple_vocab_matches_gate():
+    """The prompts teach Claude Design the tuple vocabulary; tools/tuple-check.py enforces it.
+    If the two ever disagree, designs get authored that cannot pass the gate — which is exactly
+    how A1's tuples were written free-text. Derive both sides; never restate either."""
+    gate = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tuple-check.py'),
+                encoding='utf8').read()
+    sets = {name: eval(m) for name in ('ARCH', 'AXIS', 'COUNT', 'MEDIA')
+            for m in [re.search(rf'^{name} = (\{{.*?\}})', gate, re.M | re.S).group(1)]}
+    brief = open(PROMPT, encoding='utf8').read()
+    for name, row in (('AXIS', 'primary axis'), ('COUNT', 'item-count class'),
+                      ('MEDIA', 'media placement')):
+        line = re.search(rf'^\s*\| {row} \| (.+?) \|\s*$', brief, re.M)
+        assert line, f'{PROMPT}: no closed-set row for "{row}" — the prompts would teach free prose'
+        taught = set(re.findall(r'`([^`]+)`', line.group(1)))
+        assert taught == sets[name], (
+            f'{row}: prompt teaches {sorted(taught)}, tuple-check.py enforces {sorted(sets[name])}')
+    missing = [a for a in sets['ARCH'] if a not in brief and a not in MISSING_FIELDS]
+    assert not missing, f'archetypes absent from both prompts: {missing}'
+
+
 if __name__ == '__main__':
     if '--check' in sys.argv:
         if not os.path.exists(OUT):
             print('  FAIL  CATEGORY-PROMPTS.html missing'); sys.exit(1)
+        assert_tuple_vocab_matches_gate()
         before = open(OUT, encoding='utf8').read()
         build()
         if open(OUT, encoding='utf8').read() != before:
             print('  FAIL  CATEGORY-PROMPTS.html was stale and has been regenerated'); sys.exit(1)
         print('category prompts: current'); sys.exit(0)
+    assert_tuple_vocab_matches_gate()
     p, b, t = build()
     print(f'CATEGORY-PROMPTS.html regenerated — {p} patch + {b} build = {t} categories')
