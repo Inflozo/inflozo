@@ -124,6 +124,14 @@ Run the categories in §6's order. It follows the build order exactly:
 2. **Then A4 Heroes** — the flagship, and the pilot for control density.
 3. **Then the rest**, in the order listed.
 
+**⚠️ If each category is a separate chat — which is what this prompt intends — that review cannot
+happen on its own.** A fresh session has no memory of what earlier categories established, so the
+continuity has to be carried by hand: close each session by asking for a **component inventory**
+(name · what it is · which category first established it, cumulative rather than reset), and paste
+that inventory above the master brief when you open the next one. Without it the library drifts one
+category at a time, and the reconciliation pass finds thirty variants of a button that should have
+been one. The copy-ready blocks for both halves are on `BUILD-BOARD.html`.
+
 Each session opens by reviewing the previous category's output for components to reuse, and closes with the category's shared field list.
 
 ---
