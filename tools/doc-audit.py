@@ -203,6 +203,15 @@ DOCS = [
   'picking up the project cold.'),
  ('planning-artifacts/INDEX.html', 'live', 'Document index (for humans)',
   'The same index, browsable and grouped by status.'),
+ ('planning-artifacts/CATEGORY-PROMPTS.html', 'live', 'Category prompts — 34 copy buttons',
+  'One paste-ready Claude Design prompt per category. PATCH prompts fix a category already designed '
+  '(specification only, no frames touched, designs named individually). BUILD prompts are fully '
+  'self-contained — the master brief plus that category. Generated, so the brief inside them cannot '
+  'drift from the prompt file.'),
+ ('tools/category-prompts.py', 'tool', 'Category prompt generator',
+  'Extracts the master brief and the 34-row category table from the prompt file, reads which '
+  'categories exist in the design export, and emits one prompt per category. Asserts it parsed every '
+  'table row — the first version silently matched 10 of 34 because the notes column is optional.'),
  ('planning-artifacts/HANDOVER.md', 'live', 'Handover for a fresh session',
   'Everything a new chat needs to continue without reading the previous conversation: where the '
   'project stands, the immediate task, the standing rules, and how the owner wants to work. Update '
@@ -315,12 +324,14 @@ def check():
             if f'{n} catalogued' not in body:
                 fails.append(f'STALE: {name} does not match disk — run --generate')
 
-    # 3b. the build board must match build-sequence.md
+    # 3b. generated HTML must match its sources
     import subprocess as _sp
-    if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'build-board.py'), '--check'],
-               capture_output=True).returncode != 0:
-        fails.append('STALE: BUILD-BOARD.html does not match build-sequence.md — '
-                     'run python3 tools/build-board.py')
+    for tool, art, src in (('build-board.py', 'BUILD-BOARD.html', 'build-sequence.md'),
+                           ('category-prompts.py', 'CATEGORY-PROMPTS.html',
+                            'the prompt file or the design export')):
+        if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
+                   capture_output=True).returncode != 0:
+            fails.append(f'STALE: {art} does not match {src} — run python3 tools/{tool}')
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()
