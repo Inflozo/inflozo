@@ -156,12 +156,51 @@ MISSING_FIELDS = """1. Descriptor — one line: what makes this design different
    JavaScript, say so plainly rather than inventing a fallback."""
 
 
+RESEARCH = os.path.join(os.path.dirname(PROMPT), '..', 'prds', 'prd-Inflozo-2026-08-17',
+                        'research-section-js-libraries.md')
+
+
+def module_registry():
+    """FR-G7's 31 modules and FR-G4's no-JS degradations, read from their source of truth.
+
+    A1 and A7 both invented a parallel `M-*` module vocabulary and wrote their own no-JS
+    statements, because the prompt asked for a module and never said a registry existed.
+    Two of those inventions contradicted a written acceptance criterion. Emitted into every
+    prompt so the author cites instead of inventing; derived, so it cannot drift."""
+    txt = open(RESEARCH, encoding='utf8').read()
+    names = re.findall(r'^\| \d+ \| \*\*`([a-z-]+)`\*\*', txt, re.M)
+    sec = txt[txt.index('\n## 7'):]
+    sec = sec[:sec.index('\n## Appendix')]
+    degr = re.findall(r'^\| `([a-z-]+)` \| (.+?) \|\s*$', sec, re.M)
+    assert len(names) == 31, f'expected 31 modules in the registry, parsed {len(names)}'
+    missing = [n for n in names if n not in dict(degr)]
+    assert not missing, f'modules with no no-JS degradation on record: {missing}'
+    rows = '\n'.join(f'| `{n}` | {dict(degr)[n]} |' for n in names)
+    return f"""## Behaviour modules — a FIXED registry. Do not invent one.
+
+Every piece of JavaScript a generated theme can run comes from these **{len(names)}** modules
+(FR-G7). **This list is closed.** If a design needs behaviour, it declares one of these by its
+exact name. It does **not** get a new name, and it does **not** get an `M-`prefixed alias — those
+do not map to anything the build can compile.
+
+**Each module's no-JS degradation is already written and is an acceptance criterion (FR-G4).
+Quote it. Do not compose your own, and never declare that a design fails without JavaScript —
+if the registry says it degrades, it degrades.**
+
+| Module | What it renders with JavaScript off |
+|---|---|
+{rows}
+
+If a design genuinely needs behaviour no module covers, say so plainly and name the closest
+module — that is a finding for the architect, not a licence to name a new module."""
+
+
 def master_brief():
     """§1–§4 of the live prompt file — the self-contained master brief."""
     txt = open(PROMPT, encoding='utf8').read()
     a = txt.index('## 1. What this is')
     b = txt.index('## 5. Order of work')
-    return txt[a:b].strip()
+    return txt[a:b].strip() + '\n\n' + module_registry()
 
 
 def categories():
@@ -214,6 +253,13 @@ For EACH of the {len(designs)} designs in this category:
 
 Leave every field you already wrote exactly as it is: responsive rule, content fields, controls,
 data binding, empty state, behaviour and accessibility notes are all correct and stay.
+
+{module_registry()}
+
+**If a spec you already wrote names a module that is not on that list — an `M-`prefixed name, or
+any name you coined — rename it to the registry module it actually is, and replace its no-JS
+sentence with the registry's. That correction is in scope for this pass even though nothing else
+about the behaviour section is.**
 
 Return the result as an updated version of this category's specification file, so I can replace the
 existing one wholesale rather than merge by hand.{repeat_block(cat['id'])}"""
