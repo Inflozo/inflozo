@@ -94,6 +94,10 @@ A3, A22 and A23 — reconcile before E4 opens rather than picking one.
 5. **Never edit a document marked `record`** in `INDEX.md`. Correcting its figures falsifies the
    history the project relies on.
 6. **Flag, do not guess.** If two decisions contradict, stop and ask.
+7. **A propagation list cannot audit itself.** End every schema or vocabulary change by grepping the
+   repo for the old name. The list of places to update is exactly the thing that misses one — the
+   six-slot tuple change had three named targets across two sessions and the grep still found the
+   PRD's FR-G5, the most normative of them all, sitting outside every list.
 
 ## How the owner wants to work
 
