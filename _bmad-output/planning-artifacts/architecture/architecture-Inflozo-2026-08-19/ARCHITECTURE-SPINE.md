@@ -269,6 +269,31 @@ core. A design that needs the shell has been designed wrong.
 
   Pre-launch there is one stack on the production domains. At go-live a fresh **Live** set is provisioned (new Supabase project, Vercel production environment, live Dodo) and takes the domains; the existing stack becomes the permanent **Test** environment on test domains, keeping Ghost targets T1–T4. The cutover moves exactly four things: `suggestions`, `suggestion_votes`, the dogfood project, and `profiles.is_admin` — the last because a claim that did not migrate leaves the live board unmoderated on day one.
 
+### AD-36b — A finding is not done until it reaches an owning document, and a script says so
+
+*(Numbered as a corollary of AD-26 rather than a thirty-seventh invariant: it governs how this
+project maintains its own documents, not how the product behaves.)*
+
+- **Binds:** every round, every epic · AD-23, AD-26, standing rules 2 and 3
+- **Prevents:** the failure this project has now made four times — a finding written up at length in
+  `MEASUREMENTS.md` and never compressed into a rule anyone building from the spine would read.
+  **The bigger the finding, the more likely it happens**, because a large finding gets a long
+  write-up that feels like the work is finished.
+- **Rule:** a finding is **not closed** until it reaches at least one of: an invariant in this spine,
+  a row in `VERIFY-AT-BUILD.md`, or a comment beside the code it governs. Evidence in
+  `MEASUREMENTS.md` is where a finding is *proved*, never where it *lives*.
+- **Rule (the gate, because a checklist nobody runs is not a control):** `tools/doc-audit.py --check`
+  exits non-zero on drift and is run at the end of every round and before any commit that adds a
+  document. It enforces: every document catalogued and every catalogued document present; the index
+  regenerated; no dangling `§` reference; no restated volatile count in a live document; and **no
+  finding id in the evidence file that reaches no owning document.** It found a real orphan on its
+  first run. **Three hand audits preceded it and every one found something, always in the most
+  recently added thing** — which is the argument for automating it rather than remembering it.
+- **Rule (round records are not edited):** a document marked `record` in `INDEX.md` is a dated
+  statement of what was true then. Correcting its figures **falsifies the history this project
+  relies on** to know which claims were tested when. Corrections go in the live document and cite
+  the record; the record stays as written.
+
 ### AD-27 — The project doc has one schema, one owner, one version
 
 - **Binds:** E4 (owner), E5, E7, E8, E13 · FR-D5, FR-D19, FR-G3, FR-H2, FR-J1, FR-J14, FR-K4

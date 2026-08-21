@@ -928,7 +928,8 @@ grant  select (id, user_id, category, title, body, status, vote_count, created_a
 -- So FR-M3's admin approval gate, the vote count and the roadmap status were all set by the person
 -- posting. `image_approved` is the one that matters most: combined with the client-side-only
 -- sanitizer (§16c/F8), it puts an unreviewed file in front of every board visitor.
--- The same hole existed on UPDATE, reachable while status = 'open' via suggestions_author_update.
+-- The same hole existed on UPDATE (finding F15), reachable while status = 'open' via
+-- suggestions_author_update — the same class one verb over, which is why both grants are narrowed.
 revoke insert, update on public.suggestions from authenticated;
 grant  insert (id, user_id, category, title, body, image_path) on public.suggestions to authenticated;
 grant  update (title, body, category, image_path)              on public.suggestions to authenticated;
