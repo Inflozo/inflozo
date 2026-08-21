@@ -333,7 +333,7 @@ Prompt 3's sessions are **design and specification in one pass** — §4 makes t
 
 Two of those are newly load-bearing and easy to omit:
 
-- The **structural descriptor tuple** — archetype · primary axis · item-count class · media placement · emphasis mechanism. FR-G5's uniqueness assertion runs over the *tuple*, not the English line, and it must stay unique within its category **after** the per-design control lists are written, since controls no longer distinguish designs.
+- The **structural descriptor tuple** — archetype · containment · ground · item-count class · media placement · emphasis mechanism (six slots since 2026-08-21; the closed sets live in `tools/tuple-check.py`). FR-G5's uniqueness assertion runs over the *tuple*, not the English line, and it must stay unique within its category **after** the per-design control lists are written, since controls no longer distinguish designs.
 - The **no-JS degradation statement** for any design declaring one of FR-G7's 31 behaviour modules. It is an acceptance criterion, not a note.
 
 Specifications land in `sections-inventory.md`, which already carries the schema and the two-layer (category union + per-design) structure they slot into.

@@ -2,10 +2,13 @@
 """FR-G5's uniqueness gate for derived-fields-A1-A12.md.
 
 The structural tuple is the machine-checkable identity a design's uniqueness runs on
-(sections-inventory.md §"What each design carries"). This verifies, per category:
-every design has a five-slot tuple, the four closed slots use the closed vocabulary,
+(sections-inventory.md §"What each design carries"). Six slots since 2026-08-21 (owner
+decision, option 1): archetype · containment · ground · item-count · media placement ·
+emphasis — the first five closed, emphasis deliberately open. This verifies, per category:
+every design has a six-slot tuple, the five closed slots use the closed vocabulary,
 no two tuples collide, and the design numbering is contiguous from 1.
-Exits non-zero on any failure; doc-audit.py --check runs it.
+Exits non-zero on any failure; doc-audit.py --check runs it, and category-prompts.py
+reads the sets below — changing one here requires regenerating the prompts.
 """
 import os, re, sys, collections
 
@@ -13,7 +16,8 @@ DOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    '_bmad-output', 'planning-artifacts', 'design', 'derived-fields-A1-A12.md')
 ARCH = {'grid-of-N', 'split', 'stack', 'bar', 'nav', 'edge rail', 'overlay', 'feed',
         'form', 'carousel', 'table', 'media frame', 'sticky', 'article body'}
-AXIS = {'horizontal', 'vertical', 'layered'}
+CONTAIN = {'none', 'card', 'box', 'pill'}
+GROUND = {'page', 'surface', 'contrast', 'image', 'transparent', 'accent'}
 COUNT = {'none', 'one', 'few', 'many', 'variable'}
 MEDIA = {'none', 'left', 'right', 'top', 'bottom', 'background', 'inline', 'edge', 'full-bleed'}
 
@@ -40,11 +44,14 @@ for cat, rows in sorted(cats.items(), key=lambda kv: int(kv[0][1:])):
             fails.append(f'{cat}: tuple collision ({c} designs): "{t}"')
     for n, name, t in rows:
         parts = [p.strip() for p in t.split('·')]
-        if len(parts) != 5:
-            fails.append(f'{cat}-{n}: tuple has {len(parts)} slots, not 5')
+        if len(parts) != 6:
+            fails.append(f'{cat}-{n}: tuple has {len(parts)} slots, not 6')
             continue
-        for slot, vocab, label in ((parts[0], ARCH, 'archetype'), (parts[1], AXIS, 'axis'),
-                                   (parts[2], COUNT, 'count class'), (parts[3], MEDIA, 'media')):
+        for slot, vocab, label in ((parts[0], ARCH, 'archetype'),
+                                   (parts[1], CONTAIN, 'containment'),
+                                   (parts[2], GROUND, 'ground'),
+                                   (parts[3], COUNT, 'count class'),
+                                   (parts[4], MEDIA, 'media')):
             if slot not in vocab:
                 fails.append(f'{cat}-{n}: {label} "{slot}" not in the closed set')
 

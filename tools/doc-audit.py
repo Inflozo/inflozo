@@ -235,9 +235,10 @@ DOCS = [
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
  ('tools/tuple-check.py', 'tool', 'FR-G5 tuple gate',
-  'Verifies the structural tuples in derived-fields-A1-A12.md: five slots, closed vocabulary, '
-  'unique within each category, contiguous numbering. Mutation-tested: a forced collision turns '
-  'it red. Run by doc-audit --check.'),
+  'Verifies the structural tuples in derived-fields-A1-A12.md: six slots, five closed sets (the '
+  'authority for the vocabulary), unique within each category, contiguous numbering. '
+  'Mutation-tested: a forced collision turns it red. Run by doc-audit --check; category-prompts.py '
+  'reads its sets, so a set change here requires a prompt regeneration.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift.'),
 ]
