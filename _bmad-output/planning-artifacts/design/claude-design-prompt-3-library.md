@@ -83,28 +83,46 @@ is the exact list the reconciliation pass checks each design against (`sections-
 each design carries"). A design missing any of them is half-delivered and will come back.
 
 - **Descriptor** — the one-line structural identity: what makes this design *this* design.
-- **Structural descriptor (the tuple)** — `archetype · primary axis · item-count class · media
-  placement · emphasis mechanism`, the five slots separated by a space, a middle dot, and a space.
-  ⚠️ **This is machine-checked, and free prose is not.** The uniqueness rule runs on the *tuple*,
-  because two designs can be described differently in English and still be the same design. **It
-  must stay unique within its category once every design's control list is written** — controls
-  stop distinguishing designs at that point, so the tuple is the only thing left that does.
+- **Structural descriptor (the tuple)** — `archetype · containment · ground · item-count class ·
+  media placement · emphasis mechanism`, the six slots separated by a space, a middle dot, and a
+  space. ⚠️ **This is machine-checked, and free prose is not.** The uniqueness rule runs on the
+  *tuple*, because two designs can be described differently in English and still be the same
+  design. **It must stay unique within its category once every design's control list is written**
+  — controls stop distinguishing designs at that point, so the tuple is the only thing left that
+  does.
 
-  **The first four slots are closed sets.** Write the exact word on its own — no parenthetical, no
+  **The first five slots are closed sets.** Write the exact word on its own — no parenthetical, no
   qualifier, no synonym, nothing appended. The check is a literal match, so `few (2–4)` **fails**
   where `few` passes.
 
   | Slot | Allowed values |
   |---|---|
   | archetype | the fourteen in the next bullet |
-  | primary axis | `horizontal` · `vertical` · `layered` |
+  | containment | `none` · `card` · `box` · `pill` |
+  | ground | `page` · `surface` · `contrast` · `image` · `transparent` · `accent` |
   | item-count class | `none` · `one` · `few` · `many` · `variable` |
   | media placement | `none` · `left` · `right` · `top` · `bottom` · `background` · `inline` · `edge` · `full-bleed` |
 
+  **Containment is a property of the SECTION, not of the items inside it.** A bare section whose
+  posts happen to be drawn as cards is `none` — those cards are the *item's* geometry. Use `card`,
+  `box` or `pill` only when the section itself sits in one. This is the single most likely slot to
+  get wrong: most card grids are `none · page`.
+
+  **Ground is what the section rests on**, which is how two otherwise identical designs earn their
+  places — the same header on `surface` and on `contrast` are two designs, and this slot is what
+  says so. `page` is the page's own background; `transparent` means the section has no ground of
+  its own and shows what is beneath it.
+
   What the count values *mean* — a gloss, never write it into the tuple: `none` = no repeating
   unit · `one` = exactly one · `few` = 2–4 · `many` = 5 or more · `variable` = the author decides
-  how many. The fifth slot, **emphasis mechanism**, is the only open one: a free phrase of at most
+  how many. The sixth slot, **emphasis mechanism**, is the only open one: a free phrase of at most
   four words naming the single device that distinguishes this design.
+
+  **What this check can and cannot promise.** It verifies that every design makes a distinct
+  structural claim. It cannot verify the claim is true — designs differing only in density, scale,
+  motion or alignment reach the same five closed slots and rest on the emphasis phrase, which no
+  machine reads. Uniqueness beyond structure, containment and ground is a judgement, not a gate.
+
 - **Archetype** — which responsive archetype it collapses under: grid-of-N, split, stack, bar, nav,
   edge rail, overlay, feed, form, carousel, table, media frame, sticky, or article body. This
   supplies its default collapse ladder, so the responsive rule below only has to state the

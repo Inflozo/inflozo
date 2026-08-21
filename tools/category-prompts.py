@@ -116,24 +116,31 @@ onto the section and the stylesheet reads it, so per-item styling is not express
 MISSING_FIELDS = """1. Descriptor — one line: what makes this design different from every other design
    in this category.
 
-2. Structural descriptor — a tuple, written exactly in this shape, the five slots separated
+2. Structural descriptor — a tuple, written exactly in this shape, the six slots separated
    by a space, a middle dot, and a space:
-       archetype · primary axis · item-count class · media placement · emphasis mechanism
+       archetype · containment · ground · item-count class · media placement · emphasis mechanism
 
-   The first four slots are CLOSED sets. Write the exact word on its own — no parenthetical,
+   The first five slots are CLOSED sets. Write the exact word on its own — no parenthetical,
    no qualifier, no synonym, nothing appended. A script checks these by literal match, so
    "few (2–4)" FAILS where "few" passes.
 
        archetype        the closed list in field 3 below
-       primary axis     horizontal | vertical | layered
+       containment      none | card | box | pill
+       ground           page | surface | contrast | image | transparent | accent
        item-count class none | one | few | many | variable
        media placement  none | left | right | top | bottom | background | inline | edge | full-bleed
 
-   What those count values mean — this is a gloss, never write it into the tuple: none = no
-   repeating unit · one = exactly one · few = 2–4 · many = 5 or more · variable = the author
-   decides how many.
+   Containment is a property of the SECTION, not of the items inside it. A bare section whose
+   posts happen to be drawn as cards is "none" — those cards are the item's geometry. Most card
+   grids are "none · page". This is the slot most likely to be got wrong.
 
-   The fifth slot, emphasis mechanism, is the only open one: a free phrase of at most four
+   Ground is what the section rests on, and it is how two otherwise identical designs earn their
+   separate places: the same header on surface and on contrast are two designs. "page" is the
+   page's own background; "transparent" means the section has no ground of its own.
+
+   What the count values mean — a gloss, never write it into the tuple: none = no repeating
+   unit · one = exactly one · few = 2–4 · many = 5 or more · variable = the author decides how
+   many. The sixth slot, emphasis mechanism, is the only open one: a free phrase of at most four
    words naming the single device that distinguishes this design.
 
    The whole tuple must be UNIQUE within this category. Two designs may be described differently
@@ -364,11 +371,11 @@ def assert_tuple_vocab_matches_gate():
     how A1's tuples were written free-text. Derive both sides; never restate either."""
     gate = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tuple-check.py'),
                 encoding='utf8').read()
-    sets = {name: eval(m) for name in ('ARCH', 'AXIS', 'COUNT', 'MEDIA')
+    sets = {name: eval(m) for name in ('ARCH', 'CONTAIN', 'GROUND', 'COUNT', 'MEDIA')
             for m in [re.search(rf'^{name} = (\{{.*?\}})', gate, re.M | re.S).group(1)]}
     brief = open(PROMPT, encoding='utf8').read()
-    for name, row in (('AXIS', 'primary axis'), ('COUNT', 'item-count class'),
-                      ('MEDIA', 'media placement')):
+    for name, row in (('CONTAIN', 'containment'), ('GROUND', 'ground'),
+                      ('COUNT', 'item-count class'), ('MEDIA', 'media placement')):
         line = re.search(rf'^\s*\| {row} \| (.+?) \|\s*$', brief, re.M)
         assert line, f'{PROMPT}: no closed-set row for "{row}" — the prompts would teach free prose'
         taught = set(re.findall(r'`([^`]+)`', line.group(1)))
