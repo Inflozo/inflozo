@@ -6,601 +6,857 @@
 <title>Inflozo — How It Works, in Plain English</title>
 <style>
   :root{
-    --bg:#fbfaf8; --card:#fff; --ink:#1a1a1a; --muted:#6b6b6b; --line:#e4e0da;
-    --accent:#1f6feb; --accent-soft:#e8f0fe;
-    --green:#127a4a; --green-soft:#e3f5ec;
-    --amber:#9a6700; --amber-soft:#fff5db;
-    --red:#b42318; --red-soft:#fdecea;
-    --purple:#6b3fa0; --purple-soft:#f1eaff;
-    --code:#f5f3f0;
-    --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+    --bg:#fbfaf8; --card:#fff; --ink:#191919; --muted:#69696b; --line:#e5e1db; --line2:#f0ede8;
+    --accent:#1f6feb; --accent-soft:#e9f0fe;
+    --green:#12784a; --green-soft:#e2f5ec;
+    --amber:#96650a; --amber-soft:#fff4d9;
+    --red:#b42318; --red-soft:#fdeceb;
+    --purple:#6a3fa0; --purple-soft:#f2eaff;
+    --code:#f4f2ef;
+    --sh:0 1px 2px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.055);
   }
-  @media (prefers-color-scheme:dark){
-    :root:not([data-theme="light"]){
-      --bg:#131316; --card:#1b1b1f; --ink:#eceaea; --muted:#9d9a98; --line:#2e2e34;
-      --accent:#6ea8fe; --accent-soft:#1c2a44;
-      --green:#5ed6a0; --green-soft:#12301f;
-      --amber:#e8bd57; --amber-soft:#33280c;
-      --red:#f08b80; --red-soft:#3a1a17;
-      --purple:#c0a2f0; --purple-soft:#291a3d;
-      --code:#232329;
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#131316; --card:#1b1b1f; --ink:#eceaea; --muted:#9d9a98; --line:#2e2e34;
-    --accent:#6ea8fe; --accent-soft:#1c2a44;
-    --green:#5ed6a0; --green-soft:#12301f;
-    --amber:#e8bd57; --amber-soft:#33280c;
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#131316; --card:#1b1b20; --ink:#ecebea; --muted:#9e9b99; --line:#2f2f36; --line2:#26262c;
+    --accent:#6ea8fe; --accent-soft:#1b2a45;
+    --green:#5ed6a0; --green-soft:#112f20;
+    --amber:#e8bd57; --amber-soft:#33280d;
     --red:#f08b80; --red-soft:#3a1a17;
-    --purple:#c0a2f0; --purple-soft:#291a3d;
+    --purple:#c0a2f0; --purple-soft:#281a3c;
     --code:#232329;
+    --sh:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.36);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#131316; --card:#1b1b20; --ink:#ecebea; --muted:#9e9b99; --line:#2f2f36; --line2:#26262c;
+    --accent:#6ea8fe; --accent-soft:#1b2a45; --green:#5ed6a0; --green-soft:#112f20;
+    --amber:#e8bd57; --amber-soft:#33280d; --red:#f08b80; --red-soft:#3a1a17;
+    --purple:#c0a2f0; --purple-soft:#281a3c; --code:#232329;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font:16.5px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:880px;margin:0 auto;padding:56px 22px 120px}
-  header.top{margin-bottom:14px}
-  .kicker{color:var(--accent);font-weight:650;font-size:.8rem;letter-spacing:.09em;text-transform:uppercase}
-  h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;margin:.3em 0 .35em;letter-spacing:-.022em;font-weight:720}
-  .lede{font-size:1.16rem;color:var(--muted);max-width:63ch;margin:0}
-  h2{font-size:1.55rem;letter-spacing:-.016em;margin:0 0 .1em;font-weight:690;line-height:1.25}
-  h3{font-size:1.06rem;margin:1.9em 0 .4em;font-weight:660;letter-spacing:-.008em}
-  section{margin-top:52px}
-  .num{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:27px;height:27px;border-radius:8px;background:var(--accent-soft);color:var(--accent);
-    font-size:.83rem;font-weight:700;margin-right:11px;flex:none
-  }
-  .h2row{display:flex;align-items:center;margin-bottom:.55em}
-  p{margin:0 0 1.05em;max-width:68ch}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:24px 26px;box-shadow:var(--shadow);margin:22px 0}
-  .fig{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:26px 20px 20px;box-shadow:var(--shadow);margin:26px 0;overflow-x:auto}
-  .fig svg{display:block;margin:0 auto;max-width:100%;height:auto;min-width:520px}
-  .cap{color:var(--muted);font-size:.9rem;text-align:center;margin:16px auto 0;max-width:60ch;line-height:1.5}
-  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:15px 19px;border-radius:0 11px 11px 0;margin:22px 0}
-  .callout.warn{border-color:var(--amber);background:var(--amber-soft)}
-  .callout.good{border-color:var(--green);background:var(--green-soft)}
-  .callout p:last-child{margin-bottom:0}
-  .callout strong{font-weight:680}
-  table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.95rem}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16.5px/1.68 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:58px 22px 130px}
+  .kick{color:var(--accent);font-weight:660;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
+  h1{font-size:clamp(2.05rem,5.2vw,3.05rem);line-height:1.1;margin:.28em 0 .3em;letter-spacing:-.024em;font-weight:730}
+  .lede{font-size:1.17rem;color:var(--muted);max-width:64ch;margin:0}
+  h2{font-size:1.6rem;letter-spacing:-.018em;margin:0;font-weight:700;line-height:1.24}
+  h3{font-size:1.08rem;margin:2em 0 .45em;font-weight:665;letter-spacing:-.008em}
+  h4{font-size:.97rem;margin:1.5em 0 .35em;font-weight:660}
+  section{margin-top:60px;scroll-margin-top:20px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+    border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:.84rem;font-weight:720;
+    margin-right:12px;flex:none}
+  .h2row{display:flex;align-items:center;margin-bottom:.5em}
+  p{margin:0 0 1.05em;max-width:69ch}
+  .lead-in{font-size:1.05rem;color:var(--muted);margin-bottom:1.7em;max-width:67ch}
+  /* nav */
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px 24px;
+    box-shadow:var(--sh);margin:34px 0 0}
+  .toc h2{font-size:1rem;margin:0 0 .7em;font-weight:670}
+  .toc ol{margin:0;padding-left:1.3em;columns:2;column-gap:30px}
+  .toc li{margin-bottom:.34em;break-inside:avoid}
+  .toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+  .toc a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  /* figures */
+  .fig{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:26px 20px 18px;
+    box-shadow:var(--sh);margin:26px 0;overflow-x:auto}
+  .fig svg{display:block;margin:0 auto;max-width:100%;height:auto;min-width:540px}
+  .cap{color:var(--muted);font-size:.9rem;text-align:center;margin:16px auto 0;max-width:62ch;line-height:1.55}
+  /* callouts */
+  .co{border-left:3px solid var(--accent);background:var(--accent-soft);padding:15px 19px;
+    border-radius:0 11px 11px 0;margin:22px 0}
+  .co.warn{border-color:var(--amber);background:var(--amber-soft)}
+  .co.good{border-color:var(--green);background:var(--green-soft)}
+  .co.bad{border-color:var(--red);background:var(--red-soft)}
+  .co p:last-child{margin-bottom:0}
+  .co strong{font-weight:685}
+  /* tables */
+  table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.945rem}
   th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
-  th{font-weight:660;font-size:.79rem;letter-spacing:.055em;text-transform:uppercase;color:var(--muted)}
+  th{font-weight:665;font-size:.78rem;letter-spacing:.055em;text-transform:uppercase;color:var(--muted)}
   tbody tr:last-child td{border-bottom:none}
   code{background:var(--code);padding:.13em .42em;border-radius:5px;font-size:.87em;
-       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .pill{display:inline-block;padding:2.5px 10px;border-radius:999px;font-size:.76rem;font-weight:640;white-space:nowrap}
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  /* bits */
+  .pill{display:inline-block;padding:2.5px 10px;border-radius:999px;font-size:.755rem;font-weight:650;white-space:nowrap}
   .pill.g{background:var(--green-soft);color:var(--green)}
   .pill.a{background:var(--amber-soft);color:var(--amber)}
   .pill.r{background:var(--red-soft);color:var(--red)}
   .pill.b{background:var(--accent-soft);color:var(--accent)}
-  ul{padding-left:1.15em;max-width:68ch}
+  ul,ol.body{padding-left:1.15em;max-width:69ch}
   li{margin-bottom:.5em}
-  .lead-in{font-size:1.04rem;color:var(--muted);margin-bottom:1.6em;max-width:66ch}
-  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:15px;margin:22px 0}
-  .mini{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:17px 19px}
-  .mini h4{margin:0 0 .35em;font-size:.99rem;font-weight:665}
-  .mini p{font-size:.92rem;color:var(--muted);margin:0}
-  .big{font-size:1.75rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
-  .unit{font-size:.83rem;color:var(--muted);font-weight:500}
-  hr.sep{border:none;border-top:1px solid var(--line);margin:56px 0 0}
-  footer{margin-top:40px;color:var(--muted);font-size:.88rem}
-  /* svg helpers */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:14px;margin:22px 0}
+  .mini{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .mini h4{margin:0 0 .3em;font-size:.97rem;font-weight:665}
+  .mini p{font-size:.9rem;color:var(--muted);margin:0}
+  .big{font-size:1.8rem;font-weight:715;letter-spacing:-.02em;line-height:1.08}
+  .unit{font-size:.8rem;color:var(--muted);font-weight:500}
+  .rule{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--purple);
+    border-radius:0 12px 12px 0;padding:15px 19px;margin:13px 0}
+  .rule h4{margin:0 0 .3em;font-size:.98rem;font-weight:670}
+  .rule p{margin:0;font-size:.91rem;color:var(--muted)}
+  .rule .tag{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:var(--purple);font-weight:600}
+  hr.sep{border:none;border-top:1px solid var(--line);margin:58px 0 0}
+  footer{margin-top:38px;color:var(--muted);font-size:.88rem}
+  /* svg */
   .s-box{fill:var(--card);stroke:var(--line);stroke-width:1.5}
-  .s-accent{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
-  .s-green{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
-  .s-amber{fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5}
-  .s-purple{fill:var(--purple-soft);stroke:var(--purple);stroke-width:1.5}
-  .s-red{fill:var(--red-soft);stroke:var(--red);stroke-width:1.5}
+  .s-a{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+  .s-g{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
+  .s-m{fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5}
+  .s-p{fill:var(--purple-soft);stroke:var(--purple);stroke-width:1.5}
+  .s-r{fill:var(--red-soft);stroke:var(--red);stroke-width:1.5}
+  .s-dim{fill:var(--line2);stroke:var(--line);stroke-width:1.4}
   .t{fill:var(--ink);font:600 13px ui-sans-serif,system-ui,sans-serif}
-  .t-sm{fill:var(--muted);font:500 11px ui-sans-serif,system-ui,sans-serif}
-  .t-mono{fill:var(--muted);font:500 11px ui-monospace,Menlo,monospace}
+  .tb{fill:var(--ink);font:700 14px ui-sans-serif,system-ui,sans-serif}
+  .ts{fill:var(--muted);font:500 11.5px ui-sans-serif,system-ui,sans-serif}
+  .tm{fill:var(--muted);font:500 11px ui-monospace,Menlo,monospace}
   .ln{stroke:var(--line);stroke-width:1.6;fill:none}
   .ln-a{stroke:var(--accent);stroke-width:1.8;fill:none}
   .ln-g{stroke:var(--green);stroke-width:1.8;fill:none}
+  .ln-r{stroke:var(--red);stroke-width:1.8;fill:none}
   .ln-d{stroke:var(--muted);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<header class="top">
-  <div class="kicker">Inflozo · Architecture</div>
+<header>
+  <div class="kick">Inflozo · Architecture</div>
   <h1>How Inflozo works</h1>
-  <p class="lede">Written for a human, not an engineer. No jargon that isn't explained in the same
-  sentence. Every number here was measured on real hardware, not estimated.</p>
+  <p class="lede">Written for a human, not an engineer. Nothing here needs prior knowledge, and any
+  term that can't be avoided is explained in the sentence that uses it. Every number was measured on
+  real hardware — none is estimated.</p>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">What it is</a></li>
+      <li><a href="#s2">The one idea it rests on</a></li>
+      <li><a href="#s3">The pieces</a></li>
+      <li><a href="#s4">A section, end to end</a></li>
+      <li><a href="#s5">Pressing Deploy</a></li>
+      <li><a href="#s6">Where the data lives</a></li>
+      <li><a href="#s7">Who is allowed to do what</a></li>
+      <li><a href="#s8">Editing safely</a></li>
+      <li><a href="#s9">When things go wrong</a></li>
+      <li><a href="#s10">The rules, in brief</a></li>
+      <li><a href="#s11">What we measured</a></li>
+      <li><a href="#s12">What isn't built</a></li>
+    </ol>
+  </nav>
 </header>
 
-<!-- 1 ─────────────────────────────────────────────────────────── -->
-<section>
+<!-- 1 ═══════════════════════════════════════════════════════════ -->
+<section id="s1">
   <div class="h2row"><span class="num">1</span><h2>What it is</h2></div>
-  <p>Inflozo is a visual site builder for <strong>Ghost</strong> — the blogging and newsletter
-  platform. Someone who runs a Ghost site drags ready-made sections onto a page, adjusts them, and
-  presses Deploy. Inflozo turns that into a real Ghost <em>theme</em> and installs it on their site.</p>
 
-  <p>A theme is the set of files that decides how a Ghost site looks. Normally you write them by hand,
-  in code. Inflozo writes them for you.</p>
+  <p>Inflozo is a visual site builder for <strong>Ghost</strong> — the publishing platform people use
+  for blogs and paid newsletters. Someone who runs a Ghost site opens Inflozo, drags ready-made
+  sections onto a page, adjusts them until it looks right, and presses Deploy. Inflozo turns that
+  into a real Ghost <em>theme</em> and installs it on their site.</p>
+
+  <p>A theme is the bundle of files that decides how a Ghost site looks — its layout, its typography,
+  its colours. Normally you write those files by hand, in code. That's the wall most Ghost owners hit:
+  they can write beautifully and they cannot write templates. Inflozo writes the files for them.</p>
 
   <div class="grid2">
-    <div class="mini"><h4>484 designs</h4><p>Ready-made sections across 34 categories — headers,
-      heroes, post grids, footers. 70 are free.</p></div>
-    <div class="mini"><h4>Their site, not ours</h4><p>The finished website lives entirely on the
-      customer's own Ghost. Inflozo is not in the path when a visitor loads it.</p></div>
+    <div class="mini"><h4>484 designs</h4><p>Across 34 categories — headers, heroes, post grids,
+      pricing tables, footers. 70 are free.</p></div>
+    <div class="mini"><h4>Two Ghost versions</h4><p>Ghost 5 and Ghost 6 are both supported, and they
+      genuinely differ. Both are tested against, every time.</p></div>
+    <div class="mini"><h4>Their site, not ours</h4><p>The finished website runs entirely on the
+      customer's own Ghost. Inflozo isn't involved when a visitor loads it.</p></div>
+    <div class="mini"><h4>Nothing to learn</h4><p>No code, no template language, no build step. Drag,
+      adjust, deploy.</p></div>
   </div>
 </section>
 
-<!-- 2 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">2</span><h2>The one idea everything rests on</h2></div>
-  <p class="lead-in">If you remember one thing from this document, make it this one.</p>
+<!-- 2 ═══════════════════════════════════════════════════════════ -->
+<section id="s2">
+  <div class="h2row"><span class="num">2</span><h2>The one idea it rests on</h2></div>
+  <p class="lead-in">If you remember one thing from this document, make it this.</p>
 
-  <p>A site builder makes a promise: <strong>what you see while designing is what actually ships.</strong>
-  That promise is easy to make and very hard to keep, because most builders draw the preview with one
-  piece of code and build the real output with another. Two pieces of code, written at different times
-  by different people, slowly drift apart. The preview starts lying.</p>
+  <p>Every site builder makes the same promise: <strong>what you see while designing is what actually
+  ships.</strong> It's an easy promise to make and a very hard one to keep, because almost every
+  builder draws the preview with one piece of code and produces the real output with another. Two
+  pieces of code, written at different times, drifting slowly apart. Eventually the preview lies —
+  and the customer only finds out after they've published.</p>
 
-  <p>Inflozo avoids this by having <strong>one</strong> description of every section, read by
-  <strong>two</strong> renderers that share almost all of their code. The preview and the shipped
-  theme aren't kept in sync by discipline — they're the same machinery pointed at two outputs.</p>
+  <p>Inflozo avoids that by having <strong>one</strong> description of each section, read by
+  <strong>two</strong> renderers that share nearly all of their code. The preview and the shipped
+  theme aren't kept in step by anyone's discipline. They're the same machinery, pointed at two
+  different outputs.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 700 300" role="img" aria-label="One section description feeds two renderers: the canvas preview and the Ghost theme">
-      <rect x="240" y="14" width="220" height="58" rx="11" class="s-accent"/>
-      <text x="350" y="38" text-anchor="middle" class="t">One section description</text>
-      <text x="350" y="57" text-anchor="middle" class="t-sm">written once, by the design team</text>
+    <svg viewBox="0 0 720 330" role="img" aria-label="One section description feeds two renderers through shared code">
+      <rect x="248" y="12" width="224" height="60" rx="11" class="s-a"/>
+      <text x="360" y="37" text-anchor="middle" class="tb">One section description</text>
+      <text x="360" y="57" text-anchor="middle" class="ts">written once, by the design team</text>
 
-      <path d="M310 72 L310 96 Q310 108 298 108 L200 108 Q188 108 188 120 L188 146" class="ln-a"/>
-      <path d="M390 72 L390 96 Q390 108 402 108 L500 108 Q512 108 512 120 L512 146" class="ln-a"/>
+      <rect x="236" y="92" width="248" height="46" rx="10" class="s-box"/>
+      <text x="360" y="112" text-anchor="middle" class="t">Shared code</text>
+      <text x="360" y="129" text-anchor="middle" class="ts">the same functions run for both outputs</text>
+      <path d="M360 72 L360 90" class="ln-a"/>
 
-      <rect x="248" y="90" width="204" height="34" rx="9" class="s-box"/>
-      <text x="350" y="112" text-anchor="middle" class="t-sm">shared code — the same functions</text>
+      <path d="M300 138 L300 152 Q300 162 288 162 L196 162 Q184 162 184 174 L184 190" class="ln-a"/>
+      <path d="M420 138 L420 152 Q420 162 432 162 L524 162 Q536 162 536 174 L536 190" class="ln-a"/>
 
-      <rect x="66" y="146" width="244" height="118" rx="12" class="s-green"/>
-      <text x="188" y="176" text-anchor="middle" class="t">The canvas</text>
-      <text x="188" y="198" text-anchor="middle" class="t-sm">what you see while designing</text>
-      <text x="188" y="221" text-anchor="middle" class="t-sm">shows real values from</text>
-      <text x="188" y="237" text-anchor="middle" class="t-sm">your actual Ghost site</text>
+      <rect x="52" y="190" width="264" height="120" rx="12" class="s-g"/>
+      <text x="184" y="217" text-anchor="middle" class="tb">The canvas</text>
+      <text x="184" y="239" text-anchor="middle" class="ts">what you see while designing</text>
+      <text x="184" y="262" text-anchor="middle" class="ts">shows the real values pulled live</text>
+      <text x="184" y="278" text-anchor="middle" class="ts">from your own Ghost site</text>
+      <text x="184" y="298" text-anchor="middle" class="tm">runs in your browser</text>
 
-      <rect x="390" y="146" width="244" height="118" rx="12" class="s-purple"/>
-      <text x="512" y="176" text-anchor="middle" class="t">The theme</text>
-      <text x="512" y="198" text-anchor="middle" class="t-sm">what gets installed on Ghost</text>
-      <text x="512" y="221" text-anchor="middle" class="t-sm">leaves blanks that Ghost</text>
-      <text x="512" y="237" text-anchor="middle" class="t-sm">fills in for each visitor</text>
+      <rect x="404" y="190" width="264" height="120" rx="12" class="s-p"/>
+      <text x="536" y="217" text-anchor="middle" class="tb">The theme</text>
+      <text x="536" y="239" text-anchor="middle" class="ts">what gets installed on Ghost</text>
+      <text x="536" y="262" text-anchor="middle" class="ts">leaves labelled blanks that Ghost</text>
+      <text x="536" y="278" text-anchor="middle" class="ts">fills in for each visitor</text>
+      <text x="536" y="298" text-anchor="middle" class="tm">runs on their server</text>
 
-      <text x="350" y="205" text-anchor="middle" class="t-sm">same structure</text>
-      <text x="350" y="222" text-anchor="middle" class="t-sm">same styling</text>
-      <path d="M312 190 L388 190" class="ln-d"/>
-      <path d="M312 244 L388 244" class="ln-d"/>
+      <path d="M318 232 L402 232" class="ln-d"/><path d="M318 268 L402 268" class="ln-d"/>
+      <rect x="322" y="240" width="76" height="20" rx="6" class="s-box"/>
+      <text x="360" y="254" text-anchor="middle" class="tm">identical</text>
     </svg>
-    <p class="cap">The only real difference: the canvas fills in the actual values so you can see
+    <p class="cap">The only real difference: the canvas fills in your actual content so you can see
     your page, while the theme leaves labelled blanks for Ghost to fill in when a visitor arrives.</p>
   </div>
 
-  <div class="callout good">
-    <p><strong>This is now proven, not just intended.</strong> A test renders one section through both
-    paths and compares the results piece by piece — every element, every style name, every attribute
-    must match. It runs on every change. Until recently only half of this existed, so the promise was
-    a claim nothing could disprove. It is now a claim that fails loudly if anyone breaks it.</p>
+  <h3>Why that's more than a nice idea</h3>
+  <p>The two outputs have to differ in exactly two ways, and be identical in every other. A list of
+  posts <em>expands</em> into real posts on the canvas, but becomes a repeat instruction in the
+  theme. A title <em>resolves</em> to real text on the canvas, but becomes a placeholder in the theme.
+  Everything else — the structure, the style names, every setting — must match precisely, because the
+  stylesheet that makes it look right selects on those.</p>
+
+  <div class="co good">
+    <p><strong>This is now proven rather than intended.</strong> A test renders one section through
+    both paths and compares them piece by piece — every element, every style name, every setting. It
+    also checks that the two intended differences <em>are</em> present, so nobody can "fix" them into
+    matching. Until recently only one of the two renderers existed, which means the product's central
+    promise was a claim nothing could disprove. It now fails loudly if anyone breaks it.</p>
   </div>
 </section>
 
-<!-- 3 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">3</span><h2>The pieces, and how they fit</h2></div>
-  <p class="lead-in">Five services. Only one of them is Inflozo.</p>
+<!-- 3 ═══════════════════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="h2row"><span class="num">3</span><h2>The pieces</h2></div>
+  <p class="lead-in">Five services. Only one of them is Inflozo, and it steps out of the way once
+  the work is done.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 700 420" role="img" aria-label="System diagram showing the browser, Inflozo, Supabase, the customer's Ghost site and visitors">
-      <!-- browser -->
-      <rect x="30" y="20" width="180" height="76" rx="12" class="s-accent"/>
-      <text x="120" y="47" text-anchor="middle" class="t">The customer</text>
-      <text x="120" y="66" text-anchor="middle" class="t-sm">in their browser,</text>
-      <text x="120" y="82" text-anchor="middle" class="t-sm">designing a page</text>
+    <svg viewBox="0 0 720 440" role="img" aria-label="System diagram: browser, Inflozo, database, the customer's Ghost, and visitors">
+      <rect x="24" y="18" width="182" height="78" rx="12" class="s-a"/>
+      <text x="115" y="45" text-anchor="middle" class="tb">The customer</text>
+      <text x="115" y="65" text-anchor="middle" class="ts">in their browser,</text>
+      <text x="115" y="81" text-anchor="middle" class="ts">designing a page</text>
 
-      <!-- inflozo -->
-      <rect x="270" y="20" width="180" height="76" rx="12" class="s-box"/>
-      <text x="360" y="47" text-anchor="middle" class="t">Inflozo</text>
-      <text x="360" y="66" text-anchor="middle" class="t-sm">the app + the compiler</text>
-      <text x="360" y="82" text-anchor="middle" class="t-mono">on Vercel</text>
+      <rect x="270" y="18" width="182" height="78" rx="12" class="s-box"/>
+      <text x="361" y="45" text-anchor="middle" class="tb">Inflozo</text>
+      <text x="361" y="65" text-anchor="middle" class="ts">the app + the compiler</text>
+      <text x="361" y="81" text-anchor="middle" class="tm">Vercel · one region</text>
 
-      <!-- supabase -->
-      <rect x="270" y="150" width="180" height="76" rx="12" class="s-box"/>
-      <text x="360" y="177" text-anchor="middle" class="t">Supabase</text>
-      <text x="360" y="196" text-anchor="middle" class="t-sm">database + file storage</text>
-      <text x="360" y="212" text-anchor="middle" class="t-sm">+ sign-in</text>
+      <rect x="516" y="18" width="180" height="78" rx="12" class="s-g"/>
+      <text x="606" y="45" text-anchor="middle" class="tb">Their Ghost site</text>
+      <text x="606" y="65" text-anchor="middle" class="ts">posts, subscribers,</text>
+      <text x="606" y="81" text-anchor="middle" class="ts">the live website</text>
 
-      <!-- ghost -->
-      <rect x="510" y="20" width="160" height="76" rx="12" class="s-green"/>
-      <text x="590" y="47" text-anchor="middle" class="t">Their Ghost site</text>
-      <text x="590" y="66" text-anchor="middle" class="t-sm">posts, subscribers,</text>
-      <text x="590" y="82" text-anchor="middle" class="t-sm">the live website</text>
+      <rect x="270" y="150" width="182" height="86" rx="12" class="s-box"/>
+      <text x="361" y="176" text-anchor="middle" class="tb">Supabase</text>
+      <text x="361" y="196" text-anchor="middle" class="ts">database · file storage</text>
+      <text x="361" y="212" text-anchor="middle" class="ts">sign-in</text>
+      <text x="361" y="229" text-anchor="middle" class="tm">their designs live here</text>
 
-      <!-- visitors -->
-      <rect x="510" y="150" width="160" height="62" rx="12" class="s-green"/>
-      <text x="590" y="177" text-anchor="middle" class="t">Their visitors</text>
-      <text x="590" y="195" text-anchor="middle" class="t-sm">the reading public</text>
+      <rect x="516" y="150" width="180" height="62" rx="12" class="s-g"/>
+      <text x="606" y="177" text-anchor="middle" class="tb">Their visitors</text>
+      <text x="606" y="195" text-anchor="middle" class="ts">the reading public</text>
 
-      <!-- billing / email -->
-      <rect x="30" y="150" width="180" height="62" rx="12" class="s-box"/>
-      <text x="120" y="177" text-anchor="middle" class="t">Dodo · Resend</text>
-      <text x="120" y="195" text-anchor="middle" class="t-sm">payments · email</text>
+      <rect x="24" y="150" width="182" height="62" rx="12" class="s-box"/>
+      <text x="115" y="177" text-anchor="middle" class="t">Dodo · Resend</text>
+      <text x="115" y="195" text-anchor="middle" class="ts">payments · email</text>
 
-      <!-- arrows -->
-      <path d="M210 48 L268 48" class="ln-a" marker-end="url(#ar)"/>
-      <path d="M360 96 L360 148" class="ln-a" marker-end="url(#ar)"/>
-      <path d="M450 40 L508 40" class="ln-a" marker-end="url(#ar)"/>
-      <path d="M210 172 L268 172" class="ln" marker-end="url(#ar)"/>
-      <path d="M590 96 L590 148" class="ln-g" marker-end="url(#ar)"/>
+      <path d="M206 46 L268 46" class="ln-a" marker-end="url(#a)"/>
+      <path d="M361 96 L361 148" class="ln-a" marker-end="url(#a)"/>
+      <path d="M452 40 L514 40" class="ln-a" marker-end="url(#a)"/>
+      <text x="483" y="28" text-anchor="middle" class="tm">installs</text>
+      <text x="483" y="60" text-anchor="middle" class="tm">the theme</text>
+      <path d="M206 176 L268 176" class="ln" marker-end="url(#a)"/>
+      <path d="M606 96 L606 148" class="ln-g" marker-end="url(#a)"/>
+      <text x="646" y="126" text-anchor="middle" class="tm">serves</text>
 
-      <!-- direct browser -> ghost -->
-      <path d="M120 96 L120 270 Q120 284 134 284 L576 284 Q590 284 590 270 L590 214" class="ln-g" marker-end="url(#ar)"/>
-      <text x="355" y="303" text-anchor="middle" class="t-sm">the browser reads the customer's posts straight from their Ghost — never through Inflozo</text>
+      <path d="M115 96 L115 282 Q115 296 129 296 L592 296 Q606 296 606 282 L606 214" class="ln-g" marker-end="url(#a)"/>
+      <text x="360" y="316" text-anchor="middle" class="ts">while designing, the browser reads their posts <tspan font-weight="700">straight from their own Ghost</tspan> — never through Inflozo</text>
 
-      <text x="238" y="40" text-anchor="middle" class="t-sm"></text>
-      <text x="478" y="32" text-anchor="middle" class="t-sm">installs</text>
-      <text x="478" y="46" text-anchor="middle" class="t-sm">the theme</text>
+      <rect x="24" y="348" width="672" height="72" rx="13" class="s-g"/>
+      <text x="360" y="378" text-anchor="middle" class="tb">Once the theme is installed, Inflozo is out of the picture</text>
+      <text x="360" y="400" text-anchor="middle" class="ts">If Inflozo went offline tomorrow, every customer's website would keep working exactly as it is</text>
 
-      <!-- the key line -->
-      <rect x="30" y="330" width="640" height="66" rx="12" class="s-green"/>
-      <text x="350" y="357" text-anchor="middle" class="t">Once the theme is installed, Inflozo is out of the picture</text>
-      <text x="350" y="378" text-anchor="middle" class="t-sm">If Inflozo went offline tomorrow, every customer's website would keep working exactly as it is</text>
-
-      <defs>
-        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/>
-        </marker>
-      </defs>
+      <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
     </svg>
-    <p class="cap">Inflozo is a workshop, not a host. It builds the thing, hands it over, and steps
-    away. That is a deliberate design choice and it shapes almost every other decision here.</p>
+    <p class="cap">Inflozo is a workshop, not a host. It builds the thing, hands it over, and walks
+    away. That single choice shapes almost every other decision in this document.</p>
   </div>
 
-  <div class="callout">
-    <p><strong>Why that matters commercially.</strong> Inflozo never pays to serve anyone's website
-    traffic, never becomes a bottleneck, and never takes a customer's site down by having a bad day.
-    It also means an outage at Inflozo is an inconvenience for people who are mid-design — not an
-    emergency for people whose business runs on their site.</p>
+  <div class="co">
+    <p><strong>Why that matters commercially.</strong> Inflozo never pays to serve anybody's website
+    traffic, never becomes a bottleneck as customers grow, and can never take a customer's site down
+    by having a bad day. An outage is an inconvenience for people mid-design — not an emergency for
+    people whose business runs on their site.</p>
+  </div>
+
+  <h3>Two doors into Ghost, and they never swap</h3>
+  <p>Ghost offers two ways in, and Inflozo uses each for exactly one thing.</p>
+
+  <table>
+    <thead><tr><th>Door</th><th>Used for</th><th>Who holds the key</th></tr></thead>
+    <tbody>
+      <tr><td><strong>The reading door</strong></td>
+        <td>Fetching posts and images to show on your canvas while you design.</td>
+        <td>The browser, directly. This key is designed to be public — it's the same one any Ghost
+            theme uses.</td></tr>
+      <tr><td><strong>The writing door</strong></td>
+        <td>Installing the theme. Four operations only: upload a theme, switch it on, upload the
+            routes file, and clear the announcement bar if you ask.</td>
+        <td><strong>The server, never the browser.</strong> One small piece of code is the only thing
+            in the entire system that can unlock this key.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="co warn">
+    <p><strong>The honest part.</strong> Ghost has no such thing as a limited key. The one that
+    installs your theme can also read your subscribers' email addresses and publish posts on your
+    site. That's a Ghost limitation, not a choice — verified on both Ghost versions. Inflozo's own
+    code only ever uses it for those four things, and every use gets logged. But the key itself is
+    powerful, and the screen that asks for it should say so plainly rather than let people find out
+    later.</p>
   </div>
 </section>
 
-<!-- 4 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">4</span><h2>What happens when you press Deploy</h2></div>
-  <p class="lead-in">Five steps. Every timing below was measured against a real Ghost site.</p>
+<!-- 4 ═══════════════════════════════════════════════════════════ -->
+<section id="s4">
+  <div class="h2row"><span class="num">4</span><h2>A section, end to end</h2></div>
+  <p class="lead-in">Follow one piece of one page from the design team's hands to a visitor's screen.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 700 250" role="img" aria-label="The deploy pipeline: build, check, package, send, switch on">
-      <rect x="14" y="60" width="118" height="80" rx="11" class="s-accent"/>
-      <text x="73" y="87" text-anchor="middle" class="t">Build</text>
-      <text x="73" y="106" text-anchor="middle" class="t-sm">turn the design</text>
-      <text x="73" y="121" text-anchor="middle" class="t-sm">into theme files</text>
-      <text x="73" y="160" text-anchor="middle" class="t-mono">3.9 s</text>
+    <svg viewBox="0 0 720 300" role="img" aria-label="A section travels from design file to visitor screen">
+      <rect x="14" y="30" width="128" height="94" rx="11" class="s-p"/>
+      <text x="78" y="55" text-anchor="middle" class="t">1 · Authored</text>
+      <text x="78" y="76" text-anchor="middle" class="ts">a designer writes</text>
+      <text x="78" y="92" text-anchor="middle" class="ts">one section, once</text>
+      <text x="78" y="112" text-anchor="middle" class="tm">484 of these</text>
 
-      <rect x="152" y="60" width="118" height="80" rx="11" class="s-amber"/>
-      <text x="211" y="87" text-anchor="middle" class="t">Check</text>
-      <text x="211" y="106" text-anchor="middle" class="t-sm">Ghost's own</text>
-      <text x="211" y="121" text-anchor="middle" class="t-sm">validator + ours</text>
-      <text x="211" y="160" text-anchor="middle" class="t-mono">0.9 s</text>
+      <rect x="162" y="30" width="128" height="94" rx="11" class="s-a"/>
+      <text x="226" y="55" text-anchor="middle" class="t">2 · Placed</text>
+      <text x="226" y="76" text-anchor="middle" class="ts">the customer drags</text>
+      <text x="226" y="92" text-anchor="middle" class="ts">it onto a page</text>
+      <text x="226" y="112" text-anchor="middle" class="tm">settings chosen</text>
 
-      <rect x="290" y="60" width="118" height="80" rx="11" class="s-box"/>
-      <text x="349" y="87" text-anchor="middle" class="t">Package</text>
-      <text x="349" y="106" text-anchor="middle" class="t-sm">zip it up and</text>
-      <text x="349" y="121" text-anchor="middle" class="t-sm">keep a copy</text>
-      <text x="349" y="160" text-anchor="middle" class="t-mono">0.2 s</text>
+      <rect x="310" y="30" width="128" height="94" rx="11" class="s-a"/>
+      <text x="374" y="55" text-anchor="middle" class="t">3 · Previewed</text>
+      <text x="374" y="76" text-anchor="middle" class="ts">drawn with their</text>
+      <text x="374" y="92" text-anchor="middle" class="ts">real posts in it</text>
+      <text x="374" y="112" text-anchor="middle" class="tm">the canvas</text>
 
-      <rect x="428" y="60" width="118" height="80" rx="11" class="s-box"/>
-      <text x="487" y="87" text-anchor="middle" class="t">Send</text>
-      <text x="487" y="106" text-anchor="middle" class="t-sm">upload to their</text>
-      <text x="487" y="121" text-anchor="middle" class="t-sm">Ghost site</text>
-      <text x="487" y="160" text-anchor="middle" class="t-mono">7.3 s</text>
+      <rect x="458" y="30" width="128" height="94" rx="11" class="s-m"/>
+      <text x="522" y="55" text-anchor="middle" class="t">4 · Compiled</text>
+      <text x="522" y="76" text-anchor="middle" class="ts">becomes theme</text>
+      <text x="522" y="92" text-anchor="middle" class="ts">files with blanks</text>
+      <text x="522" y="112" text-anchor="middle" class="tm">checked, then sent</text>
 
-      <rect x="566" y="60" width="118" height="80" rx="11" class="s-green"/>
-      <text x="625" y="87" text-anchor="middle" class="t">Switch on</text>
-      <text x="625" y="106" text-anchor="middle" class="t-sm">make it the</text>
-      <text x="625" y="121" text-anchor="middle" class="t-sm">live theme</text>
-      <text x="625" y="160" text-anchor="middle" class="t-mono">1.5 s</text>
+      <rect x="606" y="30" width="100" height="94" rx="11" class="s-g"/>
+      <text x="656" y="55" text-anchor="middle" class="t">5 · Served</text>
+      <text x="656" y="76" text-anchor="middle" class="ts">Ghost fills</text>
+      <text x="656" y="92" text-anchor="middle" class="ts">the blanks</text>
+      <text x="656" y="112" text-anchor="middle" class="tm">per visitor</text>
 
-      <path d="M132 100 L150 100" class="ln" marker-end="url(#ar2)"/>
-      <path d="M270 100 L288 100" class="ln" marker-end="url(#ar2)"/>
-      <path d="M408 100 L426 100" class="ln" marker-end="url(#ar2)"/>
-      <path d="M546 100 L564 100" class="ln" marker-end="url(#ar2)"/>
+      <path d="M142 77 L160 77" class="ln" marker-end="url(#b)"/>
+      <path d="M290 77 L308 77" class="ln" marker-end="url(#b)"/>
+      <path d="M438 77 L456 77" class="ln" marker-end="url(#b)"/>
+      <path d="M586 77 L604 77" class="ln" marker-end="url(#b)"/>
 
-      <text x="349" y="30" text-anchor="middle" class="t">About 13 seconds, start to finish</text>
-      <text x="349" y="212" text-anchor="middle" class="t-sm">Measured on a deliberately heavy page — 70 sections, 197 files, 10 MB.</text>
-      <text x="349" y="230" text-anchor="middle" class="t-sm">A normal site is far smaller.</text>
-      <defs>
-        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/>
-        </marker>
-      </defs>
+      <rect x="310" y="164" width="276" height="76" rx="11" class="s-box"/>
+      <text x="448" y="190" text-anchor="middle" class="t">Steps 3 and 4 share their code</text>
+      <text x="448" y="211" text-anchor="middle" class="ts">which is what makes the preview honest —</text>
+      <text x="448" y="227" text-anchor="middle" class="ts">they cannot drift apart without a test failing</text>
+      <path d="M374 124 L374 162" class="ln-d"/><path d="M522 124 L522 162" class="ln-d"/>
+
+      <text x="160" y="196" class="ts">The customer's own words and images</text>
+      <text x="160" y="214" class="ts">travel with it and are never</text>
+      <text x="160" y="230" class="ts">treated as instructions — see §7.</text>
+      <defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
     </svg>
-    <p class="cap">The goal was "first site live within ten minutes". The machine part takes thirteen
-    seconds — the remaining time is entirely the human deciding what they want.</p>
+    <p class="cap">One description, authored once, used five different ways. Nobody re-writes the
+    section for the preview and again for the output.</p>
+  </div>
+
+  <h3>What a "setting" actually is</h3>
+  <p>When a customer changes a section — wider, darker, centred — Inflozo doesn't generate new code.
+  It writes a single label onto that section, and the section's stylesheet already knows what that
+  label means. One mechanism, used by all 484 designs.</p>
+  <p>This sounds like an implementation detail and is actually the reason the library can be that
+  large. If every design invented its own way of being adjusted, 484 designs would be 484 separate
+  problems. Because they share one mechanism, a setting behaves identically everywhere, and the
+  preview and the shipped page can be compared automatically.</p>
+</section>
+
+<!-- 5 ═══════════════════════════════════════════════════════════ -->
+<section id="s5">
+  <div class="h2row"><span class="num">5</span><h2>Pressing Deploy</h2></div>
+  <p class="lead-in">Five steps. Every timing below was measured against a real Ghost site, on a
+  deliberately oversized page.</p>
+
+  <div class="fig">
+    <svg viewBox="0 0 720 268" role="img" aria-label="The deploy pipeline with measured timings">
+      <rect x="10" y="62" width="124" height="84" rx="11" class="s-a"/>
+      <text x="72" y="88" text-anchor="middle" class="t">Build</text>
+      <text x="72" y="108" text-anchor="middle" class="ts">design becomes</text>
+      <text x="72" y="123" text-anchor="middle" class="ts">theme files</text>
+      <text x="72" y="167" text-anchor="middle" class="tm">3.9 s</text>
+
+      <rect x="152" y="62" width="124" height="84" rx="11" class="s-m"/>
+      <text x="214" y="88" text-anchor="middle" class="t">Check</text>
+      <text x="214" y="108" text-anchor="middle" class="ts">Ghost's validator</text>
+      <text x="214" y="123" text-anchor="middle" class="ts">plus our own</text>
+      <text x="214" y="167" text-anchor="middle" class="tm">0.9 s</text>
+
+      <rect x="294" y="62" width="124" height="84" rx="11" class="s-box"/>
+      <text x="356" y="88" text-anchor="middle" class="t">Package</text>
+      <text x="356" y="108" text-anchor="middle" class="ts">zip it, and keep</text>
+      <text x="356" y="123" text-anchor="middle" class="ts">a copy for rollback</text>
+      <text x="356" y="167" text-anchor="middle" class="tm">0.2 s</text>
+
+      <rect x="436" y="62" width="124" height="84" rx="11" class="s-box"/>
+      <text x="498" y="88" text-anchor="middle" class="t">Send</text>
+      <text x="498" y="108" text-anchor="middle" class="ts">upload to their</text>
+      <text x="498" y="123" text-anchor="middle" class="ts">Ghost site</text>
+      <text x="498" y="167" text-anchor="middle" class="tm">7.3 s</text>
+
+      <rect x="578" y="62" width="128" height="84" rx="11" class="s-g"/>
+      <text x="642" y="88" text-anchor="middle" class="t">Switch on</text>
+      <text x="642" y="108" text-anchor="middle" class="ts">make it the</text>
+      <text x="642" y="123" text-anchor="middle" class="ts">live theme</text>
+      <text x="642" y="167" text-anchor="middle" class="tm">1.5 s</text>
+
+      <path d="M134 104 L150 104" class="ln" marker-end="url(#c)"/>
+      <path d="M276 104 L292 104" class="ln" marker-end="url(#c)"/>
+      <path d="M418 104 L434 104" class="ln" marker-end="url(#c)"/>
+      <path d="M560 104 L576 104" class="ln" marker-end="url(#c)"/>
+
+      <text x="360" y="32" text-anchor="middle" class="tb">About 13 seconds, start to finish</text>
+      <rect x="150" y="196" width="420" height="54" rx="10" class="s-m"/>
+      <text x="360" y="219" text-anchor="middle" class="t">Only one site can be deployed to at a time</text>
+      <text x="360" y="238" text-anchor="middle" class="ts">Ghost itself has no such protection — see §9</text>
+      <defs><marker id="c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
+    </svg>
+    <p class="cap">The goal is "first site live within ten minutes". The machine part takes thirteen
+    seconds — the rest is the human deciding what they want.</p>
   </div>
 
   <h3>The check step is the interesting one</h3>
-  <p>Ghost has its own theme validator, and it is strict — it will refuse a theme outright rather than
-  install something broken. Inflozo runs <em>that exact validator</em> before uploading, plus its own
-  additional checks for things Ghost doesn't look at (accessibility, colour contrast, valid HTML,
-  leftover scaffolding).</p>
+  <p>Ghost ships its own theme validator, and it's strict — it will refuse a theme outright rather
+  than install something broken. Inflozo runs <em>that exact validator</em> before uploading, plus its
+  own extra checks for things Ghost doesn't look at: accessibility, colour contrast, valid markup, and
+  leftover scaffolding that should never reach a finished file.</p>
 
-  <div class="callout good">
-    <p><strong>The heavy test theme currently passes both Ghost versions with zero errors and zero
-    warnings.</strong> Not "a few harmless warnings" — zero. That is the standard being held to.</p>
+  <div class="co good">
+    <p><strong>The heavy test theme passes both Ghost versions with zero errors and zero
+    warnings.</strong> Not "a few harmless warnings" — zero. That's the standard being held to, and
+    it's checked on every build.</p>
   </div>
 
-  <h3>When it goes wrong</h3>
-  <p>Deliberately broken deploys were tested against a live site: a corrupted file, a file that isn't a
-  theme, switching on a theme that doesn't exist, and a theme with a fatal error inside. All four were
-  refused cleanly with a specific message, and <strong>in every case the customer's live site was left
-  completely untouched.</strong> Nothing was half-applied.</p>
+  <div class="co warn">
+    <p><strong>A subtlety that cost a round to find.</strong> Ghost 5 and Ghost 6 each bundle a
+    <em>different version</em> of that validator, and their rules genuinely differ. Running the newer
+    one twice with a "check as if version 5" flag looks equivalent and isn't — on the same theme it
+    reported zero problems while real Ghost 5 reported one. Inflozo now runs each Ghost's own
+    validator version, so the answer matches what the customer will actually see.</p>
+  </div>
 </section>
 
-<!-- 5 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">5</span><h2>Whose data is this, and what happens if we lose it</h2></div>
-  <p class="lead-in">This is the question worth being precise about, because it decides how much
-  backup effort is justified.</p>
-
-  <p>Everything Inflozo stores is <strong>the customer's</strong> — not internal company records.
-  But the stakes vary enormously between one kind and another, and it's worth splitting them.</p>
+<!-- 6 ═══════════════════════════════════════════════════════════ -->
+<section id="s6">
+  <div class="h2row"><span class="num">6</span><h2>Where the data lives</h2></div>
+  <p class="lead-in">Worth being precise about, because it decides what needs protecting.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 700 340" role="img" aria-label="What lives where: the customer's Ghost holds the site and subscribers, Inflozo holds design work and the original theme backup">
-      <rect x="16" y="16" width="320" height="300" rx="14" class="s-green"/>
-      <text x="176" y="46" text-anchor="middle" class="t">On THEIR Ghost site</text>
-      <text x="176" y="66" text-anchor="middle" class="t-sm">Inflozo never owns any of this</text>
+    <svg viewBox="0 0 720 336" role="img" aria-label="What lives on the customer's Ghost versus inside Inflozo">
+      <rect x="14" y="14" width="336" height="306" rx="14" class="s-g"/>
+      <text x="182" y="44" text-anchor="middle" class="tb">On THEIR Ghost site</text>
+      <text x="182" y="64" text-anchor="middle" class="ts">Inflozo never owns any of this</text>
+      <rect x="38" y="84" width="288" height="38" rx="9" class="s-box"/>
+      <text x="182" y="108" text-anchor="middle" class="ts">Their posts and pages</text>
+      <rect x="38" y="130" width="288" height="38" rx="9" class="s-box"/>
+      <text x="182" y="154" text-anchor="middle" class="ts">Their subscribers and members</text>
+      <rect x="38" y="176" width="288" height="38" rx="9" class="s-box"/>
+      <text x="182" y="200" text-anchor="middle" class="ts">Their live website</text>
+      <rect x="38" y="230" width="288" height="72" rx="9" class="s-g"/>
+      <text x="182" y="256" text-anchor="middle" class="t">If Inflozo vanished entirely,</text>
+      <text x="182" y="276" text-anchor="middle" class="t">all of this keeps working.</text>
+      <text x="182" y="294" text-anchor="middle" class="tm">this is a deliberate property, not luck</text>
 
-      <rect x="40" y="86" width="272" height="40" rx="9" class="s-box"/>
-      <text x="176" y="103" text-anchor="middle" class="t-sm">Their posts and pages</text>
-      <text x="176" y="118" text-anchor="middle" class="t-mono">safe · not ours to lose</text>
-
-      <rect x="40" y="136" width="272" height="40" rx="9" class="s-box"/>
-      <text x="176" y="153" text-anchor="middle" class="t-sm">Their subscribers and members</text>
-      <text x="176" y="168" text-anchor="middle" class="t-mono">safe · not ours to lose</text>
-
-      <rect x="40" y="186" width="272" height="40" rx="9" class="s-box"/>
-      <text x="176" y="203" text-anchor="middle" class="t-sm">Their live website</text>
-      <text x="176" y="218" text-anchor="middle" class="t-mono">safe · not ours to lose</text>
-
-      <rect x="40" y="248" width="272" height="50" rx="9" class="s-green"/>
-      <text x="176" y="270" text-anchor="middle" class="t-sm">If Inflozo vanished entirely,</text>
-      <text x="176" y="287" text-anchor="middle" class="t-sm">all of this keeps working.</text>
-
-      <rect x="364" y="16" width="320" height="300" rx="14" class="s-amber"/>
-      <text x="524" y="46" text-anchor="middle" class="t">Inside Inflozo</text>
-      <text x="524" y="66" text-anchor="middle" class="t-sm">the customer's, held by us</text>
-
-      <rect x="388" y="86" width="272" height="52" rx="9" class="s-box"/>
-      <text x="524" y="106" text-anchor="middle" class="t-sm">The pages they designed</text>
-      <text x="524" y="123" text-anchor="middle" class="t-mono">days of work · rebuildable, painfully</text>
-
-      <rect x="388" y="148" width="272" height="52" rx="9" class="s-box"/>
-      <text x="524" y="168" text-anchor="middle" class="t-sm">Images they uploaded</text>
-      <text x="524" y="185" text-anchor="middle" class="t-mono">maybe their only copy</text>
-
-      <rect x="388" y="210" width="272" height="88" rx="9" class="s-red"/>
-      <text x="524" y="234" text-anchor="middle" class="t">Their ORIGINAL theme</text>
-      <text x="524" y="253" text-anchor="middle" class="t-sm">how their site looked before</text>
-      <text x="524" y="269" text-anchor="middle" class="t-sm">Inflozo ever touched it</text>
-      <text x="524" y="289" text-anchor="middle" class="t-mono">CANNOT be recreated. Ever.</text>
+      <rect x="370" y="14" width="336" height="306" rx="14" class="s-m"/>
+      <text x="538" y="44" text-anchor="middle" class="tb">Inside Inflozo</text>
+      <text x="538" y="64" text-anchor="middle" class="ts">the customer's, held by us</text>
+      <rect x="394" y="84" width="288" height="52" rx="9" class="s-box"/>
+      <text x="538" y="106" text-anchor="middle" class="ts">The pages they designed</text>
+      <text x="538" y="123" text-anchor="middle" class="tm">days of work · rebuildable, painfully</text>
+      <rect x="394" y="144" width="288" height="52" rx="9" class="s-box"/>
+      <text x="538" y="166" text-anchor="middle" class="ts">Images they uploaded</text>
+      <text x="538" y="183" text-anchor="middle" class="tm">also inside the deployed theme</text>
+      <rect x="394" y="204" width="288" height="98" rx="9" class="s-r"/>
+      <text x="538" y="230" text-anchor="middle" class="tb">Their ORIGINAL theme</text>
+      <text x="538" y="250" text-anchor="middle" class="ts">how their site looked before</text>
+      <text x="538" y="266" text-anchor="middle" class="ts">Inflozo ever touched it</text>
+      <text x="538" y="288" text-anchor="middle" class="tm">CANNOT be recreated. Ever.</text>
     </svg>
     <p class="cap">The left column is why an Inflozo outage is never an emergency. The red box on the
-    right is why backups are not optional.</p>
+    right is why the customer is asked to take their own backup before anything changes.</p>
   </div>
 
-  <h3>So: is it customer data or internal data?</h3>
-  <p><strong>Customer data, almost entirely.</strong> The only genuinely internal records are billing
-  history and the community suggestions board — and the billing records also exist at the payment
-  provider, so they are not the risk.</p>
-
-  <p>The risk is concentrated in three things, in order of severity:</p>
+  <h3>Whose data is it?</h3>
+  <p><strong>The customer's, almost entirely.</strong> The only genuinely internal records are billing
+  history and the public suggestions board — and billing also exists at the payment provider, so it
+  isn't the risk. Everything else belongs to the person who made it.</p>
 
   <table>
-    <thead><tr><th>What</th><th>If it's lost</th><th></th></tr></thead>
+    <thead><tr><th>If this were lost</th><th>What happens</th><th></th></tr></thead>
     <tbody>
-      <tr>
-        <td><strong>Their original theme</strong><br><span style="color:var(--muted);font-size:.9rem">taken automatically before Inflozo first changes their site</span></td>
-        <td>They can never put their site back the way it was. There is no other copy anywhere in
-            the world. This is the "undo button" for having tried Inflozo at all.</td>
+      <tr><td><strong>Their original theme</strong></td>
+        <td>They can never put their site back the way it was. No other copy exists anywhere. This is
+            the undo button for having tried Inflozo at all.</td>
         <td><span class="pill r">unrecoverable</span></td>
       </tr>
-      <tr>
-        <td><strong>The pages they designed</strong></td>
-        <td>Their live site keeps working, but every hour they spent designing is gone and they start
-            again from a blank canvas. A customer would very reasonably leave over this.</td>
+      <tr><td><strong>The pages they designed</strong></td>
+        <td>Their live site keeps working, but every hour of design is gone and they start from a
+            blank canvas. A customer would reasonably leave over this.</td>
         <td><span class="pill a">rebuildable, painfully</span></td>
       </tr>
-      <tr>
-        <td><strong>Their uploaded images</strong></td>
-        <td>Less serious than it first looks. Once a page is deployed, its images are packed
-            <em>inside</em> the theme sitting on the customer's own Ghost — so they exist in two
-            places. Only images uploaded and not yet deployed live solely in Inflozo.</td>
+      <tr><td><strong>Their uploaded images</strong></td>
+        <td>Less serious than it looks. Once deployed, images are packed <em>inside</em> the theme on
+            the customer's own Ghost, so they exist twice. Only not-yet-deployed images live solely
+            in Inflozo.</td>
         <td><span class="pill g">mostly safe</span></td>
       </tr>
     </tbody>
   </table>
 
-  <div class="callout good">
-    <p><strong>Decided: Inflozo is not a backup tool, and does not try to be.</strong> It keeps no
-    copy of the customer's Ghost data. Instead, before the first deploy to a site, the customer is
+  <div class="co good">
+    <p><strong>Decided: Inflozo is not a backup tool and does not try to be.</strong> It keeps no copy
+    of the customer's Ghost data. Instead, before the first deploy to a site, the customer is
     <strong>blocked</strong> until they confirm they hold their own backup — with a checklist showing
-    exactly where each thing lives in Ghost and how to save it.</p>
-    <p>The gate says plainly what Inflozo changes — <strong>the theme, and the routes file</strong> —
-    and then recommends a full backup anyway. Accurate first, because a warning that exaggerates gets
-    clicked through, and a gate everybody clicks through isn't a gate.</p>
+    where each thing lives in Ghost and exactly how to save it.</p>
+    <p>The gate states what Inflozo changes — <strong>the theme, and the routes file</strong> — and
+    then recommends a full backup anyway. Accurate first, because a warning that exaggerates gets
+    clicked through, and a gate everyone clicks through isn't a gate.</p>
   </div>
 
-  <p>Two details from Ghost's own documentation that the checklist has to be honest about, because
-  both are easy to get wrong:</p>
-
+  <p>Two facts from Ghost's own documentation that the checklist must be honest about, because both
+  are easy to get wrong and one is genuinely dangerous:</p>
   <ul>
-    <li><strong>Ghost's content export does not include images.</strong> People export their content,
-    see a file, and assume they're covered. They aren't. This is the single most important line on
-    the checklist.</li>
-    <li><strong>Ghost's own hosting customers cannot download their images at all.</strong> There's no
-    export for it and no server to copy them from. Inflozo can't fix that — so the gate says so
-    rather than implying they're safe.</li>
+    <li><strong>Ghost's content export does not include images.</strong> People export, see a file,
+    and assume they're covered. They aren't. This is the single most important line on the list.</li>
+    <li><strong>Ghost's own hosting customers cannot download their images at all.</strong> No export
+    exists and there's no server to copy from. Inflozo can't fix that, so the gate says so instead of
+    implying they're safe.</li>
   </ul>
 
-  <div class="callout warn">
-    <p><strong>Being straight about what this is:</strong> a consent gate moves responsibility, it
+  <div class="co warn">
+    <p><strong>Being straight about what a consent gate is:</strong> it moves responsibility, it
     doesn't reduce risk. Someone who ticks the box without actually backing up still loses their old
-    theme. That's a deliberate trade — the same one every tool of this kind makes — and it's recorded
-    as a decision rather than left to be discovered later.</p>
+    theme. That's a deliberate trade — the same one every tool of this kind makes — recorded as a
+    decision rather than left to be discovered.</p>
   </div>
-
-  <h3>What was found when this was actually tested</h3>
-  <p>The plan has always said "practise restoring from a backup before launch". That practice run had
-  never been done. It was done, and <strong>the backup did not work</strong> — it produced a database
-  that looked perfectly restored and had quietly lost the link between every piece of work and the
-  person who owned it. Everything was there, belonging to nobody.</p>
-  <p>Both problems are now fixed and written up as a step-by-step procedure. The thing that caught
-  them was running the security tests against the restored copy — nothing about the restore itself
-  looked wrong.</p>
 </section>
 
-<!-- 6 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">6</span><h2>The rules that keep it safe</h2></div>
-  <p class="lead-in">There are 36 written rules the whole system is built from. These are the ones
-  that matter most, in plain terms.</p>
+<!-- 7 ═══════════════════════════════════════════════════════════ -->
+<section id="s7">
+  <div class="h2row"><span class="num">7</span><h2>Who is allowed to do what</h2></div>
+  <p class="lead-in">Enforced by the database itself, not by the application remembering to check.</p>
 
   <div class="fig">
-    <svg viewBox="0 0 700 250" role="img" aria-label="Trust boundary: what the browser may touch versus what only the server may touch">
-      <rect x="20" y="26" width="300" height="200" rx="14" class="s-accent"/>
-      <text x="170" y="54" text-anchor="middle" class="t">What the browser may touch</text>
+    <svg viewBox="0 0 720 268" role="img" aria-label="Trust boundary between browser and server">
+      <rect x="16" y="26" width="316" height="216" rx="14" class="s-a"/>
+      <text x="174" y="55" text-anchor="middle" class="tb">What the browser may touch</text>
+      <rect x="40" y="76" width="268" height="34" rx="8" class="s-box"/>
+      <text x="174" y="98" text-anchor="middle" class="ts">their own designs and settings</text>
+      <rect x="40" y="118" width="268" height="34" rx="8" class="s-box"/>
+      <text x="174" y="140" text-anchor="middle" class="ts">their own uploaded images</text>
+      <rect x="40" y="160" width="268" height="34" rx="8" class="s-box"/>
+      <text x="174" y="182" text-anchor="middle" class="ts">reading their own Ghost posts</text>
+      <text x="174" y="216" text-anchor="middle" class="tm">and nothing belonging to anyone else</text>
 
-      <rect x="44" y="74" width="252" height="34" rx="8" class="s-box"/>
-      <text x="170" y="96" text-anchor="middle" class="t-sm">their own designs and settings</text>
-      <rect x="44" y="116" width="252" height="34" rx="8" class="s-box"/>
-      <text x="170" y="138" text-anchor="middle" class="t-sm">their own uploaded images</text>
-      <rect x="44" y="158" width="252" height="34" rx="8" class="s-box"/>
-      <text x="170" y="180" text-anchor="middle" class="t-sm">reading their Ghost posts</text>
-      <text x="170" y="212" text-anchor="middle" class="t-mono">and nothing belonging to anyone else</text>
+      <rect x="388" y="26" width="316" height="216" rx="14" class="s-r"/>
+      <text x="546" y="55" text-anchor="middle" class="tb">Server only — never the browser</text>
+      <rect x="412" y="76" width="268" height="34" rx="8" class="s-box"/>
+      <text x="546" y="98" text-anchor="middle" class="ts">the keys to their Ghost site</text>
+      <rect x="412" y="118" width="268" height="34" rx="8" class="s-box"/>
+      <text x="546" y="140" text-anchor="middle" class="ts">payment records</text>
+      <rect x="412" y="160" width="268" height="34" rx="8" class="s-box"/>
+      <text x="546" y="182" text-anchor="middle" class="ts">who is on which plan · the audit log</text>
+      <text x="546" y="216" text-anchor="middle" class="tm">in a separate area the web cannot reach at all</text>
 
-      <rect x="380" y="26" width="300" height="200" rx="14" class="s-red"/>
-      <text x="530" y="54" text-anchor="middle" class="t">Server only — never the browser</text>
-
-      <rect x="404" y="74" width="252" height="34" rx="8" class="s-box"/>
-      <text x="530" y="96" text-anchor="middle" class="t-sm">the keys to their Ghost site</text>
-      <rect x="404" y="116" width="252" height="34" rx="8" class="s-box"/>
-      <text x="530" y="138" text-anchor="middle" class="t-sm">payment records</text>
-      <rect x="404" y="158" width="252" height="34" rx="8" class="s-box"/>
-      <text x="530" y="180" text-anchor="middle" class="t-sm">who is on which plan</text>
-      <text x="530" y="212" text-anchor="middle" class="t-mono">held in a separate area the web can't reach</text>
-
-      <path d="M322 126 L378 126" class="ln-d"/>
+      <path d="M334 134 L386 134" class="ln-d"/>
     </svg>
-    <p class="cap">The database enforces this itself. It isn't a rule the code has to remember —
-    the browser is refused at the door even if the app asks wrongly.</p>
+    <p class="cap">The browser is refused at the door even if the application asks wrongly. That's the
+    difference between a rule and a control.</p>
   </div>
 
   <div class="grid2">
     <div class="mini"><h4>Nobody sees anyone else's work</h4>
-      <p>Enforced by the database, not by the app. Tested by having one account try to read, edit and
-      delete another's — and fail every time.</p></div>
-    <div class="mini"><h4>The browser never holds the Ghost keys</h4>
-      <p>They're encrypted, and only one small piece of server code can ever unlock them. Verified: a
-      leaked key can't reach them.</p></div>
-    <div class="mini"><h4>Nothing a user types can become code</h4>
+      <p>Tested by having one account try to read, edit and delete another's — refused every time,
+      including the subtler routes like counting rows to learn they exist.</p></div>
+    <div class="mini"><h4>The browser never holds Ghost keys</h4>
+      <p>Encrypted, and only one small piece of server code can unlock them. Verified: even a leaked
+      master key cannot reach the decrypted values.</p></div>
+    <div class="mini"><h4>Typed text can never become code</h4>
       <p>If someone types something that looks like an instruction into a heading, it ships as visible
-      text, never as something that runs.</p></div>
-    <div class="mini"><h4>Facts the user shouldn't set, they can't set</h4>
-      <p>Their storage usage, their plan, their deploy history — the server asserts those. The browser
-      is refused, on creating <em>and</em> editing.</p></div>
+      text. Proven against every variation tried.</p></div>
+    <div class="mini"><h4>Facts users shouldn't set, they can't</h4>
+      <p>Storage used, plan, deploy history, moderation status. Refused on creating <em>and</em>
+      editing — an early version only blocked editing, which handed it all back.</p></div>
   </div>
 
-  <div class="callout warn">
-    <p><strong>The honest part.</strong> Connecting a Ghost site means handing Inflozo a key that can
-    read that site's subscriber email addresses and publish posts on it. Ghost offers no narrower key
-    — that's a Ghost limitation, not a choice. Inflozo's own code only ever uses it for four specific
-    things, and every use will be logged. But the key itself is powerful, and the connect screen
-    should say so plainly rather than let people find out later.</p>
+  <h3>The rule behind the rules</h3>
+  <p>Four separate security problems found in testing turned out to be one idea missing. In each,
+  a value from outside was carefully <em>escaped</em> — special characters made harmless — and then
+  handed to something that <em>interprets</em> it.</p>
+  <p>Escaping is the wrong tool there. A web link reading <code>javascript:…</code> contains no
+  special character to escape, so it passes through untouched and then runs when someone clicks. The
+  fix isn't four patches; it's a rule: <strong>parse the value and rebuild it from validated parts —
+  never paste it into something that will interpret it.</strong> That rule is now written down, built,
+  and tested on both renderers.</p>
+</section>
+
+<!-- 8 ═══════════════════════════════════════════════════════════ -->
+<section id="s8">
+  <div class="h2row"><span class="num">8</span><h2>Editing safely</h2></div>
+  <p class="lead-in">What happens to work in progress, and what happens when two devices collide.</p>
+
+  <div class="fig">
+    <svg viewBox="0 0 720 250" role="img" aria-label="Local-first editing with periodic sync and a takeover">
+      <rect x="20" y="26" width="200" height="94" rx="12" class="s-a"/>
+      <text x="120" y="53" text-anchor="middle" class="t">Your browser</text>
+      <text x="120" y="74" text-anchor="middle" class="ts">every change is saved</text>
+      <text x="120" y="90" text-anchor="middle" class="ts">locally as you make it</text>
+      <text x="120" y="110" text-anchor="middle" class="tm">works offline</text>
+
+      <rect x="292" y="26" width="200" height="94" rx="12" class="s-box"/>
+      <text x="392" y="53" text-anchor="middle" class="t">Synced to the cloud</text>
+      <text x="392" y="74" text-anchor="middle" class="ts">every ~3 minutes, on close,</text>
+      <text x="392" y="90" text-anchor="middle" class="ts">and always before a deploy</text>
+      <text x="392" y="110" text-anchor="middle" class="tm">never crosses a deploy unsynced</text>
+
+      <rect x="564" y="26" width="136" height="94" rx="12" class="s-g"/>
+      <text x="632" y="53" text-anchor="middle" class="t">Undo</text>
+      <text x="632" y="74" text-anchor="middle" class="ts">survives a reload,</text>
+      <text x="632" y="90" text-anchor="middle" class="ts">as people expect</text>
+
+      <path d="M220 73 L290 73" class="ln-a" marker-end="url(#d)"/>
+      <path d="M492 73 L562 73" class="ln-g" marker-end="url(#d)"/>
+
+      <rect x="20" y="152" width="680" height="80" rx="12" class="s-m"/>
+      <text x="360" y="178" text-anchor="middle" class="tb">If someone else opens the same project</text>
+      <text x="360" y="200" text-anchor="middle" class="ts">They take over — that is allowed. The first device is then told it lost the session,</text>
+      <text x="360" y="218" text-anchor="middle" class="ts">and exactly how many unsaved changes went with it. Honest, not reassuring.</text>
+      <defs><marker id="d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/></marker></defs>
+    </svg>
+    <p class="cap">Local-first: your work lives in your browser as you type and is copied up
+    periodically, so a dropped connection costs nothing.</p>
+  </div>
+
+  <div class="co">
+    <p><strong>The takeover rule is a good example of a product decision and a security fix being the
+    same thing.</strong> For the displaced device to be <em>told</em> it was taken over, it has to be
+    able to <em>detect</em> it — and detection works off a counter that must increase on every
+    takeover. Testing found the counter could be skipped, meaning both devices would believe they held
+    the session and the warning could never appear. The database now refuses any takeover that doesn't
+    advance it. One rule, both problems.</p>
   </div>
 </section>
 
-<!-- 7 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">7</span><h2>What we know because we measured it</h2></div>
-  <p class="lead-in">Four rounds of deliberately trying to break this, all against real systems —
-  two real Ghost sites, a real database, real payments.</p>
+<!-- 9 ═══════════════════════════════════════════════════════════ -->
+<section id="s9">
+  <div class="h2row"><span class="num">9</span><h2>When things go wrong</h2></div>
+  <p class="lead-in">Deliberately broken deploys, run against a real Ghost site. Four behaved. One
+  didn't.</p>
+
+  <table>
+    <thead><tr><th>What was done on purpose</th><th>What happened</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Uploaded a corrupted file</td><td>Refused with a clear message. Site untouched.</td><td><span class="pill g">clean</span></td></tr>
+      <tr><td>Uploaded a valid file that isn't a theme</td><td>Refused. Site untouched.</td><td><span class="pill g">clean</span></td></tr>
+      <tr><td>Switched on a theme that doesn't exist</td><td>Refused. Site untouched.</td><td><span class="pill g">clean</span></td></tr>
+      <tr><td>Uploaded a theme with a fatal error inside</td><td>Refused outright by Ghost. Site untouched.</td><td><span class="pill g">clean</span></td></tr>
+      <tr><td><strong>Two deploys of the same theme at once</strong></td>
+          <td>One succeeded; the other crashed and leaked a piece of the server's folder structure in
+              the error message.</td><td><span class="pill a">see below</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="co good">
+    <p><strong>Nothing broke the site.</strong> After all five, both test sites were serving pages
+    normally. No failure ever left a half-applied theme, which is the promise that matters most —
+    and it had never actually been checked before.</p>
+  </div>
+
+  <div class="co warn">
+    <p><strong>That fifth one is reassurance more than alarm.</strong> Ghost has no protection against
+    two simultaneous deploys — but Inflozo already puts a lock around the operation for exactly this
+    reason. That was previously an argument on paper; now it's a demonstrated failure that the lock
+    prevents. The remaining work is making sure that crash message never reaches a customer, since it
+    contains part of their server's directory layout.</p>
+  </div>
+
+  <h3>Rolling back</h3>
+  <p>Every deploy keeps a copy of exactly what was installed, so going back is replaying a stored file
+  rather than rebuilding. That distinction matters: rebuilding an old design against today's section
+  library would produce a <em>different</em> theme, because the library keeps improving.</p>
+  <p><strong>The last 10 versions are kept on the paid plan and 3 on free</strong>, with the option to
+  pin ones worth keeping. Because those files can't be regenerated, that limit is the real boundary on
+  how far back someone can go — so the interface says so plainly rather than showing a history list
+  with buttons that don't work.</p>
+</section>
+
+<!-- 10 ══════════════════════════════════════════════════════════ -->
+<section id="s10">
+  <div class="h2row"><span class="num">10</span><h2>The rules, in brief</h2></div>
+  <p class="lead-in">There are 36 written rules the whole system is built from. These are the ones a
+  non-engineer would actually want to know, in plain terms.</p>
+
+  <div class="rule"><h4>The preview and the shipped page share their code</h4>
+    <p class="tag">AD-1 · AD-14</p>
+    <p>Not "we keep them in sync" — literally the same functions. And the compiler produces
+    byte-for-byte identical output from identical input, on any machine, every time.</p></div>
+
+  <div class="rule"><h4>The section library is data, not programs</h4>
+    <p class="tag">AD-2</p>
+    <p>A design is a folder of plain files. Nothing imports it; both renderers read it. Deleting the
+    folder deletes the design completely.</p></div>
+
+  <div class="rule"><h4>Every table is scoped to its owner, the same way</h4>
+    <p class="tag">AD-6</p>
+    <p>One pattern, applied everywhere, so a reviewer checks one shape rather than thirty. Testing
+    later added a second half: owning a piece of work doesn't mean you own the project it hangs
+    from — that had to be checked separately.</p></div>
+
+  <div class="rule"><h4>The customer never sets a fact the server should</h4>
+    <p class="tag">AD-8 · AD-31</p>
+    <p>Storage used, plan, deploy history. Enforced by the database on creating and editing both,
+    because an earlier version locked only editing and handed everything back.</p></div>
+
+  <div class="rule"><h4>Anything about Ghost must be proven, not assumed</h4>
+    <p class="tag">AD-23</p>
+    <p>Four confident claims about Ghost made it into the plan and were later shown false — each one
+    had damaged a working feature. Now: cite it or run it, or it doesn't go in.</p></div>
+
+  <div class="rule"><h4>Untrusted values are parsed, never pasted</h4>
+    <p class="tag">AD-36</p>
+    <p>The rule behind four separate security findings. Escaping protects against odd characters; it
+    does nothing about a value whose <em>meaning</em> is dangerous.</p></div>
+
+  <div class="rule"><h4>A finding isn't finished until it reaches a rule</h4>
+    <p class="tag">AD-36b</p>
+    <p>Evidence is where something is proven, never where it lives. Three audits found the same
+    failure — big findings get written up at length and never turned into a rule — so a script now
+    checks it and fails the build.</p></div>
+</section>
+
+<!-- 11 ══════════════════════════════════════════════════════════ -->
+<section id="s11">
+  <div class="h2row"><span class="num">11</span><h2>What we measured</h2></div>
+  <p class="lead-in">Four rounds of deliberately trying to break this, plus a reliability round — all
+  against real systems: two real Ghost sites, a real database, real payments.</p>
 
   <div class="grid2">
     <div class="mini"><div class="big">13<span class="unit"> sec</span></div>
-      <p>A full deploy, start to finish, on a deliberately oversized page. The target was ten minutes.</p></div>
+      <p>A full deploy on an oversized page. The target was ten minutes.</p></div>
     <div class="mini"><div class="big">0<span class="unit"> errors</span></div>
-      <p>Ghost's own theme validator, on both supported Ghost versions. Zero warnings too.</p></div>
+      <p>Ghost's own validator, both versions. Zero warnings too.</p></div>
     <div class="mini"><div class="big">70<span class="unit"> checks</span></div>
-      <p>Security tests that run against the database. All passing — and proven to actually fail when
-      something breaks.</p></div>
+      <p>Security tests on the database. All passing — and proven to fail when something breaks.</p></div>
     <div class="mini"><div class="big">1.4<span class="unit"> KB</span></div>
-      <p>The stylesheet a visitor downloads, against a 40 KB budget. Comfortable, though this figure
-      needs rechecking on real designs.</p></div>
+      <p>Stylesheet a visitor downloads, against a 40 KB budget. Needs rechecking on real designs.</p></div>
+    <div class="mini"><div class="big">14×</div>
+      <p>Speed difference a single missing database index makes at realistic scale. Now added
+      everywhere and checked automatically.</p></div>
+    <div class="mini"><div class="big">0.7<span class="unit"> sec</span></div>
+      <p>Delay on the first action after an idle period. Immaterial to every budget; worth knowing
+      for how the first click feels.</p></div>
   </div>
 
-  <h3>The most valuable thing found</h3>
-  <div class="callout warn">
-    <p>The security test suite — the thing that had been reporting "all clear" for three rounds —
-    <strong>could not actually fail.</strong> It printed the word FAIL and then reported success
-    anyway, so anything watching it saw a green tick. Six real problems had been hiding behind it.</p>
-    <p>It's now a genuine gate, and that was verified the only honest way: by deliberately breaking
-    nine things one at a time and confirming it caught all nine.</p>
-    <p><strong>A later audit found the same disease one level up.</strong> Two of the new checks were
-    written to guard a whole <em>category</em> of mistake — and then listed the specific items they
-    guarded, so anything added afterwards went unchecked. Within a day, two had. And one check was
-    asking a nearly-right question that had a hole in it, quietly, since the very first round. Both
-    now work off a live list the database generates, so nothing can be forgotten into them.</p>
+  <h3>The two most valuable things found</h3>
+
+  <div class="co bad">
+    <p><strong>The security test suite couldn't fail.</strong> The thing reporting "all clear" for
+    three rounds printed the word FAIL and then reported success anyway, so anything watching saw a
+    green tick. Six real problems were hiding behind it.</p>
+    <p>Now a genuine gate — verified the only honest way, by deliberately breaking nine things one at
+    a time and confirming it caught all nine.</p>
   </div>
 
-  <p>That finding is also the reason for a habit that now runs through everything here: <strong>a test
-  that has never been seen to fail is not yet a test.</strong> The same logic applied to the backup —
-  which is exactly why the restore practice found two defects the moment it was finally run.</p>
+  <div class="co bad">
+    <p><strong>The backup didn't work.</strong> The plan had always said "practise restoring before
+    launch". Nobody had. When it was finally done, the restore produced a database that looked
+    perfect and had quietly lost the link between every piece of work and the person who owned it —
+    everything present, belonging to nobody.</p>
+    <p>Both defects are fixed and written up as a procedure. What caught them was running the security
+    tests <em>against the restored copy</em> — nothing about the restore itself looked wrong.</p>
+  </div>
+
+  <p>Those two share a lesson that now runs through everything here: <strong>a test that has never
+  been seen to fail is not yet a test</strong>, and a backup nobody has restored from is a hypothesis.
+  A later audit found the same disease one level up — checks written to guard a whole category of
+  mistake, which then listed the specific items they guarded, so anything added afterwards went
+  unchecked. Within a day, two things had. Those now work off a live list the database generates.</p>
 </section>
 
-<!-- 8 ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="h2row"><span class="num">8</span><h2>What isn't built yet</h2></div>
-  <p class="lead-in">Stated plainly, because a document that only lists strengths isn't useful.</p>
+<!-- 12 ══════════════════════════════════════════════════════════ -->
+<section id="s12">
+  <div class="h2row"><span class="num">12</span><h2>What isn't built</h2></div>
+  <p class="lead-in">Stated plainly, because a document that only lists strengths isn't useful to
+  anyone deciding anything.</p>
 
   <table>
     <thead><tr><th>Area</th><th>Where it stands</th></tr></thead>
     <tbody>
       <tr><td><strong>The 484 designs</strong></td>
-        <td><span class="pill b">in progress</span> Being designed now. This is the longest piece of
-        work in the project and everything else waits on it.</td></tr>
+        <td><span class="pill b">in progress</span> Being designed now. The longest piece of work in
+        the project, and everything downstream waits on it.</td></tr>
       <tr><td><strong>The editor itself</strong></td>
-        <td><span class="pill b">not started</span> The design and the rules are settled; the
+        <td><span class="pill b">not started</span> The rules and the design are settled; the
         interface hasn't been built.</td></tr>
+      <tr><td><strong>The backup checklist</strong></td>
+        <td><span class="pill a">specified</span> Decided and written down. The Ghost menu paths in it
+        come from Ghost's documentation and still need checking against both supported versions.</td></tr>
       <tr><td><strong>Ghost's hosted plans</strong></td>
         <td><span class="pill a">blocked by choice</span> One Ghost hosting tier forbids custom
-        themes. Handling that needs an account on it to test against — deferred, and it blocks
+        themes. Handling it needs an account on that tier to test against — deferred, and it blocks
         public launch.</td></tr>
-      <tr><td><strong>File backups</strong></td>
-        <td><span class="pill g">decided</span> Inflozo keeps no copy of customer data. The customer
-        is gated at first deploy instead — see section 5. The checklist itself still needs building,
-        and its Ghost menu paths need checking against both supported Ghost versions.</td></tr>
       <tr><td><strong>Database rewind</strong></td>
-        <td><span class="pill a">half proven</span> The manual backup route is now proven end to end
-        and written up as a procedure — the first practice run found two defects that would have made
-        a real recovery fail. Ghost's paid "rewind to a moment in time" feature is confirmed running
-        but has never been used in anger.</td></tr>
+        <td><span class="pill a">half proven</span> The manual backup route is proven end to end. The
+        paid "rewind to a moment" feature is confirmed running but has never been used in anger, and
+        is deliberately not being bought yet.</td></tr>
       <tr><td><strong>Rollback history</strong></td>
-        <td><span class="pill g">designed</span> Last 10 versions kept on the paid plan, 3 on free,
-        with the option to pin ones worth keeping. Built and tested; the interface is not.</td></tr>
+        <td><span class="pill g">built</span> Last 10 versions on paid, 3 on free, with pinning.
+        Built and tested; the interface isn't.</td></tr>
     </tbody>
   </table>
 </section>
 
 <hr class="sep">
 <footer>
-  <p>Every figure here comes from a measurement against real infrastructure, recorded with the command
-  that produced it. Nothing is estimated. Where something is unproven, this document says so.</p>
+  <p>Every figure here comes from a measurement against real infrastructure, recorded alongside the
+  command that produced it. Nothing is estimated. Where something is unproven, this document says so
+  rather than rounding up.</p>
   <p>Companion documents: the full architecture (36 rules), the measurement log, the database design
-  and its test suite, and the restore procedure.</p>
+  and its test suite, the restore procedure, and the backup gate specification. The document index
+  lists all of them with a brief on each.</p>
 </footer>
 
 </div>
