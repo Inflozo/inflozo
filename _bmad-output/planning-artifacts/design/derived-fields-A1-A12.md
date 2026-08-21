@@ -27,6 +27,16 @@ tuples into the closed vocabulary below (same meaning, this file's words), then 
 `tools/tuple-check.py` — uniqueness must be re-proven for a re-authored category, never assumed to
 carry over.
 
+> **Supersedes are HELD (2026-08-21) pending an owner decision on the tuple schema.** A1's authored
+> tuples showed five designs collapsing to identical closed slots, and the same property holds
+> library-wide in this file: 98 of the 186 designs share all four closed slots with a same-category
+> sibling, so their uniqueness rests on the open emphasis slot — free text the gate cannot judge.
+> The decision (with the owner via the prompts session): whether to add a closed `containment` slot
+> — which makes the recurring band/card/panel family mechanical, including the "same DOM, different
+> ground" borderline duplicates — knowing it does not close the gap for pairs that differ by
+> density, scale or motion. Normalising A1 into a vocabulary about to widen would be work done
+> twice. When the decision lands, delete this note and proceed.
+
 These fields merge into `sections-inventory.md` with the rest of each design's specification when
 the specs land there (build-sequence step 3→4). Until then this file is their home.
 
