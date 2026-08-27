@@ -35,7 +35,8 @@ STATUS = {'live': 'Current and authoritative', 'record': 'Dated record — do no
 DOCS = [
  # ── the spine and its runnable companions ────────────────────────────────────
  ('architecture/.../ARCHITECTURE-SPINE.md', 'live', 'The architecture',
-  'The 36 invariants (AD-1..AD-36) every epic is built from. Each carries what it Binds, what it '
+  'Every invariant (AD-1 upward — the file is the count) that every epic is built from. Each carries '
+  'what it Binds, what it '
   'Prevents, and its Rule. This is the highest-authority build document — if code and spine '
   'disagree, the spine is wrong or the code is, never "it depends".'),
  ('architecture/.../SCHEMA.sql', 'live', 'The database, complete',
@@ -125,8 +126,9 @@ DOCS = [
  # ── process ──────────────────────────────────────────────────────────────────
  ('build-sequence.md', 'live', 'The build sequence',
   'The six steps from finished PRD to first story, what each needs from the owner, and a runnable '
-  'prompt for each. Steps 1 and 2 are complete; their prompts are marked historical and one '
-  'contains an instruction later proven FALSE, flagged in place rather than deleted.'),
+  'prompt for each. Steps 1–3 are complete; step 4 is current and is two prompts — the review, then '
+  'the Ghost Build Room. One step-2 prompt contains an instruction later proven FALSE, flagged in '
+  'place rather than deleted.'),
  ('design/claude-design-prompt.md', 'record', 'Design prompt 1 — run',
   'Produced the 27 interface mockups.'),
  ('design/claude-design-prompt-2.md', 'live', 'Design prompt 2 — outstanding',
@@ -136,12 +138,12 @@ DOCS = [
   'Run once per category, 34 times, producing that category\'s designs AND their full '
   'specifications in one pass. The longest pole in the project; nothing downstream can start '
   'without it.'),
- ('design/derived-fields-A1-A12.md', 'live', 'Derived fields — A1 through A12',
-  'The four fields the first 12 exported categories were missing — descriptor, archetype, '
-  'structural tuple, no-JS degradation — derived per design from the export\'s own text, never '
-  'invented: every underivable gap is marked NEEDS DESIGN ANSWER and rolled up by root cause. '
-  'Tuple uniqueness is machine-checked by tools/tuple-check.py. Merges into sections-inventory.md '
-  'when the specs land there.'),
+ ('design/derived-fields-A1-A12.md', 'retired', 'Derived fields — A1 through A12',
+  'SUPERSEDED WHOLESALE at the 2026-08-27 inventory merge (ruling R-16). It derived four missing '
+  'fields for the first 12 exported categories by reading the export\'s prose; all 33 live '
+  'categories now carry those fields natively, so its 186 hand-derived tuples are both partial and '
+  'outranked. tools/tuple-check.py reads the export through tools/export-roster.py instead. Kept '
+  'for provenance — do not build from it.'),
 
  # ── round records ────────────────────────────────────────────────────────────
  ('architecture/.../STRESS-TEST-PROMPT.md', 'record', 'Round 1 brief', 'The first stress test.'),
@@ -165,6 +167,16 @@ DOCS = [
  ('prds/.../reconcile-mockups.md', 'record', 'Mockups vs PRD',
   'Found ~31 disagreements; the precedent for the design-reconciliation step.'),
  ('prds/.../reconcile-design-prompt.md', 'record', 'Design reconciliation brief', 'How that pass was run.'),
+ ('prds/.../reconcile-designs.md', 'record', 'Designs vs PRD, architecture and Ghost',
+  'Step 4a (2026-08-27): all 34 category specs, P0 and the S/M screens reconciled — 1,086 findings, '
+  '41 probe families, 1,078 owner-flag rows (the Ghost Build Room agenda), the PRD amendments by FR. '
+  'Its findings array is reconcile-designs.findings.json beside it.'),
+ ('prds/.../reconcile-designs-decisions.md', 'live', 'Ghost Build Room rulings',
+  'Step 4b (2026-08-27): the owner\'s rulings on everything 4a could not settle by reading. Every '
+  'ruling names the documents that must move, so the merge works from this file. Four approved '
+  'decisions are superseded here (D3 native search, D17 accent seeding, D26 gap names, D27 in half) '
+  'and four probe families were removed from the 41 — two closed by execution against T1/T3 during '
+  'the session, two deleted by the search ruling. Its §E is the remaining probe list.'),
  ('prds/.../encode-propagation-map.md', 'record', 'Encode propagation map',
   'Where each requirement change had to land. The origin of "propagate, never localise".'),
  ('prds/.../encode-report-batch1.md', 'record', 'Encode report', 'Batch record.'),
@@ -198,6 +210,7 @@ DOCS = [
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
+ ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
  ('tools/probe/run-f8-storage.py', 'tool', 'Storage sanitizer probe',
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',
@@ -214,6 +227,11 @@ DOCS = [
   '(specification only, no frames touched, designs named individually). BUILD prompts are fully '
   'self-contained — the master brief plus that category. Generated, so the brief inside them cannot '
   'drift from the prompt file.'),
+ ('planning-artifacts/CONTROL-PROMPTS.html', 'live', 'Controls-reconciliation prompts',
+  'The controls audit of the full 34-category export against the PRD and Ghost\'s data surface: one '
+  'primitives session (P0) plus one patch prompt per category, the 39 recorded decisions (all ruled '
+  'by the owner 2026-08-24), and the architect carry-forwards. Hand-authored source of record — no generator; the '
+  'category BUILD prompts remain in CATEGORY-PROMPTS.html.'),
  ('tools/category-prompts.py', 'tool', 'Category prompt generator',
   'Extracts the master brief and the 34-row category table from the prompt file, reads which '
   'categories exist in the design export, and emits one prompt per category. Asserts it parsed every '
@@ -234,20 +252,33 @@ DOCS = [
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
+ ('tools/export-roster.py', 'tool', 'The library roster, from the export',
+  'Reads the design export and emits every live category and design as JSON — number, name, '
+  'structural tuple, declared modules, one-line descriptor. Refuses to emit when a spec table and '
+  'its drawn frame disagree about a name, so a hand-edit to one that misses the other cannot pass '
+  'silently. The step-4b deletions (R-24) are applied here, once, with their reason, rather than by '
+  'deleting export files. sections-inventory.md and tuple-check.py both read this.'),
+ ('tools/inventory-gen.py', 'tool', 'Inventory roster generator',
+  'Writes Appendix A\'s totals and the numbered roster of every category in sections-inventory.md '
+  'from the export (R-16 — the drawings are the roster). It owns exactly two things per category: '
+  'the count in the heading and the lines between its roster markers; the normative prose around '
+  'them stays hand-authored. --check is run by doc-audit and fails on drift.'),
  ('tools/tuple-check.py', 'tool', 'FR-G5 tuple gate',
-  'Verifies the structural tuples in derived-fields-A1-A12.md: six slots, five closed sets (the '
-  'authority for the vocabulary), unique within each category, contiguous numbering. '
-  'Mutation-tested: a forced collision turns it red. Run by doc-audit --check; category-prompts.py '
-  'reads its sets, so a set change here requires a prompt regeneration.'),
+  'Verifies every live design\'s structural tuple, read from the export through '
+  'tools/export-roster.py: six slots, five closed sets (the authority for the vocabulary), unique '
+  'within each category, contiguous numbering. Mutation-tested — a forced collision and an '
+  'out-of-vocabulary slot each turn it red. Run by doc-audit --check; category-prompts.py reads its '
+  'sets, so a set change here requires a prompt regeneration.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift.'),
 ]
 
 GROUPS = [
- ('design/claude-design-export/', 'live', 'Design library export — 12 of 34 categories',
-  'Claude Design\'s export: 12 per-category spec files and 225 design frames, A1 Headers through '
-  'A12 About and Team. The specs predate the prompt correction and carry six of the ten required '
-  'fields; the other four are derived in design/derived-fields-A1-A12.md.'),
+ ('design/claude-design-export/', 'live', 'Design library export — all 34 categories',
+  'Claude Design\'s export: the zip (authoritative) plus the owner\'s extraction in Inflozo/ — 34 '
+  'per-category spec files, the design frames, the S1-S13 app screens and M1-M9 pages, and the '
+  'owner\'s A1-A3 controls-audit notes. Categories 13+ carry all ten spec fields natively; the '
+  'controls-reconciliation pass over all 34 is CONTROL-PROMPTS.html.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '
   'Design artifacts are non-normative — where one disagrees with the PRD, the PRD wins.'),
@@ -346,8 +377,15 @@ def check():
     # 3c. the structural tuples must stay unique and in vocabulary (FR-G5)
     if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'tuple-check.py')],
                capture_output=True).returncode != 0:
-        fails.append('TUPLE DRIFT: derived-fields-A1-A12.md fails tools/tuple-check.py — '
+        fails.append('TUPLE DRIFT: the merged library fails tools/tuple-check.py — '
                      'a tuple collided or left the closed vocabulary')
+
+    # 3d. the inventory's rosters and totals must still match the export (R-16)
+    r = _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'inventory-gen.py'), '--check'],
+                capture_output=True, text=True)
+    if r.returncode != 0:
+        fails.append('INVENTORY DRIFT: sections-inventory.md no longer matches the design export — '
+                     + (r.stdout.strip().splitlines() or ['see tools/inventory-gen.py --check'])[-1])
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()

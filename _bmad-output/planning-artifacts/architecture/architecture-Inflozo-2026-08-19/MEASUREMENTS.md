@@ -2171,3 +2171,186 @@ pass is not a result.* All three defects above were caught by the control failin
 payloads — a 403 for everything, a 400 for everything, a silent null for everything. Without a
 control in every probe, each would have been recorded as "Ghost rejects it — held", and the last one
 would have been a **false negative on a real security question**.
+
+---
+
+## 29. Ghost Build Room (step 4b) — four claims settled by execution · 2026-08-27
+
+Four probe families from `reconcile-designs.md` §(a) were settled inside the step-4b session rather
+than deferred to a spike, because the owner's rulings depended on them. Hosts: **T1**
+`ghost6.inflozo.com` (6.58.0) and **T3** `ghost5.inflozo.com` (5.130.6), credentials
+`tools/probe/.env`. Rulings and propagation targets: `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`.
+
+### 29a. Probe family 2 — the members signup endpoint is JSON-only and token-gated. **Refuted the no-JS claim.**
+
+The owner's hypothesis, from `docs.ghost.org/themes/members`, was that a `data-members-form` submits
+natively and CSS renders the result — the docs describe `loading` / `success` / `error` classes on the
+`<form>` and never mention JavaScript. Tested rather than argued.
+
+    # A  native-form shape, no token
+    curl -X POST "$H/members/api/send-magic-link/" \
+      -H 'Content-Type: application/x-www-form-urlencoded' \
+      --data 'email=probe-a@inflozo.test&emailType=subscribe&honeypot='
+    # B  JSON, no token          C  GET /members/api/integrity-token/
+    # D  JSON + token            E  urlencoded + token        F  -L, print url_effective
+
+| Sent | Ghost 6.58.0 | Ghost 5.130.6 |
+| --- | --- | --- |
+| A · form-encoded, no token | `400 BadRequestError` | `400` **"Email is required."** |
+| B · JSON, no token | `400 BadRequestError` | `500 EmailError` — *accepted*, SMTP absent |
+| C · `GET …/integrity-token/` | `200` + token | `200` + token |
+| D · JSON **with** token | `500 EmailError` — *accepted* | `500 EmailError` — *accepted* |
+| E · form-encoded **with** token | `400 BadRequestError` | `400` **"Email is required."** |
+| F · follow redirects, native shape | no redirect, ends on the API URL | no redirect, ends on the API URL |
+
+**Three independent findings, each fatal alone.**
+
+1. **The endpoint never parses `application/x-www-form-urlencoded`.** Row E proves it with a *valid*
+   token, and Ghost 5 says so in words — the body was dropped, so `email` was missing. A native
+   `<form>` cannot send JSON. Its own submit can therefore never reach this endpoint on either major.
+2. **Ghost 6 additionally requires an `integrityToken`** fetched from a separate GET (B fails, D
+   succeeds). A plain form cannot make a request before submitting itself.
+3. **There is no redirect back** (row F). Even were a submit accepted, the browser leaves the page and
+   renders raw JSON — no page survives for CSS to style.
+
+**Where the documented classes actually come from.** `portal.min.js`
+(`cdn.jsdelivr.net/ghost/portal@~2.69`, injected by `{{ghost_head}}`):
+
+    Array.prototype.forEach.call(document.querySelectorAll(`form[data-members-form]`),
+      function(t){ let n=t.querySelector(`[data-members-error]`); … t.addEventListener(`submit`,r) })
+    … t.classList.remove(`loading`) … t.classList.add(`error`)
+
+Portal attaches the submit listener and applies the classes itself. **The owner's reading of the CSS
+mechanism was correct; JavaScript is what puts the class there.** Every designed sent/error state
+survives — only the "works without JavaScript" promise was false.
+
+**Recorded as a documentation defect:** `docs.ghost.org/themes/members` states none of this. The
+question must not be reopened from that page alone.
+
+### 29b. Probe family 31 — Portal's share page exists on 6.x only, and is unthemeable. **D15 held.**
+
+`portal@~2.69` carries a real page in `getPageFromLinkPath`:
+
+    else if (e === `share`) return { page: `share` }
+
+Destinations present: X, Facebook, LinkedIn, Threads, Bluesky — fixed order, **no Mastodon**.
+`portal@~2.51` (served to Ghost 5.130.6) has **no `share` branch**, so `data-portal="share"` falls
+through to `{page:'default'}` and a Share button opens the **sign-in** modal on every Ghost 5 site.
+Portal renders in a shadow-DOM iframe; theme CSS reaches nothing inside it.
+
+**Consequence:** D15's own site-wide ordered share list stands unchanged — it works on both majors,
+carries Mastodon, and can be themed.
+
+### 29c. Ghost's native search — the sealed frame and the index's real field set
+
+Executed while ruling out a vendored search engine (decision R-24).
+
+    curl -sL "https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js"
+    curl -G "$H/ghost/api/content/search-index/posts/" --data-urlencode "key=$CONTENT_KEY"
+
+- **It renders inside an iframe.** `this.node.contentDocument.documentElement` / `.head` / `.body`,
+  with its own injected `<style>` and stylesheet URL. Theme CSS reaches nothing inside; only Ghost's
+  `brandColor` crosses the boundary.
+- **Triggers:** any element carrying `[data-ghost-search]` (`getCustomTriggerButtons()`), a
+  `#/search` or `#/search/` fragment (`handleSearchUrl()`), and ⌘K (`addKeyboardShortcuts()`).
+- **The live posts index returns exactly** `id, slug, title, excerpt, url, updated_at, visibility`
+  — **no post body**. Separate `search-index/tags/` and `search-index/authors/` endpoints, `200` on
+  both majors.
+
+**Therefore full-content search does not exist natively, and no Inflozo-drawn results surface can be
+styled.** Every A23 design that draws results has nothing to draw.
+
+### 29d. Probe family 1 (order half) — `filter="id:[…]"` discards the requested order
+
+Four known posts requested in deliberately reversed order, both majors, no `order=`:
+
+    requested            D, C, B, A
+    Ghost 6.58 returned  A, B, C, D
+    Ghost 5.130 returned A, B, C, D          # = published_at desc
+
+**Hand-picked order is not achievable with one get.** It costs **one `{{#get}}` per picked item**, and
+`appendix-b1 §5` documents a per-template abort threshold that A1-7 already approaches (up to seven
+gets on one page). **Still to measure:** that threshold — it fixes the hand-pick cap (R-20).
+
+### 29e. Recorded because it bounds everything above
+
+Both `sodo-search` and `portal` are loaded from jsDelivr at a **floating minor range** (`@~1.8`,
+`@~2.69`), so their internals can change without a Ghost upgrade on the customer's site. **No Inflozo
+theme may depend on their markup, class names or internal behaviour** — only on the documented
+attribute surface (`data-ghost-search`, `data-portal`, `data-members-*`).
+
+---
+
+## 30. VERIFY item 47 — the `{{#get}}` abort threshold, measured · 2026-08-27 · **it is not per template**
+
+Run before the inventory merge, as ruling R-20 and §E-1 of `reconcile-designs-decisions.md` require.
+It was the only number those rulings left open. `tools/probe/run-verify-47.py`, against **T1**
+(`ghost6.inflozo.com`, 6.58.0) and **T3** (`ghost5.inflozo.com`, 5.130.6).
+
+    python3 tools/probe/run-verify-47.py              # N distinct single-id gets
+    python3 tools/probe/run-verify-47.py --identical  # the same id, N times
+
+**Method.** One probe theme, five templates, each carrying a different number of single-id
+`{{#get "posts" filter="id:…" limit="1"}}` blocks — exactly the shape hand-picked order costs after
+§29d. Each route rendered three times; the table reports best-of-three, how many gets actually
+resolved, whether `data-aborted-get-helper` appeared and whether `X-Ghost-Degraded-Render` was set.
+The probe uploads its theme, restores the previously active one and deletes itself.
+
+### 30a. No abort, at any count either major reaches
+
+| gets on one template | T1 6.58.0 best | T3 5.130.6 best | resolved | `data-aborted-get-helper` | `X-Ghost-Degraded-Render` |
+|---|---|---|---|---|---|
+| 1 | 0.650 s | 0.666 s | 1 / 1 | none | unset |
+| 8 | 0.770 s | 0.709 s | 8 / 8 | none | unset |
+| 16 | 0.855 s | 0.775 s | 16 / 16 | none | unset |
+| 24 | 0.923 s | 0.881 s | 24 / 24 | none | unset |
+| 33 | 0.967 s | 0.912 s | 33 / 33 | none | unset |
+
+A first pass ran the same ladder to **36 · 48 · 72 · 100 · 150** gets on one template. **Every get
+resolved on both majors, with no abort marker and no degraded-render header** — 150 gets rendered in
+1.855 s (T1) and 1.563 s (T3). The table above is the re-run with **all ids distinct**, because
+Ghost 6 dedups identical queries (§30c) and the high ladder cycled a 33-post fixture.
+
+**Marginal cost of one hand-picked item: ≈ 10 ms on Ghost 6, ≈ 8 ms on Ghost 5** — 32 further gets
+cost 0.317 s and 0.246 s respectively.
+
+### 30b. What actually aborts is one slow get, at 5000 ms, on both majors
+
+`optimization.getHelper.timeout.threshold` in `core/shared/config/defaults.json` is **5000**
+(`level: error`) at **v5.130.6 and v6.58.0 alike**, with a separate `notify.threshold` of 200 ms that
+only logs a warning. `core/frontend/helpers/get.js` races **each invocation** against that timer:
+
+    // get.js — one race per {{#get}} call, not one per template
+    const timeout = new Promise((resolve) => { … `{{#get}} took longer than ${threshold}ms and was aborted` … }, threshold);
+    response = await Promise.race([apiResponse, timeout]);
+
+    // and, on abort:
+    return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+
+**There is no cumulative per-template budget.** Twelve fast gets are twelve independent 5-second
+races, not one shared one. `appendix-b1 §5` and §29d both said "a per-template abort threshold";
+that reading is corrected in place by this section.
+
+### 30c. Ghost 6 dedups identical `{{#get}}` queries within one render; Ghost 5 does not
+
+`get.js` on 6.58.0 carries `generateCacheKey(resource, apiOptions)` and a per-request
+`options.data._queryCache` Map that stores the in-flight promise, so two identical gets on one page
+cost one API call. **v5.130.6 has no such code.** Measured, same id repeated N times:
+
+| gets | T1 6.58.0 identical / distinct | T3 5.130.6 identical / distinct |
+|---|---|---|
+| 24 | 0.859 s / 0.923 s | 0.864 s / 0.881 s |
+| 33 | 0.881 s / 0.967 s | 1.002 s / 0.912 s |
+
+The difference is inside run-to-run noise at this size — **the query is cheap enough that the cache
+does not dominate.** It is recorded because hand-picking never sends duplicate ids, so the cache is
+not available to it on either major, and because it is a real 5→6 behaviour difference.
+
+### 30d. Consequence for R-20
+
+The hand-pick cap **is not a platform limit**. Ghost imposes none in the range any section would
+use. R-20's "about twelve per section" therefore **stands at twelve as ruled**, on a latency budget
+rather than an abort threshold — item 47 anticipated only the downward correction ("if the threshold
+is low, the cap drops"), and the threshold is not low. Twelve picks cost ≈ 0.12 s of extra server
+render on an idle Ghost. **Raising it above twelve would be a new owner decision, not a consequence
+of this measurement**, and is flagged as such rather than taken here.

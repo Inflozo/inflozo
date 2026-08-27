@@ -84,80 +84,12 @@ footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:v
 drift apart.</p>
 
 <div class="rail">
-<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="running" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="next" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD</span><span class="b"></span></a><a class="ready" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
+<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="next" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
 </div>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>For every new category chat, follow the five steps</b><span>1. Open a new chat.  2. Paste the START block below.  3. Paste sections 1 to 4 of design/claude-design-prompt-3-library.md plus that category block.  4. Paste the END block below. 5. Save the frames to design/ and the specs to sections-inventory.md.</span></li><li><b>If a chat is running right now, paste the one-off correction into it</b><span>Only that chat. New chats get the corrected file automatically.</span></li></ol>
-    <div class="prompt live" style="margin-top:4px">
-      <div class="phead"><h4>ONLY IF a chat is running right now</h4>
-        <span class="ptag live">one-off</span>
-        <button class="copy" data-t="Correction: each design&#x27;s spec needs TEN fields, not six.
-
-Add these four to every design in this session, including the ones already done:
-
-1. Descriptor — one line: what makes this design different from the others in this category.
-2. Structural descriptor — a tuple: archetype · containment · ground · item-count class · media
-   placement · emphasis mechanism. It must be unique within this category.
-3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
-   carousel, table, media frame, sticky, article body.
-4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
-   does with JavaScript switched off.
-
-Keep the six you are already producing: responsive rule, content fields, controls, data binding,
-empty state, accessibility notes.">Copy</button></div>
-      <pre>Correction: each design&#x27;s spec needs TEN fields, not six.
-
-Add these four to every design in this session, including the ones already done:
-
-1. Descriptor — one line: what makes this design different from the others in this category.
-2. Structural descriptor — a tuple: archetype · containment · ground · item-count class · media
-   placement · emphasis mechanism. It must be unique within this category.
-3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
-   carousel, table, media frame, sticky, article body.
-4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
-   does with JavaScript switched off.
-
-Keep the six you are already producing: responsive rule, content fields, controls, data binding,
-empty state, accessibility notes.</pre></div>
-    <div class="prompt live">
-      <div class="phead"><h4>STEP 4 — paste at the END of every category</h4>
-        <span class="ptag live">every category</span>
-        <button class="copy" data-t="Before we finish, give me two blocks I can paste into the next category&#x27;s chat.
-
-1. COMPONENT INVENTORY — every reusable component this category used or created.
-   One line each:  name — what it is — which category it came from.
-   Include ones reused from earlier categories, so the list keeps growing.
-
-2. SHARED FIELD LIST — the union of every content field this category&#x27;s designs need.">Copy</button></div>
-      <pre>Before we finish, give me two blocks I can paste into the next category&#x27;s chat.
-
-1. COMPONENT INVENTORY — every reusable component this category used or created.
-   One line each:  name — what it is — which category it came from.
-   Include ones reused from earlier categories, so the list keeps growing.
-
-2. SHARED FIELD LIST — the union of every content field this category&#x27;s designs need.</pre></div>
-    <div class="prompt live">
-      <div class="phead"><h4>STEP 2 — paste at the START of every category</h4>
-        <span class="ptag live">every category</span>
-        <button class="copy" data-t="Components already built in earlier categories. Reuse these exactly. Do not invent
-replacements for them.
-
-&lt;paste the component inventory from the last category here — for category 1, write: none yet&gt;
-
-If a design needs something none of these cover, say so and explain why an existing one would not work.
-
-The brief follows below.">Copy</button></div>
-      <pre>Components already built in earlier categories. Reuse these exactly. Do not invent
-replacements for them.
-
-&lt;paste the component inventory from the last category here — for category 1, write: none yet&gt;
-
-If a design needs something none of these cover, say so and explain why an existing one would not work.
-
-The brief follows below.</pre></div>
-  </div>
-  <div class="act soon"><h3>Do soon</h3><ol><li><b>Categories finished before the correction need four fields added</b><span>Tell me how many and I will say whether to re-run them or patch them.</span></li><li><b>Export design prompt 2 to design/</b><span>Already run, just not on disk. Once it is there, step 5 can start.</span></li><li><b>Send category one&#x27;s specs so I can check them</b><span>Confirms the format is right before you do the other 33.</span></li></ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Run VERIFY item 47 before the inventory merge</b><span>A /bmad-build probe against ghost6 and ghost5: how many {{#get}} queries one template can make before Ghost gives up. It is the one number the Ghost Build Room left unmeasured, and it fixes the hand-pick cap (ruling R-20).</span></li><li><b>The inventory merge — the critical path</b><span>Specs into sections-inventory.md, its per-design rosters superseded wholesale in 24+ categories, derived-fields superseded, every count re-derived from the export, and the PRD amendments landed. Driven by reconcile-designs-decisions.md, whose every ruling names the documents that must move. Three traps it flags: FR-G7&#x27;s search exception is WITHDRAWN not landed, Appendix C does NOT move on gap names, and FR-K needs NO video asset type.</span></li></ol></div>
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>Step 5 — journeys and flows</b><span>Fully unblocked. 4a&#x27;s §37.7 lists the editor surfaces with no frame and the flows drawn on wrong semantics — that is this step&#x27;s input. Runs alongside the merge.</span></li><li><b>The rulings the room did NOT reach</b><span>Nine asks still have no owner and are owed before E4/E9 open — pack tokens, the FR-H2 delta set, the dependency vocabulary, AD-27&#x27;s row shapes and five smaller ones. Listed in §F of reconcile-designs-decisions.md.</span></li></ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
@@ -167,7 +99,7 @@ The brief follows below.</pre></div>
     <div class="stitle"><h2>Architecture</h2>
       <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">The 36 invariants, the schema, and its runnable proof. Four stress rounds and a reliability round applied on top.</p>
+  <p class="stands">Every invariant (the spine is the count), the schema, and its runnable proof. Four stress rounds and a reliability round applied on top.</p>
   <dl><dt>Produces</dt><dd>The architecture spine — the rules everything else is built from.</dd>
   </dl>
   <div class="prompt historical"><div class="phead"><h4>Architecture</h4><span class="ptag historical">historical</span></div><p class="pnote historical">Complete. Kept for provenance. It states figures that were true when written and are not now.</p><pre>/bmad-architecture
@@ -282,97 +214,353 @@ guessing. The rest are executable now, and several were read from source but nev
 Record each item as confirmed, refuted or still-open. A REFUTED item is a scope change and must
 be raised as one before the epic that depends on it starts — do not quietly work around it.
 This project has been damaged four times by an unverified platform claim entering as fact.</pre></div>
-</section><section class="step running" id="s3">
+</section><section class="step done" id="s3">
   <div class="shead">
     <span class="snum">3</span>
     <div class="stitle"><h2>Design prompts 2 and 3</h2>
-      <span class="badge running">running now</span></div>
+      <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">Prompt 2 is RUN but not yet exported to disk. Prompt 3 is RUNNING in batches — and its first batches used a prompt that asked for only six of the ten required spec fields.</p>
-  <dl><dt>Produces</dt><dd>The archetype system and missing surfaces (prompt 2); then 484 designs AND their specifications (prompt 3, run 34 times).</dd>
+  <p class="stands">All 34 categories designed and exported, then patched by the controls-reconciliation pass (P0 primitives + 34 patches; 39 decisions, all ruled). Every spec ends with its own Reconciliation notes — step 4&#x27;s third input.</p>
+  <dl><dt>Produces</dt><dd>The archetype system and the app screens (prompt 2); every category&#x27;s designs AND their specifications (prompt 3).</dd>
   </dl>
   
-</section><section class="step next" id="s4">
+</section><section class="step done" id="s4">
   <div class="shead">
     <span class="snum">4</span>
-    <div class="stitle"><h2>Reconcile designs against the PRD</h2>
-      <span class="badge next">next up</span></div>
+    <div class="stitle"><h2>Reconcile designs against the PRD, the architecture and Ghost</h2>
+      <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">Runnable as soon as the first two or three categories land — do NOT wait for all 34.</p>
-  <dl><dt>Produces</dt><dd>A reconciliation report: contradictions, gaps, and spec completeness.</dd>
-  <dt>Waiting on</dt><dd>the first categories from prompt 3</dd></dl>
-  <div class="prompt live"><div class="phead"><h4>Reconcile designs against the PRD</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-review
+  <p class="stands">Both halves ran 2026-08-27. 4a reviewed all 34 categories, P0 and the S/M screens (1,086 findings, 41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: 29 rulings, all 66 ghost-infeasible findings and all five decision-collisions closed, FOUR approved decisions reversed (D3, D17, D26, D27 in half), and four probe families removed — two closed by execution against T1/T3 during the session, two deleted by the native-search ruling. Read reconcile-designs-decisions.md §B before trusting any D-number anywhere in this project.</p>
+  <dl><dt>Produces</dt><dd>prds/.../reconcile-designs.md and reconcile-designs-decisions.md — 29 rulings, each naming the documents that must move. Its propagation ledger records that the architecture, the evidence file and the register already carry them.</dd>
+  </dl>
+  <div class="prompt live"><div class="phead"><h4>4a — The review (unattended)</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-review
 
-Reconcile the Inflozo design output against the PRD.
-Run the verification-gap and adversarial lenses together — this pass is looking for what is
-MISSING and what CONTRADICTS, not for prose quality.
+Reconcile the Inflozo design library — all 34 categories, the P0 editor primitives and the S/M app
+screens — against the PRD, the architecture, and what Ghost actually permits.
+Run the verification-gap and adversarial lenses together. This pass looks for what is MISSING, what
+CONTRADICTS, and what CANNOT BE BUILT ON GHOST — never for prose quality.
 
-PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-Designs: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/
-Precedent for the format and the bar: reconcile-mockups.md in the same folder, which did this
-for prompt 1 and found ~31 disagreements.
+INPUTS, read in this order
+  The PRD (normative — read its preamble first, it states the precedence order):
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+  On any fact about Ghost the research companions in that folder OUTRANK the PRD body:
+    research-ghost-binding-contexts.md · research-ghost-koenig-cards.md ·
+    research-ghost-membership-pages.md · research-ghost-empty-values.md ·
+    research-section-js-libraries.md (the FR-G7 registry — source of truth for the module list) ·
+    appendix-b1-template-contexts.md (where a binding is legal: template × scope × Ghost version) ·
+    appendix-h1-string-catalog.md (every chrome string) · sections-inventory.md (Appendix A).
+  The architecture:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
+    ARCHITECTURE-SPINE.md (the invariants) and VERIFY-AT-BUILD.md (the register — its items 44, 45
+    and 46 were raised BY the design work and are still open).
+  The designs:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/
+    One &quot;&lt;ID&gt; &lt;Name&gt; - Spec.md&quot; per category, A1–A34, plus &quot;P0 Editor Primitives - Spec.md&quot;. The
+    specs are the contract; the frames (*.dc.html) are read selectively when a spec is ambiguous
+    about what is visible. Also: the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s output).
+    EVERY category spec ends with a &quot;Reconciliation notes&quot; section — the conflicts the last patch
+    hit against what the category had already ruled, and how it resolved them, with lines marked
+    &quot;flag to the owner&quot; and &quot;ARCHITECT:&quot;. Those notes are a THIRD source of open decisions and
+    every one of them must reach your report (question 6).
+  The controls pass that produced those notes:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/CONTROL-PROMPTS.html
+    Its §Decisions holds 39 decisions, ALL RULED by the owner on 2026-08-24 — D1 Tabler icons ·
+    D2 prefix navigation, JavaScript-required, no no-JS accommodation · D3 third-party search
+    allowed, MiniSearch vendored inside search-overlay · D11 A31&#x27;s ten designs accepted ·
+    D13 visitor-clock dates deferred, and the rest. Treat every ruling as DECIDED: do not
+    re-litigate it, DO check that each spec honoured it. Its §Carry-forwards lists what the pass
+    found for the PRD and the architect — treat those as findings to VERIFY against the specs and
+    the spine, never to restate.
+  Precedent for format and bar: reconcile-mockups.md beside the PRD — prompt 1&#x27;s reconciliation,
+    ~31 findings. Expect MORE this time, not fewer: 35 specs, each carrying its own conflict list.
 
-DESIGN ARTIFACTS ARE NON-NORMATIVE. Where a design and the PRD disagree, the PRD wins and the
-design moves — unless the design reveals that the PRD specified something unbuildable or
-incoherent, in which case flag it as a PRD defect and do not silently pick a side.
+PRECEDENCE
+  Design artifacts are non-normative. Where a design and the PRD disagree, the PRD wins and the
+  design moves — UNLESS the design reveals the PRD specified something unbuildable, incoherent, or
+  contradicted by Ghost: that is a PRD DEFECT — flag it, cite the evidence, never pick a side
+  silently. Where the PRD body and a research companion disagree on a Ghost fact, the research is
+  right and the PRD line is the defect.
 
-Three questions, kept separate in the report:
-  1. CONTRADICTIONS — where a design shows something the PRD forbids, or contradicts a control
-     vocabulary, a binding rule, a plan gate or a count.
-  2. GAPS — surfaces the PRD requires that no design covers. Check against: the section
-     inventory&#x27;s 34 categories, section 8&#x27;s epics, Appendix F.1&#x27;s plan matrix, and the six
-     flows and four journeys named in the PRD preamble, PLUS the two flows added 2026-08-21 —
-     the pre-deploy backup gate and deploy history with pinning (eight flows in total).
-  3. SPEC COMPLETENESS — every design carries all ten fields of the per-design specification
-     schema in sections-inventory.md. Two are newly load-bearing and easy to omit: the
-     structural descriptor TUPLE (which FR-G5&#x27;s uniqueness assertion runs over, and which must
-     stay unique within its category after per-design control lists are written) and the no-JS
-     degradation statement for any design declaring an FR-G7 behaviour module.
+STANDING RULES — learned expensively
+  1. A claim about Ghost is a hypothesis until read in Ghost&#x27;s source or docs, or executed against
+     it. Every Ghost claim in your report carries its citation: the companion section, the docs URL,
+     or the helper/endpoint name. Where reading cannot settle it, do NOT guess — put it under NEEDS
+     EXECUTION with the exact probe. Two real Ghosts exist for that, T1 ghost6.inflozo.com (6.58.0)
+     and T3 ghost5.inflozo.com (5.130.6), credentialed in tools/probe/.env; run-verify-all.py in
+     that folder is the pattern. Executing is a separate run — not this one.
+  2. Propagate, never localise — a finding names every place it reaches.
+  3. Counts are derived — count the export, the specs and the register; trust no number in a doc.
+  4. Flag, do not guess — where two approved decisions contradict, say so and stop on that item.
 
-Verify counts rather than trusting them: 34 categories, 484 designs, per-category counts summing
-to 484, 70 [Free] on variant lines only.
+THE REVIEW — six questions, kept separate in the report, worked CATEGORY BY CATEGORY
+  Use subagents (one per category or per small group). Every one of the 35 specs is read in full —
+  a sampled review is not a review. Name the design, the claim, the evidence and the verdict.
 
-Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlog.">Copy prompt</button></div><pre>/bmad-review
+  1. GHOST FEASIBILITY — can each design be built on Ghost as specified? For every binding, check
+     appendix-b1&#x27;s context matrix; for every helper and field, the research (the nine social
+     handles exist only on Ghost ≥ 6.36; Ghost Admin cannot reorder authors; tier prices are in
+     subunits and need {{price}}; member forms need data-members-form and sign-out needs
+     data-members-signout; the private gate needs {{input_password}}; {{comments}} accepts only
+     title/count/mode/saturation; navigation is flat; Sodo searches titles and excerpts only;
+     {{#get}} is capped at 100 and may read only template-level context; page.hbs guards on
+     @page.show_title_and_feature_image; what error.hbs may run is unverified); for every control,
+     what a compiled theme can express (one control writes one data-attribute on the section root —
+     per-item styling is impossible; every value set is closed); for every custom-setting use, the
+     20-setting cap with 3 reserved. Verdict per item: buildable · buildable with a stated change ·
+     not buildable on Ghost · needs execution.
+  2. CONTRADICTIONS — a spec or screen showing what the PRD forbids, or contradicting the control
+     vocabulary (FR-F1, Appendix C), a binding rule, FR-G7&#x27;s registry (no invented module names;
+     every declared module carries the registry&#x27;s no-JS sentence — the one waiver is D2&#x27;s),
+     FR-J15&#x27;s credit, a plan gate, or a count.
+  3. GAPS — what the PRD requires that no design covers: section 8&#x27;s epics; Appendix F.1&#x27;s plan
+     matrix; the four journeys and EIGHT flows (the PRD&#x27;s six plus the pre-deploy backup gate and
+     deploy history with pinning); every editor surface an FR names — the Routes Manager, Theme
+     Settings, Translations, the custom-settings builder, the Paywall editor, the Editor Cards
+     screen (S14), the pre-deploy check, the drift report, the template-binding checklist, the
+     edit-lock choreography; and every primitive P0 promised that some category still lacks.
+  4. ARCHITECTURE — everything the designs now ask of the spine and the registry: the new modules
+     (nav-transform, contact-form, search-overlay&#x27;s vendored index, member-form&#x27;s one-time-code
+     branch), the multi-module-per-section ruling, the edit-safe rulings (lightbox, carousel), the
+     route-awareness mechanism (A24 · A26 · A27 · A28 all need it), the pack-token asks, the FR-H2
+     deltas (an authors source, the fallback field, Count as a stepper, the main feed&#x27;s owned empty
+     state, the A34 pagination control living on the main feed), and the consent-seeding asks
+     (announcement bar already; comments accent now). For each: the AD or register row that owns
+     it — or &quot;no owner; needs one&quot;.
+  5. SPEC COMPLETENESS — every design carries all ten fields; every structural-descriptor tuple is
+     unique within its category (the closed vocabularies live in tools/tuple-check.py — run it if it
+     can read the specs; if it reads only derived-fields-A1-A12.md, say so, because extending it is
+     a finding); every declared module carries its no-JS line; every authored list carries
+     add/remove/reorder and every Ghost-bound list carries none (register item 44).
+  6. THE OWNER-FLAG REGISTER — collect every &quot;flag to the owner&quot;, &quot;overrule&quot;, &quot;owner to confirm&quot;
+     and &quot;ARCHITECT:&quot; line from all 35 Reconciliation-notes sections into one table: spec · item ·
+     what was decided provisionally · what the owner or the architect must rule. This table is the
+     agenda of the Ghost Build Room session that follows this review.
 
-Reconcile the Inflozo design output against the PRD.
-Run the verification-gap and adversarial lenses together — this pass is looking for what is
-MISSING and what CONTRADICTS, not for prose quality.
+COUNTS TO DERIVE, NEVER TRUST
+  Categories on disk; designs on disk per category (the export carries one more than the PRD&#x27;s
+  inventory — A31 has ten, accepted by D11 — state exactly what the PRD and the inventory must
+  change); [Free] designs per category; declared modules vs the registry; custom-setting slots any
+  design spends.
 
-PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-Designs: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/
-Precedent for the format and the bar: reconcile-mockups.md in the same folder, which did this
-for prompt 1 and found ~31 disagreements.
+OUTPUT
+  Write prds/prd-Inflozo-2026-08-17/reconcile-designs.md in reconcile-mockups.md&#x27;s shape, one
+  section per category then the cross-cutting ones, every finding tagged: ghost-infeasible ·
+  stale-design · prd-defect · arch-gap · spec-incomplete · needs-execution · consistent (only where
+  the confirmation is useful). Every finding names its evidence. End with three lists: (a) NEEDS
+  EXECUTION — each with its probe; (b) the OWNER-FLAG REGISTER; (c) the PRD AMENDMENTS this pass
+  implies, one line each naming the FR touched. Register the file in tools/doc-audit.py, run
+  `python3 tools/doc-audit.py --check` until it passes, and log to the memlog:
+    cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
+    uv run /home/ghost/Dev/Inflozo/_bmad/scripts/memlog.py append --workspace . --type change \
+      --text &quot;&lt;one line: step 4a done — N findings, M needs-execution, K owner flags&gt;&quot;">Copy prompt</button></div><pre>/bmad-review
 
-DESIGN ARTIFACTS ARE NON-NORMATIVE. Where a design and the PRD disagree, the PRD wins and the
-design moves — unless the design reveals that the PRD specified something unbuildable or
-incoherent, in which case flag it as a PRD defect and do not silently pick a side.
+Reconcile the Inflozo design library — all 34 categories, the P0 editor primitives and the S/M app
+screens — against the PRD, the architecture, and what Ghost actually permits.
+Run the verification-gap and adversarial lenses together. This pass looks for what is MISSING, what
+CONTRADICTS, and what CANNOT BE BUILT ON GHOST — never for prose quality.
 
-Three questions, kept separate in the report:
-  1. CONTRADICTIONS — where a design shows something the PRD forbids, or contradicts a control
-     vocabulary, a binding rule, a plan gate or a count.
-  2. GAPS — surfaces the PRD requires that no design covers. Check against: the section
-     inventory&#x27;s 34 categories, section 8&#x27;s epics, Appendix F.1&#x27;s plan matrix, and the six
-     flows and four journeys named in the PRD preamble, PLUS the two flows added 2026-08-21 —
-     the pre-deploy backup gate and deploy history with pinning (eight flows in total).
-  3. SPEC COMPLETENESS — every design carries all ten fields of the per-design specification
-     schema in sections-inventory.md. Two are newly load-bearing and easy to omit: the
-     structural descriptor TUPLE (which FR-G5&#x27;s uniqueness assertion runs over, and which must
-     stay unique within its category after per-design control lists are written) and the no-JS
-     degradation statement for any design declaring an FR-G7 behaviour module.
+INPUTS, read in this order
+  The PRD (normative — read its preamble first, it states the precedence order):
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+  On any fact about Ghost the research companions in that folder OUTRANK the PRD body:
+    research-ghost-binding-contexts.md · research-ghost-koenig-cards.md ·
+    research-ghost-membership-pages.md · research-ghost-empty-values.md ·
+    research-section-js-libraries.md (the FR-G7 registry — source of truth for the module list) ·
+    appendix-b1-template-contexts.md (where a binding is legal: template × scope × Ghost version) ·
+    appendix-h1-string-catalog.md (every chrome string) · sections-inventory.md (Appendix A).
+  The architecture:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
+    ARCHITECTURE-SPINE.md (the invariants) and VERIFY-AT-BUILD.md (the register — its items 44, 45
+    and 46 were raised BY the design work and are still open).
+  The designs:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/
+    One &quot;&lt;ID&gt; &lt;Name&gt; - Spec.md&quot; per category, A1–A34, plus &quot;P0 Editor Primitives - Spec.md&quot;. The
+    specs are the contract; the frames (*.dc.html) are read selectively when a spec is ambiguous
+    about what is visible. Also: the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s output).
+    EVERY category spec ends with a &quot;Reconciliation notes&quot; section — the conflicts the last patch
+    hit against what the category had already ruled, and how it resolved them, with lines marked
+    &quot;flag to the owner&quot; and &quot;ARCHITECT:&quot;. Those notes are a THIRD source of open decisions and
+    every one of them must reach your report (question 6).
+  The controls pass that produced those notes:
+    /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/CONTROL-PROMPTS.html
+    Its §Decisions holds 39 decisions, ALL RULED by the owner on 2026-08-24 — D1 Tabler icons ·
+    D2 prefix navigation, JavaScript-required, no no-JS accommodation · D3 third-party search
+    allowed, MiniSearch vendored inside search-overlay · D11 A31&#x27;s ten designs accepted ·
+    D13 visitor-clock dates deferred, and the rest. Treat every ruling as DECIDED: do not
+    re-litigate it, DO check that each spec honoured it. Its §Carry-forwards lists what the pass
+    found for the PRD and the architect — treat those as findings to VERIFY against the specs and
+    the spine, never to restate.
+  Precedent for format and bar: reconcile-mockups.md beside the PRD — prompt 1&#x27;s reconciliation,
+    ~31 findings. Expect MORE this time, not fewer: 35 specs, each carrying its own conflict list.
 
-Verify counts rather than trusting them: 34 categories, 484 designs, per-category counts summing
-to 484, 70 [Free] on variant lines only.
+PRECEDENCE
+  Design artifacts are non-normative. Where a design and the PRD disagree, the PRD wins and the
+  design moves — UNLESS the design reveals the PRD specified something unbuildable, incoherent, or
+  contradicted by Ghost: that is a PRD DEFECT — flag it, cite the evidence, never pick a side
+  silently. Where the PRD body and a research companion disagree on a Ghost fact, the research is
+  right and the PRD line is the defect.
 
-Write the report to the prds/prd-Inflozo-2026-08-17/ folder and log to the memlog.</pre></div>
-</section><section class="step ready" id="s5">
+STANDING RULES — learned expensively
+  1. A claim about Ghost is a hypothesis until read in Ghost&#x27;s source or docs, or executed against
+     it. Every Ghost claim in your report carries its citation: the companion section, the docs URL,
+     or the helper/endpoint name. Where reading cannot settle it, do NOT guess — put it under NEEDS
+     EXECUTION with the exact probe. Two real Ghosts exist for that, T1 ghost6.inflozo.com (6.58.0)
+     and T3 ghost5.inflozo.com (5.130.6), credentialed in tools/probe/.env; run-verify-all.py in
+     that folder is the pattern. Executing is a separate run — not this one.
+  2. Propagate, never localise — a finding names every place it reaches.
+  3. Counts are derived — count the export, the specs and the register; trust no number in a doc.
+  4. Flag, do not guess — where two approved decisions contradict, say so and stop on that item.
+
+THE REVIEW — six questions, kept separate in the report, worked CATEGORY BY CATEGORY
+  Use subagents (one per category or per small group). Every one of the 35 specs is read in full —
+  a sampled review is not a review. Name the design, the claim, the evidence and the verdict.
+
+  1. GHOST FEASIBILITY — can each design be built on Ghost as specified? For every binding, check
+     appendix-b1&#x27;s context matrix; for every helper and field, the research (the nine social
+     handles exist only on Ghost ≥ 6.36; Ghost Admin cannot reorder authors; tier prices are in
+     subunits and need {{price}}; member forms need data-members-form and sign-out needs
+     data-members-signout; the private gate needs {{input_password}}; {{comments}} accepts only
+     title/count/mode/saturation; navigation is flat; Sodo searches titles and excerpts only;
+     {{#get}} is capped at 100 and may read only template-level context; page.hbs guards on
+     @page.show_title_and_feature_image; what error.hbs may run is unverified); for every control,
+     what a compiled theme can express (one control writes one data-attribute on the section root —
+     per-item styling is impossible; every value set is closed); for every custom-setting use, the
+     20-setting cap with 3 reserved. Verdict per item: buildable · buildable with a stated change ·
+     not buildable on Ghost · needs execution.
+  2. CONTRADICTIONS — a spec or screen showing what the PRD forbids, or contradicting the control
+     vocabulary (FR-F1, Appendix C), a binding rule, FR-G7&#x27;s registry (no invented module names;
+     every declared module carries the registry&#x27;s no-JS sentence — the one waiver is D2&#x27;s),
+     FR-J15&#x27;s credit, a plan gate, or a count.
+  3. GAPS — what the PRD requires that no design covers: section 8&#x27;s epics; Appendix F.1&#x27;s plan
+     matrix; the four journeys and EIGHT flows (the PRD&#x27;s six plus the pre-deploy backup gate and
+     deploy history with pinning); every editor surface an FR names — the Routes Manager, Theme
+     Settings, Translations, the custom-settings builder, the Paywall editor, the Editor Cards
+     screen (S14), the pre-deploy check, the drift report, the template-binding checklist, the
+     edit-lock choreography; and every primitive P0 promised that some category still lacks.
+  4. ARCHITECTURE — everything the designs now ask of the spine and the registry: the new modules
+     (nav-transform, contact-form, search-overlay&#x27;s vendored index, member-form&#x27;s one-time-code
+     branch), the multi-module-per-section ruling, the edit-safe rulings (lightbox, carousel), the
+     route-awareness mechanism (A24 · A26 · A27 · A28 all need it), the pack-token asks, the FR-H2
+     deltas (an authors source, the fallback field, Count as a stepper, the main feed&#x27;s owned empty
+     state, the A34 pagination control living on the main feed), and the consent-seeding asks
+     (announcement bar already; comments accent now). For each: the AD or register row that owns
+     it — or &quot;no owner; needs one&quot;.
+  5. SPEC COMPLETENESS — every design carries all ten fields; every structural-descriptor tuple is
+     unique within its category (the closed vocabularies live in tools/tuple-check.py — run it if it
+     can read the specs; if it reads only derived-fields-A1-A12.md, say so, because extending it is
+     a finding); every declared module carries its no-JS line; every authored list carries
+     add/remove/reorder and every Ghost-bound list carries none (register item 44).
+  6. THE OWNER-FLAG REGISTER — collect every &quot;flag to the owner&quot;, &quot;overrule&quot;, &quot;owner to confirm&quot;
+     and &quot;ARCHITECT:&quot; line from all 35 Reconciliation-notes sections into one table: spec · item ·
+     what was decided provisionally · what the owner or the architect must rule. This table is the
+     agenda of the Ghost Build Room session that follows this review.
+
+COUNTS TO DERIVE, NEVER TRUST
+  Categories on disk; designs on disk per category (the export carries one more than the PRD&#x27;s
+  inventory — A31 has ten, accepted by D11 — state exactly what the PRD and the inventory must
+  change); [Free] designs per category; declared modules vs the registry; custom-setting slots any
+  design spends.
+
+OUTPUT
+  Write prds/prd-Inflozo-2026-08-17/reconcile-designs.md in reconcile-mockups.md&#x27;s shape, one
+  section per category then the cross-cutting ones, every finding tagged: ghost-infeasible ·
+  stale-design · prd-defect · arch-gap · spec-incomplete · needs-execution · consistent (only where
+  the confirmation is useful). Every finding names its evidence. End with three lists: (a) NEEDS
+  EXECUTION — each with its probe; (b) the OWNER-FLAG REGISTER; (c) the PRD AMENDMENTS this pass
+  implies, one line each naming the FR touched. Register the file in tools/doc-audit.py, run
+  `python3 tools/doc-audit.py --check` until it passes, and log to the memlog:
+    cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
+    uv run /home/ghost/Dev/Inflozo/_bmad/scripts/memlog.py append --workspace . --type change \
+      --text &quot;&lt;one line: step 4a done — N findings, M needs-execution, K owner flags&gt;&quot;</pre></div><div class="prompt live"><div class="phead"><h4>4b — The Ghost Build Room (you must be in the room)</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-party-mode --party ghost-build-room
+
+Agenda: rule on everything the design reconciliation could not settle by reading.
+
+Read first, in this order:
+  1. /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs.md
+     — the review that just ran (step 4a). Its three closing lists are tonight&#x27;s agenda: NEEDS
+     EXECUTION, the OWNER-FLAG REGISTER, and the PRD AMENDMENTS.
+  2. /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/CONTROL-PROMPTS.html — §Decisions
+     (39 rulings the owner already made on 2026-08-24: they are settled and NOT on the table, unless
+     4a found one of them unbuildable) and §Carry-forwards.
+  3. This room&#x27;s own memory — AD-36 and the round-4 findings came out of here; don&#x27;t re-derive them.
+
+The room, and what each of you owns tonight:
+  Ravi — the source of truth on what Ghost permits. For every item: which Ghost version, which API,
+    which helper, which file you checked. &quot;You can&#x27;t&quot; is a complete answer only when it is followed
+    by the two things we CAN do. Where reading cannot settle it, name the exact probe and it goes to
+    the execution list — nothing is settled by confidence in this room.
+  Winston — the architecture. Every design ask lands on an AD or a register row, or gets a new one:
+    the new registry modules (nav-transform, contact-form, search-overlay&#x27;s vendored MiniSearch,
+    member-form&#x27;s one-time-code branch), multi-module sections, the edit-safe rulings, the
+    route-awareness mechanism, the pack-token asks, the FR-H2 deltas. No orphan findings — AD-36b.
+  Amelia — buildability. You build all of it against the single-source runtime (PRD §7.3), the
+    data-attribute control mechanism and the compiler. Say plainly what is cheap, what is a week,
+    and where a spec is hand-waving.
+  Murat — testability: for every ruling, the fixture or probe that proves it.
+  Sally — the person editing their site: is the control still understandable after the ruling?
+  Dana — the shippable version, whenever Winston and Amelia disagree.
+
+House rules for tonight:
+  - The owner is in the room and rules. Present each item as a numbered decision with its options
+    and ONE marked (RECOMMENDED), in plain language with a concrete example — then wait.
+  - Standing rule 1 binds Ravi hardest: cite the companion section, the docs URL or the helper name,
+    or send it to execution.
+  - Work the agenda in this order: ghost-infeasible findings first (they can delete designs), then
+    the owner-flag register category by category, then the arch-gaps, then the PRD amendments.
+  - Nothing is closed until it reaches an owning document (standing rule 4). Close the session by
+    writing prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md: every decision numbered,
+    the ruling, who owns its propagation (PRD line · AD · register row · spec), and the execution
+    list for a /bmad-build probe run if any item needs one. Top up this room&#x27;s memory, register the
+    file in tools/doc-audit.py, and run `python3 tools/doc-audit.py --check`.">Copy prompt</button></div><p class="pnote live">Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled item to you as a numbered decision.</p><pre>/bmad-party-mode --party ghost-build-room
+
+Agenda: rule on everything the design reconciliation could not settle by reading.
+
+Read first, in this order:
+  1. /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs.md
+     — the review that just ran (step 4a). Its three closing lists are tonight&#x27;s agenda: NEEDS
+     EXECUTION, the OWNER-FLAG REGISTER, and the PRD AMENDMENTS.
+  2. /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/CONTROL-PROMPTS.html — §Decisions
+     (39 rulings the owner already made on 2026-08-24: they are settled and NOT on the table, unless
+     4a found one of them unbuildable) and §Carry-forwards.
+  3. This room&#x27;s own memory — AD-36 and the round-4 findings came out of here; don&#x27;t re-derive them.
+
+The room, and what each of you owns tonight:
+  Ravi — the source of truth on what Ghost permits. For every item: which Ghost version, which API,
+    which helper, which file you checked. &quot;You can&#x27;t&quot; is a complete answer only when it is followed
+    by the two things we CAN do. Where reading cannot settle it, name the exact probe and it goes to
+    the execution list — nothing is settled by confidence in this room.
+  Winston — the architecture. Every design ask lands on an AD or a register row, or gets a new one:
+    the new registry modules (nav-transform, contact-form, search-overlay&#x27;s vendored MiniSearch,
+    member-form&#x27;s one-time-code branch), multi-module sections, the edit-safe rulings, the
+    route-awareness mechanism, the pack-token asks, the FR-H2 deltas. No orphan findings — AD-36b.
+  Amelia — buildability. You build all of it against the single-source runtime (PRD §7.3), the
+    data-attribute control mechanism and the compiler. Say plainly what is cheap, what is a week,
+    and where a spec is hand-waving.
+  Murat — testability: for every ruling, the fixture or probe that proves it.
+  Sally — the person editing their site: is the control still understandable after the ruling?
+  Dana — the shippable version, whenever Winston and Amelia disagree.
+
+House rules for tonight:
+  - The owner is in the room and rules. Present each item as a numbered decision with its options
+    and ONE marked (RECOMMENDED), in plain language with a concrete example — then wait.
+  - Standing rule 1 binds Ravi hardest: cite the companion section, the docs URL or the helper name,
+    or send it to execution.
+  - Work the agenda in this order: ghost-infeasible findings first (they can delete designs), then
+    the owner-flag register category by category, then the arch-gaps, then the PRD amendments.
+  - Nothing is closed until it reaches an owning document (standing rule 4). Close the session by
+    writing prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md: every decision numbered,
+    the ruling, who owns its propagation (PRD line · AD · register row · spec), and the execution
+    list for a /bmad-build probe run if any item needs one. Top up this room&#x27;s memory, register the
+    file in tools/doc-audit.py, and run `python3 tools/doc-audit.py --check`.</pre></div>
+</section><section class="step next" id="s5">
   <div class="shead">
     <span class="snum">5</span>
     <div class="stitle"><h2>Journeys and flows</h2>
-      <span class="badge ready">ready when unblocked</span></div>
+      <span class="badge next">next up</span></div>
   </div>
-  <p class="stands">Blocked only on prompt 2 being EXPORTED — the work itself is already done. Nothing here depends on the 484 designs, so this can run alongside them rather than after.</p>
+  <p class="stands">Fully unblocked — 4a has reported on the S-screens. Its §37.7 lists the editor surfaces with no frame, the flows drawn on wrong semantics, and the journeys that hold; that is this step&#x27;s input. Runs alongside the inventory merge.</p>
   <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified.</dd>
-  <dt>Waiting on</dt><dd>prompt 2 landing in design/</dd></dl>
+  </dl>
   <div class="prompt live"><div class="phead"><h4>Journeys and flows</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-ux
 
 Create the UX specifications for Inflozo: the mandated journeys and flows.
@@ -400,8 +588,11 @@ miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PER
 journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
 target excludes the token step, which is what makes it reachable.
 
-Existing design surfaces are in design/mockups/ (27 from prompt 1) plus prompt 2&#x27;s output.
-Design artifacts are non-normative; the PRD wins on any conflict.
+Existing design surfaces: design/mockups/ (27 from prompt 1) and the design export at
+design/claude-design-export/Inflozo/ — the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s
+output) plus the P0 editor primitives. If step 4a&#x27;s report exists
+(prds/prd-Inflozo-2026-08-17/reconcile-designs.md), read it first: it names the screens that
+must move. Design artifacts are non-normative; the PRD wins on any conflict.
 
 Appendix H is the voice canon and governs every string you write.">Copy prompt</button></div><pre>/bmad-ux
 
@@ -430,8 +621,11 @@ miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PER
 journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
 target excludes the token step, which is what makes it reachable.
 
-Existing design surfaces are in design/mockups/ (27 from prompt 1) plus prompt 2&#x27;s output.
-Design artifacts are non-normative; the PRD wins on any conflict.
+Existing design surfaces: design/mockups/ (27 from prompt 1) and the design export at
+design/claude-design-export/Inflozo/ — the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s
+output) plus the P0 editor primitives. If step 4a&#x27;s report exists
+(prds/prd-Inflozo-2026-08-17/reconcile-designs.md), read it first: it names the screens that
+must move. Design artifacts are non-normative; the PRD wins on any conflict.
 
 Appendix H is the voice canon and governs every string you write.</pre></div>
 </section><section class="step later" id="s6">
@@ -442,13 +636,15 @@ Appendix H is the voice canon and governs every string you write.</pre></div>
   </div>
   <p class="stands">Expands section 8 into stories. It does not re-plan anything.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
-  <dt>Waiting on</dt><dd>steps 4 and 5</dd></dl>
+  <dt>Waiting on</dt><dd>the inventory merge, and step 5</dd></dl>
   <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-Architecture: (path from step 1)
+Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
+Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
+reconcile-designs-decisions.md — the rulings there bind the stories.
 
 Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
 owning epic — 130 FRs, each owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
@@ -472,7 +668,9 @@ its specs in sections-inventory.md (§4).">Copy prompt</button></div><pre>/bmad-
 Create the epics and stories list for Inflozo.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-Architecture: (path from step 1)
+Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
+Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
+reconcile-designs-decisions.md — the rulings there bind the stories.
 
 Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
 owning epic — 130 FRs, each owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand

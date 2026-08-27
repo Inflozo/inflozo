@@ -1,0 +1,22 @@
+{
+  "name": "inflozo-probe-47",
+  "description": "VERIFY item 47 \u2014 {{#get}} abort threshold",
+  "version": "1.0.0",
+  "engines": {
+    "ghost": ">=5.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ghost",
+    "theme",
+    "ghost-theme"
+  ],
+  "author": {
+    "name": "Inflozo",
+    "email": "hello@inflozo.com"
+  },
+  "config": {
+    "posts_per_page": 12,
+    "card_assets": true
+  }
+}

@@ -176,21 +176,32 @@ RESEARCH = os.path.join(os.path.dirname(PROMPT), '..', 'prds', 'prd-Inflozo-2026
 
 
 def module_registry():
-    """FR-G7's 31 modules and FR-G4's no-JS degradations, read from their source of truth.
+    """FR-G7's behaviour modules and FR-G4's no-JS degradations, read from their source of truth.
 
     A1 and A7 both invented a parallel `M-*` module vocabulary and wrote their own no-JS
     statements, because the prompt asked for a module and never said a registry existed.
     Two of those inventions contradicted a written acceptance criterion. Emitted into every
-    prompt so the author cites instead of inventing; derived, so it cannot drift."""
+    prompt so the author cites instead of inventing; derived, so it cannot drift.
+
+    The count is DERIVED from §2.1, never asserted (standing rule 3). It used to read
+    `assert len(names) == 31`, which is precisely the hardcoded-class-membership failure
+    doc-audit.py's own header records finding twice — and it duly broke on 2026-08-27 when the
+    Ghost Build Room deleted two modules and added three. What is asserted instead is the
+    invariant that actually matters: every module in §2.1 has a no-JS degradation in §7."""
     txt = open(RESEARCH, encoding='utf8').read()
     names = re.findall(r'^\| \d+ \| \*\*`([a-z-]+)`\*\*', txt, re.M)
     sec = txt[txt.index('\n## 7'):]
     sec = sec[:sec.index('\n## Appendix')]
-    degr = re.findall(r'^\| `([a-z-]+)` \| (.+?) \|\s*$', sec, re.M)
-    assert len(names) == 31, f'expected 31 modules in the registry, parsed {len(names)}'
-    missing = [n for n in names if n not in dict(degr)]
+    # §7 carries three columns since 2026-08-27: module | no-JS degradation | edit-safe (FR-D20).
+    # Take the no-JS column only; the edit-safe column is the editor's, not the prompt's.
+    degr = re.findall(r'^\| `([a-z-]+)` \| (.+?) \| (.+?) \|\s*$', sec, re.M)
+    degr = {n: d for n, d, _e in degr}
+    assert names, 'no modules parsed from research §2.1 — the registry table moved or changed shape'
+    missing = [n for n in names if n not in degr]
     assert not missing, f'modules with no no-JS degradation on record: {missing}'
-    rows = '\n'.join(f'| `{n}` | {dict(degr)[n]} |' for n in names)
+    orphan = [n for n in degr if n not in names]
+    assert not orphan, f'no-JS degradation on record for a module §2.1 does not list: {orphan}'
+    rows = '\n'.join(f'| `{n}` | {degr[n]} |' for n in names)
     return f"""## Behaviour modules — a FIXED registry. Do not invent one.
 
 Every piece of JavaScript a generated theme can run comes from these **{len(names)}** modules
@@ -340,8 +351,29 @@ BUILD_ORDER = [
 ]
 
 
+# Shown once every category is designed, pointing at where the design work moved. The card only
+# renders when CONTROL-PROMPTS.html actually exists, so this page never links to a missing file.
+NEXT_STEP = '''<div class="how"><h2>Next: the controls reconciliation</h2>
+<p style="margin:0">Every category's sidebar controls were audited against the PRD and Ghost's real
+data surface. The patch prompts for that pass — one per category plus a shared-primitives session —
+are in <a href="CONTROL-PROMPTS.html"><b>CONTROL-PROMPTS.html</b></a>. Run those, not the prompts
+below.</p></div>'''
+
+
 def ordinal(n):
     return f"{n}{'th' if 10 <= n % 100 <= 20 else {1:'st',2:'nd',3:'rd'}.get(n % 10, 'th')}"
+
+
+# Categories deleted AFTER they were designed. The prompt that built one stays in the
+# prompt file — it is the record of what was run — but its card carries no copy button,
+# because re-running it would rebuild a category the owner has cut.
+DELETED_CATEGORIES = {
+    'A23': "Deleted by ruling R-24 (owner, 2026-08-27): search is not a section. All fifteen "
+           "designs are cut. Search is now an affordance on A1 — Off · Icon · Button · Bar — "
+           "that opens Ghost's native search, and the Link Picker gains \u201cGhost search\u201d "
+           "as a destination. The prompt below built the category and is kept as the record; "
+           "there is deliberately no copy button. See reconcile-designs-decisions.md \u00a7A R-24.",
+}
 
 
 def build():
@@ -349,7 +381,7 @@ def build():
     e = html.escape
     date = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
                           capture_output=True, text=True).stdout.strip()
-    rows, n_patch, n_build = [], 0, 0
+    rows, n_patch, n_build, n_dead = [], 0, 0, 0
     seq = {cid: i for i, (cid, _) in enumerate(BUILD_ORDER)}
     why = dict(BUILD_ORDER)
     missing = [c['id'] for c in cats if c['id'] not in done and c['id'] not in seq]
@@ -358,12 +390,16 @@ def build():
     cats = sorted(cats, key=lambda c: (c['id'] in done, seq.get(c['id'], 0)))
     for c in cats:
         ds = done.get(c['id'])
-        if ds:
+        if c['id'] in DELETED_CATEGORIES:
+            n_dead += 1
+            kind, label = 'dead', 'deleted — do not run'
+            body, note = '', DELETED_CATEGORIES[c['id']]
+        elif ds:
             n_patch += 1
             kind, label = 'patch', f'{len(ds)} designs · run and verified'
             body = patch_prompt(c, ds)
-            note = ('Done — this prompt was run and its output verified against the gates. '
-                    'Kept for re-runs only; you do not need to run it again.')
+            note = ('Done — this category is designed and its export verified. The patch prompt '
+                    'exists only for a re-run; you do not need to run it.')
         else:
             n_build += 1
             kind, label = 'build', f"{c['n']} designs · run {ordinal(n_build)}"
@@ -373,11 +409,12 @@ def build():
   <div class="chead">
     <span class="cid">{e(c['id'])}</span>
     <div class="cmeta"><h3>{e(c['name'])}</h3><span class="clabel">{e(label)}</span></div>
-    <span class="ctag {kind}">{'patch' if kind=='patch' else 'build'}</span>
-    <button class="copy" data-t="{e(body)}">Copy prompt</button>
+    <span class="ctag {kind}">{kind}</span>
+    {'' if kind == 'dead' else f'<button class="copy" data-t="{e(body)}">Copy prompt</button>'}
   </div>
   <p class="cnote">{e(note)}</p>
-  <details><summary>Show the prompt ({len(body):,} characters)</summary><pre>{e(body)}</pre></details>
+  {'' if kind == 'dead' else
+   f'<details><summary>Show the prompt ({len(body):,} characters)</summary><pre>{e(body)}</pre></details>'}
 </div>''')
 
     open(OUT, 'w', encoding='utf8').write(f'''<!doctype html>
@@ -418,6 +455,9 @@ background:var(--code);border-radius:7px;padding:4px 9px;min-width:44px;text-ali
 .clabel{{font-size:.82rem;color:var(--muted)}}
 .ctag{{font-size:.68rem;font-weight:680;padding:2px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}}
 .ctag.patch{{background:var(--patch-s);color:var(--patch)}}
+.ctag.dead{{background:#f3f4f6;color:#6b7280;text-decoration:line-through}}
+.cat.dead{{opacity:.72}}
+.cat.dead h3{{text-decoration:line-through}}
 .ctag.build{{background:var(--build-s);color:var(--build)}}
 .cnote{{margin:8px 0 0;font-size:.86rem;color:var(--muted)}}
 details{{margin-top:9px}}
@@ -433,9 +473,8 @@ h2.grp{{font-size:1.1rem;margin:34px 0 4px;font-weight:690}}
 footer{{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}}
 </style></head><body><div class="wrap">
 <div class="kick">Inflozo</div><h1>Category prompts</h1>
-<p class="lede">One button per category. <b>Patch</b> fixes a category you have already designed;
-<b>build</b> designs one you have not started. Every prompt is self-contained — copy, open a new
-Claude Design chat, paste, done.</p>
+<p class="lede">{f'All {len(cats)} categories are designed. These are the prompts that built them, kept for re-runs; the live design work has moved to the controls-reconciliation prompts.' if n_build == 0 else 'One button per category. <b>Patch</b> fixes a category you have already designed; <b>build</b> designs one you have not started. Every prompt is self-contained — copy, open a new Claude Design chat, paste, done.'}</p>
+{NEXT_STEP if n_build == 0 and os.path.exists(os.path.join(PLAN, 'CONTROL-PROMPTS.html')) else ''}
 
 <div class="counts">
   <span class="pill"><b>{n_patch}</b> to patch</span>
@@ -453,11 +492,13 @@ Claude Design chat, paste, done.</p>
     continuing.</li>
 </ol></div>
 
-<h2 class="grp">Run these, in this order — 22 categories to build</h2>
+{f'<h2 class="grp">Run these, in this order — {n_build} categories to build</h2>' if n_build else ''}
 {''.join(r for r in rows if 'class="cat build"' in r)}
 
-<h2 class="grp">Done and verified — the 12 patch prompts, kept only for re-runs</h2>
+<h2 class="grp">Done and verified — {'all ' if n_build == 0 else ''}{n_patch} patch prompts, kept only for re-runs</h2>
 {''.join(r for r in rows if 'class="cat patch"' in r)}
+{f'<h2 class="grp">Deleted after the design pass — {n_dead} category, no prompt</h2>' if n_dead else ''}
+{''.join(r for r in rows if 'class="cat dead"' in r)}
 
 <footer>Generated {e(date)} from <code>design/claude-design-prompt-3-library.md</code> and the design
 export. The master brief inside every build prompt is extracted from that file, never retyped, so

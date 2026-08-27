@@ -220,6 +220,8 @@ Not in any native context. Offer these only through a `{{#get}}`-driven section 
 - Read queries (by `id`/`slug`) accept only `include`.
 - Block params: `{{#get "posts" as |articles pages|}}` — the second is the pagination object.
 - A slow `{{#get}}` is **aborted**: it yields an empty collection plus a visible `<span data-aborted-get-helper>Could not load content</span>` and sets `X-Ghost-Degraded-Render`. Every `{{#get}}`-driven section must degrade gracefully (FR-H8 guards cover this).
+- **The abort is per get, not per template — measured, `MEASUREMENTS.md §30`, VERIFY item 47.** Each `{{#get}}` is raced on its own against `optimization.getHelper.timeout.threshold`, **5000 ms and identical on 5.130.6 and 6.58.0**. There is **no cumulative per-template budget**: 150 single-id gets on one template resolved in full on both majors, with no abort marker and no degraded header. Earlier text here read as a per-template threshold and was wrong; the number that actually bounds hand-picked order is **latency, ≈ 10 ms per get on Ghost 6 and ≈ 8 ms on Ghost 5**, not an abort.
+- **Ghost 6 dedups identical gets within one render; Ghost 5 does not** (`get.js` `_queryCache`, register item 52). Never cost a design on the assumption that repeating a get is free.
 
 ---
 

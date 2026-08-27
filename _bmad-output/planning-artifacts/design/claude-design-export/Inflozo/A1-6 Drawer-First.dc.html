@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A1 HEADERS &amp; NAVIGATION · DESIGN 6 OF 16 · PAPER PACK</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Drawer-First</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">No nav in the bar, at any width. A wordmark, a labelled Menu button, search, one action — and a takeover that holds the whole navigation at display size. The trade is deliberate: the page loses at-a-glance orientation and gains a header that never runs out of room, the right trade for a publication with 14 sections and no obvious five. It is also the design that absorbs the worst content: the stress case from A1·0 fits here without folding anything.</p>
+</section>
+
+<section data-screen-label="A1-6 desktop resting" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · closed</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="height:76px;display:flex;align-items:center;padding:0 72px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#232019">Orbit Weekly</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+          <span style="width:38px;height:38px;border-radius:8px;border:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;color:#6B6459">⌕</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;font-size:14px;font-weight:500;color:#232019"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:16px;height:1.5px;background:#232019"></span><span style="width:16px;height:1.5px;background:#232019"></span></span>Menu</span>
+        </div>
+      </div>
+      <div style="padding:56px 72px 64px;display:flex;gap:48px">
+        <div style="flex:1.15;display:flex;flex-direction:column;gap:14px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+          <p style="margin:0;font-size:16px;line-height:1.6;color:#6B6459;max-width:480px">Why writers are leaving the feed — and coming home to a page of their own.</p>
+        </div>
+        <div style="flex:1;border-radius:8px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);min-height:200px"></div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1440px">The button is labelled, not a bare glyph: an unlabelled glyph has to be guessed at, and “Menu” costs 46 px. The rules are 16 px and two, never three — established here and reused by every drawer toggle in the library. The 38 px search button joins the bar beside Subscribe and Menu (this pass) — search must not live only behind the takeover.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · takeover open · desktop 1440 · the design’s real subject</div>
+    <div style="width:1440px;background:#F4F0E8;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="height:76px;display:flex;align-items:center;padding:0 72px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#232019">Orbit Weekly</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+          <span style="width:38px;height:38px;border-radius:8px;border:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;color:#6B6459">⌕</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;background:#FFFFFF;font-size:14px;font-weight:500;color:#232019"><span style="font-size:16px;line-height:1">×</span>Close</span>
+        </div>
+      </div>
+      <div style="padding:52px 72px 60px;display:flex;gap:64px">
+        <div style="flex:1.6;display:flex;flex-direction:column;gap:0">
+          <div style="display:flex;align-items:center;gap:9px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:12px 16px;margin-bottom:28px;max-width:420px"><span style="font-size:19px;line-height:1;color:#6B6459">⌕</span><span style="font-size:15px;color:#6B6459">Search Orbit Weekly</span></div>
+          <div style="display:flex;gap:56px">
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#6B6459;text-transform:uppercase;padding-bottom:10px">Sections</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Essays</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Interviews</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Field Notes</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Reviews</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">The Long Read</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#6B6459;text-transform:uppercase;padding-bottom:10px">More</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Archive</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">About</span>
+              <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.35;color:#232019">Contact</span>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+                <span style="font-size:14px;color:#6B6459">Newsletter</span>
+                <span style="font-size:14px;color:#6B6459">Membership</span>
+                <span style="font-size:14px;color:#6B6459">Privacy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:14px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Latest</span>
+          <div style="border-radius:8px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);height:170px"></div>
+          <h3 style="margin:0;font-family:Georgia,serif;font-size:23px;font-weight:700;line-height:1.2;color:#232019">What we lost when blogrolls died</h3>
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:24px;height:24px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">MR</span><span style="font-size:13px;color:#6B6459">Mara Ruiz · 19 August</span></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1440px">The takeover keeps the bar in place and fills the rest with <strong style="font-weight:600">surface</strong>: the Menu button becomes Close, the wordmark stays put, and nothing about the page’s position is forgotten. Two columns of sections in the pack heading font at 30 px, secondary links beneath the second column at body size, and one featured post — the drawer is the only place in A1 that renders content, and it renders exactly one item. Grandchildren indent under their child here, as in every dropdown. The “Latest” eyebrow is the featuredHeading field, editable inline (P0·1); Show date and Show excerpt govern the post’s meta. With Nav children = From Ghost navigation, the “Sections” and “More” headlines come from Ghost’s “+” labels (≤ 5 columns; more than 3 hides the latest-post column; past 5 the rest fold under the last) and unprefixed items render as the plain-link row — ARCHITECT: registry addition (nav-transform).</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:9px;border:1px dashed #DED7CB;border-radius:8px;padding:10px;box-sizing:border-box">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;letter-spacing:0.06em">UNIVERSAL · OUTSIDE THIS LIST</span>
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span><span style="font-size:11.5px;color:#232019">Background <span style="font-size:9px;color:#6E6A64">▾</span></span></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Vertical spacing <span style="font-weight:400">— bar height</span></span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Top divider</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">None</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Line</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Fade</span></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;gap:4px;padding:6px;box-sizing:border-box"><span style="width:8px;height:8px;border-radius:2px;background:#C9C2B6"></span><span style="width:16px;height:3px;background:#DED7CB"></span><span style="margin-left:auto;width:12px;height:6px;border-radius:2px;background:#DED7CB"></span></div>
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:flex-start;justify-content:center;padding:6px;box-sizing:border-box"><span style="width:48px;height:12px;border-radius:6px;border:1.5px solid #DED7CB"></span></div>
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;align-items:center;justify-content:space-between;padding:6px;box-sizing:border-box"><span style="width:8px;height:8px;border-radius:2px;background:#C9C2B6"></span><span style="display:flex;flex-direction:column;gap:2px"><span style="width:12px;height:2px;background:#FF5941"></span><span style="width:12px;height:2px;background:#FF5941"></span></span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Menu button</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Icon + label</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Label only</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Icon only</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Takeover</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">Full page below bar</span><span style="font-size:9px;color:#6E6A64">▾</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Takeover ground</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Contrast</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Featured post in menu</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+        <span style="font-size:10.5px;color:#6E6A64;line-height:1.45">Source in the Data group — Latest · Featured · By tag · By author · Hand-picked (P0·5)</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Show date</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Show excerpt</span><span style="width:34px;height:20px;border-radius:24px;background:#DED7CB;display:flex;align-items:center;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Subscribe in bar</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Search in header</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Dark mode toggle</span><span style="width:34px;height:20px;border-radius:24px;background:#DED7CB;display:flex;align-items:center;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border-top:1px solid #E7E2DB;padding-top:10px">9 controls · universal trio outside the list · no nav in the bar to position</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">STATES · hover and focus</div>
+      <div style="width:560px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:22px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">MENU BUTTON · resting → hover → focus-visible → open</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;font-size:14px;font-weight:500;color:#232019"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:16px;height:1.5px;background:#232019"></span><span style="width:16px;height:1.5px;background:#232019"></span></span>Menu</span>
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #DCD3C6;background:#F4F0E8;font-size:14px;font-weight:500;color:#232019"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:16px;height:1.5px;background:#232019"></span><span style="width:16px;height:1.5px;background:#232019"></span></span>Menu</span>
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;font-size:14px;font-weight:500;color:#232019;box-shadow:0 0 0 2px #FBF9F5,0 0 0 4px #D96C3F"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:16px;height:1.5px;background:#232019"></span><span style="width:16px;height:1.5px;background:#232019"></span></span>Menu</span>
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;background:#FFFFFF;font-size:14px;font-weight:500;color:#232019"><span style="font-size:16px;line-height:1">×</span>Close</span>
+          </div>
+          <span style="font-size:12.5px;line-height:1.5;color:#6B6459">Hover fills to the hover surface and darkens the hairline one step — the button must feel pressable, because it is the only way into the navigation. The rules do not animate into an X; they cross-fade with the label in 160 ms, which survives reduced-motion as an instant swap.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;border-top:1px solid #EBE5DB;padding-top:16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">TAKEOVER ITEM · resting → hover → focus-visible</span>
+          <div style="display:flex;flex-direction:column;gap:2px;background:#F4F0E8;border-radius:8px;padding:12px 14px">
+            <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#232019">Field Notes</span>
+            <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#232019;text-decoration:underline;text-decoration-color:#D96C3F;text-decoration-thickness:2px;text-underline-offset:5px">Reviews</span>
+            <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#232019;box-shadow:0 0 0 2px #D96C3F;border-radius:4px;padding:0 4px;width:fit-content">Archive</span>
+          </div>
+          <span style="font-size:12.5px;line-height:1.5;color:#6B6459">At display size, colour change is too quiet to register — so takeover items underline on hover in the accent at 2 px, offset 5. This is the one place the library allows a hover underline, because there is no active-state underline in the takeover to confuse it with.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop · takeover open</div>
+      <div style="width:900px;background:#211D17;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+        <div style="height:76px;display:flex;align-items:center;padding:0 44px;border-bottom:1px solid #332E27;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#E0805A;color:#1A120C;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#F2EDE4">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+            <span style="width:38px;height:38px;border-radius:8px;border:1px solid #3D372E;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;color:#A79E8F">⌕</span>
+            <span style="padding:9px 17px;border-radius:8px;background:#E0805A;color:#1A120C;font-size:14px;font-weight:600">Subscribe</span>
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #3D372E;background:#2A251E;font-size:14px;font-weight:500;color:#F2EDE4"><span style="font-size:16px;line-height:1">×</span>Close</span>
+          </div>
+        </div>
+        <div style="padding:40px 44px 48px;display:flex;gap:44px">
+          <div style="flex:1.5;display:flex;gap:40px">
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#A79E8F;text-transform:uppercase;padding-bottom:10px">Sections</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Essays</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Interviews</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Field Notes</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Reviews</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#A79E8F;text-transform:uppercase;padding-bottom:10px">More</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Archive</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">About</span>
+              <span style="font-family:Georgia,serif;font-size:27px;font-weight:700;line-height:1.35;color:#F2EDE4">Contact</span>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#E0805A;text-transform:uppercase">Latest</span>
+            <div style="border-radius:8px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);height:130px"></div>
+            <h3 style="margin:0;font-family:Georgia,serif;font-size:21px;font-weight:700;line-height:1.2;color:#F2EDE4">What we lost when blogrolls died</h3>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:900px">Dark takeover sits on surface #211D17, one step up from the page ground, so the bar’s hairline still separates them. Choosing the Contrast ground instead gives a near-black panel in light mode and a near-paper one in dark — inverted both times, which is why it is a control and not the default.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · closed · unchanged but for measure</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="height:76px;display:flex;align-items:center;padding:0 40px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <span style="width:38px;height:38px;border-radius:8px;border:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;color:#6B6459">⌕</span>
+            <span style="padding:9px 16px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+            <span style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:8px;border:1px solid #EBE5DB;font-size:14px;font-weight:500;color:#232019"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:16px;height:1.5px;background:#232019"></span><span style="width:16px;height:1.5px;background:#232019"></span></span>Menu</span>
+          </div>
+        </div>
+        <div style="padding:36px 40px 44px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:34px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019;max-width:520px">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px">Closed, tablet is pure narrowing: height and both buttons hold, padding 72 → 40, wordmark 19 → 18. This design has nothing to fold, which is its whole argument. <strong style="font-weight:600">Open</strong>, the takeover does change at 834: the two section columns become one and the featured post moves beneath the list rather than beside it — drawn at 390 below, since the tablet open state is the same single-column arrangement at a wider measure.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · closed / takeover open</div>
+      <div style="display:flex;gap:16px">
+        <div style="width:390px;height:520px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+          <div style="height:64px;display:flex;align-items:center;gap:8px;padding:0 12px 0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+              <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:#232019">⌕</span>
+              <span style="padding:8px 13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Join</span>
+              <span style="display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:8px;border:1px solid #EBE5DB;font-size:13px;font-weight:500;color:#232019"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:14px;height:1.5px;background:#232019"></span><span style="width:14px;height:1.5px;background:#232019"></span></span>Menu</span>
+            </div>
+          </div>
+          <div style="padding:28px 20px;display:flex;flex-direction:column;gap:11px">
+            <span style="font-size:12px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47</span>
+            <h2 style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#6B6459">Why writers are leaving the feed — and coming home to a page of their own.</p>
+            <div style="height:130px;border-radius:8px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px)"></div>
+          </div>
+        </div>
+        <div style="width:390px;height:520px;background:#F4F0E8;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column">
+          <div style="height:64px;flex-shrink:0;display:flex;align-items:center;padding:0 12px 0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:8px;border:1px solid #EBE5DB;background:#FFFFFF;font-size:13px;font-weight:500;color:#232019"><span style="font-size:15px;line-height:1">×</span>Close</span>
+          </div>
+          <div style="flex:1;padding:14px 20px 0;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:9px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:11px 13px;margin-bottom:14px"><span style="font-size:18px;line-height:1;color:#6B6459">⌕</span><span style="font-size:14px;color:#6B6459">Search Orbit Weekly</span></div>
+            <span style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#232019;padding:9px 0">Essays</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0"><span style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#232019">Sections</span><span style="font-size:12px;color:#6B6459">▾</span></div>
+            <span style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#232019;padding:9px 0">Interviews</span>
+            <span style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#232019;padding:9px 0">Archive</span>
+            <div style="display:flex;flex-wrap:wrap;gap:10px 18px;padding:14px 0 0;margin-top:6px;border-top:1px solid #EBE5DB">
+              <span style="font-size:13.5px;color:#6B6459">Newsletter</span>
+              <span style="font-size:13.5px;color:#6B6459">Membership</span>
+              <span style="font-size:13.5px;color:#6B6459">Privacy</span>
+            </div>
+          </div>
+          <div style="flex-shrink:0;border-top:1px solid #EBE5DB;padding:12px 20px 16px;display:flex;flex-direction:column;gap:8px">
+            <span style="text-align:center;padding:13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:15px;font-weight:600">Subscribe</span>
+            <span style="text-align:center;padding:13px;border-radius:8px;border:1px solid #EBE5DB;font-size:15px;font-weight:500;color:#232019">Sign in</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:796px">One column, item size 30 → 25, secondary links become a wrapping row on a hairline, and the featured post is dropped — at 390 it would push the actions two screens down. That is the one piece of content this design drops rather than relocates, and the sidebar says so when the control is set to a chosen post.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">ACCESSIBILITY · the takeover is the whole problem</div>
+      <div style="width:560px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px">
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">1</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">The toggle owns the relationship.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">button aria-expanded aria-controls</code> pointing at the takeover panel, with its accessible name changing from “Menu” to “Close”. The visible label and the accessible name are the same string — no aria-label overriding visible text.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">2</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Focus is trapped and returned.</strong> Opening moves focus to the search field, or to the first nav item when search is off. Tab cycles inside the panel; Escape closes and returns focus to the toggle. The page behind is inert and does not scroll.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">3</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Reading order matches the columns.</strong> The takeover is one <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">nav</code> containing two lists with their eyebrows as list labels, then the secondary list, then the featured post as a separate region — so a screen reader hears “Sections, 5 items” rather than ten unrelated links. Column layout is CSS, never DOM order.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">4</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">30 px items still need a hit area.</strong> Display-size links are tall but narrow; each row is a full-width target with 44 px minimum height, so tapping the gap beside a word still works.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#6B6459;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">5</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">No hover-only route.</strong> The takeover opens on click, never on hover — the entire navigation would otherwise be unreachable to touch and unstable to a tremor.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+  <div style="width:1440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A1·6 DRAWER-FIRST · full text in “A1 Headers — Spec.md”</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Content fields</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Shared A1 list — and the only design that uses <em>all</em> of it, since nothing has to be hidden for room: navItems with no cap, children two deep, secondaryNav, socialLinks, signInLabel, cta pair, searchEnabled, darkModeToggle. Adds featuredPost (bound in the Data group), featuredHeading (“Latest”, inline-editable), and menuLabel/closeLabel (defaults “Menu”/“Close”).</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Data</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Ghost primary nav fills column one, secondary nav the row beneath column two. The featured block populates from the P0·5 sources (single-post mode: Latest · Featured · By tag · By author · Hand-picked); if the site has 0 posts the block is dropped and the columns re-centre. Empty primary nav → the Menu button is not rendered at all, because a takeover with nothing in it is a dead end; the bar becomes wordmark + search + action. Ghost-prefix mode builds the takeover from “+” groups (read-only lists — “Edit navigation in Ghost”; ARCHITECT: nav-transform).</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Responsive · empty · a11y</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Closed: 1440–768 narrows only; ≤ 767 wordmark 17, short CTA label, Menu keeps its label at 13 px. Open: two columns ≥ 1024, one column below, featured post beneath the list at 834 and dropped at ≤ 767. <strong style="font-weight:600">a11y:</strong> see the annotated frame — expanded/controls on the toggle, focus trapped and returned, page inert, one nav with labelled lists, 44 px rows, click-only.</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showSpec: this.props.showSpec ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

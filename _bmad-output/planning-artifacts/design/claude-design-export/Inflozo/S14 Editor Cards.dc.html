@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#1C1B1A; text-decoration:none; }
+  a:hover { color:#FF5941; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">P0·7 · NEW SCREEN S14 · IN THE S4 EDITOR'S LEFT NAVIGATION, ALSO REACHABLE FROM THEME SETTINGS · KOENIG CARDS ARE STYLED ONCE PER PROJECT, NOT PER POST</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">S14 · Editor cards</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:760px;text-wrap:pretty">Ghost's post editor writes Koenig cards into every post body; their styling on the live site is the theme's job. This screen lets the user design them: an A33 treatment for the whole set, a card-type dropdown in the top bar (the S4 template-switcher pattern), the chosen card rendered live inside the style-guide post fixture at reading width, and that card's own panel on the right — 4–7 controls, named values, plus Reset to Ghost default.</p>
+</section>
+
+<section data-screen-label="S14a dropdown open" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14a · EDITOR CARDS — CARD-TYPE DROPDOWN OPEN · ALL TWENTY KOENIG CARDS IN GHOST'S ORDER, "CUSTOMISED" BADGES WHERE A VALUE CHANGED ⚑ · 1440</div>
+<div data-screen-label="S14a Editor cards dropdown" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+  <div style="height:48px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;position:relative;z-index:4">
+    <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+    <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+    <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer"><span style="font-size:12px;font-weight:500;color:#6E6A64">Treatment</span><span style="font-size:12.5px;font-weight:600">Card</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.25);cursor:pointer"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card</span><span style="font-size:12.5px;font-weight:600">Callout</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+      <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg><span style="font-size:12px;font-weight:500;color:#6E6A64">View as</span><span style="font-size:12.5px;font-weight:600">Anonymous</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+    </div>
+    <div style="position:absolute;left:calc(50% - 47px);top:44px;transform:translateX(-50%);width:250px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;gap:0px;z-index:9;max-height:660px">
+      <div style="padding:7px 10px 5px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">EVERY KOENIG CARD · GHOST'S ORDER</div>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Image</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Markdown</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">HTML</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Gallery<span style="font-size:9.5px;font-weight:600;color:#8A6100;background:#FFF4D6;border-radius:24px;padding:1px 7px">customised</span></span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Divider</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Bookmark</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Email content</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Call to action <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">NO COLOUR CTLS</span></span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Public preview</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Button</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:600;background:#FFEDE8;cursor:pointer">Callout<span style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:9.5px;font-weight:600;color:#8A6100;background:#FFF4D6;border-radius:24px;padding:1px 7px">customised</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">GIF</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Toggle</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Audio</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Video</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">File</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Product</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Header <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">NO COLOUR CTLS</span></span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Embeds</span>
+      <span style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer">Signup <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">NO COLOUR CTLS</span></span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="display:flex;height:32px;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+        <span style="display:inline-flex;align-items:center;padding:0 16px;background:#C2381F;color:#FFFFFF;font-size:13px;font-weight:600;cursor:pointer">Ship it</span>
+        <span style="width:26px;background:#C2381F;border-left:1px solid rgba(255,255,255,.25);color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;flex-shrink:0;background:#F7F5F2">
+      <div style="padding:10px 8px;display:flex;flex-direction:column;gap:2px">
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span style="font-size:13px;font-weight:500;color:#6E6A64;flex:1">Pages</span></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"></rect><rect x="13" y="3" width="8" height="8" rx="1"></rect><rect x="3" y="13" width="8" height="8" rx="1"></rect><rect x="13" y="13" width="8" height="8" rx="1"></rect></svg><span style="font-size:13px;font-weight:500;color:#6E6A64;flex:1">Layers</span></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#FFEDE8;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span style="font-size:13px;font-weight:600;flex:1">Editor cards</span></div>
+      </div>
+      <div style="border-top:1px solid #E7E2DB;padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:11px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Customised</span>
+        <span style="font-size:12.5px;font-weight:500;cursor:pointer">Callout</span>
+        <span style="font-size:12.5px;font-weight:500;cursor:pointer">Gallery</span>
+        <span style="font-size:11.5px;color:#A8A29A">18 cards on Ghost defaults</span>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #E7E2DB;padding:12px 16px"><span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Cards are styled once, site-wide. Authors keep inserting them per post in Ghost.</span></div>
+    </div>
+    <div style="flex:1;background:#EDEAE6;overflow:hidden;padding:24px 28px 0;min-width:0">
+      <div style="max-width:864px;margin:0 auto;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10);overflow:hidden;height:100%;padding:44px 0 0">
+        <div style="max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STYLE-GUIDE POST FIXTURE · C.4 · READING WIDTH · LIVE IN THE PROJECT'S STYLE PACK (PAPER)</span>
+          <span style="font-family:Georgia,serif;font-size:32px;font-weight:700;line-height:1.12;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</span>
+          <span style="font-size:12px;color:#6B6459">Maya Chen · Aug 14 · 9 min read</span>
+          <p style="margin:0;font-size:15.5px;line-height:1.7;color:#232019;font-family:Georgia,serif">The web used to point outward. A blogroll was a list of other people's homes, kept in public and updated by hand — reading one felt like being handed a map.</p>
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px 22px;display:flex;gap:14px;align-items:flex-start;margin:10px 0">
+            <span style="font-size:20px;line-height:1;flex-shrink:0">💡</span>
+            <span style="font-size:14.5px;line-height:1.6;color:#232019;font-family:'Inter',sans-serif">Every essay in this series is free to read. The print annual collects them each October.</span>
+          </div>
+          <p style="margin:0;font-size:15.5px;line-height:1.7;color:#232019;font-family:Georgia,serif">What replaced it was a feed that points inward, and the difference is the whole story.</p>
+        </div>
+      </div>
+    </div>
+    <div style="width:280px;border-left:1px solid #E7E2DB;background:#F7F5F2;flex-shrink:0;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Callout</span><span style="font-size:9.5px;font-weight:600;color:#8A6100;background:#FFF4D6;border-radius:24px;padding:2px 8px">customised</span></div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12px;font-weight:500;color:#6E6A64">Callout colours</span>
+          <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+            <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Pack tokens</span>
+            <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Ghost's palette</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span>
+          <div style="display:flex;gap:8px">
+            <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#FBF9F5;box-shadow:inset 0 0 0 1px rgba(28,27,26,.15)"></span><span style="font-size:9px;color:#6E6A64">Base</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF;box-shadow:0 0 0 2px #F7F5F2,0 0 0 3.5px #FF5941"></span><span style="font-size:9px;color:#6E6A64">Surface</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#F4EEE4;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12)"></span><span style="font-size:9px;color:#6E6A64">Tint</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#D96C3F"></span><span style="font-size:9px;color:#6E6A64">Accent</span></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;font-weight:500">Emoji</span>
+          <div style="width:36px;height:20px;border-radius:10px;background:#FF5941;position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji size</span>
+          <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+            <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Small</span>
+            <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Large</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px">
+        <span style="font-size:11px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">From the Card treatment</span>
+        <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Plane</span><span style="font-weight:500;color:#1C1B1A">Surface</span></span>
+        <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Space around</span><span style="font-weight:500;color:#1C1B1A">Comfortable</span></span>
+        <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Corners</span><span style="font-weight:500;color:#1C1B1A">Pack radius</span></span>
+      </div>
+      <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;color:#C2381F;font-family:'Inter',sans-serif;cursor:pointer">Reset to Ghost default</button>
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#EFECE7;border-radius:8px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+        <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Header, signup and CTA cards offer no colour controls — authors set those inline in Ghost's editor.</span>
+      </div>
+    </div>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1290px"><strong style="font-weight:600">Two dropdowns in the template switcher's position</strong>: Treatment (the A33 whole-set style, one active per project) then Card (all twenty Koenig cards, Ghost's order). Per-card overrides sit on top of the treatment, which is why the panel shows treatment-decided values read-only. <strong style="font-weight:600">Colour controls are never offered for header, signup and CTA cards</strong> ⚑ — the post author sets their colours inline in Ghost's editor, and a control that silently loses to an inline style is worse than none; those three carry the note in the dropdown and in their panel. <strong style="font-weight:600">Flagged</strong> ⚑: this pass's brief lists "radius" as a callout control example, but A33's floor rules corners read-only from the pack token in every treatment — the frame follows A33 and shows Corners in the read-only block.</p>
+</section>
+
+<section data-screen-label="S14b treatment picker" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14b · THE TREATMENT DROPDOWN — THE SIX A33 WHOLE-SET STYLES, ONE ACTIVE PER PROJECT · DETAIL 520</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+  <div style="width:520px;height:420px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:48px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.25);cursor:pointer"><span style="font-size:12px;font-weight:500;color:#6E6A64">Treatment</span><span style="font-size:12.5px;font-weight:600">Card</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+      <div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card</span><span style="font-size:12.5px;font-weight:600">Callout</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+    </div>
+    <div style="position:absolute;top:54px;left:50%;transform:translateX(-50%);width:300px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;gap:1px">
+      <div style="padding:7px 10px 4px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">WHOLE SET · A33 · ONE ACTIVE PER PROJECT</div>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:18px;height:3px;background:#C9C2B8;border-radius:1px"></span></span>Plain</span>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:600;background:#FFEDE8;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:22px;height:14px;border:1px solid #C9C2B8;border-radius:3px;box-shadow:0 1px 1px rgba(28,27,26,.12)"></span></span><span style="flex:1">Card</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:28px;height:16px;background:#EFECE7;border-radius:2px;display:inline-flex;align-items:center;justify-content:center"><span style="width:16px;height:3px;background:#C9C2B8;border-radius:1px"></span></span></span>Panel</span>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:28px;height:8px;background:#E7E2DB;border-radius:2px"></span></span>Wide</span>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0"><span style="width:100%;height:10px;background:#E7E2DB"></span></span>Full Bleed</span>
+      <span style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer"><span style="width:34px;height:24px;border:1px solid #E7E2DB;border-radius:5px;background:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:28px;height:14px;background:#3B382F;border-radius:2px;display:inline-flex;align-items:center;justify-content:center"><span style="width:16px;height:3px;background:#A79E8F;border-radius:1px"></span></span></span>Contrast Band</span>
+    </div>
+    <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">Treatment ▾ — switching re-renders the fixture; per-card overrides survive where they still apply ⚑</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE TREATMENT SITS ABOVE THE PER-CARD DROPDOWN — CHOSEN FIRST, ONCE PER PROJECT · ITS OWN SIX CONTROLS (SPACE, CAPTIONS, CREDIT…) LIVE IN THE SIDEBAR WHEN NO CARD OVERRIDE IS OPEN, EXACTLY AS A33'S CARDS MODULE DREW THEM · THIS SCREEN ADDS NOTHING TO A33'S VOCABULARY, IT HOUSES IT ⚑</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">A CARD OVERRIDE THAT A NEW TREATMENT CLAIMS (E.G. PLANE) IS DROPPED WITH A ONE-LINE NOTICE IN THE PANEL — NEVER SILENTLY KEPT AND OUTVOTED</span>
+  </div>
+</div>
+</section>
+
+<section data-screen-label="S14c reset confirm" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14c · RESET TO GHOST DEFAULT — THE CONFIRM · PER CARD, NEVER WHOLE-SET · DETAIL 520</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+  <div style="width:520px;height:300px;flex-shrink:0;background:rgba(28,27,26,.35);border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;align-items:center;justify-content:center">
+    <div style="width:360px;background:#FFFFFF;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:20px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:15px;font-weight:600">Reset Callout to Ghost's default?</span>
+      <span style="font-size:13px;color:#6E6A64;line-height:1.55">Removes your 3 changes — colours, emoji and emoji size — everywhere callouts appear. Posts keep their content.</span>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+        <span style="height:32px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer">Cancel</span>
+        <span style="height:32px;display:inline-flex;align-items:center;padding:0 14px;background:#C2381F;color:#FFFFFF;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer">Reset card</span>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE SENTENCE NAMES THE COUNT AND THE CHANGED CONTROLS · "POSTS KEEP THEIR CONTENT" IS ALWAYS THE SECOND SENTENCE — THE FEAR TO ANSWER · RESET CLEARS THE CUSTOMISED BADGE IN THE DROPDOWN AND THE LEFT RAIL · UNDOABLE FROM THE EDITOR'S UNDO STACK, SO THE CONFIRM IS ONE STEP, NOT TWO</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">Reset is per card and scoped in words</strong> — the treatment choice and other cards' overrides are untouched. There is deliberately no "reset all cards": twenty decisions removed by one click is a footgun with no matching user intent.</p>
+</section>
+
+<section data-screen-label="S14d entry point" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14d · THE ENTRY POINT — "EDITOR CARDS" IN THE S4 EDITOR'S LEFT NAVIGATION · SURFACE LINKS SIT ABOVE THE LAYERS LIST · DETAIL 560</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+  <div style="width:560px;height:420px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+    <div style="height:48px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0">
+      <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
+    </div>
+    <div style="flex:1;display:flex;min-height:0">
+      <div style="width:240px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;flex-shrink:0">
+        <div style="padding:10px 8px 8px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid #E7E2DB">
+          <span style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:rgba(28,27,26,.04)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>Pages<span style="margin-left:auto;font-size:11.5px;color:#A8A29A">6</span></span>
+          <span style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:rgba(28,27,26,.04)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>Layers</span>
+          <span style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:13px;font-weight:600;background:#FFEDE8;box-shadow:inset 2px 0 0 #FF5941;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.5"><rect x="3" y="6" width="13" height="14" rx="2"></rect><path d="M8 3h11a2 2 0 0 1 2 2v11"></path></svg>Editor cards<span style="margin-left:auto;display:inline-flex;align-items:center;height:17px;padding:0 6px;border-radius:5px;background:#F7C948;font-size:10px;font-weight:600;color:#3B2E05">2</span></span>
+        </div>
+        <div style="flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;opacity:.45">
+          <span style="font-size:11px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em;padding:2px 8px 4px">This page</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:12.5px;font-weight:500">Header</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:12.5px;font-weight:500">Hero — Split Editorial</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:12.5px;font-weight:500">Post Grid — Magazine</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:12.5px;font-weight:500">Footer — Mega Grid</span>
+        </div>
+      </div>
+      <div style="flex:1;background:#EDEAE6;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div style="width:100%;max-width:240px;background:#FBF9F5;border-radius:6px;box-shadow:0 4px 16px rgba(28,27,26,.10);padding:16px;display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#A8A29A;letter-spacing:0.04em">STYLE-GUIDE POST FIXTURE</span>
+          <span style="height:6px;background:#EBE5DB;border-radius:2px;width:80%"></span>
+          <div style="border-left:3px solid #C2381F;background:#FFEDE8;border-radius:6px;padding:9px 10px;display:flex;gap:7px;align-items:flex-start"><span style="font-size:11px">💡</span><span style="height:5px;background:#E3C7BE;border-radius:2px;flex:1;margin-top:3px"></span></div>
+          <span style="height:5px;background:#EBE5DB;border-radius:2px"></span>
+          <span style="height:5px;background:#EBE5DB;border-radius:2px;width:60%"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">SURFACE LINKS — PAGES · LAYERS · EDITOR CARDS — SIT IN ONE GROUP ABOVE THE LAYERS LIST, DIVIDED BY A RULE · THE LAYERS LIST IS PER-PAGE, EDITOR CARDS IS PER-PROJECT, SO IT NEVER CHANGES WITH THE PAGE SWITCHER</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE AMBER COUNT IS THE NUMBER OF CUSTOMISED CARDS — ABSENT AT ZERO, NEVER "0"</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">ALSO REACHABLE FROM THEME SETTINGS → EDITOR CARDS; BOTH ROUTES LAND ON THE SAME SCREEN WITH THE LAST-VIEWED CARD SELECTED</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">A11Y: THE GROUP IS A NAV LANDMARK, EDITOR CARDS CARRIES ARIA-CURRENT="PAGE" WHEN ACTIVE; THE COUNT IS READ AS "2 CUSTOMISED CARDS"</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">One nav item, one screen.</strong> Card styling is a project-level decision, so it lives beside Pages and Layers rather than inside any page's section list — a user who opens it from a post-detail page sees the same state as one who opens it from Theme Settings.</p>
+</section>
+
+<section data-screen-label="S14e callout selected" style="padding:0 56px 56px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14e · A CALLOUT CARD SELECTED — DROPDOWNS CLOSED, THE CARD'S OWN PANEL AT SIDEBAR WIDTH 280 · FOUR CONTROLS, NAMED VALUES ONLY</div>
+<div style="display:flex;gap:24px;align-items:flex-start">
+  <div style="width:600px;flex-shrink:0;background:#EDEAE6;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center">
+    <div style="width:100%;max-width:460px;background:#FBF9F5;border-radius:6px;box-shadow:0 4px 16px rgba(28,27,26,.10);padding:26px 30px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A;letter-spacing:0.04em">STYLE-GUIDE POST · READING WIDTH</span>
+      <span style="font-family:Georgia,serif;font-size:21px;font-weight:700;color:#232019;line-height:1.25">What the reading experience owes the reader</span>
+      <p style="margin:0;font-family:Georgia,serif;font-size:14px;line-height:1.65;color:#3A3835">Ghost's editor writes cards into the post body. The theme decides how they land on the page, which is why they are styled here once rather than in every post.</p>
+      <div style="position:relative;border-left:3px solid #C2381F;background:#FFEDE8;border-radius:8px;padding:14px 16px;display:flex;gap:11px;align-items:flex-start;box-shadow:0 0 0 2px rgba(255,89,65,.35)">
+        <span style="font-size:17px;line-height:1.2">💡</span>
+        <p style="margin:0;font-family:Georgia,serif;font-size:13.5px;line-height:1.6;color:#3A3835">Callouts inherit the Card treatment's plane and corners; only the four controls in the panel are this card's own.</p>
+        <span style="position:absolute;top:-11px;left:-3px;display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:5px;background:#FF5941;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.04em">CALLOUT</span>
+      </div>
+      <p style="margin:0;font-family:Georgia,serif;font-size:14px;line-height:1.65;color:#3A3835">Every other card in the set renders below in the same fixture, so a change is judged in context.</p>
+    </div>
+  </div>
+  <div style="width:280px;flex-shrink:0;border:1px solid #E7E2DB;background:#F7F5F2;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Callout</span><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:5px;background:#F7C948;font-size:10px;font-weight:600;color:#3B2E05">CUSTOMISED</span></div>
+    <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Callout colours</span>
+        <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer">Pack tokens</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Ghost's palette</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Base</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Surface</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #FF5941;border-radius:7px;background:#FFEDE8;font-size:11px;font-weight:600;cursor:pointer">Tint</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Accent</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji</span><span style="width:34px;height:20px;border-radius:12px;background:#C2381F;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF"></span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji size</span>
+        <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer">Small</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Large</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">From the Card treatment</span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Plane</span><span style="font-weight:500;color:#1C1B1A">Surface</span></span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Space around</span><span style="font-weight:500;color:#1C1B1A">Comfortable</span></span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Corners</span><span style="font-weight:500;color:#1C1B1A">Pack radius</span></span>
+    </div>
+    <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;color:#C2381F;font-family:'Inter',sans-serif;cursor:pointer" style-hover="border-color:#C2381F">Reset to Ghost default</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:300px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">FOUR CONTROLS — INSIDE THE 4–7 NORM · NAMED VALUES ONLY, NO HEX AND NO PX ANYWHERE ON THIS SCREEN</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">SELECTION IS THE CANVAS'S OWN 2 PX ACCENT RING PLUS THE CARD-NAME TAG — THE SAME SELECTION CHROME SECTIONS USE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">NO COLOUR CONTROLS FOR HEADER, SIGNUP AND CTA CARDS — THE POST AUTHOR SETS THOSE INLINE IN GHOST, AND A CONTROL THAT SILENTLY LOSES TO AN INLINE STYLE IS WORSE THAN NONE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE CUSTOMISED PILL IS THE PANEL'S ONLY STATUS; IT CLEARS WITH THE RESET</span>
+  </div>
+</div>
+</section>
+</x-dc>
+</body>
+</html>

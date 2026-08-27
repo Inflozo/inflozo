@@ -22,30 +22,38 @@ OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
 # key, number, title, status, one-line where-it-stands, what it produces, blocked-by
 STEPS = [
  ('s1', '1', 'Architecture', 'done',
-  'The 36 invariants, the schema, and its runnable proof. Four stress rounds and a reliability '
+  'Every invariant (the spine is the count), the schema, and its runnable proof. Four stress '
+  'rounds and a reliability '
   'round applied on top.',
   'The architecture spine — the rules everything else is built from.', None),
  ('s2', '2', 'The two E0 spikes', 'done',
   'Both emitters exist and are proven to agree node by node. The platform register is closed to the '
   'limit of what is reachable without a Ghost(Pro) site.',
   'Proof the rich-text model works end to end, and executed results for the whole register.', None),
- ('s3', '3', 'Design prompts 2 and 3', 'running',
-  'Prompt 2 is RUN but not yet exported to disk. Prompt 3 is RUNNING in batches — and its first '
-  'batches used a prompt that asked for only six of the ten required spec fields.',
-  'The archetype system and missing surfaces (prompt 2); then 484 designs AND their '
-  'specifications (prompt 3, run 34 times).', None),
- ('s4', '4', 'Reconcile designs against the PRD', 'next',
-  'Runnable as soon as the first two or three categories land — do NOT wait for all 34.',
-  'A reconciliation report: contradictions, gaps, and spec completeness.',
-  'the first categories from prompt 3'),
- ('s5', '5', 'Journeys and flows', 'ready',
-  'Blocked only on prompt 2 being EXPORTED — the work itself is already done. Nothing here depends '
-  'on the 484 designs, so this can run alongside them rather than after.',
-  'Four journeys and eight flows, authored rather than verified.',
-  'prompt 2 landing in design/'),
+ ('s3', '3', 'Design prompts 2 and 3', 'done',
+  'All 34 categories designed and exported, then patched by the controls-reconciliation pass '
+  '(P0 primitives + 34 patches; 39 decisions, all ruled). Every spec ends with its own '
+  'Reconciliation notes — step 4\'s third input.',
+  'The archetype system and the app screens (prompt 2); every category\'s designs AND their '
+  'specifications (prompt 3).', None),
+ ('s4', '4', 'Reconcile designs against the PRD, the architecture and Ghost', 'done',
+  'Both halves ran 2026-08-27. 4a reviewed all 34 categories, P0 and the S/M screens (1,086 findings, '
+  '41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: 29 rulings, '
+  'all 66 ghost-infeasible findings and all five decision-collisions closed, FOUR approved decisions '
+  'reversed (D3, D17, D26, D27 in half), and four probe families removed — two closed by execution '
+  'against T1/T3 during the session, two deleted by the native-search ruling. Read '
+  'reconcile-designs-decisions.md \u00a7B before trusting any D-number anywhere in this project.',
+  'prds/.../reconcile-designs.md and reconcile-designs-decisions.md \u2014 29 rulings, each naming '
+  'the documents that must move. Its propagation ledger records that the architecture, the evidence '
+  'file and the register already carry them.', None),
+ ('s5', '5', 'Journeys and flows', 'next',
+  'Fully unblocked — 4a has reported on the S-screens. Its \u00a737.7 lists the editor surfaces with '
+  'no frame, the flows drawn on wrong semantics, and the journeys that hold; that is this step\'s '
+  'input. Runs alongside the inventory merge.',
+  'Four journeys and eight flows, authored rather than verified.', None),
  ('s6', '6', 'Epics and stories', 'later',
   'Expands section 8 into stories. It does not re-plan anything.',
-  'The story breakdown.', 'steps 4 and 5'),
+  'The story breakdown.', 'the inventory merge, and step 5'),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
@@ -62,64 +70,33 @@ PROMPTS = [
   'Read the warning in build-sequence.md before this prompt, never the prompt alone.'),
  ('s2',  'Spike (b) — platform verification', 'historical',
   'Complete. Its "21 items" is long out of date; the register has grown every round.'),
- ('s4',  'Reconcile designs against the PRD', 'live', None),
+ ('s4',  '4a — The review (unattended)', 'live', None),
+ ('s4',  '4b — The Ghost Build Room (you must be in the room)', 'live',
+  'Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled '
+  'item to you as a numbered decision.'),
  ('s5',  'Journeys and flows', 'live', None),
  ('s6',  'Epics and stories', 'live', None),
  ('s6b', 'Readiness gate', 'live', None),
 ]
 
-# One chat per category is what the prompt intends ("runs once per category, 34 times... this
-# prompt is self-contained"). Two consequences the board has to carry.
-#
-# (1) The durable fix for the missing fields is the CORRECTED FILE, used for every new chat — not a
-#     correction pasted into a session. The paste is only for a category already in flight.
-# (2) The prompt tells each session to reuse components established in earlier categories, and a
-#     fresh chat cannot see them. That continuity has to be carried by hand.
-FIX_PROMPT = """Correction: each design's spec needs TEN fields, not six.
-
-Add these four to every design in this session, including the ones already done:
-
-1. Descriptor — one line: what makes this design different from the others in this category.
-2. Structural descriptor — a tuple: archetype · containment · ground · item-count class · media
-   placement · emphasis mechanism. It must be unique within this category.
-3. Archetype — pick one: grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form,
-   carousel, table, media frame, sticky, article body.
-4. Behaviour module — which module it uses (if any), whether it is edit-safe, and what the design
-   does with JavaScript switched off.
-
-Keep the six you are already producing: responsive rule, content fields, controls, data binding,
-empty state, accessibility notes."""
-
-HANDOFF_PROMPT = """Before we finish, give me two blocks I can paste into the next category's chat.
-
-1. COMPONENT INVENTORY — every reusable component this category used or created.
-   One line each:  name — what it is — which category it came from.
-   Include ones reused from earlier categories, so the list keeps growing.
-
-2. SHARED FIELD LIST — the union of every content field this category's designs need."""
-
-CARRY_PROMPT = """Components already built in earlier categories. Reuse these exactly. Do not invent
-replacements for them.
-
-<paste the component inventory from the last category here — for category 1, write: none yet>
-
-If a design needs something none of these cover, say so and explain why an existing one would not work.
-
-The brief follows below."""
-
 ACTIONS = [
- ('now', 'For every new category chat, follow the five steps',
-  '1. Open a new chat.  2. Paste the START block below.  3. Paste sections 1 to 4 of '
-  'design/claude-design-prompt-3-library.md plus that category block.  4. Paste the END block below. '
-  '5. Save the frames to design/ and the specs to sections-inventory.md.'),
- ('now', 'If a chat is running right now, paste the one-off correction into it',
-  'Only that chat. New chats get the corrected file automatically.'),
- ('soon', 'Categories finished before the correction need four fields added',
-  'Tell me how many and I will say whether to re-run them or patch them.'),
- ('soon', 'Export design prompt 2 to design/',
-  'Already run, just not on disk. Once it is there, step 5 can start.'),
- ('soon', 'Send category one\'s specs so I can check them',
-  'Confirms the format is right before you do the other 33.'),
+ ('now', 'Run VERIFY item 47 before the inventory merge',
+  'A /bmad-build probe against ghost6 and ghost5: how many {{#get}} queries one template can make '
+  'before Ghost gives up. It is the one number the Ghost Build Room left unmeasured, and it fixes '
+  'the hand-pick cap (ruling R-20).'),
+ ('now', 'The inventory merge — the critical path',
+  'Specs into sections-inventory.md, its per-design rosters superseded wholesale in 24+ categories, '
+  'derived-fields superseded, every count re-derived from the export, and the PRD amendments landed. '
+  'Driven by reconcile-designs-decisions.md, whose every ruling names the documents that must move. '
+  'Three traps it flags: FR-G7\'s search exception is WITHDRAWN not landed, Appendix C does NOT move '
+  'on gap names, and FR-K needs NO video asset type.'),
+ ('soon', 'Step 5 — journeys and flows',
+  'Fully unblocked. 4a\'s \u00a737.7 lists the editor surfaces with no frame and the flows drawn on '
+  'wrong semantics — that is this step\'s input. Runs alongside the merge.'),
+ ('soon', 'The rulings the room did NOT reach',
+  'Nine asks still have no owner and are owed before E4/E9 open — pack tokens, the FR-H2 delta set, '
+  'the dependency vocabulary, AD-27\'s row shapes and five smaller ones. Listed in \u00a7F of '
+  'reconcile-designs-decisions.md.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),
@@ -264,23 +241,7 @@ drift apart.</p>
 </div>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol>
-    <div class="prompt live" style="margin-top:4px">
-      <div class="phead"><h4>ONLY IF a chat is running right now</h4>
-        <span class="ptag live">one-off</span>
-        <button class="copy" data-t="{e(FIX_PROMPT)}">Copy</button></div>
-      <pre>{e(FIX_PROMPT)}</pre></div>
-    <div class="prompt live">
-      <div class="phead"><h4>STEP 4 — paste at the END of every category</h4>
-        <span class="ptag live">every category</span>
-        <button class="copy" data-t="{e(HANDOFF_PROMPT)}">Copy</button></div>
-      <pre>{e(HANDOFF_PROMPT)}</pre></div>
-    <div class="prompt live">
-      <div class="phead"><h4>STEP 2 — paste at the START of every category</h4>
-        <span class="ptag live">every category</span>
-        <button class="copy" data-t="{e(CARRY_PROMPT)}">Copy</button></div>
-      <pre>{e(CARRY_PROMPT)}</pre></div>
-  </div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol></div>
   <div class="act soon"><h3>Do soon</h3><ol>{''.join(acts['soon'])}</ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol>{''.join(acts['gate'])}</ol></div>
 </div>

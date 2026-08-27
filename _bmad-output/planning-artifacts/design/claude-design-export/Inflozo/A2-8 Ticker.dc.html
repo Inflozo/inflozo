@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A2 ANNOUNCEMENT BARS · DESIGN 8 OF 15 · PAPER PACK</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Ticker</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">Several notices on one continuously moving strip, with a pause control that is not optional. This is the design for a site that genuinely has three things to say at once — and the one where the resting state drawn in the editor is deliberately not the state most readers see, because motion does not run while you are editing.</p>
+</section>
+
+<section data-screen-label="A2-8 desktop resting" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · mid-scroll · bar above A1·1 Rail</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="position:relative;height:44px;background:#232019;display:flex;align-items:center;overflow:hidden;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-190px">
+          <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+          <span style="font-size:14px;color:#FBF9F5">Issue 47 is out — the slow return of the personal homepage.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+          <span style="font-size:14px;color:#FBF9F5">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+          <span style="font-size:14px;color:rgba(251,249,245,.9)">Mara Ellison joins Orbit Weekly as our Field</span>
+        </div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:56px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+        <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:56px;padding-right:16px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+        </div>
+      </div>
+      <div style="height:76px;display:flex;align-items:center;gap:40px;padding:0 72px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#232019">Orbit Weekly</span></div>
+        <div style="display:flex;align-items:center;gap:28px">
+          <span style="font-size:15px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:15px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span>
+          <span style="font-size:15px;color:#6B6459">Interviews</span>
+          <span style="font-size:15px;color:#6B6459">Archive</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <span style="font-size:14px;color:#6B6459">Sign in</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+        </div>
+      </div>
+      <div style="padding:52px 72px 64px;display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019;max-width:760px">The slow return of the personal homepage</h2>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:#6B6459;max-width:560px">Why writers are leaving the feed — and coming home to a page of their own.</p>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">44 px at Comfortable, drawn 190 px into the loop so the clipping at both ends is visible. Messages are separated by a 4 px dot at 45% of the carried colour and 28 px of space either side. Both edges carry a 56 px fade to the band colour, and the pause and close sit inside the right fade so the strip appears to pass behind them rather than colliding with them. The strip moves right to left at 60 px per second at Medium: a 14 px sentence takes about six seconds to cross a 1440 viewport, which is slow enough to read and quick enough to reach the third message.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">STATES · desktop 1440 · paused, pause hover, pause focus-visible</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="width:1440px;height:44px;border-radius:8px;background:#232019;position:relative;display:flex;align-items:center;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-190px">
+          <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Issue 47 is out — the slow return of the personal homepage.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+        </div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:56px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+        <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:56px;padding-right:16px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+          <span style="width:32px;height:32px;border-radius:8px;background:rgba(251,249,245,.1);display:flex;align-items:center;justify-content:center;font-size:10px;color:#FFFFFF">▶</span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ paused · the strip stops where it is, the glyph becomes a play triangle, and the button keeps the 10% wash so the paused state is visible without hovering. Pausing is sticky for the session: a reader who stops the ticker does not have it start again on the next page.</span>
+      <div style="width:1440px;height:44px;border-radius:8px;background:#232019;position:relative;display:flex;align-items:center;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-190px">
+          <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Issue 47 is out — the slow return of the personal homepage.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+        </div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:56px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+        <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:56px;padding-right:16px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+          <span style="width:32px;height:32px;border-radius:8px;background:rgba(251,249,245,.16);display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:11px;background:#FFFFFF"></span><span style="width:2px;height:11px;background:#FFFFFF"></span></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ pause hover · 16% wash, glyph to full carried colour. Hovering anywhere on the strip also pauses it, and moving away resumes — the button is for the readers who cannot hover.</span>
+      <div style="width:1440px;height:44px;border-radius:8px;background:#232019;position:relative;display:flex;align-items:center;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-190px">
+          <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Issue 47 is out — the slow return of the personal homepage.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45)"></span>
+          <span style="font-size:14px;color:#FBF9F5">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+        </div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:56px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+        <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:56px;padding-right:16px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px;box-shadow:0 0 0 2px #FBF9F5"><span style="width:2px;height:11px;background:#FFFFFF"></span><span style="width:2px;height:11px;background:#FFFFFF"></span></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+        </div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ pause focus-visible · lightest-surface ring on the contrast ground, and the strip pauses on focus entering the bar at all — including focus landing on a message link, so a keyboard reader is never chasing a moving target.</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · reduced motion · desktop 1440</div>
+      <div style="width:900px;display:flex;flex-direction:column;gap:8px">
+        <div style="height:44px;border-radius:8px;background:#232019;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 100px;box-sizing:border-box">
+          <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <div style="position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:17px"><span style="width:7px;height:7px;border-radius:50%;background:#FBF9F5"></span><span style="width:7px;height:7px;border-radius:50%;background:rgba(251,249,245,.35)"></span><span style="width:7px;height:7px;border-radius:50%;background:rgba(251,249,245,.35)"></span></div>
+            <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+          </div>
+        </div>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:900px">Under <code style="font-family:'JetBrains Mono',monospace;font-size:12px">prefers-reduced-motion</code> the strip does not move at all. It shows message 1, centred, with the three dots from A2·9 Rotator at the right end and no auto-advance: the reader taps a dot. The pause button is gone because there is nothing to pause. <strong style="font-weight:600">This makes Ticker identical to Rotator for those readers</strong> — flagged in A2-0 as a convergence I think is correct. The alternative, a strip that steps one message every few seconds, is still motion for someone who asked for none.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">CONTROL · Speed and Separator · desktop 1440 crops</div>
+      <div style="width:492px;display:flex;flex-direction:column;gap:8px">
+        <div style="height:44px;border-radius:8px;background:#232019;position:relative;display:flex;align-items:center;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-120px">
+            <span style="font-size:14px;color:#FBF9F5">Issue 47 is out.</span>
+            <span style="font-size:14px;color:rgba(251,249,245,.45)">/</span>
+            <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins as columnist.</span>
+            <span style="font-size:14px;color:rgba(251,249,245,.45)">/</span>
+            <span style="font-size:14px;color:#FBF9F5">Live in Lisbon, 4 April.</span>
+          </div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(270deg,#232019 40%,rgba(35,32,25,0))"></div>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ Separator: Slash · the third value is Wide space, 64 px of nothing. Dot is the default.</span>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.6;color:#3A3835">
+          <span style="font-weight:600">Speed, in words and numbers</span>
+          <span><strong style="font-weight:600">Slow</strong> 40 px/s · <strong style="font-weight:600">Medium</strong> 60 · <strong style="font-weight:600">Fast</strong> 90. The sidebar shows the named values only. Speed is constant regardless of viewport, so a phone shows the same words at the same pace as a desktop — a percentage-based speed would make narrow screens unreadable.</span>
+          <span>Flagged: the three px values are mine. 90 px/s is the ceiling because above it a 14 px sentence cannot be finished before it leaves; 40 is the floor because slower than that reads as broken.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · mid-scroll · re-tuned, not inverted</div>
+    <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+      <div style="position:relative;height:44px;background:#EDE7DA;display:flex;align-items:center;overflow:hidden;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:28px;white-space:nowrap;margin-left:-190px">
+          <span style="font-size:14px;color:#171511">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(23,21,17,.4);flex-shrink:0"></span>
+          <span style="font-size:14px;color:#171511">Issue 47 is out — the slow return of the personal homepage.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(23,21,17,.4);flex-shrink:0"></span>
+          <span style="font-size:14px;color:#171511">Live in Lisbon on 4 April; tickets open to members on Friday.</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:rgba(23,21,17,.4);flex-shrink:0"></span>
+          <span style="font-size:14px;color:rgba(23,21,17,.9)">Mara Ellison joins Orbit Weekly as our Field</span>
+        </div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:56px;background:linear-gradient(90deg,#EDE7DA 40%,rgba(237,231,218,0))"></div>
+        <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:56px;padding-right:16px;background:linear-gradient(90deg,rgba(237,231,218,0),#EDE7DA 40%)">
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:11px;background:rgba(23,21,17,.7)"></span><span style="width:2px;height:11px;background:rgba(23,21,17,.7)"></span></span>
+          <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(23,21,17,.7)">×</span>
+        </div>
+      </div>
+      <div style="height:76px;display:flex;align-items:center;gap:40px;padding:0 72px;border-bottom:1px solid #332E27;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#E0805A;color:#1A120C;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#F2EDE4">Orbit Weekly</span></div>
+        <div style="display:flex;align-items:center;gap:28px">
+          <span style="font-size:15px;color:#F2EDE4;font-weight:500;padding-bottom:2px;border-bottom:2px solid #E0805A">Essays</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:15px;color:#A79E8F">Sections<span style="font-size:9px">▾</span></span>
+          <span style="font-size:15px;color:#A79E8F">Interviews</span>
+          <span style="font-size:15px;color:#A79E8F">Archive</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <span style="font-size:14px;color:#A79E8F">Sign in</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#E0805A;color:#1A120C;font-size:14px;font-weight:600">Subscribe</span>
+        </div>
+      </div>
+      <div style="padding:44px 72px 52px;display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#E0805A;text-transform:uppercase">Issue 47 · Essays</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-size:44px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#F2EDE4;max-width:720px">The slow return of the personal homepage</h2>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">The fades are the only thing dark mode really changes here: they are the band colour fading to transparent, so they invert with <code style="font-family:'JetBrains Mono',monospace;font-size:12px">contrast</code> and cannot be written as a fixed black gradient. Separator dots drop from 45% to 40% because a dark dot on a pale band reads heavier than the reverse.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · same speed, narrower window</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;height:44px;background:#232019;display:flex;align-items:center;overflow:hidden;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:24px;white-space:nowrap;margin-left:-140px">
+            <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins Orbit Weekly as our Field Notes columnist.</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+            <span style="font-size:14px;color:#FBF9F5">Issue 47 is out — the slow return of the personal homepage.</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+            <span style="font-size:14px;color:#FBF9F5">Live in Lisbon on 4 April.</span>
+          </div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:48px;padding-right:14px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+            <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span></span>
+            <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+          </div>
+        </div>
+        <div style="height:76px;display:flex;align-items:center;gap:24px;padding:0 40px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="display:flex;align-items:center;gap:20px"><span style="font-size:14px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span><span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span><span style="font-size:14px;color:#6B6459">Interviews</span><span style="font-size:14px;color:#6B6459">Archive</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:13px"><span style="font-size:14px;color:#6B6459">Sign in</span><span style="padding:8px 15px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span></div>
+        </div>
+        <div style="padding:30px 40px 36px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:34px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019;max-width:520px">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px">834: separator spacing 28 → 24, edge fades 56 → 40, and the speed is unchanged — that is the point of a px-per-second speed rather than a duration. All three messages stay in the loop at every width; the strip is a queue, not a layout, so nothing needs to fit.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · mid-scroll</div>
+      <div style="width:390px;height:430px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;height:48px;background:#232019;display:flex;align-items:center;overflow:hidden;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:20px;white-space:nowrap;margin-left:-96px">
+            <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins as our Field Notes columnist.</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+            <span style="font-size:14px;color:#FBF9F5">Issue 47 is out.</span>
+          </div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:24px;background:linear-gradient(90deg,#232019 40%,rgba(35,32,25,0))"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;padding-left:32px;padding-right:2px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;color:rgba(251,249,245,.72)">×</span>
+          </div>
+        </div>
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="padding:7px 13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span><span style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></span></div>
+        </div>
+        <div style="padding:24px 20px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">48 px for a 44 px close. The pause button leaves the bar at ≤ 767 — two 44 px targets plus a moving strip in 390 px leaves no window to read — and its job passes to <strong style="font-weight:600">tap anywhere on the strip to pause</strong>, which is also how the message links are reached: first tap pauses, second tap follows the link under your finger. Stated on the frame because a tap that does two different things needs saying.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · paused by tap</div>
+      <div style="width:390px;height:430px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="position:relative;height:48px;background:#232019;display:flex;align-items:center;overflow:hidden;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:20px;white-space:nowrap;margin-left:20px">
+            <span style="font-size:14px;color:#FBF9F5">Issue 47 is out.</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+            <span style="font-size:14px;color:#FBF9F5">Live in Lisbon.</span>
+          </div>
+          <div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;gap:2px;padding-left:36px;padding-right:2px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+            <span style="width:28px;height:28px;border-radius:8px;background:rgba(251,249,245,.12);display:flex;align-items:center;justify-content:center;font-size:9px;color:#FFFFFF">▶</span>
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:17px;color:rgba(251,249,245,.72)">×</span>
+          </div>
+        </div>
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span style="padding:7px 13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span><span style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></span></div>
+        </div>
+        <div style="padding:24px 20px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47</span>
+          <h2 style="margin:0;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#232019">The slow return of the personal homepage</h2>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">Once paused by tap, a 28 px resume button appears where the pause button would have been, inside the right fade and left of the close — the reader has to be able to start it again, and the button only needs to exist once there is something to resume. Height is unchanged at 48. The strip stops with a message at the left margin rather than wherever the finger landed.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">ACCESSIBILITY · annotated · desktop 1440 crop</div>
+      <div style="width:940px;display:flex;flex-direction:column;gap:12px">
+        <div style="border-radius:8px;overflow:hidden;border:1px solid #EBE5DB">
+          <div style="height:26px;background:#FBF9F5;border-bottom:1px dashed #D6CFC2;display:flex;align-items:center;padding:0 16px;box-sizing:border-box"><span style="font-size:11px;color:#6B6459">Skip to content</span><span style="margin-left:8px;width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">1</span></div>
+          <div style="position:relative;height:44px;background:#232019;display:flex;align-items:center;overflow:hidden">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center;z-index:2">2</span>
+            <div style="display:flex;align-items:center;gap:20px;white-space:nowrap;margin-left:34px">
+              <span style="font-size:14px;color:#FBF9F5">Mara Ellison joins as our Field Notes columnist.</span>
+              <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">3</span>
+              <span style="width:4px;height:4px;border-radius:50%;background:rgba(251,249,245,.45);flex-shrink:0"></span>
+              <span style="font-size:14px;color:#FBF9F5">Issue 47 is out.</span>
+            </div>
+            <div style="position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:5px;padding-left:40px;background:linear-gradient(90deg,rgba(35,32,25,0),#232019 40%)">
+              <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">4</span>
+              <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span><span style="width:2px;height:11px;background:rgba(251,249,245,.72)"></span></span>
+              <span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">5</span>
+              <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+            </div>
+          </div>
+          <div style="height:52px;background:#FBF9F5;display:flex;align-items:center;gap:16px;padding:0 16px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">6</span><span style="font-size:12.5px;color:#6B6459">&lt;header&gt; — A1·1 Rail, unchanged</span></div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.6;color:#3A3835">
+          <span><strong style="font-weight:600">1</strong> · Skip link first, ahead of the bar.</span>
+          <span><strong style="font-weight:600">2</strong> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;aside aria-label="Announcements"&gt;</code> — plural here — containing a <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;ul&gt;</code> of the messages in authored order. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-live="off"</code>: the strip is present at load and must not announce itself as it moves.</span>
+          <span><strong style="font-weight:600">3</strong> · The visual loop repeats the list a second time so the strip never shows a gap; <strong style="font-weight:600">the duplicate is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-hidden</code></strong> and carries no links, so nothing is announced or focusable twice. Separator dots are decorative and hidden.</span>
+          <span><strong style="font-weight:600">4</strong> · The pause button satisfies WCAG 2.2.2 — motion that runs longer than five seconds needs a mechanism to stop it. It is a real button, labelled “Pause announcements” / “Play announcements”, and it stays in the accessibility tree at every width. At ≤ 767 it is replaced by tap-to-pause and a resume button that appears once paused; hover-pause is never the only mechanism. Motion also stops on focus entering the bar and under prefers-reduced-motion, where the strip does not move at all.</span>
+          <span><strong style="font-weight:600">5</strong> · Close is last in focus order: message links in order, pause, close.</span>
+          <span><strong style="font-weight:600">6</strong> · Carried text on contrast 13.9:1. The edge fades pass over text — a message is partly faded for about 0.6 s at Medium — so no message is ever <em>only</em> legible mid-fade, which is why the loop repeats rather than jumping.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:6px;box-sizing:border-box"><span style="width:34px;height:4px;background:#C9C2B6"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;padding:6px;box-sizing:border-box"><span style="width:8px;height:4px;background:#FF5941"></span><span style="width:18px;height:3px;background:#DED7CB"></span><span style="width:10px;height:3px;background:#C9C2B6"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;align-items:center;gap:4px;padding:6px;box-sizing:border-box"><span style="width:16px;height:3px;background:#C9C2B6"></span><span style="width:3px;height:3px;border-radius:50%;background:#FF5941"></span><span style="width:16px;height:3px;background:#C9C2B6"></span><span style="width:3px;height:3px;border-radius:50%;background:#FF5941"></span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Messages</span><div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">01</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Mara Ellison joins Orbit…</span></div>
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">02</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Issue 47 is out — the slow…</span></div>
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:6px 8px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">03</span><span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Live in Lisbon on 4 April…</span></div>
+        <span style="font-size:11px;color:#6E6A64">Up to 6 · drag to reorder</span>
+      </div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Source</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Authored</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">From posts</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">From posts: each item renders the post’s title linking to it; Add, Remove and drag hide. The binding lives on the shared list — Ticker, Rotator and Triple stay in step.</span></div>
+      <div style="border:1px dashed #DED7CB;border-radius:8px;background:#FFFFFF;padding:9px 10px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.04em;color:#8A8378">DATA · POPULATE FROM… (P0·5) · WHEN BOUND</span>
+        <span style="font-size:11.5px;color:#8A8378">Filter — Latest · Featured · By tag · By author · Hand-picked</span>
+        <span style="font-size:11.5px;color:#8A8378">Count — capped at the 6-message cap · Order — Newest · Oldest</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Speed</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Slow</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Medium</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Fast</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Separator icon</span><div style="display:flex;align-items:center;gap:10px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="width:24px;height:24px;border:1px solid #E7E2DB;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#232019;font-size:12px">●</span><span style="font-size:12.5px">point · Small · Muted</span><span style="margin-left:auto;font-size:9px;color:#6E6A64">▾</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">An icon slot (P0·2): swap, Size and Colour role from the Icon Picker popover. Replaces Dot · Slash · Wide space.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Placement</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">In flow</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Sticky</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Sticky + moving text follows the reader down the page. Not recommended.</span></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">UNIVERSAL · every placeable section · outside the list</span>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Contrast</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Accent</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Vertical spacing</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#8A8378">Top divider</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.06em;color:#8A8378">LOCKED</span></div><div style="display:flex;align-items:center;border:1px dashed #DED7CB;border-radius:8px;background:#F7F5F2;padding:7px 10px"><span style="font-size:12.5px;color:#8A8378">None</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Locked None — the bar is the first element on the page; nothing sits above it. The seam below follows the category’s grounds-and-hairlines rule.</span></div>
+      </div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">VISIBILITY · shared by all 15 · outside the list</span>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Audience</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">Everyone</span><span style="font-size:9px;color:#6E6A64">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Comes back after</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">30 days</span><span style="font-size:9px;color:#6E6A64">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Schedule</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">Always</span><span style="font-size:9px;color:#6E6A64">▾</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Always · From date · Until date · Between dates (Date Picker). Server-evaluated: under page caching an expired bar can show until the cache turns — owner-accepted, and the panel says so.</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Shows on</span><div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:7px 10px"><span style="font-size:12.5px">All pages</span><span style="font-size:9px;color:#6E6A64">▾</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">All pages · Home only · Posts · Pages — mirrors A3's Site-wide group.</span></div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border-top:1px solid #E7E2DB;padding-top:10px">3 design controls + the message list + Data + universal trio + Visibility</span>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">NEW THIS PASS · SOURCE: FROM POSTS · LATEST · 3 · desktop 1440</div>
+    <div style="width:1440px;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+      <div style="position:relative;height:44px;background:#232019;display:flex;align-items:center;gap:24px;padding:0 64px;overflow:hidden;box-sizing:border-box">
+        <span style="font-size:14px;color:#FBF9F5;white-space:nowrap;border-bottom:1px solid rgba(251,249,245,.5);padding-bottom:1px">The slow return of the personal homepage</span>
+        <span style="width:5px;height:5px;border-radius:50%;background:rgba(251,249,245,.55);flex-shrink:0"></span>
+        <span style="font-size:14px;color:#FBF9F5;white-space:nowrap;border-bottom:1px solid rgba(251,249,245,.5);padding-bottom:1px">Interview: Mara Ellison on slow media</span>
+        <span style="width:5px;height:5px;border-radius:50%;background:rgba(251,249,245,.55);flex-shrink:0"></span>
+        <span style="font-size:14px;color:#FBF9F5;white-space:nowrap;border-bottom:1px solid rgba(251,249,245,.5);padding-bottom:1px">Field Notes is now a weekly column</span>
+        <span style="position:absolute;right:20px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:#232019;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(251,249,245,.72)">×</span>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">Source: From posts — the shared list bound through P0·5 (Latest · Featured · By tag · By author · Hand-picked · Count capped at the 6-message cap · Order). Each item renders the post’s title linking to the post; Add, Remove and drag hide and the rows read “From Ghost”. The binding lives on the shared messages[] list, so switching to Rotator or Triple keeps it. The separator is now an icon slot — drawn as Tabler’s point at Small in the Muted role; swap, size and colour role from its popover. Titles are plain-text-locked: “Edit in Ghost”.</p>
+  </div>
+
+  <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+  <div style="width:1440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A2·8 TICKER · full text in “A2 Announcement Bars — Spec.md”</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Content fields</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">messages[] (list of { message ≤ 120, linkLabel ≤ 24, linkUrl }, req, 2–6 items — one item is not a ticker and the editor says so, offering A2·1) · dismissible · audience · dismissMemory. Uses no label, headline, body, image or clock. Switching to a single-message design keeps all six and shows item 1; switching back restores the order.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Controls · data</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Messages: the list itself, up to 6, drag to reorder. Speed: Slow 40 px/s · Medium 60 · Fast 90 — constant at every viewport. Separator: an icon slot (P0·2) — swap, size and colour role from the Icon Picker popover. Background role (universal): Contrast · Surface · Accent. Vertical spacing (universal): Compact 36 · Comfortable 44 · Spacious 56. Placement: In flow · Sticky (not recommended — moving text that follows the reader). Universal trio outside the list: Background role · Vertical spacing · Top divider (locked). Visibility gains Schedule (Always · From · Until · Between dates) and Shows on (All pages · Home only · Posts · Pages); Preview as is removed — previewing is the editor’s View as.<br><strong style="font-weight:600">Data:</strong> member state only. Fewer than two messages → renders as A2·1 Rule with item 1.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Responsive · motion · a11y · flagged</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">1440–768: strip with 56 → 40 px edge fades, separator spacing 28 → 24, speed unchanged; all messages stay in the loop at every width because the strip is a queue, not a layout. ≤ 767: bar 48 px for a 44 px close, the pause button leaves the bar and its job passes to tap-to-pause — first tap pauses, second follows the link under the finger — with a 28 px resume button appearing once paused. Motion: pauses on hover, on focus entering the bar, and on the button; stops entirely under prefers-reduced-motion, where the bar shows message 1 with A2·9's dots and no auto-advance, making the two designs identical for those readers. <strong style="font-weight:600">a11y:</strong> ul of messages, the visual duplicate aria-hidden and unfocusable, aria-live off, pause button always in the accessibility tree (WCAG 2.2.2).<br><strong style="font-weight:600">Flagged as mine:</strong> the three speeds in px/s, the 6-message cap, the 56 px fades, dropping the pause button at 390 in favour of tap-to-pause, and session-sticky pausing.</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showSpec: this.props.showSpec ?? true };
+  }
+}
+
+</script>
+</body>
+</html>
