@@ -209,31 +209,41 @@ A30 members pages, A32 paywall CTAs, the header/footer member links, and every `
 | `private.submit` | Continue | |
 | `private.error` | That password didn't work. | |
 
-### 3.7 `search.*` — 15 keys
+### 3.7 `search.*` — 15 keys, **nine of them retired 2026-08-27**
 
-**Scoped deliberately.** A23 #1–#8, #11, #14 are *triggers* for Ghost's native search overlay: the catalog covers the theme-rendered **trigger text only** (`search.trigger_*`, `search.placeholder*`, `search.key_hint_*`). Every string **inside** Ghost's native overlay belongs to Ghost's i18n namespace (S8, §5) and is neither catalogable nor overridable from the Translations surface.
+**⚠ Ruling R-24 deleted A23 and made search Ghost's own.** Under **S1 a key is never deleted**, so the
+nine overlay keys below are **retired, not removed**: a theme already deployed references them and a
+user's override is stored against them. **A retired key is still emitted in every locale file (S4) and
+is never reused for a different meaning.** What changes is that **no design renders it any more.**
 
-A23 #13 ("Search + Recent") is a hybrid: its trigger opens Ghost's overlay, but the recent-posts block beneath it is theme-rendered, so that block's strings **are** in-catalog while the overlay's are not.
+**What a theme still owns of search: the trigger, and nothing else.** `sodo-search` renders **inside an
+iframe** with its own injected stylesheet, so theme CSS reaches nothing within it and only Ghost's accent
+colour crosses (`MEASUREMENTS.md` §29c). Its own strings are **Ghost's**, and **S8 keeps Ghost's strings
+out of this catalog** — which is exactly why the overlay keys must go quiet rather than be re-pointed at
+sodo. The live namespace is therefore **the trigger's label and its accessible name**, wherever the
+Search affordance is placed: A1's header control (Off · Icon · Button · Bar), or any button or link whose
+Link Picker destination is "Ghost search" (FR-F6).
 
-A23 #9, #10, #12, #15 ("Custom Overlay" designs) render **Inflozo's own** search UI against the Content API — those strings are theme-rendered and therefore in-catalog, under `search.overlay_*`, and are JS-consumed.
+**⌘K is Ghost's.** `sodo-search` binds it, **no Inflozo design may bind it**, and the `command-palette`
+module is deleted — so the two key-hint strings are retired with the overlay's.
 
-| Key | English default | |
-|---|---|---|
-| `search.placeholder` | Search | |
-| `search.placeholder_long` | Search this site | |
-| `search.trigger_label` | Search | a11y |
-| `search.trigger_close` | Close search | a11y |
-| `search.key_hint_mac` | ⌘K | JS |
-| `search.key_hint_win` | Ctrl K | JS |
-| `search.overlay_placeholder` | Search posts | JS |
-| `search.overlay_label` | Site search | JS, a11y |
-| `search.overlay_empty` | Start typing to search | JS |
-| `search.overlay_no_results` | No results for "{query}" | JS |
-| `search.overlay_no_results_hint` | Try a different word. | JS |
-| `search.overlay_results_count` | {count} results | JS |
-| `search.overlay_loading` | Searching… | JS |
-| `search.overlay_error` | Search isn't available right now. | JS |
-| `search.overlay_tags_heading` | Popular tags | JS |
+| Key | English default | | Status |
+|---|---|---|---|
+| `search.placeholder` | Search | | **live** — a Bar-form trigger's placeholder |
+| `search.placeholder_long` | Search this site | | **live** |
+| `search.trigger_label` | Search | a11y | **live** — the accessible name on every form of the affordance |
+| `search.trigger_close` | Close search | a11y | **live** |
+| `search.key_hint_mac` | ⌘K | JS | **retired** — ⌘K is `sodo-search`'s, and no Inflozo design may bind it |
+| `search.key_hint_win` | Ctrl K | JS | **retired** — as above |
+| `search.overlay_placeholder` | Search posts | JS | **retired** — the overlay is Ghost's (S8) |
+| `search.overlay_label` | Site search | JS, a11y | **retired** |
+| `search.overlay_empty` | Start typing to search | JS | **retired** |
+| `search.overlay_no_results` | No results for "{query}" | JS | **retired** |
+| `search.overlay_no_results_hint` | Try a different word. | JS | **retired** |
+| `search.overlay_results_count` | {count} results | JS | **retired** |
+| `search.overlay_loading` | Searching… | JS | **retired** |
+| `search.overlay_error` | Search isn't available right now. | JS | **retired** |
+| `search.overlay_tags_heading` | Popular tags | JS | **retired** |
 
 ### 3.8 `gallery.*` — 8 keys
 

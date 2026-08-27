@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">P0 EDITOR PRIMITIVES · 5 OF 6 · ONE SHARED PANEL FOR EVERY SECTION THAT CAN DRAW CONTENT FROM THE READER'S GHOST SITE · THE SIDEBAR'S DATA GROUP</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">P0·5 · "Populate from…" data panel</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:760px;text-wrap:pretty">Source: Static (authored) · From posts. Choosing "From posts" reveals Filter (Latest / Featured / By tag / By author / Hand-picked), Count, Order, and the design's own meta toggles. Designed once at sidebar width; every category that can populate reuses it by name.</p>
+</section>
+
+<section data-screen-label="P0-5 panel states" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">FOUR STATES AT SIDEBAR WIDTH 280 · STATIC · BY TAG (SELECT OPEN) · BY AUTHOR · HAND-PICKED · THE PANEL IS THE DATA GROUP'S ENTIRE BODY</div>
+<div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Data</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Source</span>
+      <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Static</span>
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">From posts</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#EFECE7;border-radius:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">You write the cards yourself in the Content group. Nothing updates automatically.</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATIC · THE FILTER BLOCK IS ABSENT, NOT DISABLED ⚑ · CONTENT GROUP SHOWS THE P0·3 AUTHORED LIST</span>
+  </div>
+
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0;position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Data</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Source</span>
+      <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Static</span>
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">From posts</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Filter</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:34px;border:1px solid #FF5941;border-radius:8px;padding:0 10px;background:#FFFFFF;box-shadow:0 0 0 2px rgba(255,89,65,.25);cursor:pointer">
+        <span style="font-size:12.5px;font-weight:500">By tag</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      </div>
+      <div style="position:absolute;top:148px;left:16px;width:246px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:5px;display:flex;flex-direction:column;gap:1px;z-index:3">
+        <span style="padding:7px 9px;border-radius:7px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer">Latest</span>
+        <span style="padding:7px 9px;border-radius:7px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer">Featured</span>
+        <span style="display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:7px;font-size:12.5px;font-weight:600;background:#FFEDE8;cursor:pointer">By tag<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+        <span style="padding:7px 9px;border-radius:7px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer">By author</span>
+        <span style="padding:7px 9px;border-radius:7px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer">Hand-picked</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:34px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;cursor:pointer;margin-top:2px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4L11 3.8A2 2 0 0 0 9.6 3.2H4a1 1 0 0 0-1 1v5.6c0 .5.2 1 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8z"></path><circle cx="7.5" cy="7.5" r="1"></circle></svg>
+        <span style="font-size:12.5px;font-weight:500;flex:1">Essays</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">214 posts</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Count</span>
+      <div style="display:flex;align-items:center;border:1px solid #E7E2DB;border-radius:8px;overflow:hidden;background:#FFFFFF">
+        <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#6E6A64;border-right:1px solid #E7E2DB">−</span>
+        <span style="width:32px;text-align:center;font-size:12.5px;font-weight:600">6</span>
+        <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#6E6A64;border-left:1px solid #E7E2DB">+</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Order</span>
+      <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Newest</span>
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Oldest</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Show on each card</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:24px;background:#FFEDE8;color:#C2381F;font-size:11px;font-weight:500;cursor:pointer">Date</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:24px;background:#FFEDE8;color:#C2381F;font-size:11px;font-weight:500;cursor:pointer">Author</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 9px;border:1px solid #E7E2DB;border-radius:24px;color:#6E6A64;font-size:11px;font-weight:500;cursor:pointer">Excerpt</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 9px;border:1px solid #E7E2DB;border-radius:24px;color:#6E6A64;font-size:11px;font-weight:500;cursor:pointer">Reading time</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:24px;background:#FFEDE8;color:#C2381F;font-size:11px;font-weight:500;cursor:pointer">Tag chip</span>
+      </div>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">BY TAG · FILTER SELECT OPEN · TAG SELECT BELOW IT, LIVE-SEARCHED, POST COUNT PER TAG · META TOGGLES ARE PER-DESIGN: ONLY THE FIELDS THIS DESIGN CAN PLACE ⚑</span>
+  </div>
+
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Filter</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:34px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;cursor:pointer">
+        <span style="font-size:12.5px;font-weight:500">By author</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:34px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;cursor:pointer;margin-top:2px">
+        <span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">M</span>
+        <span style="font-size:12.5px;font-weight:500;flex:1">Maya Chen</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">86 posts</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Count</span>
+      <div style="display:flex;align-items:center;border:1px solid #E7E2DB;border-radius:8px;overflow:hidden;background:#FFFFFF">
+        <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#6E6A64;border-right:1px solid #E7E2DB">−</span>
+        <span style="width:32px;text-align:center;font-size:12.5px;font-weight:600">4</span>
+        <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#6E6A64;border-left:1px solid #E7E2DB">+</span>
+      </div>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">BY AUTHOR · SAME SELECT PATTERN, AVATAR + NAME + POST COUNT · SINGLE PICK — MULTI-AUTHOR FEEDS BELONG TO ROUTES, NOT SECTIONS ⚑</span>
+  </div>
+
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Filter</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:34px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;cursor:pointer">
+        <span style="font-size:12.5px;font-weight:500">Hand-picked</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="display:flex;justify-content:space-between;font-size:12px;font-weight:500;color:#6E6A64">Picked posts<span style="font-family:'JetBrains Mono',monospace;font-size:10px">3 picked</span></span>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:7px 8px"><svg width="8" height="13" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><span style="font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">The slow return of the perso…</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+        <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:7px 8px"><svg width="8" height="13" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><span style="font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">What we lost when blogroll…</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+        <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:7px 8px"><svg width="8" height="13" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><span style="font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">A field guide to quiet softw…</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+      </div>
+      <div style="height:34px;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#FFFFFF">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+        <span style="font-size:12px;color:#A8A29A">Search posts to add</span>
+      </div>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">HAND-PICKED · SEARCH-AND-PICK LIST · DRAG REORDERS, × UNPICKS · COUNT AND ORDER ARE HIDDEN — THE PICKED LIST IS THE COUNT AND THE ORDER ⚑ · UNPUBLISHED PICKS DROP OUT SERVER-SIDE, THE ROW STAYS WITH AN "UNPUBLISHED" NOTE</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1290px"><strong style="font-weight:600">Constraints stated once, for every category</strong> ⚑: Count caps at 100. No relative-date filters — "this month" is route vocabulary, not section vocabulary. A secondary feed renders nothing at zero items, heading and container together — an empty "More essays" band is a defect the panel prevents by construction. Meta toggles are the design's own: a design with no excerpt slot never offers an Excerpt toggle. The tag and author selects live-search past ten entries with the same field grammar as the Link Picker.</p>
+</section>
+</x-dc>
+</body>
+</html>

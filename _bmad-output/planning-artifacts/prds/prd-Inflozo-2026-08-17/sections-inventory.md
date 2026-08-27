@@ -6,9 +6,23 @@ updated: 2026-08-19
 
 ## Appendix A — Complete Section Inventory (normative)
 
-**Totals: 34 categories · 484 designs (exact; per-category counts sum to 484) · 70 [Free].** The first two designs in every category are **[Free]** (68), plus **A29 #7 and A31 #10** — re-tiered so the author-archive binding context and the `private.hbs` compile target each have a Free option of their own (FR-G2). A30 takes **no** third re-tier: all 13 of its designs share one binding context and one compile target, so #1 and #2 already satisfy FR-G2 for that target. All others are Pro. Design descriptors define the *structural* identity that FR-G5 protects.
+<!-- totals -->
+**Totals: 33 categories · 468 designs · 66 [Free] · 440 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the first 2 designs of each category and nothing else (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
+<!-- /totals -->
+**[Free] is positional and nothing else.** The first two designs of every category are Free; the two
+historical extras are struck (R-17). **A29 #7's and A31 #10's re-tiers are withdrawn** — A31's private
+gate is drawn by *every* A31 design, so #1 Centred and #2 Split Reason already give `private.hbs` a Free
+pair, and A29's third had no basis in the export, where all fourteen bind either archive. Every spec
+carries the marker on its own roster; the merge does not map it positionally onto a spec that has lost
+or gained a design. Design descriptors define the *structural* identity FR-G5 protects.
 
-**Placeable sections vs non-placeable treatments (normative carve-out):** 456 of the 484 are **placeable** — the user drags them onto a canvas (FR-D5/FR-D12). **28 are not placeable:** they are chosen elsewhere, apply once per project, and are excluded from the Section Picker rail, drag/reorder, the Layers panel, Variant Shuffle (FR-D13) and Site Remix (FR-D17). Every requirement that quantifies over "every design" — FR-G1 launch deliverables, FR-G5 uniqueness, FR-G6 / NFR-6(a) render matrix, NFR-5 accessibility, the E14 gallery — still covers all 28, using the host context named here:
+**Placeable sections vs non-placeable treatments (normative carve-out):** the split itself is in the
+generated totals above and is not restated here. A **placeable** design is one the user drags onto a
+canvas (FR-D5/FR-D12). The **non-placeable treatments** are chosen elsewhere, apply once per project, and
+are excluded from the Section Picker rail, drag/reorder, the Layers panel, Variant Shuffle (FR-D13) and
+Site Remix (FR-D17). Every requirement that quantifies over "every design" — FR-G1 launch deliverables,
+FR-G5 uniqueness, FR-G6 / NFR-6(a) render matrix, NFR-5 accessibility, the E14 gallery — **still covers
+every non-placeable design**, using the host context named here:
 
 | Category | Count | Chosen where | Host context for the render matrix and the gallery |
 |---|---|---|---|
@@ -19,6 +33,17 @@ updated: 2026-08-19
 **The design picker is not a control (normative).** Every category's `Controls:` line used to open with a "layout picker" that had no declared value set — while A32's opened with a "design picker" naming the same thing. They were one control under two names, and the ambiguity is exactly what the one-term ruling exists to end: **the mini-diagram thumbnail picker is FR-D19's design picker**, its value set is the category's own designs, and it is therefore declared nowhere below. It sits outside every `Controls:` list, on every placed section, like the universal controls — never a Quick Control, never counted against FR-F3's cap, and never promotable to a Ghost custom setting, since no Admin select can swap a design's markup. The word **layout** no longer names a unit anywhere in this library; it survives only inside a design's own name (A25 "Post Content Layouts") and in ordinary prose about arrangement.
 
 **Universal controls (every section, not repeated below):** Background role (Swatch Row: Base/Surface/Accent/Contrast/Image), Vertical spacing (Compact/Comfortable/Spacious), Top divider (None/Line/Fade). These three are **outside** every declared `Controls:` list and are **exempt from FR-F3's ≈ 15-control cap**. They are declared **once, per section, not per design** — a design switch never adds or removes them. The cap governs **a single design's** own controls, so the effective per-section ceiling is ≈ 15 + 3. They are never Quick Controls. (Content width is governed by the Style Pack's site-width token — FR-E1/FR-F2 — not per section; the pack's **gutters** token has its own scale, **Tight/Normal/Loose**, matching A14's `gap` — never the per-section Vertical spacing labels.) Mode-scoped: Background role, per-mode image swap. Non-placeable treatments carry the universal controls only where they render as a block of their own (A32); A33 and A34 carry none.
+
+**Sections do not know about each other at runtime; the compiler knows about all of them (AD-37, ruling
+R-19).** One partial per placed section (`prd.md` §7.4) means no section can reach into its neighbour's
+markup *while rendering* — that has not changed, and a design that needed it would still be unbuildable.
+What changed is where the question is answered: **the build already knows every placed section and its
+order**, so overlay-header preconditions, stacked-padding collapse, duplicate-post suppression,
+one-share-block-per-route, footer adjacency and margin occupancy are all **compile-time facts**, decided
+once and emitted. **A placed design never becomes a different design at render** (R-8): a module hides its
+own chrome, the editor advises, and a design switch stays an edit-time act. Where a design's own text says
+two sections "never know about each other", read it as *at runtime* — the sentence was written before
+AD-37 and is amended, not deleted.
 
 **How to read a category declaration (FR-G3).** The library is declared at **two levels**, and the distinction is load-bearing rather than editorial.
 
@@ -33,7 +58,7 @@ updated: 2026-08-19
 | Field | Meaning |
 |---|---|
 | **Descriptor** | the one-line structural identity FR-G5 protects — what makes this design *this* design |
-| **Structural descriptor** | the machine-checkable **tuple** on which FR-G5's uniqueness assertion actually runs — archetype · primary axis · item-count class · media placement · emphasis mechanism. Free prose cannot be asserted over, and two designs can be described differently while being the same design. **It must stay unique within its category after the per-design control lists are written**, since controls no longer distinguish designs (FR-F7) |
+| **Structural descriptor** | the machine-checkable **tuple** on which FR-G5's uniqueness assertion actually runs — archetype · containment · ground · item-count class · media placement · emphasis mechanism (six slots since 2026-08-21; the closed sets live in `tools/tuple-check.py`, which is the authority). Free prose cannot be asserted over, and two designs can be described differently while being the same design. **It must stay unique within its category after the per-design control lists are written**, since controls no longer distinguish designs (FR-F7). The machine checks structure, containment and ground; the emphasis slot is open, and what it names is a human's judgement |
 | **Archetype** | the responsive archetype it collapses under — grid-of-N, split, stack, bar, nav, edge rail, overlay, feed, form, carousel, table, media frame, sticky, article body — which supplies its default collapse ladder |
 | **Responsive rule** | what happens at each breakpoint, **in words**; where the design cannot follow its archetype, its bespoke behaviour |
 | **Content fields** | the subset of the category union it uses, with types, optionality and limits |
@@ -45,30 +70,60 @@ updated: 2026-08-19
 
 **The one-line descriptors below are the seed, not the specification.** They fix each design's structural identity and are normative for scope — the inventory's counts, tiers and carve-outs bind now. The full specification for a category is authored in that category's design session and lands here before its build story opens (§4). A category whose designs still carry only their descriptor has not yet been through that session.
 
+**A design declares where it may be placed, and the compiler refuses an illegal placement (R-7).**
+`compileTarget: any` is withdrawn wherever it was a lie. A design emitting `{{pagination}}` is restricted
+to **paginated targets** — on `post.hbs`, `page.hbs`, `error.hbs` or `private.hbs` it is a **fatal render**
+(`appendix-b1 §3`). A design performing a `{{#get}}` excludes **`error.hbs` and `private.hbs`**
+(`appendix-b1 §3c`): an error page that queries the database compounds the outage it is reporting.
+**Load-more designs are main-feed-only** — a `{{#get}}` feed never paginates, so there is no `/page/2/` to
+fetch or to fall back to (FR-H2). `limit="all"` is **capped at 100** with the truncation stated: `all`
+trips gscan on 6.x and silently returns 100 anyway. The refusal is at **compile time** (FR-J3), not a
+runtime guard.
+
+**Hand-picked order costs one `{{#get}}` per picked item. No hard cap; the panel warns past 25 (R-20, re-ruled 2026-08-27 — the budget is per page, not per section).**
+`filter="id:[…]"` **discards the requested order** and returns `published_at desc` on both majors
+(`MEASUREMENTS.md` §29d), so "picked order is drawn order" compiles to N single-id gets. The cap is
+**twelve per section, stated in the panel**. It is **not** a platform limit: Ghost races each `{{#get}}`
+against a 5000 ms timeout of its own and imposes no per-template budget — 150 gets on one template
+resolved in full on both majors (§30). Twelve is a **latency budget** at roughly 10 ms per pick, and
+raising it is an owner decision rather than a consequence of the measurement.
+
 **`bindingContext` / `compileTarget` (FR-G3):** every category declares both, and Variant Shuffle (FR-D13), Site Remix (FR-D17) and the Section Picker (FR-D12) cycle and filter **only within matching values** — a placed instance never shuffles into a design that binds a resource its template does not have, or that compiles into a different file. Groups 1–2 (A1–A16) are `bindingContext: none` and `compileTarget: any` (A7's tiers, A12's optional authors and A15's optional posts are Data-group opt-ins, not context changes), except the site-wide singletons A1–A3, which compile into `default.hbs` (FR-D5). Groups 3–5 declare theirs per category below; where designs inside one category differ — **A29** (tag vs author), **A31** (error vs private vs custom page) — the values are declared **per design** and the Shuffle ring is partitioned accordingly. **A30** declares one value for all 13 of its designs (`custom-{name}.hbs`, page-backed) but still partitions its Shuffle ring by membership surface — signup / signin / member home. The context axes are FR-H7's: see `prd.md` Appendix B and `research-ghost-binding-contexts.md`.
 
-**Member visibility (every CTA-bearing category — A2, A6, A22, A26):** a **show to (Everyone / Logged out / Free members / Paid members)** control, evaluated against `@member` on the live site and previewed via FR-D16. It adds no designs; it makes the whole existing CTA range member-aware, and it is how a member ask is placed on a canvas now that A32 is non-placeable.
+**Member visibility (re-derived from the export — R-16):** a **show to (Everyone / Logged out /
+Free members / Paid members)** control, evaluated against `@member` on the live site and previewed via
+FR-D16. It adds no designs; it makes an existing ask member-aware, and it is how a member ask is placed on
+a canvas now that A32 is non-placeable. **Eleven categories carry it: A4, A5, A6, A7, A8, A9, A16, A21,
+A22, A26, A29** — and inside those it sits on the CTA-bearing designs only, not on all of them (A21 on
+five, A26 on 12 Subscribe, A29 on its three CTA designs). **Twenty-two categories do not carry it, each
+for a reason the category records rather than an omission**: a richer member-state model already subsumes
+it (**A1**'s P0·4 per-action states, **A2**'s `audience` control, **A3·4**'s *Signed-in members*,
+**A30**'s `signedInBehaviour`), or the category bears no call to action at all to gate (**A10–A15, A17–A20,
+A24, A25, A27, A28, A31, A33, A34**). **A32 refuses it deliberately** — a paywall that hides itself from
+the members it is asking is not a paywall. Every Portal fragment inside a member ask carries register
+45(c)'s sentence: **with JavaScript off, nothing happens** (R-5).
 
 ### Group 1 · Structure & Chrome
 
-**A1. Headers & Navigation (16)** — Used on `default.hbs` (site-wide).
+**A1. Headers & Navigation (15)** — Used on `default.hbs` (site-wide).
 Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigation` + manual items), cta?, search toggle, member links toggle. Controls: sticky (None/Sticky/Sticky-shrink), nav alignment, CTA toggle, search toggle, member-links toggle. Data: `@site.navigation`, secondary nav, `@member` state swap (Sign in ↔ Account).
-1. **Classic Left** [Free] — logo left, links right, optional CTA button end.
-2. **Minimal Center** [Free] — centered logo above a centered link row.
-3. **Split Nav** — links split left/right of a centered logo.
-4. **Pill Float** — detached rounded pill bar floating over content.
-5. **Double Decker** — slim utility bar (social/search) above main nav.
-6. **Transparent Overlay** — sits over the first section, gains surface on scroll.
-7. **CTA Forward** — oversized primary button, links de-emphasized.
-8. **Underline Slide** — animated underline indicator on active/hover links.
-9. **Boxed Container** — nav inside a bordered container edge-to-edge rule.
-10. **Command Bar** — search-first field center, links compressed to sides.
-11. **Sidebar Trigger** — hamburger on desktop opening a full-height drawer.
-12. **Mega Search** — expanding full-width search takeover on focus.
-13. **Members Aware** — avatar/account menu prominent when signed in.
-14. **Borderline** — full-width bottom rule, generous whitespace, uppercase links.
-15. **Mono Wordmark** — oversized text wordmark, links tucked far right.
-16. **Tab Deck** — nav rendered as a tab strip that *reads* as attached to whatever follows it. **Visual only (normative):** the header and the section beneath it never know about each other. One partial per placed section (`prd.md` §7.4) means a header cannot reach into its neighbour's markup, and a design that required it would be unbuildable in this compiler and unshufflable in the editor — so the attachment is achieved with the header's own bottom edge, radius and background, and is correct against *any* section placed below it, including none.
+<!-- roster:A1 -->
+1. **Rail** [Free] — The undecorated single row — logo, nav, actions, hairline — and the only design that adds nothing to it; four other designs fall back to this arrangement rather than inventing one.
+2. **Split Rail** [Free] — The only design with a centred wordmark and the nav split around it, so the header reads from an axis of symmetry rather than left to right.
+3. **Stacked Masthead** — The only design whose lower tier is a full-width nav row that detaches from the masthead on scroll and carries the reading-progress rule.
+4. **Overlay** — The only design with no ground of its own — it renders on the image of the section beneath it, and the only one whose existence depends on another section's content.
+5. **Floating Pill** — The only design that is a detached object rather than a band — a capsule inset from three sides with the page ground visible around it, and the only header carrying a shadow at rest.
+6. **Drawer-First** — The only design with no nav in the bar at any width — navigation exists solely as a display-size takeover, which is why it is the only design with no cap on items.
+7. **Mega Bar** — The only design that expands into a full-width panel of bound or authored columns with descriptions and grandchild groups, instead of a 248 px dropdown.
+8. **Utility + Nav** — The only design with a second, thinner tier above the bar on its own ground, carrying secondary nav, social and a note.
+9. **Contrast Band** — The only design on the contrast token, where the accent's usual jobs are reassigned to other tokens rather than recoloured.
+10. **Side Rail** — The only design that is a vertical column instead of a horizontal band, and the only one that takes width out of the page layout rather than sitting above it.
+11. **Boxed** — The only design bounded by a box measured to the content column, so the nav's left edge and the body text's left edge are the same line.
+12. **Centre Nav** — The only design where the nav is centred on the page rather than on the slack between logo and actions, held there by equal outer grid columns whatever the CTA label says.
+13. **Icon Utilities** — The only design whose right side is an icon cluster beside the actions instead of labelled actions alone — and, since this pass, a design with no member furniture of its own: signed-in members see the member-aware action labels, not an avatar.
+14. **Big Type** — The only design where the wordmark is the display moment and the nav is subordinate to it.
+15. **Reveal** — The only design defined by scroll direction rather than scroll position: hidden going down the page, returned as a floating panel going up, in flow at the top.
+<!-- /roster:A1 -->
 
 **A2. Announcement Bars (15)** — Site-wide, above header. Part of the shell block (§4), and site-wide singletons like A1 and A3 — compiled into `default.hbs` once (FR-D5). `bindingContext: none` · `compileTarget: default.hbs`.
 **Ghost has an announcement bar of its own, and Inflozo's replaces it (owner ruling, verified feasible).** Ghost injects its native bar through `{{ghost_head}}` above everything the theme renders, so a site with both enabled shows **two stacked**. The resolution is that Inflozo's bar **takes over**, and the mechanism is fixed by what Ghost actually permits:
@@ -79,437 +134,464 @@ Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigatio
 - **If the user never seeds**, nothing changes and no warning is invented — but the stack is **visible while designing**: Ghost's bar is **shimmed as a strip at the top of the canvas** (FR-H5), taking real vertical space above the header, so an A2 design placed below it is authored against what the visitor will actually see rather than against a page missing its top strip. No warning is needed once the thing being warned about is on screen.
 
 Content: message (inline link support), cta?, dismiss toggle. Controls: dismissible, rotation (for multi-message), show to (Everyone / Logged out / Free members / Paid members).
-1. **Solid Accent** [Free] — accent band, message + arrow link.
-2. **Slim Dismissable** [Free] — hairline bar with close affordance.
-3. **Ticker Marquee** — continuously scrolling repeated message.
-4. **Gradient Slide** — animated two-stop gradient background.
-5. **Emoji Lead** — leading emoji slot with bold message.
-6. **Countdown** — message + live countdown to a set date.
-7. **Dual Action** — message left, two compact buttons right.
-8. **Pill Floating** — detached rounded pill under the header.
-9. **Rotating Messages** — up to 3 messages crossfading.
-10. **Dark Contrast** — contrast-role band regardless of mode.
-11. **Outline Ghost** — bordered transparent bar, understated.
-12. **Link Arrow** — entire bar is one large link with animated arrow.
-13. **Members Only** — renders only for signed-in members.
-14. **Top Rounded** — rounded lozenge fused to top of viewport.
-15. **Seasonal Confetti** — subtle animated particles behind message.
+<!-- roster:A2 -->
+1. **Rule** [Free] — The category's floor — one line on a contrast band with nothing added to it, spending no accent, and the arrangement five other designs resolve to rather than inventing one of their own.
+2. **Split** [Free] — The only single-row bar whose action is a filled button at the right margin, and the only one that breaks its row on a content threshold rather than at a width.
+3. **Badge** — The only design with a label before the sentence and no band of its own — a bar drawn with a single hairline on the page's own ground.
+4. **Two-Line** — The only design with two type sizes stacked — a heading-font line over a body line — and the only one that re-arranges on a stated usable-width trigger rather than at a breakpoint.
+5. **Capture** — The only design that takes input, so the only one with focus, error, submitting and success states — and the only one that becomes a different design when members are off in Ghost.
+6. **Countdown** — The only design whose content changes without anyone editing it, and the only one whose height is set by a clock rather than by a Height control.
+7. **Dateline** — The only design that reads content from Ghost, and the only one whose right end carries publication meta instead of an action or a close-adjacent control.
+8. **Ticker** — The only design where the text moves continuously, and the only one carrying a pause control as a requirement rather than a choice.
+9. **Rotator** — The only design that shows one message of several at a time with nothing moving horizontally, and the only one whose stop mechanism is its indicators rather than a pause button.
+10. **Pill** — The only design that is a detached object with air around it rather than a band, and the only one where a control — Sticky — changes what the design is rather than where it sits.
+11. **Toast** — The only design that arrives after the page has settled rather than being present at load, and the only one Escape dismisses from anywhere on the page.
+12. **Takeover** — The only design that carries imagery, and the only one tall enough to be mistaken for a hero.
+13. **Notice** — The only bottom-anchored bar in the top-stack's vocabulary — one sentence with an always-underlined policy link and a dismiss, recording nothing and gating nothing.
+14. **Edge** — The only design that is four pixels of furniture until it is pressed, and the only one whose collapsed and open states are two different designs.
+15. **Triple** — The only design that shows more than one message at once without moving, and the only one that hands off to another design below 768 instead of re-arranging itself.
+<!-- /roster:A2 -->
 
 **A3. Footers (16)** — Site-wide.
 Content: logo/wordmark, description?, link columns (manual + auto nav), social links, newsletter toggle, legal line, credit toggle (Pro-gated — FR-J15). Controls: column count, social style (Icons/Labels), newsletter embed toggle, back-to-top toggle.
-1. **Minimal Single Row** [Free] — wordmark left, links + social right, one line.
-2. **Center Stack** [Free] — centered logo, links row, social, legal.
-3. **Mega Grid** — 4–5 link columns + brand column with description.
-4. **Newsletter Forward** — subscribe form dominates, links secondary.
-5. **Big Wordmark** — oversized clipped site name as the footer's hero.
-6. **Sitemap Columns** — dense multi-column directory with headings.
-7. **Split Brand** — brand + blurb left half, link grid right half.
-8. **CTA Capped** — full CTA band fused above a slim footer. **Visual only**, on the same rule as A1 #16: the band is part of the footer's own markup, not a claim on the section above it.
-9. **Dark Contrast** — contrast-role footer in both modes.
-10. **Rounded Card** — footer as an inset rounded card with margin.
-11. **Border Grid** — visible hairline grid cells around each column.
-12. **Social First** — large social tiles row, minimal links below.
-13. **Gradient Fade** — background fades from page color to accent tint.
-14. **Colophon** — "made with", fonts/credits, RSS, humane small print.
-15. **Legal Slim** — single hairline row, ultra-minimal.
-16. **Back-to-Top Tower** — right-edge vertical rail with top button + social.
+<!-- roster:A3 -->
+1. **Minimal Line** [Free] — The category's floor — a brand row over a legal row with nothing added to them, spending no accent, and the arrangement six other designs resolve to rather than inventing one of their own.
+2. **Columns** [Free] — The design that settles the column grid — brand block at the left margin, authored columns filling the measure — and the only one whose column count is free to run the whole 2–7 range, which is what the seven-column cap, the eight-link cap and the accordion threshold are written against.
+3. **Two-Tier** — The only footer split across two grounds, with the lockup in the lower bar rather than in the tier — which is what lets the bar be the site's constant while the tier above it changes.
+4. **Newsletter Band** — The only footer that takes input — one form row as a band across the top of the footer, with no heading and no body copy, which is exactly what separates it from A22 Newsletter.
+5. **Contrast Band** — The same grid as A3·2 with the inverted ground as the design rather than as a setting — no Ground picker, one step more padding, and a four-column cap, which is what makes it a separate design instead of a control value.
+6. **Centred Stack** — The only footer with no grid at all — one centred column on a fixed measure, with the authored columns flattened into a wrapping row of links and their headings kept but never drawn.
+7. **Big Type** — The only footer whose subject is the site's own name at display scale, and the only one that drops the mark and the tagline by construction rather than by a control.
+8. **Sitemap** — The only design above four columns, drawn at the category's smallest link size, and the only one with a Density control — which is the control the extra columns pay for.
+9. **Latest Posts** — The only footer whose main content changes without anyone editing it, and the only one whose repeating unit carries an image.
+10. **Contact Block** — The only footer carrying post, email, phone and reply hours as a labelled block, and the only one whose content may be legally required of the site.
+11. **Colophon** — The only footer whose main content is prose, and the only one with a required rich-text field — without the paragraph there is no design.
+12. **Card** — The only footer that does not touch the window — a panel inset on three sides with the page ground visible around it, and the only one carrying a shadow at rest.
+13. **Tags** — The only footer whose main content comes from Ghost's own tags rather than from typing, and the design where the chip's geometry is set for the library.
+14. **Image Band** — The only footer whose subject is a photograph — one full-bleed band closing the page with the site's name over it — and the design that settles the scrim for the library.
+15. **Wrap** — The only footer that draws every link at reading size in one wrapping field, with no headings and no columns at any width — the design for a list with no hierarchy worth drawing.
+16. **Mini Bar** — The only footer with a scroll behaviour — a slim bar pinned to the window while the reader is in the page, released at the page's end into whichever A3 design sits below it, one element in both states.
+<!-- /roster:A3 -->
 
 ### Group 2 · Marketing Sections
 
-**A4. Heroes (18)** — Home, custom pages.
+**A4. Heroes (17)** — Home, custom pages.
 Content: eyebrow?, headline, subhead?, primary cta, secondary cta?, media (image?/none), badge?. Controls: media side, text alignment, CTA arrangement, media frame (None/Rounded/Browser/Tilt).
-1. **Center Stage** [Free] — centered stack: eyebrow, headline, subhead, dual CTAs.
-2. **Split Editorial** [Free] — oversized headline left, feature image right, meta beneath.
-3. **Image Backdrop** — full-bleed image, overlaid text with scrim control.
-4. **Gradient Burst** — radial accent gradient behind centered copy.
-5. **Feature Post Hero** — binds the latest featured post as the hero story.
-6. **Portrait Intro** — author portrait beside personal-brand introduction (binds author).
-7. **Newsletter Signup Hero** — headline + inline portal signup as the primary CTA.
-8. **Big Type Manifesto** — headline at viewport scale, nothing else above the fold.
-9. **Magazine Cover** — masthead-style: rules, kicker, cover image, issue meta.
-10. **Offset Card** — copy card overlapping a bleeding background image.
-11. **Stats Punch** — hero copy with a three-stat row fused beneath.
-12. **Collage Grid** — copy beside a 3-image staggered collage.
-13. **Typewriter Minimal** — monospace accent line with animated caret.
-14. **Search Hero** — headline over a prominent site-search field.
-15. **Logo Proof Hero** — hero with a trusted-by logo row fused below.
-16. **Split Form** — copy left, standalone signup card right.
-17. **Video Poster** — poster image with play affordance opening embed modal.
-18. **Ticker Base** — hero with a scrolling tag/topic ticker along its base.
+<!-- roster:A4 -->
+1. **Centred** [Free] — The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under resolves to without its band, and the design the type and action ladders are established on.
+2. **Flush Left** [Free] — The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 all resolve to when their picture is absent.
+3. **Split** — The design that settles the two-column hero — text on seven columns, one contained 4:3 crop on five, both on the page's own ground — and the geometry 10, 11 and 13 borrow rather than restate.
+4. **Full Bleed** — The only design where the set sits on the photograph itself, and the design that settles the scrim, the crop floor and the honest contrast limit for text over an unknown picture.
+5. **Image Under** — The only design that puts its whole picture below the set as a captioned band, so no word in it ever sits on a photograph.
+6. **Big Type** — The only design whose headline size is measured rather than picked from the category's ladder, and the only one that drops the eyebrow field entirely.
+7. **Masthead** — The only design whose subject is the site's own name from Settings rather than an authored headline, held between rules with an issue line under it.
+8. **Card** — The only design that is a detached panel with the page ground visible around it, the only one whose padding is measured inside a card, and the only one where a phone control decides whether the card survives at all.
+9. **Contrast Band** — The only design with no Ground control — the inverted ground is the design rather than a setting on 1 Centred — and the only one that redraws the action pair for a contrast band.
+10. **Video Poster** — The only design carrying a video, and the only one whose control opens a dialog rather than navigating, scrolling or submitting.
+11. **Subscribe** — The only design that takes an email address, and the only one where a form row stands in the actions' slot at the actions' own height.
+12. **Offset Image** — The only design whose picture leaves the window, and the only one that corrects settlement 1 by refusing a transparent header outright.
+13. **Latest Post** — The only design carrying live content from Ghost, and the only one whose second half is a query result rather than an authored picture.
+14. **Full Height** — The only design measured against the window rather than against its own content, and the only one carrying a scroll cue.
+15. **Pull Quote** — The only design where the display position is spent on somebody else's sentence, and the only one where the publication's own headline is demoted to the eyebrow's treatment and is optional.
+16. **Slim** — The only design that is a page title rather than an argument — one row of about 160 px — the only one offered on every route, and the only one whose title can come from Ghost.
+17. **Overlap Card** — The only design that reaches into the section below it, and the only one where the headline sits on a measured surface over a photograph rather than on the photograph.
+<!-- /roster:A4 -->
 
 **A5. Features (16)** — Home, custom pages.
 Content: heading?, intro?, items[] {icon?, image?, title, body, link?}. Controls: columns (2/3/4), icon style (Line/Filled/Tile), item alignment, item count.
-1. **Icon Grid** [Free] — 3-up grid of icon + title + body.
-2. **Alternating Rows** [Free] — image/copy rows alternating sides.
-3. **Bento Grid** — mixed-size tiles, one dominant feature cell.
-4. **Checklist Split** — copy left, checkmarked benefits list right.
-5. **Card Trio** — elevated cards with icon tiles and links.
-6. **Big Icon Center** — one row of oversized icons, minimal text.
-7. **Screenshot Spotlight** — large product image with annotated callouts.
-8. **Accordion Features** — expandable feature list beside a static image.
-9. **Tabs Showcase** — tabbed features swapping a shared media panel.
-10. **Mini Cards Dense** — 6–8 compact cards, small icons, tight grid.
-11. **Comparison Split** — "without / with" two-column contrast panel.
-12. **Sticky Scroll** — sticky media panel while feature copy scrolls.
-13. **Highlight Band** — single full-width feature banded in accent tint.
-14. **Numbered Ledger** — oversized numerals with rule-separated rows.
-15. **Illustration Rows** — spot-illustration slots beside short copy rows.
-16. **Stat-Backed Cards** — each feature card carries a supporting stat.
+<!-- roster:A5 -->
+1. **Three Up** [Free] — The category's floor — a centred head over three bare items on the page's own ground, adding nothing to the item, the grid, the head or the action, and the arrangement the fifteen designs after it are departures from.
+2. **Two Up** [Free] — The only design that caps its body copy inside a column wider than the cap — a 520 px measure in a 632 px item — which is the whole of what separates it from 1 Three Up with a column removed.
+3. **Four Up** — The only design that offers to remove its own body copy — the control that buys a fourth column, and the reason the ladder stops there rather than at a fifth.
+4. **Cards** — The design that settles the plane — every item on its own surface at a fixed 28 px padding, stretched to the row's height with its text held at the top — the three things half the category borrows rather than re-deciding.
+5. **Split Head** — The only design whose head is a column beside the items rather than a block above them, and the only one whose section action sits inside that head at every width.
+6. **Rows** — The only design that gives each item a full-width row of its own with a hairline between, and the design that introduces itemMeta at the row's right end.
+7. **Alternating Media** — The only design where the picture changes sides from row to row, and the only one capped at four items because every row spends a half-page on one.
+8. **Media Top** — The only design that runs a picture across the top of every item in a grid, at a 16:9 crop it argues for explicitly against 7's 3:2.
+9. **Bento** — The only design that draws one item at four times the size of the others, taking that emphasis from the item's position in the list rather than from any control.
+10. **Contrast Band** — The only design whose ground is the design rather than a control — the whole set on the inverted band, with the icon lift, the hairline, the action and the focus ring all re-derived from the carried colour.
+11. **Checklist** — The only design whose item is a title and nothing else, spending the accent once per entry on a mark that says the entry is included.
+12. **Tabs** — The only design that shows one item at a time, and the only one whose resting state hides most of what is authored in it.
+13. **Spotlight** — The only design that makes one item the subject and reduces every other to a single line, and the only one whose remaining items can be dropped from the DOM by a control.
+14. **Scroller** — The only design that overflows sideways instead of wrapping, with a card sliced by the window as its affordance — and the only one whose arrangement is identical at every width.
+15. **Index** — The only design whose most conspicuous element is not authored — a numeral generated from the item's position, sitting where every other design puts its media.
+16. **Panel** — The only design whose items share one plane, separated by hairlines that stop short of the panel's edge rather than by gaps of page ground.
+<!-- /roster:A5 -->
 
 **A6. CTA Banners (15)** — Any template.
 Content: heading, subtext?, primary cta, secondary cta?, image?. Controls: alignment, emphasis (Band/Card/Full-bleed), show to (Everyone / Logged out / Free members / Paid members).
-1. **Accent Band** [Free] — full-width accent strip, heading + button.
-2. **Boxed Border** [Free] — outlined card CTA on page background.
-3. **Gradient Card** — rounded gradient card with dual CTAs.
-4. **Split Action** — copy left, buttons right, single rule above.
-5. **Big Type Center** — display-size ask with one oversized button.
-6. **Image Side** — CTA card with flush image on one side.
-7. **Floating Overlap** — card overlapping the sections above and below.
-8. **Dark Invert** — contrast-role panel in both modes.
-9. **Newsletter CTA** — portal signup embedded as the action.
-10. **Dual Path** — two side-by-side option cards (e.g., read vs subscribe).
-11. **Countdown CTA** — deadline timer beside the action.
-12. **Slim Inline** — single-line CTA with arrow, near-invisible chrome.
-13. **Full-Bleed Photo** — edge-to-edge image with scrimmed CTA copy.
-14. **Testimonial-Backed** — quote + avatar fused above the ask.
-15. **Emoji Punch** — playful oversized emoji beside short ask.
+<!-- roster:A6 -->
+1. **Centred** [Free] — The category floor — the ask centred on the page's own ground with nothing added to it, and the arrangement four other designs resolve to rather than inventing one.
+2. **Flush Left** [Free] — The only design that draws a hairline above itself, and the only one whose right half is empty by arrangement rather than by a missing field.
+3. **Split** — The only design that puts words and actions in opposite halves of one row, with the actions a right-aligned column rather than a row.
+4. **Card** — The only design contained by a plane of its own — one surface card inset from the page margin with page ground on all four edges, so the section's boundary is an edge rather than a change of ground.
+5. **Contrast Band** — The only design where the inverted ground is the design rather than a control value — and the only one that spends no accent at all, its action carrying the band's own colour.
+6. **Inline Form** — The only design that takes input, so the only one with focus, invalid, submitting and done states — and the only one whose ground pairing runs the other way in dark.
+7. **Full Bleed Image** — The only design whose ground is a photograph filling the section, and the only one carrying a flat scrim with a per-width value.
+8. **Image Split** — The only design where a photograph sits beside the words rather than under them, with no scrim and nothing measured against the picture — and the only one whose alt text is drawn as an alt.
+9. **Big Type** — The only design above the category's title ladder, and the only one where the sub and the actions share a line under a full-width rule.
+10. **Slim** — The only single-row design, on its own 20/28/36 padding scale and A1·1's button rather than A6's hero scale, and the only one that draws rules of its own by default.
+11. **Reasons** — The only design with a repeating unit — up to three short marked lines that read stronger than the sub — and the only one that borrows A5·11's mark without its accent.
+12. **Pair** — The only design with two asks, two accent fills and no section heading — the section named by its eyebrow rather than by a title.
+13. **Overlap** — The only design with a precondition, and the only one that crosses another section's edge — a card whose bottom sits over the footer's top, with the footer's padding absorbing it.
+14. **Members** — The only design that reads Ghost's member state, and so the only one with three states — including one where the section does not render at all.
+15. **Signature** — The only design whose copy has an author — a portrait, a signed name and a role sitting above the actions, and the only place A6 puts anything before the actions in the DOM.
+<!-- /roster:A6 -->
 
 **A7. Pricing & Tiers (15)** — Home, custom pages, A30's membership pages (page-backed `custom-{name}.hbs`). **Binds live Ghost tiers** (`{{#get "tiers"}}`: names, monthly/yearly prices, currency, benefits).
 **Authoring rule, normative for every design that binds tiers — A7's 15, A22 #8, and A32's paywall designs under FR-H6.** Two constraints, both executed against Ghost 5.130.6 and 6.58.0 (VERIFY-AT-BUILD 14b, 33):
 1. **Emptiness is tested on a *filtered* get, never on `tiers.length`.** The visibility filter is applied to the serialized rows *after* the count is taken, so an unfiltered `{{#get "tiers"}}` on a site whose only paid tier is hidden reports `length` = 2 and yields **one** row — and `{{#if tiers.length}}` around a pricing section then renders a heading with no cards. Always carry `filter="visibility:public"`, under which count and rows agree.
 2. **No emitted `{{#get}}` uses `limit="all"`, and none exceeds `limit="100"`.** `GS090-NO-LIMIT-ALL-IN-GET-HELPER` and `GS090-NO-LIMIT-OVER-100-IN-GET-HELPER` are v6-spec warnings — invisible on Ghost 5, standing warnings on Ghost 6 against FR-J6's 0/0 target.
 Content: heading?, intro?, per-tier cta labels, footnote?, member-count line? (#12). Controls: billing toggle (Monthly/Yearly/Toggle), highlight tier select, benefit display (Checks/Plain), free-tier visibility, member-count line toggle (#12). Data: live tiers or sample; the member count on #12 comes from `{{total_members}}` — **a string, always**, since Ghost rounds it down and appends `+`, so no design may format, compare or compute on it.
-1. **Card Trio** [Free] — classic side-by-side tier cards.
-2. **Minimal Table** [Free] — rule-lined table, prices right-aligned.
-3. **Highlight Middle** — center card raised, accent-ringed, "popular" tag.
-4. **Toggle Cards** — monthly/yearly segmented control swapping prices live.
-5. **Single Plan Spotlight** — one paid tier, oversized, benefits split right.
-6. **Feature Matrix** — tiers as columns over a feature-row grid.
-7. **Free vs Paid Split** — two-panel contrast between free and premium.
-8. **Benefits Checklist** — stacked wide rows, price right, checks left.
-9. **Gradient Featured** — highlighted tier carries gradient fill.
-10. **Border Cards** — flat outlined cards, no elevation, editorial.
-11. **Dark Cards** — contrast-role cards on light page (and inverse).
-12. **Founding Member** — scarcity-framed single card with a live member-count line via `{{total_members}}`, a core keyless server-side helper (no Admin key, no custom setting, no client-side fetch). **The count is a string, not a number:** Ghost rounds it down and appends `+`, so the design renders it verbatim and never does arithmetic, formatting or comparison on it.
-13. **FAQ-Attached** — pricing cards with a compact FAQ fused beneath.
-14. **Stacked Ledger** — vertically stacked full-width tier rows.
-15. **Comparison Wide** — full-width matrix with sticky tier header row.
+<!-- roster:A7 -->
+1. **Cards** [Free] — The category's floor: three equal cards on the page ground with nothing added to them, and the arrangement nine other designs hand off to rather than inventing one of their own.
+2. **Table** [Free] — The only real <table> in A7, the only design that derives a benefit matrix from per-tier strings, the only one that scrolls, and the only one that takes a fourth tier.
+3. **Stack** — The only arrangement in A7 that does not care how many tiers there are, which is why every columned design collapses into it at 1080 instead of inventing a second arrangement.
+4. **Split Head** — The only design that puts every authored field in one column and everything from Ghost in the other, and the only one where the cadence switch belongs to the head rather than to the prices it sits above.
+5. **Contrast Band** — The only design whose ground is the design rather than a control, and the only place in A7 where the recommendation substitutes its tokens instead of spending them.
+6. **Single Tier** — The only design built for exactly one paid tier, the only one that sets a planed tier beside a tier with no plane at all, and the only one that hands off upwards.
+7. **Highlight** — The only design where the recommended tier is a different size from the others, and the only one that requires a recommendation in order to exist.
+8. **Slim Row** — The only design with no head, no benefits and no descriptions, and the only one with a single action for the whole section instead of one per tier.
+9. **Big Price** — The only design above the price ladder — 88 or 112 px — and the only one that refuses three tiers outright.
+10. **Tabs** — The only design that shows one tier at a time, and the only one where the recommendation chooses what a reader sees first.
+11. **Free and Paid** — The only design that draws free and paid as two different kinds of object rather than two of the same kind, and the only one that reorders its tiers on a phone.
+12. **Ledger** — The only design with no planes anywhere, the only right-aligned price, and the only one that can drop the actions entirely.
+13. **Members** — The only design that reads the reader — signed in, paid, and which tier — and the only one whose accent is computed rather than authored.
+14. **Assurances** — The only design carrying a strip of site-written claims about the transaction beneath the tiers, and the only one that deliberately ships an empty field.
+15. **Both Prices** — The only design with no cadence control at all — both prices are content on every card — and the only one with no behaviour of any kind.
+<!-- /roster:A7 -->
 
 **A8. Testimonials (15)**
 Content: items[] {quote, name, role?, avatar?, rating?, link?}, heading?. Controls: count, avatar toggle, rating toggle, motion (Static/Marquee/Carousel).
-1. **Quote Grid** [Free] — 2×2/3-up quote cards.
-2. **Single Spotlight** [Free] — one large centered quote with avatar.
-3. **Marquee Scroll** — infinite horizontal drift, pause on hover.
-4. **Masonry Wall** — variable-height quote wall.
-5. **Big Pull Quote** — display-type quote with oversized quotation mark.
-6. **Split Photo Quote** — portrait photo half, quote half.
-7. **Card Carousel** — snap-scrolling cards with dots.
-8. **Tweet Cards** — social-post styled cards with handles.
-9. **Avatar Row** — compact strip: avatars + one rotating quote.
-10. **Logos + Quotes** — company logo above each quote card.
-11. **Star Cards** — rating-forward cards, quote secondary.
-12. **Alternating Rail** — quotes alternating left/right down a center rule.
-13. **Video Testimonial** — embed slot beside supporting pull quote.
-14. **Inline Ribbon** — single-line quotes separated by dots, ticker-like.
-15. **Case Teaser** — quote + metric + "read story" link card.
+<!-- roster:A8 -->
+1. **Single** [Free] — The only design that draws one quotation with no card and no plane around it — the category's floor, and the arrangement eight other designs hand off to at a count of one rather than inventing one of their own.
+2. **Three Up** [Free] — The category's card grid at its home scale — three equal 416 px cards on the page's own ground — and the collapse target every columned design in A8 names at 1080 rather than inventing a second arrangement.
+3. **Two Up** — The only card grid whose quotation reaches Feature 27 inside the card, which is what a 632 px measure buys — and the only design in A8 whose step-down stops one step short of the ladder's floor.
+4. **Grid** — The only design with more than one row of cards, and so the only one that has to settle row stretch — rows equal within themselves and never across the grid, with both alternatives refused by name.
+5. **Wall** — The only design that gives up equal heights entirely — up to twelve quotations at their natural heights in CSS columns, with an uneven bottom edge as a stated outcome rather than a defect.
+6. **Split Head** — The only design whose head is a column beside the quotations rather than a block above them, and so the only one that has to decide where the section's own two sentences go when the head is not on top.
+7. **Slider** — The only design whose set overflows sideways instead of wrapping, with a card sliced by the page's right margin as its affordance — and the only one whose arrangement is identical at every width.
+8. **Portrait** — The only design that draws a photograph of the person speaking, and the only one that suppresses the avatar because of it — a 36 px circle of the same face beside a 632 px photograph of it is the same fact twice.
+9. **Contrast Band** — The only design whose ground is the design rather than a control value — 2 Three Up's arrangement on the inverted band, with every mix, the accent's substitution and the panel's disappearance at one quotation all following from the token pair.
+10. **Big Quote** — The only design that reaches Display 40 outside a card, and the only one that drops the section's title by construction in order to do it — the quotation is the section's largest voice and there is no second one.
+11. **Faces** — The only design that turns the attributions into the control — a reader picks a face and the quotation follows — and so the only one whose resting state hides most of what is authored in it.
+12. **Rows** — The plainest thing the category can put on a page — quotations as hairline rows with the attribution in a caption column, no head, no card, no avatar and no accent pixel available to it — and the design three hand-offs arrive at.
+13. **Highlight** — The only design that draws one quotation larger than its neighbours, taking that emphasis from the repeater's order rather than from any control — and the only one that settles how far one voice may lead: two steps of the ladder and no more.
+14. **Slim Line** — The only design that fits a quotation and its source on one line, on its own compact padding scale, with a 120-character ceiling no other design imposes and a hand-off rather than a truncation at the top of it.
+15. **Overlap** — The only design that puts a quotation over a photograph, and the only one whose geometry reaches into the section below it — the card's overhang reserved out of its own bottom padding so no page needs to know it is there.
+<!-- /roster:A8 -->
 
 **A9. FAQ (15)**
 Content: heading?, intro?, items[] {question, answer}, contact cta?. Controls: columns (1/2), default state (First open/All closed/All open), divider style.
-1. **Accordion Single** [Free] — classic single-column accordion.
-2. **Two-Column Accordion** [Free] — accordion split across two columns.
-3. **Split Sticky** — heading + contact sticky left, questions right.
-4. **Open Grid** — all Q&As visible as cards, no interaction.
-5. **Numbered List** — oversized numerals, rule-separated.
-6. **Boxed Cards** — each Q&A an outlined expandable card.
-7. **Minimal Rules** — hairline rows, plus/minus glyphs only.
-8. **Category Tabs** — tabbed question groups.
-9. **Chat Style** — Q as sent bubble, A as reply bubble.
-10. **Icon Questions** — leading icon slot per question.
-11. **Wide Accordion** — full-width rows with generous type scale.
-12. **Dark Panel** — contrast-role panel container.
-13. **Dense Compact** — small-type two-column reference style.
-14. **Contact-Capped** — accordion with support CTA band fused below.
-15. **Marquee Header FAQ** — scrolling "FAQ" display text above list.
+<!-- roster:A9 -->
+1. **Accordion** [Free] — The category's floor accordion — one column of hairline rows with nothing added to it, the only design with no count control and the only one offering Open on load, and the arrangement seven others hand off to rather than inventing one of their own.
+2. **Two Column** [Free] — The only design that divides one list into two independent columns — split by count and never equalised by height — which is what makes settlement 4's two refusals visible on the page.
+3. **Open List** — The only design that draws every answer with no button, no marker and no region — nothing here can be hidden by a state, which is why ten accordion panels name it.
+4. **Cards** — The only design that gives each question a card of its own, so what a reader sees is the item's geometry rather than the section's — and the only one where a row of items shares a height.
+5. **Split Head** — The only design that puts the head in a column of its own beside the rows, so the publication's voice and the reader's questions sit side by side — and the head does not move when a row opens.
+6. **Grouped** — The only design that draws every group's rows at once under its own label, so the list is grouped and complete at the same time — no container hides anything.
+7. **Index** — The only design with a jump index beside its rows — the library's one sticky element inside a section and A9's one copy-link affordance, holding twenty-four questions by showing a reader the shape of the whole list.
+8. **Contrast Band** — The only design on the contrast token — 1 Accordion's rows with every colour derived from the band's own pair, and the only section in A9 that can contain no accent pixel by construction rather than by an authoring choice.
+9. **Numbered** — The only design that numbers its questions — the numerals in the pack's heading font at display scale, so an item's position in the list becomes the first thing a reader sees.
+10. **Image Split** — The only design that reads image — a photograph on one half and the rows on the other, with neither column stretching to meet the other's height.
+11. **Tabs** — The only design that shows one group at a time — and the only one whose resting state withholds its questions as well as its answers.
+12. **Filter** — The only design with an input — a field that narrows twenty-four questions to the few a reader typed for, and the only place in A9 where content leaves the DOM.
+13. **Slim** — The only design with no head at any value — its own padding scale, a 300-character answer ceiling and no lists or code, three or four short questions as a band inside somebody else's page.
+14. **Ask** — The only design that ends in a contact panel — A9's one filled accent button, spending the section's whole accent budget on the reader's own question rather than on an offer.
+15. **Ledger** — The only design that puts the question in a column of its own beside its answer, and the only one where the answer's measure and the row's width are the same number.
+<!-- /roster:A9 -->
 
 **A10. Stats & Numbers (15)**
 Content: heading?, items[] {value, label, sublabel?}, source note?. Controls: count (2–4), count-up animation toggle, divider toggle.
-1. **Big Number Row** [Free] — 3–4 display-size stats in a row.
-2. **Card Stats** [Free] — stats in soft cards with labels.
-3. **Split Narrative** — paragraph left, stat stack right.
-4. **Gradient Numbers** — gradient-filled numerals.
-5. **Bordered Grid** — hairline grid cells per stat.
-6. **Count-Up Ticker** — animated counting on scroll into view.
-7. **Inline Sentence** — stats embedded within a flowing sentence.
-8. **Milestone Rail** — horizontal timeline of dated milestones.
-9. **Bento Emphasis** — one hero stat tile + smaller tiles.
-10. **Percent Bars** — labeled horizontal bars with values.
-11. **Dark Band** — contrast strip with luminous numerals.
-12. **Icon Stats** — icon above each value.
-13. **Compact Strip** — single slim row, dot-separated.
-14. **Photo-Backed** — stats overlaid on a scrimmed image.
-15. **Circle Rings** — ring-progress glyphs beside values.
+<!-- roster:A10 -->
+1. **Row** [Free] — The category's floor and the row every other design is measured against — an undecorated set of equal cells carrying seven controls, more than any other design in A10, and the only one that will put the label above the value.
+2. **Cards** [Free] — The only design that gives each stat a surface of its own — and, because a card has a visible edge, the only design in A10 that equalises the height of anything.
+3. **Grid** — The only design that draws five stats, and the only one whose separation is a shared-edge hairline matrix rather than a gutter.
+4. **Single** — The only design with no arrangement at all — one stat as the whole section at up to 128 px — and the design eight others hand off to when a single stat is authored.
+5. **Lead Stat** — The only design that draws two value sizes at once, and the only one whose emphasis comes from the repeater's order rather than from any control.
+6. **Split Head** — The only design whose head is a column beside the stats rather than a block above them, and the only one whose stat block holds the same internal width at both of its counts.
+7. **Contrast Band** — The only design whose ground is the design rather than a control value — 1 Row inverted onto contrast, with the accent unavailable and the band's carried colour standing in for all three of its jobs.
+8. **Ledger** — The only design that turns the stat on its side — label left, value right, on one baseline — and the only one that leaves 320 px of the content width deliberately unused.
+9. **Bars** — The only design that draws anything other than type, and the only one with a precondition: every drawn stat needs a share or the whole section becomes 1 Row.
+10. **Image Split** — The only design that reads an image, and the only one whose head sits in the column with the stats rather than above them.
+11. **Inline** — The only design where the stats have a grammar — values set inside an authored sentence — and the only one that draws no list, no cell and no label.
+12. **Sourced** — The only design that sources each stat separately, as numbered footnotes, and the only one that does not draw the section's own source line.
+13. **Slim** — The only design with no head, no source line and no link at any setting — a short band on the one padding scale in A10 that does not step with width — and the only one that puts the label beside the value.
+14. **Change** — The only design that draws a second figure per stat — the number this one replaced, with a glyph and one of four fixed wordings — and the only one that computes anything from two authored strings.
+15. **Big Type** — The only design that gives one stat a whole row at 96 px, and the only one where two control values draw the same thing at ≤ 767.
+<!-- /roster:A10 -->
 
 **A11. Logo Walls (15)**
 Content: heading?, logos[] {image, link?}. Controls: treatment (Grayscale/Original/Mono-invert), motion (Static/Marquee/Dual-marquee), density.
-1. **Grayscale Row** [Free] — single centered row, muted logos.
-2. **Grid Bordered** [Free] — logo cells in a hairline grid.
-3. **Marquee Loop** — continuous single-direction drift.
-4. **Dual Rows Offset** — two counter-scrolling rows.
-5. **Center Statement** — "Trusted by" line flanked by logos.
-6. **Pill Chips** — logos inside rounded chips.
-7. **Card Tiles** — elevated tiles, hover lift.
-8. **Fade Edges** — row with soft gradient masks at edges.
-9. **With Metric** — logos plus one proof stat.
-10. **Sparse Airy** — 3–4 large logos, maximal whitespace.
-11. **Framed Box** — logos inside one outlined container with label tab.
-12. **Category Grouped** — labeled logo clusters.
-13. **Mono Invert** — solid-color logo treatment on accent band.
-14. **Compact Inline** — small logos inline with body-size caption.
-15. **Checker Grid** — alternating filled/empty cells pattern.
+<!-- roster:A11 -->
+1. **Row** [Free] — The category’s floor — one row of equal cells with nothing added to it: no container, no caption, no second size and no behaviour, and the arrangement eleven other designs hand off to rather than inventing one of their own.
+2. **Caption Row** [Free] — The only design where type and artwork share one horizontal band — a 13 px label in a 196 px column with the wall filling the 1,056 beside it — and the only one whose section field is required in practice for the design to exist.
+3. **Grid** — The only design that draws more rows than it has counts and the only one offering a hairline matrix — the category’s answer to six to eighteen marks, and the design carrying A11’s one forced control value.
+4. **Boxed** — The only design that puts the whole wall inside one surface panel with a hairline and the pack radius — the section’s own container rather than the item’s — and the only one whose inner padding is a control.
+5. **Cards** — The only design that gives each logo a card of its own — the item’s geometry rather than the section’s — which is what makes a linked mark’s target the card instead of the artwork.
+6. **Split Head** — The only design that sets the head, sub, note and link in a column beside the wall rather than above it, and the only one whose foot leaves that column and moves under the wall at 1080.
+7. **Contrast Band** — The only design on the contrast token, and the only one in the library that reads the dark-ground file in light mode and the light file in dark — the same wall as 1 Row, separated by its ground alone.
+8. **Marquee** — The only design that moves without being touched — a full-bleed track in one or two rows, with a pause button that cannot be turned off, no cell grid and no pause on hover.
+9. **Rail** — The only design the reader moves — a track wider than the window, scrolled by hand — and the only one in A11 whose existence is decided by a measurement at render rather than by what was authored.
+10. **Slim** — The only design with no type in it at all — a 92 to 148 px band of three to six marks with no head, note, link or accessible name, keeping ten of the fourteen fields and drawing none of them.
+11. **Named** — The only design that draws a caption under each mark — equalised to the tallest caption in its row rather than in the wall — and so the only one whose item holds type as well as artwork.
+12. **Tiers** — The only design that draws two box sizes in one section — the first one, two or three marks at Huge 64 or Large 48 and the rest at Small 28 — and the only one whose ranking comes from the item order rather than from a field.
+13. **Dense** — The only design at Tiny 22 and six to ten across, where the aspect classes stop governing and the wall reads as a texture rather than as marks — and the design where the category’s twenty-four ceiling is reached.
+14. **Inline** — The only design where a mark is a word rather than an item — two to four logos set inside one sentence, placed by chips in the lede — and the only one that keeps url and refuses to draw it.
+15. **Big Type** — The only design where the type is louder than the artwork — a Display 48 title on a 1,040 measure over three or four marks — and the category’s only Display size, only 1,040 measure and only 64 px head gap.
+<!-- /roster:A11 -->
 
 **A12. About & Team (15)**
 Content: heading?, body, images[], team[] {name, role, image, link?}?, values[]?. Controls: team columns, portrait shape (Square/Rounded/Circle), values toggle. Data: optional bind team to Ghost authors.
-1. **Founder Letter** [Free] — signed letter layout with portrait.
-2. **Team Grid** [Free] — uniform portrait cards with roles.
-3. **Portrait Split** — large portrait half, story half.
-4. **Timeline Story** — dated vertical company story.
-5. **Values Cards** — icon + value cards trio.
-6. **Photo Collage** — staggered image cluster beside copy.
-7. **Mission Big Type** — display-scale mission statement.
-8. **Team Masonry** — varied-size portraits wall.
-9. **Author Bind Grid** — team auto-populated from Ghost authors.
-10. **Culture Gallery** — candid photo strip with caption copy.
-11. **Split Manifesto** — numbered beliefs beside sticky heading.
-12. **Stats-Backed About** — story with fused stat row.
-13. **Quote-Led About** — founder quote as the opener.
-14. **Compact Bio List** — text-only rows: name, role, one-liner.
-15. **Hiring Capped** — about section ending in a join-us band. **Visual only**, on the same rule as A1 #16: the band is inside this section, never a claim on the one that follows.
+<!-- roster:A12 -->
+1. **Grid** [Free] — The category's floor — a circle above a name and a role in equal cells, with no container, no bio, no second size and no behaviour: the arrangement ten other designs hand off to rather than inventing one of their own.
+2. **Cards** [Free] — The only design where a person gets a plane of their own — a fill, a hairline and the pack radius around each card, equalised to its row's height — and therefore the only one where a short card is stretched rather than left short.
+3. **Rows** — The only design that gives a person a full-width row — photograph at the left, the category's longest bio on an 824 measure with the remaining 344 left deliberately empty — and the only one whose collapse depends on the photo size rather than on the width alone.
+4. **Story and Team** — The only design with prose and a group photograph of its own above the people — the one that reads body, image and imageAlt together — and the only section in A12 that renders with an empty people[].
+5. **Split Head** — The only design that sets the head, the story and the foot in a 416 column beside the people rather than above them, and the only one that offers Count Two — where the person card turns side by side instead of stacked.
+6. **Portraits** — The only design that draws a person at editorial scale — two or three named crops filling their cells, with the category's one scrim under an overlaid caption — and the only one that ends at a single column on a phone.
+7. **Contrast Band** — The only design on the contrast token — 1 Grid's exact wall at the band's own vertical scale, separated from it by ground alone — and the only one in A12 where the accent is disabled with its ratio shown.
+8. **Founder** — The only design that draws one person, and the only one whose two halves are vertically centred against each other — a named crop beside a 900-character letter, with no list in the DOM at all.
+9. **Faces** — The only design that draws a face and a name and nothing else — eight to twenty-four circles at four, six or eight across, with the role kept and refused — and the only one where turning the names off moves the link and the alt text onto the photograph.
+10. **Directory** — The only design that draws no photograph at any setting — names and roles in hairline rows, filled down and then across in one, two or three columns — and the only one that goes to a single column at every width.
+11. **Slim** — The only design with no heading at all — a 96 to 144 px band of overlapped 32 px faces, one sentence and a link — and the only one that keeps url without drawing it, because no name is drawn to carry it.
+12. **Big Type** — The only design that offers Display 48 — one statement on a 1,040 measure with a single row of three or four people under it — and the only one that holds authored people out of the DOM entirely rather than drawing them somewhere.
+13. **Rail** — The only design the reader moves — a full-bleed track of portrait cards wider than the window — and the only one in A12 whose existence is decided by a measurement at render rather than by what was authored.
+14. **Reveal** — The only design where a bio opens per person — 1 Grid's cells with a 38 px disclosure in each card, any number open at once — and the only one whose opened panel can be drawn outside the card that opened it.
+15. **Groups** — The only design that regroups the list — labelled blocks in the order their first member appears, built from an authored per-person field rather than by sorting — and the only one in A12 with a second heading level.
+<!-- /roster:A12 -->
 
 **A13. Process / How It Works (15)**
 Content: heading?, steps[] {title, body, icon?/image?}, cta?. Controls: step count (3–5), numbering style (Numerals/Dots/Icons), connector (Line/Arrow/None).
-1. **Numbered Row** [Free] — 3-up numbered columns.
-2. **Vertical Timeline** [Free] — stacked steps on a spine.
-3. **Alternating Steps** — zigzag left/right along center line.
-4. **Card Steps** — elevated step cards with badges.
-5. **Arrow Flow** — chevron-connected horizontal flow.
-6. **Sticky Progress** — sticky step list left, media right per step.
-7. **Bento Steps** — steps as mixed-size tiles.
-8. **Illustrated Steps** — image slot per step, copy beneath.
-9. **Tabbed Stages** — steps as tabs with shared detail panel.
-10. **Checklist Journey** — progressive checkmarked path.
-11. **Circle Badges** — oversized circled numerals, minimal copy.
-12. **Minimal Ledger** — hairline rows, numeral left, copy right.
-13. **Split Detail** — step selector left, expanded detail right.
-14. **Path Curve** — steps along a drawn curved path (SVG).
-15. **Compact Tri-Step** — one-line 1-2-3 strip for tight pages.
+<!-- roster:A13 -->
+1. **Three Up** [Free] — The category's floor — a numeral above a title above a paragraph in equal cells, with no container, no picture, no label and no behaviour: the arrangement five other designs hand off to rather than inventing one of their own.
+2. **Track** [Free] — The only design in which a single hairline joins the steps rather than dividing them — three to five markers in one line with the connector running through them — and the only one whose defining element rotates rather than collapsing when the steps stack.
+3. **Rows** — The only design that gives a step a full-width row with its numeral alone in a fixed gutter — the category's longest body on an 824 measure with the remaining 376 carrying the label at its far end — and one of four that take eight steps without changing shape.
+4. **Cards** — The only design where a step gets a plane of its own — a fill, a hairline and the pack radius around each card, equalised to its row's height — and the only one where an icon sits on the title's own line rather than above it.
+5. **Split Head** — The only design that sets the head, the section's prose and the foot in a 416 column beside the steps rather than above them, and the only one besides 9 Big Numbers that offers Title Large 40.
+6. **Contrast Band** — The only design on the contrast token — 1 Three Up's exact grid at the band's own vertical scale, separated from it by ground alone — and the only one in A13 where the accent is disabled with its ratio shown.
+7. **Alternating Media** — The only design where the picture changes side at every step — full-width halves, vertically centred against each other, with alternation as a rule and the side of the first step as the only control over it — and the one where the numeral plate is drawn at its largest.
+8. **Rail** — The only design the reader moves — a full-bleed snap track of equal step cards wider than the window — and the only one in A13 whose existence is decided by a measurement at render rather than by what was authored.
+9. **Big Numbers** — The only design that spends the section's display moment on the numerals — 72 or 104 px figures above two to four steps — and the only one with a numeral-position control, because at that size the figure is a composition element rather than a marker.
+10. **Panel** — The only design whose containment is the section's own — one surface panel holding every step as a hairline row — and the only one where the numerals sit at the right of the row rather than before it.
+11. **Walkthrough** — The only design that shows one step and hides the rest — a column of tabs beside a fixed-height panel carrying that step's label, title, body and picture — and the only one in A13 whose heading level changes when JavaScript is off.
+12. **Media Top** — The only design with a picture above every step in a grid of equal cells, and the only one that offers Portrait 4:5 or puts the numeral inside a marker on the picture itself.
+13. **Slim Bar** — The only design with no heading at all — a 96 to 144 px band of numbered pills separated by chevrons, with a sentence at the left and a link at the right — and the only one that draws no body at any setting.
+14. **Index** — The only design that draws every field of every step in aligned columns down the whole section — numeral, label, title and body in four hard columns on hairline rows — and the design four of the other fourteen name when a site reaches seven steps.
+15. **Sticky Rail** — The only design with a sticky contents list beside the steps, and the only thing in A13 that marks a current step — derived from the reader's scroll rather than authored, which is why a per-step “current” flag is refused everywhere else.
+<!-- /roster:A13 -->
 
 **A14. Galleries (15)**
 Content: heading?, images[] {image, caption?, link?}. Controls: columns, gap (Tight/Normal/Loose), lightbox toggle, aspect (Natural/Square/Wide).
-1. **Uniform Grid** [Free] — equal cells, optional lightbox.
-2. **Masonry** [Free] — natural-height column flow.
-3. **Filmstrip Scroll** — horizontal snap strip.
-4. **Collage Feature** — one hero image + supporting cluster.
-5. **Full-Bleed Rows** — alternating full-width images.
-6. **Caption Cards** — image cards with visible captions.
-7. **Polaroid Scatter** — rotated framed prints look.
-8. **Hover Zoom Grid** — scale-on-hover tight grid.
-9. **Split Scroll** — sticky copy beside scrolling image column.
-10. **Two-Tone Frames** — accent mat frames around images.
-11. **Square Social** — 1:1 grid, dense, social-wall feel.
-12. **Wide Banner Strip** — single row of ultrawide crops.
-13. **Bento Mixed Ratio** — mixed-aspect tiles composition.
-14. **Rounded Tiles** — heavily rounded corner treatment grid.
-15. **Numbered Exhibits** — gallery with exhibit numerals + captions.
+<!-- roster:A14 -->
+1. **Grid** [Free] — Six photographs in three even columns on the page ground, one enforced crop across every cell, each caption under its own frame. The category default and the arrangement six other designs resolve to at 390.
+2. **Masonry** [Free] — Three columns filled top to bottom with the list in order, every photograph at its uploaded ratio, captions under each frame. Nothing measures and nothing packs.
+3. **Mosaic** — A fixed tile: the first image at 2 × 2 cells, two cells stacked beside it, three in a row beneath. The lead is the list's first frame and no control changes that.
+4. **Panel** — The head, the set and the credit inside one surface plane with a hairline and the pack's md shadow; three columns within the plane's 40 px padding. Nothing inside is raised again.
+5. **Split Head** — The head, blurb and credit in a 380 column beside a 868 column holding the set two-up, on a 48 px gutter. Fewer, larger frames read alongside their context.
+6. **Contrast Band** — 1 Grid's three columns standing on a full-bleed inverted band that carries the section's padding. The ground is the whole of the difference.
+7. **Carousel** — One frame at a time on a snapping track at 968 × 726, the previous and next peeking 140 px at the margins, dots and a counter beneath, arrows beside the head.
+8. **Filmstrip** — One horizontally scrolling row on a full-width surface strip: every frame at one shared height and its own native width, starting at the page margin and running off the right edge.
+9. **Full Bleed** — The set edge to edge with a 1 px hairline gutter and no side margins; the head and the credit alone keep the page's measure. Captions live in the lightbox.
+10. **Lead and Grid** — The first image across the full width of the page at a set height, its caption on the page margin beneath it, and the rest of the set in a contained three-up row below.
+11. **Overlay** — Three columns of frames with each caption inside its own frame, on a warm wash over the lower 60%. No text sits outside a photograph except the head and the credit.
+12. **Captioned Rows** — One photograph per row at 848 with its caption in a 400 column beside it, sides alternating down the page, a hairline between rows. Two to four frames.
+13. **Contact Sheet** — The whole set as square thumbnails in six columns on a full-width surface band, each numbered from its position, nothing captioned on the page.
+14. **Index** — The set as a ruled list: a mono number, the caption at 17 px in text, and a 128 × 96 thumb at the right of each row, hairlines between.
+15. **Boxed** — Three columns inside a 1 px box at the pack radius with no fill, a mono label breaking the top edge, on the page ground. 4 Panel without the lift.
+<!-- /roster:A14 -->
 
 **A15. Video & Embeds (15)**
 Content: heading?, embed url(s), poster image?, caption?, copy?. Controls: aspect (16:9/4:3/1:1/9:16), frame (None/Rounded/Browser/Device), autoplay-muted toggle (where allowed). Data: the episode designs (#5, #6) bind posts via the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, fixed Count, never paginated.
-1. **Cinema Center** [Free] — single centered player, generous margins.
-2. **Split Video Copy** [Free] — player beside heading + copy + CTA.
-3. **Poster Modal** — poster + play button opening modal player.
-4. **Playlist Grid** — 2×2 grid of embeds with titles.
-5. **Episode List** — post-bound rows styled as episodes (e.g., tag `#podcast`).
-6. **Podcast Player Row** — audio embed rows with episode meta.
-7. **Floating Frame** — player in browser-chrome mockup, tilted.
-8. **Background Poster Band** — full-bleed poster with center play.
-9. **Dual Videos** — two players side by side with labels.
-10. **Caption Side** — player with vertical caption rail.
-11. **Full-Bleed Embed** — edge-to-edge player, no chrome.
-12. **Testimonial Video** — player beside pull-quote card.
-13. **Device Mock** — player inside phone/laptop frame.
-14. **Numbered Series** — vertically stacked players with part numerals.
-15. **Sticky Mini Row** — compact horizontal scroll of small players.
+<!-- roster:A15 -->
+1. **Player** [Free] — One film at 960 centred under a centred head, the duration on the poster, one meta line under it. The category default and the frame every other design is built out of.
+2. **Split** [Free] — The film in a 720 column with eyebrow, heading, description, a labelled play action and the meta line held in a 480 column beside it. Two columns above 1,080.
+3. **Panel** — Head, film, meta line and credit inside one surface plane with a hairline and the md shadow; the film at 960 within 40 px of plane padding.
+4. **Contrast Band** — 1 Player's arrangement on a full-bleed inverted band: head in the carried colour, film at 960, meta line at 72%.
+5. **Full Bleed** — The film at the viewport's full width, square-cornered, head above and meta beneath inside the page's margins. The only design that crosses the content box.
+6. **Cover** — The poster full bleed at 620 with eyebrow, heading and meta line on a warm wash at its foot and the play control at the centre. Opens the theatre.
+7. **Grid** — Six films in three even columns, each poster above its title and meta line, one reserved ratio across every cell.
+8. **Lead and Grid** — Item 1 at the full content box with its title and meta line beneath, then the rest of the set in a row of three. Two frame sizes in one arrangement.
+9. **Carousel** — One film centred on a native scroll-snap track with both neighbours peeking, dots, arrows and a counter beneath.
+10. **Playlist** — A player and a queue on one surface plane: 800 × 450 beside a 400 px list of rows, the current film marked, the running total in the queue's head.
+11. **Chapters** — One film at 960 with a ruled contents list beneath it: mono timecode at the left, chapter label at the right, each row a link that starts the film at that point.
+12. **Embed Card** — One embed in a hairline box whose top edge names the kind and the provider, with the click-to-load notice above the frame and the description beneath it.
+13. **Thumb Rows** — One film a row: a 320 × 180 poster at the left, title, description and meta line at the right, a hairline between rows. The only design that draws the description.
+14. **Slim Bar** — One 88 px line on a surface plane: a 96 × 54 thumbnail, the title, a meta line and a watch action at the right. Opens the theatre at every width.
+15. **Tabs** — A tab per film on a hairline strip above one shared frame, the active label underlined in accent, the active film's description and meta line beneath.
+<!-- /roster:A15 -->
 
 **A16. Contact (15)** — (No form backend in Ghost: actions compile to email links, portal actions, or an external form/calendar embed URL control.)
 Content: heading, body?, email, socials[], locations[]?, embed url?. Controls: action type (Email button/Embed), social style, hours/info toggles.
-1. **Center Card** [Free] — heading + email button + socials.
-2. **Split Info** [Free] — copy left; contact details stack right.
-3. **Big Email Type** — the email address as display-size link.
-4. **Info Columns** — email / social / address columns.
-5. **Embed Split** — copy beside external form or calendar embed.
-6. **Map Side** — static map image beside contact details.
-7. **Office Cards** — location cards with details.
-8. **Dark Panel** — contrast contact card.
-9. **FAQ + Contact** — mini-FAQ with contact rail.
-10. **Social Grid** — large social tiles as the primary actions.
-11. **Support Tiers** — "for X contact Y" routed options cards.
-12. **Split Photo** — team/office photo half, contact half.
-13. **Compact Banner** — slim one-row contact strip.
-14. **Community Links** — Discord/forum/newsletter option cards.
-15. **Signature Close** — letter-style sign-off with contact line.
+<!-- roster:A16 -->
+1. **Split** [Free] — The head and the publication's own contact details in a 560 column at the left, the form in a 640 column at the right on a 96 px gutter. The category default; nothing is raised, boxed or photographed.
+2. **Centred** [Free] — A centred head on a 720 measure with the form beneath on 560, and no contact details at any value. The smallest complete form in A16.
+3. **Card** — The form on an inset surface card raised off the page ground, with the head above it on the page. A19·3's card at A16's scale.
+4. **Panel** — A raised surface plane the full content width, carrying the four contact rows across its top and the form beneath a hairline. The details and the form as one object.
+5. **Contrast Band** — A full-bleed inverted band carrying the head and three contact rows at the left and the form at the right, with every colour derived from the two contrast tokens.
+6. **Details Grid** — Four labelled detail cells across the content box divided by hairlines, with the social row beneath a rule. No form at any value.
+7. **Map Split** — A static map holding one half of a surface plane and the address, hours and form holding the other. The map is an image with a link, never an embed.
+8. **Locations** — One card per location on a full-bleed surface ground — map thumb, name, address, hours, directions. The only design in A16 built for a list of places. No form.
+9. **Slim Bar** — A full-bleed surface strip between hairlines carrying a label, one address and the social row on a single line. No heading, no blurb, no form.
+10. **Big Type** — The address at display scale with one short line above it and the social row beneath. The category's single display moment, spent on the thing a reader copies. No form.
+11. **Enquiry Types** — A row of enquiry types above one form on a full-bleed surface ground. The choice sets the destination and the line beneath the row; the fields never change.
+12. **Boxed** — The form inside a hairline box with no fill and no shadow, with the contact row and socials beneath it on the page under a full-width rule.
+13. **Directory** — One ruled row per address — what it is, what to use it for, where it goes — as a three-column table on the page ground. No form.
+14. **Reasons** — Head and form in a standing 640 column with one to three authored lines numbered and ruled in a 480 column beside them. A6·11's reasons list, carried verbatim.
+15. **Cover** — A full-bleed photograph under a warm scrim carrying a centred head and a two-field form in white. The category's one image moment.
+<!-- /roster:A16 -->
 
 ### Group 3 · Ghost Content Sections
 
 **A17. Post Grids (18)** — Home, tag/author archives, custom pages. `bindingContext: posts` · `compileTarget: any` (native paginated context on collection templates, `{{#get}}` elsewhere — FR-H2).
 Content: post-bound per `prd.md` Appendix B — card fields: feature image, title, excerpt, date, author, reading time, primary tag; static: heading?, intro?, empty-state line. Controls: columns (2/3/4), image aspect (Natural/Square/Wide/None), excerpt length (Short/Long/Off), card frame (None/Border/Elevated), meta position (Above title/Below title). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
-1. **Classic Cards** [Free] — 3-col image-top cards with meta row.
-2. **Minimal Title Grid** [Free] — text-only cards: tag, title, date.
-3. **Magazine Mixed** — one lead story + 2×2 grid beside/below.
-4. **Bento Editorial** — mixed-size tiles, first post dominant.
-5. **Overlay Cards** — image-filled cards, scrimmed text overlay.
-6. **Horizontal Cards** — thumb-left rows in a 2-col grid.
-7. **Masonry Feed** — natural-height card flow.
-8. **Numbered Ranked** — oversized ranking numerals per card.
-9. **Wide Duo** — 2-col large cards with generous imagery.
-10. **Dense Four** — compact 4-col grid, tight meta.
-11. **Serif Editorial** — rules + serif titles, imagery restrained.
-12. **Gradient Hover** — accent gradient reveal on hover.
-13. **Frame Border** — outlined cards, flat, gallery-like.
-14. **Photo Square** — 1:1 imagery, title beneath, minimal meta.
-15. **Tag-Chip Cards** — prominent tag chips atop each card.
-16. **Meta-Rich Rows** — grid of cards with full meta stack visible.
-17. **Alternating Size** — A-B-B rhythm of large and small cards.
-18. **Spotlight Rail** — first post as tall rail beside a stacked list.
+<!-- roster:A17 -->
+1. **Three Up** [Free] — Three 416 cells, image above tag, title, excerpt and meta. The category's default and what a site gets when it types "posts".
+2. **Two Up** [Free] — Two 636 cells — the largest ordinary image in the category — with three lines of excerpt.
+3. **Four Up** — Four 306 cells with two lines of excerpt — the densest grid that still carries one.
+4. **Cards** — One post per card on a surface plane with a hairline, equalised per row. The only design in A17 that gives a post a plane, and the only hover lift.
+5. **Lead and Grid** — The span as the design: first cell across two columns with the excerpt, the rest beside and beneath it. The one design where the feature span is not a control.
+6. **Split Head** — Head, sub, note and link in a 416 column, the grid in the 856 beside it.
+7. **Contrast Band** — 1 Three Up inverted onto the contrast token at the band's own vertical scale.
+8. **Overlay** — Title and tag set over the image behind a scrim, at Portrait 4:5. The one scrim in A17.
+9. **Big Type** — Titles at Display scale, two to a row, hairline-ruled, tag folded into the date line, no images at any setting — the text grid and the category's image-less fallback.
+10. **Ledger** — Title, tag and abbreviated date on one hairline-divided row, two columns, rows as tall as their contents — the archive as a table.
+11. **Masonry** — Three independent columns filled top to bottom with consecutive posts, each cell's ratio taken from a cycle indexed by ((row − 1) + (column − 1)) mod 3 — a diagonal, so no two rows align. Not true masonry: nothing measures, nothing packs, no JavaScript.
+12. **Bento** — Five posts in a fixed two-column composition of unequal cells — one tall spanning two rows, two wide stacked beside it, two square beneath — the tall cell promoted by size, type step and excerpt.
+13. **Thumb Side** — A fixed-size square thumbnail at the left of each row with title and meta beside it, two columns, no hairlines — the image sized rather than proportioned, so the row is identical at every width.
+14. **Dense** — Six 196 cells carrying an image, a title and an abbreviated date and nothing else — the narrowest cell in A17 and its only use of the Six division.
+15. **Filtered** — A strip of tag links above the grid with the current one marked — the only design with links outside its cards.
+16. **Load More** — A three-up grid that appends the next batch in place under one centred button with a live count beneath it — the only design in A17 that grows, and the only one with a button.
+17. **Panel** — The entire section — head, grid, note and link — inside one surface panel with a hairline and the pack's radius, the posts themselves left bare.
+18. **Edge to Edge** — Squared images filling the full viewport with no gutter and no page margin, text inset beneath each — the category's only full-bleed design and its only unrounded image.
+<!-- /roster:A17 -->
 
 **A18. Post Lists (15)** — Same binding as A17; list-form. `bindingContext: posts` · `compileTarget: any`.
 Content: post-bound per A17's card model — title, excerpt, date, author, reading time, primary tag, feature image (as thumbnail); static: heading?, intro?, empty-state line. Controls: thumbnail (Off/Small/Large), excerpt length (Short/Long/Off), row divider (None/Line/Space), group headers (Off/Month/Year), meta lead (Date/Reading time/Tag). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
-1. **Editorial Rules** [Free] — full-width rows separated by hairlines.
-2. **Thumb Left** [Free] — small image, title + excerpt right.
-3. **Big Date** — oversized date column beside titles.
-4. **Minimal Index** — title + date only, maximal restraint.
-5. **Excerpt Rich** — generous excerpts with reading time.
-6. **Numbered Archive** — index numerals down the margin.
-7. **Month Grouped** — sticky month/year group headers.
-8. **Two-Column Index** — dense split-column title list.
-9. **Hover Reveal** — image appears beside title on hover.
-10. **Card List** — full-width soft cards stacked.
-11. **Serif Journal** — literary type, drop rules, dates in margin.
-12. **Split Date Rail** — vertical date rail left of entries.
-13. **Reading-Time Focus** — time-to-read as the leading meta.
-14. **Compact Dense** — small type, many posts, archive-grade.
-15. **Letterhead Rows** — tag eyebrow above each title row.
+<!-- roster:A18 -->
+1. **Rows** [Free] — Full-width rows on a hairline, text held to an 820 px measure at the left and a 200 px meta column hung at the right; no image at any setting. The category's default.
+2. **Thumb Rows** [Free] — 1 Rows with a fixed-size thumbnail at the leading edge, the text measure paying for it and the meta still hung.
+3. **Slim** — One post per line — title left, one trailing fact right, 44 px a row at Compact. The category's density floor.
+4. **Dated** — A fixed date column at the leading edge with each post hung beside it, the author's name moved under the excerpt and the right of the row left empty.
+5. **Grouped** — Rows cut into derived groups by month, year or tag, each under an eyebrow-sized heading above or hung left, rules running inside a group and stopping at its end.
+6. **Split Head** — The section head in a 416 px column beside an 856 px list, its title one step larger than anywhere else in A18, the note and link inside the head column.
+7. **Contrast Band** — 1 Rows' arrangement on the pack's contrast ground, full width or inset, with muted and hairline derived from the band's own text at 60% and 10%.
+8. **Row Cards** — One post per full-width card — surface or ground, hairline, pack radius, 16 px apart, no rules — with a thumbnail at the trailing edge and the meta under the excerpt.
+9. **Big Type** — Three to five posts as display-size titles on an 1,100 px measure with one quiet meta line each, the section head stepped down to Small so the posts can be the display moment.
+10. **Lead and List** — The query's first post drawn large with the section's only picture, at two thirds of the content width, above the remaining posts as ruled lines at full width.
+11. **Numbered** — Ruled rows with a tabular numeral in a fixed leading column at the title's size in the muted colour; the library's only ordered list.
+12. **Panel** — The whole list inside one surface panel at a 48 px inset, dividers stopping at the panel's padding, the panel's edge closing the list; the head optionally moved outside.
+13. **Timeline** — A vertical hairline with a marker at every post, dates right-aligned into it and titles beside it; the rail is the separator and there is no rule.
+14. **Index** — Titles at the category's smallest size flowed down two, three or four columns with one optional fact each; the densest design in the library.
+15. **Load More** — A thumbnail list drawn one batch at a time with a centred button below it that appends the next batch in place; the category's only behaviour module.
+<!-- /roster:A18 -->
 
 **A19. Featured & Spotlight (15)** — Binds featured or hand-picked posts. `bindingContext: posts` · `compileTarget: any`.
 Content: post-bound — feature image, title, excerpt, **`custom_excerpt` (a distinct field — #11 binds this one and only this one)**, primary tag, author, date, reading time; static: eyebrow?, heading?, badge label?, cta?, quote attribution? (#11). Controls: image treatment (Fill/Contain/Scrim), excerpt toggle, meta toggles (date, author, reading time, tag chip), badge toggle, cta toggle. Data: group per FR-H2 with Source defaulting to **Featured** — `{{#get}}`-driven, fixed Count, never the main feed and never paginated.
-1. **Full-Bleed Spotlight** [Free] — edge-to-edge image, overlaid title.
-2. **Split Feature** [Free] — image half, title/excerpt/CTA half.
-3. **Card Overlap** — text card overlapping the feature image.
-4. **Cover Carousel** — snap carousel of featured covers.
-5. **Dual Feature** — two equal spotlights side by side.
-6. **Trio Spotlight** — one large + two stacked features.
-7. **Big Serif Feature** — display serif title above wide image.
-8. **Sticky Feature** — sticky spotlight beside scrolling list.
-9. **Gradient Panel** — feature inside accent-gradient panel.
-10. **Editor's Pick** — badge-led compact feature card.
-11. **Excerpt Quote** — the post's authored `custom_excerpt` set as a pull-quote, with attribution. **Binds `custom_excerpt` only, never `{{excerpt}}`**, whose 500-character plaintext fallback would drop a mid-sentence fragment inside quote marks; a post with no custom excerpt falls back to the design's own no-quote state (FR-H8).
-12. **Photo Left Ledger** — image left, oversized numeral, meta ledger.
-13. **Magazine Splash** — kicker + deck + byline, cover-story layout.
-14. **Boxed Feature** — outlined containment with inner padding rhythm.
-15. **New Badge Marquee** — "Latest" ticker above the spotlight.
+<!-- roster:A19 -->
+1. **Split** [Free] — One featured post as a two-column split: text on a 560 px measure at the left, its feature image on 636 at the right, the two centred against each other. The category's default and the design the rest of it hands off to.
+2. **Full Bleed** [Free] — One featured post whose feature image fills the section edge to edge, with the eyebrow, title, excerpt, meta and call to action set on the picture over a bottom-up scrim of the pack's contrast colour.
+3. **Card** — One featured post on a surface or outlined plane inset 48 px from the content width, its picture held inside the card's 40 px padding at the left and the text at the right, the two centred against each other.
+4. **Poster** — One featured post in a narrow centred column: the feature image at the column's full width in a portrait crop, the eyebrow, title, excerpt, author photograph and call to action beneath it, centred.
+5. **Contrast Band** — 1 Split's two-column arrangement on the pack's contrast ground, full bleed or inset to the content width, with every on-band value derived from the band's own two colours.
+6. **Big Type** — One featured post as type alone: eyebrow, hairline, the title at 52–72 px on an 1,100 px measure, the excerpt at 20 on 720, meta and call to action. No image at any setting.
+7. **Overlap** — One featured post: a 16:9 picture at the content width or full bleed, with a 560 px surface card overlapping its lower edge by 64 px, inset 48 from the picture's left, right or centred.
+8. **Lead and Two** — A spotlight on 848 with its picture at the leading edge and its text beside it, and two text-only followers stacked in a 424 px column at the right, separated by a hairline. Hierarchy by size alone: 34 against 20.
+9. **Alternating** — Two or three spotlights stacked as full-width bands, 672 picture and 560 text with a 64 px gutter, vertically centred against each other, the picture's side swapping on every band. No ranking: every band is the same size.
+10. **Pair** — Two featured posts as equal 636 px halves with a 24 px gutter, picture on top of each, titles from 28, both cells carrying the call to action. No lead, no ranking, and the count fixed at two.
+11. **Lead and Rail** — A spotlight on 848 with its picture above its text, and every other post the query returned as a ruled rail of 18 px titles in the 424 beside it. The rail carries no pictures and no excerpts; it grows and shrinks with the count while the lead stays the same size.
+12. **Picks** — Three or five featured posts as a ruled numbered feed: a zero-padded ordinal in a 96 px left column at the muted token, the tag, title and one line of excerpt on 720, the meta right-aligned to the content edge. No pictures at any setting and no call to action on a row.
+13. **Quote** — One featured post's excerpt set at 34 px in the heading font at regular weight on a full-width surface band, with a quote mark above it, and the post's title at 20 px beneath as the attribution with a 24 px author avatar and the date. The writing is the headline.
+14. **Slim** — One featured post on a single 64 px line of surface running the section's full width: label and 20 px title at the left, date and an accent arrow at the right, the whole strip one link. The smallest spotlight in the library.
+15. **Carousel** — Three or five featured posts as full-width spotlights on a snapping track, one visible at a time: picture 768 at the left, text 480 at the right, a widening dot row beneath and A1·14's outlined arrows beside the head. Paged on demand, never automatically.
+<!-- /roster:A19 -->
 
 **A20. Tag Collections (15)** — Binds tags (name, description, accent color, feature image, post count) and their posts. `bindingContext: tags` (+ `posts` on the designs that show them) · `compileTarget: any`.
 Content: tag-bound per `prd.md` Appendix B — name, description, accent color, feature image, `count.posts`, url; static: heading?, intro?, per-tag label overrides?. Controls: columns/density, count badge toggle, description toggle, tag image toggle, tag-accent tint toggle (uses the tag's own accent color when set). Data: tag source (All / Hand-picked / Visible only), Count, Order (Post count / Alphabetical / Newest); the per-tag post rows (#3, #14) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
-1. **Tag Pill Cloud** [Free] — wrapped pills with counts.
-2. **Tag Cards Grid** [Free] — image cards per tag with counts.
-3. **Featured Tag Rows** — per-tag heading + horizontal post row.
-4. **Topic Tabs** — tabbed tags swapping a post grid.
-5. **Big Tag Index** — display-type tag list with counts.
-6. **Tag Bento** — mixed-size tag tiles using tag colors.
-7. **Curated Collections** — hand-picked tag sets with descriptions.
-8. **Tag Banner Cards** — wide banner card per tag with image.
-9. **Horizontal Scroller** — snap-scrolling tag chips rail.
-10. **Numbered Topics** — ranked topic list with counts.
-11. **Split Tag Nav** — sticky tag list left, posts right.
-12. **Dark Tag Tiles** — contrast tiles with luminous names.
-13. **Accent Underline List** — tags as underlined display links.
-14. **Tag + Latest** — each tag chip paired with its newest title.
-15. **Mosaic Wall** — dense mosaic of tag images.
+<!-- roster:A20 -->
+1. **Chips** [Free] — The whole public tag set as one wrapping row of hairline pills under a head, with the count inside each pill. The category default.
+2. **Tiles** [Free] — A four-up grid of picture tiles, one per topic, name and count under the picture.
+3. **Cards** — The tag set on one raised surface plane, each topic a hairline card with name, count and description.
+4. **Rows** — A ruled feed of full-width rows: square thumbnail, name, description, right-aligned count.
+5. **Split Head** — Head in a fixed left column, the tag set as ruled name-and-count lists in two columns beside it.
+6. **Contrast Band** — The wrapping pill row and its head on an inverted full-bleed band.
+7. **Index** — The whole public tag set alphabetically in balanced columns, grouped under letter heads.
+8. **Big Type** — Tag names set at display size, one per ruled line, with a small count at the line's end.
+9. **Rail** — The tag set as picture tiles on a horizontal scroll-snap track that bleeds off the right page edge.
+10. **Lead and Rest** — The first topic drawn at picture size beside the remaining topics as ruled name-and-count lines.
+11. **Ledger** — The tag set as an aligned three-column table — name, description, count — on a raised plane.
+12. **Panel** — Head and the whole tag set inside one hairline box, topics as ruled lines in columns.
+13. **Overlay** — A few topics as full-picture tiles with the name and count set over a warm scrim.
+14. **Slim** — One ruled line carrying a label, the topic names separated by a middot, and the all-topics link.
+15. **Filter Bar** — The tag set as a chip bar on a raised surface, the current archive filled in accent, with an All chip at its head.
+<!-- /roster:A20 -->
 
 **A21. Author Showcases (15)** — Binds authors (name, bio, portrait, cover, socials, post count). `bindingContext: authors` (+ `posts` on the designs that show them) · `compileTarget: any`.
 Content: author-bound per `prd.md` Appendix B — name, bio, profile image, cover image, website/twitter/facebook, `count.posts`, url; static: heading?, intro?, role labels?. Controls: columns, portrait shape (Square/Rounded/Circle), bio toggle, socials toggle, post-count toggle. Data: author source (All / Hand-picked), Count, Order (Post count / Alphabetical); the per-author post rows (#5) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
-1. **Author Cards** [Free] — portrait cards with role/bio line.
-2. **Byline Rows** [Free] — list rows: portrait, name, bio, count.
-3. **Single Spotlight** — one author, large portrait + bio + links.
-4. **Masthead** — magazine-style contributor masthead columns.
-5. **Author + Latest** — each author with their newest posts row.
-6. **Circle Row** — circular portraits strip with hover names.
-7. **Split Interview** — portrait beside Q&A-styled intro.
-8. **Contributor Wall** — dense portrait mosaic.
-9. **Author Bento** — featured author tile + smaller tiles.
-10. **Featured Band** — accent band showcasing one author.
-11. **Social Cards** — cards leading with social links.
-12. **Editorial Board** — formal two-column name/role listing.
-13. **Compact Chips** — inline avatar chips paragraph-embedded.
-14. **Cover Cards** — author cover image cards, portrait inset.
-15. **Alphabet Index** — grouped alphabetical contributor index.
+<!-- roster:A21 -->
+1. **Grid** [Free] — Portraits over names in an N-column grid on the page ground, each writer with a count, two bio lines and an archive link. The category default and the arrangement the other fourteen depart from.
+2. **Cards** [Free] — One raised surface card per writer, portrait left of the name, bio clamped at three lines and the link on a common foot. The category's tokenisation proof.
+3. **Rows** — A hairline-separated row per writer: portrait left, name and bio in the middle, count and archive link held at the right edge.
+4. **Split Head** — Heading, blurb and one action in a standing 400 px left column; the roster as a two-column grid in the 808 beside it.
+5. **Contrast Band** — A full-bleed inverted band carrying the head and one row of portraits with names and counts.
+6. **Founder** — One writer on an inset card: portrait at picture scale bleeding to the card's right edge, name at 40, the full bio, a meta line, a social row and one accent action. The design for the single-author site.
+7. **Panel** — The whole roster on one raised surface plane in two columns of hairline rows, with a writer-count line at the plane's right edge.
+8. **Faces** — A one-line credits bar between hairlines: overlapping portraits, an assembled "Written by" sentence with up to three linked names, and a masthead link at the right.
+9. **Big Type** — Names at display scale on ruled lines, each with a leading portrait and a trailing post count. No ground of its own.
+10. **Directory** — A ruled table of writers: portrait and name, location, and a right-aligned tabular post count, under authored column labels.
+11. **Rail** — A 240 px margin rail carrying the label, the writer count and one action; the writers as names and counts in two ruled columns beside it. No portraits.
+12. **Carousel** — A horizontally scrolling strip of writer cards with a 4:5 portrait, bleeding past the right margin, with arrows at the head and dots beneath.
+13. **Lead and Rest** — One writer at size with portrait, bio, meta and link, then a rule, then the rest as a three-column list of names and counts.
+14. **Image Band** — A full-bleed authored photograph carrying a warm scrim, the head in white and a row of portraits with names and counts along the foot.
+15. **Slim** — A full-bleed surface strip carrying one assembled sentence of credits and a masthead link. The smallest author showcase in the library — 73 px including both hairlines.
+<!-- /roster:A21 -->
 
 **A22. Newsletter / Subscribe (16)** — Portal-bound (`data-portal` signup); members-aware (hides/swaps for members via FR-D16 preview). `bindingContext: none` (+ `@member`; `tiers` on #8) · `compileTarget: any`.
 Content: heading, subtext?, button label, proof line?, frequency badge?. Controls: alignment, portal action (signup / signup/{tier} / upgrade), show to (Everyone / Logged out / Free members / Paid members), proof-line toggle, frequency-badge toggle, signed-in swap (Hide section / Show account link). Data: #7 Issue Preview uses the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, never paginated.
-1. **Center Card** [Free] — rounded card: heading, subtext, button.
-2. **Inline Slim Bar** [Free] — single-row band with button.
-3. **Split Benefit** — copy + benefit checks left, action right.
-4. **Gradient Card** — accent-gradient card, on-accent text.
-5. **Big Type Ask** — display headline, oversized button.
-6. **Social Proof** — subscriber/proof line with avatar cluster.
-7. **Issue Preview** — recent newsletter posts beside signup.
-8. **Free vs Paid Path** — dual cards routing to signup tiers.
-9. **Boxed Border** — outlined flat panel, editorial tone.
-10. **Dark Invert** — contrast panel with luminous button.
-11. **Frequency Promise** — "Every Sunday" badge-led card.
-12. **Testimonial-Backed** — reader quote above the ask.
-13. **Floating Pill** — pill-shaped compact ask, mid-content friendly.
-14. **Paper Fold** — letter/envelope visual metaphor card.
-15. **Footer Band** — full-width band designed to sit above footers.
-16. **Emoji Fun** — playful emoji + short ask, casual tone.
+<!-- roster:A22 -->
+1. **Inline Row** [Free] — A centred eyebrow, heading and blurb with one form row beneath, on the page ground. The category default; nothing is raised, boxed or photographed.
+2. **Card** [Free] — The centred ask on an inset surface card, raised on the page ground. The category's tokenisation proof.
+3. **Split** — Head in a standing left column, the form in the column beside it on a fixed 96 px gutter. The design for a publication with a paragraph to spend.
+4. **Contrast Band** — A full-bleed inverted band carrying a centred head and one form row, with the button in the carried colour rather than the accent.
+5. **Panel** — The ask on a raised surface plane the full width of the content box, left-aligned, with internal padding fixed.
+6. **Image Split** — A photograph holding one half of a surface plane and the ask the other, the picture bleeding to three of the plane's edges. The only design in A22 with an authored image and a drawn alt.
+7. **Cover** — A full-bleed photograph under a warm scrim carrying a centred head and form in white. The only design in A22 where the field sits on an image.
+8. **Big Type** — The heading at display scale on a 1,080 measure with a hairline under it and the form row beneath. No ground of its own and no blurb at any value.
+9. **Slim Bar** — A full-bleed surface strip between hairlines carrying a label and one form row on a single line. The smallest newsletter section in the library — 93 px including both rules.
+10. **Choice** — The site's newsletters as checkbox rows above one field. The design for a publication that sends more than one letter.
+11. **Reasons** — Head and form in a standing left column with one to three authored reasons on hairlines beside them. The only design in A22 with an authored list.
+12. **Issue Preview** — The ask above a rule with the last three issues beneath it as thumbnail rows read from Ghost. The only design in the category that shows what arrives.
+13. **Boxed** — The centred ask inside a hairline box with no fill and no shadow, on the page ground.
+14. **Slide-in Card** — A 380 px card arriving in the page's bottom corner after a trigger, carrying a short ask and a stacked form. The only design in A22 outside the document flow.
+15. **Two Up** — One card per newsletter, side by side, each with its own name, description and field. Two independent forms in one section.
+16. **Quote** — One authored reader quote at 28 px above a rule, with a small heading and the form beneath it. The only design in A22 that argues in somebody else's words.
+<!-- /roster:A22 -->
 
-**A23. Search (15)** — Styled triggers for Ghost native search; "Custom Overlay" designs implement in-theme search UI via client-side Content API. `bindingContext: none` (Custom Overlay designs read `posts`/`tags` client-side) · `compileTarget: any`.
-Content: trigger label?, placeholder, heading?, helper text?, popular tag chips? (#5); results, empty and no-result strings are chrome strings from the Translations catalog (FR-Q6) on the Custom Overlay designs only — native-trigger designs inherit Ghost's own overlay strings, which the catalog cannot reach. Controls: field size (Compact/Large), placeholder text, popular-tags toggle, recent-posts toggle (#13), tag-filter toggle (Custom Overlay designs). Data: Custom Overlay designs query the Content API client-side (FR-H4) inside NFR-2's JS budget; native-trigger designs bind nothing.
-1. **Modal Trigger Bar** [Free] — full-width faux input opening native search.
-2. **Icon Trigger** [Free] — icon button for nav/hero placement.
-3. **Hero Search** — display heading over large search field.
-4. **Command Palette** — ⌘K-styled trigger with key hint.
-5. **Search + Popular Tags** — field with suggested tag chips.
-6. **Rounded Pill Big** — oversized pill field, centered.
-7. **Minimal Underline** — borderless underlined field.
-8. **Sticky Band** — slim sticky search strip.
-9. **Custom Overlay Classic** — full overlay, live results list.
-10. **Custom Overlay Split** — overlay with results + tag filters.
-11. **Boxed Card** — search card with helper text.
-12. **Dark Overlay** — contrast overlay treatment.
-13. **Search + Recent** — field with latest posts beneath.
-14. **Inline Expand** — icon expanding into field on focus.
-15. **Zero-State Art** — overlay with playful empty/no-results states.
+**A23 Search is deleted (R-24, owner ruling 2026-08-27).** Search is not a section. Every one of its fifteen designs is cut — all but two drew an Inflozo results surface, and Ghost's `sodo-search` renders inside an **iframe** with its own injected stylesheet, so theme CSS reaches nothing inside it and its index carries no post body (`MEASUREMENTS.md` §29c). Search is now an **affordance with four values — Off · Icon · Button · Bar** — offered as a control on **A1 Headers**, and the **Link Picker gains "Ghost search" as a destination**, so any button or link in any category can open it without a new design, a new control or a new module. **No design in any category may draw a search results surface**, and none may bind ⌘K, which `sodo-search` already takes. `{{ghost_head exclude="search"}}` is never emitted. This is why the library declares thirty-three categories and not thirty-four.
 
 ### Group 4 · Template-Specific Sections
 
 **A24. Post Headers (16)** — `post.hbs` and `page.hbs`. Binds title, excerpt, feature image (+alt/caption), tag, authors, date, reading time. `bindingContext: post` (opened inside `{{#post}}` on **both** templates — a page is a post whose data object is called `post`; see A25's dual-target rule and FR-H7) · `compileTarget: post.hbs, page.hbs`.
 **`@page.show_title_and_feature_image` (normative, `page.hbs` only).** On `page.hbs` this flag is genuinely toggleable from Ghost's own page-builder settings and **must** be honoured, or the user's toggle does nothing: every A24 design wraps its **title and feature-image markup** — and nothing else — in `{{#if @page.show_title_and_feature_image}}` when it compiles into `page.hbs`. On `post.hbs` the flag is always `true`, so gating there is a no-op and is not emitted. It is the sole `@page.*` property the theme may reference (FR-I1, FR-J6).
 Content: post/page-bound per `prd.md` Appendix B — title, custom excerpt, feature image + alt + caption, primary tag, authors, published date, reading time; static: kicker/eyebrow?, breadcrumb labels? (#16). Controls: feature image (Show/Hide), image treatment (Fill/Contain/Scrim), title alignment, meta row toggles (date, author, reading time, tag chip — the whole row is hidden on `page.hbs` per the Synthesis Defaults), excerpt/standfirst toggle, reading-progress toggle (#15).
-1. **Classic Center** [Free] — tag, title, meta, image below.
-2. **Split Meta** [Free] — title left, meta column right, image under.
-3. **Full-Bleed Cover** — edge-to-edge image, title overlaid.
-4. **Overlay Bottom** — image with title panel rising from base.
-5. **Serif Editorial** — big serif title, hairline rules, restrained image.
-6. **Minimal No-Image** — typographic header ignoring feature image.
-7. **Gradient Wash** — accent gradient behind centered title.
-8. **Boxed Title Card** — title card overlapping cover image.
-9. **Wide Below** — compact title block, ultrawide image beneath.
-10. **Tag Eyebrow** — colored tag chip leading a left-aligned stack.
-11. **Author Forward** — portrait + author line above title.
-12. **Journal Left** — left-aligned literary layout, date in margin.
-13. **Magazine Deck** — kicker + title + standfirst deck.
-14. **Offset Image** — image offset right, title wrapping space.
-15. **Progress Attached** — header emitting a reading-progress bar.
-16. **Breadcrumb Trail** — home/tag breadcrumb above title.
+<!-- roster:A24 -->
+1. **Centred** [Free] — Tag, title, standfirst and byline centred on one axis at three narrowing measures — 820, 720, 720 — with the feature image beneath at the full content width. The category default, the design a switch falls back to, and the only one that changes nothing in the Post block.
+2. **Flush Left** [Free] — Tag, title, byline and standfirst left-aligned on the article's own 720 measure between two hairlines, with the byline between the title and the standfirst. The only design whose header measure is the body measure, and one of seven that draw no picture.
+3. **Split** — The header's text in a 756 column with its type held to 560, the feature image in a 476 column beside it on a 64 gutter, the two cross-centred, the caption under the picture. The only A24 design in which the title and the photograph are side by side, and the only one with a genuine tablet arrangement.
+4. **Image Top** — The feature image at the content width first, then tag, title, standfirst and byline beneath it on 1 Centred's measures, with the caption moved to the foot of the header under a hairline. One of two designs offering Panorama 21:9, and the only one whose caption is not adjacent to its picture.
+5. **Full Bleed** — The feature image full bleed at a named height, the tag, title and byline on it in the contrast colour's text under a bottom-up scrim, the standfirst withheld. The category's only design with text on a photograph, its only image ground, and its only design with a stated precondition.
+6. **Edge to Edge** — Tag, title, standfirst and byline on the page margin, then the feature image breaking the measure and running to both viewport edges with no radius, with the caption returning to the margin beneath it. The only design in A24 whose picture leaves the grid while its type does not.
+7. **Card** — The header inside one surface card at the content width: the picture filling a 476 column, cover-cropped to whatever height the words produce, and the tag, title, standfirst and byline in the other at 40 px of card padding. A19·3's card reused verbatim with one change — it is not a link — and the only A24 design on a surface ground.
+8. **Contrast Band** — The tag, title, standfirst and byline left-aligned inside a full-bleed band of the pack's contrast colour, 400 px minimum, flush under the nav, every colour in it derived from the band's own text. The category's only inverted ground and its only zero padding value.
+9. **Overlap** — A photograph at the content measure, 520 tall, with a 700-wide surface card inset 40 from its left edge and riding 80 px over its lower edge; the eyebrow, title, standfirst and byline are all inside the card, and the caption sits beneath it. The only design in A24 whose picture is the ground its text sits over, and the only one that needs no scrim to do it.
+10. **Big Type** — The title at 88 px across the full 1,296 content measure with an eyebrow above it and a byline at 36/15 below, closed by a hairline. No standfirst and no picture at any setting — the category's one display moment, its own title ladder, and the only design that takes the content measure rather than the 820 title measure.
+11. **Dateline** — The title on the 820 measure with the byline broken into four equal labelled cells on the full 1,296 below it, hairlines above, below and between. The category's only table, its only design where the meta is the composition, and the only one that narrows a Post block field. No standfirst, no picture at any setting.
+12. **Rail** — A 240 px rail on the left holding the tag, the byline, the date and the reading time one to a line at 15 px, a vertical hairline, a 72 px gap, then the title on 820 and the standfirst on 720 in a 984 column with the photograph beneath them at the column's full width. The category's one edge rail, and the one design that reads a Post block field as a line count.
+13. **Sticky** — The tag, title and byline left-aligned on the 820 measure, plus a full-bleed 56 px bar that holds at the top of the viewport once the resting title has scrolled out of view, carrying the title truncated to one line at 15/600, the reading time, and a 2 px accent progress meter. The category's only sticky design, its only truncation, and one of only two that declare a module.
+14. **Share Row** — The tag, title, standfirst and byline left-aligned on the 820 and 720 measures, closed by a hairline at 820, with a labelled row of two to four sharing destinations beneath it at 15/600 in text. The only design in A24 with a control a reader can press, and the only one with two authored labels of its own.
+15. **Slim** — The title at 28 px on the article's own 720 measure with the meta line — tag, date, reading time — baseline-aligned at its right, and a hairline under both. 44 px tall at its default. No standfirst, no picture, no avatar, and the only design in A24 with both its own title ladder and its own padding ladder.
+16. **Two Column** — The eyebrow and title in a 612 left column, the standfirst and byline in a 612 right column with a hairline between them, the two columns bottom-aligned so the standfirst sits on the title's last line, and the photograph beneath both at the full 1,296 with its caption. The only design in A24 that touches no Post block field.
+<!-- /roster:A24 -->
 
 **A25. Post Content Layouts (12) — the Post Content section.** A **dedicated designable section carrying its own design picker**, placed on `post.hbs` **and** `page.hbs`. It wraps Ghost's `{{content}}` output, and it is where the reading experience — measure, table of contents, drop cap, share rail, type scale — is **designed rather than inherited**. `bindingContext: post` · `compileTarget: post.hbs, page.hbs`.
 **Dual-target binding (normative — and not an exception to FR-G3's enum).** On `page.hbs` Ghost's root carries **both** `post` and `page` keys pointing at the **same object**, so `{{#post}}` and `{{#page}}` both reach it; both official themes use `{{#post}}`, and **Inflozo emits `{{#post}}` on both targets** so one design compiles identically to each (`appendix-b1-template-contexts.md` §3, §4.2). `bindingContext: post` is therefore correct on both, and FR-G3's enum gains no `page` value.
@@ -517,149 +599,180 @@ Content: post/page-bound per `prd.md` Appendix B — title, custom excerpt, feat
 **A post and a page are not the same *product*, and that difference lives in `compileTarget`.** A post is an article: it carries comments, an author byline, related posts and a reading table of contents. A page is a standing page — About, Our Story, Contact — and carries none of them, which is why **A26 post footers, A27 related posts and A28 comments declare `post.hbs` only** and can never be placed on a page canvas. What A25 does carry on both is the reading experience itself, and its defaults differ by target: on `page.hbs` the synthesized design ships **TOC off and share rail off**, because a standing page is usually short and rarely shared as an article — both remain available for the long-form exception (a detailed "Our Story", a documentation page). On `post.hbs` they default as before. The remaining target-specific obligation belongs to **A24**, not A25: on `page.hbs` `@page.show_title_and_feature_image` is genuinely toggleable and **must** be honoured (FR-I1).
 Content: the post/page body via `{{content}}` — no editable content props (the body is authored in Ghost, never in Inflozo); static: aside/callout label? (#12). On the canvas `{{content}}` resolves to the **style-guide fixture** (FR-H3, FR-H4), which is what makes these twelve designs — and the card treatments they sit around — designable at all. Controls: measure (Narrow/Comfort/Wide) (reading-column layout choice — distinct from the removed universal width control), **TOC** (Off/Left/Right, auto-hidden < 3 headings) and TOC style (Plain/Numbered/Rule), **drop cap** (Off/Serif/Display), share rail toggle, type scale (Normal/Large).
 **Card styling is not A25's (normative).** Every `.kg-*` selector belongs to `cards.css`, emitted by the card design module (FR-Q7); an A25 design **never** emits a `.kg-*` rule into `screen.css`, and the compiler asserts it. Where a design's identity depends on card-adjacent styling — **#9 Photo Essay**'s full-bleed image cards, **#12 Split Aside**'s callout margin column — it declares the card-treatment values it needs and they are emitted into `cards.css` with everything else, so the two files never carry competing rules for the same selector and there is no order-dependent contest to lose. Removing A25 entirely does not strand the treatment: FR-Q9 keeps the selection in Theme Settings.
-1. **Narrow Classic** [Free] — ~680px measure, canonical blog reading.
-2. **Comfort Wide** [Free] — ~760px with larger media breakouts.
-3. **TOC Left** — sticky table of contents rail left.
-4. **TOC Right** — sticky TOC right with scroll-spy.
-5. **Share Rail** — floating share/copy rail alongside content.
-6. **Drop Cap Serif** — literary opener with drop cap.
-7. **Docs Style** — wider measure, anchored headings, tight lists.
-8. **Newsletter Tight** — email-like narrow rhythm.
-9. **Photo Essay** — full-bleed image cards, captions styled large.
-10. **Focus Reader** — enlarged type, dimmed chrome, max legibility.
-11. **Pull-Quote Wide** — quotes break out beyond the measure.
-12. **Split Aside** — content with styled aside/callout margin column.
+<!-- roster:A25 -->
+1. **Measured** [Free] — The article on a centred 720 measure with the index in one margin and the share rail in the other, both drawn in margin the measure already had, neither able to move the text. The category default and the design a switch falls back to.
+2. **Plain** [Free] — The article on a centred measure and nothing else — no index, no rail, no ground of its own, no box. The category's floor, drawn as a design.
+3. **Sheet** — The article on a surface sheet at the full content width, the measure unchanged inside it, a symmetrical inset the section owns, images able to run to the sheet's edges with captions returning to the measure, and the share row inside the plane. The category's one raised design.
+4. **Contrast Band** — The article inside a full-bleed band of the pack's contrast colour, every colour in it derived from the two contrast tokens, the measure centred in the band, the index in band margin and — after this pass — one share mark on a surface derived from the band itself. The category's one inverted reading surface.
+5. **Full Bleed** — A narrow text column with the images, galleries and embeds in the body breaking out of the measure — by default to the width the author already chose on each card, captions returning to the measure or to the right margin, and a symmetrical space ladder of the section's own around each break. The category's picture essay.
+6. **Hanging Heads** — The article on its measure with every H2 — and optionally every H3 — moved into a 240 column in the left margin, top-aligned with the first line of the text it heads. The one design that makes structure visible without drawing a second list of it.
+7. **Sticky Index** — An index in one margin that holds at 96 px from the top of the viewport and marks the section the reader is in, with the share buttons travelling on it. The category's only element that leaves the document flow.
+8. **Index Top** — A ruled index on the article's own measure, above the first line, carrying the section count and the reading time, its entries in one, two or three columns. The only index in A25 inside the article rather than beside it, and the only one that survives at 390 intact.
+9. **Share Rail** — One share mark in one margin at the article's first line — a link to Ghost's native share modal — with no index at any setting and the opposite margin left empty. The category's only design whose furniture is not a list of headings.
+10. **Marginalia** — The article on its measure with figure captions — and optionally pull quotes — placed in a 240 column in one margin, beside the block they belong to, and a caption over about 140 characters returning under its picture. The category's one design that moves the author's own elements.
+11. **Ruled** — The article inside a hairline box that hugs the measure rather than the content width, with a rule above every heading or between every block, and an inset that is the same value in both directions. The category's one design drawn entirely in border.
+12. **Numbered** — Every H2 — and optionally every H3 — numbered from the article's own heading order, the numeral hanging in a 72 px column left of the measure or sitting above the heading inside it. The category's one design that generates content, and it does it with CSS counters and no module.
+<!-- /roster:A25 -->
 
 **A26. Post Footers (15)** — Below content on `post.hbs`. `bindingContext: post` · `compileTarget: post.hbs`.
 Content: post-bound — authors (portrait, bio, links, more-by), tags, previous/next post, related posts; static: heading?, cta?, disclosure text? (#13), sign-off line? (#14). Controls: author bio toggle, tag chips toggle, share row toggle, prev/next toggle, newsletter/CTA block toggle, show to (Everyone / Logged out / Free members / Paid members). Data: the related and series rows (#5, #12) use the FR-H2 Data group — `{{#get}}` by primary tag, fixed Count, never paginated.
-1. **Author Bio Card** [Free] — portrait, bio, links, more-by link.
-2. **Tags + Share Row** [Free] — tag chips left, share buttons right.
-3. **Bio + Next/Prev** — author card above prev/next pair.
-4. **Newsletter Close** — subscribe card as the article close.
-5. **Related Trio Fused** — compact related grid within footer.
-6. **Big Next Article** — oversized next-post banner.
-7. **Support CTA** — membership/upgrade ask close.
-8. **Minimal End Rule** — end-mark glyph + hairline, nothing else.
-9. **Comments Lead-In** — styled divider inviting to comments.
-10. **Share Band** — full-width share strip with copy-link.
-11. **Author Split Wide** — bio half, author's recent posts half.
-12. **Series Nav** — same-tag series prev/next with positions.
-13. **Sponsor Note** — styled disclosure/sponsor block.
-14. **End Flourish** — decorative sign-off with signature line.
-15. **Stacked Combo** — bio + tags + newsletter in one rhythm.
+<!-- roster:A26 -->
+1. **Author Bio** [Free] — The four blocks stacked on the article's measure in the fixed order, each opening with a hairline, the author block carrying the weight — 56 px avatar, name in the heading font, two clamped lines of bio, the socials row, a link to the author's archive. The category default and the design a switch falls back to.
+2. **Rows** [Free] — Every block a full-width row across the content measure, opened by a 120 px uppercase label column and closed by a hairline. The design that names its blocks instead of relying on their shape.
+3. **Card** — The whole footer on one A19·3 surface card at the content width, symmetrical inset, md shadow in light and a hairline in dark, the plane leaving below 767. The category's one raised design.
+4. **Contrast Band** — The footer inside a full-bleed band of the pack's contrast colour, every colour derived from the two contrast tokens, the blocks on the measure centred in it. The category's one inverted closing surface.
+5. **Split** — Two columns across the content width — tags and the author left, the share row and the two destinations stacked right — divided by a hairline in the gutter. The design that answers the footer's two questions side by side.
+6. **Slim** — One 44 px line under the article carrying the tags as a dotted run left and the share links right, on a hairline, with a second line for the destinations. The footer with no author block in it.
+7. **Next and Prev** — The two destinations as tiles running to the viewport edges, each carrying its feature image behind a warm scrim with its kicker, title and byline, mirrored left and right. The category's one picture.
+8. **Tag Row** — The post's tags as the whole footer, at reading size, in 44 px full-height targets under a small label, with one link to the archive. The design for a site whose tags are navigation.
+9. **Share Row** — The share destinations alone on a surface bar at the content width, label left and links right, one 44 px row. The canonical home of the share block, and the reason A25's share affordance resolves to Off.
+10. **Big Type** — "More from Rosa Menendez" at display size across the content width, the bio, a 40 px avatar and the socials row beneath it, then share and the destinations. The category's one display moment.
+11. **Portrait** — The author as a 280 px portrait at 4:5 beside four lines of bio, the name at 28, the socials row under the words, tags above and the share row beneath. The category's one photograph of a person.
+12. **Subscribe** — A subscribe prompt on a surface bar under the article — a line, a sentence, one field, one button — with no picture, no benefits, no tiers and no counts — and one ask per member state. The one place A26 asks for an email address.
+13. **Rail** — The tags as a stacked list and the share destinations as A25·9's tower in a 240 px margin column, the author block and the destinations on the measure beside them, the rail leaving the margin at 1,200. The footer for a post whose article already uses its margins.
+14. **Ledger** — A colophon for the post: a right-aligned label column and one line of fact per row — filed under, written by, published, updated, photography, share, read next — a hairline between each. The design that carries the credits and the dates.
+15. **Grid** — Three labelled columns across the content width — written by, filed under, read next — the avatar above the name in the first, the socials row under its bio, the share row spanning beneath. A3·2's site footer, at a post's scale.
+<!-- /roster:A26 -->
 
 **A27. Related Posts (12)** — `{{#get}}` by primary tag with fallback to latest. `bindingContext: post` (+ the `posts` the `{{#get}}` block yields) · `compileTarget: post.hbs`.
 Content: post-bound cards — feature image, title, excerpt, date, reading time, primary tag; static: heading? (default "Read next" — chrome string, FR-Q6). Controls: columns, image toggle, excerpt toggle, meta toggles (date, reading time, tag chip), heading text. Data: group per FR-H2 with Source fixed to **primary tag → latest fallback** (built-in) and Count default **3** — `{{#get}}`-driven, never paginated (the post context has no pagination).
-1. **Trio Cards** [Free] — 3-up related cards.
-2. **Read Next Banner** [Free] — single full-width next suggestion.
-3. **Prev/Next Pair** — two large directional cards.
-4. **Same-Tag Rail** — horizontal snap rail of related.
-5. **Grid Four** — compact 4-up grid.
-6. **Minimal Titles** — text-only related list.
-7. **Thumb List** — small-image stacked list.
-8. **Editorial Pair** — two serif-styled features.
-9. **Carousel Row** — arrowed card carousel.
-10. **Sidebar Match** — column list styled to TOC layouts.
-11. **Fresh Picks** — a randomized row drawn client-side by Fisher-Yates over a **≤ 100-post pool**, with a refresh control. The label is honest about its reach — *"random from the 100 most recent"* — because 100 is the ceiling the Content API and `{{#get}}` both impose (FR-H2); the old name "Discover Shuffle" claimed a discovery it cannot perform. Degrades to a plain latest-posts row with JS off (FR-G7 `shuffle`).
-12. **Continue Sticky** — slide-in next-article card near page end.
+<!-- roster:A27 -->
+1. **Three Up** [Free] — Three related posts as three equal cards under a labelled hairline, on the content width.
+2. **Rows** [Free] — Related posts as titled rows on the article's measure, separated by hairlines, with no pictures anywhere. The design for an archive that is not illustrated.
+3. **Thumb Rows** — A17's card turned on its side: a 96 or 128 px picture at the left of each row, the title beside it, the meta at the right edge, on the content width. The one picture design whose shape survives a phone.
+4. **Panel** — The three-card set lifted onto one surface panel at the pack radius, head inside, page ground visible on all four sides. A plane instead of a hairline.
+5. **Contrast Band** — The three-card set on the inverted band, edge to edge, with the head and every foreground in the carried colour. The only A27 design that changes the colour of the page.
+6. **Lead and List** — One related post as a 636 card with its picture and excerpt, the rest as titled rows in a 588 column beside it, 72 px apart. The lead is the first in the set, not a choice.
+7. **Rail** — The head in a 240 px margin column and the posts as rows in the 1,008 px body beside it.
+8. **Overlay** — The title and its date over the picture, on 4:5 tiles with a warm scrim from the foot.
+9. **Big Type** — Three or four related titles at 44 or 56 px, one under another, hairlines between, a byline under each. No pictures, no excerpts — the design 8 Overlay hands off to.
+10. **Carousel** — A snapping strip of cards that runs past the right edge, with two arrow buttons on the head's line. The only design in A27 that declares a behaviour module.
+11. **Index** — Related posts as a numbered, ruled index: number, title, tag, date and optionally reading time, in fixed columns. The densest design in A27 — four posts in 240 px.
+12. **Next Up** — One related post as a 560 px picture beside a 34 px title, an excerpt and a byline. The only design in A27 that forces a value in the Data group.
+<!-- /roster:A27 -->
 
 **A28. Comments (10)** — Wrappers for `{{comments}}` (Ghost native). `bindingContext: post` (+ `@site.comments_enabled`) · `compileTarget: post.hbs`.
 Content: count heading label and the signed-out explainer (#9) — chrome strings from the Translations catalog (FR-Q6); the thread itself is Ghost's native `{{comments}}` output and carries no Inflozo content props. Controls: count header toggle, header size (Normal/Display), width (Match content measure / Full width), signed-out note toggle. Data: none — comments are not exposed by the Content API, so the canvas renders the **comments fixture** — **14 comments across 9 threads**, five of them carrying one reply, one with a long body and one in the signed-out state (FR-H3) — and the live thread is Ghost's. The count header has a real two-digit number to render because of it. What a theme may style **inside** Ghost's native thread output is a verify-at-build item (`prd.md` §7.6); until it is answered these ten designs are scoped to the chrome around the thread — panel, count header, header size, width, signed-out note.
-1. **Card Panel** [Free] — comments inside a soft panel with count header.
-2. **Minimal Thread** [Free] — bare native comments, matched typography.
-3. **Toggle Reveal** — "Show comments (n)" button expanding thread.
-4. **Rule-Lined** — hairline-framed discussion block.
-5. **Dark Panel** — contrast container treatment.
-6. **Rounded Surface** — heavy-radius surface card.
-7. **Narrow Matched** — width-locked to content measure.
-8. **Wide Board** — full-width discussion area.
-9. **Members Note** — signed-out explainer + signup nudge above.
-10. **Count Header Big** — display-size count heading treatment.
+<!-- roster:A28 -->
+1. **Rule** [Free] — One hairline, a labelled count and a line of house rules above Ghost's block, on the article measure. The category default and the one the other nine depart from.
+2. **Split Head** [Free] — The head, count and house rules in a fixed left column beside Ghost's block. The design for a publication that moderates and wants its rules read.
+3. **Panel** — The whole section on a raised surface plane, inset from its own edge, at the measure plus that inset.
+4. **Contrast Band** — The section as a band of the pack's contrast colour, the measure centred in it, the block re-moded to match the band rather than the page.
+5. **Boxed** — A hairline box round the head, the rules and the block, with the head in its own divided row at the top of the box.
+6. **Rail** — The label, count and house rules standing in the page margin on A25's rail division, with Ghost's block in the 1,008 column beside them.
+7. **Disclosure** — A full-width bar carrying the label, the count and a Show or Hide, with Ghost's block inside a native disclosure beneath it.
+8. **Prompt** — The publication's own membership prompt in place of the block for readers who cannot comment, with the count of the discussion they cannot see.
+9. **Big Count** — The comment count set at display size in a column beside the block, with the label and house rules under it.
+10. **Slim** — One line of muted type above the block, on no ground of its own, at the category's tightest spacing.
+<!-- /roster:A28 -->
 
-**A29. Archive Headers (14)** — `tag.hbs` / `author.hbs` heads; bind tag or author objects + post counts. **`bindingContext` per design** — `tag`: #1, #3, #4, #5 · `author`: #2, #7, #8, #9 · either: #6, #10, #11, #12, #13, #14; `compileTarget` follows (`tag.hbs` / `author.hbs`). Shuffle and Site Remix cycle only inside the placed instance's context, so an author archive never lands on a tag-bound design.
+**A29. Archive Headers (14)** — `tag.hbs` / `author.hbs` heads; bind tag or author objects + post counts. **The per-design partition is withdrawn (R-16).** In the export A29 is **one design over three archives**:
+every design reads whichever object the route provides — `{{#tag}}`, `{{#author}}` or a collection route's
+own key — and **the eyebrow is what changes** ("Tag", "Author", "Archive"). No design is tag-bound and none
+is author-bound, so `bindingContext: tag | author | collection` is declared **once for the category** and
+the Shuffle ring is no longer partitioned. `compileTarget: tag.hbs, author.hbs` **and `custom-{name}.hbs`**
+— R-7 adds the collection template, on which *From Ghost* resolves only via a page key and otherwise offers
+Custom text alone. **A29 takes no third [Free] re-tier** (R-17): its old #7 was justified by an
+author-bound partition that no longer exists.
 Content: tag-bound (name, description, accent color, feature image, `count.posts`) or author-bound (name, bio, profile image, cover image, socials, `count.posts`) per the design's context; static: eyebrow?, breadcrumb labels? (#14). Controls: cover/backdrop image toggle, description/bio toggle, post-count toggle, socials toggle (author context), tag-accent tint toggle (built-in on #1 — uses the tag's own accent color when set), filter/sort strip toggle (#13) — when on, the strip renders server-side tag/author links that work with JS off, and refetches through the browser-safe Content API with JS on: **limit caps at 100**, and **sort offers only real schema columns** (`published_at`, `updated_at`, `title`).
-1. **Tag Banner** [Free] — tag name, description, count on tinted band (uses tag accent color when set).
-2. **Author Split** [Free] — portrait left, name/bio/socials right.
-3. **Tag Cover** — tag feature image backdrop with overlay.
-4. **Minimal Tag Title** — display-type tag name + count only.
-5. **Tag Description Split** — name left, long description right.
-6. **Count Badge** — oversized post-count numeral treatment.
-7. **Author Hero** [Free] — cover image, overlapping portrait, bio.
-8. **Author Minimal** — byline-style compact header.
-9. **Author Cover Card** — portrait card floating on cover.
-10. **Gradient Band** — accent gradient archive band.
-11. **Boxed Card** — archive identity in outlined card.
-12. **Dark Band** — contrast header band.
-13. **Filter Bar Attached** — archive header with a **progressive** filter/sort strip fused to it. Server-rendered tag and author links work with no JS at all; with JS, the strip refetches through the **browser-safe Content API** (`{{content_api_key}}` / `{{content_api_url}}`, both core helpers). **Limit caps at 100** and **sorting is offered only on real schema columns** — `published_at`, `updated_at`, `title` — never on computed values the API cannot order by (FR-G7 `filter-strip`).
-14. **Breadcrumbed** — home / archives trail above title.
+<!-- roster:A29 -->
+1. **Centred** [Free] — Eyebrow, name, description and count centred on a 720 measure. The category default and the arrangement the other thirteen depart from.
+2. **Split Head** [Free] — Name in a left column, description, count and back link in a right column on a fixed 100 px gutter. The design for archives that have a description.
+3. **Contrast Band** — The head as a full-bleed inverted band directly under the site header, with the category's only resting-state action.
+4. **Panel** — The head on a raised surface plane inset in the content box, count and back link at the plane's right edge.
+5. **Full Bleed** — The tag or author feature image full-bleed under the site header, name and count on a warm scrim, bottom-left on the content box.
+6. **Image Split** — The head in one half of the content box and the feature image in the other, vertically centred against each other.
+7. **Rail** — Label, count and back link in a 240 px margin rail; name and description in the 1,008 px body. A25's division, reused verbatim.
+8. **Bar** — A one-line surface band carrying the label, name, count and way back. The lightest head in the category and the only one that draws no description.
+9. **Big Type** — The archive name at display scale across the content box, count in the opposite corner, no ground of its own.
+10. **Boxed** — A hairline box on the page ground with the head centred inside it. A boundary rather than a surface.
+11. **Filter** — The archive name over a row of sibling-tag links, the current one accent-filled, the row closed by an all-topics link.
+12. **Portrait** — The author archive as an inset card carrying the portrait, name, bio, meta line, an optional social row and one action. The only design in A29 that draws a face.
+13. **Index** — The archive head in a 416 column beside the full tag index in ruled columns, the current tag marked.
+14. **Sticky** — A full head with a slim full-bleed bar at its foot that pins to the top of the window as the grid scrolls.
+<!-- /roster:A29 -->
 
 **A30. Members Pages (13)** — full-page membership designs; tier-bound; portal-wired. Ghost 6 has **no members template family**: the `signup.hbs` / `signin.hbs` / `account.hbs` trio under a `members` directory does not exist and never renders — that path is a fossil of the archived Lyra theme's own `routes.yaml` (`research-ghost-membership-pages.md` §9/§12). Each design is an ordinary **Ghost Page** whose template the user picks from the **Template dropdown** in Ghost's page editor — no `routes.yaml`, no Ghost Admin routing step. `bindingContext: tiers` + `@member` · `compileTarget: custom-{name}.hbs` (theme root, never a subdirectory; the filename becomes the dropdown label, title-cased — `custom-membership.hbs` → "Membership" — and is a **frozen public API** of the emitted theme once shipped — named, collision-checked and rename-blocked by the scheme in `prd.md` §7.4, enforced at the naming step in FR-I3). The stored `custom_template` survives a page rename; a slug-derived `page-{slug}.hbs` silently stops applying and outranks the user's own choice, so it is never emitted (`research-ghost-membership-pages.md` §0/§1/§2). Shuffle and Site Remix must not move an instance across the signup / signin / member-home boundary. **Paid CTAs gate on `@site.paid_members_enabled`, never on tier presence** — Ghost seeds a $5/mo "Default Product" tier at install, so a site that cannot take payment still returns a priced tier and would otherwise ship a dead buy button (§6). **Signin seam:** the form itself is themeable (`data-members-form="signin"`), but the one-time-code step hands off to a Portal modal Inflozo cannot design (§10).
 Content: tier-bound per FR-H6 (`{{#get "tiers"}}` — names, prices, currency, benefits; sample tiers when unlinked); static: heading, subtext?, benefit lines?, helper/legal line?, **sent-state copy** — the designed `.success` state of the on-page `data-members-form` (heading, body, resend link), carried by every signup and signin design (#1–#10); this is where the former "Magic-Link Sent" design now lives, as a form state rather than a page, because Ghost routes no URL to it; cta labels (portal actions signup / signin / signup/{tier} / account / `account/plans` / `account/profile` / `account/newsletters` via the Link Picker, plus `data-members-signout` for sign out — **`upgrade` is not a Portal action**: it falls through to Portal's default screen despite Ghost's own Source theme shipping `data-portal="upgrade"`, so #13 and every upsell CTA emit `account/plans` (§4/§12)). Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), brand panel toggle, helper links toggle, sent-state preview, newsletter-preferences toggle (#11 only).
-1. **Signup Center Card** [Free] — brand, benefits, tier cards, free CTA.
-2. **Signin Minimal** [Free] — logo + email portal action, calm page.
-3. **Signup Split Benefit** — benefits/testimonial half, tiers half.
-4. **Signup Tiers Inline** — horizontal tier row under hero ask.
-5. **Signup Gradient** — accent-gradient backdrop, floating card.
-6. **Signup Dark** — contrast-mode auth aesthetic.
-7. **Signup Testimonial** — reader quote flanking the form card.
-8. **Signup Compact Modal-Style** — small centered card, blurred site behind.
-9. **Signin Card** — bordered card with helper links.
-10. **Signin Split** — brand statement half, action half.
-11. **Member Home** — greeting, plan badge and status from `@member`; every action (email, newsletters, plan, sign out) hands off to Portal — display-only, never an editable account panel, and no protected URL or logged-out redirect (§10).
-12. **Benefits Page** — marketing-grade membership explainer + tiers.
-13. **Upgrade Spotlight** — free→paid upsell page with comparison, upgrade CTA on `account/plans`.
+<!-- roster:A30 -->
+1. **Centred** [Free] — One centred column on the page ground carrying eyebrow, heading, blurb, the email field and an included list under a hairline; the same column, widened to 640, carries the account rows. The category default.
+2. **Split Pitch** [Free] — The case for membership in a 700 column with a numbered included list, and the form alone in a 520 column beside it. The left column is authored and never reacts to data.
+3. **Card** — The whole page inside one centred surface card at the pack radius + 4 with a warm shadow, holding head, field and a three-line included list; the card widens to 760 for the account rows.
+4. **Panel** — One raised plane the width of the content box carrying a centred 460 form and a four-column included row under a hairline. The same components as 1 with the ground changed.
+5. **Contrast Band** — The whole page on one full-bleed inverted band carrying its own padding, form centred on 480, included list under a 20 % hairline. The only design in A30 with no accent on it.
+6. **Cover** — The form over a full-bleed photograph under a warm scrim, every colour derived from the carried white. On /account/ the photograph becomes a 200 px band above rows on the page ground.
+7. **Image Split** — The form and a three-line list in a 560 column on the page ground, with a photograph filling everything right of the 40 px gap to the viewport edge. No text sits on the picture.
+8. **Tiers** — Ghost's tiers as three cards with a monthly-yearly toggle above them and the free option as an email row beneath a hairline. The only design in A30 that draws tier data.
+9. **Big Type** — One authored sentence at 96 px with an inline field row beneath it and the blurb under a hairline. On /account/ the same treatment applied to the member's own name at 72 px.
+10. **Boxed** — The whole page inside one hairline box at the pack radius with internal rules dividing head, form and included list. No fill, no shadow — the quietest containment in the category.
+11. **Rail** — A 240 px rail beside a content column: the membership's own sections with the current one marked on /account/, and the included list on /signup/. The only design in A30 that draws navigation.
+12. **Ledger** — Six authored ruled rows across the content box — mono ordinal, name, one muted line — with a price sentence and the form on a hairline at the foot. The only A30 design built for five or more included lines.
+13. **Steps** — Three numbered steps on one raised plane — choose a tier, enter an address, open the link — with all three visible at rest. On /account/ the same numbering carries the member's three facts.
+<!-- /roster:A30 -->
 
-**A31. Error & Utility (9)** — `error.hbs` + special pages. **`compileTarget` per design** — `error.hbs`: #1–#5 · `private.hbs`: #10 · custom page templates (FR-I3): #6, #7, #9 — each on a `custom-{name}.hbs` under the same frozen-filename scheme (`prd.md` §7.4).
-**⚠ A31's design ids are non-contiguous by design: there is no #8.** "Empty Tag State" was retired as a design and is now **a state of the feed itself** (FR-H2, FR-H4). It never had a file to compile into — its declared `compileTarget` was "the empty state of a collection template", which is not a file — and no surface could place it, so it was a design in the inventory that no user could ever reach. **The slot is retired rather than renumbered:** #10 Private Site Gate is `[Free]` and is the `private.hbs` compile target that FR-G2's Free-tier distribution depends on, and it is cross-referenced by number throughout this document set. Shifting nine ids to save one is how a renumber breaks a reference nobody re-checked. `bindingContext`: `error` (`statusCode`, `message`, `errorDetails` — `research-ghost-binding-contexts.md` §10) for #1–#5, `private` (`{{#if error}}` / `error.message` only — `research-ghost-binding-contexts.md` §11) for #10, `none` for the utility pages. Shuffle and Site Remix never move an instance to a different compile target.
+**A31. Error & Utility (10)** — `error.hbs` + special pages. **`compileTarget` per design, re-derived from the export** — the roster is contiguous 1–14 with no retired
+slot, and **every design draws the private gate**, which is why #1 Centred and #2 Split Reason already give
+`private.hbs` its [Free] pair and **#10's re-tier is withdrawn** (R-17). `error.hbs`: #1–#7 and #10 ·
+`private.hbs`: all ten · custom page templates (FR-I3): #8 Elsewhere and #9 Directory — each on a `custom-{name}.hbs` under the same frozen-filename scheme (`prd.md` §7.4).
+**A31's ids are now contiguous 1–10 (R-16).** The old roster skipped #8 because "Empty Tag State" had been retired — it declared a `compileTarget` of "the empty state of a collection template", which is not a file, and no surface could place it. **The export fills the slot with a real design**, `#8 Elsewhere` (recent posts under the message), so the gap closes and every id below is the export's own. The old warning against renumbering stands as a rule for the future — a renumber breaks references nobody re-checks — but it no longer describes this roster. `bindingContext`: `error` (`statusCode`, `message`, `errorDetails` — `research-ghost-binding-contexts.md` §10) on the error targets, `private` (`{{#if error}}` / `error.message` only — §11) on `private.hbs`, `none` on the utility pages. **A `{{#get}}` is refused on both `error.hbs` and `private.hbs` (R-7)**, which is a real constraint on `#8 Elsewhere`: its recent-posts block compiles only where the design is placed on a custom page template, and on the error target it renders its authored recovery list alone. Shuffle and Site Remix never move an instance to a different compile target.
 Content: on every `error.hbs` design the numeral **and** the message are bound to the error context — `{{statusCode}}` and `{{message}}`, never a literal status — so one `error.hbs` serves 404, 500 and every other status (FR-I1 emits no `error-404.hbs`/`error-4xx.hbs`); static: supporting line?, home-link label?, illustration slot?. On #10 the password form plus its `{{#if error}}` feedback line. On #6/#7/#9 ordinary static page content (heading, body, cta?, portal signup?). Controls: numeral display (Display/Compact/Hidden), supporting line (Off/Custom copy beneath the bound message), home-link toggle, search toggle, popular-posts toggle, illustration toggle. Data: the popular-posts block (#4) uses the FR-H2 Data group — `{{#get}}`-driven, fixed Count, never paginated.
-1. **Minimal Type** [Free] — bound numeral at display scale, one-line message, home link.
-2. **Search Recovery** [Free] — bound message above a search field and popular tags.
-3. **Playful Scene** — illustrated scene wrapped around the bound numeral.
-4. **Popular Posts** — bound message above a grid of top content.
-5. **Calm Reassurance** — low-chroma type-only treatment, no recovery links.
-6. **Coming Soon** — pre-launch page with subscribe.
-7. **Maintenance** — brief downtime page.
-9. **Subscribe Success** — welcome-aboard confirmation page.
-10. **Private Site Gate** [Free] — styled password-access page.
+<!-- roster:A31 -->
+1. **Centred** [Free] — One column optically centred in the viewport — code chip, heading, sentence, search field, primary action beside a text link, and the authored recovery list under a hairline. No box, plane or band. The category default.
+2. **Split Reason** [Free] — Code, heading and sentence in the left column of the content box; search field, primary action and recovery list in the right. Top-aligned, on an 80 px gap, with an optional hairline between.
+3. **Card** — The stack inside one surface card centred on the page ground — pack radius + 4, one hairline, the warm md shadow, 720 wide with 40 of padding.
+4. **Boxed** — One hairline box at 720 in the content box — no fill, no shadow — with the authored recovery links as ruled rows inside it, label left and URL in mono right.
+5. **Panel** — One raised surface plane across the content box: message and action left, the recovery links in a right column behind a hairline. The page ground shows above and below, not around.
+6. **Contrast Band** — The page as one inverted full-bleed band at viewport height, the block centred on it, every value derived from the band's carried ink. No accent, no plane, no shadow.
+7. **Cover** — A photograph filling the page under a flat 45 % warm scrim, the block centred on it in derived carried values. Hands off to 1 Centred at a 500 .
+8. **Elsewhere** — The message at 620 with an optional search field, a hairline, then five recent posts as A18's ruled rows at 820. Hands off to the message alone on a 500 and on the gate .
+9. **Directory** — The message at 560, then Ghost's own navigation at page scale in two ruled columns at 19 px. A 404 answered with a map. Hands off to 1 Centred on the 500 and on the gate .
+10. **Display** — The status code at 156 px in the heading font in the left column of an inverted full-bleed band; message, search field, action and recovery list in the right. The category's one display moment.
+<!-- /roster:A31 -->
 
 ### Group 5 · Ghost Native Elements
 
 **A32. Paywall / Content CTA (12)** — **Non-placeable treatment** (see the carve-out above): the 12 designs are selectable inside the standalone **Paywall Template** editor, one active per project, and the compiler emits the chosen design as `partials/content-cta.hbs` — the override point Ghost renders inline at the members-only divider the user placed in the Ghost editor (`research-ghost-binding-contexts.md` §16). Tier-bound; portal-wired. A flagship differentiator. `bindingContext: post` + `tiers` + `@member` · `compileTarget: partials/content-cta.hbs` (rendered from `post.hbs`).
 Content: tier-bound per FR-H6 (names, prices, currency, benefits; sample tiers when unlinked); static: heading, subtext?, benefit lines?, cta labels (portal actions signup / signup/{tier} / upgrade). Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), preview treatment (None/Fade/Blur), progress meter toggle (#12) — **approximate by construction**: `reading_time` is computed before gating so it describes the full post, but only to ±137 words, so the meter reads "About X%" bucketed to 5% and hides itself under 3 minutes; preview treatment **Blur** on #10 requires the theme's own `partials/content-cta.hbs` wrapper, because Ghost emits preview blocks bare — plus the universal controls, since the paywall renders as a block of its own.
-1. **Fade + Card** [Free] — content fades into an upgrade card.
-2. **Hard Stop Card** [Free] — clean rule, centered unlock card.
-3. **Split Benefits** — benefits checklist beside tier CTA.
-4. **Tier Cards Inline** — full tier cards at the cutoff.
-5. **Minimal Lock Line** — single elegant line + button.
-6. **Dark Lock Panel** — contrast unlock moment.
-7. **Testimonial Unlock** — member quote powering the ask.
-8. **Dual Path** — free-signup vs paid-upgrade cards.
-9. **Big Type Ask** — display-size "keep reading" statement.
-10. **Blurred Preview** — the last visible free-preview block fades under the CTA. **Mechanism is normative:** Ghost emits preview blocks **bare, with no wrapper**, so the blur cannot be applied to Ghost's own markup — the theme supplies the wrapper itself from `partials/content-cta.hbs` and applies a `mask-image` gradient to the preceding block. Without the theme-supplied wrapper there is nothing to attach the effect to.
-11. **Checklist Compact** — tight benefits + single CTA row.
-12. **Progress Tease** — an **approximate** read-so-far meter above the unlock CTA. `reading_time` is computed **before** gating, so it reflects the **full** post — but only to ±137 words, which is why the copy is deliberately imprecise: **"About X%"**, **bucketed to 5%**, **suppressed entirely under 3 minutes** where the error swamps the signal, and carrying a **server-rendered baseline sentence** so the tease still reads correctly with JS off (FR-G7 `reading-progress`).
+<!-- roster:A32 -->
+1. **Fade** [Free] — The last visible paragraph fades into the page ground and the gate continues in the article's own measure — eyebrow, heading, sentence, button, sign-in line — with no box, plane or rule of its own. The category default.
+2. **Card** [Free] — The gate inside one centred surface card at the article's measure, at the pack's radius + 4 with the md warm shadow, standing in front of the article's fade. 1's stack in a containment.
+3. **Panel** — One raised plane the width of the content box carrying the gate centred on a 560 measure and a three-column included row under a hairline. 1's components with the section's ground changed.
+4. **Contrast Band** — The gate as a full-bleed inverted band carrying the copy centred on 560 and a three-line included list, with every colour on the band derived from the band's carried colour. The category's one accent-free design besides 10.
+5. **Boxed** — One hairline box at the article's measure with no fill and no shadow, holding the gate at 28 px of padding. Containment without a plane.
+6. **Split Pitch** — The reason for membership in a 700 column with numbered included rows and the action alone in a 520 column beside it, across the full content box — a gate wider than the article it interrupts.
+7. **Tiers** — A short centred head, the monthly-yearly toggle, and the publication's paid tiers as A7·1 cards side by side at the cut. The only A32 design that repeats an item.
+8. **Ledger** — What a membership includes as six ruled rows across the content box — mono ordinal, name, one line of detail — with the heading and the action above them. Argument by enumeration.
+9. **Big Type** — The gate's heading at display size across a 1,040 measure with one 18 px line under it and the button beneath — no list, no containment, no ground of its own. The category's one display moment.
+10. **Cover** — A full-bleed cover 520 tall carrying a warm flat scrim, with the gate centred on it and every colour derived from the carried light. The only A32 design with an image, and the only one where it is required.
+11. **Sticky Bar** — A 76 px surface bar pinned to the foot of the viewport carrying one line and one button, with an in-flow twin of the same line and button at the cut. The quietest gate in the category.
+12. **Meter** — A 4 px meter across the measure showing how much of the post the preview was, its label in words, and the gate beneath it. The only A32 design that states a quantity, and the only one with no eyebrow.
+<!-- /roster:A32 -->
 
 **A33. Koenig Card Treatments (6)** — **Non-placeable treatment.** Site-wide `cards.css` styling for all Ghost editor cards (callout, bookmark, button, toggle, gallery, header, product, audio, video, file, quote designs). One treatment active per project, **chosen in the card design module (FR-Q7)** — the six treatments are its starting points, and the module is where each card is then designed individually. `bindingContext: none` · `compileTarget: assets/css` (`cards.css` — FR-J3).
 Content: none — the cards are Ghost editor output; a treatment styles them and carries no content props. Controls: the treatment selector in the card design module (project-level, one active per project), reachable from **Theme Settings** whenever no Post Content section is placed (FR-Q9); no per-instance controls and no universal controls.
-1. **Editorial** [Free] — hairlines, serif captions, restrained fills.
-2. **Soft Cards** [Free] — rounded tinted surfaces, gentle shadows.
-3. **Bold Frames** — 2px borders, chunky radii, high contrast.
-4. **Minimal Flat** — near-invisible chrome, typography-led.
-5. **Accent Pop** — accent-forward fills on callouts/buttons.
-6. **Paper Notes** — card-stock look with subtle texture tint.
+<!-- roster:A33 -->
+1. **Plain** [Free] — Every card on the page ground at the article's measure, with no plane and no frame; a single hairline above and below the six cards that must read as one object — HTML, bookmark, toggle, audio, file, product — and a tinted plane on the callout and the call to action. The category default.
+2. **Card** [Free] — Every card on a surface panel at the article's measure — hairline, pack radius, warm sm shadow, 24 px padding — with the media inset inside the panel and the caption in the panel with it.
+3. **Panel** — The card's ground runs past the article measure to the wide column — 1,040 at 1440 — with the card's content held at 720 inside it and the media staying in the measure by default.
+4. **Wide** — Every media card renders one rung wider than the width its author gave it — regular at the wide column's 1,040, wide and full at the content box's 1,296 — with the text at the measure and the caption aligned to the media.
+5. **Full Bleed** — A media card marked full takes the viewport's whole width and drops its corner radius; wide takes the content box; regular stays in the measure; the caption returns to the 720 column beneath. Copy cards are 1 Plain's, unchanged, and only the five media cards — image, gallery, embed, video, GIF — may bleed .
+6. **Contrast Band** — The copy-bearing cards on the pack's inverted contrast colour at the wide column, carrying the carried text; the photograph cards — image, gallery, embed — left on the page ground untouched.
+<!-- /roster:A33 -->
 
 **A34. Pagination Styles (10)** — **Non-placeable treatment.** Designs behind the feed Pagination control (FR-H2). Numbered designs compile to `/page/2/` links via native pagination context; Load More and Infinite ship JS with numbered-link fallback. `bindingContext: pagination` (page, pages, total, next, prev — `prd.md` Appendix B) · `compileTarget: partials/pagination.hbs`, rendered inside the designated main feed's section.
 Content: none — the labels ("Older posts", "Newer posts", "Page {page} of {pages}", the load-more label) are chrome strings from the Translations catalog (FR-Q6). Controls: the **Pagination style** selector exposed by the designated main feed's FR-H2 Data group; no per-instance controls and no universal controls.
-1. **Numbered Classic** [Free] — page numbers + prev/next.
-2. **Load More Solid** [Free] — centered primary button with count.
-3. **Numbered Pills** — rounded page chips, accent current.
-4. **Minimal Prev/Next** — two text links with post ranges.
-5. **Big Arrows** — oversized directional buttons.
-6. **Rule + Numbers** — hairline with inset numerals.
-7. **Load More Ghost** — outline button, subtle spinner.
-8. **Load More Ticker** — button with remaining-count badge.
-9. **Infinite Fade** — auto-load with skeleton shimmer rows.
-10. **Infinite Dot Pulse** — auto-load with minimal pulse loader.
+<!-- roster:A34 -->
+1. **Numbers** [Free] — A centred cluster of page links on the page ground, windowed to seven slots with an ellipsis where it skips, the current page marked by weight and a 2 px accent underline, a directional link at each end and a position line beneath. The only A34 design that names every destination.
+2. **Prev and Next** [Free] — Two directional links at the ends of the content measure, each with the destination's page number beneath, the position line centred between them, a hairline above. No page links, and the only A34 design that reaches the content edges.
+3. **Bar** — A full-bleed surface strip between two hairlines, 72 px tall, holding the position line, the windowed page links and the older-posts link in three zones on the feed's own page margin. The only A34 design that shows all three at once.
+4. **Pill** — The windowed page links and two chevrons inside one contents-width surface pill with a hairline and a warm md shadow, centred on the page ground, position line beneath. The current page is a filled inner pill rather than an underline — the only A34 design that changes that marker.
+5. **Counter** — The current page and the total as one 52 px group in the heading font, three tones deep, with a 38 px icon button either side and the post range beneath. A34's only display moment and its only design whose subject is position rather than navigation.
+6. **Load More** — A17·16's centred button under the feed, appending one Ghost page per press, with a count line and a 320 px hairline meter beneath and the route's numbered links present in the markup at all times. The only A34 design that grows the feed rather than replacing it.
+7. **Endless** — An invisible sentinel that fetches the next page as the reader nears the end of the feed, a 44 px surface pill pinned to the bottom of the viewport carrying the count and a Back to top link, a focus-revealed button in the flow, and a hard stop after four pages that hands the rest to 6 Load More's button. The only A34 design with nothing in the page's flow at rest.
+8. **Contrast Band** — A full-bleed band of the pack's contrast colour, 120 px tall, carrying the windowed page links at 17 px and the position line beneath, both in colours derived from the band rather than the palette. The category's only inverted ground.
+9. **Cards** — Two mirrored surface cards at A17's 636 px cell width, 112 px tall, each carrying a 13 px direction eyebrow over the destination's page number at 20 px in the heading font, with the arrows at the pair's outer edges. The category's largest targets and its only contained items.
+10. **Slim** — A single 44 px row under a hairline: the position line at 13 px left, "Newer" and "Older" at 15/600 with their chevrons right, divided by a 14 px vertical hairline. The smallest pager in the library and the only A34 design whose arrangement is identical at every width.
+<!-- /roster:A34 -->
 
 ---
 
@@ -681,9 +794,9 @@ Synthesized templates render inside `default.hbs` like every template, so chrome
 
 | Element | Rule |
 |---|---|
-| Header, Announcement bar, Footer | **Referenced.** Site-wide singletons (FR-D5) compile into `default.hbs` once; synthesized templates get whatever the user's Home shows. No announcement bar is ever synthesized. If the project has no header/footer singleton at all (nothing designed anywhere), synthesize **A1 #1 Classic Left** and **A3 #1 Minimal Single Row** with auto content (`@site.logo`/title, `@site.navigation`; CTA off, search off, member links on). Hidden/deleted footer on Free → FR-J15 credit fallback in `default.hbs`. |
+| Header, Announcement bar, Footer | **Referenced.** Site-wide singletons (FR-D5) compile into `default.hbs` once; synthesized templates get whatever the user's Home shows. No announcement bar is ever synthesized. If the project has no header/footer singleton at all (nothing designed anywhere), synthesize **A1 #1 Rail** and **A3 #1 Minimal Line** with auto content (`@site.logo`/title, `@site.navigation`; CTA off, search off, member links on). Hidden/deleted footer on Free → FR-J15 credit fallback in `default.hbs`. |
 | Style Pack tokens | **Referenced.** Project token set (FR-E1/E4) — one token block, all templates. |
-| Koenig treatment (A33) | **Referenced.** Project-level choice; defaults to **A33 #1 Editorial** if never set. |
+| Koenig treatment (A33) | **Referenced.** Project-level choice; defaults to **A33 #1 Plain** if never set. |
 | Body sections | **Never cloned from Home.** Each synthesized template uses its fixed default stack below (fresh compile-time instances with schema-default control values). |
 
 Unless a row below says otherwise, all universal controls sit at schema defaults: Background role **Base**, Vertical spacing **Comfortable**, Top divider **None**.
@@ -696,24 +809,24 @@ Ghost resolves **`home.hbs` for the site root** and **`index.hbs` for `/page/N/`
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A17 #1 Classic Cards** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbered Classic**. All meta toggles on. Identical in both files, so page 1 and page 2 are the same design (FR-D21). |
+| 1 | **A17 #1 Three Up** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbers**. All meta toggles on. Identical in both files, so page 1 and page 2 are the same design (FR-D21). |
 
 #### `post.hbs`
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A24 #1 Classic Center** (Post Header) | Binds title, tag, meta, feature image (skips image row when unset). |
-| 2 | **A25 #1 Narrow Classic** (Post Content section) | Wraps `{{content}}`. **The synthesized design is #1** — the design picker opens on it, and the values below are #1's own control defaults (FR-F7), not a category-level stack: Measure **Narrow**, TOC **Off**, TOC style Plain, drop cap **Off**, share rail **off**, type scale **Normal**. Card treatment defaults to **A33 #1 Editorial** by reference, per §2 — the Post Content section does not carry it (FR-Q7). **No paywall section is synthesized** — A32 is a non-placeable treatment emitted from the project's Paywall Template, and an untouched project has none, so Ghost's own content CTA renders at the members-only cutoff until one is designed. |
-| 3 | **A26 #1 Author Bio Card** (Post Footer) | Portrait, bio, more-by link from post authors. |
-| 4 | **A27 #1 Trio Cards** (Related Posts) | `{{#get}}` by primary tag, fallback latest (built-in), Count **3**. Never paginated. |
-| 5 | **A28 #2 Minimal Thread** (Comments) | `{{comments}}`; #2 over #1 deliberately — bare native output renders nothing when comments are disabled, no orphaned panel chrome. |
+| 1 | **A24 #1 Centred** (Post Header) | Binds title, tag, meta, feature image (skips image row when unset). |
+| 2 | **A25 #1 Measured** (Post Content section) | Wraps `{{content}}`. **The synthesized design is #1** — the design picker opens on it, and the values below are #1's own control defaults (FR-F7), not a category-level stack: Measure **Narrow**, TOC **Off**, TOC style Plain, drop cap **Off**, share rail **off**, type scale **Normal**. Card treatment defaults to **A33 #1 Plain** by reference, per §2 — the Post Content section does not carry it (FR-Q7). **No paywall section is synthesized** — A32 is a non-placeable treatment emitted from the project's Paywall Template, and an untouched project has none, so Ghost's own content CTA renders at the members-only cutoff until one is designed. |
+| 3 | **A26 #1 Author Bio** (Post Footer) | Portrait, bio, more-by link from post authors. |
+| 4 | **A27 #1 Three Up** (Related Posts) | `{{#get}}` by primary tag, fallback latest (built-in), Count **3**. Never paginated. |
+| 5 | **A28 #2 Split Head** (Comments) | `{{comments}}`; #2 over #1 deliberately — bare native output renders nothing when comments are disabled, no orphaned panel chrome. |
 
 #### `page.hbs`
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A24 #1 Classic Center** (Post Header) | Meta row (date/author/reading time/tag) **hidden** — pages aren't dated content. Title and feature image are wrapped in `{{#if @page.show_title_and_feature_image}}` (A24's `page.hbs` rule), which is what makes the two synthesized headers **not** byte-identical, so §7.4's hoist keeps them as separate partials. |
-| 2 | **A25 #1 Narrow Classic** (Post Content section) | Same design and the same control values as `post.hbs` row 2 — A25 is target-agnostic and binds `post` on both templates (see A25's dual-target rule), so the two synthesize identically and the compiler's byte-identity hoist may legitimately merge them into one shared partial (§7.4). |
+| 1 | **A24 #1 Centred** (Post Header) | Meta row (date/author/reading time/tag) **hidden** — pages aren't dated content. Title and feature image are wrapped in `{{#if @page.show_title_and_feature_image}}` (A24's `page.hbs` rule), which is what makes the two synthesized headers **not** byte-identical, so §7.4's hoist keeps them as separate partials. |
+| 2 | **A25 #1 Measured** (Post Content section) | Same design and the same control values as `post.hbs` row 2 — A25 is target-agnostic and binds `post` on both templates (see A25's dual-target rule), so the two synthesize identically and the compiler's byte-identity hoist may legitimately merge them into one shared partial (§7.4). |
 
 No post footer, related, or comments on pages.
 
@@ -721,21 +834,21 @@ No post footer, related, or comments on pages.
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A29 #1 Tag Banner** (Archive Header) | Tag name, description, post count; tag accent color when set (built-in). |
-| 2 | **A17 #1 Classic Cards** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbered Classic**. All meta toggles on. |
+| 1 | **A29 #1 Centred** (Archive Header) | Tag name, description, post count; tag accent color when set (built-in). |
+| 2 | **A17 #1 Three Up** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbers**. All meta toggles on. |
 
 #### `author.hbs`
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A29 #2 Author Split** (Archive Header) | #2 required: #1 binds the tag object; #2 is the author-bound design (portrait, name, bio, socials). |
-| 2 | **A17 #1 Classic Cards** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbered Classic**. All meta toggles on. |
+| 1 | **A29 #2 Split Head** (Archive Header) | **The requirement is withdrawn.** A29 is one design over three archives in the export — every one of the fourteen reads whichever object the route provides (`{{#tag}}`, `{{#author}}` or a collection route), so no design is tag-bound and #1 is legal here too. #2 stays the synthesized default because its right column carries a description and a count, which is what an author archive has to say; **#12 Portrait** is the design to reach for when the site wants the author's face. |
+| 2 | **A17 #1 Three Up** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbers**. All meta toggles on. |
 
 #### `error.hbs`
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A31 #1 Minimal Type** (Error & Utility) | Numeral and message bound to the error context (`{{statusCode}}`, `{{message}}`) — as in every A31 error design — so one `error.hbs` serves 404, 500 and any other status (FR-I1 emits no `error-404.hbs`/`error-4xx.hbs`). Home link → `@site.url`. |
+| 1 | **A31 #1 Centred** (Error & Utility) | Numeral and message bound to the error context (`{{statusCode}}`, `{{message}}`) — as in every A31 error design — so one `error.hbs` serves 404, 500 and any other status (FR-I1 emits no `error-404.hbs`/`error-4xx.hbs`). Home link → `@site.url`. |
 
 No feed, no pagination.
 
@@ -745,7 +858,7 @@ On every synthesized collection template (**`home.hbs`, `index.hbs`**, `tag.hbs`
 
 - Bound to the template's **native paginated collection context** (`{{#foreach posts}}` over the context's posts array) — **NEVER** a fixed-count `{{#get}}` feed. Ghost's index/tag/author contexts each provide a posts array with pagination, so `/page/2/` works on every archive out of the box.
 - Sized by the global `posts_per_page` (FR-Q1, default 12) — no Count control.
-- Pagination style = **A34 #1 Numbered Classic** (`/page/2/` links via native pagination context) — the only style that needs no JS fallback path (FR-G4 makes Load More **and** infinite scroll fall back to numbered links; Numbered *is* that fallback), which is why defaults never use Load More/Infinite.
+- Pagination style = **A34 #1 Numbers** (`/page/2/` links via native pagination context) — the only style that needs no JS fallback path (FR-G4 makes Load More **and** infinite scroll fall back to numbered links; Numbered *is* that fallback), which is why defaults never use Load More/Infinite.
 - Exactly one main feed per synthesized collection template; the zero-feed SEO-guard branch of FR-H2 can never apply to a synthesized template.
 - The only `{{#get}}` feed in any default stack is A27 Related Posts on `post.hbs` (post context has no pagination).
 

@@ -9,6 +9,16 @@ create or replace function auth.uid() returns uuid language sql stable as $$ sel
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon; end if;
   if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated; end if;
+  -- service_role is NOT optional, and its absence was a live break. [Round 4]
+  -- Round 3's §19d fix added `grant ... to service_role` to SCHEMA.sql §11a(7). This file never
+  -- created that role, so from that commit until now SCHEMA.sql ABORTED against a bare container:
+  --     ERROR:  role "service_role" does not exist
+  -- The hosted path kept working (Supabase provides the role), so the break was invisible to the
+  -- run everyone was doing. `bypassrls` matches the platform, and it is what makes the AD-7 and
+  -- AD-8 server-role assertions in RLS-TEST.sql mean the same thing on both targets.
+  if not exists (select 1 from pg_roles where rolname = 'service_role') then
+    create role service_role bypassrls;
+  end if;
 end $$;
 -- Schema usage is still granted; table privileges are NOT. [R2-3, corrected 2026-08-19]
 --
@@ -37,10 +47,15 @@ end $$;
 --
 -- `storage`, `auth` and `realtime` are explicitly unaffected by that change (same changelog), so the
 -- storage grants further down stay as they are.
-grant usage on schema public to anon, authenticated;
+grant usage on schema public to anon, authenticated, service_role;
 
 create schema if not exists storage;
 create table storage.buckets (id text primary key, name text, public boolean default false);
+-- Real Supabase ships storage.buckets with RLS ON and ZERO policies, which is what makes AD-32's
+-- "no bucket is public" true by default -- executed and recorded in MEASUREMENTS §16b. This
+-- stand-in did not model that, so RLS-TEST.sql's storage.buckets assertion (one of the only two
+-- that could ever abort) failed on every container run. [Round 4]
+alter table storage.buckets enable row level security;
 create table storage.objects (
   id uuid primary key default gen_random_uuid(),
   bucket_id text references storage.buckets(id),
@@ -48,5 +63,5 @@ create table storage.objects (
 alter table storage.objects enable row level security;
 create or replace function storage.foldername(name text) returns text[]
   language sql immutable as $$ select string_to_array(name, '/') $$;
-grant usage on schema storage to anon, authenticated;
+grant usage on schema storage to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to authenticated;

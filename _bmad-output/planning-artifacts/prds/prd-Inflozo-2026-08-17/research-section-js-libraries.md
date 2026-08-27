@@ -16,7 +16,7 @@ created: 2026-08-18
 ## 0. Executive summary
 
 1. **31 behaviour modules** (30 feature modules + 1 shared core) cover every interactive design in the 485-variant inventory. Full list in §2.
-2. **29 of 31 ship as hand-written vanilla.** Exactly **two** modules were seriously contested — `carousel` and `search-overlay` — and both resolve to vanilla too. **Net: zero third-party runtime libraries in a generated theme.** One conditional exception is held open (§3.6).
+2. **Every module ships as hand-written vanilla.** Exactly **two** were seriously contested — `carousel` and `search-overlay` — and both resolved to vanilla. **Net: zero third-party runtime libraries in a generated theme.** One conditional exception is held open (§3.6). **Amended 2026-08-27:** `search-overlay` no longer exists (ruling **R-24** — Ghost's native search only), so the one contested module that later won a vendoring exception under D3 has taken that exception with it; **FR-G7's zero-third-party rule is restored whole**. The module count is derived from §2.1, never restated (standing rule 3).
 3. **Swiper is rejected.** Not on ideology — on arithmetic. Swiper's *core alone*, with zero feature modules, is **19.61 KB gzipped** (measured). NFR-2's entire JS budget for a *maximal design* — every module plus the search overlay — is **40 KB gzipped**. One carousel would consume **49 %** of it. A minimal-but-honest modular Swiper build (core + navigation + pagination + a11y + keyboard) measures **27.48 KB gzipped** and breaks NFR-2 outright when combined with the rest of the module set (§4).
 4. **The inventory itself already specified the answer.** Every carousel design in Appendix A describes *snapping horizontal scroll* — "snap-scrolling cards with dots" (A8 #7), "snap carousel" (A19 #4), "horizontal snap strip" (A14 #3), "snap-scrolling tag chips rail" (A20 #9), "horizontal snap rail" (A27 #4), "compact horizontal scroll" (A15 #15). Not one asks for coverflow, cube, parallax or true infinite loop. **CSS `scroll-snap` + ~1.2 KB of shared vanilla control layer is not a compromise here; it is a more literal implementation of the designs than Swiper would be.**
 5. **Recommended baseline: Baseline "Widely Available", pinned by date, with a short explicit allowlist for safely-degrading enhancements.** As of 2026-08-18 that resolves to **Chrome/Edge 121, Firefox 122, Safari & iOS Safari 17.2** (computed in §A3). This unlocks `<dialog>`, `inert`, `:has()`, `IntersectionObserver`, `ResizeObserver`, `scroll-snap`, `Element.animate()`, container queries, `color-mix()` and `subgrid`. It **excludes** the `popover` attribute, CSS scroll-driven animations, View Transitions and `@starting-style` from load-bearing use.
@@ -30,7 +30,7 @@ created: 2026-08-18
 
 | Constraint | Source | Value |
 |---|---|---|
-| JS budget, maximal design | `prd.md` **NFR-2** | **< 40 KB gzipped** — every FR-J4 module *plus* the A23 Custom Overlay search client |
+| JS budget, maximal design | `prd.md` **NFR-2** | **< 40 KB gzipped** — every FR-J4 module. **The A23 search client is gone** (ruling R-24): search is Ghost's own `sodo-search`, which the theme neither ships nor pays for, so the measured figures are ceilings |
 | JS budget, owner's stated envelope | owner brief | warn at 50 KB/page, loud flag at 100 KB/page |
 | Render-blocking JS | **NFR-2 (3)** | none — every script `defer`red or `type="module"` |
 | Accessibility gate | **NFR-5** | axe-core, WCAG 2.1 AA, **zero violations**, across all 485 variants |
@@ -49,39 +49,51 @@ Derived by walking every one of the 485 variant descriptors in `sections-invento
 
 ### 2.1 The modules
 
+> **Amended 2026-08-27 by the Ghost Build Room** (`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`).
+> **Deleted:** `search-overlay` and `search-expand` — ruling **R-24** replaces every Inflozo search
+> surface with Ghost's own native search, so no engine is vendored and **FR-G7's zero-third-party-JS
+> exception that D3 created is withdrawn**. A search affordance is now a plain element carrying
+> `data-ghost-search`. **Added:** `nav-transform` (D2), `contact-form` (D28), `group-headings`
+> (ruling R-1). The count in this section's heading, in §0's summary and in FR-G7 is **re-derived
+> from this table at the inventory merge** (standing rule 3) — as is every row's "Designs requiring
+> it" and "Trigger in the inventory" column, which still cite inventory identities the export
+> supersedes (ruling **R-16**). §3 and §4 below are the *analysis* that produced these modules and
+> are left as the record; where they discuss `search-overlay`, read ruling R-24 first.
+
 | # | Module | Designs requiring it | Control reach | Trigger in the inventory |
 |---|---|---|---|---|
 | 0 | **`core`** (shared runtime) | — | all | Module registry, `data-i18n-*` reader, one shared `IntersectionObserver` factory, `matchMedia('(prefers-reduced-motion: reduce)')` gate, `AbortController` teardown |
 | 1 | **`nav-drawer`** (off-canvas + focus containment) | 16 | 16 | Every A1 header needs a mobile nav at 390 px (FR-G4). A1 #11 *Sidebar Trigger* uses it on desktop too |
-| 2 | **`header-scroll`** (sticky / shrink / overlay→solid) | 1 | 16 | A1 control `sticky (None/Sticky/Sticky-shrink)`; A1 #6 *Transparent Overlay* "gains surface on scroll" intrinsically; A23 #8 *Sticky Band* |
-| 3 | **`search-expand`** | 3 | 15 | A1 #10 *Command Bar*, A1 #12 *Mega Search* (full-width takeover on focus), A23 #14 *Inline Expand* |
-| 4 | **`search-overlay`** (Content API client) | 5 | 15 | A23 #9, #10, #12, #15 Custom Overlay variants + #13 *Search + Recent*. Named explicitly in FR-J4 and NFR-2 |
-| 5 | **`command-palette`** (⌘K / Ctrl-K binding) | 1 | — | A23 #4 *Command Palette*; thin trigger over #4 above |
-| 6 | **`dismiss`** (with persistence) | 1 | 15 | A2 `dismissible` control across all 15 bars; A2 #2 *Slim Dismissable* intrinsic |
-| 7 | **`rotator`** (crossfade between messages) | 2 | 15 | A2 #9 *Rotating Messages* (up to 3 crossfading), A2 `rotation` control, A8 #9 *Avatar Row* ("one rotating quote") |
-| 8 | **`countdown`** | 2 | — | A2 #6 *Countdown*, A6 #11 *Countdown CTA* |
-| 9 | **`marquee`** (ticker) | 8 | 30 | A2 #3, A4 #18, A8 #3, A8 #14, A9 #15, A11 #3, A11 #4, A19 #15 — plus A8 `motion: Marquee` (15) and A11 `motion: Marquee/Dual-marquee` (15) |
-| 10 | **`confetti`** (particles) | 1 | — | A2 #15 *Seasonal Confetti* |
-| 11 | **`accordion`** | 15 | 15 | A9 #1,#2,#3,#6,#7,#11,#12,#13,#14 + A9 `default state` control; A5 #8 *Accordion Features*; A28 #3 *Toggle Reveal* |
-| 12 | **`tabs`** | 4 | — | A5 #9 *Tabs Showcase*, A9 #8 *Category Tabs*, A13 #9 *Tabbed Stages*, A20 #4 *Topic Tabs* |
-| 13 | **`carousel`** | 7 | 15 | A8 #7, A14 #3, A15 #15, A19 #4, A20 #9, A27 #4, A27 #9 — plus A8 `motion: Carousel` (15) |
-| 14 | **`lightbox`** (modal media) | 3 | 15 | A14 `lightbox` toggle across 15 galleries; A4 #17 *Video Poster*, A15 #3 *Poster Modal*, A15 #8 *Background Poster Band* |
-| 15 | **`video-facade`** (click-to-load embed) | 15 | 15 | Every A15 embed variant; A4 #17. Not a design requirement — a **performance** one: a cold YouTube iframe is ~500 KB+ of third-party JS on a page whose own budget is 40 KB |
-| 16 | **`price-toggle`** (billing period swap) | 1 | 40 | A7 `billing toggle` (15) + A7 #4 *Toggle Cards* intrinsic; A30 `billing toggle` (13); A32 `billing toggle` (12) |
-| 17 | **`member-form`** (states of `data-members-form`) | 11 | 11 | A30 #1–#10 each carry designed **sent-state** copy (heading, body, resend); A31 #10 *Private Site Gate* error line |
-| 18 | **`count-up`** | 3 | 15 | A10 `count-up animation` toggle (15); A10 #6 *Count-Up Ticker*, #10 *Percent Bars*, #15 *Circle Rings* |
-| 19 | **`reveal`** (animate-on-scroll) | 3 | — | A13 #10 *Checklist Journey* (progressive path), A13 #14 *Path Curve* (SVG draw), A34 #9 *Infinite Fade* skeleton. Shares the `core` IO factory |
-| 20 | **`scroll-spy`** (active-item tracking) | 2 | — | A5 #12 *Sticky Scroll*, A13 #6 *Sticky Progress*. Shared implementation with `toc` |
-| 21 | **`reading-progress`** | 2 | 16 | A24 `reading-progress` toggle (16) + A24 #15 *Progress Attached*; A32 #12 *Progress Tease* |
-| 22 | **`toc`** (build + scroll-spy) | 2 | 12 | A25 `TOC (Off/Left/Right, auto-hidden < 3 headings)` across 12; A25 #3 *TOC Left*, #4 *TOC Right*. **Must be client-side**: `{{content}}`'s heading structure does not exist until Ghost renders the post |
-| 23 | **`share`** (+ copy-link) | 3 | 27 | A25 `share rail` toggle (12) + #5 *Share Rail*; A26 `share row` toggle (15) + #2 *Tags + Share Row*, #10 *Share Band* |
-| 24 | **`load-more`** | 3 | — | A34 #2 *Load More Solid*, #7 *Load More Ghost*, #8 *Load More Ticker* |
-| 25 | **`infinite-scroll`** | 2 | — | A34 #9 *Infinite Fade*, #10 *Infinite Dot Pulse*. Reuses `load-more`'s fetch/append; adds a sentinel |
-| 26 | **`shuffle`** (client-side randomize) | 1 | — | A27 #11 *Discover Shuffle* ("randomized picks with refresh glyph") |
-| 27 | **`slide-in-card`** | 1 | — | A27 #12 *Continue Sticky* ("slide-in next-article card near page end") |
-| 28 | **`filter-strip`** (filter / sort) | 1 | 14 | A29 #13 *Filter Bar Attached* + A29 `filter/sort strip` toggle across 14 |
-| 29 | **`typewriter`** | 1 | — | A4 #13 *Typewriter Minimal* ("monospace accent line with animated caret") |
-| 30 | **`mode-toggle`** (light/dark) | — | site-wide | Named in FR-J4; FR-E4's Auto mode is the `prefers-color-scheme` media query and needs no JS — only the *manual* toggle does |
+| 2 | **`header-scroll`** (sticky / shrink / overlay→solid) | 1 | 16 | A1 control `sticky (None/Sticky/Sticky-shrink)`; A1's overlay design "gains surface on scroll" intrinsically; **and ruling R-3 gives it two more consumers** — A24's condensed bar (`position: fixed` at the threshold, hidden with no JS; as drawn it could never hold, because its containing block has already left the viewport), A1's direction-watch and A4's scroll cue. One module, three consumers, one no-JS line. ~~A23 #8~~ *Sticky Band* |
+| ~~3~~ | ~~**`command-palette`** (⌘K / Ctrl-K binding)~~ **DELETED — ruling R-24** | — | — | **Its only consumer was A23 #4, and A23 is deleted; and the ruling's own lint rule — "sodo binds ⌘K, so no Inflozo design may bind ⌘K" — forbids the module's entire job.** The row is struck rather than removed, because "add a command palette" is a proposal that will otherwise be made again. A visitor still gets ⌘K: it is `sodo-search`'s, and it works on every Ghost without a theme doing anything |
+| 4 | **`dismiss`** (with persistence) | 1 | 15 | A2 `dismissible` control across all 15 bars; A2 #2 *Slim Dismissable* intrinsic |
+| 5 | **`rotator`** (crossfade between messages) | 2 | 15 | A2 #9 *Rotating Messages* (up to 3 crossfading), A2 `rotation` control, A8 #9 *Avatar Row* ("one rotating quote") |
+| 6 | **`countdown`** | 2 | — | A2 #6 *Countdown*, A6 #11 *Countdown CTA* |
+| 7 | **`marquee`** (ticker) | 8 | 30 | A2 #3, A4 #18, A8 #3, A8 #14, A9 #15, A11 #3, A11 #4, A19 #15 — plus A8 `motion: Marquee` (15) and A11 `motion: Marquee/Dual-marquee` (15) |
+| 8 | **`confetti`** (particles) | 1 | — | A2 #15 *Seasonal Confetti* |
+| 9 | **`accordion`** | 15 | 15 | A9 #1,#2,#3,#6,#7,#11,#12,#13,#14 + A9 `default state` control; A5 #8 *Accordion Features*; A28 #3 *Toggle Reveal* |
+| 10 | **`tabs`** | 4 | — | A5 #9 *Tabs Showcase*, A9 #8 *Category Tabs*, A13 #9 *Tabbed Stages*, A20 #4 *Topic Tabs* |
+| 11 | **`carousel`** | 7 | 15 | A8 #7, A14 #3, A15 #15, A19 #4, A20 #9, A27 #4, A27 #9 — plus A8 `motion: Carousel` (15) |
+| 12 | **`lightbox`** (modal media) | 3 | 15 | A14 `lightbox` toggle across 15 galleries; A4 #17 *Video Poster*, A15 #3 *Poster Modal*, A15 #8 *Background Poster Band* |
+| 13 | **`video-facade`** (click-to-load embed) | 15 | 15 | Every A15 embed variant; A4 #17. Not a design requirement — a **performance** one: a cold YouTube iframe is ~500 KB+ of third-party JS on a page whose own budget is 40 KB |
+| 14 | **`price-toggle`** (billing period swap) | 1 | 40 | A7 `billing toggle` (15) + A7 #4 *Toggle Cards* intrinsic; A30 `billing toggle` (13); A32 `billing toggle` (12) |
+| 15 | **`member-form`** (states of `data-members-form`) | 11 | 11 | A30 #1–#10 each carry designed **sent-state** copy (heading, body, resend); A31 #10 *Private Site Gate* error line |
+| 16 | **`count-up`** | 3 | 15 | A10 `count-up animation` toggle (15); A10 #6 *Count-Up Ticker*, #10 *Percent Bars*, #15 *Circle Rings* |
+| 17 | **`reveal`** (animate-on-scroll) | 3 | — | A13 #10 *Checklist Journey* (progressive path), A13 #14 *Path Curve* (SVG draw), A34 #9 *Infinite Fade* skeleton. Shares the `core` IO factory |
+| 18 | **`scroll-spy`** (active-item tracking) | 2 | — | A5 #12 *Sticky Scroll*, A13 #6 *Sticky Progress*. Shared implementation with `toc` |
+| 19 | **`reading-progress`** | 2 | 16 | A24 `reading-progress` toggle (16) + A24 #15 *Progress Attached*; A32 #12 *Progress Tease* |
+| 20 | **`toc`** (build + scroll-spy) | 2 | 12 | A25 `TOC (Off/Left/Right, auto-hidden < 3 headings)` across 12; A25 #3 *TOC Left*, #4 *TOC Right*. **Must be client-side**: `{{content}}`'s heading structure does not exist until Ghost renders the post |
+| 21 | **`share`** (+ copy-link) | 3 | 27 | A25 `share rail` toggle (12) + #5 *Share Rail*; A26 `share row` toggle (15) + #2 *Tags + Share Row*, #10 *Share Band* |
+| 22 | **`load-more`** | 3 | — | A34 #2 *Load More Solid*, #7 *Load More Ghost*, #8 *Load More Ticker* |
+| 23 | **`infinite-scroll`** | 2 | — | A34 #9 *Infinite Fade*, #10 *Infinite Dot Pulse*. Reuses `load-more`'s fetch/append; adds a sentinel |
+| 24 | **`shuffle`** (client-side randomize) | 1 | — | A27 #11 *Discover Shuffle* ("randomized picks with refresh glyph") |
+| 25 | **`slide-in-card`** | 1 | — | A27 #12 *Continue Sticky* ("slide-in next-article card near page end") |
+| 26 | **`filter-strip`** (filter / sort) | 1 | 14 | A29 #13 *Filter Bar Attached* + A29 `filter/sort strip` toggle across 14 |
+| 27 | **`typewriter`** | 1 | — | A4 #13 *Typewriter Minimal* ("monospace accent line with animated caret") |
+| 28 | **`mode-toggle`** (light/dark) | — | site-wide | Named in FR-J4; FR-E4's Auto mode is the `prefers-color-scheme` media query and needs no JS — only the *manual* toggle does |
+| 29 | **`nav-transform`** (Ghost prefix navigation — **D2**) | 18 | 16 | Every A1 header in prefix mode (16), A3-2, A3-11, A31-9. Ghost navigation is flat and Handlebars cannot strip a `+` / `−` / `\|` label prefix server-side. **JavaScript-required by owner ruling; no no-JS accommodation is built** |
+| 30 | **`contact-form`** (honest `mailto:` composition — **D28**) | 10 | 10 | Every A16 contact design. Composes a pre-filled draft in JavaScript; the visible `mailto:` link is what works without it. No tile provider and no third-party post endpoint in v1 (**D29**) |
+| 31 | **`group-headings`** (heading on a key change — **ruling R-1**) | 3 | 3 | A18-5 *Grouped*, A20-7 *Index* (group by initial), A21-10 *Directory* (group by letter). Handlebars has no access to the previous item in a loop, so a month / year / tag / initial heading cannot be emitted server-side on any Ghost version |
 
 ### 2.2 Things that look like modules and are not — the deletions
 
@@ -113,9 +125,9 @@ Legend — **V** = hand-written vanilla; **L** = library recommended; **L?** = l
 | `core` | **V** | `AbortController` (Baseline Widely 2021-09), `matchMedia`, `IntersectionObserver` (Widely 2021-09) | — | — | ~0.8 KB. One IO instance shared by `reveal`, `count-up`, `scroll-spy`, `toc`, `infinite-scroll`, `carousel` dots — far cheaper than per-module observers | Owns the single `prefers-reduced-motion` gate, so no module can forget it |
 | `nav-drawer` | **V** | **`<dialog>.showModal()`** (Widely 2024-09) gives focus trap, `Esc`, `aria-modal`, `::backdrop` and inert-rest-of-page **natively**; `inert` (Widely 2025-10) as belt-and-braces | `focus-trap` 8.2.2 + `tabbable` | 3.90 + 2.39 = **6.29 KB** | Rejected: it re-implements in 6.29 KB what `HTMLDialogElement` now does in the engine. Buying a focus trap in 2026 is buying a polyfill | **Decisive for vanilla.** Native `<dialog>` is the *most* axe-clean path — the browser owns focus containment, so the classic hand-rolled failures (`aria-hidden-focus`, escaped focus, missing `aria-modal`) cannot occur |
 | `header-scroll` | **V** | `IntersectionObserver` on a zero-height sentinel at the top of `<body>` — no `scroll` listener, no rAF throttling, no layout thrash | — | — | ~0.4 KB | Sticky headers must not trap focus or obscure a focused element: `scroll-margin-top` on all headings/anchors handles WCAG 2.4.11 Focus Not Obscured, in CSS |
-| `search-expand` | **V** | `:focus-within` does most of it in CSS; JS only adds `Esc`-to-collapse and `aria-expanded` | — | — | ~0.3 KB | Trivial: one `aria-expanded` on the trigger, `Esc` restores focus to it |
-| `search-overlay` | **V** | `fetch()` + `AbortController` per keystroke, `<template>` cloning, `<dialog>`, debounce via `setTimeout` | `@tryghost/content-api` 1.11.21<br>`fuse.js` 7.5.0 | **12.81 KB**<br>**8.55 KB** | **Both rejected.** The Content API is one `GET /ghost/api/content/posts/?key=…&filter=…` — a 12.81 KB SDK to build one URL is indefensible. Fuse adds fuzzy ranking the Content API's NQL `~` operator already approximates server-side. ~1.8 KB vanilla | **Build it as a search *dialog*, not an APG combobox.** A `<dialog>` containing `<form>` + `<input type="search">` + `<ul>` of results + one `aria-live="polite"` status region ("12 results") is dramatically easier to keep axe-clean than `role="combobox"` + `aria-activedescendant`. This is a **normative implementation constraint**, not a preference — the combobox pattern is the single most common source of AA failures in this list |
-| `command-palette` | **V** | `keydown` + `event.metaKey/ctrlKey`; reuses `search-overlay`'s dialog | — | — | ~0.6 KB delta | Must not shadow a native shortcut; needs a visible trigger too (a keyboard-only entry point fails 2.1.1 for touch/AT users who cannot produce ⌘K) |
+| ~~`search-expand`~~ **DELETED 2026-08-27** — claimed by no export design (`reconcile-designs.md` §37.5). | **V** | `:focus-within` does most of it in CSS; JS only adds `Esc`-to-collapse and `aria-expanded` | — | — | ~0.3 KB | Trivial: one `aria-expanded` on the trigger, `Esc` restores focus to it |
+| ~~`search-overlay`~~ **DELETED 2026-08-27 (ruling R-24)** — kept as the record of why a vendored engine was contested; Ghost's native search is used instead and no module exists. | **V** | `fetch()` + `AbortController` per keystroke, `<template>` cloning, `<dialog>`, debounce via `setTimeout` | `@tryghost/content-api` 1.11.21<br>`fuse.js` 7.5.0 | **12.81 KB**<br>**8.55 KB** | **Both rejected.** The Content API is one `GET /ghost/api/content/posts/?key=…&filter=…` — a 12.81 KB SDK to build one URL is indefensible. Fuse adds fuzzy ranking the Content API's NQL `~` operator already approximates server-side. ~1.8 KB vanilla | **Build it as a search *dialog*, not an APG combobox.** A `<dialog>` containing `<form>` + `<input type="search">` + `<ul>` of results + one `aria-live="polite"` status region ("12 results") is dramatically easier to keep axe-clean than `role="combobox"` + `aria-activedescendant`. This is a **normative implementation constraint**, not a preference — the combobox pattern is the single most common source of AA failures in this list |
+| ~~`command-palette`~~ **DELETED (R-24)** | — | ~~`keydown` + `event.metaKey/ctrlKey`; reused `search-overlay`'s dialog, which is also deleted~~ | — | — | — | The concern recorded here proved decisive in the other direction: it must not shadow a native shortcut, and **⌘K is already `sodo-search`'s** (a keyboard-only entry point fails 2.1.1 for touch/AT users who cannot produce ⌘K) |
 | `dismiss` | **V** | `localStorage` + a content-hash key so a *new* message reappears after an old one was dismissed | — | — | ~0.3 KB | The close control is a real `<button>` with a `data-i18n` accessible name; focus moves to the next landmark on dismiss |
 | `rotator` | **V** | CSS `@keyframes` crossfade driven by a class swap; `Element.animate()` (Widely 2023-03) where finer control is wanted | — | — | ~0.4 KB | **WCAG 2.2.2 (Pause, Stop, Hide)**: auto-rotating content over 5 s needs a pause control, and must not rotate at all under `prefers-reduced-motion` — then it renders message 1 statically |
 | `countdown` | **V** | `Intl.NumberFormat`, `<time datetime>`, `setInterval` at 1 Hz | — | — | ~0.6 KB | **Real trap:** a per-second `aria-live` region floods AT. Ticking digits get `aria-live="off"` / `aria-hidden`, with one static accessible summary ("Offer ends 3 September 2026") beside them |
@@ -381,7 +393,7 @@ NFR-2's budget covers *Inflozo's* `assets/js/main.js`. The visitor downloads mor
 Two actions follow, and they are worth more real-world milliseconds than every optimisation above combined:
 
 1. **`video-facade` is not optional.** It is the single largest performance lever in the section library.
-2. **Investigate suppressing `sodo-search` on themes that ship A23's Custom Overlay variants.** Shipping Inflozo's ~1.8 KB overlay *on top of* Ghost's 86.50 KB one is strictly worse than either alone. A `{{ghost_head exclude="search"}}` form is discussed in the community but is **not verified as supported Ghost API** — treat this as an open question for the FR-C5 per-release verification, not as a settled mechanism.
+2. ~~**Investigate suppressing `sodo-search` on themes that ship A23's Custom Overlay variants.**~~ **CLOSED by ruling R-24 — and in the opposite direction.** There is no Inflozo overlay to ship, so nothing is suppressed and `{{ghost_head exclude="search"}}` is **never emitted**. The original reasoning stands as the record: shipping Inflozo's ~1.8 KB overlay *on top of* Ghost's 86.50 KB one was strictly worse than either alone. A `{{ghost_head exclude="search"}}` form is discussed in the community but is **not verified as supported Ghost API** — treat this as an open question for the FR-C5 per-release verification, not as a settled mechanism.
 
 ---
 
@@ -532,44 +544,63 @@ Add a fourth, human check: **bumping `widelyAvailableOnDate` requires a render-m
 
 ---
 
-## 7. No-JS degradation statement per module (FR-G4)
+## 7. No-JS degradation statement per module (FR-G4), and the edit-safe column (FR-D20)
 
 One line each. This is the acceptance criterion for the module's no-JS state.
 
-| Module | With JavaScript disabled |
-|---|---|
-| `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
-| `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
-| `search-expand` | The search field renders permanently expanded rather than expanding on focus. |
-| `search-overlay` | The trigger is a real `<form action="/search/" method="get">`, so search submits as a normal page navigation. |
-| `command-palette` | The ⌘K hint is hidden; the visible search trigger remains and behaves as above. |
-| `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
-| `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
-| `countdown` | The static deadline renders as a `<time datetime>` element ("Ends 3 September 2026"); no ticking digits. |
-| `marquee` | The track renders as a static row, horizontally scrollable via `overflow-x: auto`; nothing moves. |
-| `confetti` | Nothing renders; purely decorative, entirely absent. |
-| `accordion` | Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute. |
-| `tabs` | All panels render stacked and visible, each preceded by its tab label as a heading. |
-| `carousel` | The slide track is a native horizontally-scrollable `scroll-snap` strip — **fully usable**, only dots and arrow buttons are hidden. |
-| `lightbox` | Each thumbnail is an `<a href>` to the full-size image; clicking opens it as a normal page. |
-| `video-facade` | The poster is an `<a href>` to the video's canonical URL (YouTube/Vimeo watch page). |
-| `price-toggle` | Both monthly and yearly prices render side by side, each labelled — no toggle control shown. |
-| `member-form` | The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state. |
-| `count-up` | The final value renders as static text — it is already in the HTML before JS ever runs. |
-| `reveal` | Content renders fully visible; the hide-then-reveal CSS is scoped to `.js-enabled`. |
-| `scroll-spy` | The sticky list renders with the first item marked current; no active-item tracking. |
-| `reading-progress` | The bar is hidden entirely (it is decorative). A32 #12's meter renders at its server-known static value. |
-| `toc` | No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied. |
-| `share` | Share links are real `<a href="https://…">` URLs and work normally; only the copy-link button is hidden. |
-| `load-more` | Ghost's numbered `/page/2/` pagination links render instead (**FR-G4, explicitly**). |
-| `infinite-scroll` | Same — numbered pagination links render (**FR-G4, explicitly**). |
-| `shuffle` | The server-rendered set displays; the refresh glyph is hidden. |
-| `slide-in-card` | The card renders statically in the document flow near the page end rather than sliding in. |
-| `filter-strip` | Filters are `<a href>` links to Ghost routes and **work perfectly** — this module needs JS least of all. |
-| `typewriter` | The complete line renders as static text; the animated caret is absent. |
-| `mode-toggle` | `prefers-color-scheme` still drives Auto mode entirely in CSS (**FR-E4**); only the manual override control is hidden. |
+**Amended 2026-08-27 by the Ghost Build Room** (`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`):
 
+- **The `Edit-safe` column is new, and it is the table FR-D20 has always cited.** `edit-safe` occurred
+  exactly once in `prd.md` — FR-D20 line 243, *"each behaviour module declares itself edit-safe or not
+  (§7.3)"* — and §7.3 carried no such table, which is why the specs each asserted their own and
+  disagreed (`carousel`: A14 said yes, A15 said no). **The sense, fixed once (ruling R-21): a module is
+  `edit-safe` if it may run inside the editor canvas without interfering with editing.** Anything marked
+  **no** is suppressed on the canvas and its section renders in its resting state. The values below are
+  the architect's pass against that sense; **E4 confirms each against the real canvas** — the two the
+  owner ruled directly are `lightbox` (**no** — the defining case) and `carousel` (**no**, settling the
+  A14/A15 disagreement).
+- **`search-overlay` and `search-expand` are deleted** (ruling R-24 — Ghost's native search only; no
+  engine is vendored, and the zero-third-party exception D3 created in FR-G7 is **withdrawn**). A search
+  affordance is now a plain element carrying `data-ghost-search`, which needs no module at all.
+- **`nav-transform`** (D2), **`contact-form`** (D28) and **`group-headings`** (ruling R-1) are added.
+- **`member-form`'s sentence was false** and is rewritten — proved by execution, `MEASUREMENTS.md` §29a.
+- **Orphans, pending the merge:** `confetti`, `shuffle` and `typewriter` are claimed by no export design
+  (`reconcile-designs.md` §37.3). Marked here; dropped or re-homed when the inventory is re-derived.
+
+| Module | With JavaScript disabled | Edit-safe |
+|---|---|---|
+| `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. | **yes** — sets a class and nothing else |
+| `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. | **no** — the drawer overlays the canvas and the hamburger swallows clicks |
+| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. | **no** — hides and reveals the header under the cursor as the canvas scrolls |
+| ~~`command-palette`~~ **DELETED (R-24)** | — | — |
+| `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. | **no** — a dismissed bar leaves the canvas and cannot be edited back |
+| `rotator` | The first message renders statically; the others are not emitted into the visible flow. | **no** — the message the editor is typing into rotates away |
+| `countdown` | The static deadline renders as a `<time datetime>` element ("Ends 3 September 2026"); no ticking digits. | **yes** — ticking digits interfere with nothing |
+| `marquee` | The track renders as a static row, horizontally scrollable via `overflow-x: auto`; nothing moves. | **no** — moves text under the cursor |
+| `confetti` | Nothing renders; purely decorative, entirely absent. | **yes** — decorative, no interaction *(orphan — see the note above)* |
+| `accordion` | Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute. | **no** — a collapsed panel hides content the editor must reach |
+| `tabs` | All panels render stacked and visible, each preceded by its tab label as a heading. | **no** — hidden panels are unreachable on the canvas |
+| `carousel` | The slide track is a native horizontally-scrollable `scroll-snap` strip — **fully usable**, only dots and arrow buttons are hidden. | **no** *(owner-ruled — settles A14 vs A15)* — off-screen slides cannot be clicked |
+| `lightbox` | Each thumbnail is an `<a href>` to the full-size image; clicking opens it as a normal page. | **no** *(owner-ruled — the defining case)* — a modal opens when the editor clicks an image to edit its caption |
+| `video-facade` | The poster is an `<a href>` to the video's canonical URL (YouTube/Vimeo watch page). | **no** — clicking to edit swaps in a third-party iframe |
+| `price-toggle` | Both monthly and yearly prices render side by side, each labelled — no toggle control shown. | **yes** — both states are reachable by the same control the visitor uses |
+| `member-form` | **JavaScript-required — the second waiver after `nav-transform` (D2).** Proved 2026-08-27 on both majors (`MEASUREMENTS.md` §29a): `/members/api/send-magic-link/` **never parses form-encoded bodies** (Ghost 5 answers "Email is required" even with a valid token), Ghost 6 additionally requires an `integrityToken` from a separate GET, and there is no redirect back — a native submit would land the visitor on raw JSON. Ghost's own `portal.min.js` attaches the submit listener and applies the documented `loading`/`success`/`error` classes, so every designed state works **with** JavaScript. Without it a designed `<noscript>` notice renders in place of the form; nothing else is built for it. | **no** — suppressed so an editor cannot submit a real signup from the canvas |
+| `count-up` | The final value renders as static text — it is already in the HTML before JS ever runs. | **yes** — animates to the value already in the markup and settles |
+| `reveal` | Content renders fully visible; the hide-then-reveal CSS is scoped to `.js-enabled`. | **no** — content starts hidden, so an editor may never see the section it placed |
+| `scroll-spy` | The sticky list renders with the first item marked current; no active-item tracking. | **yes** — only sets `aria-current` |
+| `reading-progress` | The bar is hidden entirely (it is decorative). A32 #12's meter renders at its server-known static value. | **yes** — a bar at the top edge, no interaction |
+| `toc` | No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied. | **no** — injects an anchor per heading into content the editor also manipulates |
+| `share` | Share links are real `<a href="https://…">` URLs and work normally; only the copy-link button is hidden. | **yes** — links only |
+| `load-more` | Ghost's numbered `/page/2/` pagination links render instead (**FR-G4, explicitly**). | **no** — would fetch and append markup the editor never placed |
+| `infinite-scroll` | Same — numbered pagination links render (**FR-G4, explicitly**). | **no** — same as `load-more` |
+| `shuffle` | The server-rendered set displays; the refresh glyph is hidden. | **no** — item order changes between edits *(orphan)* |
+| `slide-in-card` | The card renders statically in the document flow near the page end rather than sliding in. | **no** — appears over the canvas on a trigger |
+| `filter-strip` | Filters are `<a href>` links to Ghost routes and **work perfectly** — this module needs JS least of all. | **no** — hides rows the editor needs to reach |
+| `typewriter` | The complete line renders as static text; the animated caret is absent. | **no** — rewrites text under the cursor *(orphan)* |
+| `mode-toggle` | `prefers-color-scheme` still drives Auto mode entirely in CSS (**FR-E4**); only the manual override control is hidden. | **yes** — switching mode is exactly what an editor wants to do |
+| `nav-transform` | *(new — D2)* The flat raw-prefix list renders: a visitor sees Ghost's own navigation with the literal `+Sections` / `−Essays` labels. **JavaScript-required, no accommodation built** — the owner's ruling, stated once here and nowhere else. | **yes** — rewrites labels once at load, and the transformed labels are what the editor should see |
+| `contact-form` | *(new — D28)* The honest `mailto:` link renders and works; the JS-composed draft (subject and body pre-filled) is what JavaScript adds. No tile provider, no third-party post endpoint. | **no** — suppressed so an editor cannot open a mail client from the canvas |
+| `group-headings` | *(new — ruling R-1)* The flat ruled list renders, ungrouped (P0·8 rule 4). Handlebars cannot detect a key change between items — no month, year, tag or initial heading is emitted server-side, on any Ghost version. | **yes** — the headings it inserts are derived and are not editable, so nothing is hidden from the editor |
 ---
 
 ## Appendix A — Method and reproducibility
@@ -647,7 +678,7 @@ Changing `CUT` to today's date yields the "Newly available" floor quoted in §6.
 
 ### A4. Open questions handed to the Architect
 
-1. **Can `sodo-search` be suppressed from `{{ghost_head}}`** on the pinned Ghost version, for themes shipping A23 Custom Overlay variants? Worth 86.50 KB gzipped if yes. Verify against Ghost source, not forum posts. → FR-C5.
+1. ~~**Can `sodo-search` be suppressed from `{{ghost_head}}`?**~~ **Moot under ruling R-24** — sodo *is* the search, so suppressing it would remove the feature rather than save its weight. Recorded because the 86.50 KB was real and someone will ask again. Original question: for themes shipping A23 Custom Overlay variants, verify against Ghost source, not forum posts. → FR-C5.
 2. **Does `load-more` fetch theme HTML or the Content API?** This document recommends **theme HTML** (`fetch('/page/2/')` + `DOMParser`) so appended cards are byte-identical to server-rendered ones and no API key ships in the theme. Confirm this against FR-H2's Data-group model.
 3. **Desktop mouse-drag on carousels** — build the vanilla pointer handling, and only if it proves fragile in the render matrix take the §3.6 Embla exception.
 4. **The per-module size estimates in §4 are estimates.** Wire `size-limit` into CI from the first module merged so the real numbers replace these before GA.

@@ -78,13 +78,70 @@ For **each design** in the category:
 
 **The control panel** — the sidebar as the user sees it for *this* design: the Design picker at the top, then this design's own 4–7 controls with their exact named values (Compact / Comfortable / Spacious — never px or hex). Designs in the same category will have *different* control sets; that is correct and expected.
 
-**The written spec**, beside the frames:
-- **Content fields** — exact names, types, whether optional, any limits.
-- **Controls** — each with its complete list of allowed values.
-- **Data** — what it pulls from Ghost, if anything, and what happens when that data is missing or empty.
-- **Responsive rule** — in words, what happens at each width.
+**The written spec**, beside the frames. **All ten fields, every time** — this list is normative and
+is the exact list the reconciliation pass checks each design against (`sections-inventory.md` §"What
+each design carries"). A design missing any of them is half-delivered and will come back.
+
+- **Descriptor** — the one-line structural identity: what makes this design *this* design.
+- **Structural descriptor (the tuple)** — `archetype · containment · ground · item-count class ·
+  media placement · emphasis mechanism`, the six slots separated by a space, a middle dot, and a
+  space. ⚠️ **This is machine-checked, and free prose is not.** The uniqueness rule runs on the
+  *tuple*, because two designs can be described differently in English and still be the same
+  design. **It must stay unique within its category once every design's control list is written**
+  — controls stop distinguishing designs at that point, so the tuple is the only thing left that
+  does.
+
+  **The first five slots are closed sets.** Write the exact word on its own — no parenthetical, no
+  qualifier, no synonym, nothing appended. The check is a literal match, so `few (2–4)` **fails**
+  where `few` passes.
+
+  | Slot | Allowed values |
+  |---|---|
+  | archetype | the fourteen in the next bullet |
+  | containment | `none` · `card` · `box` · `pill` |
+  | ground | `page` · `surface` · `contrast` · `image` · `transparent` · `accent` |
+  | item-count class | `none` · `one` · `few` · `many` · `variable` |
+  | media placement | `none` · `left` · `right` · `top` · `bottom` · `background` · `inline` · `edge` · `full-bleed` |
+
+  **Containment is a property of the SECTION, not of the items inside it.** A bare section whose
+  posts happen to be drawn as cards is `none` — those cards are the *item's* geometry. Use `card`,
+  `box` or `pill` only when the section itself sits in one. This is the single most likely slot to
+  get wrong: most card grids are `none · page`.
+
+  **Ground is what the section rests on**, which is how two otherwise identical designs earn their
+  places — the same header on `surface` and on `contrast` are two designs, and this slot is what
+  says so. `page` is the page's own background; `transparent` means the section has no ground of
+  its own and shows what is beneath it.
+
+  What the count values *mean* — a gloss, never write it into the tuple: `none` = no repeating
+  unit · `one` = exactly one · `few` = 2–4 · `many` = 5 or more · `variable` = the author decides
+  how many. The sixth slot, **emphasis mechanism**, is the only open one: a free phrase of at most
+  four words naming the single device that distinguishes this design.
+
+  **What this check can and cannot promise.** It verifies that every design makes a distinct
+  structural claim. It cannot verify the claim is true — designs differing only in density, scale,
+  motion or alignment reach the same five closed slots and rest on the emphasis phrase, which no
+  machine reads. Uniqueness beyond structure, containment and ground is a judgement, not a gate.
+
+- **Archetype** — which responsive archetype it collapses under: grid-of-N, split, stack, bar, nav,
+  edge rail, overlay, feed, form, carousel, table, media frame, sticky, or article body. This
+  supplies its default collapse ladder, so the responsive rule below only has to state the
+  *departures* from it.
+- **Responsive rule** — in words, what happens at each width; and where it cannot follow its
+  archetype, the bespoke behaviour.
+- **Content fields** — the subset of the category union it uses: exact names, types, optionality, limits.
+- **Controls** — its own list **in sidebar order**, each with its complete closed value set, Quick
+  Controls first.
+- **Data** — what it binds from Ghost, and its behaviour at **0, 1 and many** items.
 - **Empty state** — what renders when optional content is absent.
+- **Behaviour module** — which module it declares, if any; whether that module is **edit-safe**; and
+  ⚠️ **its no-JS degradation, written out.** That is an acceptance criterion, not a footnote — a
+  design whose module is missing its degradation statement is not done.
 - **Accessibility notes** — heading level, focus order, anything needing a label.
+
+**Where the specs go:** into `prds/prd-Inflozo-2026-08-17/sections-inventory.md`, which already
+carries this schema and the two-layer structure (category union, then per-design) they slot into.
+**The frames go in `design/`; the specifications do not.** They are the half that the build reads.
 
 **Per category, additionally:**
 - **One design rendered in three packs, light and dark** (6 frames) — the tokenisation proof.
@@ -100,6 +157,14 @@ Run the categories in §6's order. It follows the build order exactly:
 1. **The shell block first** — A1, A2, A3. Site-wide furniture. Everything else appears inside it, so it must exist first.
 2. **Then A4 Heroes** — the flagship, and the pilot for control density.
 3. **Then the rest**, in the order listed.
+
+**⚠️ If each category is a separate chat — which is what this prompt intends — that review cannot
+happen on its own.** A fresh session has no memory of what earlier categories established, so the
+continuity has to be carried by hand: close each session by asking for a **component inventory**
+(name · what it is · which category first established it, cumulative rather than reset), and paste
+that inventory above the master brief when you open the next one. Without it the library drifts one
+category at a time, and the reconciliation pass finds thirty variants of a button that should have
+been one. The copy-ready blocks for both halves are on `BUILD-BOARD.html`.
 
 Each session opens by reviewing the previous category's output for components to reuse, and closes with the category's shared field list.
 

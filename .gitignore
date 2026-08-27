@@ -12,3 +12,4 @@ tools/stress/theme.zip
 tools/probe/out/
 __pycache__/
 *.pyc
+_bmad-output/planning-artifacts/design/claude-design-export/unpacked/

@@ -193,9 +193,17 @@ designing a card means styling **every** class gscan checks for it, or the 0/0 t
 `SCHEMA.sql` applies clean to PostgreSQL 17.11 on the first run. The static sweep reports:
 
 - **0** public tables with RLS disabled
-- **policies across tables — re-derive from the proof, do not quote this line.** It read "34 policies across 26 tables"; the shipped `RLS-TEST.sql` prints **37 / 28**. The drift is Round 1 decision 24's whole point: a number restated by hand in a second place goes stale the first time the schema moves. *(Round 3, decision D8 — the count is now read from the proof's own output, and this line exists only to record why it is not a number.)*
+- **policies across tables — re-derive from the proof; this line is deliberately not a number.**
+  It once read "34 policies across 26 tables" and has gone stale twice since: **37 / 28** after Round
+  2's grants, **46 / 29** after Round 4 (the parent-ownership policies, `renewal_reminders`, and the
+  AD-7 tables moving to `private`). That drift is Round 1 decision 24's whole point — a count
+  restated by hand in a second place goes stale the first time the schema moves. `RLS-TEST.sql`
+  prints the live figure on every run; container and hosted were confirmed identical at **46 / 29**
+  on 2026-08-20. *(Round 3 decision D8 flagged this line for re-derivation; Round 4 re-derived it.)*
 - exactly **2** deliberate server-only tables (`site_credentials`, `billing_events`) — both
-  RLS-enabled with zero policies, which is AD-7's deny mechanism
+  RLS-enabled with zero policies, which is AD-7's deny mechanism. **Both moved to the `private`
+  schema in Round 4 (F6), and a third joined them** (`credential_audit`), so the equivalent
+  present-day check is that `public` holds exactly one deny-all table, `feature_flags`
 - **0** tables carrying `user_id` without a policy that scopes on it
 
 The behavioural pass proves isolation rather than asserting it — every line reads PASS:
@@ -1210,3 +1218,1139 @@ flag's whole purpose — turning the feature off without a redeploy — is defea
 **Still unexecuted, and honestly so:** a complete enrolment and assertion round trip needs a browser
 and a real authenticator. What is established is that the API is present, the client supports it, and
 it is off by default — which is what item 4 asked.
+
+---
+
+## 21. Round 4 — attack & performance, executed against the live estate · 2026-08-20
+
+Real end-user JWTs (publishable key + password grant), never the secret key except where the secret
+key IS the subject. Two tenants A/B. Every line is a PostgREST/Admin-API call, not reasoning.
+Probes: `scratchpad/attack_supabase*.py`, `attack_board.py`, `attack_ghost_accent.py`,
+`rls_perf2.sql`, `deploy_timing.py`, `visitor.py` (session scratch; verdict-only, no secrets printed).
+
+### 21a. Public board — self-approval and forgery AT INSERT (F1, HIGH)
+`authenticated` holds INSERT on **all** columns of `suggestions` (verified via
+`information_schema.role_column_grants`: INSERT covers `image_approved, vote_count, status, hidden,
+merged_into, …`). The RLS insert policy checks only `user_id = auth.uid()`. Executed, tenant B:
+
+    POST /rest/v1/suggestions {image_approved:true, vote_count:99999, status:'shipped', image_path:…}
+      -> HTTP 201
+    (anon) GET /rest/v1/suggestions_public?id=eq.<sid>
+      -> {"status":"shipped","vote_count":99999,"image_path":"suggestion-images/<B>/evil.svg"}
+
+The FR-M3 admin approval gate, the vote count and the roadmap status are all client-set at creation.
+Chains with §16c/F8 (raw `<script>` SVG lands in `suggestion-images` byte-identical, re-confirmed this
+run) → an attacker's unsanitized image reaches every board visitor with no admin in the loop.
+
+### 21b. Owner policy authorizes by the child's own user_id, never the parent (F2, HIGH, systemic)
+The uniform AD-6 policy is `user_id = (select auth.uid())` with no parent-ownership check. Tenant A,
+against tenant B's project id:
+
+    POST /rest/v1/project_templates {project_id:<B's project>, user_id:<A>, template_key:'home', doc:{}}
+      -> HTTP 201   (row created, attached to B's project)
+    POST … {project_id:<random uuid>, …}
+      -> HTTP 409 code 23503 (foreign_key_violation)
+
+So a client can (a) attach child rows to **another tenant's project** and (b) use the FK error as a
+cross-tenant existence oracle. A server route that reads a project's children by `project_id` alone
+under `service_role` (bypassrls) ingests the foreign row — cross-tenant compile/theme injection.
+Bounded by UUID unguessability of `project_id`.
+
+### 21c. Whole-row INSERT grants defeat the narrowed UPDATE grants (F3, MEDIUM, systemic)
+`§11` narrows UPDATE column-by-column; INSERT stays whole-row. Executed:
+
+    POST /rest/v1/assets {bytes:9999999, stored_bytes:1, …}  -> HTTP 201  (meter understated at rest)
+    PATCH /rest/v1/assets?id=eq.<id> {stored_bytes:5e8}      -> HTTP 403  (UPDATE correctly locked)
+
+`assets.stored_bytes` (FR-K3 meter → quota evasion), `edit_locks.lock_generation` (arbitrary initial
+value) and the F1 columns are all the same class. One fix — column-narrow the INSERT grants, or a
+BEFORE INSERT trigger that resets server-asserted columns — closes all of them.
+
+### 21d. edit_locks holder reseated without advancing lock_generation (F4, MEDIUM) — R3 §2.4, still open
+    POST  /rest/v1/edit_locks {holder:'device-1', lock_generation:5} -> 201
+    PATCH /rest/v1/edit_locks {holder:'device-2-SEIZED'}             -> 200, holder=device-2 at gen STILL 5
+    PATCH /rest/v1/edit_locks {lock_generation:1}                    -> 403 (monotonic trigger HELD)
+    PATCH /rest/v1/edit_locks {user_id:<B>}                          -> 403 (identity frozen HELD)
+
+AD-15 detects takeover from the generation advancing; a reseated holder at the same generation is a
+split-brain the displaced device never notices. R1 d32 deferred the protocol; it is still undecided.
+
+### 21e. Decision B — accent_color is a CSS-injection channel (F5, MEDIUM), both Ghosts
+`POST /ghost/api/admin/tags {accent_color:…}`, then read back. Ghost's validation is a loose char
+filter, not a CSS validator — it rejects some payloads and passes others:
+
+    '#ff0000; background:url(https://evil.example/track.png)'  -> 422 REJECTED (has space + //. )
+    'red;}body{display:none'                                    -> 201 ACCEPTED verbatim
+    '#fff" onmouseover="x'                                       -> 201 ACCEPTED verbatim
+    'javascript:alert(1)'                                        -> 201 ACCEPTED verbatim
+    '#fff;background:url(x)'                                     -> 201 ACCEPTED verbatim
+    '#fff;width:100vw'                                           -> 201 ACCEPTED verbatim
+    '#f00;/* c */color:red'                                      -> 201 ACCEPTED verbatim
+    '#fff;position:fixed;inset:0;background:#000;z-index:99999'  -> 422 REJECTED
+
+Emitted as `style="--tag-accent: {{accent_color}}"`, Ghost HTML-escapes `{{ }}` so `"`/`<` cannot
+break the attribute or inject script, and inline styles cannot hold a selector — so the quote and
+brace vectors are inert. What survives is **extra CSS declarations on the same tag element**
+(layout/defacement/tracking). Actor E (controls the Ghost); blast radius is the customer's visitors.
+Ghost's own filter is not a control Inflozo can rely on. Inflozo must strictly parse accent_color
+(hex/rgb/hsl only) in ghost-shim before it reaches the custom property.
+
+### 21f. AD-7 tables are on the PostgREST data API (F6, MEDIUM)
+    (authenticated) GET /rest/v1/site_credentials -> 403 42501   (HELD)
+    (authenticated) GET /rest/v1/billing_events   -> 403 42501   (HELD)
+    (secret key)    GET /rest/v1/site_credentials -> 200, rows=1  <-- service_role reads it over REST,
+                                                                       no server route involved
+
+AD-7 reads "reachable only by the service role inside a server route". It is reachable by the service
+role from anywhere PostgREST is exposed. A leaked secret key dumps every tenant's Vault references
+over HTTP. Move `site_credentials`/`billing_events` to a schema outside `PGRST_DB_SCHEMAS`.
+
+### 21g. RLS index coverage (P1, MEDIUM scaling) and the AD-6 wrapper (P2, HELD)
+21 of 29 RLS-scoped tables have **no index whose first key is user_id** (only `assets, entitlements,
+notifications, passkey_labels, profiles, projects, sites, subscriptions` do). RLS rewrites every
+tenant query to `where user_id = uid`; an unfiltered list seq-scans the whole multi-tenant table.
+
+AD-6's wrapper proven on 200k rows (50k for the target tenant), claims set, `set role authenticated`:
+
+    with an index on user_id:  wrapped 11.8ms  |  bare 11.2ms   (both Index Only Scan)
+    NO index (seq scan):       wrapped 23.4ms  |  bare 320.9ms   (14x)
+
+Wrapped emits `Index Cond: (user_id = (InitPlan 1).col1)` — auth.uid() computed **once**. Bare inlines
+the `coalesce(current_setting(...))` and, on a seq scan, re-evaluates it **per row**. The wrapper is
+real insurance, but it only removes the per-row call; it does not remove the seq scan. P1 is the
+missing half — index user_id on every RLS table.
+
+### 21h. Performance held
+- `screen.css` = **1.36 KB brotli** (raw 42 KB, gzip 2.2 KB) on the 70-section stress theme — far under
+  NFR-2's 40 KB. Caveat: the synthetic fixture's CSS is highly repetitive and compresses unusually well.
+- **Deploy half, measured**: upload **7.2 s (Ghost 5) / 7.5 s (Ghost 6)**, activate **1.6 s / 1.4 s**,
+  gscan **0/0 on upload** both majors, for the 10.09 MB / 70-section theme. With R3's ~3.9 s compile
+  that is ~13 s end to end — inside G1's 10 minutes with three orders of magnitude to spare.
+- **Visitor page** (Ghost's own active theme): homepage ~59 KB, post ~19 KB, the `{{comments}}`
+  cdn.jsdelivr.net script present on posts (§15c). Ghost's portal/search/comments scripts dominate a
+  visitor's download and are outside Inflozo's theme and CSP.
+
+### 21i. Regressions re-tested — all HELD
+lock_generation monotonic (403) · edit_locks.user_id frozen (403) · assets.stored_bytes UPDATE locked
+(403) · site_credentials/billing_events denied to authenticated (403) · cross-tenant project read
+scoped (rows=0, Content-Range */0) · count(*) oracle scoped · suggestions_public hides another user's
+unapproved image (null) · base suggestions.image_path unreadable by client (403) · A cannot edit/delete
+B's suggestion (403) · F8 raw SVG still lands byte-identical, server-only buckets + folder scoping deny
+· storage schema not PostgREST-exposed (404, D6 control) · gscan 0/0 on upload both majors.
+
+### 21j. Vault — probed for the first time (5.2 item 4). HELD, and it bounds 21f.
+`site_credentials.admin_key_vault_ref` is a UUID into `vault.secrets`. Probed live:
+
+    supabase_vault 0.3.1 present.
+    grants on vault.secrets / vault.decrypted_secrets: service_role only (SELECT,DELETE);
+      anon/authenticated hold nothing.
+    (secret key) GET /rest/v1/decrypted_secrets -> 404   (vault is NOT a PostgREST-exposed schema)
+    (secret key) GET /rest/v1/secrets           -> 404
+
+So decryption needs `service_role` **and** a path that is not the REST data API. A leaked **API
+secret key** reads `site_credentials` over REST (21f) and gets the opaque `vault_ref` UUIDs, but
+**cannot decrypt them** — `decrypted_secrets` is 404 over PostgREST. Actual decryption requires a
+direct DB connection (server route via the pooler, or the DB password). This bounds 21f: the leak
+yields references, billing PII and full `public` read, not the Ghost admin secrets themselves — real,
+but not immediate site-takeover. The AD-10 decrypt chokepoint holds. Watch item: `pgsodium` is being
+replaced under `supabase_vault`; re-probe on the vault major bump.
+
+### 21k. The compiler as an injection channel — beyond AD-5 (5.2 item 1). Three findings, executed.
+Run against the real pipeline (`tools/stress/compile.js`, the decided AD-4/AD-5/R2-5 ordering).
+`full()` = renderSection then the R2-5 user-text substitution pass, i.e. what actually ships.
+
+**HELD first, because it bounds the rest.** AD-5's numeric-entity escaping and the AD-4 splice hold
+against every user-text vector tried: braces, block helpers and the marker shape all ship inert, and
+a user quote inside an attribute is escaped, so no attribute breakout:
+
+    user title = 'Notes on {{@site.title}} and {{#if @member}}x{{/if}}'
+      -> live mustache in output: false          (entities, as designed)
+    user href  = 'https://ok.example/" onclick="alert(1)'
+      -> <a href="https://ok.example/&quot; onclick=&quot;alert(1)">    (escaped, no breakout)
+    plain data-bind -> <div>{{html_field}}</div>   zero `{{{`
+
+**F7 (CONFIRMED, HIGH) — a user-supplied URL reaches `href` with no scheme validation.**
+
+    content.link = 'javascript:alert(document.domain)'
+    <a data-prop-attr="href:link">  ->  <a href="javascript:alert(document.domain)">x</a>
+
+The Conventions row promises *"every Ghost-sourced value is scheme-validated (`http`/`https` only)
+before reaching `href`, `src` or `srcset`"* — but that carve-out names **Ghost-sourced** values and
+lives in `ghost-shim`. A **user-typed link** (FR-D/AD-4's `marks[].href`, and any `data-prop-attr`
+image/link control) goes through `applyProps`, which HTML-escapes and never checks the scheme.
+Escaping is the wrong control for a URL: `javascript:` contains no escapable character. Actor B or a
+compromised design; the victim is a **visitor to the customer's deployed site** (actor D). The same
+gap covers `data:` and `vbscript:`.
+
+**F8b (CONFIRMED, HIGH, actor C) — helper arguments are unescaped string interpolation.**
+`bindExpr` builds Handlebars source by template literal:
+`` `{{img_url ${path} size="${arg}"}}` `` — neither `path` nor `arg` is validated. A design file
+(`packages/library`, 484 of them, actor C) that writes a crafted `data-bind-attr` breaks straight out
+of the mustache into raw theme text:
+
+    data-bind-attr='src:featureImage|img_url:800"}}<script>alert(1)</script>{{"'
+      ->  <img src="{{img_url featureImage size="800"}}<script>alert(1)</script>{{""}}">
+
+That is a live `<script>` in the emitted `.hbs`, on every customer site that deploys the design.
+AD-5 closes the *user-text* half of this class and nothing closes the *author* half — the same
+asymmetry AD-2/D13 already noted for the marker shape, arriving through the binding vocabulary.
+
+**F9 (CONFIRMED, MEDIUM, actor C) — a design may name any attribute, including an event handler.**
+
+    <div data-bind-attr="onload:featureImage">  ->  <div onload="{{featureImage}}">x</div>
+
+`applyProps`/`emitBindings` accept the attribute name verbatim. AD-34's gate asserts "no inline event
+handlers" over emitted files, so the gate is the only thing standing between this and a shipped
+theme — a single check, on the far side of the pipeline, with no authoring-time check in front of it
+(D13's CI lint is still unbuilt). Note the DOM does refuse a quote inside an attribute *name*
+(jsdom `InvalidCharacterError`), so the breakout is via the attribute-name whitelist, not via quoting.
+
+**One mechanism closes all three**: a binding vocabulary that is parsed and validated, not
+interpolated — attribute names from a fixed allowlist, helper args typed (`size` ∈ enum), and every
+URL-bearing attribute scheme-checked in `ghost-shim` for **user** values as well as Ghost values.
+
+### 21l. Actor G — cost and denial of service, computed from measured figures. Mostly HELD.
+Inputs are all measured, none assumed: compile 3.9 s / 486 MB peak (§14), upload+activate 8.8 s
+(§21h, this round), Fluid Active-CPU $0.128/CPU-hr and $0.0106/GB-hr at 2 cores (§17d), `memory:
+4096` (AD-11 after decision A), FR-J11 = 10 deploys/hour/site, a Pro account holds 25 projects.
+
+    one deploy               12.7 s wall  ->  $0.000427
+    1 site  at 10/hr          10/hr  = $0.004/hr  = $3.07/month
+    25 sites at 10/hr        250/hr  = $0.107/hr  = $76.84/month   <- a Pro account at full abuse
+    steady-state concurrency  250/hr x 12.7 s = 0.88 concurrent    <- no co-location pressure
+
+**The compute lever is not material.** A single account deploying flat-out costs the owner ~$77/month
+against a $15/month subscription — unpleasant, bounded, and visible in NFR-9's spend alarms long
+before it matters. FR-J11 is adequate as a compute control and no per-account concurrency limit is
+needed: at 4 GB, eight 486 MB compiles fit an instance and the worst case reaches 0.88 concurrent.
+
+**The storage meter is the real lever, and it is F3's consequence.** FR-K3 meters
+`assets.stored_bytes`, which §21c shows the client sets **at INSERT**. The meter can be written as
+1 byte per asset while the object bytes land in Storage for real, so the Free 100 MB / Pro 5 GB caps
+bound nothing — the true limit is Supabase's own storage bill. Closing F3 closes this too; it is one
+finding with two consequences, not two findings.
+
+### 21m. AD-10 / P8 — the write allowlist is code discipline, not a credential boundary (F10). Executed.
+P8 permits Inflozo **four** Admin writes: theme upload, theme activate, `routes.yaml` upload, and the
+consented announcement-bar clear. That allowlist lives in `apps/web/server/ghost-admin/*`. The
+question actor F asks is different: what does the **stored credential** permit if that code is
+bypassed — by a server-side bug, an SSRF into the proxy, or a Vault compromise? Executed against both
+live Ghosts with the Admin API key Inflozo stores:
+
+    ghost5 (5.130.6)                       ghost6 (6.58.0)
+      GET /admin/members/   200, incl. email   200, incl. email     <- subscriber PII
+      GET /admin/users/     200                200                  <- staff accounts
+      GET /admin/settings/  200 (99 rows)      200 (117 rows)       <- whole site config
+      POST /admin/posts/    201 CREATED        201 CREATED          <- arbitrary content write
+      GET /admin/themes/    501                403                  (§15h, integration tokens: HELD)
+
+So one Ghost Admin key is **full site control**: read every subscriber's email address, read staff,
+and publish content on the customer's site. The four-item allowlist is a good invariant and it holds
+*inside Inflozo's own code path*, but it bounds nothing about the credential. Nothing in the spine
+states this: AD-10 reads as though the allowlist were the boundary, and the blast radius of the thing
+`site_credentials` protects has never been written down. (The Staff Access Token's 400s are its
+different auth scheme in this probe, not a narrower scope — §15h already established it is *wider*,
+lifting `GET /themes/`.)
+
+**Consequence for the spine:** AD-10 should say plainly that the credential is all-or-nothing, that
+Ghost offers no scoped-integration mechanism to reduce it, and that the compensating controls are
+therefore the decrypt chokepoint (§21j, holds), key rotation (`admin_key_rotated_at` exists as a
+column and no policy uses it), and logging on the proxy (does not exist). This is the single largest
+item behind "would you put other people's website credentials behind this?"
+
+### 21n. ⚠️ The RLS harness is advisory, not a gate (F0). Executed — and this is the meta-finding.
+`RLS-TEST.sql` is E1's exit criterion and, under AD-26, the gate every future migration relies on.
+Its header says *"expect every line to read PASS"*. Counted in the file as shipped:
+
+    raise exception  : 2      (lines 443, 454 — the two storage.buckets checks only)
+    raise notice 'FAIL: 36
+
+`\set ON_ERROR_STOP on` aborts on a SQL **ERROR**. A `raise notice` is severity NOTICE, and the
+structural sentinels (§262–326) are plain `select … as finding` statements that return rows without
+raising. Executed, the exact shapes the file uses:
+
+    $ psql "$DB" -v ON_ERROR_STOP=1 -f fail-shape.sql   # a FAIL notice + a sentinel finding row
+    exit code: 0
+
+**So 36 of 38 assertions cannot fail the run.** Any CI keyed on the exit code is green while the
+output prints `FAIL:`. This is the finding that explains the others: §21a/b/c/d all describe holes in
+a schema whose proof has reported PASS for three rounds. It also means the *regression* half of this
+round's mandate — "every closed finding is a regression test now" — is not mechanically true. Two
+lines of change per assertion (`notice` → `exception`, and wrapping each sentinel in a `do` block
+that raises) converts the whole file from a report into a gate.
+
+### 21o. ⚠️ §19d fixed the instance, not the class — 12 more AD-8 tables are unreachable by the server (F11, CRITICAL for E7/E12)
+Round 3's §19d found `billing_events` and `site_credentials` held `REFERENCES, TRIGGER, TRUNCATE` and
+no SELECT/INSERT for `service_role`, and granted those two. **Every other AD-8 table still has the
+identical signature.** Read from the live project:
+
+    billing_events              INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed in R3
+    site_credentials            INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE   <- fixed in R3
+    deploys                     REFERENCES,TRIGGER,TRUNCATE
+    deploy_jobs                 REFERENCES,TRIGGER,TRUNCATE
+    entitlements                REFERENCES,TRIGGER,TRUNCATE
+    subscriptions               REFERENCES,TRIGGER,TRUNCATE
+    exports                     REFERENCES,TRIGGER,TRUNCATE
+    project_site_bindings       REFERENCES,TRIGGER,TRUNCATE
+    deployed_template_names     REFERENCES,TRIGGER,TRUNCATE
+    asset_usages                REFERENCES,TRIGGER,TRUNCATE
+    checkout_consents           REFERENCES,TRIGGER,TRUNCATE
+    notifications               REFERENCES,TRIGGER,TRUNCATE
+    template_binding_checklist  REFERENCES,TRIGGER,TRUNCATE
+    profiles                    REFERENCES,TRIGGER,TRUNCATE
+
+AD-8 says these tables *"are written by server routes under the service role"*. None of them can be.
+The first deploy, the first entitlement write, the first notification and FR-I6's checklist all fail
+with `42501` the moment E7/E12 run — the same failure §19d hit, in twelve more places. This is a
+build-stopper, not a security hole, and it is the exact pattern the round was warned about: a fix
+applied where it was found and not propagated to its siblings. **The durable form is a
+`RLS-TEST.sql` assertion that every AD-8 table holds SELECT+INSERT for `service_role`**, not thirteen
+more grant lines.
+
+### 21p. AD-9 is 3/4 implemented — `custom_settings` has no freeze trigger (F12, HIGH)
+AD-9 names four frozen columns and devotes a sentence to why `frozen_at` must be frozen alongside
+`key` ("freezing only `key` left a two-statement bypass: null the stamp, then rename"). The trigger
+was never created. Triggers actually present:
+
+    profiles                 profiles_privilege_frozen          <- present
+    deployed_template_names  deployed_template_names_frozen     <- present
+    projects                 projects_revision_monotonic, projects_slug_frozen  <- present
+    custom_settings          custom_settings_cap                <- the CAP only; NO freeze guard
+
+Executed as the table owner (AD-31 requires these to hold against the service role too):
+
+    update custom_settings set key='renamed_key' where …   -> OPEN: renamed despite frozen_at set
+    update custom_settings set frozen_at = null where …    -> OPEN: the two-statement bypass, by name
+    update profiles set is_admin=true where …              -> HELD (42501)   <- the control
+
+The column-level GRANT still stops a *client*, so this is not remotely exploitable today. What it
+breaks is FR-Q2's guarantee against a **server bug**: a renamed `custom_settings.key` erases the site
+owner's stored `@custom` value on their live Ghost, silently and unrecoverably.
+
+### 21q. Four more verified structural gaps
+**F13 (HIGH) — nothing creates a `profiles` row.** §11b provisions `entitlements` from an
+`auth.users` trigger; there is no equivalent for `profiles`, and `auth_user_entitlement` is the only
+non-internal trigger on `auth.users`. Live counts after this round's signups:
+
+    auth.users = 6    entitlements = 6    profiles = 2
+
+Four users have no profile. `is_admin`, `autosave_enabled` and `free_editable_project_id` read NULL
+for them — and AD-15 makes `autosave_enabled` load-bearing for data loss. §16a read "profiles = 2" as
+confirming the design; those two rows were seeded by `RLS-TEST.sql`, not by signup.
+
+**F14 (MEDIUM) — `site_snapshots` is fully client-writable.** `authenticated` holds
+`SELECT, INSERT, UPDATE, DELETE` (it sits in §10a's owner list and §11a(1)'s full-CRUD list), while
+AD-32 makes the `site-snapshots` *bucket* server-only with no policy at all, because "a snapshot a
+client could write defeats FR-J13 entirely". The bucket is governed and the table that points into it
+is not, so a client can forge or delete the pointer to its own pre-Inflozo theme backup.
+
+**F15 (MEDIUM) — the board's UPDATE path has the same hole as its INSERT path.** `authenticated`
+holds whole-row UPDATE on `suggestions` (`image_approved, status, vote_count, hidden, merged_into…`),
+and `suggestions_author_update` permits it while `status = 'open'`. So §21a's self-approval works by
+UPDATE as well as by INSERT — one fix must cover both verbs.
+
+**F16 (LOW) — `sync_vote_count` fires on `INSERT DELETE` only.** A client that UPDATEs its own
+`suggestion_votes.suggestion_id` from S1 to S2 desyncs the denormalized `vote_count` on both rows;
+the public board reads that column.
+
+### 21r. Pass 4 — red team and pre-mortem. The finding about the findings.
+Both methods converge on the same structural verdict, and it is not any single hole.
+
+**Red team's chain, built only from executed findings:** sign up → post to the public board with
+`image_approved: true` (§21a, HTTP 201, no admin) → the image is a raw SVG because the only sanitizer
+is client-side and was skipped (§16c) → it renders to every board visitor including the founder, on
+`app.inflozo.com` → same origin, so the session token is readable, with the `javascript:` href gap
+(§21k) as a second route through the editor iframe → the founder is `is_admin`.
+**Blue's rebuttal is fair** — the last step needs a script-execution sink the editor does not yet
+have, and `script-src 'self'` is specified. **Red's counter stands**: §18c states plainly that the
+canvas half of that CSP is a *requirement on E5, not a measured property*. The control that stops the
+chain is the one control never tested.
+
+**Pre-mortem, 2028, 500 customers.** The headline is not stolen cards or defaced sites — it is
+*"site builder leaked 40,000 newsletter subscriber emails"*, and it is news because the victims never
+heard of Inflozo. 500 customers × ~80 subscribers sit behind one all-or-nothing Ghost Admin key
+(§21m). Time exploitable: **since the schema was written, ~26 months.** Time to detection: until a
+customer asked why their subscribers were getting spam — there is no audit log on the Admin proxy, no
+log on Vault decryption, no alert on anomalous `site_credentials` reads. **Detection was external.**
+
+**Which of the 62 decisions enabled it: none.** Every one was individually sound. R1 d13 correctly
+narrowed UPDATE and nobody asked about INSERT. §19d correctly granted two tables and nobody asked
+about the other twelve. AD-6 correctly gave every policy one shape, and that shape authorizes the
+child rather than the parent. **The failure mode is fifteen good decisions each closing the instance
+in front of it, in a project whose own stated rule is to prefer the mechanism that closes the class.**
+The round-4 prompt named that pattern and counted five prior occurrences; this round found six more.
+
+**Prevention, ranked by what would actually have changed the outcome:**
+1. **A harness that fails** (§21n). Two of the six structural findings would have surfaced in Round 1.
+2. **An audit log on the credential paths.** Would not have prevented the breach; would have cut 26
+   months of dwell to days. **Only logging detects — everything else on this list only prevents.**
+3. **A written blast-radius statement in AD-10**, so the consent screen can tell the truth (§21m).
+4. **AD-36** — a named invariant for untrusted-value-into-interpreting-sink, so the next instance is
+   recognised as a member of a class rather than found by a fourth stress test.
+5. **Class-closing assertions rather than fixes** — every finding becomes an assertion over *all*
+   tables, never a grant line for one.
+
+The pre-mortem's question for the owner: *what would have to be true to find this in month 2 rather
+than month 26?* Exactly one item on that list answers it. The architecture has 35 invariants and not
+one of them is about knowing that something happened.
+
+---
+
+## 22. Round 4 decisions APPLIED, and proved · 2026-08-20
+
+The owner took 14 of 17 recommendations and deviated on three (F16 → remove-and-re-add, S1 → test
+first, H2 → re-measure on real designs), plus two directions: **F4's takeover is allowed with a
+"you were taken over and lost these changes" message to the displaced device**, and **S2's story
+must also design a per-account budget**. Everything below is executed, not asserted.
+
+### 22a. Two breaks found while applying, both pre-existing
+**`SCHEMA.sql` had not applied to a bare container since Round 3.** §19d's fix added
+`grant ... to service_role` and `PRELUDE.sql` never created that role:
+
+    psql:/s.sql:858: ERROR:  role "service_role" does not exist
+
+The hosted path kept working because Supabase provides the role, so the break was invisible to the
+run everyone was doing. `PRELUDE.sql` now creates it `bypassrls`, matching the platform — which is
+also what makes the new AD-7/AD-8 service-role assertions mean the same thing on both targets.
+
+**`PRELUDE.sql` did not model `storage.buckets`' real default.** Round 3 §16b established that the
+platform ships it **RLS on, zero policies**; the stand-in shipped it with RLS off, so RLS-TEST's
+`storage.buckets` assertion — one of only two that could ever abort — failed on **every** container
+run. Fixed in the stand-in rather than weakened in the test.
+
+### 22b. F0 — the harness is a gate now, and that is proved by mutation
+36 `raise notice 'FAIL` → `raise exception`; the structural sentinels, which returned findings as
+**rows**, are wrapped in blocks that raise. Then every fix was reverted one at a time against a
+freshly built database, and the gate had to catch it:
+
+    revert F1  (grant update (image_approved))         -> exit 3   FAIL (F3): suggestions.image_approved
+    revert F2  (drop the parent-ownership policy)      -> exit 3   FAIL (F2): project_templates
+    revert F3  (grant insert (stored_bytes) on assets) -> exit 3   FAIL (F3): assets.stored_bytes
+    revert F11 (revoke insert on deploys)              -> exit 3   FAIL (F11): deploys
+    revert F12 (drop custom_settings_key_frozen)       -> exit 3   FAIL: missing guard trigger(s)
+    revert F13 (drop auth_user_profile)                -> exit 3   FAIL: missing guard trigger(s)
+    revert F4  (drop edit_locks_takeover_advances)     -> exit 3   FAIL: missing guard trigger(s)
+    revert P1  (drop deploys_user_id_idx)              -> exit 3   FAIL (P1): deploys
+    revert F16 (grant update on suggestion_votes)      -> exit 3   FAIL (F16): a vote was moved
+    unmutated control                                  -> exit 0
+
+**9 of 9 caught.** Clean run on a brand-new container: **67 assertions, 0 failures, exit 0**, 45
+policies over 28 tables — up from 38 assertions that could not fail.
+
+### 22c. Writing the assertions found four more instances of the same class
+This is the argument for class assertions over per-table fixes, and it happened while the work ran.
+The F3 catalogue check went red on its first execution against tables nobody had flagged:
+
+    FAIL (F3): sites.deploy_rate_limit_exempt (INSERT), sites.capability (INSERT),
+               projects.revision (INSERT), custom_settings.frozen_at (INSERT)
+
+§11 had revoked UPDATE on all three and named the writable columns, and §11a granted **whole-row
+INSERT** beside it — so everything §11 forbade was available one verb over. Round 4's attack pass
+found this class on `suggestions`, `assets` and `edit_locks`; the assertion found the other four for
+free. INSERT is now column-narrowed on all seven.
+
+Two further self-corrections worth recording, because both were the gate working on its author:
+`role_table_grants` lists **table-level grants only**, so the first reachability assertion called
+`suggestions` unreachable the moment F1 moved it to column-level grants — fixed by using
+`has_any_column_privilege`. And building `'public.'||tablename` inside a qual let the planner
+evaluate the privilege test **before** the schema filter, failing on `public.pg_statistic`; passing
+the OID removes the possibility.
+
+### 22d. AD-36 implemented and proved — `tools/stress/test-ad36.js`, 10 checks
+All four vectors are inert and every legitimate case still works:
+
+    ok  javascript: in a user link is neutralised
+    ok  data:, vbscript:, case, control-char and whitespace evasions all neutralised
+    ok  ordinary and relative links are untouched
+    ok  a crafted helper argument is refused at compile time
+    ok  quote-in-arg, brace-in-path and unknown-helper are all refused
+    ok  the legitimate binding vocabulary is unchanged
+    ok  event handlers, style and formaction are not bindable
+    ok  legitimate attribute bindings still emit
+    ok  AD-5 still holds — user braces ship as entities, never as a mustache
+    ok  AD-4 still holds — a quote in a user value cannot break the attribute
+
+**The first draft of the path grammar was wrong and the fixture caught it**: it refused
+`@site.logo`, because it had been written against dotted identifiers rather than against
+Handlebars' actual vocabulary. A grammar that rejects the language it parses is a broken parser, not
+a strict one — the "legitimate case still works" half of each check is what caught it, and that is
+why it is part of the invariant rather than a courtesy.
+
+### 22e. The hardened compiler still ships
+Nothing regressed on the real pipeline or the real Ghosts:
+
+    70 sections over 7 templates, 197 files, 10.20 MB   (render 983 ms, gate 900 ms, total 2.16 s)
+    gscan 4.49.7 (v5): 0 errors 0 warnings  ·  gscan 6.4.2 (v6): 0 errors 0 warnings
+    AD-14 determinism: two builds byte-identical (aede7be372ed0950)
+    live upload+activate: ghost5 5.95 s + 1.53 s · ghost6 5.60 s + 2.40 s, 0/0 on upload both
+
+### 22f. What was applied, by decision
+| | Decision | Mechanism | Proof |
+|---|---|---|---|
+| F0 | make the harness fail | 36 notices → exceptions; sentinels raise | 9/9 mutation test |
+| F11 | fix twelve + assert the class | `service_role` CRUD loop + catalogue assertion | revert `deploys` → caught |
+| F1 | lock create **and** edit; sanitize on approval | column-narrowed INSERT+UPDATE on `suggestions` | 3 behavioural regressions |
+| F10 | write the radius down, log every use | AD-10 rewritten; `private.credential_audit` | table + deny assertion |
+| AD36 | one rule, one shared check | `AD-36` + `compile.js` + `test-ad36.js` | 10 checks |
+| F2 | parent-ownership on the shared rule | `owns_project()` + restrictive policy loop | cross-tenant insert now 42501 |
+| F13 | signup provisions the profile | `provision_profile()` + trigger | 6 users → 6 profiles |
+| F3 | lock create like edit, everywhere | INSERT narrowed on 7 tables | catalogue assertion, both verbs |
+| F6 | move off the data API | `private` schema | assertion: not in `public` |
+| F12 | add the missing guard | `guard_custom_setting_freeze()` | rename + null both 42501 |
+| F4 | decide the protocol *(owner: allow, then notify)* | `guard_lock_takeover()` | reseat blocked, real takeover works |
+| F14 | backup record read-only | `site_snapshots` → AD-8 select-only | grant assertion |
+| P1 | index now, assert for new tables | 19 indexes + catalogue assertion | revert one → caught |
+| F16 | remove-and-re-add *(owner deviation)* | UPDATE grant removed | move now 42501 |
+| S1 | test with a staff login first *(deferred)* | register item 34 | — |
+| S2 | note on the story + per-account budget *(owner)* | register item 35 | — |
+| H2 | re-measure on real designs *(deferred)* | register item 36 | — |
+
+---
+
+## 23. Round 4 follow-through · 2026-08-20
+
+### 23a. E0(a) closed — the canvas emitter exists and the two renderers are proven to agree
+§7.3 rests the product on canvas and shipped theme agreeing **by construction**, justified by "the
+same code ran". The rebuilt pipeline had only the theme emitter, so that was a promise nothing could
+falsify. `renderCanvas` now shares `applyProps`, `safeUrl`, `bindExpr`'s grammar and
+`assertBindableAttr` with the theme path — **the `users` parameter is the only difference between
+them** (a `UserText` on the theme, `null` on the canvas).
+
+`tools/stress/test-renderer-agreement.js` — 8 checks, comparing the two **node by node**:
+
+    ok  a static section agrees exactly
+    ok  AD-3 control attributes survive identically on both emitters
+    ok  a Ghost-bound repeat agrees, structure for structure
+    ok  no directive attribute survives on either emitter
+    ok  the two intended differences are present: foreach-vs-rows, mustache-vs-value
+    ok  AD-4/AD-5 — the canvas decodes and the theme ships inert, from one serializer
+    ok  AD-36 — the URL scheme check runs on both emitters, not just the theme
+    ok  FR-H8 — an empty media binding hides the element on both, by each emitter's own mechanism
+
+The comparison is over **structure** — tag tree, classes, attribute names — because those three are
+what a design's stylesheet selects on, and it is deliberately blind to the two things that must
+differ. Those two are asserted **positively** as well, so nobody "fixes" them into agreement.
+
+**The test caught a flaw in itself first, and it is worth recording.** The theme legitimately emits
+`src="{{img_url feature_image size="800"}}"` — valid Handlebars that gscan passes 0/0, but **not**
+valid HTML, so a raw parse read the inner `size="800"` as a stray attribute and reported a
+disagreement that did not exist. Inline mustaches are collapsed before the structural compare.
+
+Both defects `build-sequence.md` names are now fixed in the live pipeline: the FR-H8 guard (§22, and
+it was silent content loss) and the date helper, which **now honours its format argument** — written
+from UTC getters, since AD-1 bans `Intl` and `toLocale*` for reading the machine rather than the
+argument. `spike-compiler/` is **retired**, not repaired (`RETIRED.md`): it is a second copy of the
+pipeline missing six rounds of decisions, it does not run, and its one unique asset was `renderCanvas`.
+
+### 23b. Supabase now blocks DELETE on storage tables — and not TRUNCATE
+Found by the reset script failing:
+
+    ERROR: 42501: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+    CONTEXT: PL/pgSQL function storage.protect_delete()
+
+Two new triggers, `protect_buckets_delete` and `protect_objects_delete`, refuse a direct SQL DELETE
+**even to `postgres`**. That is the platform enforcing AD-32's own rule — a row delete orphans the
+bytes — and it is welcome. Re-tested what it does *not* cover:
+
+    trigger coverage:  protect_buckets_delete  DELETE
+                       protect_objects_delete  DELETE          <- DELETE only
+    grants still held: anon TRUNCATE, authenticated TRUNCATE   <- unchanged
+    as authenticated:  truncate storage.objects   -> SUCCEEDED
+
+**So the platform now guards the recoverable verb and leaves the destructive one open.** D6 is
+unchanged: the control that holds is that `storage` is not PostgREST-exposed, which `RLS-TEST.sql`
+asserts. Second time this item has moved under us — re-check after any storage-api upgrade.
+
+### 23c. FR-P1's sixth email, decided and built into the schema
+Owner decision: send our own renewal reminder at **30 days (annual) / 7 days (monthly)**, and leave
+Dodo's ~2-day reminder **on** — they fire at different moments, so they complement rather than
+duplicate. `public.renewal_reminders` carries the send record and **its primary key
+`(user_id, period_end)` is the never-send-twice rule**, expressed as a database fact rather than as
+something the cron must remember. Keyed on the renewal being announced rather than the send time, so
+a renewal date that moves earns a fresh reminder. AD-33's closed cron set gains its **seventh**, with
+E12 as its owner, and the schema still applies clean: **67 assertions, 0 failures, exit 0**.
+
+**The consequence of owning it is stated in the AD rather than discovered later:** a silent failure
+of that job now means nobody is warned at all, so it belongs on the NFR-9 alerting path.
+
+### 23d. The harness is now pure SQL, and runs on three targets
+`RLS-TEST.sql` opened with `\set ON_ERROR_STOP on` and `\pset pager off`. Those are **psql client
+directives, not SQL** — the Supabase dashboard SQL editor sends raw SQL to the server, which
+rejected the very first line:
+
+    ERROR: 42601: syntax error at or near "\"
+    LINE 26: \set ON_ERROR_STOP on
+
+`SCHEMA.sql` and `PRELUDE.sql` were already clean, which is why the schema applied and only the
+proof failed. Removed; `ON_ERROR_STOP` belongs on the psql **command line** (`-v ON_ERROR_STOP=1`),
+where it serves the two psql targets, and the editor needs no equivalent — it runs the script as one
+transaction and an exception aborts it outright. Same contract, different mechanism.
+
+**The file is also self-cleaning now**, because the fix exposed a second problem. Several assertions
+are stateful — the FR-Q2 cap inserts 17 settings, the theme-name test claims a binding, the takeover
+test advances a generation — so a second run died on a duplicate key, which **reads as "the schema is
+broken" when it means "the fixture is still here"**. The editor makes an accidental re-run one click
+away. The file now deletes its own four fixture users first, cascading everything they own.
+
+Verified on a clean container:
+
+    psql -f, ON_ERROR_STOP on the command line   exit 0   67 PASS   0 FAIL
+    whole file as ONE query string (editor)      exit 0   67 PASS   0 FAIL
+    the same, run three times in a row           exit 0   67 PASS   0 FAIL   0 ERROR
+
+And it still bites, in editor mode, with no `ON_ERROR_STOP` anywhere:
+
+    drop trigger auth_user_profile      -> exit 1  ERROR: FAIL: missing guard trigger(s)
+    grant update (image_approved) …     -> exit 1  ERROR: FAIL (F3): suggestions.image_approved (UPDATE)
+
+---
+
+## 24. Propagation audit, and the reliability gap · 2026-08-20
+
+### 24a. Every Round 4 finding cross-referenced against the docs. Three gaps found.
+Checked mechanically rather than from memory — standing rule 2 ("propagate, never localise") is the
+rule this project has broken most often, and an audit done by recollection is how it stays broken.
+Each of the 20 finding ids was searched across the spine, the schema and the register.
+
+**17 of 20 had propagated. Three had not, and one of them mattered:**
+
+- **F0 was an orphan in the spine.** The finding — the harness could not fail — lived in
+  `MEASUREMENTS.md` and in `RLS-TEST.sql`'s own header, and **nowhere in the architecture**. AD-26 is
+  the invariant that owns `supabase/tests/rls.sql`; it required every migration to ship a row there
+  and said **nothing about that file having to raise**. So the single most expensive defect this
+  project has found was recorded as evidence and not as a rule, and the real repo's harness would
+  have been rebuilt with no instruction to make it a gate. **AD-26 now carries it**, with the three
+  consequences that bind every future migration: `raise exception` not `raise notice`, catalogue
+  queries wrapped in a raising block, and the harness **mutation-tested** rather than trusted.
+- **§23a — the renderer-agreement proof was not referenced from AD-1**, whose "the same code ran is
+  the proof" sentence is exactly the claim it makes runnable. Added.
+- **§23b — the new storage DELETE guard was not in AD-32.** Added, including the part that matters:
+  it does **not** cover TRUNCATE.
+
+**Also corrected while auditing**: §8's policy count, which Round 3's decision D8 had already flagged
+for re-derivation, still carried a stale figure inside its own correction. It is now not a number at
+all — the proof prints the live one, and container and hosted agree at **46 / 29**. Register item 37
+is marked **superseded** by 37b rather than left reading OPEN.
+
+### 24b. AD-11's cold-start row — Round 4 asked for it and never filled it
+The round-4 prompt's performance table listed *"Cold starts — Fluid instance boot on a real deploy:
+how long before the first byte on a cold path?"* and the round did not measure it. Closed now,
+against the live probe deployment:
+
+    request 1, after hours idle   1325 ms
+    requests 2-7, warm             657 · 598 · 604 · 576 · 632 · 403 ms   (median 601 ms)
+    cold-start penalty             ~724 ms
+
+The warm figure is dominated by network RTT to `iad1` from this machine, not by the function. **The
+penalty is ~0.7 s and it is immaterial to every budget the product states** — against AD-11's 300 s
+compile ceiling it is noise, and against G1's ten minutes it is invisible. Where it is worth
+remembering is perceived responsiveness on a user's *first* action after idle, which is a UX note for
+E5 rather than a budget concern.
+
+### 24c. ⚠️ The reliability leg is the weak one, and NFR-4 names a gate nobody has run
+Security and performance have both been executed hard. **Reliability has not been tested at all.**
+
+NFR-4 reads: *"Supabase Postgres point-in-time recovery (PITR) enabled for user work-product, **with
+a restore drill exercised before launch**."* Searched across every measurement file: **zero mentions
+of a restore drill, and zero evidence any restore has ever been attempted.** The probe project shows
+`wal_level=logical` and `archive_mode=on`, so the machinery is there, but PITR itself is a Supabase
+**paid add-on** and whether it is enabled — and at what retention — has never been checked. Appendix F
+already carries a `[NOTE FOR PM]` to confirm the retention window matches NFR-4 before launch; that
+note and this gate are the same item, and neither has been actioned.
+
+**Three reliability facts that follow from AD-29 and have no evidence behind them:**
+
+1. **No restore has ever been performed.** A backup that has not been restored from is a hypothesis,
+   and this project's own standing rule 1 is about exactly that class of belief.
+2. **Storage has no PITR at all** — AD-29 states this plainly — and `site-snapshots` holds the one
+   artifact that *cannot* be regenerated: a customer's pre-Inflozo theme. There is currently **no
+   backup story for it whatsoever**, only a lifecycle rule that deletes it.
+3. **No failure path has been executed.** AD-20's partial-success state, AD-24's error envelope and
+   §19e's webhook contract all describe what happens when something breaks; not one of them has been
+   run against a real failure — a Ghost that 500s mid-upload, a dropped connection, an unreachable
+   Supabase.
+
+---
+
+## 25. The reliability round · 2026-08-20 · **NFR-4's restore drill, run for the first time**
+
+Security and performance had both been executed hard. Reliability had never been tested at all.
+Three parts: the restore drill NFR-4 names as a launch gate, the storage-backup question AD-29
+leaves open, and a set of deliberate failures against a real Ghost.
+
+### 25a. ⚠️ R1 — the obvious backup is silently incomplete, and it looks fine
+The first drill ever run found a defect on the first attempt.
+
+    pg_dump --schema=public --schema=private   ->  22.9 s, 131 KB, 32 tables with data
+    pg_restore into a virgin target            ->   0.7 s
+
+It **looks** like a complete success: 29 public tables, 3 private tables, every row present —
+`profiles` 4, `custom_settings` 17, `sites` 2. Then:
+
+    foreign keys in the live project : 56
+    foreign keys after restore       : 43        <-- 13 missing
+
+**All 13 reference `auth.users`.** They failed with *"insert or update violates foreign key
+constraint"* because the users are in the `auth` schema, which was not in the dump — so the restored
+database contains every project, design and setting **belonging to users who do not exist**. Every
+row orphaned, no error at the end of the restore loud enough to notice, and a `pg_restore` exit that
+reads as success.
+
+**The fix, verified:** include `--schema=auth`. Our role *can* read it (`postgres`, non-superuser,
+`has_table_privilege(auth.users) = true`, 23 auth tables dumped). With it:
+
+    pg_dump --schema=public --schema=private --schema=auth  ->  26.2 s, 218 KB
+    pg_restore into a virgin target                          ->   1.1 s, 1 cosmetic error
+    foreign keys restored : 56 of 56
+    auth.users restored   : 4      profiles: 4      orphaned rows: 0
+
+### 25b. R2 — `--no-privileges` throws away the security model
+The conventional cross-account restore flags are `--no-owner --no-privileges`. The second one is
+wrong for this schema, and the harness caught it immediately:
+
+    harness against the restored copy  ->  ERROR: permission denied for table sites
+
+`SCHEMA.sql` §11a exists because **this schema grants IN and names every privilege** (R2-1). A dump
+that strips privileges restores the tables, the rows and the RLS policies, and drops **every grant** —
+so `authenticated` holds nothing and the application is dead. It **fails closed rather than open**,
+which is the safe direction and worth stating, but a restore that needs the grants re-applied by hand
+is not a restore. Dump with `--no-owner` **only**.
+
+### 25c. R3 — a restore target needs the platform roles created first
+Restoring *with* privileges produced **31 `ERROR: role … does not exist`**. Grants naming
+`anon`, `authenticated`, `service_role`, `supabase_auth_admin` and others cannot apply to a target
+that has never heard of them. Benign, and it means the runbook has an order: **create the roles,
+then restore.** `PRELUDE.sql` already does this for the container; the runbook must do it for any
+other target.
+
+### 25d. The restore runbook, as proved
+    1. create roles: anon, authenticated, service_role, supabase_auth_admin
+    2. pg_dump  --schema=public --schema=private --schema=auth --no-owner --format=custom
+    3. pg_restore --no-owner            (NOT --no-privileges)
+    4. re-create the storage buckets and their policies — storage is NOT in the dump
+    5. run RLS-TEST.sql against the restored copy. It is the acceptance test for the restore.
+
+**Step 5 is the point of the whole exercise.** The harness is what turned "the restore succeeded"
+into "the restore is missing 13 foreign keys and every grant", and no reading of a `pg_restore` exit
+code would have.
+
+**Timings at this scale are meaningless and are recorded so they are not mistaken for a measurement**:
+41 rows, dump 26 s (dominated by connection latency, not data), restore 1 s. **This is a
+correctness drill, not a capacity one** — re-run it against a realistic volume before launch.
+
+### 25e. What is still NOT tested, stated plainly
+**Supabase's own PITR restore has not been exercised and cannot be from here.** `wal_level=logical`,
+`archive_mode=on` and `archive_command=/usr/bin/admin-mgr wal-push` — so the physical WAL archiving
+machinery *is* running on this project. But triggering a point-in-time restore is a dashboard action
+gated on the paid add-on, and no management token exists in the probe environment. **NFR-4's gate is
+therefore half-closed:** the logical backup/restore path is now proved end to end; the platform PITR
+path is proved to be *running* and never proved to *restore*. That half stays an owner action, and
+Appendix F's `[NOTE FOR PM]` about the retention window is the same item.
+
+### 25f. Deliberate failures against a real Ghost — four clean, one not
+Every one of these was described by an AD and none had ever been run. Ghost 6.58.0.
+
+| what was done | result | verdict |
+|---|---|---|
+| upload a corrupt zip | `422 ValidationError` — *"Failed to read zip file"* | clean, typed, site untouched |
+| upload a valid zip that is not a theme | `422 ThemeValidationError` | clean, typed, site untouched |
+| activate a theme that does not exist | `422 ValidationError` — *"cannot be activated because it was not found"* | clean, typed, site untouched |
+| upload a theme with a fatal gscan error (unclosed `{{#foreach}}`) | `422 ThemeValidationError`, **upload refused outright** | confirms §15j — `GS005-TPL-ERR` is fatal at upload |
+| **upload the same theme name twice, concurrently** | **`500 InternalServerError` — `EEXIST: file already exists, mkdir '/var/…'`** | **⚠️ see below** |
+
+**⚠️ Ghost has no lock on theme upload, and the failure is a raw 500 with a filesystem path in it.**
+Two concurrent uploads of the same theme name: one returned 200, the other returned a **500** whose
+message leaks a server directory. Two consequences, and the first is a confirmation rather than a
+finding:
+
+1. **AD-19 is load-bearing, and this is what it prevents.** The per-site advisory lock over
+   upload-and-activate exists exactly so two deploys cannot interleave a globally stateful operation.
+   Until now that was reasoning; this is the failure it stops, executed. FR-J11's rate limit would
+   *not* have prevented it — a limit is not a mutex, which is the sentence AD-19 already carries.
+2. **AD-24's gscan mapping must handle a raw Ghost 500, and must not pass it through.** The
+   verbatim-passthrough fallback is wrong here: the message contains the server's directory layout,
+   and "an unexpected error occurred" tells the user nothing actionable. This is a second signature
+   for the same treatment §7.6's malformed-`visibility` cascade already gets.
+
+**Nothing broke the site.** After all five failures, both Ghosts served their homepage (HTTP 200,
+~59 KB) and their Content API. **No failure left a partially-applied theme**, which is FR-J11's
+promise and had never been checked.
+
+---
+
+## 26. FR-J7 rollback retention, built · 2026-08-21
+
+Owner decision: **at most 10 stored versions per project on Pro and 3 on Free, pinned included in
+that count**, stated in the UI rather than implied. A version may be **pinned** to survive pruning.
+
+### 26a. The N−1 cap could not live in the database, and the split follows AD-9's shape
+The owner's rule is "at most N−1 pinned", so a customer who pins every slot is never left unable to
+deploy. **N is plan-dependent**, and AD-28 makes `resolveEntitlement` the *only* thing that decides
+plan state — a trigger reading `entitlements` to find the limit would be a second decider, which is
+the exact divergence AD-28 exists to prevent.
+
+So the rule splits the way AD-9 already splits its own ("the trigger is the floor under the UI, not a
+substitute for it"):
+
+| where | what it enforces | why there |
+|---|---|---|
+| server route | the plan-specific cap, **N−1** | it is the only place allowed to ask what plan someone is on |
+| `guard_pin_leaves_a_slot()` | **at least one version stays unpinned** | plan-independent, so it can live in the database and hold against the service role too (AD-31) |
+
+The floor is the same rule stated without reference to a plan: a project whose every version is
+pinned has nowhere to put its next build, and the only ways out are refusing the deploy or silently
+unpinning something the customer explicitly asked to keep. Refusing the *pin* is the least bad of
+the three, and it is the one the customer can act on.
+
+`deploys.pinned` is **not granted to the client** — `deploys` is select-only under AD-8, so a pin is
+set by a server route like every other server-asserted fact.
+
+### 26b. Verified on a clean container
+    harness: exit 0, 70 assertions, 0 failures     (was 67 before this change)
+
+    PASS (FR-J7): a version can be pinned while an unpinned slot remains
+    PASS (FR-J7): the last unpinned version cannot be pinned (42501)
+    PASS (FR-J7): unpinning is always allowed
+
+The third matters as much as the second: **unpinning is unconditional**, or a customer could pin
+their way into a state they cannot get out of.
+
+### 26c. Mutation-tested, per AD-26
+    drop trigger deploys_pin_leaves_a_slot        -> exit 3  FAIL: missing guard trigger(s)
+    grant update (pinned) … to authenticated      -> exit 3  FAIL (F3): deploys.pinned (UPDATE)
+    control (unmutated)                           -> exit 0
+
+Both new guards are caught by an assertion written over a **catalogue** rather than over a name —
+`pinned` was added to the server-asserted column list and the trigger to the required-guard list, so
+neither needed a bespoke check. That is AD-26's "prefer an assertion over a catalogue" paying off on
+the first change made after it was written down.
+
+### 26d. Still owed to this decision, and it is not a database concern
+- **The UI must state the limit** — a history list that silently drops its oldest entry reads as
+  complete when it is not (E7/E13).
+- **The history must never show a version it cannot restore.** A dead Restore button is worse than a
+  short list.
+- **The pruning job skips pinned rows** and applies 10/3 through `resolveEntitlement` (E7, AD-33's
+  artifact-retention cron).
+
+---
+
+## 27. Second propagation audit · 2026-08-21 · **the class assertions were not class assertions**
+
+The first audit (§24a) asked "does each finding reach an owning document". This one looked in
+different directions — restated counts, dangling references, and whether the *assertions themselves*
+had kept pace with the schema. The third direction found the real defect.
+
+### 27a. ⚠️ Two "class" assertions had hardcoded their own member lists, and both had already drifted
+`RLS-TEST.sql`'s F11 check is the assertion written in Round 4 specifically because §19d had fixed an
+instance and left twelve siblings. **It hardcoded its own list of tables** — and by the time this
+audit ran, two tables had joined the class it guards and neither was being checked:
+
+    in the AD-8 class (SCHEMA §10b) : … renewal_reminders  site_snapshots
+    actually asserted by F11        : … (neither)
+
+`site_snapshots` joined in Round 4 (F14); `renewal_reminders` was added a day later. **A class
+assertion that names its members is an instance assertion wearing a class costume** — the exact
+defect it exists to catch, occurring inside the assertion itself. The same audit found the function
+check had the same shape and had already lost `guard_pin_leaves_a_slot()`.
+
+**Both now derive from the catalogue**, and the derivations are self-evidently true rather than
+lists to maintain:
+
+- **F11:** *if the client can read a table but cannot insert into it, the server must be able to
+  insert — or no row can ever come into existence.*
+- **5d:** *every function in `public` that returns `trigger` must not be executable by a client.*
+
+Proved against a table that **does not exist in the schema at all** — a brand-new AD-8-shaped table
+created on the fly was caught immediately, which is the only real test of a derived assertion:
+
+    revoke insert on renewal_reminders from service_role  -> CAUGHT
+    revoke insert on site_snapshots    from service_role  -> CAUGHT
+    a brand-new client-readable table nobody declared     -> CAUGHT
+
+### 27b. ⚠️ And the function check was testing a proxy, not the property — a hole that pre-dates Round 4
+Mutation-testing the de-hardcoded version exposed something worse than drift. The check asked
+`proacl is null` — *"has this function never been granted or revoked?"* — as a stand-in for *"can a
+client execute it?"*. **Those are not the same question.** An explicit `grant execute … to public`
+sets a non-null ACL, so the function becomes world-executable **and the assertion goes quiet**:
+
+    grant execute on function guard_pin_leaves_a_slot() to public   -> MISSED by the old form
+
+This is not a Round 4 regression; the `proacl is null` form dates from R1 d16/R2-11 and has been
+green over this hole ever since. It now asks the real question — `has_function_privilege` for `anon`
+and `authenticated`, which between them cover a null ACL, an explicit grant to PUBLIC, and a direct
+grant to either role. Re-tested:
+
+    grant execute … to public          -> CAUGHT
+    grant execute … to authenticated   -> CAUGHT
+
+**The general lesson, and it is worth more than the two fixes:** an assertion that tests a *proxy*
+for the property it cares about inherits every gap between the two. Test the property.
+
+### 27c. Restated counts, again
+Standing rule 3 says counts are derived, not restated, and three **live** documents still stated one:
+the spine's frontmatter ("§7.6's 21 items"), and `build-sequence.md` twice ("37 items"). All three
+now describe the register as *the* count rather than quoting a number. The round records
+(`STRESS-TEST-R2/R3/R4`, the decision files) also carry old figures and were **left alone
+deliberately** — they are dated records of what was true then, and editing them would falsify the
+history the project relies on.
+
+Also found: **step 1's prompt was not marked historical** the way step 2's was, and it instructs
+against "21 verify-at-build items". Marked.
+
+### 27d. Clean
+Dangling file references: none — the ten unresolved names are library files not yet authored, the
+future repo's own harness, or files belonging to Supabase and Ghost. Dangling `§` references: none.
+Final state: **schema applies clean, 70 assertions, 0 failures.**
+
+### 27e. Completeness pass — the audits' own findings, propagated in full
+Both audits' *fixes* were applied when they were found. This pass asked the harder question: were
+they propagated **everywhere they belong**, including documents neither audit had opened. Three gaps.
+
+**The second audit's most valuable lesson had no owning rule.** AD-26 carried "prefer an assertion
+over a catalogue to an assertion over a name" — written 2026-08-20 and **violated the same day** —
+but nothing recorded *why* it had failed, and nothing at all recorded the sharper finding: that an
+assertion testing a **proxy** for the property it cares about inherits every gap between the two. The
+`proacl is null` form had been green over its hole through **all four rounds**. AD-26 now carries
+both as numbered invariants, with the evidence that the softer version of the rule did not hold.
+
+**The plain-English document was materially out of date**, and it is the one a human actually reads.
+Written before the backup decision, it still told the reader the storage question was "the open
+question, deliberately still open", listed file backups as an open decision, and described uploaded
+images as possibly the customer's only copy — which the compile-pipeline finding had since disproved
+(a deployed image ships **inside** the theme package, so it also exists on the customer's own Ghost).
+All three corrected, plus its check count (67 → 70) and a new row for rollback retention.
+
+**A live count was still restated in three places** (§27c) after standing rule 3 had been cited
+against exactly that. Now derived.
+
+**Nothing else moved:** schema applies clean, **70 assertions / 0 failures**, compiler 13 + 8. Every
+finding from both audits now resolves to an owning invariant — verified mechanically rather than by
+recollection, which is the only reason the first two passes found anything.
+
+---
+
+## 28. Register item 34 / Round 4's S1 — closed by execution · 2026-08-21 · **HELD**
+
+S1 was Round 4's only SUSPECTED security finding: the theme's `<style>` block emits
+`--accent: {{@custom.accent_colour}}` and an unquoted `url({{@custom.dark_logo}})`, and unlike an
+inline `style` attribute that context **can carry selectors** — so if Ghost accepted loose values in
+a custom setting the payload class would be strictly larger than the tag-`accent_color` finding.
+The owner chose "test it properly with a staff login, then decide". Done.
+
+**Three probe defects, each of which produced a convincing false result.** Recording all three,
+because every one of them looked like an answer:
+
+1. **Round 4 used an integration token.** Ghost refuses those for settings writes — and the *control*
+   write of a valid `#1f6feb` was refused **identically**, which is exactly why it was marked
+   SUSPECTED rather than held. Correct call at the time.
+2. **This round's first attempt passed the staff token raw.** A Staff Access Token is `id:secret` and
+   must be minted into a JWT the same way an Admin API key is. Raw → `400 Invalid token`.
+3. **Theme settings are not on `/settings/`.** Writes there return **`200` and silently do nothing** —
+   every value read back as `None`, *including the control*. They live on
+   `/ghost/api/admin/custom_theme_settings/`, whose payload is the whole settings array.
+
+Executed on the right endpoint with a real staff session, against the stress theme's own
+`config.custom`, on Ghost 6.58.0:
+
+    #ff0000                                        -> 200, stored          <- control passes
+    '#fff; } body{display:none} .x{color:#fff'     -> 422 Validation error
+    '#fff;background:url(https://evil.example/…)'  -> 422 Validation error
+    'notacolour'                                   -> 422 Validation error
+
+**Ghost validates `color`-typed custom settings strictly. S1 is refuted and the `<style>` block holds.**
+
+**What it does not change.** A tag's `accent_color` is a *different field on a different endpoint*
+and is still loose — `red;}body{display:none}`, `#fff;background:url(x)` and `#fff;width:100vw` were
+all accepted verbatim on both majors (§21e). AD-36(4) stands: `ghost-shim` parses every bound colour,
+and it must, because the value that *is* loose reaches an inline `style` on the customer's live site.
+This closes a suspected **escalation**, not the rule.
+
+**The lesson worth keeping, and it is the third time this session:** *a result whose control did not
+pass is not a result.* All three defects above were caught by the control failing alongside the
+payloads — a 403 for everything, a 400 for everything, a silent null for everything. Without a
+control in every probe, each would have been recorded as "Ghost rejects it — held", and the last one
+would have been a **false negative on a real security question**.
+
+---
+
+## 29. Ghost Build Room (step 4b) — four claims settled by execution · 2026-08-27
+
+Four probe families from `reconcile-designs.md` §(a) were settled inside the step-4b session rather
+than deferred to a spike, because the owner's rulings depended on them. Hosts: **T1**
+`ghost6.inflozo.com` (6.58.0) and **T3** `ghost5.inflozo.com` (5.130.6), credentials
+`tools/probe/.env`. Rulings and propagation targets: `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`.
+
+### 29a. Probe family 2 — the members signup endpoint is JSON-only and token-gated. **Refuted the no-JS claim.**
+
+The owner's hypothesis, from `docs.ghost.org/themes/members`, was that a `data-members-form` submits
+natively and CSS renders the result — the docs describe `loading` / `success` / `error` classes on the
+`<form>` and never mention JavaScript. Tested rather than argued.
+
+    # A  native-form shape, no token
+    curl -X POST "$H/members/api/send-magic-link/" \
+      -H 'Content-Type: application/x-www-form-urlencoded' \
+      --data 'email=probe-a@inflozo.test&emailType=subscribe&honeypot='
+    # B  JSON, no token          C  GET /members/api/integrity-token/
+    # D  JSON + token            E  urlencoded + token        F  -L, print url_effective
+
+| Sent | Ghost 6.58.0 | Ghost 5.130.6 |
+| --- | --- | --- |
+| A · form-encoded, no token | `400 BadRequestError` | `400` **"Email is required."** |
+| B · JSON, no token | `400 BadRequestError` | `500 EmailError` — *accepted*, SMTP absent |
+| C · `GET …/integrity-token/` | `200` + token | `200` + token |
+| D · JSON **with** token | `500 EmailError` — *accepted* | `500 EmailError` — *accepted* |
+| E · form-encoded **with** token | `400 BadRequestError` | `400` **"Email is required."** |
+| F · follow redirects, native shape | no redirect, ends on the API URL | no redirect, ends on the API URL |
+
+**Three independent findings, each fatal alone.**
+
+1. **The endpoint never parses `application/x-www-form-urlencoded`.** Row E proves it with a *valid*
+   token, and Ghost 5 says so in words — the body was dropped, so `email` was missing. A native
+   `<form>` cannot send JSON. Its own submit can therefore never reach this endpoint on either major.
+2. **Ghost 6 additionally requires an `integrityToken`** fetched from a separate GET (B fails, D
+   succeeds). A plain form cannot make a request before submitting itself.
+3. **There is no redirect back** (row F). Even were a submit accepted, the browser leaves the page and
+   renders raw JSON — no page survives for CSS to style.
+
+**Where the documented classes actually come from.** `portal.min.js`
+(`cdn.jsdelivr.net/ghost/portal@~2.69`, injected by `{{ghost_head}}`):
+
+    Array.prototype.forEach.call(document.querySelectorAll(`form[data-members-form]`),
+      function(t){ let n=t.querySelector(`[data-members-error]`); … t.addEventListener(`submit`,r) })
+    … t.classList.remove(`loading`) … t.classList.add(`error`)
+
+Portal attaches the submit listener and applies the classes itself. **The owner's reading of the CSS
+mechanism was correct; JavaScript is what puts the class there.** Every designed sent/error state
+survives — only the "works without JavaScript" promise was false.
+
+**Recorded as a documentation defect:** `docs.ghost.org/themes/members` states none of this. The
+question must not be reopened from that page alone.
+
+### 29b. Probe family 31 — Portal's share page exists on 6.x only, and is unthemeable. **D15 held.**
+
+`portal@~2.69` carries a real page in `getPageFromLinkPath`:
+
+    else if (e === `share`) return { page: `share` }
+
+Destinations present: X, Facebook, LinkedIn, Threads, Bluesky — fixed order, **no Mastodon**.
+`portal@~2.51` (served to Ghost 5.130.6) has **no `share` branch**, so `data-portal="share"` falls
+through to `{page:'default'}` and a Share button opens the **sign-in** modal on every Ghost 5 site.
+Portal renders in a shadow-DOM iframe; theme CSS reaches nothing inside it.
+
+**Consequence:** D15's own site-wide ordered share list stands unchanged — it works on both majors,
+carries Mastodon, and can be themed.
+
+### 29c. Ghost's native search — the sealed frame and the index's real field set
+
+Executed while ruling out a vendored search engine (decision R-24).
+
+    curl -sL "https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js"
+    curl -G "$H/ghost/api/content/search-index/posts/" --data-urlencode "key=$CONTENT_KEY"
+
+- **It renders inside an iframe.** `this.node.contentDocument.documentElement` / `.head` / `.body`,
+  with its own injected `<style>` and stylesheet URL. Theme CSS reaches nothing inside; only Ghost's
+  `brandColor` crosses the boundary.
+- **Triggers:** any element carrying `[data-ghost-search]` (`getCustomTriggerButtons()`), a
+  `#/search` or `#/search/` fragment (`handleSearchUrl()`), and ⌘K (`addKeyboardShortcuts()`).
+- **The live posts index returns exactly** `id, slug, title, excerpt, url, updated_at, visibility`
+  — **no post body**. Separate `search-index/tags/` and `search-index/authors/` endpoints, `200` on
+  both majors.
+
+**Therefore full-content search does not exist natively, and no Inflozo-drawn results surface can be
+styled.** Every A23 design that draws results has nothing to draw.
+
+### 29d. Probe family 1 (order half) — `filter="id:[…]"` discards the requested order
+
+Four known posts requested in deliberately reversed order, both majors, no `order=`:
+
+    requested            D, C, B, A
+    Ghost 6.58 returned  A, B, C, D
+    Ghost 5.130 returned A, B, C, D          # = published_at desc
+
+**Hand-picked order is not achievable with one get.** It costs **one `{{#get}}` per picked item**, and
+`appendix-b1 §5` documents a per-template abort threshold that A1-7 already approaches (up to seven
+gets on one page). **Still to measure:** that threshold — it fixes the hand-pick cap (R-20).
+
+### 29e. Recorded because it bounds everything above
+
+Both `sodo-search` and `portal` are loaded from jsDelivr at a **floating minor range** (`@~1.8`,
+`@~2.69`), so their internals can change without a Ghost upgrade on the customer's site. **No Inflozo
+theme may depend on their markup, class names or internal behaviour** — only on the documented
+attribute surface (`data-ghost-search`, `data-portal`, `data-members-*`).
+
+---
+
+## 30. VERIFY item 47 — the `{{#get}}` abort threshold, measured · 2026-08-27 · **it is not per template**
+
+Run before the inventory merge, as ruling R-20 and §E-1 of `reconcile-designs-decisions.md` require.
+It was the only number those rulings left open. `tools/probe/run-verify-47.py`, against **T1**
+(`ghost6.inflozo.com`, 6.58.0) and **T3** (`ghost5.inflozo.com`, 5.130.6).
+
+    python3 tools/probe/run-verify-47.py              # N distinct single-id gets
+    python3 tools/probe/run-verify-47.py --identical  # the same id, N times
+
+**Method.** One probe theme, five templates, each carrying a different number of single-id
+`{{#get "posts" filter="id:…" limit="1"}}` blocks — exactly the shape hand-picked order costs after
+§29d. Each route rendered three times; the table reports best-of-three, how many gets actually
+resolved, whether `data-aborted-get-helper` appeared and whether `X-Ghost-Degraded-Render` was set.
+The probe uploads its theme, restores the previously active one and deletes itself.
+
+### 30a. No abort, at any count either major reaches
+
+| gets on one template | T1 6.58.0 best | T3 5.130.6 best | resolved | `data-aborted-get-helper` | `X-Ghost-Degraded-Render` |
+|---|---|---|---|---|---|
+| 1 | 0.650 s | 0.666 s | 1 / 1 | none | unset |
+| 8 | 0.770 s | 0.709 s | 8 / 8 | none | unset |
+| 16 | 0.855 s | 0.775 s | 16 / 16 | none | unset |
+| 24 | 0.923 s | 0.881 s | 24 / 24 | none | unset |
+| 33 | 0.967 s | 0.912 s | 33 / 33 | none | unset |
+
+A first pass ran the same ladder to **36 · 48 · 72 · 100 · 150** gets on one template. **Every get
+resolved on both majors, with no abort marker and no degraded-render header** — 150 gets rendered in
+1.855 s (T1) and 1.563 s (T3). The table above is the re-run with **all ids distinct**, because
+Ghost 6 dedups identical queries (§30c) and the high ladder cycled a 33-post fixture.
+
+**Marginal cost of one hand-picked item: ≈ 10 ms on Ghost 6, ≈ 8 ms on Ghost 5** — 32 further gets
+cost 0.317 s and 0.246 s respectively.
+
+### 30b. What actually aborts is one slow get, at 5000 ms, on both majors
+
+`optimization.getHelper.timeout.threshold` in `core/shared/config/defaults.json` is **5000**
+(`level: error`) at **v5.130.6 and v6.58.0 alike**, with a separate `notify.threshold` of 200 ms that
+only logs a warning. `core/frontend/helpers/get.js` races **each invocation** against that timer:
+
+    // get.js — one race per {{#get}} call, not one per template
+    const timeout = new Promise((resolve) => { … `{{#get}} took longer than ${threshold}ms and was aborted` … }, threshold);
+    response = await Promise.race([apiResponse, timeout]);
+
+    // and, on abort:
+    return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+
+**There is no cumulative per-template budget.** Twelve fast gets are twelve independent 5-second
+races, not one shared one. `appendix-b1 §5` and §29d both said "a per-template abort threshold";
+that reading is corrected in place by this section.
+
+### 30c. Ghost 6 dedups identical `{{#get}}` queries within one render; Ghost 5 does not
+
+`get.js` on 6.58.0 carries `generateCacheKey(resource, apiOptions)` and a per-request
+`options.data._queryCache` Map that stores the in-flight promise, so two identical gets on one page
+cost one API call. **v5.130.6 has no such code.** Measured, same id repeated N times:
+
+| gets | T1 6.58.0 identical / distinct | T3 5.130.6 identical / distinct |
+|---|---|---|
+| 24 | 0.859 s / 0.923 s | 0.864 s / 0.881 s |
+| 33 | 0.881 s / 0.967 s | 1.002 s / 0.912 s |
+
+The difference is inside run-to-run noise at this size — **the query is cheap enough that the cache
+does not dominate.** It is recorded because hand-picking never sends duplicate ids, so the cache is
+not available to it on either major, and because it is a real 5→6 behaviour difference.
+
+### 30d. Consequence for R-20
+
+The hand-pick cap **is not a platform limit**. Ghost imposes none in the range any section would
+use. R-20's "about twelve per section" therefore **stands at twelve as ruled**, on a latency budget
+rather than an abort threshold — item 47 anticipated only the downward correction ("if the threshold
+is low, the cap drops"), and the threshold is not low. Twelve picks cost ≈ 0.12 s of extra server
+render on an idle Ghost. **Raising it above twelve would be a new owner decision, not a consequence
+of this measurement**, and is flagged as such rather than taken here.

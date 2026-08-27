@@ -1,7 +1,7 @@
 ---
 title: Contested Section Variants — Ghost Truth
 status: normative-companion
-role: normative companion to prd.md — the source of truth for the six contested section variants (A7 #12, A32 #12, A32 #10, A29 #13, A27 #11, A19 #11) and for the Admin API key security policy
+role: normative companion to prd.md — the source of truth for the six contested section variants and for the Admin API key security policy. The design ids below are the PRE-MERGE ones; the re-pointing table at the head of the document maps each to the design it is now, per ruling R-16
 created: 2026-08-18
 source: Ghost core source (git, commit fe7771d), installed Ghost 6.45.0 runtime, gscan 6.3.0, docs.ghost.org
 ---
@@ -23,6 +23,27 @@ source: Ghost core source (git, commit fe7771d), installed Ghost 6.45.0 runtime,
 
 Source URLs below use the pinned commit:
 `https://github.com/TryGhost/Ghost/blob/fe7771d1ebd84df74ad99bb8eed2cfe842022769/<path>`
+
+---
+
+## ⚠ Re-pointed at the 2026-08-27 inventory merge (ruling R-16)
+
+**The design ids in this document are the ones the review used, and five of the six have moved.** The
+export is the roster, so the numbers below are what each settlement now resolves to. **The findings
+themselves are unchanged** — what moved is which drawing they land on.
+
+| Settled as | Is now | Note |
+|---|---|---|
+| **A7 #12** Founding Member | **A7 #13 Members** | The live member count via `{{total_members}}` — a string, always |
+| **A32 #12** Progress Tease | **A32 #12 Meter** | Same number, new name. Ruling R-3 fixes its shape: a **server-static line from `{{reading_time}}`**, with the proportional fill belonging to `reading-progress` and hidden when `reading_time < 3` or the preview is empty |
+| **A32 #10** Blurred Preview | **A32 #1 Fade** | The mechanism — `partials/content-cta.hbs` wrapping `{{{html}}}`, the fade on `> :last-child` — is now the category's first design. Ruling R-3 fixes it as a **fixed-height `mask-image` gradient from the bottom, never a line count** |
+| **A29 #13** Filter Bar Attached | **A29 #11 Filter** | Content API only, `{{content_api_key}}` supplies the key |
+| **A27 #11** Discover Shuffle | **no counterpart — the design is gone** | The export draws no shuffle design in A27, and the `shuffle` module is dropped or re-homed with it. The finding stands as a record of *why* random order is impossible in Ghost; it no longer governs a shipped design |
+| **A19 #11** Quote Feature | **A19 #13 Quote** | Binds `custom_excerpt` and only `custom_excerpt`, with FR-H8's empty state when it is absent |
+
+**One settlement is overtaken entirely.** §1's Admin-API-key verdict stands, but the six variants no
+longer motivate a key at all, and **ruling R-22 keeps AD-10's write allowlist at four** — Ghost's
+comment accent is **linked to, never written**.
 
 ---
 
