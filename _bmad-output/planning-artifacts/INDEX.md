@@ -1,12 +1,12 @@
 ---
 title: Inflozo — Document Index
 generated: by `tools/doc-audit.py --generate` — do not hand-edit
-updated: 2026-08-21
+updated: 2026-08-27
 ---
 
 # Document index
 
-**80 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**81 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -78,6 +78,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Credential check](tools/probe/check-access.py)**<br>`tools/probe/check-access.py` | Verifies every live credential works. Prints verdicts only — it has no code path that can reach a secret, written that way after two keys leaked into a transcript. |
 | **[Decision-sheet template](tools/probe/report-template.html)**<br>`tools/probe/report-template.html` | Copy it, replace the findings array, change nothing else. |
 | **[Diagram geometry checker](tools/svg-check.py)**<br>`tools/svg-check.py` | The architecture diagrams are hand-written SVG, and a browser will draw text straight through a box without complaining. Finds text that overflows its frame, text crossing a shape it does not belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was reported — and its first version missed the worst case by only parsing two-point paths. |
+| **[Did the design pass apply the rulings?](tools/verify-design-pass.py)**<br>`tools/verify-design-pass.py` | One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. --extract dumps the per-category fields and modules for the two deferred derivations, marking every spec the parser cannot read rather than reporting an empty list as success. |
 | **[FR-G5 tuple gate](tools/tuple-check.py)**<br>`tools/tuple-check.py` | Verifies every live design's structural tuple, read from the export through tools/export-roster.py: six slots, five closed sets (the authority for the vocabulary), unique within each category, contiguous numbering. Mutation-tested — a forced collision and an out-of-vocabulary slot each turn it red. Run by doc-audit --check; category-prompts.py reads its sets, so a set change here requires a prompt regeneration. |
 | **[Fixture sections](tools/stress/sections.js)**<br>`tools/stress/sections.js` | The annotated HTML the fixture compiles. |
 | **[Ghost fixture seeder](tools/probe/seed-ghost.py)**<br>`tools/probe/seed-ghost.py` | Seeds both Ghosts identically. |

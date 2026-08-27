@@ -252,6 +252,8 @@ DOCS = [
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
+ ('tools/verify-design-pass.py', 'tool', 'Did the design pass apply the rulings?',
+  'One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. --extract dumps the per-category fields and modules for the two deferred derivations, marking every spec the parser cannot read rather than reporting an empty list as success.'),
  ('tools/export-roster.py', 'tool', 'The library roster, from the export',
   'Reads the design export and emits every live category and design as JSON — number, name, '
   'structural tuple, declared modules, one-line descriptor. Refuses to emit when a spec table and '
