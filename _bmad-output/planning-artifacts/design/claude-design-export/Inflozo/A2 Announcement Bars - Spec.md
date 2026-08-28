@@ -8,7 +8,7 @@ Frames: `A2-1 Rule` · `A2-2 Split` · `A2-3 Badge` · `A2-4 Two-Line` · `A2-5 
 
 **Specification-only pass, this session.** Every design now carries four added fields — descriptor, structural descriptor, archetype, behaviour module — at the head of its section, above its content fields. Nothing drawn changed, no frame moved, and no earlier field was rewritten: responsive rules, content fields, controls, data binding, empty states, behaviour and accessibility notes all stand as written. **No module rename was needed.** This document had named no modules at all — it wrote behaviour as motion and state rather than as JavaScript — so nothing here had to be corrected against the fixed 31-module registry (FR-G7). Every module name below is the registry's, and every no-JS sentence is quoted from it rather than composed here.
 
-**A2 uses seven modules.** `dismiss` on all fifteen — every design now carries a close — plus `member-form` (5 Capture), `countdown` (6), `marquee` (8 Ticker), `rotator` (9, and 15 Triple below 768), `slide-in-card` (11 Toast) and `accordion` (14 Edge). **13 Notice (renamed from Consent this pass)** carries `dismiss` like its siblings — the owner’s ruling removed the Accept/Decline pair, and the old no-module finding closes. The findings are listed at the end.
+**A2 uses seven modules.** `dismiss` on all fifteen — every design now carries a close — plus `member-form` (5 Capture), `countdown` (6), `marquee` (8 Ticker), `rotator` (9 Rotator alone — 15 Triple no longer borrows it), `slide-in-card` (11 Toast) and `accordion` (14 Edge). **13 Notice (renamed from Consent this pass)** carries `dismiss` like its siblings — the owner’s ruling removed the Accept/Decline pair, and the old no-module finding closes. The findings are listed at the end.
 
 **`core` is assumed, not declared per design.** Every no-JS branch in A2 — the inert close, the static strip, the resting rotator — is CSS keyed off `.js-enabled`, which is `core`'s job: “Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch.” Stated once here rather than fifteen times. *Flagged: not listing it per design is mine.*
 
@@ -25,6 +25,19 @@ Frames: `A2-1 Rule` · `A2-2 Split` · `A2-3 Badge` · `A2-4 Two-Line` · `A2-5 
 ## 0 · Category-wide rules
 
 These apply to all 15 designs and are not repeated per design.
+
+**What the design patch pass changed category-wide.**
+
+- **No design turns into another design (Part A·A8).** Every hand-off in A2 is withdrawn: **Badge** hides its badge at Label style None, **Dateline** hides its eyebrow and date, **Ticker** and **Rotator** draw a single message static at one item, **Triple** draws slot one alone below 768 and gives one item the whole band. No sidebar offers a switch to another design.
+- **Remove never greys (Part A·A2).** Active at the floor in all three list designs, answered with **"A bar needs at least one message."**
+- **Counts are number pickers (Part A·A5).** Messages 1–6 in Ticker, Rotator and Triple; **Slots becomes a picker capped at 3** with the reason stated. No fixed count buttons remain.
+- **Universals (Part A·A6).** The trio may narrow with a stated reason — A2·5's Contrast is disabled with its reason, A2·15's Vertical spacing is locked to the slot height — and may never be renamed or extended. The swatch row is **Base**. **No "Inherit" value exists in A2.**
+- **Scale labels (Part A·A3) and gap names (Part A·A4).** Vertical spacing keeps Compact · Comfortable · Spacious; A2 draws no gap control, so Tight · Normal · Loose has nothing to rename here.
+- **Member asks are conditional (Part A·A9).** Every subscribe, sign-up and sign-in affordance carries the P0·4 card's two notes: **it does not render when the connected site has self-signup off, or no payment provider for a paid ask** — the band closes up, with no reserved gap — and **it opens Ghost's Portal, so with JavaScript off nothing happens.** Nine designs are affected.
+- **The no-JavaScript form notice (Part A·A10).** **A2·5 Capture is the only design with a field**, so it is the only one that draws the notice: P0·4's **slim variant** replaces the form at the band's own height, keeping the close. **Focus, invalid, submitting and success are unchanged** — they are Ghost's own script — only the claim that the form works without script was withdrawn. Reached from the P0·6 switcher's **No JavaScript** entry.
+- **Avatars (Part A·A1).** A2 renders no person, so neither initial rule applies here.
+- **Ctrl-K (Part B·B5).** Unbound; nothing in A2 bound it.
+- **[Free], two per category (Part A·A7): 1 Rule and 2 Split** — the baseline pair. Marked in the roster as a suggestion for the owner's confirmation.
 
 **The universal trio (this pass).** Every placeable section carries **Background role**, **Vertical spacing** (Compact · Comfortable · Spacious) and **Top divider** (None · Line · Fade) outside its own control list. In A2, every per-design **Ground** row was the universal Background role under a local name and merges into it, keeping each design’s value set and its disable-with-ratio rules; A2·14 Edge locks it — the accent rule is the design’s identity — and its Open ground control is a different thing and stays. Every per-design **Height** row used the universal value names and is ruled to *be* Vertical spacing: merged, each design’s px ladder kept as the values’ meanings (Rule 36·44·56 · Split 48·56·68 · Badge 40·48·60 · Two-Line 72·88·104 · Capture 56·64·76 · Dateline 40·48·60 · Ticker 36·44·56 · Rotator 44·52·64 · Takeover 160·200·240 with the Compact ceiling intact). The six fixed-height designs lock the universal row with the reason shown — Countdown (Clock style decides), Pill (48 px; Air is the presence control), Toast (content decides; Width is the control), Notice (its old Padding row was the literal duplicate and is removed in Vertical spacing’s favour), Edge (Rule weight collapsed; 44 px plus the rule open), Triple (slot height). **Top divider locks None on all fifteen**: thirteen designs are the first element on the page — nothing sits above them — and two are bottom-anchored floats. The seam *below* a bar stays governed by the grounds-and-hairlines rule; A2·2’s bottom-edge control is renamed **Divider under** rather than removed — different edges, both real.
 
@@ -76,7 +89,7 @@ These apply to all 15 designs and are not repeated per design.
 
 **What Add produces — never a blank row.** A new notice arrives carrying a sentence — "Something new to tell readers." — with **its link pair empty**, and lands **last**: the end of the loop, the last dot, the slot after the last filled one. On Triple it also arrives with the label "New". The link pair is left empty deliberately: a label with no URL is the dead button the empty-data floor already refuses, and a placeholder URL is worse than none.
 
-**Remove, and the floor.** Remove sits on the row and is undoable. **The floor is a hand-off, not a disabled button:** at one item Ticker and Rotator render A2·1 Rule with item 1 and Triple renders A2·3 Badge set to Centred, each named in the sidebar with the switch offered. Remove is never disabled and no notice is ever the last one the user may not delete — the design stops being a list design instead of breaking.
+**Remove, and the floor.** Remove sits on the row, is undoable, and **stays visible and fully active at the floor** (Part A·A2) — never dimmed, never hidden. At one item each design **hides what does not apply and stays itself** (Part A·A8): **Ticker** draws the single message static, with no loop and no pause control; **Rotator** draws it with no dots; **Triple** gives it the whole band, with no dividers. Removing the last item is answered with the floor in this category's words: **"A bar needs at least one message."** No design names another design as a state, and no switch is offered anywhere.
 
 **The cap is six**, shared. Add is disabled at six on Ticker and Rotator with the reason shown. **On Triple Add stays enabled past the slot count** and the sidebar counts what is not drawn, because the list is shared and an item invisible in three slots is visible on the other two designs.
 
@@ -94,9 +107,9 @@ These apply to all 15 designs and are not repeated per design.
 
 ## 1 · Rule
 
-One line on the contrast band, optically centred, close at the right end. The baseline, and the fallback for designs whose preconditions are absent. Spends no accent.
+One line on the contrast band, optically centred, close at the right end. The baseline: the least a bar can be and still be a bar. Spends no accent.
 
-**Descriptor.** The category's floor — one line on a contrast band with nothing added to it, spending no accent, and the arrangement five other designs resolve to rather than inventing one of their own.
+**Descriptor.** The category's floor — one line on a contrast band with nothing added to it, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 
 **Structural descriptor.** `bar · none · contrast · one · none · full-width contrast band`
 
@@ -205,7 +218,7 @@ A short label, then the sentence, then a text link — left-aligned on the page'
 
 **Responsive.** 1440–768 one line: label, sentence, link, close at the right edge; padding 72 → 40, gaps 14 → 10. Truncation priority is fixed — the label never truncates, the link never truncates, so the sentence shortens: to `messageShort` if set, by ellipsis on one line if not. ≤ 767 the link label and its arrow are dropped and **the whole bar becomes the link**; the label stays inline if `messageShort` is set, otherwise it moves above the sentence with left edges aligned at 20 px (an inline pill pushes a two-line sentence into three). Bar 52 px one-line, ≈ 86 px stacked.
 
-**Behaviour.** *Sticky*: the bar's hairline is dropped and the header's md shadow carries both bands — two grounds this close in tone plus two hairlines 48 px apart reads as a smear when it floats over content. Combined offset 104 px. *Hover*: the arrow moves 2 px right, the only movement in the design. **Label style: None** makes this design A2·1 Rule set to Left on background; the sidebar says so and offers the switch, and the `label` field is kept.
+**Behaviour.** *Sticky*: the bar's hairline is dropped and the header's md shadow carries both bands — two grounds this close in tone plus two hairlines 48 px apart reads as a smear when it floats over content. Combined offset 104 px. *Hover*: the arrow moves 2 px right, the only movement in the design. **Label style: None** hides the badge and leaves the sentence holding the band, left-aligned on background — **this design with its badge hidden** (Part A·A8). No switch is offered and the `label` field is kept.
 
 **Empty state.** No label → see above. Link style: None → sentence alone, left-aligned, and the whole-bar tap target does not apply at any width.
 
@@ -266,7 +279,7 @@ One sentence and an email field, subscribed without leaving the page. The only d
 
 **Archetype.** form
 
-**Behaviour module.** `member-form`, plus `dismiss` for the close. Both edit-safe: nothing posts or validates while the section is edited, and the frames draw the states rather than reaching them. **JS off:** “The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state.” So the field, its visually-hidden label, the submit control and the sentence all render and **the address is subscribable** — what the reader does not get is the in-place confirmation and the `aria-live` error line, because Ghost's own page answers instead. The drawn success state, the fixed error copy, the 118 → 66 px mobile collapse and the “success counts as dismissed” rule all belong to the enhanced path and do not happen; the invalid state falls back to the browser's own `type="email"` validation. **Members off in Ghost → the design renders as A2·2 Split and its module set is `dismiss` alone.**
+**Behaviour module.** `member-form`, plus `dismiss` for the close. Both edit-safe: nothing posts or validates while the section is edited, and the frames draw the states rather than reaching them. **JS off:** “The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state.” So the field, its visually-hidden label, the submit control and the sentence all render and **the address is subscribable** — what the reader does not get is the in-place confirmation and the `aria-live` error line, because Ghost's own page answers instead. The drawn success state, the fixed error copy, the 118 → 66 px mobile collapse and the “success counts as dismissed” rule all belong to the enhanced path and do not happen; the invalid state falls back to the browser's own `type="email"` validation. **Self-signup off, or members disabled (Part A·A9) → the field does not render: this design keeps its own band and drops the ask, and its module set is `dismiss` alone.**
 
 **Items.** None. The email field is one input, not a repeater — the design takes one address and offers one submit — and `messages[]` is kept.
 
@@ -373,7 +386,7 @@ An eyebrow and a sentence at the left margin, publication meta at the right, no 
 
 **Behaviour.** Above a multi-row header the Compact ceiling applies, and the sidebar adds a second note: **Meta: None is recommended when the header below shows a date.** Recommended, not enforced — the bar's date is the issue's and the masthead's is today's, and there are mastheads where both belong.
 
-**Empty state.** Meta: None → the slot goes, the sentence stays on the left margin, height unchanged. Label None + Meta None + `messageShort` set → the design is A2·1 Rule set to Left, and the sidebar offers the switch; both fields are kept.
+**Empty state.** Meta: None → the slot goes, the sentence stays on the left margin, height unchanged. Label None + Meta None + `messageShort` set → the band is the short sentence alone, left-aligned: **this design with everything optional hidden** (Part A·A8). No switch is offered and both fields are kept.
 
 **Accessibility.** The eyebrow is text in the same paragraph as the sentence ("Issue 47. Out now: …"), not a heading. The date is `<time datetime="2026-03-12">` with its long form as the visible text, so no hidden duplicate is needed; the visible text shortens at ≤ 767 and the attribute does not. An inline link inside the sentence is distinguished by colour alone at rest, which fails 1.4.1 — so the underline appears on hover **and** on focus, and **Link style: Underlined is the accessible default the sidebar recommends**. This is the only place in A2 where the drawn default and the accessibility recommendation differ. Contrast on background: sentence 13.2:1, muted meta 5.4:1, accent eyebrow 4.85:1 at 13 px / 600.
 
@@ -396,9 +409,9 @@ Several notices on one continuously moving strip, with a pause control that is n
 **Items.** `messages[]` — the shared list, and the design the list was drawn for.
 
 - **Add.** **Add message** at the foot of the Messages repeater. The new notice arrives as "Something new to tell readers." with its link pair empty and lands **last**, which is the end of the loop. Add is disabled at six with the reason shown.
-- **Remove.** On the row, undoable. Removing down to one is allowed and hands off: the strip renders as A2·1 Rule with item 1, the sidebar says so and offers the switch, and nothing is deleted that removal did not delete.
+- **Remove.** On the row, undoable, and active at the floor (Part A·A2). At one item **the strip stops moving and draws that message static** — the loop, the pause control and the duplicate track all have nothing to do, so none render (Part A·A8). Removing the last one is refused with the category's floor sentence.
 - **Reorder.** Drag, or ⌥↑ / ⌥↓ on the focused row. Order is the loop's order and the static row's left-to-right order — **but the loop has no privileged first**: a reader arriving mid-cycle meets whichever notice is passing, so nothing in this design may depend on being item 1. That is the honest difference from Rotator, and the sidebar says it on the repeater.
-- **Counts.** 2–6. Designed for **two to four**; below two it is not a ticker and hands off, and six is the cap because a loop that long may finish after the reader has left the page — a reading limit rather than a layout one. Every message stays in the loop at every width, so no count changes the layout.
+- **Counts.** A number picker, 1–6 (Part A·A5). Designed for **two to four**; at one the strip is static rather than a ticker, and six is the cap because a loop that long may finish after the reader has left the page — a reading limit rather than a layout one. Every message stays in the loop at every width, so no count changes the layout.
 - **Zero.** The section does not render: no strip, no fades, no pause button over an empty band.
 - **Inside an item.** `message` (req, ≤ 120) and the optional `linkLabel` + `linkUrl` pair. `messageShort` and `label` sit on the shared shape and are **kept but never drawn here** — the strip is a queue rather than a layout, so nothing needs shortening and no notice carries a label. A notice with an empty link pair is plain text in the strip and is not focusable; focus order is the notices that do have links, in authored order.
 - **Per-item styling does not exist.** Speed, Separator, Ground and Height write one value onto the strip. A notice that needs to move slower or louder than its neighbours is one bar on its own.
@@ -442,14 +455,14 @@ The same message list as Ticker, one at a time, dots at the right end, nothing m
 
 **Archetype.** carousel
 
-**Behaviour module.** `rotator`, plus `dismiss`. Edit-safe: no rotation while editing. **JS off:** “The first message renders statically; the others are not emitted into the visible flow.” Message 1, its link and the Height value all render, so the bar is a working single-message bar — which is A2·1 with dots, and is exactly what the design already falls back to under one message. Two consequences: **the dots go with the module**, since with nothing to advance they would be controls that do nothing (flagged — the registry names the messages, not the indicators); and the visually-hidden `<ul>` of all messages the accessibility note requires is not the visible flow, so it survives and a screen-reader user still gets every message in authored order. *Flagged: reading the hidden list as outside “the visible flow” is this pass's reading of the registry sentence.* The reduced-motion convergence with Ticker is CSS and is unaffected either way.
+**Behaviour module.** `rotator`, plus `dismiss`. Edit-safe: no rotation while editing. **JS off:** “The first message renders statically; the others are not emitted into the visible flow.” Message 1, its link and the Height value all render, so the bar is a working single-message bar — and with one message the dots do not render either, so script-off and one-item resolve to the same band. Two consequences: **the dots go with the module**, since with nothing to advance they would be controls that do nothing (flagged — the registry names the messages, not the indicators); and the visually-hidden `<ul>` of all messages the accessibility note requires is not the visible flow, so it survives and a screen-reader user still gets every message in authored order. *Flagged: reading the hidden list as outside “the visible flow” is this pass's reading of the registry sentence.* The reduced-motion convergence with Ticker is CSS and is unaffected either way.
 
 **Items.** The same `messages[]` list Ticker reads — one repeater, two designs, so editing the list in either edits both.
 
 - **Add.** **Add message** at the foot of the repeater; the notice arrives as "Something new to tell readers." with the link pair empty and lands **last**, which is the last dot and the last turn. Before it is saved the editor measures the sentence against the one-line rule and asks for a `messageShort` if it will not hold one centred line above 767. Add is disabled at six.
-- **Remove.** On the row, undoable. The canvas returns to message 1 after any removal, so the editor never draws an empty frame. Removing to one hands off to A2·1 Rule with item 1 — the dots go with the rotation, since indicators for one message are controls that do nothing.
+- **Remove.** On the row, undoable, and active at the floor (Part A·A2). The canvas returns to message 1 after any removal, so the editor never draws an empty frame. **At one item the rotation and its dots do not render** — indicators for one message are controls that do nothing — and the design draws that message alone, still itself (Part A·A8).
 - **Reorder.** Drag, or ⌥↑ / ⌥↓. **Order matters more here than anywhere else in A2:** item 1 is what renders with JavaScript off — "The first message renders statically" — and what a `prefers-reduced-motion` reader sees, so **whatever every reader must read belongs in position 1**. The sidebar states that on the repeater rather than leaving it to be discovered.
-- **Counts.** 2–6. Designed for **two to four**: at Interval: Medium the full cycle is six seconds an item, so six notices need thirty-six seconds on the page to come round, and the sidebar shows the cycle time beside the Interval control. Below two → hand-off. *Flagged: the cycle-time note is mine.*
+- **Counts.** A number picker, 1–6 (Part A·A5). Designed for **two to four**: at Interval: Medium the full cycle is six seconds an item, so six notices need thirty-six seconds on the page to come round, and the sidebar shows the cycle time beside the Interval control. At one item the rotation and the dots are absent. *Flagged: the cycle-time note is mine.*
 - **Zero.** The section does not render: never dots above an empty band.
 - **Inside an item.** `message` (req, ≤ 120) · `messageShort` (opt, ≤ 48) · `linkLabel` + `linkUrl` (opt pair). Empty `messageShort` → the full sentence renders and must hold one centred line above 767, which is what the editor measures. Empty link pair → that message's turn has nothing focusable, and at ≤ 767 the whole-bar link does not apply while it shows, so the bar is plain for those seconds; the dots and the close stay. `label` is kept, not drawn.
 - **Per-item styling does not exist.** Interval, Transition, Indicators, Ground and Height are section values. One notice cannot be held longer than the others; a notice that needs its own timing is the only notice.
@@ -669,9 +682,9 @@ A 4 px accent rule across the top with a chip at its right end; pressed, it open
 
 **Behaviour module.** `accordion` — the chip is a disclosure — plus `dismiss` for the × beside it. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” **Edge is therefore the one A2 design whose own behaviour is unaffected by JavaScript being off**: the rule renders, the chip opens the bar into A2·1 on the chosen ground, and the page moves down by the difference. Three things this raises, all findings rather than corrections. **Opens on: Click and focus is exactly `<details>`/`<summary>` and needs nothing; Hover and focus is not expressible as `<details>`**, so with JavaScript off it behaves as Click and focus (*flagged: this pass's reading*). **Escape-to-collapse is script** and is absent, as is the × — the bar opens and closes but cannot be removed. And the accessibility field, which stands unchanged, specifies `<button aria-expanded>` where the registry compiles `accordion` to `<details>`/`<summary>`; **on module mechanics the registry is the authority, and reconciling the drawn panel with it is owed to a later pass.**
 
-**Items.** None. One chip, one sentence; opened, Edge is A2·1 carrying the same single notice. `messages[]` is kept.
+**Items.** None. One chip, one sentence; opened, the band carries that single notice in its own strip. `messages[]` is kept.
 
-**Content fields.** `message` (rich text, req, ≤ 120) · `messageShort` (text, opt, ≤ 48) · `linkLabel` + `linkUrl` (opt pair, ≤ 24) · **`chipLabel`** (text, req, ≤ 14 — **added to the category list**; the only visible text in the collapsed state). The open bar is A2·1 and reads the same fields, so switching between the two loses nothing but the chip label.
+**Content fields.** `message` (rich text, req, ≤ 120) · `messageShort` (text, opt, ≤ 48) · `linkLabel` + `linkUrl` (opt pair, ≤ 24) · **`chipLabel`** (text, req, ≤ 14 — **added to the category list**; the only visible text in the collapsed state). The open bar reads the same fields every single-message design reads, so switching designs loses nothing but the chip label.
 
 **Controls.**
 
@@ -706,20 +719,20 @@ No height ladder — the universal Vertical spacing locks here: collapsed is the
 
 Three short notices side by side in one band, divided by hairlines. The only design that shows more than one message at once without moving.
 
-**Descriptor.** The only design that shows more than one message at once without moving, and the only one that hands off to another design below 768 instead of re-arranging itself.
+**Descriptor.** The only design that shows more than one message at once without moving. Below 768 it draws its first slot alone and hides the other two — it stays itself at every width (Part A·A8).
 
 **Structural descriptor.** `grid-of-N · none · surface · few · none · three hairline-divided slots`
 
 **Archetype.** grid-of-N
 
-**Behaviour module.** `dismiss` above 768. Below 768 the hand-off to A2·9 Rotator brings `rotator` with it, so **this is the only design in A2 whose module set depends on width.** Both edit-safe. **JS off, above 768:** “The bar renders and stays; the close button is hidden rather than rendered inert” — the grid, the per-slot clipping, the labels and the per-slot links are CSS and markup, so the band is complete and only the close goes. **JS off, below 768:** “The first message renders statically; the others are not emitted into the visible flow,” so the phone shows notice one alone. *Flagged:* a module set that changes with width is a consequence of the hand-off rather than a decision, and it means **a reader on a phone with JavaScript off sees less content than a reader on a desktop with JavaScript off** — worth the architect's attention, and the strongest argument on record for the rejected three-stacked-rows alternative drawn at 62% on the frame.
+**Behaviour module.** `dismiss`, at every width — **the module set no longer depends on width** now that the design keeps itself below 768 (Part A·A8). Edit-safe. **JS off, at every width:** “The bar renders and stays; the close button is hidden rather than rendered inert” — the grid, the single-slot phone band, the labels and the per-slot links are CSS and markup, so the band is complete and only the close goes. **What a phone reader sees no longer depends on script**: slot one draws either way, where the previous hand-off to `rotator` made it script-dependent. Finding 3 closes with it.
 
 **Items.** The same `messages[]` list again, **plus the per-item `label` this design adds to the item shape.**
 
 - **Add.** **Add message** at the foot of the repeater. The notice arrives with the label "New" and the sentence "Something new to tell readers.", link pair empty, and lands **last** — the next empty slot, or beyond the slot count if the slots are full. **Add stays enabled past the slot count**, unlike Ticker and Rotator: the list is shared, so an item this design does not draw is still drawn by the other two. The sidebar counts what is not shown ("three of five shown") rather than refusing the item.
-- **Remove.** On the row, undoable. Removing a drawn item **promotes the next kept item into the slot** rather than leaving a hole — an empty cell is the one thing this design cannot show. At two items with Slots: Three the grid drops to two columns, as the Data field states. At one item the design becomes A2·3 Badge set to Centred and the sidebar offers the switch.
+- **Remove.** On the row, undoable. Removing a drawn item **promotes the next kept item into the slot** rather than leaving a hole — an empty cell is the one thing this design cannot show. At two items with Slots: Three the grid drops to two columns, as the Data field states. **At one item the slot takes the whole band and the dividers are absent** — still this design, no switch offered (Part A·A8).
 - **Reorder.** Drag, or ⌥↑ / ⌥↓, and it is load-bearing twice over: order decides **which items are drawn at all** — the first two or three — and **which slot carries the accent label**, since Labels: First in accent names a position rather than an item. Moving an item into slot one moves the accent onto it; the item never carries it.
-- **Counts.** Designed for **exactly the slot count** — two at Slots: Two, three at Slots: Three — with 2–6 authorable. Items past the slot count are kept, counted and not drawn above 768. Below 768 the hand-off to A2·9 Rotator draws the **whole** list, so a six-item list is three notices on a desktop and six on a phone; that consequence is finding 4 rather than a rule.
+- **Counts.** A number picker (Part A·A5), 1–6, designed for **exactly the slot count** — two at Slots: Two, three at Slots: Three. Items past the slot count are kept, counted and **not drawn**. Below 768 only slot one draws, so a six-item list is three notices on a desktop and one on a phone — **authored order decides which**, the same consequence Rotator's item 1 carries. Finding 4 stands, narrowed to a stated rule.
 - **Zero.** The section does not render: no band, no dividers, no empty cells.
 - **Inside an item.** `message` (req, ≤ 120, clipped to one line with its full text kept for screen readers) · `label` (opt, ≤ 14) · `messageShort` (opt, ≤ 48) · `linkLabel` + `linkUrl` (opt pair). Empty `label` → the slot starts at the sentence with no space reserved for a label, and if slot one's label is empty under Labels: First in accent the accent simply does not appear in the band; nothing is promoted from another slot to carry it. `messageShort` set → it renders, which is how an author beats the ~34-character slot budget. Empty link pair → the slot is not a link under Link style: Whole slot and draws no arrow under Arrow link, and that slot is not focusable while its neighbours are.
 - **Per-item styling does not exist.** Slots, Dividers, Labels, Link style and Ground are section values, and `1fr 1fr 1fr` refuses "make slot two wider" by construction. A notice that needs more width than its neighbours is a one-notice design.
@@ -731,7 +744,7 @@ Three short notices side by side in one band, divided by hairlines. The only des
 | Control | Values |
 |---|---|
 | Messages | The shared list |
-| Slots | Two · Three |
+| Slots | **Number picker, 2–3** (Part A·A5) — capped at three with the reason stated: "three columns is what 1,296 px divides into with a sentence still readable" |
 | Dividers | Hairline · Space · None |
 | Labels | First in accent · All muted · None |
 | Link style | Whole slot · Arrow link |
@@ -741,9 +754,9 @@ Three short notices side by side in one band, divided by hairlines. The only des
 
 **Grid.** Three equal columns on `1fr 1fr 1fr` — equal by grid, never by content, so a short third notice cannot steal width from a long first one. Only the first slot's label takes accent; three accent labels in one 56 px band is three focal points and none. The close reserves 24 px of the third slot's right padding at every width, on its own ground patch, so hovering it never highlights the slot underneath.
 
-**Data.** Member state, plus the shared list’s posts source (§0) — bound, each slot renders a post’s title linking to the post, labels do not apply to bound items, and the sidebar counts bound items past the slot count. Two items with Slots: Three → the grid drops to two columns rather than leaving an empty cell; an empty third is the one thing this design cannot show. One item → the design becomes A2·3 Badge set to Centred and the sidebar offers the switch. Items beyond the slot count are kept and counted in the sidebar.
+**Data.** Member state, plus the shared list’s posts source (§0) — bound, each slot renders a post’s title linking to the post, labels do not apply to bound items, and the sidebar counts bound items past the slot count. Two items with Slots: Three → the grid drops to two columns rather than leaving an empty cell; an empty third is the one thing this design cannot show. One item → the slot takes the whole band and the dividers are absent, still this design (Part A·A8); no switch is offered. Items beyond the slot count are kept and counted in the sidebar.
 
-**Responsive.** 1440–1024 as drawn. 834 keeps three slots and **drops the labels** — 278 px cannot hold a label, a sentence and an arrow, and the sentence is what the reader came for; the accent leaves the band entirely, the only design in A2 where that happens by rule rather than by control. **Below 768 the design hands off to A2·9 Rotator** from the same list, at 95 px, with the full sentence restored because there is one column and no clipping; Slots and Dividers are inert there and the sidebar names them. The rejected alternative — three stacked rows at 138 px, three quarters of the space above the fold — is drawn on the frame at 62% so the choice is visible rather than assumed.
+**Responsive.** 1440–1024 as drawn. 834 keeps three slots and **drops the labels** — 278 px cannot hold a label, a sentence and an arrow, and the sentence is what the reader came for; the accent leaves the band entirely, the only design in A2 where that happens by rule rather than by control. **Below 768 slot one draws alone and slots two and three do not** (Part A·A8, owner's ruling): 77 px, the label kept, the sentence wrapped in full, one close for the band. Slots and Dividers are inert there and the sidebar names them, beside the count of items kept and not drawn. **Authored order decides what a phone reader sees** — the same consequence Rotator's item 1 carries. The rejected alternative — all three stacked at 212 px, most of a phone's first screen — is drawn on the frame at 62% so the choice is visible rather than assumed.
 
 **Empty state.** Labels: None → sentence and arrow per slot. Dismissal removes all three notices at once; there is no per-slot dismissal, because a band that can lose a column mid-session would re-lay-out under the reader.
 
@@ -787,7 +800,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 **The close pairs, stated rather than buried.** 1 Rule and 6 Countdown share `bar · none · contrast · one · none` and separate on the clock. 3 Badge and 7 Dateline share `bar · none · page · one · none` and separate on which end carries the extra element. 2 Split and 13 Notice share `bar · none · surface · one · none` and separate on a right-hand button versus a dismiss-only sentence. Each pair is exactly what it looks like — the same bar with one device changed — which is what the sixth slot is for.
 
-**Not used as a separator.** Height, Placement, Alignment, Link style, Dismissible, `dismissMemory` and `audience` never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does the fallback web — that five designs resolve to 1 Rule when their preconditions are absent is a hand-off, not a structure.
+**Not used as a separator.** Height, Placement, Alignment, Link style, Dismissible, `dismissMemory` and `audience` never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does the fallback web — and after Part A·A8 there is none: **no A2 design resolves to another design.** Each hides what does not apply and states it.
 
 ---
 
@@ -811,7 +824,7 @@ Seven of the registry's 31, and nothing coined. `dismiss` appears on all fifteen
 | 12 | Takeover | `dismiss` | scrim, crops and the type step-down are all CSS |
 | 13 | Notice | `dismiss` | renamed from Consent this pass; the old finding is closed |
 | 14 | Edge | `accordion` · `dismiss` | `<details>` needs no script at all |
-| 15 | Triple | `dismiss`; `rotator` below 768 | **the only width-dependent module set** |
+| 15 | Triple | `dismiss` | one set at every width, since the design no longer changes design below 768 |
 
 **Modules A2 deliberately does not use.** `header-scroll` (the header's, and the source of the sticky offset A2 contributes to), `nav-drawer`, `reveal`, `count-up`, `confetti`, `typewriter`, `carousel` — 9 Rotator's archetype is a carousel and its module is `rotator`, which is the registry's name for the same thing in a bar — and the twenty-two others. Nothing in A2 animates on scroll, counts up, or reveals.
 
@@ -823,8 +836,8 @@ Four were recorded across the earlier passes; the reconciliation patch closes on
 
 1. **Closed — 13 had no module.** Renamed **Notice** by owner ruling, the Accept/Decline pair removed; `dismiss` now fits exactly — one close, a per-browser memory. The consent gap is re-recorded as an upgrade path rather than a design: **ARCHITECT: registry addition (`consent`)** — choice storage, a DOM event announcing the choice, and gating for `<script type="text/plain" data-consent>` code-injection blocks. On the frame and here; no module name coined, and the no-JS state of the shipped Notice is designed (the bar renders and stays; the close is hidden).
 2. **14 Edge's markup and its module disagree** — stands, unchanged by this patch. The accessibility field specifies `<button aria-expanded>`; `accordion` compiles to `<details>`/`<summary>`. The registry is the authority on module mechanics; the drawn panel and spec card still owe that correction, and Opens on: Hover and focus degrades to Click and focus.
-3. **15 Triple's module set changes with width** — stands. A phone reader with JavaScript off sees one notice where a desktop reader sees three.
-4. **15 Triple draws less of the shared list than its siblings** — stands, and the new posts source inherits it: a bound six-post list is three titles on a desktop and six on a phone. Per-design cap, slot-following count, or a second list — still the architect's call.
+3. ~~15 Triple's module set changes with width~~ — **closed by Part A·A8.** The design stacks instead of handing off, so `dismiss` is its whole set at every width and a phone reader with JavaScript off sees all three notices.
+4. **15 Triple draws less of the shared list than its siblings, and less again on a phone** — stands: a bound six-post list is three titles on a desktop and one on a phone, by the owner's ruling this pass. Per-design cap, slot-following count, or a second list — still the architect's call.
 
 ---
 
@@ -855,5 +868,27 @@ Conflicts between this patch and what the category had already ruled, one line e
 19. **The 6-control norm is lifted** where this pass adds controls; every panel stays within the PRD's ~15 plus the universal trio, Visibility and Data. Footer counts on the panels were rewritten to the new arithmetic.
 20. **Zero items and the bound list agree.** A bound list with zero published posts does not render the section — the P0·5 zero rule and the category's zero-items floor are the same rule seen from two sides; stated once here.
 21. **A2-0 Category Proof is now partially historical.** Its shared field list, its "Preview as" mention and its Consent findings predate this patch; this spec supersedes it, and A2-0 is kept as the drawn record of the earlier settlements rather than redrawn.
+
+## Patch notes — design patch pass
+
+Frames updated: `A2-0 Category Proof`, `A2-3 Badge`, `A2-5 Capture`, `A2-7 Dateline`, `A2-15 Triple`.
+
+| Rule | Change |
+|---|---|
+| A8 | **All hand-offs withdrawn.** A2·3 hides the badge; A2·7 hides eyebrow and date; A2·8 and A2·9 draw one message static at the floor; **A2·15 draws slot one alone below 768** and hides slots two and three — owner's ruling this pass, 77 px against the stack's 212. The rejected all-three stack is kept on the frame at 62%. A2·15's module set no longer varies by width (finding 3 closed). |
+| A2 | Remove is active at the floor in all three list designs, with the category's floor sentence. |
+| A5 | Message counts are pickers, 1–6; **Slots is a picker capped at 3** with the reason drawn in the panel. |
+| A6 | Universals may narrow with a reason, never rename or extend; swatch row is **Base**; no "Inherit" anywhere in A2. |
+| A9 | The two conditional notes added to every member ask (nine designs), drawn once in `A2-0`. |
+| A10 | **A2·5 draws the no-JavaScript notice** (slim variant) in place of its field, at the band's height, close kept — new frame. Its four working states are untouched. |
+| A1 | Not applicable: A2 renders no person. |
+| B5 | Ctrl-K unbound; nothing in A2 bound it. |
+| A7 | **[Free]: 1 Rule and 2 Split**, marked in the roster as a suggestion. |
+
+### Open questions
+
+1. ~~A2·15's stacked height.~~ **Closed by the owner:** slot one draws alone below 768 and slots two and three do not draw — 77 px, against 212 for the stack. The stack is kept on the frame at 62% as the rejected alternative. **Consequence recorded:** authored order now decides what a phone reader sees, and the sidebar states it beside the count of items kept and not drawn.
+2. ~~The floor sentence's second clause.~~ **Closed by the owner:** one clause only — **"A bar needs at least one message."** No floor sentence in the library points at another control.
+3. ~~A2·5's disabled field controls.~~ **Closed by the owner:** they stay in the panel, disabled with the reason.
 
 — End of specification —

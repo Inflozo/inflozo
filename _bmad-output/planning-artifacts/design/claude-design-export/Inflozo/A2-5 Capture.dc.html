@@ -129,12 +129,11 @@
     </div>
 
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · members off in Ghost · hands off to A2·2</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · TWO CASES WHERE THE FIELD CANNOT WORK · PART A · A9 AND A10</div>
       <div style="width:680px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
         <div style="height:56px;background:#FFFFFF;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;gap:14px;padding:0 32px;box-sizing:border-box">
-          <span style="font-size:14px;color:#232019">Get Orbit Weekly in your inbox every Wednesday.</span>
+          <span style="font-size:14px;color:#232019">Get Orbit Weekly in your inbox every Wednesday. <a href="#" style="color:#232019;text-decoration:underline;text-underline-offset:3px">Read the latest issue</a></span>
           <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
-            <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
             <span style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
           </div>
         </div>
@@ -143,7 +142,25 @@
           <span style="margin-left:auto;padding:8px 15px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span>
         </div>
         <div style="padding:18px 32px 24px;display:flex;flex-direction:column;gap:9px">
-          <p style="margin:0;font-size:13.5px;line-height:1.7;color:#6B6459">A field that cannot subscribe anyone is worse than no field. With members disabled in Ghost, this design renders as <strong style="font-weight:600">A2·2 Split</strong> at 56 px: the sentence holds, the field is replaced by a button carrying <code style="font-family:'JetBrains Mono',monospace;font-size:12px">submitLabel</code>, and the button links to the site's own subscribe page. The editor states the substitution in the sidebar with a link to Ghost's members setting. Nothing is lost — <code style="font-family:'JetBrains Mono',monospace;font-size:12px">emailPlaceholder</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:12px">successMessage</code> are kept and return the moment members are switched on.</p>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">SELF-SIGNUP OFF, OR MEMBERS DISABLED IN GHOST · 56 PX · THE FIELD GOES AND SO DOES THE ASK</span>
+          <p style="margin:0;font-size:13.5px;line-height:1.7;color:#6B6459">A field that cannot subscribe anyone is worse than no field, and <strong style="font-weight:600">a button that cannot either is no better</strong>. When the connected site has self-signup switched off, or has members disabled altogether, <strong style="font-weight:600">this design keeps its own bar and drops the ask</strong> (Part A·A9): the sentence holds at 56 px, the authored link renders if there is one, the close stays. It does not become another design (Part A·A8), and the editor says which of the two conditions is in force. The <code style="font-family:'JetBrains Mono',monospace;font-size:12px">submitLabel</code> and field controls stay in the panel, disabled with the reason, because the site's settings can change without the author touching this bar.</p>
+        </div>
+      </div>
+      <div style="width:680px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="min-height:56px;background:#FFFFFF;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;gap:12px;padding:9px 32px;box-sizing:border-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"></circle><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <span style="font-size:14px;line-height:1.45;color:#3A3835">Signing up needs JavaScript — turn it on to subscribe.</span>
+          <span style="margin-left:auto;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6B6459">×</span>
+        </div>
+        <div style="height:68px;display:flex;align-items:center;gap:16px;padding:0 32px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <span style="margin-left:auto;padding:8px 15px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span>
+        </div>
+        <div style="padding:18px 32px 24px;display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">NO JAVASCRIPT · P0·4'S SLIM NOTICE, AT THE BAND'S OWN HEIGHT · THE FIELD AND THE BUTTON ARE BOTH ABSENT</span>
+          <p style="margin:0;font-size:13.5px;line-height:1.7;color:#6B6459"><strong style="font-weight:600">Ghost's signup endpoint will not accept a plain form submission</strong> — tested against both live servers — so without script this field would take an address and lose it. The <strong style="font-weight:600">no-JavaScript form notice</strong> (P0·4, slim variant) replaces the form at the same band height, keeping the close so the reader can still dismiss the bar. <strong style="font-weight:600">The four states above are unaffected</strong>: focus, invalid, submitting and success are Ghost's own script doing its job, and they stay exactly as drawn. Reached in the editor from the P0·6 switcher's <strong style="font-weight:600">No JavaScript</strong> entry.</p>
+        </div>
+      </div>
         </div>
       </div>
     </div>

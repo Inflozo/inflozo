@@ -1,20 +1,22 @@
 # A4 Heroes — written specification
 
-18 designs · Paper pack · drawn in this project as `A4-1 Centred.dc.html` … `A4-18 Overlap Card.dc.html`, with the category's shared artefacts in `A4-0 Category Proof.dc.html`.
+17 designs, numbered 1–14 and 16–18 · Paper pack · drawn in this project as `A4-1 Centred.dc.html` … `A4-18 Overlap Card.dc.html`, with the category's shared artefacts in `A4-0 Category Proof.dc.html`. **15 Search is deleted and its number is retired — the gap is permanent and is never closed or reused.**
 
-Read `A4-0` first. It carries the four settlements §8 asks A4 to make, the rules all eighteen share, the type and action ladders, the roster, the shared field list, the tokenisation proof across three packs, and the category stress frame. This document is the prose companion: one section per design, plus the shared floor that would otherwise be repeated eighteen times.
+Read `A4-0` first. It carries the four settlements §8 asks A4 to make, the rules all seventeen share, the type and action ladders, the roster, the shared field list, the tokenisation proof across three packs, and the category stress frame. This document is the prose companion: one section per design, plus the shared floor that would otherwise be repeated seventeen times.
 
 Every rule below is stated once here and once on the design's own frames and spec card, in the same words. Where a rule is invented rather than given, it is marked **Flagged**.
 
-**Specification-only pass, this session.** Every design now carries four added fields — descriptor, structural descriptor, archetype, behaviour module — at the head of its section, above its content fields. Nothing drawn changed, no frame moved, and no earlier field was rewritten: responsive rules, content fields, controls, data binding, empty states, behaviour and accessibility notes all stand as written. **No module rename was needed.** This document had named no modules at all — it wrote behaviour as motion, state and hand-offs rather than as JavaScript — so nothing here had to be corrected against the fixed 31-module registry (FR-G7). Every module name below is the registry's, and every no-JS sentence is quoted from it rather than composed here.
+**Specification-only pass, this session.** Every design now carries four added fields — descriptor, structural descriptor, archetype, behaviour module — at the head of its section, above its content fields. Nothing drawn changed, no frame moved, and no earlier field was rewritten: responsive rules, content fields, controls, data binding, empty states, behaviour and accessibility notes all stand as written. **No module rename was needed.** This document had named no modules at all — it wrote behaviour as motion and state rather than as JavaScript — so nothing here had to be corrected against the fixed 31-module registry (FR-G7). Every module name below is the registry's, and every no-JS sentence is quoted from it rather than composed here.
 
-**Second specification-only pass: the item controls.** The category's one repeater — **`proof[]`, the 0–3 authored pairs only 2 Flush Left draws** — now carries its controls in full: where the list sits in the panel, what Add produces, what Remove does at the floor, whether order means anything, the counts the row is designed for and what it does outside them, and which fields inside a pair are editable. **The other seventeen designs carry no repeater at all**, and each says so in one line rather than leaving it to be inferred. Nothing drawn changed in this pass either, and no earlier field was rewritten.
+**Second specification-only pass: the item controls.** The category's one repeater — **`proof[]`, the 0–3 authored pairs only 2 Flush Left draws** — now carries its controls in full: where the list sits in the panel, what Add produces, what Remove does at the floor, whether order means anything, the counts the row is designed for and what it does outside them, and which fields inside a pair are editable. **The other sixteen designs carry no repeater at all**, and each says so in one line rather than leaving it to be inferred. Nothing drawn changed in this pass either, and no earlier field was rewritten.
 
-**Third pass — the controls-reconciliation patch (this document's current state), 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface, reusing the shared **P0 editor primitives by name** — the P0·1 inline toolbar and link popover, the P0·2 icon slots and Icon Picker, the P0·3 item controls, the P0·4 member-aware action editor, the P0·5 populate-from panel, the P0·6 state switcher — never redesigning them. Every design gains the universal trio outside its own list and Member visibility; every Padding and Ground row is retired into the trio; per-design items landed on 2, 4, 7, 8, 9, 10, 11, 13, 14, 15 and 16; 15's no-JS claim is corrected to the `search-overlay` module. No layout was redesigned. Where this pass conflicts with an earlier ruling, the conflict is recorded — one line each — in the closing **Reconciliation notes**, which open with every frame changed.
+**Third pass — the controls-reconciliation patch (this document's current state), 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface, reusing the shared **P0 editor primitives by name** — the P0·1 inline toolbar and link popover, the P0·2 icon slots and Icon Picker, the P0·3 item controls, the P0·4 member-aware action editor, the P0·5 populate-from panel, the P0·6 state switcher — never redesigning them. Every design gains the universal trio outside its own list and Member visibility; every Padding and Ground row is retired into the trio; per-design items landed on 2, 4, 7, 8, 9, 10, 11, 13, 14 and 16 (15's items are void — the design is deleted). No layout was redesigned. Where this pass conflicts with an earlier ruling, the conflict is recorded — one line each — in the closing **Reconciliation notes**, which open with every frame changed.
 
-**A4 uses four modules after this pass.** `video-facade` on **10 Video Poster**; `member-form` on **11 Subscribe**, with `countdown` beside it at that design's Deadline line value; **`search-overlay` on 15 Search** — the pass's one module correction, because Ghost has no server-rendered search results and the earlier real-GET-form ruling was a fake results page by another name. **Fourteen of the eighteen declare nothing at all**, which is what a hero should be: the headline, sub, actions, picture, quotation, post, count and field are all in the HTML before any script runs, so **no A4 design loses content without JavaScript** — 15 included, whose no-JS state is the field plus a link to the archive.
+**Fourth pass — the design patch pass and its confirmation (this document's current state), 28 August 2026.** The ten library-wide rules were applied to the category and then read back, one rule against each of the seventeen designs. What the first sitting changed, what the confirmation sitting finished, and where a rule had nothing to change are all in the closing **Patch notes**, by rule name. Rules are named there and throughout, never numbered. Nothing was redesigned in either sitting: the visual language, type scale, colour packs, spacing system and numbering all stand, and the changes are captions, notes, empty states and spec sentences.
 
-**`core` is assumed, not declared per design.** The one place in A4 keyed off `.js-enabled` is 14 Full Height's scroll cue, and `core`'s own line covers it: “Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch.” Stated once here rather than eighteen times. *Flagged: not listing it per design is mine, as it was in A3.*
+**A4 uses three modules after this pass.** `video-facade` on **10 Video Poster**; `member-form` on **11 Subscribe**, with `countdown` beside it at that design's Deadline line value. ~~`search-overlay` on 15 Search~~ is **void with the design** (the deletion of design 15 Search). Kept for the record: it had been the pass's one module correction, because Ghost has no server-rendered search results and the earlier real-GET-form ruling was a fake results page by another name. **Fourteen of the seventeen declare nothing at all**, which is what a hero should be: the headline, sub, actions, picture, quotation, post, count and field are all in the HTML before any script runs, so **no A4 design loses content without JavaScript** — 15 included, whose no-JS state is the field plus a link to the archive.
+
+**`core` is assumed, not declared per design.** The one place in A4 keyed off `.js-enabled` is 14 Full Height's scroll cue, and `core`'s own line covers it: “Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch.” Stated once here rather than seventeen times. *Flagged: not listing it per design is mine, as it was in A3.*
 
 **Edit-safe** means the module does not run while the section is being edited and writes nothing to authored DOM. All four are edit-safe, which is why every frame in A4 is a resting state — the poster drawn as a still, the form empty, the deadline static, the overlay closed. States that never show at rest — 11's four form states and its signed-in state, 15's typed and submitted states — are reached with the P0·6 state switcher and the top bar's View as, never a sidebar preview control; A4 had no “Preview” control to remove, and none was added.
 
@@ -24,7 +26,23 @@ Every rule below is stated once here and once on the design's own frames and spe
 
 ## 0. The shared floor
 
-Everything in this section applies to all eighteen unless a design says otherwise.
+### 0·0 · What the design patch pass changed category-wide
+
+- **Design 15 Search is deleted** (the deletion of design 15 Search), and **A23 Search with it** (the deletion of the Search category). Its subject — "a field that never renders a result" — is now any hero action pointed at **Ghost search** through the link picker's new destination. **No A4 design draws a search affordance**, `search-overlay` leaves the category, and `searchPlaceholder` leaves the shared field list. **Numbering runs 1–14 and 16–18; 15 stays retired** (the numbering rule).
+- **No design ever turns into another design.** **6 Big Type**'s four-line cap no longer switches to 1 Centred: the scale steps down toward the clamp's **64 px floor**, and at the floor **the cap lifts** and the headline takes the lines it needs — **confirmed by the owner, 28 August 2026: do not cut the headline** — the same answer given for the Footers category's big-type design. **18 Overlap Card** with no image no longer becomes 2 Flush Left: **the card lands on the page's ground**, radius, shadow and inset dropped. **12 Offset Image** reaches 3 Split's geometry below 1081 by its own media query, not by becoming it. Descriptors that described a design as "the arrangement others resolve to" are rewritten. **Completed in the confirmation pass:** the phrases that survived in the frames and in the empty states of **3 Split, 4 Full Bleed, 5 Image Under, 10 Video Poster, 13 Latest Post, 14 Full Height** and **2 Flush Left**'s 1024 rule are gone; each design now names its own state — the picture's column closes up, the band leaves, the flat contrast panel is drawn — and the word "fall-back" is used for a missing *field*, never for a missing design. **A4-0**'s no-image table and roster are rewritten with it.
+- **Header modes are unaffected, and A1·4 is corrected with them.** A design's Overlap or Below mode is still a property of the design. What changed is the header's end: with no full-width picture, **A1·4 renders on its own ground** — its own no-image state — rather than becoming A1·1 Rail (the rule that no design ever turns into another design, and the ruling on A1 Headers' overlay design: the precondition is read at build time, never in the browser).
+- **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript.** **11 Subscribe** is the category's only form. It does not render with self-signup off or members disabled; a paid ask needs a payment provider; every Portal link does nothing with JavaScript off. Its field controls stay disabled with the reason. **Extended in the confirmation pass to all seventeen:** any design's primary or secondary action may be pointed at a Portal action, so the rule cannot end at 11. The action editor carries both notes on any action whose destination is signup, signin or a paid tier — it does not render where the connected site cannot support it, and with JavaScript off the pop-up does not open. Written once into the shared floor below rather than seventeen times. **Confirmed by the owner, 28 August 2026: the notes appear on the action's own editor, and only when its destination is a Portal action** — signup, signin or a paid tier. A design whose actions point at ordinary URLs carries neither note, so the warning is shown exactly where it is true.
+- **The no-JavaScript notice.** **11 is the only design with a field**, so it is the only one that draws the notice — at the form row's own height, 46 px above 767 and 48 px at ≤ 767, so the hero's height is unchanged. Its **five states stay exactly as drawn**.
+- **A design may offer fewer choices on a shared control, and must say why.** 11's email-field override is **Site defaults · This section only**. Universals may narrow with a reason — 4, 9, 10 and 14 lock Background role, 16 narrows Attribution on the contrast ground — and may never be renamed or extended. The swatch row is **Base**.
+- **The Remove button never greys out.** **A4 has one repeater — 2 Flush Left's proof pairs — and it has no minimum**: zero pairs is a legal state, drawn as the row's absence. Remove is therefore always visible and always clickable, and there is no floor for it to defend. **Corrected in the confirmation pass:** the earlier note claimed Remove is held active "at the floor" on 2's pairs and on 13's hand-picked list, and answered it with "a proof row needs at least one pair" — which contradicts 2's own stated zero state, and 13 has no repeater at all (its post comes from Ghost's query, with no Add and no Remove). Both claims are withdrawn. **Confirmed by the owner, 28 August 2026: zero pairs stays legal** — the row simply disappears and the hero still reads, so no minimum is introduced and Remove never needs to refuse.
+- **Item counts are a number picker.** **No count in A4 is drawn as a row of fixed buttons**, so nothing had to be replaced. 2's proof pairs are an authored list with Add pair and a per-row Remove, capped at three with the reason shown and A10 Stats and Numbers named; 13's Which post is a single pick from Ghost, not a count. **Corrected:** the earlier note called 13's hand-picked posts a stepper. They are one post, picked.
+- **Avatars with no photograph.** **16 Pull Quote's portrait placeholder shows one letter** — the first letter of the typed name (“Maya Okonjo” → M). The pass had kept two initials on the reading that a typed name can supply both; **the owner ruled on 28 August 2026 for one letter everywhere**, so the library carries one rule with no exception to explain. Nothing in A4 renders a Ghost author, so this is the only avatar in the category.
+- **Member counts.** 2's Member count pairs and 11's count render Ghost's `{{total_members}}` **verbatim, already rounded** ("1,200+"); no copy may imply an exact figure.
+- **Two rules had nothing to change here, and that is recorded rather than assumed.** **Slider labels:** A4 draws no slider — every control is a named-value row, and each row's title says what it affects while its values reuse the standard words (Card padding: Compact · Comfortable · Spacious). **Gap names:** A4 has no gap control; the one spacing ladder is the universal Vertical spacing, whose values are Compact · Comfortable · Spacious, so there is no Tight/Even/Airy anywhere to replace.
+- **Ctrl-K is unbound.** `command-palette` was never A4's; recorded.
+- **Mark the two free designs: 1 Centred and 2 Flush Left** — the two plainest arrangements, both picture-free, so a free theme is not gated on imagery. Marked as a suggestion for the owner's confirmation.
+
+Everything in this section applies to all seventeen unless a design says otherwise.
 
 **Colour.** Role tokens only — `background`, `surface`, `text`, `text-muted`, `border`, `accent`, `contrast`. Accent appears once or twice per section: the primary action, an active state. Never as decoration.
 
@@ -36,7 +54,7 @@ Everything in this section applies to all eighteen unless a design says otherwis
 
 **The universal trio — this pass.** Every placeable section carries three controls **outside its own list**: **Background role** (Background · Surface · Contrast), **Vertical spacing** (Compact · Comfortable · Spacious) and **Top divider** (None · Line · Fade — default None on every hero; the header above already ends in a rule). The old per-design Padding and Ground rows were this trio under other names and are retired everywhere. Vertical spacing resolves 64 · 96 · 132 at 1440 (80 at 834, 64 at 390) unless a design names its own resolution — **9 Contrast Band** 44 · 64 · 88, **14 Full Height** 56 · 88 · 120, **17 Slim** 36 · 56 · 80 — a departure survives as a resolution, never a duplicate row. Genuinely different ladders keep their own names: **8 Card**'s Card padding and Inset (Vertical spacing locked there, reason shown) and **18 Overlap Card**'s Overlap (locked there too). A design whose ground is its identity locks Background role with the reason shown: **9** at Contrast, and the three image grounds **4**, **10**, **14**.
 
-**Member visibility.** Every design carries Member visibility — Everyone · Logged out · Free members · Paid members — except **11 Subscribe**, whose richer signed-in model subsumes it. It hides the whole section; one action's audience is P0·4's member-aware editor, and the two are scope-tagged apart, as P0·4 draws. Where an action's target is a Portal action (signup / signin), the P0·4 per-state editor — show / label / link per audience — is offered on that action, the same model as A1's header actions.
+**Member visibility.** Every design carries Member visibility — Everyone · Logged out · Free members · Paid members — except **11 Subscribe**, whose richer signed-in model subsumes it. It hides the whole section; one action's audience is P0·4's member-aware editor, and the two are scope-tagged apart, as P0·4 draws. Where an action's target is a Portal action (signup / signin), the P0·4 per-state editor — show / label / link per audience — is offered on that action, the same model as A1's header actions. **Two notes travel with that destination — on the action's own editor, and only where the destination is a Portal action** (the rule that member buttons are conditional): the action **does not render when the connected site cannot support it** — self-signup switched off, members disabled, or, for a paid tier, no payment provider connected — and **with JavaScript off, Ghost's sign-up pop-up does not open**, so nothing happens when the button is pressed. Where a site owner wants the ask to work without script, the honest destination is the signup *page*, not the pop-up, and the editor says so at the field. No design in A4 claims that anything can be subscribed to without JavaScript.
 
 **Editing.** Every visible authored text edits inline with the P0·1 toolbar — bold, italic, underline, link, with the link popover's open-in-new-tab and rel nofollow / noreferrer / sponsored options. Ghost-owned content — the site title, site description, post titles, tags, dates, member counts — is never inline-editable: clicking it shows the plain-text lock pill and “Edit in Ghost”. Every URL field opens the Ghost-aware Link Picker. Every button accepts an optional icon before or after its label from the P0·2 Icon Picker (always Small, label-coloured).
 
@@ -70,13 +88,13 @@ Everything in this section applies to all eighteen unless a design says otherwis
 
 The whole set centred on a 720 px measure with no picture. The category's floor: every other design is a departure from this one, and the type and action ladders above are established here.
 
-**Descriptor.** The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under resolves to without its band, and the design the type and action ladders are established on.
+**Descriptor.** The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under's own no-band state resembles, and the design the type and action ladders are established on.
 
 **Structural descriptor.** `stack · none · page · none · none · centred 720 px measure`
 
 **Archetype.** stack
 
-**Behaviour module.** **none.** Eyebrow, headline, sub, note and the two links are server-rendered, and every state in the design is a CSS hover or focus. **JS off:** identical — which is what lets four other designs hand back to this arrangement rather than inventing a fallback.
+**Behaviour module.** **none.** Eyebrow, headline, sub, note and the two links are server-rendered, and every state in the design is a CSS hover or focus. **JS off:** identical — the plainest arrangement in the category has nothing that could degrade.
 
 **Items.** No repeater: eyebrow, headline, sub, note and the two actions are single fields, and a third action is A6's. `proof[]` is kept if authored on 2 and not drawn here.
 
@@ -100,7 +118,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 1 Centred's set moved to the left margin on a half measure, the right half deliberately empty, with an optional proof row under the actions.
 
-**Descriptor.** The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 all resolve to when their picture is absent.
+**Descriptor.** The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 each approach in their own no-picture states, none of which switch design (the rule that no design ever turns into another design), when their picture is absent.
 
 **Structural descriptor.** `stack · none · page · few · none · deliberately empty right half`
 
@@ -117,7 +135,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 - **Counts.** Designed at **three**. The row is a three-column grid on the text block's measure, so **two pairs fill the left two columns and leave the third empty rather than widening**, and **one pair sits in the first column**, its value's left edge on the headline's. A value's left edge does not move with the count. Above three the repeater stops: Add is disabled, and a fourth pair authored on another design is kept, counted in the sidebar and not drawn. At ≤ 767 the three columns become three rows in the same order.
 - **Zero.** The row is absent — **not a set of zeros, not placeholder pairs, not three empty cells** — the gap under the sub closes with it, and the rest of the design renders unchanged. This is the design's stated empty state, reached by emptying the list.
 - **Inside a pair.** `value` and `label`, both editable, **both required**: there is no optional field inside a proof pair, because a number with no label means nothing and a label with no number is a word. A pair missing either is **not drawn**, and the sidebar names the row rather than rendering half of it. No link, no picture, no icon — a proof pair is two strings. Size, weight, alignment, colour and the gap between pairs are section values, so **a pair cannot be made larger than its neighbours by construction**; the design that needs that is A10's.
-- **Value source — this pass.** Per pair: **Typed · Member count.** At Member count the pair's value renders `{{total_members}}` — Ghost's own pre-rounded string (“1,200+”), verbatim, display only, never re-formatted, counted or animated; the label stays authored (“subscribers”). The earlier spec flagged the proof row as an open invention and its “2,400 subscribers” sample is exactly this hookup. With members disabled in Ghost the source is disabled with the reason shown and the pair falls back to its typed value. `count-up` stays undeclared — the value is static text either way.
+- **Value source — this pass.** Per pair: **Typed · Member count.** At Member count the pair's value renders `{{total_members}}` — Ghost's own pre-rounded string (“1,200+”), verbatim, display only, never re-formatted, counted or animated; the label stays authored (“subscribers”). The earlier spec flagged the proof row as an open invention and its “2,400 subscribers” sample is exactly this hookup. With members disabled in Ghost the source is disabled with the reason shown and the pair renders its typed value instead (the rule that member buttons are conditional). `count-up` stays undeclared — the value is static text either way.
 
 *Flagged, this pass: the placeholder pair's content, the fill-from-the-left grid rule, leaving the control at Proof row over an empty list, and both fields being required.*
 
@@ -163,7 +181,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **Responsive.** Seven and five on a 64 px gutter at 1440; six and six on a 40 px gutter at 834 with the headline at 40 and the actions stacked; one column at ≤ 767 with the picture between the sub and the actions.
 
-**Empty.** No image → the section is 2 Flush Left, header unchanged. The picture is never replaced by a placeholder on a published site.
+**Empty.** No image → the picture's five columns close up, the text keeps its seven and the header is unchanged; still this design, per the rule that no design ever turns into another design. The picture is never replaced by a placeholder on a published site.
 
 **Flagged.** The seven/five ratio, the fixed 4:3 crop, the framed-inset mount, and the picture's position between sub and actions on a phone.
 
@@ -187,7 +205,7 @@ One 16:9 photograph edge to edge with the set over it, anchored to the lower thi
 
 **Controls.** Text position (Bottom left · Centred — both sit in the lower third) · Over the picture (Everything · Headline and actions · Headline only) · Scrim (Subtle · Standard · Strong) · Headline size · Actions · Member visibility.
 
-Universal: Background role **locked** — the photograph is the ground, reason shown; with no image the fall-back is the flat contrast panel, not a role. Vertical spacing resolving 64 · 96 · 132, still measured from the picture's bottom edge. Top divider default None. Picture focus leaves the panel for the Image Picker popover, where every image field now carries it.
+Universal: Background role **locked** — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel, not another role. Vertical spacing resolving 64 · 96 · 132, still measured from the picture's bottom edge. Top divider default None. Picture focus leaves the panel for the Image Picker popover, where every image field now carries it.
 
 **Over the picture** decides how much of the set sits on the photograph; what it drops moves below the picture onto the page's own ground, where the scrim is not needed and the contrast is a measured token pair. It is the control that lets a site with a busy photograph keep a legible sub.
 
@@ -195,7 +213,7 @@ Universal: Background role **locked** — the photograph is the ground, reason s
 
 **Responsive.** Headline 60 / 44 / 34, margin 72 / 40 / 20, and the crop is the floor — the section is as tall as the picture at 16:9 or the set plus padding, whichever is greater.
 
-**Empty.** No image → a flat `contrast` panel, scrims removed, carried text at A3·5's values, header back to A1·1 Rail.
+**Empty.** No image → this design's own flat `contrast` panel, scrims removed, carried text at A3·5's values, and the header on its own ground — A1·4 Overlay's own no-image state.
 
 **a11y.** Contrast is measured against the scrim, and the specification says plainly that a scrim cannot guarantee a ratio against an unknown photograph. Where a photograph cannot carry the sub, Over the picture moves it onto the page instead — a real fix rather than a darker scrim.
 
@@ -229,7 +247,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132, measured
 
 **Responsive.** The band narrows with the page at Page margin and holds the page's full width at Full bleed; the crop goes 2.4:1 to 16:9 at ≤ 767, where the band is always full bleed. The caption stays 13 px muted under it at every width.
 
-**Empty.** No image → 1 Centred. No caption → the line is absent.
+**Empty.** No image → band and caption leave and the set closes up on this design's own padding. No caption → the line is absent.
 
 **Flagged.** The two band widths, the fixed 2.4:1 and 16:9 crops, and the 80-character caption cap.
 
@@ -259,7 +277,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **Empty.** No sub authored, or Sub under the rule off → the rule is the last thing before the actions. The floor is a headline alone.
 
-**Flagged.** The three scale values and the 64–160 clamp, dropping the eyebrow entirely, and putting the sub below the rule rather than above it.
+**Flagged.** The three scale values and the 64–160 clamp (the lifted cap itself is no longer flagged — the owner confirmed it), dropping the eyebrow entirely, and putting the sub below the rule rather than above it.
 
 ---
 
@@ -315,7 +333,7 @@ The hero as a surface panel inset from the page's edges, page ground visible aro
 
 Universal: Background role — the ground behind the card; the card's own ground keeps its control. Vertical spacing **locked** — Card padding measures inside the card and Inset around it, and a third ladder would fight both; reason shown. Top divider default None.
 
-**Alignment, this pass.** Centred · Left — A6's card design carries it, and no left-aligned sibling exists in A4 to hand off to; a card's measure makes left-set type read as deliberate rather than unfinished.
+**Alignment, this pass.** Centred · Left — A6's card design carries it, and no left-aligned sibling exists in A4 for the user to reach for; a card's measure makes left-set type read as deliberate rather than unfinished.
 
 **Two separate controls, two different relationships to A3·12:** the padding inside the card is a step up because a hero's card carries a headline; the inset around it is byte-identical to the footer's, so a site running both reads one shape.
 
@@ -347,7 +365,7 @@ The whole hero on the inverted ground. Ground is not a control here: it is the d
 
 Universal: Background role **locked** at Contrast, reason shown — the inverted ground is the design, and on any other role this is 1 Centred. Vertical spacing resolving 44 · 64 · 88 — the tighter ladder survives as a resolution. Top divider default None.
 
-**Alignment, this pass.** Centred · Left — A6's band design carries it and this one did not, with no left-aligned sibling to hand off to.
+**Alignment, this pass.** Centred · Left — A6's band design carries it and this one did not, with no left-aligned sibling for the user to reach for.
 
 **There is no Background role to set:** the universal control is locked at Contrast with the reason shown — the ground is the design.
 
@@ -377,7 +395,7 @@ A 16:9 poster with a labelled play control at its centre and the set in the lowe
 
 **Controls.** Play control (Large centred · Inline — always inline on a phone, unless nothing else is over the poster) · Show how long it runs (Show · Hide) · Over the poster (Everything · Headline and play · Play only) · Headline size · Actions · Member visibility.
 
-Universal: Background role **locked** — the poster is the ground; with neither poster nor image the fall-back is the flat contrast panel. Vertical spacing resolving 64 · 96 · 132, measured from the poster's bottom edge. Top divider default None.
+Universal: Background role **locked** — the poster is the ground; with neither poster nor image the section draws its own flat contrast panel. Vertical spacing resolving 64 · 96 · 132, measured from the poster's bottom edge. Top divider default None.
 
 **Field contracts, this pass.** `videoUrl` accepts YouTube and Vimeo watch pages — the same canonical URLs the module's no-JS anchor navigates to; uploaded video is A15's ground, and the editor says so at the field. `videoDuration` edits inline on the canvas with the P0·1 toolbar; nothing reads it from the video, as flagged. The poster gains Image focus in the Image Picker popover.
 
@@ -385,9 +403,9 @@ The scrims are 4 Full Bleed's, measured and fixed rather than a control. **Over 
 
 **Behaviour.** Nothing autoplays and nothing is muted-looping. The poster is a still. The play control is a labelled `<button>` that opens a dialog with focus trapped and returned; A15 owns the player inside it.
 
-**Empty.** No poster and no image → the flat contrast panel, as 4. No video URL → the design is not offered.
+**Empty.** No poster and no image → this design's own flat contrast panel, the one 4 Full Bleed settles. No video URL → the design is not offered.
 
-**Flagged.** `videoDuration` and the note that nothing reads it from the video, the two play-control positions, the dialog hand-off, and the no-autoplay rule.
+**Flagged.** `videoDuration` and the note that nothing reads it from the video, the two play-control positions, the dialog the poster opens, and the no-autoplay rule.
 
 ---
 
@@ -401,23 +419,23 @@ The set with A3·4's one-row form standing where the actions would be. The hero'
 
 **Archetype.** form
 
-**Behaviour module.** `member-form`, plus `countdown` at Above the form: Deadline line. Both edit-safe. **JS off, `member-form`:** “The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state” — so the designed success state is what the module adds, not what the form depends on. **JS off, `countdown`:** “The static deadline renders as a `<time datetime>` element (“Ends 3 September 2026”); no ticking digits.” The four field states are CSS `:focus` and `:invalid` and stand without either module; the 46 px row, the reserved button width and the suppressed focus ring are CSS.
+**Behaviour module.** `member-form`, plus `countdown` at Above the form: Deadline line. Both edit-safe. **JS off, `member-form` — corrected this pass (the no-JavaScript notice):** ~~the form posts natively to Ghost's members endpoint~~. **It cannot.** Tested against both live Ghost servers, **Ghost's signup endpoint refuses a plain form submission**, so a scriptless field would take an address and lose it. The form is **replaced by P0·4's notice at the form row's own height — 46 px above 767, 48 px at ≤ 767** — so the hero's height does not change and nothing below it moves; headline and note stay; it is plain text, not an alert. **The five states are untouched** — empty, focus, invalid, submitting and done are Ghost's own script (Part D). Also **conditional on the connected site (the rule that member buttons are conditional):** with self-signup off or members disabled the field does not render and the button stands alone; a paid ask needs a payment provider; the field controls stay in the panel disabled with the reason. ~~Ghost's own server response replaces the designed sent state” — so the designed success state is what the module adds, not what the form depends on. **JS off, `countdown`:** “The static deadline renders as a `<time datetime>` element (“Ends 3 September 2026”); no ticking digits.” The four field states are CSS `:focus` and `:invalid` and stand without either module; the 46 px row, the reserved button width and the suppressed focus ring are CSS.
 
 **Items.** No repeater. The form is one row with one field: the five `email*` strings are separate named fields shared with the footer's form rather than a list, and the deadline is one date.
 
 **Fields.** The set as 1, minus the actions, plus the five `email*` fields — placeholder, button label, note, success, short success — with A3·4's names and caps, and `deadline` (**flagged as invented**).
 
-**Controls.** Field width (Narrow 320 · Medium 400 · Wide 480 — steps down one value on a tablet) · Headline size · Above the form (Nothing · Deadline line) · Note under the form (Show · Hide) · When a member is signed in (Show a members line · Hide the section) · Show member count (On · Off) · Email form fields (Inherit from site · This section only).
+**Controls.** Field width (Narrow 320 · Medium 400 · Wide 480 — steps down one value on a tablet) · Headline size · Above the form (Nothing · Deadline line) · Note under the form (Show · Hide) · When a member is signed in (Show a members line · Hide the section) · Show member count (On · Off) · Email form fields (Site defaults · This section only).
 
 Universal: Background role, with Contrast disabled in the same words as before — a field on a contrast band needs a surface step the packs do not define. Vertical spacing resolving 64 · 96 · 132. Top divider default None. **Member visibility does not appear** — the signed-in model below subsumes it, per the ground rule.
 
 **The member model, this pass — A6·14's, reused.** A signed-in member never sees the form: it would ask for an email Ghost already has. At **Show a members line** the form's slot carries one authored line (default “You already get the Thursday letter.” — a field, not fixed copy) and one Portal link (account, via the P0·4 member-aware editor) at the form's own height, so the page never jumps between audiences; at **Hide the section** the hero is absent for members and the page opens on whatever follows. **Show member count: On** renders `{{total_members}}` exactly as Ghost sends it — pre-rounded, display only, never re-formatted — plus an authored suffix in the note. The states are reached with the P0·6 state switcher and View as, never a sidebar preview. Compiles to server-side member checks; nothing flashes.
 
-**The email-field override, this pass.** The five shared `email*` fields gain a per-section override with **Inherit from site** the default — a hero can say “Get the Thursday letter” while the footer says “Subscribe”. **The invalid state's wording ships as a theme translation-catalog string** — a correction: the earlier ruling called it fixed copy, and the no-fixed-strings rule wins.
+**The email-field override, this pass.** The five shared `email*` fields gain a per-section override with **Site defaults** the default (the same rule strikes “Inherit”: no control in the library carries that value) — a hero can say “Get the Thursday letter” while the footer says “Subscribe”. **The invalid state's wording ships as a theme translation-catalog string** — a correction: the earlier ruling called it fixed copy, and the no-fixed-strings rule wins.
 
 The five `email*` fields are shared with the footer's form — change them once and both follow, unless this section's override (above) is set.
 
-**Four states** at one height: empty, focus, error, success. The field is 46 px — **A4's hero button height, not A3·4's 44 px footer row**, because a form standing in the actions' slot has to be the height of the actions it replaced. Flagged as a departure, and the only measurement in this design that is one. The button sits inside the row, the note under it. Success replaces the row in place; the short success is for the narrow width. Every other value is A3·4's, including the suppressed focus ring, the reserved button width and the refusal of red.
+**Five states** at one height, in the frame's own names: **empty · focus · invalid · submitting · done**. (Corrected this pass — the enumeration read "empty, focus, error, success", which both undercounted and renamed two of them; Part D makes which states exist load-bearing, since A10 turns on knowing that all five are Ghost's script rather than ours.) The field is 46 px — **A4's hero button height, not A3·4's 44 px footer row**, because a form standing in the actions' slot has to be the height of the actions it replaced. Flagged as a departure, and the only measurement in this design that is one. The button sits inside the row, the note under it. Success replaces the row in place; the short success is for the narrow width. Every other value is A3·4's, including the suppressed focus ring, the reserved button width and the refusal of red. **A3·4 draws four crops to this design's five** — it takes the resting band as its empty state rather than drawing it twice; the state model is the same.
 
 **Empty.** No deadline → the countdown line is absent. Past its date the line is removed and the form stays.
 
@@ -435,7 +453,7 @@ Text on a 620 px measure at the left margin with the picture running off the rig
 
 **Archetype.** split
 
-**Behaviour module.** **none.** The bleed is a full-bleed grid column with a negative side margin, the 1080 hand-off to 3 Split's arrangement is a media query, and Header mode Below is a markup decision taken before render. **JS off:** identical.
+**Behaviour module.** **none.** The bleed is a full-bleed grid column with a negative side margin, the 1080 change of crop is a media query, and Header mode Below is a markup decision taken before render. **JS off:** identical.
 
 **Items.** No repeater — one picture, as 3.
 
@@ -447,11 +465,11 @@ Universal: Background role — new; this design previously had no ground control
 
 **Image, this pass.** Image focus in the Image Picker popover; on a post or page canvas the picture defaults to the post's feature image, source named.
 
-**Responsive.** Above 1080 the picture bleeds past the margin. Below 1081 there is no margin to spare: the picture becomes 3 Split's contained crop and the design hands off to 3's arrangement, stated on the frame. **Header mode is Below, a correction to settlement 1** — a part-width picture cannot carry a transparent header, because the header would be half over a photograph and half over the page.
+**Responsive.** Above 1080 the picture bleeds past the margin. Below 1081 there is no margin to spare: the picture takes a contained crop — the same geometry 3 Split uses at that width, arrived at by this design's own media query and not by becoming it (the rule that no design ever turns into another design) — and the arrangement, stated on the frame. **Header mode is Below, a correction to settlement 1** — a part-width picture cannot carry a transparent header, because the header would be half over a photograph and half over the page.
 
 **Frame height.** The text block plus its padding is the taller side at Medium and above, so it sets the section's height and the 520 px picture centres against it.
 
-**Flagged.** The bleed rule, the 1080 hand-off, and the correction to settlement 1.
+**Flagged.** The bleed rule, the 1080 contained crop, and the correction to settlement 1.
 
 ---
 
@@ -479,7 +497,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **The card.** Feature image at 3:2, to agree with A24's post crop. Title 24 px in the heading font, two lines maximum, full title in the DOM. A1·6's “tag · date” meta row at 13 px. The whole card is one link named by the title; hover underlines the title and darkens the picture 4% **with no scale** — A3·9's 1.02 would move the fold. At Title and date the card takes `surface`, one hairline, a 13 px “Latest” label and a 28 px title.
 
-**Data states.** Post with no feature image → a hover-surface panel of the same height carrying the title at 15 px clipped to three lines; the title then appears twice, deliberately, as A3·9 decided. No published post, or an empty tag or featured set → the section's own `image` at 4:3 and the design renders as 3 Split; with neither, 2 Flush Left. Members-only post → a third meta item, “Members only”, in `text`, no glyph and no badge. **This last is a stated departure from A3·9**, which marks nothing in the footer: a hero is where a reader arrives, and sending them from the front door into a paywall unannounced is worse than telling them.
+**Data states.** Post with no feature image → a hover-surface panel of the same height carrying the title at 15 px clipped to three lines; the title then appears twice, deliberately, as A3·9 decided. No published post, or an empty tag or featured set → the section's own `image` at 4:3 in the card's place; with neither, the right column closes up and the text keeps its place — the design renders either way. Members-only post → a third meta item, “Members only”, in `text`, no glyph and no badge. **This last is a stated departure from A3·9**, which marks nothing in the footer: a hero is where a reader arrives, and sending them from the front door into a paywall unannounced is worse than telling them.
 
 **Routes.** Home and custom routes only.
 
@@ -519,7 +537,7 @@ Universal: Background role **locked** — the picture is the ground behind a win
 
 **The cue.** A 13 px uppercase label at 82% over a 1 px × 20 px rule, centred, 24 px from the foot, 44 px hit area. Hover takes the label to full strength and the rule to 28 px. A real `<button>` — it moves the page rather than going somewhere — that scrolls and then moves focus to the next section's heading; instant under reduced motion. **Removed from the DOM** past 40 px of scroll and whenever the section is not the window's height, rather than hidden. No bob, no pulse, no fade.
 
-**Empty.** No image → 4's flat contrast panel, but the window's height and the cue are both kept.
+**Empty.** No image → the flat contrast panel 4 Full Bleed settles, with the window's height and the cue both kept.
 
 **Responsive.** 4's ladder for the set. At 834 portrait the section is taller than it is wide, the only place in A4 that happens, and the picture is cropped hard on its sides. At ≤ 767 the set sits 72 px from the foot, the cue 20 px with a 16 px rule, and the home-indicator safe area is added below the cue rather than taken from it.
 
@@ -527,39 +545,7 @@ Universal: Background role **locked** — the picture is the ground behind a win
 
 ---
 
-## 15. Search
-
-One field where the actions would be, for an archive whose front door is a query. **It never renders a result.**
-
-**Descriptor.** The only design that is a search landmark, and the only one whose primary action is a field that never renders a result.
-
-**Structural descriptor.** `form · none · page · one · none · one field, no results`
-
-**Archetype.** form
-
-**Behaviour module.** **`search-overlay` — corrected this pass.** The earlier ruling drew a real `<form action="/search/">` and declared no module, but Ghost has no server-rendered search results: a route that renders none is a fake results page by another name, and the honest claim is that search needs script. The field triggers `search-overlay` — the same surface A23 owns — and the return key opens it. `search-expand` stays deliberately undeclared: the field is permanently drawn, so there is nothing to expand; `command-palette` stays the header's. **JS off:** the field renders with a plain link to the archive beside it — never a results page, real or faked; the 44 px “Clear search” control is script's too, with `<input type="search">`'s native clear standing in where a browser offers one.
-
-**Items.** No repeater. One field, and no list behind it: no suggestions, no recent searches and no results, all of which are A23's.
-
-**Fields.** `eyebrow` · `headline` (req) · `sub` · `searchPlaceholder` (≤ 32, default “Search the archive”) · `note` (≤ 90). The two action fields are kept and not drawn — a button beside the field would compete with the return key for the same job.
-
-**Controls.** Field width (Narrow 400 · Medium 520 · Wide 640) · Headline size · Sub (Show · Hide) · Note (Show · Hide) · Search icon (an icon slot — P0·2's picker, the current magnifier as the default; size and colour role in the slot popover) · Member visibility.
-
-Universal: Background role, Contrast disabled in A3·4's words; Vertical spacing resolving 64 · 96 · 132; Top divider default None. The placeholder and note edit inline as defaults — no fixed string ships.
-
-**The field.** 52 px at every width — a search field is the page's primary action and 52 px is where it stops reading as a form row. `surface` with the border token, a 17 px glyph in a P0·2 icon slot (the magnifier is the default), 16 px text; inner padding 16 px above 767 and 14 px below. All three widths are narrower than the headline's 720 px measure: a field as wide as the headline reads as a second headline.
-
-**Four states.** Empty (placeholder and glyph muted) · focus (1.5 px accent border, the library ring suppressed as A3·4 and A4·11) · typed (a 44 px clear control labelled “Clear search”, 8 px inside the field's edge above 767 and 4 px below) · submitted (the overlay opens; the field hands its query to A23). No button, no dropdown, no suggestions.
-
-**Dark.** The field is `background` darkened one step — a recess rather than a lift, because a 640 px field lifted would be the brightest object on the page. A pack whose background is already near-black gets a 4% lift instead, the same escape A3·5 uses.
-
-**Data.** Nothing from Ghost; the note's numbers are typed. Where the theme has no search, the design is not offered and the editor names the reason rather than rendering a field that goes nowhere.
-
-**a11y.** `<form role="search">` — the category's only `search` landmark, and one of its two form landmarks alongside 11's — with `<input type="search">`, a visually-hidden label, `enterkeyhint="search"`, no `autofocus`, an `aria-hidden` glyph and a labelled 44 px clear button that returns focus to the field. **No results, no live region, no combobox pattern.** A23 Search owns everything after the return key.
-
-**Flagged.** The 52 px height and its clear control, the 16/14 and 8/4 px ladder, the icon slot's default glyph, the absent button, the three widths and the measure rule, the submitted state, the dark recess and its near-black escape, and refusing suggestions.
-
----
+<!-- 15. Search — DELETED in the design patch pass (the deletion of design 15 Search): "a field that never renders a result" is now any hero action pointed at Ghost search via the link picker. A23 Search is deleted with it (the deletion of the Search category). The number stays retired: A4 runs 1–14, 16–18. -->
 
 ## 16. Pull Quote
 
@@ -589,9 +575,9 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **The cap and the step-down.** 240 characters, hard — the only hard cap in A4 — because a paragraph in the display position is an excerpt, not a pull quote. Above 180 characters the quote renders **one size value below** the control's setting, disclosed under the size control rather than silently disagreeing with it.
 
-**Empty.** No portrait → A1·6's initials fallback at 44 px; the circle is never dropped, so a missing picture cannot silently change the chosen value. No headline → the line leaves and the quotation becomes the h1. No quote → the section does not render.
+**Empty.** No portrait → the **one-letter** placeholder at 44 px — the first letter of the typed name, the same everywhere in the library (owner's ruling, 28 August 2026); the circle is never dropped, so a missing picture cannot silently change the chosen value. No headline → the line leaves and the quotation becomes the h1. No quote → the section does not render.
 
-**On the Contrast ground** the portrait is unavailable and Attribution falls back to Name and role: a photograph in a circle on an inverted band reads as a hole punched in it.
+**On the Contrast ground** the portrait is unavailable and Attribution is narrowed to Name and role, with the reason shown (the rule that a shared control may offer fewer choices and must say why): a photograph in a circle on an inverted band reads as a hole punched in it.
 
 **a11y.** `<figure>` → `<blockquote><p>` + `<figcaption>`, so the attribution is programmatically the quote's source. The headline is the h1 despite being the smallest text — visual size is not heading level. Quotation marks are typed characters, not `::before`. Portrait decorative, initials `aria-hidden`, name and role never links. No rotation and no motion; a set of more than one quotation is A8 Testimonials', and A2·9 Rotator is where the library rotates anything at all.
 
@@ -651,7 +637,7 @@ A wide picture with the text on a surface card pulled up over its bottom edge, t
 
 **Items.** No repeater — one picture, one card.
 
-**Fields.** `image` (required in practice — without it the design hands off) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. Picture focus applies. Nothing from Ghost, except a post or page's feature image offered as the picture's default with its source named.
+**Fields.** `image` (required in practice — without it the overlap has nothing to overlap) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. Picture focus applies. Nothing from Ghost, except a post or page's feature image offered as the picture's default with its source named.
 
 **Controls.** Picture height (Standard 440 · Tall 520) · Card side (Left · Right · Centred, where the card widens to 820 and the text stays left) · Overlap (Small 48 · Medium 96 · Large 144, how far the card is pulled up onto the picture) · Headline size (Medium · Large · ~~Display~~, disabled — 76 px on a 660 px card leaves under 8 characters a line) · Overlap on a phone (On · Off) · Actions · Member visibility.
 
@@ -663,19 +649,19 @@ Universal: Background role — the ground under the card and past the picture. V
 
 **Header mode is Overlap** (A1·4 Overlay) with 4 Full Bleed's top scrim.
 
-**Empty.** No image → hands off to **2 Flush Left**, card and all, header back to A1·1 Rail. The design's subject is the relationship between a picture and a card; without the picture there is no design, only a text block, and 2 already is that text block. No sub or no actions → the card shortens and the overlap may step down. Overlap off on a phone → surface, shadow and inset all leave and the text sits on the page at the page margin, which is 3 Split's mobile arrangement.
+**Empty.** No image → **the card lands on the page's own ground**: radius, md shadow and inset dropped, text at the page margin, still this design (the rule that no design ever turns into another design). The header, with no picture to sit on, renders on its own ground — A1·4's own no-image state. The design's subject is the relationship between a picture and a card; with no picture the relationship is what is missing, not the card, and the sidebar says the overlap is not in force. No sub or no actions → the card shortens and the overlap may step down. Overlap off on a phone → surface, shadow and inset all leave and the text sits on the page at the page margin.
 
 **a11y.** The headline is the h1 **on a measured surface rather than over a photograph** — this design's real advantage over 4 Full Bleed, since the contrast is a token pair rather than an estimate against an unknown image. The DOM is flat and in visual order; the overlap is negative margin, not absolute positioning, so the section's height includes the card and 200% text zoom grows it downward. The card is not a landmark, a region or a labelled group — it is a visual plane. No motion: no rise, no fade, no parallax.
 
 **Responsive.** Card 660 / 560 / full-minus-16, inset 48 / 36 / 24, overlap 96 → 64 at 834 and 32 at ≤ 767, picture 520 / 400 / 260, headline 60 / 40 / 32. The actions stack at 834 even though the row would fit — a stacked pair inside a card reads as the card's own content. At ≤ 767 the card keeps a 16 px side margin, inside the page's 20, and Card side is ignored.
 
-**Flagged.** The 660/820 px card and 48 px inset, the md shadow and its dark hairline substitution, all-four-corner radius, the three overlap values and the 40% rule, measuring the section's foot from the card, the disabled Display value, stacking at 834, the 16 px phone margin, the contrast-band warning, and the hand-off to 2.
+**Flagged.** The 660/820 px card and 48 px inset, the md shadow and its dark hairline substitution, all-four-corner radius, the three overlap values and the 40% rule, measuring the section's foot from the card, the disabled Display value, stacking at 834, the 16 px phone margin, the contrast-band warning, and the flattened card at no image.
 
 ---
 
 ## Structural descriptors — uniqueness check
 
-Tuple shape: `archetype · containment · ground · item-count class · media placement · emphasis mechanism`. All eighteen checked against each other; no two are the same.
+Tuple shape: `archetype · containment · ground · item-count class · media placement · emphasis mechanism`. All seventeen checked against each other; no two are the same.
 
 | # | Design | Structural descriptor |
 |---|---|---|
@@ -693,7 +679,6 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 | 12 | Offset Image | split · none · page · none · edge · picture off window edge |
 | 13 | Latest Post | feed · none · page · one · right · newest post as card |
 | 14 | Full Height | media frame · none · image · none · background · measured to window height |
-| 15 | Search | form · none · page · one · none · one field, no results |
 | 16 | Pull Quote | stack · none · page · one · inline · quotation in display position |
 | 17 | Slim | bar · none · page · none · none · single row page title |
 | 18 | Overlap Card | stack · none · page · none · top · card pulled over picture |
@@ -702,15 +687,15 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 **Ground does the most separating.** `page` on 1, 2, 3, 5, 6, 7, 11, 12, 13, 15, 16, 17, 18 · `surface` on 8 · `contrast` on 9 · `image` on 4, 10, 14. Each is the drawn default, never the control's full range: eleven designs offer Background · Surface · Contrast and are still `page`, which is the settlement the category rests on — **9 Contrast Band is its own design because it has no Ground control**, so it is not 1 Centred on a setting. **8 Card is `surface`** because its drawn card ground is Surface and the page is only what shows around it. **18 is `page`, not `image`**: the picture is the section's media, and the card — with the greater part of the section — rests on the page's own ground, which is exactly what its accessibility field claims. `transparent` and `accent` are unused: no A4 design renders on another section's picture — **12 Offset Image's correction to settlement 1 is the refusal of precisely that** — and a hero on an accent ground would spend the whole accent budget on a ground.
 
-**Item-count reads the design's own repeating or bound unit, not the set.** The eyebrow, headline, sub, note and two actions are on nearly every design, so none of them counts. What counts: **2's** authored proof pairs (`few` — 0–3, designed at three, capped there with A10 named), **10's** one video, **11's** one form row, **13's** one post from Ghost, **15's** one field, **16's** one quotation. Everything else is `none`. **`many` and `variable` are unused, and that is the category's shape rather than an oversight** — the moment a hero repeats a unit five deep or lets the author decide how many, it is A5 Features, A10 Stats or A19's design, and the hand-off table says so.
+**Item-count reads the design's own repeating or bound unit, not the set.** The eyebrow, headline, sub, note and two actions are on nearly every design, so none of them counts. What counts: **2's** authored proof pairs (`few` — 0–3, designed at three, capped there with A10 named), **10's** one video, **11's** one form row, **13's** one post from Ghost, **15's** one field, **16's** one quotation. Everything else is `none`. **`many` and `variable` are unused, and that is the category's shape rather than an oversight** — the moment a hero repeats a unit five deep or lets the author decide how many, it is A5 Features, A10 Stats or A19's design, and the category-boundary table says so.
 
 **Media placement.** `none` on 1, 2, 6, 7, 8, 9, 11, 15, 17 · `right` on 3 and 13 · `bottom` on 5 · `top` on 18 · `edge` on 12 · `full-bleed` on 4 and 10 · `background` on 14 · `inline` on 16. `left` is unused as a drawn value: 3 and 12 both offer Picture side: Left, and a control setting is not a design. **`background` is what separates 14 Full Height from 4 Full Bleed** — in 4 the picture's own 16:9 crop sets the section's height, so the photograph is the content and the placement is `full-bleed`; in 14 the window sets the height and the picture fills behind the set, cropped hard on its sides at 834 portrait. **16's `inline`** is the 44 px portrait inside the attribution row, the library's largest instance of A1·6's avatar and the one place it is a subject.
 
-**Two clusters share their first five slots and separate on the emphasis phrase.** They are named here rather than papered over. **1 Centred, 6 Big Type and 7 Masthead** are all `stack · none · page · none · none`: three text stacks on the page's own ground, differing in what carries the page — a centred 720 px measure, the headline's own measured scale, or the site's nameplate between rules. **11 Subscribe and 15 Search** are both `form · none · page · one · none`: one field row where the actions would be, differing in what the row does — post to Ghost's members endpoint, or navigate to a search route — which is also why they declare different modules. In both clusters the closed slots are honest and the sixth is doing the work it exists for; inventing a distinction in a closed slot to force them apart would be worse than saying so.
+**Two clusters share their first five slots and separate on the emphasis phrase.** They are named here rather than papered over. **1 Centred, 6 Big Type and 7 Masthead** are all `stack · none · page · none · none`: three text stacks on the page's own ground, differing in what carries the page — a centred 720 px measure, the headline's own measured scale, or the site's nameplate between rules. ****11 Subscribe** is the category's only `form · none · page · one · none` tuple now that 15 is deleted, so it shares its first five slots with nothing. Formerly the pair differed in what the row does — post to Ghost's members endpoint, or navigate to a search route — which is also why they declare different modules. In both clusters the closed slots are honest and the sixth is doing the work it exists for; inventing a distinction in a closed slot to force them apart would be worse than saying so.
 
 **13 Latest Post is a `feed` one item deep.** The archetype names what the right half *is* — a query result, newest first, with Ghost's own exclusions — and that is exactly what separates it from **3 Split**, whose right half is an authored picture. Drawing one post rather than three does not make it a split; it makes it the shallowest feed in the library.
 
-**Not used as a separator.** Padding, Headline size, Actions, Ground where it is a control, Picture side, Over the picture, Measure and every phone-only value: they are controls, and two designs that differ only by a control setting are one design. Nor is the fallback web — that 3, 5, 13 and 18 resolve to 1 or 2 when their picture or post is absent is a hand-off, not a structure.
+**Not used as a separator.** Padding, Headline size, Actions, Ground where it is a control, Picture side, Over the picture, Measure and every phone-only value: they are controls, and two designs that differ only by a control setting are one design. Nor is the fallback web — and after the rule that no design ever turns into another design there is none: **no A4 design resolves to another design.** Each hides what does not apply and keeps its own arrangement, which is a state, not a structure.
 
 ---
 
@@ -720,7 +705,7 @@ Four of the registry's 31, and nothing coined. Fourteen designs declare none; `c
 
 | # | Design | Modules | Note |
 |---|---|---|---|
-| 1 | Centred | none | every part server-rendered; the fallback four other designs use |
+| 1 | Centred | none | every part server-rendered; nothing degrades |
 | 2 | Flush Left | none | `count-up` the near miss, deliberately not declared |
 | 3 | Split | none | crop, mount and side swap are CSS |
 | 4 | Full Bleed | none | both scrims are gradients; not `lightbox` |
@@ -731,15 +716,14 @@ Four of the registry's 31, and nothing coined. Fourteen designs declare none; `c
 | 9 | Contrast Band | none | the disabled Accent value is editor behaviour |
 | 10 | Video Poster | `video-facade` | markup disagreement, `<button>` vs `<a href>` — **finding** |
 | 11 | Subscribe | `member-form`, plus `countdown` at Deadline line | native post; Ghost's response replaces the success state |
-| 12 | Offset Image | none | bleed is a grid column; hand-off is a media query |
+| 12 | Offset Image | none | bleed is a grid column; the 1080 crop change is a media query |
 | 13 | Latest Post | none | one post, no next page; not `load-more`, not `shuffle` |
 | 14 | Full Height | none for the section; the scroll cue has no module | **finding** |
-| 15 | Search | `search-overlay` | corrected this pass — Ghost renders no search results; JS off: field + archive link |
 | 16 | Pull Quote | none | `rotator` is A2·9's and is refused in words |
 | 17 | Slim | none | count is template logic; not `filter-strip` |
 | 18 | Overlap Card | none | overlap is negative margin; not `reveal` |
 
-**Modules A4 deliberately does not use.** `nav-drawer`, `header-scroll`, `command-palette` and `mode-toggle` are the header's; `search-overlay` moved onto 15 this pass, shared with A23; `dismiss`, `rotator` and `marquee` are A2's; `accordion`, `tabs` and `toc` have nothing to fold in a hero; `carousel` and `shuffle` are refused by the no-carousel rule in the shared floor; `lightbox` is refused because no A4 photograph is a thumbnail of a larger one; `load-more` and `infinite-scroll` have no next page to fetch; `reveal`, `confetti`, `typewriter`, `count-up`, `reading-progress`, `scroll-spy` and `slide-in-card` are all refused by “no entrance animation, no parallax, no autoplay”; `price-toggle` is A7's and `share` is the post's. **Nothing in A4 animates on scroll, counts, reveals, rotates or shuffles.**
+**Modules A4 deliberately does not use.** `nav-drawer`, `header-scroll`, `command-palette` and `mode-toggle` are the header's; `search-overlay` is gone with design 15 and with A23 itself (the deletion of the Search category, and of design 15 Search with it) — **no A4 design draws a search affordance**, and any hero action may point at Ghost search through the link picker; `dismiss`, `rotator` and `marquee` are A2's; `accordion`, `tabs` and `toc` have nothing to fold in a hero; `carousel` and `shuffle` are refused by the no-carousel rule in the shared floor; `lightbox` is refused because no A4 photograph is a thumbnail of a larger one; `load-more` and `infinite-scroll` have no next page to fetch; `reveal`, `confetti`, `typewriter`, `count-up`, `reading-progress`, `scroll-spy` and `slide-in-card` are all refused by “no entrance animation, no parallax, no autoplay”; `price-toggle` is A7's and `share` is the post's. **Nothing in A4 animates on scroll, counts, reveals, rotates or shuffles.**
 
 ---
 
@@ -760,15 +744,16 @@ In `A4-0 Category Proof.dc.html`:
 - **The four settlements** §8 asks A4 to make — where A1·4 Overlay lands on each hero, the image / no-image / video-poster variants, how the set scales from 1440 to 390 without dropping the actions, and what a hero renders on a page with no feature image and on templates other than home.
 - **The tokenisation proof** — 3 Split in three packs, light and dark, six frames, with only tokens changing.
 - **The stress frame** — the category's worst realistic content: an eyebrow at 29 of 32 characters, a 119-character headline against about 90 advised, a sub at 219 of 220, both action labels at 18 of 20, a portrait photograph in a landscape crop, and Headline size left at Display where the content wanted Medium.
-- **The roster** — all eighteen, what each is for, what it settles, and its header mode.
-- **The shared field list** — the union of everything the eighteen need, with types, caps and which designs draw each field. This is the contract that makes design-switching safe: a design may draw fewer fields, but none may need one that is not on the list, and fields a design does not draw are kept rather than cleared.
-- **The consistency pass** — §9, written after all eighteen were drawn: what was checked, the eight things that were wrong, and the pattern in them. Every control list in this document was rewritten from its drawn panel as part of it; where the two ever disagree again, **the drawn panel is the authority**.
+- **The roster** — all seventeen, what each is for, what it settles, and its header mode.
+- **The shared field list** — the union of everything the seventeen need, with types, caps and which designs draw each field. This is the contract that makes design-switching safe: a design may draw fewer fields, but none may need one that is not on the list, and fields a design does not draw are kept rather than cleared.
+- **The consistency pass** — §9, written after all seventeen were drawn: what was checked, the eight things that were wrong, and the pattern in them. Every control list in this document was rewritten from its drawn panel as part of it; where the two ever disagree again, **the drawn panel is the authority**.
 
-## Hand-offs out of A4
+## What A4 leaves to other categories
+
+Under the rule that no design ever turns into another design, no A4 design becomes another design. This table is about **category boundaries** — work that belongs to another category — not about designs swapping at runtime.
 
 | Boundary | Owner |
 |---|---|
-| Search results, the overlay, its keyboard model | A23 Search |
 | The post as subject — excerpt, author, reading time, more than one post | A19 Featured and Spotlight |
 | A set of more than one quotation | A8 Testimonials |
 | Rotating anything | A2·9 Rotator |
@@ -783,19 +768,76 @@ In `A4-0 Category Proof.dc.html`:
 
 ## Reconciliation notes
 
-**Frames changed in this pass.** All eighteen control-panel frames — Padding and Ground rows retired; the universal trio drawn outside each list, locked with the reason shown on 4, 9, 10, 14 (Background role) and 8, 18 (Vertical spacing); Member visibility added everywhere but 11; footer counts rewritten. New control rows drawn: 4's Scrim, 7's Issue line source and Standfirst source, 8's and 9's Alignment, 11's three member rows, 13's five-value Which post plus Show tag and Show date, 15's Search icon slot. New section frames: 4's scrim triptych (Subtle · Standard · Strong) and 11's signed-in members line. Annotation-only panel changes: 3's and 10's field notes, 14's cue label, 15's placeholder, 16's quote fields, 17's Ghost-locked title. No layout was redesigned, and no "Preview" control existed in A4 to remove.
+**Frames changed in this pass.** All seventeen control-panel frames — Padding and Ground rows retired; the universal trio drawn outside each list, locked with the reason shown on 4, 9, 10, 14 (Background role) and 8, 18 (Vertical spacing); Member visibility added everywhere but 11; footer counts rewritten. New control rows drawn: 4's Scrim, 7's Issue line source and Standfirst source, 8's and 9's Alignment, 11's three member rows, 13's five-value Which post plus Show tag and Show date. New section frames: 4's scrim triptych (Subtle · Standard · Strong) and 11's signed-in members line. Annotation-only panel changes: 3's and 10's field notes, 14's cue label, 15's placeholder, 16's quote fields, 17's Ghost-locked title. No layout was redesigned, and no "Preview" control existed in A4 to remove.
 
 **Conflicts with earlier rulings, one line each.**
 
-1. **15's no-JS claim** — the spec ruled a real GET form to `/search/` and no module; Ghost has no server-rendered results, so the design now declares `search-overlay` and its no-JS state is the field plus an archive link. The search-landmark reading survives; the submitted state hands to the overlay.
+1. ~~**15's no-JS claim**~~ — **void: design 15 is deleted and A23 with it** (the deletion of design 15 Search, and of the Search category with it). Nothing in A4 posts a query anywhere. Kept for the record: the spec ruled a real GET form to `/search/` and no module; Ghost has no server-rendered results, so the design had declared `search-overlay` and its no-JS state is the field plus an archive link. The search-landmark reading survives; the submitted state hands to the overlay.
 2. **11's invalid wording** — "fixed copy, not a field" loses to the no-fixed-strings rule: it ships as a theme translation-catalog string.
-3. **11's shared email fields** — "change them once and both follow" vs the per-section override: reconciled as Inherit from site by default, override opt-in per section.
+3. **11's shared email fields** — "change them once and both follow" vs the per-section override: reconciled as **Site defaults** by default, override opt-in per section — renamed from “Inherit from site” because **no control in the library carries an Inherit value** (the rule that a shared control may offer fewer choices and must say why).
 4. **4's scrims** — "Fixed, not a control" vs the new Scrim control: Standard keeps the old 60/30 as the default, so an untouched site renders identically.
 5. **14's Picture focus** — "4's field, not a control on this design" vs image-focus-everywhere: resolved by placement — focus lives in the Image Picker popover on every image field and is a panel row nowhere, 4's included.
 6. **The shared floor's "every number is typed"** — Member count (2's Value source, 11's Show member count) is the named exception; the Ghost value renders verbatim, display only.
 7. **7's flagged `issueLine` invention** — stands; Latest post date is a source substitution, not a new field, and the typed field is kept when the source switches.
 8. **The six-control norm** — 7, 8 and 13 now run eight rows; legal under the lifted ~15 ceiling plus the universal trio, and Quick Controls stay the 3–5 highest-impact per design.
 9. **Member visibility on 11** — subsumed by the signed-in model per the ground rule; it is the one design without the four-value row, stated on its frame.
-10. **Fixed English** — 13's "Latest" and "Members only", 15's "Clear search" and 17's count grammar were fixed strings; all are translation-catalog strings now, and 14's "Read on", 15's placeholder and 11's members line are editable fields with defaults.
+10. **Fixed English** — 13's "Latest" and "Members only" and 17's count grammar were fixed strings; all are translation-catalog strings now (15's "Clear search" is void with the design), and 14's "Read on", 15's placeholder and 11's members line are editable fields with defaults.
 11. **A4-0 Category Proof** — its shared field list gains this pass's fields (`imageFocus`, `valueSource`, the sources on 7, the member rows on 11, Scrim, the two Alignments, the meta toggles on 13, the icon slot on 15, Member visibility); A4-0 was not redrawn this pass, and per the consistency rule the drawn panels are the authority until it is.
 12. **14's scroll cue** — no registry module then, none now; the **ARCHITECT: registry ruling** flag is on the frame as well as in this document, and no module name was coined.
+
+## Patch notes — design patch pass
+
+Two sittings are recorded here. The first applied the ten library-wide rules to A4 and is listed under **What changed**. The second — the **confirmation pass** — checked every rule against every design in the roster one by one, finished the work the first sitting left half-applied, and is listed under **Confirmed design by design**. Rules are named, never numbered: the letter-and-number labels elsewhere in the project are filing codes and say nothing about what a rule requires.
+
+Frames updated in the first sitting: all seventeen design panels (eyebrow counts), `A4-0 Category Proof`, `A4-1`, `A4-6`, `A4-9`, `A4-11`, `A4-12`, `A4-18`. Frame deleted: `A4-15 Search`.
+
+Frames updated in the confirmation pass: `A4-0 Category Proof` (the no-image table, the roster's three entries, the reference audit), `A4-2`, `A4-3`, `A4-4`, `A4-5`, `A4-10`, `A4-13`, `A4-14`. Nothing was redrawn: every change is a caption, a note or a spec-card sentence, and no layout, type scale, colour pack or spacing value moved.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| The deleted Search design | **Design 15 Search deleted** — frame, spec §15, roster row, both table rows, the `searchPlaceholder` field, 9 Contrast Band's reference to it, and its module. Numbering runs **1–14, 16–18**; 15 stays retired and is not reused. |
+| The deleted Search category | The Search category goes with it; `search-overlay` leaves A4 and the forward-reference list is corrected. Any hero action may point at **Ghost search** through the link picker. |
+| No design ever turns into another design | **6 Big Type**: the scale steps to the 64 px floor and then **the cap lifts** ⚑, instead of switching to 1 Centred. **18 Overlap Card**: with no image the card lands on the page's ground. **12 Offset Image**: the 1081 crop is its own media query. **1** and **12**'s header notes corrected — A1·4 renders on its own ground. **Confirmation pass:** the same rule applied to the seven places it had been missed — 3 Split, 4 Full Bleed, 5 Image Under, 10 Video Poster, 13 Latest Post, 14 Full Height and 2 Flush Left's 1024 rule — plus A4-0's no-image table and roster. "Hand-offs out of A4" is now "What A4 leaves to other categories", about category boundaries only. |
+| Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript | 11 Subscribe's ask is conditional on self-signup, members enabled, and a payment provider for a paid tier; its field controls stay disabled with the reason. **Confirmation pass:** the rule reaches past 11 — any design's action may be pointed at a Portal destination, so both notes (does not render where the site cannot support it; with JavaScript off nothing happens) are written into the shared floor and carried by the action editor on all seventeen. |
+| The no-JavaScript notice | **11's "posts natively" claim withdrawn** — new no-JavaScript frame, the notice at the form row's own height (46 px desktop, 48 px at ≤ 767). **The five form states are untouched.** |
+| A design may offer fewer choices on a shared control, and must say why | **"Inherit from site" → "Site defaults"** on 11's email-field override; no control in the library carries an Inherit value. The narrowings that remain each show their reason: Background role locked on 4, 9, 10 and 14; Vertical spacing locked on 8 and 18; Attribution narrowed on 16's contrast ground; Accent disabled with its ratio on 9. |
+| The Remove button never greys out | **Confirmation pass, correction.** A4's one repeater — 2 Flush Left's proof pairs — has no minimum, so Remove is always active and there is no floor. The earlier claim that Remove is "held active at the floor" with the clause "a proof row needs at least one pair" is withdrawn: it contradicted 2's own zero state. The claim that 13's hand-picked list keeps an active Remove is withdrawn too — 13 has no repeater. |
+| Item counts are a number picker | Nothing in A4 was a row of fixed counts, so nothing was replaced. 2's pairs are an authored list, Add pair with a per-row Remove, capped at three with the reason shown. **Confirmation pass, correction:** 13's hand-picked post was described as a stepper; it is one post, picked. |
+| Avatars with no photograph | **16's portrait shows one letter.** The pass first kept two initials, since the name is typed; the owner ruled for one letter everywhere on 28 August 2026, and the frame, the a11y note and the spec are drawn and written that way. No A4 design renders a Ghost author, so this is the category's only avatar. |
+| Mark the two free designs | **1 Centred and 2 Flush Left**, marked in the roster, offered as a suggestion for confirmation. |
+| Slider labels | **Already satisfied.** A4 draws no slider; every control is a named-value row whose title says what it affects and whose values reuse the standard words. |
+| Gap names are "Tight · Normal · Loose" | **Already satisfied.** A4 has no gap control, and no Tight/Even/Airy or Tight/Standard/Wide exists in the category to replace. |
+| Ctrl-K is unbound | Recorded: `command-palette` was never A4's. |
+
+### Confirmed design by design
+
+Each of the ten rules was read against each of the seventeen. Only the designs with a subject are listed; where a rule has no subject in a design, the design is silent on it rather than carrying a note about a rule that cannot apply to it.
+
+| Rule | Designs with a subject | Outcome |
+|---|---|---|
+| Avatars with no photograph | 16 | One letter, per the owner's ruling. No other design draws an avatar. |
+| The Remove button never greys out | 2 | No minimum, so Remove never has a floor. Earlier claim corrected. |
+| Slider labels | none | No slider in the category. |
+| Gap names | none | No gap control in the category. |
+| Item counts are a number picker | 2 | An authored list with a stated cap, not a row of counts. |
+| Fewer choices on a shared control, with the reason said | 4, 8, 9, 10, 11, 14, 16, 18 | Every narrowing shows its reason; no shared control renamed or extended; the swatch row is Base; no Inherit value anywhere. |
+| Mark the two free designs | 1, 2 | Marked in the roster. |
+| No design ever turns into another design | 2, 3, 4, 5, 6, 10, 12, 13, 14, 18 | All ten now name their own state. Nothing in the category resolves to another design. |
+| Member buttons are conditional | 11 by construction; all seventeen by destination | Both notes on any Portal-pointed action; 11's form conditional on the connected site. |
+| The no-JavaScript notice | 11 | The only design with a field; the notice replaces the form at the row's own height. |
+
+### Answered by the owner, 28 August 2026
+
+1. **Big Type's lifted cap — do not cut the headline.** At the 64 px floor the cap lifts and a long headline takes the lines it needs; no word is ever removed. The same answer given for the Footers category's big-type design now holds here, where the limit had been an explicit design rule. The flag is cleared on 6's frame and in §6.
+2. **The proof row keeps no minimum.** Zero pairs stays legal: the row disappears and the hero still reads. Remove is always active and never has to refuse, so the rule that the Remove button never greys out is satisfied by there being no floor at all.
+3. **The two member-button notes sit on the action's own editor,** and appear only when that action's destination is a Portal action — signup, signin or a paid tier. Fifteen designs whose actions point at ordinary URLs carry neither note.
+
+### Open questions
+
+**No open questions remain in this category.**
+4. **The portrait circle shows one letter,** not two — “Maya Okonjo” → M — whether the name was typed or came from Ghost. One rule across the library, and the second letter is given up deliberately.
+5. **The free pair stays 1 Centred and 2 Flush Left.** Both are picture-free, so a free theme is never gated on having photography.
+
+— End of specification —

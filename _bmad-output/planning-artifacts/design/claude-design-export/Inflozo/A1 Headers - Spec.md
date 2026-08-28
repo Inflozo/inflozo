@@ -1,18 +1,18 @@
 # A1 · Headers & Navigation — written specification
 
-Pack drawn: **Paper**. **All 16 designs complete.** Category artefacts (tokenisation proof, stress frame, shared field list, roster) are in **A1-0 Category Proof.dc.html**.
+Pack drawn: **Paper**. **15 designs complete** — numbering runs **1–8 and 10–16**; design 9 Search-Forward was deleted in the design patch pass and its number stays retired (Part B·B2). Category artefacts (tokenisation proof, stress frame, shared field list, roster) are in **A1-0 Category Proof.dc.html**.
 
-Frames: `A1-1 Rail` · `A1-2 Split Rail` · `A1-3 Stacked Masthead` · `A1-4 Overlay` · `A1-5 Floating Pill` · `A1-6 Drawer-First` · `A1-7 Mega Bar` · `A1-8 Utility + Nav` · `A1-9 Search-Forward` · `A1-10 Contrast Band` · `A1-11 Side Rail` · `A1-12 Boxed` · `A1-13 Centre Nav` · `A1-14 Icon Utilities` · `A1-15 Big Type` · `A1-16 Reveal` (all `.dc.html`)
+Frames: `A1-1 Rail` · `A1-2 Split Rail` · `A1-3 Stacked Masthead` · `A1-4 Overlay` · `A1-5 Floating Pill` · `A1-6 Drawer-First` · `A1-7 Mega Bar` · `A1-8 Utility + Nav` · *(no 9 — Search-Forward is deleted and the number stays retired)* · `A1-10 Contrast Band` · `A1-11 Side Rail` · `A1-12 Boxed` · `A1-13 Centre Nav` · `A1-14 Icon Utilities` · `A1-15 Big Type` · `A1-16 Reveal` (all `.dc.html`)
 
 **Frame set per design, from design 5 onward:** desktop 1440 light (primary) · the design's behaviour state · a hover/focus states frame · tablet 834 always, even when it only narrows · mobile 390 closed and open · dark desktop · an annotated accessibility frame · control panel · spec card. Designs 1–4 predate the last three of those; their states and accessibility notes live in their spec cards and in §0 below.
 
-**Controls-reconciliation pass, third round.** The whole category was audited against the PRD's control vocabulary and Ghost's verified data surface. This round reuses the shared editor primitives designed in **P0 · Editor primitives** — the inline text toolbar (P0·1), the icon slot + Icon Picker (P0·2), the item-list controls (P0·3), the member-aware action editor (P0·4), the "Populate from…" data panel (P0·5) and the editor state switcher (P0·6) — **by name, never redesigned**. What changed: the universal control trio moved outside every per-design list (and absorbed every "Height" row), search and the dark-mode toggle became controls on all sixteen, a second navigation source (Ghost prefixes) was added, the Actions vocabulary was defined precisely and given the P0·4 editor, fold thresholds became a control, every fixed English string was resolved, social rows were bound to Ghost, and nine designs took per-design corrections. Changed frames are listed at the head of §21 · Reconciliation notes. Earlier rounds' corrections (registry module names, six-slot structural descriptors) stand.
+**Controls-reconciliation pass, third round.** The whole category was audited against the PRD's control vocabulary and Ghost's verified data surface. This round reuses the shared editor primitives designed in **P0 · Editor primitives** — the inline text toolbar (P0·1), the icon slot + Icon Picker (P0·2), the item-list controls (P0·3), the member-aware action editor (P0·4), the "Populate from…" data panel (P0·5) and the editor state switcher (P0·6) — **by name, never redesigned**. What changed: the universal control trio moved outside every per-design list (and absorbed every "Height" row), search and the dark-mode toggle became controls on all fifteen, a second navigation source (Ghost prefixes) was added, the Actions vocabulary was defined precisely and given the P0·4 editor, fold thresholds became a control, every fixed English string was resolved, social rows were bound to Ghost, and nine designs took per-design corrections. Changed frames are listed at the head of §21 · Reconciliation notes. Earlier rounds' corrections (registry module names, six-slot structural descriptors) stand.
 
 ---
 
 ## 0 · Category-wide rules
 
-These apply to all 16 designs and are not repeated per design.
+These apply to all 15 designs and are not repeated per design.
 
 **Placement.** Site-wide furniture. Sits below the announcement bar (A2) and above everything else. Present on every template.
 
@@ -32,7 +32,7 @@ These apply to all 16 designs and are not repeated per design.
 
 Every placeable section carries **Background role**, **Vertical spacing** (Compact · Comfortable · Spacious) and **Top divider** (None · Line · Fade) **outside its own control list**, in the panel's universal block. On A1 they read as follows.
 
-- **Vertical spacing is the bar height.** Every per-design "Height (Compact · Comfortable · Spacious)" row was that control wearing a local name and has been **removed from all sixteen lists**; the universal row carries it, and each design's spec keeps its px readings (Comfortable = 76 on the bars, etc.). Genuinely different ladders keep their own names and stay in the lists: A1·3's **Masthead height** (it measures one tier, not the section), A1·15's **Wordmark size** (type scale, not spacing — but its "Padding" row was the duplicate and is removed). A1·11 has no height at all: its universal Vertical spacing row is **disabled with the reason shown** ("A fixed rail fills the viewport — it has no height to set").
+- **Vertical spacing is the bar height.** Every per-design "Height (Compact · Comfortable · Spacious)" row was that control wearing a local name and has been **removed from all fifteen lists**; the universal row carries it, and each design's spec keeps its px readings (Comfortable = 76 on the bars, etc.). Genuinely different ladders keep their own names and stay in the lists: A1·3's **Masthead height** (it measures one tier, not the section), A1·15's **Wordmark size** (type scale, not spacing — but its "Padding" row was the duplicate and is removed). A1·11 has no height at all: its universal Vertical spacing row is **disabled with the reason shown** ("A fixed rail fills the viewport — it has no height to set").
 - **Background role** offers **Background · Surface** on a header — never Contrast, because an inverted header is A1·10, a design, not a setting (§19's own rule: two designs that differ only by a control value are one design). **Locked, with the reason shown:** A1·4 ("Transparent over the hero is this design"), A1·10 ("The contrast band is this design"), A1·12 ("The box sits on the page ground; its fill is the Box treatment control"). On A1·5 it sets the page ground around the capsule; the capsule itself stays `surface` (that is the design). A1·11's former "Rail ground" row was this control wearing a local name and is removed; see §21 for the fate of its Contrast value.
 - **Top divider** is the seam **above** the header — under the announcement bar when one is present. It is distinct from the designs' own bottom-edge rows, which are renamed **"Divider under"** wherever the old name was the bare "Divider" (A1·1, A1·8, A1·13); A1·2's "Hairline under" and A1·3's "Rules" already said which edge they mean.
 
@@ -40,11 +40,11 @@ Every placeable section carries **Background role**, **Vertical spacing** (Compa
 
 ### 0·2 · Editing — what is inline, what is locked, what is picked
 
-- **Every visible authored text is editable inline** with the shared floating toolbar (P0·1: bold / italic / underline / link; the link popover carries "Open in new tab" and the rel toggles `nofollow` · `noreferrer` · `sponsored`). That includes wordmark-as-text, taglines, nav-item labels in Authored mode, children, descriptions, column titles, `stripNote`, the strip's authored items, `featuredHeading`, `railHeading`, the BY TOPIC / BY AUTHORS headlines, `searchPlaceholder`, and every action label via its P0·4 card.
+- **Every visible authored text is editable inline** with the shared floating toolbar (P0·1: bold / italic / underline / link; the link popover carries "Open in new tab" and the rel toggles `nofollow` · `noreferrer` · `sponsored`). That includes wordmark-as-text, taglines, nav-item labels in Authored mode, children, descriptions, column titles, `stripNote`, the strip's authored items, `featuredHeading`, `railHeading`, the BY TOPIC / BY AUTHORS headlines, and every action label via its P0·4 card.
 - **Ghost-owned content never shows the toolbar**: site title, site description (the tagline default), post titles, post dates, excerpts, tag names, author names, member name/tier/renewal, and nav labels in **From Ghost navigation** mode. Clicking it shows the P0·1 plain-text lock pill ("Site title — plain text, set in Ghost" / "Edit navigation in Ghost"); editing site title and description edits the Ghost setting.
 - **Every URL field opens the Ghost-aware Link Picker** (the P0·1 link popover): `ctaUrl`, child targets, authored strip items, authored column links, foot links, the P0·4 Link rows (Portal actions first).
 - **Every image field carries an Image focus (Centre · Top · Bottom), reachable from the Image Picker popover** — never a hidden field. A1's authored image fields: `logo`, `logoLight`, A1·15's logo image. Post feature images (A1·6, A1·7) are Ghost's and take no focus control here.
-- **Buttons accept an optional icon before or after the label**, from the Icon Picker with its size/colour-role popover (P0·2 button-icon rules: always Small, inherits the label colour). Applies to the primary button and the ghost action in all sixteen.
+- **Buttons accept an optional icon before or after the label**, from the Icon Picker with its size/colour-role popover (P0·2 button-icon rules: always Small, inherits the label colour). Applies to the primary button and the ghost action in all fifteen.
 - **No "Preview"-type control exists in any panel.** A1 shipped none (verified design by design); states are the editor's P0·6 switcher, audiences are View as.
 
 ### 0·3 · Actions, defined precisely
@@ -55,14 +55,34 @@ The **Actions** control's values name the slots, not fixed strings: **None · Si
 
 **No section-level Member Visibility on A1.** The category's CTA-bearing designs would ordinarily carry it (Everyone · Logged out · Free · Paid), but a site header must render for every audience; the P0·4 per-action model subsumes every legitimate use. Recorded in §21.
 
-### 0·4 · Search and the dark-mode toggle — on all sixteen
+### 0·4 · Search and the dark-mode toggle — on all fifteen
 
-- **"Search in header: On · Off"** is a control on **all 16 designs**, drawn with the shared 38 px affordance (icon button in the bar, 44 px target on mobile, labelled field in the drawer; opens the A23 surface via `search-overlay`). Local names stay where the placement is the point: "Search in pill" (5), "Search in band" (10), "Search in rail" (11), "Search at the top" (16). On A1·2 it lives inside the Right cluster values; on A1·14 inside the Icons values — those two lists are the control there, stated in each sidebar. On A1·9 it is **forced On and shown locked with the reason** ("The field is the design"). Default off elsewhere, as before.
-- **"Dark mode toggle: On · Off"** is a control on **all 16 designs**, drawn by the registry **`mode-toggle`** module and **offered only when the project ships both modes** (otherwise the row is absent, not disabled). Placement when On: the standard 38 px icon button beside the search affordance in the bar's utility cluster, plus a switch row in the drawer, the two kept in sync. Local exceptions: A1·14 draws it inside its Icons cluster (its Icons values are the control); A1·8's toggle no longer lives in the strip (see §8). **JS off:** "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden."
+- **"Search: Off · Icon · Button · Bar"** (Part B·B1) is a **standing control on all 15 designs**, and per the owner's ruling it sits **outside the per-design control count**, like the Design picker. **Default: Icon.**
+  - **Icon** — the shared 38 px affordance established in A1·2, 44 px hit area, accessible name "Search".
+  - **Button** — a labelled 38 px button, with or without the glyph.
+  - **Bar** — a field-shaped trigger. **It looks like a field and is a button** ⚑: no caret, and clicking anywhere in it opens Ghost's search rather than accepting a keystroke we would then have to swallow. At 390 it draws as the labelled row at the head of the design's own drawer.
+  - **Off** — nothing renders and the siblings close up; no reserved gap.
+  - **All three forms do exactly one thing on click: open Ghost's native search.** Everything after the click is Ghost's — its overlay opens in a frame our stylesheet cannot reach, and its index holds titles, excerpts, tags and authors, not article text. **Every search overlay, results panel and expanding field in this category is removed** (Part B·B1), and **design 9 is deleted** (Part B·B2).
+  - **The control is named "Search" on every design** — no "Search in pill", "Search in band", "Search in rail" or "Search at the top": a universal control may not be renamed per design (Part A·A6). Where search previously sat inside a compound value it leaves that value: **A1·2's Right cluster** and **A1·14's Icons** (on A1·14 the glyph still draws in the cluster when the control is at Icon).
+  - **The link picker also gains "Ghost search" as a destination** (P0·1, SITE group), so any existing button or link in any category can open search with no new control and no new design.
+  - **No JavaScript:** the trigger renders and the click does nothing, because Ghost's search is Ghost's own script ⚑. **No design binds Ctrl-K** (Part B·B5) — Ghost already binds it on every site.
+- **"Dark mode toggle: On · Off"** is a control on **all 15 designs**, drawn by the registry **`mode-toggle`** module and **offered only when the project ships both modes** (otherwise the row is absent, not disabled). Placement when On: the standard 38 px icon button beside the search affordance in the bar's utility cluster, plus a switch row in the drawer, the two kept in sync. Local exceptions: A1·14 draws it in its icon cluster, as its own toggle in that labelled group (§0·9); A1·8's toggle no longer lives in the strip (see §8). **JS off:** "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden."
+
+### 0·4a · What the patch pass changed category-wide
+
+- **Avatars (Part A·A1).** Where a header renders a person from Ghost — A1·6's and A1·7's post references — an author with no photograph shows **one letter**, not two. Two initials survive only in lists the user types themselves, of which A1 has none. A1·14's member avatar was already removed by earlier ruling.
+- **Lists with a floor (Part A·A2).** Any authored list in an A1 panel — a dropdown's children, A1·8's strip links — keeps **Remove visible and active at its minimum**; the click answers with the floor in this category's words: **"A dropdown needs at least one child. Remove the parent instead, or point it at a page."**
+- **Counts (Part A·A5).** "Nav items before More" is a **stepper**, capped per design with the cap's reason stated; "Fit to width" is a separate toggle (§0·6). No count in this category is a row of fixed buttons.
+- **Universals (Part A·A6).** The three universal controls may narrow with a stated reason — A1·4's Background role is locked, and says why — and may never be renamed or extended. The colour swatch row is **Base**. **A1 offers no "Inherit" value anywhere**, and none was drawn.
+- **Gap names (Part A·A4).** A1·13's Nav spacing reads **Tight · Normal · Loose**.
+- **No design becomes another (Part A·A8).** §17.8, rewritten. Per design: §4, §8, §11, §15, §16.
+- **Member asks (Part A·A9).** Sign in and Subscribe **do not render when the connected site has self-signup off**, and a paid ask needs a payment provider; both open Portal, so **with JavaScript off nothing happens**. Stated in every A1 panel that carries an action, via the P0·4 card.
+- **Ctrl-K is unbound (Part B·B5).** Ghost binds it on every site.
+- **[Free], two per category (Part A·A7):** **1 Rail** and **13 Centre Nav** — the two plainest bars; the distinctive ones (7 Mega Bar, 11 Side Rail, 15 Big Type, 4 Overlay, 16 Reveal) stay paid. **Marked as a suggestion pending the owner's list — confirmed in this pass.**
 
 ### 0·5 · Two navigation sources
 
-**"Nav children: Authored in Inflozo (default) · From Ghost navigation (prefixes)"** — a category-wide control in the Data group of all sixteen.
+**"Nav children: Authored in Inflozo (default) · From Ghost navigation (prefixes)"** — a category-wide control in the Data group of all fifteen.
 
 - **Authored in Inflozo** (default): as before — Ghost's flat primary nav supplies the items; children, grandchildren and descriptions are authored here with the P0·3 item controls.
 - **From Ghost navigation (prefixes):** the whole tree is read out of Ghost's primary navigation by label prefix. A label prefixed **`+`** is a dropdown parent (its URL is `#` in Ghost; if a URL is present, it is ignored). The **`-`**-prefixed items immediately after it are its children (usual URLs); after the last child, the next item is a new parent or a plain link. A dropdown may sit first, middle or last. **One child level only — grandchildren remain Inflozo-authored** in either mode. In this mode every nav list in the sidebar is **read-only rows with an "Edit navigation in Ghost" row — never an Add button** (P0·3's Ghost-sourced list card).
@@ -71,7 +91,7 @@ The **Actions** control's values name the slots, not fixed strings: **None · Si
 
 ### 0·6 · Fold thresholds
 
-**"Nav items before More: Auto · Four · Five · Six"** joins the bar designs — **A1·1, A1·4, A1·5, A1·7, A1·9, A1·10, A1·12, A1·13, A1·14, A1·15, A1·16**. "Auto" is the design's drawn threshold (4 on all of these) adjusted down when the actions and search leave no room; Four/Five/Six pin it, so a five-item site is never forced into More. §20's per-design table reads as the Auto values. Not offered on A1·2 (the Split control owns distribution; fold stays at 6), A1·3 (the full-width row caps at 8 and scrolls at tablet instead of folding), A1·6 (uncapped — no More exists), A1·11 (the column folds at 7 to a More row; a vertical rail has no width pressure) — each stated in its sidebar.
+**"Nav items before More"** joins the bar designs — **A1·1, A1·4, A1·5, A1·7, A1·10, A1·12, A1·13, A1·14, A1·15, A1·16**. Per **Part A·A5 it is a number picker**, not a row of fixed values: a stepper from 3 to each design's own cap, with the cap's reason stated ("this bar holds four before More"). **"Auto" survives as a separate "Fit to width" toggle above the stepper** ⚑ — with it on, the stepper is disabled and shows the reason, because a measured threshold and a chosen number cannot both be in force. Flagged as an interpretation: A5 bans fixed count buttons but does not say where an automatic mode goes. "Auto" is the design's drawn threshold (4 on all of these) adjusted down when the actions and search leave no room; a number set on the stepper pins it, so a five-item site is never forced into More. §20's per-design table reads as the Auto values. Not offered on A1·2 (the Split control owns distribution; fold stays at 6), A1·3 (the full-width row caps at 8 and scrolls at tablet instead of folding), A1·6 (uncapped — no More exists), A1·11 (the column folds at 7 to a More row; a vertical rail has no width pressure) — each stated in its sidebar.
 
 ### 0·7 · Visitor-facing strings — no fixed English ships
 
@@ -85,8 +105,6 @@ Every string a visitor can read is either an **editable field with a default** o
 | Drawer group labels ("Navigation", "Follow", "Preferences") | **Catalog strings** |
 | Drawer search placeholder ("Search {site name}") | **Catalog string** with the site-name placeholder |
 | "Sign in", "Subscribe", "Account" | **Fields** — the P0·4 per-state labels, with those defaults |
-| A1·9's field placeholder | **Field** `searchPlaceholder` (as before); its default's "essays and interviews" noun is part of the default, replaced wholesale when edited |
-| A1·9's "No matches for '…' — try a tag", "See all results", the live count line | **Catalog strings** with placeholders |
 | Foot-link labels carrying live counts ("All {n} sections", "All {n} tags", "All authors") | **Catalog strings** with the count placeholder |
 | "Dark mode" (the toggle's name) | **Catalog string** |
 | A1·3's date line | Not a string — a locale-formatted date; see §3 |
@@ -94,6 +112,17 @@ Every string a visitor can read is either an **editable field with a default** o
 ### 0·8 · Social links
 
 Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` **binds to Ghost's social accounts**: **Facebook and X only on Ghost 5.x; all nine platforms on ≥ 6.36** — the sidebar rows are version-gated and absent on the older data surface, not disabled. Each glyph is a **P0·2 icon slot** (defaults from the Icon Picker's Social/Brands group, swappable); rows follow Ghost's field order (§20 — no reorder handles). Authored extras beyond Ghost's fields remain, as P0·3 authored rows.
+
+### 0·9 · One toggle per thing — no compound values
+
+**The owner's ruling, this pass, and it holds for every header.** A control whose values combine two or more independent things with a "+" is **not one control — it is one toggle per thing**. "Links + note + social", "Nav + Subscribe", "Search + RSS + Dark mode" and "Icon + label" each hid two or three separate decisions behind a list of the combinations someone happened to draw, so an editor who wanted an unusual pair had to hunt for it in the list or do without. **The panels gain rows and the editor gains granular control; that trade is accepted.**
+
+- **What splits.** Any value set of the shape "A + B" or "A · A + B · A + B + C". In this category: **8's Strip content** → **Social icons** · **Editorial note** · **14's Icons** → **RSS icon** · **Dark mode toggle** · **16's Returned contents** → **Wordmark** · **Subscribe** · **Sign in** · **6's Menu button** → **Icon** · **Label** · **11's Icons** (Off · Shown) → one **Row icons** toggle.
+- **What does not split.** A single-axis choice is still one control, because it names one thing with several settings rather than several things at once: a **form** (Search: Off · Icon · Button · Bar), a **width** (Pill width, Band width, Rail width, Box width), a **placement** (Nav position, Nav placement, Rail side, Children open), a **ladder** (Vertical spacing, Wordmark size, Masthead height), a **ground** (Strip ground, Takeover ground, Returned ground), a **treatment** (Icon style, Box treatment, Primary action, Rules) and a **behaviour state** (On scroll, Hides after).
+- **What is always drawn is not a toggle.** A split group states its constant in the panel: the strip's links, the returned panel's nav, the icon cluster's search glyph (which the standing Search control owns) are always there and get no switch.
+- **A group with a floor keeps the last toggle on**, refusing to switch it off with the reason shown, in the words of the rule that the Remove button never greys out: "the menu button needs its icon or its label". Never dimmed, never hidden.
+- **Toggles are drawn as a labelled group** — the group name above the switches — so a split control still reads as one decision with parts, and the panel does not turn into an undifferentiated list of switches.
+- **Shared controls are not re-cut here.** The **Actions** control ("None · Sign in · Subscribe · Sign in + Subscribe") is a compound value and belongs to the shared editor controls every category uses, so splitting it changes all 33. **A1·2's local "Right cluster" is renamed to the shared Actions control** — which the rule against renaming a shared control already required — and whether Actions itself becomes two toggles is **open question 4** ⚑.
 
 **Shared components established here, reused verbatim for the rest of the library.**
 
@@ -106,7 +135,7 @@ Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` *
 | Ghost action | `text-muted` label, 14 px, no border in the bar; 1 px `border` and radius token when it appears as a full-width drawer button. Accepts a P0·2 icon. |
 | Overflow menu | `moreLabel` + 9 px caret, uses the dropdown panel. |
 | Drawer | Full-height panel on `surface` (or `contrast` for A1·4), 64 px close row, nav items in the heading font at 22–26 px, actions pinned to the foot, focus trapped. |
-| Search affordance | 38 px icon button (1 px `border`, radius token, 19 px glyph) in the bar; a 44 px target with a 20 px glyph on mobile; a labelled field in the drawer. Opens the A23 surface. |
+| Search affordance | 38 px icon button (1 px `border`, radius token, 19 px glyph) in the bar; a 44 px target with a 20 px glyph on mobile; at **Bar** a field-shaped button, and at ≤ 767 the labelled row at the head of the drawer. **It opens Ghost's own search and nothing else — there is no surface of ours behind it.** |
 | Mode toggle | 38 px icon button, on state a contrast fill, `aria-pressed`, name "Dark mode"; a switch row in the drawer, the two in sync. |
 
 **Accessibility floor for every design.** One `<header>` landmark; one `<nav aria-label="Primary">`. The wordmark links to `/` and is not an `<h1>` except on the home page. Dropdown triggers are `<button aria-expanded>`; panels close on Escape and on focus leaving. The drawer traps focus and returns it to its toggle. A skip-to-content link is first in focus order on every design. Visual focus is a 2 px `accent` ring at 2 px offset. DOM order follows reading order regardless of visual arrangement.
@@ -115,30 +144,31 @@ Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` *
 
 **Empty-data floor.** Zero nav items never leaves a ruled empty band: the nav row or the hairline that framed it is removed. Zero member actions shifts remaining content, it does not leave a gap. A missing logo image falls back to the wordmark as text, never to a broken-image box.
 
-**Behaviour modules.** All non-CSS behaviour in A1 comes from the fixed registry (FR-G7). A1 uses eight of its modules, `mode-toggle` now on all sixteen rather than two. `core` is present site-wide and is not repeated on the per-design lines. One registry addition is flagged for the architect: **`nav-transform`** (§0·5) — flagged, not coined. No A1 design is module-free, because navigation itself is a module in all sixteen.
+**Behaviour modules.** All non-CSS behaviour in A1 comes from the fixed registry (FR-G7). A1 uses seven of its modules, `mode-toggle` now on all fifteen rather than two. `core` is present site-wide and is not repeated on the per-design lines. One registry addition is flagged for the architect: **`nav-transform`** (§0·5) — flagged, not coined. No A1 design is module-free, because navigation itself is a module in all fifteen.
 
 | Module | What A1 uses it for | With JavaScript off (registry text, quoted) |
 |---|---|---|
 | `core` | The `.js-enabled` class every other module's CSS branches on. | "Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch." |
-| `nav-drawer` | The mobile drawer in all sixteen designs and A1·6's takeover: open and close, focus trap, page inert, scroll lock, focus returned to the trigger. | "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." |
+| `nav-drawer` | The mobile drawer in all fifteen designs and A1·6's takeover: open and close, focus trap, page inert, scroll lock, focus returned to the trigger. | "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." |
 | `header-scroll` | Every scroll state named in the category — sticky, shrink, solidify, re-form left, stick and narrow, stick and fill, collapse to bar, hide — and A1·16's direction-driven reveal. | "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." |
 | `accordion` | Click-to-open surfaces: nav dropdowns, More, A1·7's mega panel, A1·11's side panels and in-place child expansion, in-drawer child expansion. Owns `aria-expanded`, Escape, click-outside and hover intent. | "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." |
-| `search-overlay` | The search affordance wherever it is offered, and A1·9's field: debounce, minimum length, suggestion rows, recent-query store, combobox keys, live count — client-side over the Content API (§9). | "The trigger is a real `<form action="/search/" method="get">`, so search submits as a normal page navigation." |
 | `carousel` | A1·3's horizontally scrolling nav rail at ≤ 1023. | "The slide track is a native horizontally-scrollable `scroll-snap` strip — fully usable, only dots and arrow buttons are hidden." |
 | `reading-progress` | A1·3's 2 px rule on the pinned nav row; post and page templates only. | "The bar is hidden entirely (it is decorative)." |
-| `mode-toggle` | The dark-mode control on all sixteen (§0·4), kept in sync with the drawer's switch row. | "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden." |
+| `mode-toggle` | The dark-mode control on all fifteen (§0·4), kept in sync with the drawer's switch row. | "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden." |
 | **ARCHITECT: `nav-transform`** | The Ghost-prefix nav scheme (§0·5), A1·2's `|` marker, A1·6's and A1·7's prefix groups. | Owner ruling: Ghost's flat list renders as-is; nothing further is designed. |
 
-**Renamed from the first round.** M-sticky and M-reveal → `header-scroll` · M-disclosure → `accordion` · M-drawer → `nav-drawer` · M-search → `search-overlay` · M-scrollrail → `carousel` · M-progress → `reading-progress` · M-mode → `mode-toggle` · M-hero-probe → not a module, see finding 2. Every no-JS sentence written for those names is discarded in favour of the registry's.
+**No search module.** The trigger is ours; everything behind the click is Ghost's own script, so **no A1 design declares a search module** — the registry's search-overlay and search-expand modules are retired with the Search category (Part B·B1).
+
+**Renamed from the first round.** M-sticky and M-reveal → `header-scroll` · M-disclosure → `accordion` · M-drawer → `nav-drawer` · M-search → retired with the Search category (Part B·B1) · M-scrollrail → `carousel` · M-progress → `reading-progress` · M-mode → `mode-toggle` · M-hero-probe → not a module, see finding 2. Every no-JS sentence written for those names is discarded in favour of the registry's.
 
 **Two findings for the architect, not new modules.**
 
-1. **A1·16 watches scroll direction and no registry module does.** `header-scroll` is the closest and is what the design declares; the registry's `reveal` is a content module and is not this. Under `header-scroll`'s degradation A1·16 renders its resting state, which is A1·1 Rail in flow — so the no-JS answer is already right. What needs deciding is whether direction-watching is a named state of `header-scroll` or a thirty-second module.
+1. **A1·16 watches scroll direction and no registry module does.** `header-scroll` is the closest and is what the design declares; the registry's `reveal` is a content module and is not this. Under `header-scroll`'s degradation A1·16 renders **its own resting state — its bar, in flow** — so the no-JS answer is already right. It is not A1·1 and never was described as becoming it (Part A·A8). What needs deciding is whether direction-watching is a named state of `header-scroll` or a thirty-second module.
 2. **A1·4 must know whether the section below it has a loadable image.** No module inspects a neighbouring section, and the closest is `core`. The design therefore declares this as a server-side precondition rather than behaviour: the template resolves the image before render and picks A1·4 or A1·1. Nothing about that choice needs JavaScript. The related risk — a sticky transparent bar surviving past the hero when the transition module is absent — is on A1·4's own line.
 
 **Edit-safe** means the module does not run while the section is being edited and never writes to authored DOM, so the editor shows the resting state — the category motion rule above, stated as a property of the module. Two designs need an exception and say so on their own line: A1·6's takeover and A1·7's panel are pinned open while their contents are selected, because that is where their authored content lives.
 
-**No-JS baseline.** Composed from the registry sentences above, not from a rule of my own. Nav is a plain stacked link list below the logo with no hamburger; dropdowns, More, the mega panel and A1·6's takeover contents are native `<details>` and remain fully keyboard-operable; search is a real `GET` form; every header renders in its resting state with CSS `position: sticky` intact and no transition; A1·3's nav rail scrolls natively; the reading-progress rule is hidden and the dark-mode toggles fall to `prefers-color-scheme`. In Ghost-prefix nav mode the flat list renders as-is (§0·5, owner ruling). What is lost: the scroll transitions and every state that depends on them, the focus trap, the scroll lock, the inert page, hover intent, click-outside dismissal, typeahead and the manual mode control. Each design states its own outcome on its Behaviour module line.
+**No-JS baseline.** Composed from the registry sentences above, not from a rule of my own. Nav is a plain stacked link list below the logo with no hamburger; dropdowns, More, the mega panel and A1·6's takeover contents are native `<details>` and remain fully keyboard-operable; the search **trigger renders in whichever of its three forms is set and the click does nothing**, because Ghost's search is Ghost's own script (Part B·B1) ⚑; every header renders in its resting state with CSS `position: sticky` intact and no transition; A1·3's nav rail scrolls natively; the reading-progress rule is hidden and the dark-mode toggles fall to `prefers-color-scheme`. In Ghost-prefix nav mode the flat list renders as-is (§0·5, owner ruling). What is lost: the scroll transitions and every state that depends on them, the focus trap, the scroll lock, the inert page, hover intent, click-outside dismissal, typeahead, the manual mode control, **and search itself**. **Portal is script too:** the Sign in and Subscribe actions render and do nothing without it (Part A·A9). **A1 contains no email field**, so the no-JavaScript form notice (P0·4) has nothing to replace here — it belongs to the categories that carry forms. Each design states its own outcome on its Behaviour module line.
 
 **Flagged.** The registry, the module names and every no-JS sentence are FR-G7's and FR-G4's, not mine. What is mine in this pass: the reconciliation rulings recorded in §21, the mapping above, the two findings, the edit-safe definition, the two pinning exceptions, the structural-descriptor readings in §19 and the item-count ranges in §20.
 
@@ -146,7 +176,7 @@ Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` *
 
 ## 1 · Rail
 
-Logo left, nav inline beside it, actions right, hairline under. The library's baseline; every other design's sticky state falls back to it.
+Logo left, nav inline beside it, actions right, hairline under. The library's baseline, and the arrangement the category's sticky behaviour was specified against.
 
 **Descriptor.** The undecorated single row — logo, nav, actions, hairline — and the only design that adds nothing to it; four other designs fall back to this arrangement rather than inventing one.
 
@@ -156,7 +186,7 @@ Logo left, nav inline beside it, actions right, hairline under. The library's ba
 
 **Behaviour module.** `header-scroll` (Sticky, Shrink) · `accordion` (child dropdowns, More) · `nav-drawer` (the ≤ 767 drawer) · `mode-toggle` (when its control is On). All edit-safe. **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — so the bar renders complete and navigable at its resting height with the hairline, and Shrink never fires. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." — below 767 the four items stack under the wordmark instead of waiting behind a toggle.
 
-**Content fields.** `logo` (image, opt) · `siteTitle` (text, from Ghost, req) · `navItems[]` (link list, opt — Auto shows 4; the fold follows Nav items before More) · `navItems[].children[]` (link list, opt, ≤ 8 per parent, two levels, Authored mode) · `signInLabel` and both action labels/links via P0·4 · `ctaLabel` + `ctaUrl` (opt pair, ≤ 18 chars, optional `ctaLabelShort`) · `moreLabel` · `searchEnabled` (bool, default off) · `darkModeToggle` (bool, opt).
+**Content fields.** `logo` (image, opt) · `siteTitle` (text, from Ghost, req) · `navItems[]` (link list, opt — Auto shows 4; the fold follows Nav items before More) · `navItems[].children[]` (link list, opt, ≤ 8 per parent, two levels, Authored mode) · `signInLabel` and both action labels/links via P0·4 · `ctaLabel` + `ctaUrl` (opt pair, ≤ 18 chars, optional `ctaLabelShort`) · `moreLabel` · `searchTrigger` (Off · Icon · Button · Bar, default Icon) · `darkModeToggle` (bool, opt).
 
 **Controls.**
 
@@ -165,10 +195,11 @@ Logo left, nav inline beside it, actions right, hairline under. The library's ba
 | On scroll | Static · Sticky · Shrink |
 | Nav position | Beside logo · Centre · Right |
 | Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
-| Nav items before More | Auto · Four · Five · Six |
+| Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
 | Divider under | Hairline · Shadow · None |
-| Search in header | On · Off |
 | Dark mode toggle | On · Off (offered only when the project ships both modes) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **Data.** Primary nav from Ghost; Nav children per §0·5. Empty nav → logo + actions only, full height, hairline kept. Members off in Ghost → both actions hidden, nav unchanged in position.
 
@@ -194,7 +225,7 @@ Wordmark centred, nav divided around it, utilities right. Same components, one a
 
 **Behaviour module.** `header-scroll` (Re-form left, Hide) · `accordion` (More, and the drawer's in-place child expansion) · `nav-drawer` · `mode-toggle`. Edit-safe; Re-form left is the one state in A1 that changes arrangement, and suspending it in the editor means the resting three-column grid is always what the user edits. **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — the resting split therefore holds for the whole page and neither Re-form left nor Hide fires. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." — below 767 the split becomes one stacked list under the centred wordmark. The `|` marker (below) is `nav-transform` and gets no no-JS accommodation (§0·5).
 
-**Content fields.** Shared list. Uses `logo`, `siteTitle`, `navItems[]` (6 shown at ≥ 1024, 3 at 768–1023, overflow folds to More — 1–3 left, 4–6 right), `children[]`, `ctaLabel`/`ctaUrl`, `signInLabel`, `searchEnabled`, `moreLabel`.
+**Content fields.** Shared list. Uses `logo`, `siteTitle`, `navItems[]` (6 shown at ≥ 1024, 3 at 768–1023, overflow folds to More — 1–3 left, 4–6 right), `children[]`, `ctaLabel`/`ctaUrl`, `signInLabel`, `searchTrigger`, `moreLabel`.
 
 **The `|` marker.** In Ghost navigation, a marker item whose label is `|` (URL `#`, ignored) splits the row: items before it sit left of the wordmark, items after sit right. **The marker wins when present; the Split control (Even · Weight left · Weight right) is the no-marker fallback** — that precedence is the rule, stated in the sidebar whenever a marker is in force ("Split set by the | item in Ghost navigation"). Declared under **ARCHITECT: `nav-transform`** (§0·5); without JS the flat list renders as-is, marker visible — nothing further designed, by owner ruling.
 
@@ -204,18 +235,18 @@ Wordmark centred, nav divided around it, utilities right. Same components, one a
 |---|---|
 | Wordmark size | Small · Medium · Large |
 | Split | Even · Weight left · Weight right (fallback when no `\|` marker) |
-| Right cluster | Subscribe · Search + Subscribe · Search only · Sign in + Subscribe · Sign in only · Hidden |
+| Actions | None · Sign in · Subscribe · Sign in + Subscribe (the shared control; each slot a P0·4 card) |
 | On scroll | Static · Re-form left · Hide |
 | Hairline under | On · Off |
 | Dark mode toggle | On · Off |
 
-Search on this design lives inside the Right cluster values — stated in the sidebar; there is no separate toggle. The two new cluster values put `signInLabel` on the desktop bar at last — before this pass it silently lived in the drawer even on desktop.
+**The local "Right cluster" is gone** (Part B·B1 and Part A·A6, with §0·9): search left it for the standing category control, and what remained was the shared **Actions** control wearing a local name — so it is now called Actions, with the shared values. The two new cluster values put `signInLabel` on the desktop bar at last — before this pass it silently lived in the drawer even on desktop.
 
 **Data.** Ghost nav, split by index or by marker. Odd counts weight left; at 5 items "Even" is not achievable and degrades to Weight left, stated in the sidebar. 0 items → centred wordmark alone at Comfortable height.
 
 **Responsive.** 1440–1024 three-column grid. 1023–768 even narrowing, items 4+ to More. ≤ 767 hamburger left / wordmark centre / search right; the CTA moves to the drawer and pins to its foot on a hairline, because a centred wordmark and a button cannot share a 390 bar without one dropping below its floor. In the drawer, children expand in place beneath their parent (indented against a hairline, body size, accent caret) rather than sliding to a second panel; opening one parent collapses any other.
 
-**Behaviour.** *Re-form left*: on scroll the header becomes A1·1 Rail at 58 px — logo left, nav single-file. This is the only structural change on scroll permitted anywhere in the library, and it is why Rail is design 1.
+**Behaviour.** *Re-form left*: on scroll the header re-forms to its own 58 px bar — logo left, nav single-file, its own tokens throughout (Part A·A8: a scroll state, never another design). This is the only structural change on scroll permitted anywhere in the library, and it is why Rail is design 1.
 
 **Empty state.** No CTA and no search → nav splits 3/3 and the right column holds nothing; the grid keeps the wordmark optically centred rather than re-centring on content.
 
@@ -249,8 +280,9 @@ Masthead row (date · wordmark + tagline · actions) over a ruled nav row. The n
 | Date | Show · Hide |
 | Date shown | Site timezone (default) · Custom date (Date Picker) |
 | Reading progress | On · Off (post and page templates only; disabled elsewhere with the reason shown) |
-| Search in header | On · Off |
 | Dark mode toggle | On · Off |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **The date.** Site timezone renders today's date in Ghost's site timezone, formatted for the site locale, **computed client-side by `core`'s date stamp — never server-rendered**, because a server-rendered "today" goes stale under page caching. Custom date renders the picked date as authored. **A visitor-local browser date is deferred by owner ruling — Site timezone and Custom are the full value set.** Without JS the Site-timezone date is absent (it is decoration, not content); Custom renders, being server-rendered content.
 
@@ -276,7 +308,7 @@ Rail's arrangement with no ground of its own, sitting on the first section's ima
 
 **Archetype.** overlay
 
-**Behaviour module.** `header-scroll` (Solidify) · `accordion` · `nav-drawer` · `mode-toggle`. The hero probe is **not a module**: no registry module inspects a neighbouring section, so the precondition is resolved server-side before render and the editor shows its outcome — A1·4 over a loadable image, A1·1 without one — as a structural choice (§0, second finding). Edit-safe. **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — the transparent state renders over a server-checked hero and Solidify never fires; because `position: sticky` still works, a pinned transparent bar can outlive the hero it was contrast-checked against, which is a consequence of the registry's degradation and a finding for the architect rather than a fallback I may write. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
+**Behaviour module.** `header-scroll` (Solidify) · `accordion` · `nav-drawer` · `mode-toggle`. The hero probe is **not a module**: no registry module inspects a neighbouring section, so the precondition is resolved server-side before render and the editor shows its outcome — **transparent over an image, or the same design over the page ground with the scrim off and normal lockup tokens when there is no image** — as a structural choice (§0, second finding). **The precondition is read at build time, never in the browser** (Part C·A1): a slow or broken image changes nothing, and the design never becomes another design (Part A·A8). Edit-safe. **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — the transparent state renders over a server-checked hero and Solidify never fires; because `position: sticky` still works, a pinned transparent bar can outlive the hero it was contrast-checked against, which is a consequence of the registry's degradation and a finding for the architect rather than a fallback I may write. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
 
 **Content fields.** Shared list plus `logoLight` (image, opt) — a second logo file for dark imagery. If absent, "Header colour on image: Light" renders the wordmark as text rather than tinting the user's file.
 
@@ -289,19 +321,20 @@ Rail's arrangement with no ground of its own, sitting on the first section's ima
 | On scroll | Stay transparent · Solidify to surface · Solidify to contrast |
 | Drawer | Full screen · Sheet |
 | Actions in bar | On · Off (moves both to the drawer) |
-| Nav items before More | Auto · Four · Five · Six |
-| Search in header | On · Off |
+| Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
 | Dark mode toggle | On · Off |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 Background role is **locked** here, with the reason shown: transparent over the hero is this design.
 
-**Data.** Ghost nav as elsewhere. **Depends on the section below it:** if the first section has no image, or its image fails to load, the header renders as A1·1 Rail on the pack's surface and the sidebar says so. No transparent header over a flat pack colour.
+**Data.** Ghost nav as elsewhere. **Whether this header is transparent is decided when the theme is built, from what is placed below it — never in the visitor's browser** (Part C·A1), so a slow or broken image changes nothing. With no image in the first section the header **keeps its own arrangement over the page ground**, drops the scrim and takes the normal lockup tokens instead of the inverted ones; the editor says so in one line. It does not become another design (Part A·A8). The sidebar says so. No transparent header over a flat pack colour.
 
 **Responsive.** 1440–768 transparent, nav folds per the fold control. ≤ 767 wordmark + toggle only; both actions move to the drawer foot.
 
 **Behaviour.** *Solidify*: crossing the hero's bottom edge the bar takes `background` at 94 % with the md shadow, the logo mark returns to `accent`, the inverted button becomes the standard accent button, height 76 → 64. One transition, no in-between. *Drawer*: full-screen on the `contrast` token — the only use of contrast in A1 — so the drawer never has to solve legibility against the image behind it.
 
-**Empty state.** No hero image → falls back to Rail (above). No CTA → nav gains the space; the scrim is unchanged, since it serves the hero text as well as the header.
+**Empty state.** No hero image → this design keeps its own arrangement over the page ground, with the scrim off and the normal lockup tokens (Part A·A8). No CTA → nav gains the space; the scrim is unchanged, since it serves the hero text as well as the header.
 
 **Accessibility.** AA is checked against the **scrimmed** image, not the raw image. Subtle is the minimum that passes at the drawn crop; choosing None disables the Light/Dark auto-pick and warns. The accent is deliberately absent from the transparent state because a pack accent is not guaranteed to hold contrast over an arbitrary photograph — the inverted action uses the pack's lightest surface instead.
 
@@ -321,7 +354,7 @@ A capsule on `surface`, inset from three sides, with the page ground visible aro
 
 **Content fields.** Shared list, no additions.
 
-**Controls.** Pill width (Narrow · Page gutter · Edge to edge) · On scroll (Static · Stick · Stick and narrow) · Lift (Flat · Subtle · Lifted) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav items before More (Auto · Four · Five · Six) · Search in pill (On · Off) · Dark mode toggle (On · Off). Background role sets the page ground around the capsule; the capsule stays `surface` — that is the design.
+**Controls.** Pill width (Narrow · Page gutter · Edge to edge) · On scroll (Static · Stick · Stick and narrow) · Lift (Flat · Subtle · Lifted) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role sets the page ground around the capsule; the capsule stays `surface` — that is the design.
 
 **Data.** Ghost primary nav. Empty nav → the pill shrinks to logo + actions and stays centred at Page-gutter width. Members off → both actions hidden; with no actions and no search the pill narrows to its content, the one case where it stops tracking the page gutter.
 
@@ -347,7 +380,7 @@ No nav in the bar at any width: wordmark, labelled Menu button, search, one acti
 
 **Archetype.** overlay
 
-**Behaviour module.** `nav-drawer` (the takeover: open and close, focus trap, page inert, scroll lock, Menu → Close) · `accordion` (children inside the takeover) · `mode-toggle` · `search-overlay` (the bar's search affordance). No `header-scroll` — this design has no scroll control. Ghost-mode takeover columns are **ARCHITECT: `nav-transform`** (§0·5). Edit-safe with a deliberate exception: the takeover is **pinned open** while any of its content is selected, since all the authored navigation lives there. **JS off:** "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." — so there is no takeover and no Menu button; the whole navigation renders as a stacked link list below the wordmark, with the secondary list and the featured post following it in the same flow, both being server-rendered content rather than module output. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." keeps the children openable inside that list. In Ghost-prefix mode the flat list renders as-is (owner ruling, §0·5). This is the widest gap between designed and degraded state in the category, and it is the registry's answer rather than a failure — noted for the architect.
+**Behaviour module.** `nav-drawer` (the takeover: open and close, focus trap, page inert, scroll lock, Menu → Close) · `accordion` (children inside the takeover) · `mode-toggle`. No `header-scroll` — this design has no scroll control. Ghost-mode takeover columns are **ARCHITECT: `nav-transform`** (§0·5). Edit-safe with a deliberate exception: the takeover is **pinned open** while any of its content is selected, since all the authored navigation lives there. **JS off:** "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown." — so there is no takeover and no Menu button; the whole navigation renders as a stacked link list below the wordmark, with the secondary list and the featured post following it in the same flow, both being server-rendered content rather than module output. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." keeps the children openable inside that list. In Ghost-prefix mode the flat list renders as-is (owner ruling, §0·5). This is the widest gap between designed and degraded state in the category, and it is the registry's answer rather than a failure — noted for the architect.
 
 **Content fields.** Shared list — the only design that uses all of it, with no cap on `navItems`, both levels of children, `secondaryNav`, `socialLinks`. Adds `featuredPost` (bound via the Data group), `featuredHeading` (text, default "Latest", editable inline), `menuLabel` (default "Menu"), `closeLabel` (default "Close").
 
@@ -355,15 +388,16 @@ No nav in the bar at any width: wordmark, labelled Menu button, search, one acti
 
 | Control | Values |
 |---|---|
-| Menu button | Icon + label · Label only · Icon only |
+| The menu button | **Icon** toggle · **Label** toggle — one toggle each (§0·9); the last one on refuses to switch off, with the reason shown |
 | Takeover | Full page below bar · Panel from right · Panel from left |
 | Takeover ground | Surface · Contrast |
 | Featured post in menu | On · Off |
 | Show date | On · Off (on the featured post) |
 | Show excerpt | On · Off (on the featured post) |
 | Subscribe in bar | On · Off |
-| Search in header | On · Off — the 38 px icon button beside Subscribe and Menu |
 | Dark mode toggle | On · Off (a switch row above the takeover's secondary links) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4) — at **Icon** it is the 38 px icon button beside Subscribe and Menu.
 
 **Data.** The featured-post block populates from the **P0·5 panel in single-post mode: Latest · Featured · By tag · By author · Hand-picked** — "Latest post · Chosen post" was the same idea with a private vocabulary and is replaced. 0 posts → the block is dropped and the columns re-centre. Primary nav fills column one, secondary nav the row beneath column two. **Empty primary nav → the Menu button is not rendered at all** — a takeover with nothing in it is a dead end — and the bar becomes wordmark + search + action.
 
@@ -393,7 +427,7 @@ Rail's bar with a full-width panel behind it: children in columns with descripti
 
 **Content fields.** Shared list plus `panelTags` (tag list, opt), `featuredPost` → the rail's binding (Data group), `railHeading` (text, default "Latest", editable inline), `byTopicHeading` (default "By topic", editable inline), `byAuthorsHeading` (default "By authors", editable inline), and `panelColumns[]` — the per-column binding record: `{title, source, tagOrAuthor, navGroup, order, count, secondLine, footLink, whenEmpty, links[]}`. Uses `children[].description` (≤ 60 chars) and grandchildren (≤ 6 per child) — the design where both earn their place.
 
-**Controls.** Panel width (Full bleed · Page gutter · Under trigger) · Columns (Two · Three · Four) · Second line (Show · Hide) · Panel opens on (Click only · Hover and click) · On scroll (Static · Sticky · Shrink) · Nav items before More (Auto · Four · Five · Six) · Search in header (On · Off) · Dark mode toggle (On · Off).
+**Controls.** Panel width (Full bleed · Page gutter · Under trigger) · Columns (Two · Three · Four) · Second line (Show · Hide) · Panel opens on (Click only · Hover and click) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **Second line, defined.** One section value. On **authored** columns the second line is `children[].description`, editable inline with P0·1. On **bound** columns it is post data — the date, or the excerpt, per the column's Second line field — plain-text-locked, **never editable**. Hide removes the line everywhere and the panel loses half its height.
 
@@ -446,19 +480,20 @@ A 38 px utility strip above the main bar: secondary links, social, an optional e
 | Control | Values |
 |---|---|
 | Strip source | From Ghost secondary nav (read-only rows) · Authored |
-| Strip content | Links · Links + social · Links + note + social |
+| In the strip | **Social icons** toggle · **Editorial note** toggle — one toggle each (§0·9); the strip's links are its content and always draw |
 | Strip ground | Surface · Background · Contrast (the strip tier, not the section — kept distinct from Background role) |
 | Nav position | Beside logo · Centre · Right |
 | On scroll | Static · Main bar sticks · Whole header sticks |
 | Divider under | Hairline · Shadow · None |
-| Search in header | On · Off |
 | Dark mode toggle | On · Off |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **The strip's toggle is gone.** The former "…+ mode" Strip-content value is removed: `mode-toggle` leaves the strip. When Dark mode toggle = On it renders as the standard 38 px icon button in the **main bar's** action cluster and as the drawer's switch row — the owner's line moves it "to the drawer", which covers ≤ 767; the bar placement is the §0·4 default filling the desktop gap, recorded in §21.
 
 **Strip source.** *From Ghost secondary nav*: read-only rows, "Edit navigation in Ghost", never an Add button (P0·3 Ghost-list card). *Authored*: a full P0·3 item list — **add items on either side by reorder**, each row `{label, url}`, label editable inline (P0·1), link via the Link Picker; a new item arrives as "New link" → `/`. Caps and shed order unchanged in both modes.
 
-**Data.** Strip links per Strip source; social from Ghost's account fields (§0·8) plus authored extras. **Empty strip (no links, no social, no note) → the strip is not rendered and the design degrades to Rail**, stated in the sidebar.
+**Data.** Strip links per Strip source; social from Ghost's account fields (§0·8) plus authored extras. **Empty strip (no links, no social, no note) → the strip is not rendered and the strip is hidden and the bar stands alone — still this design, never another (Part A·A8)**, stated in the sidebar.
 
 **Responsive.** ≥ 1024 both tiers full. 768–1023 the strip sheds social, then the note, keeping links; the bar loses search and the ghost action. ≤ 767 the strip is removed entirely and its contents move into a labelled group in the drawer, with the mode toggle as a switch row; the note is dropped. Strip height 38 and bar height hold at every width above the drawer.
 
@@ -472,48 +507,7 @@ A 38 px utility strip above the main bar: secondary links, social, an optional e
 
 ---
 
-## 9 · Search-Forward
-
-A persistent search field between the nav and the actions, taking the slack in the bar.
-
-**Descriptor.** The only design with a persistent search field in the bar at every width, sized by whatever slack the nav and actions leave — and the only one where search survives the mobile collapse.
-
-**Structural descriptor.** `form · none · page · few · none · field takes the slack`
-
-**Archetype.** form
-
-**Behaviour module.** `search-overlay` (the query surface: 200 ms debounce, 3-character minimum, suggestion rows, recent-query store, combobox keys, live count — **client-side over the Content API; never a `/search/` page that pretends to render results server-side**; the registry's degradation form posts to `/search/`, which is the A23 surface itself and stays client-rendered, so the round trip lands the reader on the same client-side surface with the query prefilled) · `accordion` · `nav-drawer` · `mode-toggle`. Not `search-expand`: the field is persistent here and never expands from a trigger. Edit-safe — the suggestion panel never opens in the editor (results states are reached with the P0·6 state switcher: no query / results / no matches), so the frame being edited is the resting empty field. **JS off:** "The trigger is a real `<form action="/search/" method="get">`, so search submits as a normal page navigation." — one round trip instead of typeahead, with no suggestions, no recent queries, no most-read fallback and no live count; the placeholder keeps its server-rendered archive size.
-
-**Content fields.** Shared list plus `searchPlaceholder` (text, opt, ≤ 40 chars; defaults to "Search N essays and interviews" with the live post count). `searchEnabled` is **forced on and shown locked with the reason** — the field is the design.
-
-**Controls.**
-
-| Control | Values |
-|---|---|
-| Field position | After nav · Before nav · Second row |
-| Field width | Compact · Takes the slack · Wide |
-| Field treatment | Outlined · Filled · Underlined |
-| Suggestions | Recent, then results · Results only · Off |
-| Results at a time | 5 · 8 · 10 |
-| Search in | Titles and excerpts (default) · Full content |
-| Match highlight | Marked · Plain |
-| Result meta | Show · Hide (section · author · date under each title) |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe |
-| Dark mode toggle | On · Off |
-
-**Data.** Queries run client-side over the Content API against the Search-in scope, debounced 200 ms, minimum 3 characters, the Results-at-a-time count plus a "See all results" row into the A23 surface. Matched substrings render `<mark>` when Match highlight = Marked. Recent queries are local to the reader; a first-time visitor gets the site's three most-read posts instead. 0 results → one line, "No matches for '…' — try a tag" (catalog string), plus the tag list. Under 20 posts on the site → the placeholder drops to plain "Search".
-
-**Responsive.** ≥ 1024 one row, field 240 px minimum. 768–1023 the field moves to a full-width second row and the header becomes two tiers; nav, both actions and the placeholder are unchanged. ≤ 767 the field keeps its second row in the bar — the only design where search survives the drawer collapse — and is focused on open in the drawer, where results push the nav list down rather than replacing it.
-
-**Behaviour.** Suggestions align to the field and never exceed its width. The page dims behind the panel but does not scroll or become inert. Escape has two steps: close the panel keeping the query, then clear.
-
-**Empty state.** No recent queries and no typing → most-read posts. Field never narrower than 240 px; below that the design falls back to the second row.
-
-**Accessibility.** The field sits in its own `search` region with a visually hidden label — the placeholder carries the archive size and a placeholder is not a label. Combobox semantics: `aria-expanded`, `aria-activedescendant` for arrow-key selection, and a polite live region announcing the result count. `<mark>` highlighting is visual only and does not fragment the accessible name. Each row's accessible name is title, section, author, date (the Result meta fields; hiding them visually does not remove them from the name). Hit area 44 px; clear button named "Clear search". Focus order is logo → nav → search → actions at every width.
-
-**Flagged.** The 200 ms debounce, 3-character minimum, 240 px floor and the most-read fallback are mine; the result-count, scope, highlight and meta controls are the owner's.
-
----
+<!-- 9 · Search-Forward — DELETED in the design patch pass (Part B·B2). The number stays retired: A1 runs 1–8, 10–16. -->
 
 ## 10 · Contrast Band
 
@@ -529,7 +523,7 @@ Rail's arrangement on the `contrast` token. The structure is settled; the design
 
 **Content fields.** Shared list. Uses `logoLight` — an image logo on the band needs its inverted file; without one the wordmark renders as text rather than being tinted.
 
-**Controls.** Band width (Full bleed · Page gutter) · Nav position (Beside logo · Centre · Right) · Primary action (Surface fill · Outline · Accent) · On scroll (Static · Sticky · Shrink) · Nav items before More (Auto · Four · Five · Six) · Search in band (On · Off) · Dark mode toggle (On · Off). Background role is **locked**, with the reason shown: the contrast band is this design.
+**Controls.** Band width (Full bleed · Page gutter) · Nav position (Beside logo · Centre · Right) · Primary action (Surface fill · Outline · Accent) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role is **locked**, with the reason shown: the contrast band is this design.
 
 **Data.** Identical to Rail. No data of its own.
 
@@ -557,7 +551,7 @@ A fixed 240 px column at the left: logo top, nav as rows, actions pinned to the 
 
 **Archetype.** edge rail
 
-**Behaviour module.** `accordion` (the side panels — and, with Children open = Below the parent, the in-place expansion: open sideways or expand beneath, close on Escape, on leaving both, and on scroll) · `nav-drawer` (below 767, inherited with the handoff to Rail) · `mode-toggle`. No `header-scroll` — a fixed rail does not answer scroll — and the 1200 handoff is a media query, not a module. Edit-safe. **JS off:** the rail is CSS layout and is unaffected; column, rows, pinned foot actions and the handoff to Rail below 1200 all hold. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." — panels open natively but no longer close on scroll, so a panel can lose its anchor while the page moves beside it; that is the one real loss here, and Below-the-parent expansion avoids it entirely. "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
+**Behaviour module.** `accordion` (the side panels — and, with Children open = Below the parent, the in-place expansion: open sideways or expand beneath, close on Escape, on leaving both, and on scroll) · `nav-drawer` (**the collapsed column below the threshold: open and close, focus trap, scroll lock, ✕ / scrim / Escape**) · `mode-toggle`. No `header-scroll` — a fixed rail does not answer scroll — and the threshold itself is a media query, not a module. Edit-safe. **JS off:** the rail is CSS layout and is unaffected; column, rows and pinned foot actions all hold above the threshold. **Below it the Menu button cannot open the column, so the rows render in the bar's place as a plain stacked list under the logo** — the same no-JS answer the whole category gives. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." — panels open natively but no longer close on scroll, so a panel can lose its anchor while the page moves beside it; that is the one real loss here, and Below-the-parent expansion avoids it entirely. "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
 
 **Content fields.** Shared list. Highest cap in the category: **7 nav items** shown, items 8+ fold to a More row, because a fixed column has vertical room a bar does not.
 
@@ -568,11 +562,12 @@ A fixed 240 px column at the left: logo top, nav as rows, actions pinned to the 
 | Rail width | Narrow 200 · Comfortable 240 · Wide 280 |
 | Rail side | Left · Right |
 | Actions | Pinned to the foot · Under the nav |
-| Icons | Off · Shown — when Shown, a P0·2 icon slot before each menu item (Icon Picker; empty slots render nothing on the live site) |
+| Row icons | On · Off — when On, a P0·2 icon slot before each menu item (Icon Picker; empty slots render nothing on the live site) |
 | Children open | Separate panel (as drawn) · Below the parent |
 | Becomes a top bar | Early 1400 · Standard 1200 · Late 1024 |
-| Search in rail | On · Off |
 | Dark mode toggle | On · Off |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 The former "Rail ground" row was the universal Background role wearing a local name and is removed (§0·1); its Contrast value is withdrawn with it — see §21. The universal Vertical spacing row is disabled here with the reason shown: a rail has no height.
 
@@ -582,7 +577,7 @@ The former "Rail ground" row was the universal Background role wearing a local n
 
 **Data.** Ghost primary nav as rows; children per Children open, two levels (Authored mode). Empty nav → the rail keeps its width and holds logo, search and actions, because the page layout depends on it.
 
-**Responsive.** ≥ 1200 the rail. **1199 and below the design becomes A1·1 Rail** — rows to inline items, active row treatment to the underline, panel or expansion opens downward, foot actions rejoin the bar, cap folds 7 → 4 with items 5+ in More. ≤ 767 Rail's drawer. The sidebar states which design is in force at the previewed width. Icons chosen for rows travel into Rail's inline items as Small leading icons.
+**Responsive.** ≥ 1200 the rail. **1199 and below the same column collapses to a labelled Menu button** and slides in from the left over a scrim — rows, active treatment, 7-item cap and pinned foot actions unchanged; full width at 390; the rows render as a stacked list under the logo without script (Part A·A8). ≤ 767 the panel takes the full width, with the rail's own 15 px rows and the same weight-and-fill active row (§11's re-cut) — not a drawer borrowed from another design at display size. The sidebar states the threshold in force at the previewed width, and the icons chosen for rows keep their Small leading position in the collapsed panel.
 
 **Behaviour.** Rail is fixed; the page scrolls beside it and the rail never scrolls. The side panel overlaps the page rather than pushing it, never covers its own row, and closes on Escape, on leaving both, or on scroll — a fixed panel over scrolling text loses its anchor.
 
@@ -590,9 +585,9 @@ The former "Rail ground" row was the universal Background role wearing a local n
 
 **Empty state.** No CTA → the foot holds the ghost action alone, still pinned. No logo image → wordmark, wrapping to two lines if it must; two lines are comfortable at this width.
 
-**Accessibility.** Source order is header-first regardless of Rail side — "Right" is a visual swap only. The skip link is mandatory and lands on the reading column. `aria-current="page"` on the active row — the weight-plus-fill treatment is not colour-only, and the attribute states it outright. Row icons are `aria-hidden` decoration (P0·2). At 200 % zoom a 1440 viewport is effectively 720, so the design has already handed off to Rail and cannot crowd the text; that is why the threshold is 1200 rather than lower.
+**Accessibility.** Source order is header-first regardless of Rail side — "Right" is a visual swap only. The skip link is mandatory and lands on the reading column. `aria-current="page"` on the active row — the weight-plus-fill treatment is not colour-only, and the attribute states it outright. Row icons are `aria-hidden` decoration (P0·2). At 200 % zoom a 1440 viewport is effectively 720, so the column has already collapsed to its Menu button and cannot crowd the text; that is why the threshold is 1200 rather than lower.
 
-**Flagged.** The 1200 threshold, the 7-item cap, the three rail widths, and the decision that this design **becomes another design** below its threshold instead of inventing a narrow-rail variant. The last of those matters most: it establishes that library designs may hand off to one another. Confirm before A2.
+**Flagged.** The 1200 threshold, the 7-item cap, the three rail widths, **the slide-in collapse below the threshold, the full-width column at 390 and the no-script stacked list** ⚑. **Hand-off is retired** (Part A·A8): below its threshold this design collapses to a labelled **Menu** button in a 60 px bar and the **same 240 px column slides in from the left over a scrim** — same rows, same 15 px labels, same weight-and-fill active row, same two actions pinned to its foot, cap unchanged at 7. It closes on ✕, on the scrim and on Escape. At 390 the column takes the full width. Without JavaScript the button cannot open it, so the rows render in the bar's place as a plain stacked list under the logo. The control that sets the threshold is renamed **"Collapses to Menu" (Early 1400 · Standard 1200 · Late 1024)**.
 
 ---
 
@@ -610,7 +605,7 @@ A hairline box aligned to the content column, so the nav's left edge is the head
 
 **Content fields.** Shared list, no additions. Children two deep.
 
-**Controls.** Box width (Content column · Page gutter · Narrow) · Box treatment (Hairline · Filled · Both) · Nav position (Beside logo · Centre · Right) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · On scroll (Static · Stick and fill · Hide) · Nav items before More (Auto · Four · Five · Six) · Search in header (On · Off) · Dark mode toggle (On · Off). No radius control — the box takes the pack token exactly, which is what distinguishes it from A1·5. Background role is **locked**, with the reason shown: the box sits on the page ground; its fill is the Box treatment control.
+**Controls.** Box width (Content column · Page gutter · Narrow) · Box treatment (Hairline · Filled · Both) · Nav position (Beside logo · Centre · Right) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · On scroll (Static · Stick and fill · Hide) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No radius control — the box takes the pack token exactly, which is what distinguishes it from A1·5. Background role is **locked**, with the reason shown: the box sits on the page ground; its fill is the Box treatment control.
 
 **Data.** Identical to Rail. Empty nav → the box holds logo and actions and keeps its width, which comes from the content column, not its contents.
 
@@ -640,7 +635,7 @@ Logo left, actions right, nav centred between them in a three-column grid.
 
 **Content fields.** Shared list, no additions.
 
-**Controls.** Centring (True centre · Optical · Space between) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav spacing (Tight 20 · Even 30 · Airy 40) · On scroll (Static · Sticky · Shrink) · Divider under (Hairline · Shadow · None) · Nav items before More (Auto · Four · Five · Six) · Search in header (On · Off) · Dark mode toggle (On · Off).
+**Controls.** Centring (True centre · Optical · Space between) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav spacing (Tight 20 · Normal 30 · Loose 40) · On scroll (Static · Sticky · Shrink) · Divider under (Hairline · Shadow · None) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **Data.** Identical to Rail. Empty nav → the centre column is removed and the grid becomes logo left, actions right, at full height.
 
@@ -674,7 +669,7 @@ Rail's bar with a bare-icon cluster at the right: search, RSS, dark mode, beside
 
 **Content fields.** Shared list, and the design that renders `socialLinks[]` as icons in the bar — capped at 2 alongside search and the mode toggle, bound per §0·8. No new fields.
 
-**Controls.** Icons (Search · Search + RSS · Search + RSS + Dark mode · Search + Dark mode) · Icon style (Bare · Outlined · Filled) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav position (Beside logo · Centre · Right) · On scroll (Static · Sticky · Shrink) · Nav items before More (Auto · Four · Five · Six). Search and the mode toggle live inside the Icons values — stated in the sidebar; there are no separate toggles here.
+**Controls.** **RSS icon** (On · Off) · **Dark mode toggle** (On · Off) — one toggle per icon, drawn as the labelled cluster group (§0·9) · Icon style (Bare · Outlined · Filled) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav position (Beside logo · Centre · Right) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). At **Icon** its glyph draws in this cluster beside the others, and it takes no toggle of its own here because the standing control owns it. **The old compound "Icons" menu is gone** (§0·9): the cluster is composed one toggle at a time, and dark mode is its own row here as on every other header.
 
 **Data.** Signed-in rendering is the P0·4 compile — server-side member checks, nothing flashes. Members disabled in Ghost → the action cards collapse to plain Label + Link (§0·3) and the icon cluster stands alone. Dark mode appears only if the pack ships both modes. Social icons per §0·8.
 
@@ -712,9 +707,10 @@ The wordmark at 64 px with the nav small and low beside it. Suits a home page or
 | Tagline | On · Off |
 | Actions | None · Sign in · Subscribe · Sign in + Subscribe |
 | On scroll | Static · Collapse to bar · Hide |
-| Nav items before More | Auto · Four · Five · Six |
-| Search in header | On · Off |
+| Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
 | Dark mode toggle | On · Off |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 The old "Padding" row was the universal Vertical spacing and is removed (§0·1). The 26 px logo *mark* is still not offered — a small badge beside display type reads as debris; the Image values set the image on the display line itself, baseline-aligned, at 40 or 56 px, with the wordmark beside it or alone per the site's file.
 
@@ -722,7 +718,7 @@ The old "Padding" row was the universal Vertical spacing and is removed (§0·1)
 
 **Responsive.** 1440 wordmark 64, nav and actions stacked at the right on a shared baseline with the tagline. 1023–768 the nav drops to its own row beneath, actions stay top right, wordmark 46, logo image 40. ≤ 767 wordmark 28 — the floor — with a two-line wrap and the bar growing to fit; the logo image holds 40; tagline 11; nav and Sign in to the drawer; drawer wordmark 20.
 
-**Behaviour.** *Collapse to bar*: the stuck state is A1·1 Rail at 56 px with the wordmark at 17 (logo image at 24 when set). Tagline, search and the ghost action leave with the large type. The transition is a 160 ms cross-fade rather than a size animation — interpolating 64 px down to 17 px draws the eye to the movement instead of the page.
+**Behaviour.** *Collapse to bar*: the stuck state is this design's own 56 px bar with the wordmark at 17 (logo image at 24 when set) — its own arrangement, collapsed (Part A·A8). Tagline, search and the ghost action leave with the large type. The transition is a 160 ms cross-fade rather than a size animation — interpolating 64 px down to 17 px draws the eye to the movement instead of the page.
 
 **Empty state.** No tagline → the wordmark sits alone and the header keeps its padding. Empty nav → the actions hold their position and the second row is removed rather than left empty. Logo = Image with no file → Wordmark only, stated in the sidebar.
 
@@ -742,11 +738,11 @@ Rail's bar, hidden while the reader goes down the page and back on any upward sc
 
 **Archetype.** sticky
 
-**Behaviour module.** `header-scroll` (200 px threshold, hide going down, return as a floating panel going up, restore in flow at the top; suspended while the drawer is open) · `accordion` · `nav-drawer` · `mode-toggle`. The registry has no direction-watching module, and its `reveal` is a content module — hide-then-reveal on entry — not this; `header-scroll` is the closest and is what this design declares (§0, first finding). Edit-safe by suspension, and this is the design where that matters most: a header that hid itself in the editor could not be selected (the hidden and returned states are reached with the P0·6 switcher's simulate-scroll entry). **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — the resting state is A1·1 Rail in flow at the top, and that is what a reader gets: it never hides and never returns, so they get a static header rather than a broken one but do not get this design. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
+**Behaviour module.** `header-scroll` (200 px threshold, hide going down, return as a floating panel going up, restore in flow at the top; suspended while the drawer is open) · `accordion` · `nav-drawer` · `mode-toggle`. The registry has no direction-watching module, and its `reveal` is a content module — hide-then-reveal on entry — not this; `header-scroll` is the closest and is what this design declares (§0, first finding). Edit-safe by suspension, and this is the design where that matters most: a header that hid itself in the editor could not be selected (the hidden and returned states are reached with the P0·6 switcher's simulate-scroll entry). **JS off:** "Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent." — the resting state is **this design's own bar in flow at the top** (Part A·A8), and that is what a reader gets: it never hides and never returns, so they get a static header rather than a broken one but do not get this design. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
 
-**Content fields.** Shared list, no additions. The Returned-contents control decides what the panel carries.
+**Content fields.** Shared list, no additions. The three returned-panel toggles decide what the panel carries.
 
-**Controls.** Hides after (Immediately · Short scroll 200 px · Long scroll) · Returned ground (Surface · Contrast · Page) · Returned shape (Inset panel · Full-width bar) · Returned contents (Nav only · Nav + Subscribe · Nav + both actions · Wordmark + nav) · Nav items before More (Auto · Four · Five · Six) · Search at the top (On · Off) · Dark mode toggle (On · Off). No On-scroll control — the scroll behaviour is the design.
+**Controls.** Hides after (Immediately · Short scroll 200 px · Long scroll) · Returned ground (Surface · Contrast · Page) · Returned shape (Inset panel · Full-width bar) · In the returned panel: **Wordmark** · **Subscribe** · **Sign in**, one toggle each (§0·9 — the nav is always in the panel) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No On-scroll control — the scroll behaviour is the design.
 
 **Data.** Identical to Rail. Empty nav → the panel carries the wordmark and the action. On pages shorter than two viewports the header never hides, since there is no scroll for it to respond to.
 
@@ -766,28 +762,28 @@ Rail's bar, hidden while the reader goes down the page and back on any upward sc
 
 Decisions I made where the brief is thin. Each is cheap to overturn now and expensive later.
 
-1. **Sticky is a control, not a design.** Rail and "Sticky Rail" are one design with an On-scroll control. This buys four more arrangements out of the 16 slots. If you would rather spend slots on behaviour, the roster changes.
+1. **Sticky is a control, not a design.** Rail and "Sticky Rail" are one design with an On-scroll control. This buys four more arrangements out of the category's slots. If you would rather spend slots on behaviour, the roster changes.
 2. **Two levels of dropdown** — approved. In Authored mode children and grandchildren are Inflozo-authored because Ghost's nav is flat; in Ghost-prefix mode one child level comes from Ghost and grandchildren remain Inflozo-authored (§0·5). Grandchildren render as an indented group under their child, never as a second flyout, and there is no third level.
 3. **Unused fields go to the drawer foot.** Content is never lost when switching design. Some drawers get long as a result.
 4. **Numeric limits** — 280 px wordmark cap, 150 px nav-label ellipsis, 248 px dropdown, 44 px targets — are mine. The brief fixes roles and named values, not these. (The fold caps are now the Auto values of the Nav-items-before-More control, §0·6.)
 5. **Pack details** — Ink's header on `surface` rather than `background`, and the dark-mode border values for Tangerine and Ink — are mine, extending the existing Calibration Set.
 6. **A2 above.** Every A1 design must tolerate an announcement bar above it, including Overlay, where the bar is opaque and the header is not, and Utility + Nav, where it makes three stacked bands. That interaction is drawn in A2, not here.
 7. **Per-design inventions** are flagged in each design's Flagged line and on its frames.
-8. **Designs may hand off to other designs.** A1·11 becomes A1·1 below 1200; A1·15's collapsed state is A1·1; A1·4 and A1·8 fall back to A1·1 when their preconditions are absent. This is now a category rule, established by those four, and it needs your confirmation before A2 relies on it.
+8. ~~Designs may hand off to other designs.~~ **Retired by the design patch pass (Part A·A8), ruled to apply in all 33 categories.** A placed design is the design that renders. **A1·11** collapses to its own slide-in column (§11). **A1·15** narrows — the wordmark scales down and the nav moves to its own drawer, keeping the stacked arrangement. **A1·4** keeps its arrangement over the page ground with the scrim off and normal lockup tokens. **A1·8** hides the utility strip when there is no secondary nav to fill it. In every case the section hides what does not apply, and the panel may advise but never switch. What was a category rule, established by those four, and it needs your confirmation before A2 relies on it.
 
 ---
 
 ## 18 · A1 is closed
 
-Sixteen designs, each with desktop 1440, its behaviour states, hover/focus states, tablet 834, mobile 390 closed and open, dark desktop, an annotated accessibility frame, its control panel and its spec. Category artefacts — the three-pack tokenisation proof, the stress frame and the shared field list — are in `A1-0 Category Proof.dc.html`.
+Fifteen designs, each with desktop 1440, its behaviour states, hover/focus states, tablet 834, mobile 390 closed and open, dark desktop, an annotated accessibility frame, its control panel and its spec. Category artefacts — the three-pack tokenisation proof, the stress frame and the shared field list — are in `A1-0 Category Proof.dc.html`.
 
-**The shared field list, amended by this pass.** logo, logoLight, siteTitle, tagline, dateLine + dateMode + customDate, navItems[], children[] (two levels), descriptions, secondaryNav[], signInLabel, ctaLabel/ctaUrl, searchEnabled, searchPlaceholder, socialLinks[], darkModeToggle, moreLabel, plus per-design fields menuLabel/closeLabel (6), featuredHeading (6), railHeading/byTopicHeading/byAuthorsHeading (7), stripNote + stripItems[] (8), and the structural records panelColumns[], panelTags[], featuredPost. Every design draws from it; nothing a design ignores is discarded — unused content goes to the drawer foot. The A1-0 field-list card predates this amendment; this section is the record.
+**The shared field list, amended by this pass.** logo, logoLight, siteTitle, tagline, dateLine + dateMode + customDate, navItems[], children[] (two levels), descriptions, secondaryNav[], signInLabel, ctaLabel/ctaUrl, searchTrigger, socialLinks[], darkModeToggle, moreLabel, plus per-design fields menuLabel/closeLabel (6), featuredHeading (6), railHeading/byTopicHeading/byAuthorsHeading (7), stripNote + stripItems[] (8), and the structural records panelColumns[], panelTags[], featuredPost. Every design draws from it; nothing a design ignores is discarded — unused content goes to the drawer foot. The A1-0 field-list card predates this amendment; this section is the record.
 
 **Components established here, carried forward verbatim:** logo lockup, nav item, dropdown panel (248 px, two levels), primary button, ghost action, overflow menu, drawer, search affordance (38 px / 19 px glyph), icon button (38 px box, three styles), mode toggle, takeover, floating panel. (The member pill and account menu are withdrawn with A1·14's re-cut; if a later category needs member furniture it is designed there.)
 
 **Decisions waiting on you before A2:**
 
-1. Designs may hand off to other designs (§17.8).
+1. ~~Designs may hand off to other designs~~ — **settled: retired** (§17.8, patch Part A·A8).
 2. `contrast` must be defined per mode in every pack (§10).
 3. Whether scroll-direction reveal is a named state of `header-scroll` or a thirty-second module (§0, finding 1).
 4. Whether A1·4's hero precondition may be resolved server-side, since no module covers it (§0, finding 2).
@@ -799,7 +795,7 @@ Sixteen designs, each with desktop 1440, its behaviour states, hover/focus state
 
 ## 19 · Structural descriptors — uniqueness check
 
-Tuple shape: `archetype · containment · ground · item-count class · media placement · emphasis mechanism`. The first five slots are closed sets, written as the bare word with nothing appended. All sixteen checked against each other.
+Tuple shape: `archetype · containment · ground · item-count class · media placement · emphasis mechanism`. The first five slots are closed sets, written as the bare word with nothing appended. All fifteen checked against each other.
 
 | # | Design | Archetype | Containment | Ground | Items | Media | Emphasis mechanism |
 |---|---|---|---|---|---|---|---|
@@ -811,7 +807,6 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 | 6 | Drawer-First | overlay | none | surface | variable | inline | display-size type, full surface |
 | 7 | Mega Bar | bar | none | page | many | edge | full-width panel behind bar |
 | 8 | Utility + Nav | stack | none | surface | many | none | tier ground change |
-| 9 | Search-Forward | form | none | page | few | none | field takes the slack |
 | 10 | Contrast Band | bar | none | contrast | few | none | inverted ground |
 | 11 | Side Rail | edge rail | none | page | many | top | column occupies page layout |
 | 12 | Boxed | bar | box | transparent | few | none | box on content column |
@@ -824,15 +819,15 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 **How each slot was read.**
 
-**Containment** is `none` in fourteen of sixteen, because a header is a band. Only A1·5 (pill) and A1·12 (box) contain themselves. The drawer, A1·6's takeover and A1·7's panel are **not** containment: they are surfaces the section opens, and the section itself is still a bare bar.
+**Containment** is `none` in thirteen of fifteen, because a header is a band. Only A1·5 (pill) and A1·12 (box) contain themselves. The drawer, A1·6's takeover and A1·7's panel are **not** containment: they are surfaces the section opens, and the section itself is still a bare bar.
 
-**Ground** — page ×11 · surface ×3 (A1·5's capsule, A1·6's takeover, A1·8's strip) · contrast ×1 (A1·10) · transparent ×2 (A1·4, A1·12). `image` and `accent` are unused: A1·4 sits over an image but has no ground of its own, which is exactly what `transparent` means, and the image is recorded in media placement instead.
+**Ground** — page ×9 · surface ×3 (A1·5's capsule, A1·6's takeover, A1·8's strip) · contrast ×1 (A1·10) · transparent ×2 (A1·4, A1·12). `image` and `accent` are unused: A1·4 sits over an image but has no ground of its own, which is exactly what `transparent` means, and the image is recorded in media placement instead.
 
-**Item-count class** — few ×8 · many ×7 · variable ×1 (A1·6, the only uncapped nav). `none` and `one` are unused, since every header draws a nav list. Where a design shows four items and folds the rest to More it is `few`: the fold is the cap, not authorial freedom.
+**Item-count class** — few ×8 · many ×6 · variable ×1 (A1·6, the only uncapped nav). `none` and `one` are unused, since every header draws a nav list. Where a design shows four items and folds the rest to More it is `few`: the fold is the cap, not authorial freedom.
 
-**Media placement** — none ×12 · background (A1·4's hero image) · inline (A1·6's featured-post thumbnail) · edge (A1·7's 300 px panel rail, divided by a hairline) · top (A1·11's logo at the head of the column). The logo lockup is **not** counted as media anywhere else: it is present in all sixteen and separates nothing.
+**Media placement** — none ×11 · background (A1·4's hero image) · inline (A1·6's featured-post thumbnail) · edge (A1·7's 300 px panel rail, divided by a hairline) · top (A1·11's logo at the head of the column). The logo lockup is **not** counted as media anywhere else: it is present in all sixteen and separates nothing.
 
-**Archetype spread.** Seven of the fourteen values are used: bar ×7 (1, 5, 7, 10, 12, 13, 14) · stack ×3 (3, 8, 15) · overlay ×2 (4, 6) · split, form, edge rail, sticky ×1 each. Seven values — grid-of-N, nav, feed, carousel, table, media frame, article body — are unused in A1 and stay available for later categories.
+**Archetype spread.** Six of the fourteen values are used: bar ×7 (1, 5, 7, 10, 12, 13, 14) · stack ×3 (3, 8, 15) · overlay ×2 (4, 6) · split, edge rail, sticky ×1 each. Eight values — form, grid-of-N, nav, feed, carousel, table, media frame, article body — are unused in A1 and stay available for later categories.
 
 **The close pairs, stated rather than buried.** 1 / 5 / 12 are all bars of few items with no media: they separate on containment and ground (full-bleed band on page, capsule on surface, box on transparent). 1 / 10 separate on ground alone, which is the category rule doing its job — the same header on page and on contrast are two designs. 3 / 15 are both stacks on page and separate on item count. 7 / 14 are both bars of many items on page and separate on media placement. 4 / 12 are both transparent and separate on containment and media.
 
@@ -844,7 +839,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 ## 20 · Repeating items — the controls for them
 
-**The arrays, found by reading the field list back.** `navItems[]` · `navItems[].children[]` and their grandchildren · `secondaryNav[]` · `stripItems[]` (new, A1·8 Authored mode) · `socialLinks[]` · `panelColumns[]` and `panelColumns[].links[]` · `panelTags[]`. Single values, which get no item controls: `logo`, `logoLight`, `siteTitle`, `tagline`, `dateLine`/`dateMode`/`customDate`, `signInLabel`, `ctaLabel`/`ctaUrl`, `searchEnabled`, `searchPlaceholder`, `darkModeToggle`, `moreLabel`, `menuLabel`/`closeLabel`, `featuredHeading`, `railHeading`, `byTopicHeading`, `byAuthorsHeading`, `stripNote`, `featuredPost`. Two things that look like lists and are not: A1·14's icon cluster, which is a set chosen by the Icons control, and A1·9's suggestion rows, which are query results. Every one of the sixteen designs draws more than one nav item, so this section applies to all sixteen. **All authored lists here use the P0·3 item controls verbatim; all Ghost-sourced lists use the P0·3 Ghost-list card verbatim.**
+**The arrays, found by reading the field list back.** `navItems[]` · `navItems[].children[]` and their grandchildren · `secondaryNav[]` · `stripItems[]` (new, A1·8 Authored mode) · `socialLinks[]` · `panelColumns[]` and `panelColumns[].links[]` · `panelTags[]`. Single values, which get no item controls: `logo`, `logoLight`, `siteTitle`, `tagline`, `dateLine`/`dateMode`/`customDate`, `signInLabel`, `ctaLabel`/`ctaUrl`, `searchTrigger`, `darkModeToggle`, `moreLabel`, `menuLabel`/`closeLabel`, `featuredHeading`, `railHeading`, `byTopicHeading`, `byAuthorsHeading`, `stripNote`, `featuredPost`. One thing that looks like a list and is not: A1·14's icon cluster, which is a set of separate toggles (§0·9). Every one of the fifteen designs draws more than one nav item, so this section applies to all fifteen. **All authored lists here use the P0·3 item controls verbatim; all Ghost-sourced lists use the P0·3 Ghost-list card verbatim.**
 
 **Ownership decides what the sidebar may do.**
 
@@ -888,15 +883,14 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 | 5 | Floating Pill | navItems, children | 3–4 | the pill stops tracking the gutter only when search and both actions are absent too | past the fold to More | pill holds logo + actions, centred at Page-gutter width, 240 px floor |
 | 6 | Drawer-First | navItems (uncapped), children, grandchildren, secondaryNav | 5–20 in the takeover | 1–2 still render at display size in one column; the sidebar says the design is built for 5 and up | past 20 the takeover column scrolls; the bar is unaffected; Ghost-prefix mode caps at five columns (§6) | **the Menu button is not rendered at all** and the bar becomes wordmark + search + action |
 | 7 | Mega Bar | navItems, children, grandchildren, panelColumns, column links, panelTags, authors block | 4 in the bar; 2–4 columns; 3, 4 or 6 links each; ≤ 6 grandchildren per child; ≤ 2 Ghost-nav columns | 1 column is not a panel — it renders as the 248 px dropdown | a fifth column needs the Columns control raised; links past Show are not drawn and the Foot link carries the real count | 0 columns → plain link, no caret |
-| 8 | Utility + Nav | navItems, children, secondaryNav or stripItems (≤ 5), socialLinks (≤ 3) | 4 primary, 3–5 secondary, 2–3 social | one secondary link renders as one link; the strip neither stretches nor centres | 6+ secondary links drop to the drawer's labelled group; a fourth social link is not drawn | no strip links, no social, no note → **the strip is not rendered and the design degrades to Rail** |
-| 9 | Search-Forward | navItems, children | 3–4, field 240 px minimum | the field takes the freed room only when Field width = Takes the slack | past the fold to More; the field moves to its second row before it goes under 240 px | logo, field and actions; the field keeps its set width |
+| 8 | Utility + Nav | navItems, children, secondaryNav or stripItems (≤ 5), socialLinks (≤ 3) | 4 primary, 3–5 secondary, 2–3 social | one secondary link renders as one link; the strip neither stretches nor centres | 6+ secondary links drop to the drawer's labelled group; a fourth social link is not drawn | no strip links, no social, no note → **the strip is not rendered and the strip is hidden and the bar stands alone — still this design, never another (Part A·A8)** |
 | 10 | Contrast Band | navItems, children | 3–4 | a contrast band reads fine with two items in it | past the fold to More | band holds logo and actions at full height |
 | 11 | Side Rail | navItems, children | 4–7 rows | fewer rows leave the column its width and the foot actions pinned | 8+ fold to a More row; the column itself never scrolls | rail keeps its width and holds logo, search and actions |
 | 12 | Boxed | navItems, children | 3–4 | the box never shrinks to fit its contents | past the fold to More | box holds logo and actions and keeps its content-column width |
 | 13 | Centre Nav | navItems, children | 3–4 | the centre column stays centred whatever it holds | past the fold to More | centre column removed; logo left, actions right |
 | 14 | Icon Utilities | navItems, children, socialLinks (≤ 2) | 4 primary, cluster of 2–4 | a cluster of one drops the hairline separator | a third social link is not drawn | bar holds logo, cluster and actions |
 | 15 | Big Type | navItems, children | 3–4 low right | fewer items leave the shared baseline as drawn | past the fold to More at nav size | actions hold their position and the second row is removed |
-| 16 | Reveal | navItems, children | 3–4 | fewer items shorten the returned panel | past the fold to More in the top state; the returned panel carries what Returned contents says | panel carries the wordmark and the action |
+| 16 | Reveal | navItems, children | 3–4 | fewer items shorten the returned panel | past the fold to More in the top state; the returned panel carries whatever its three toggles say | panel carries the wordmark and the action |
 
 **Flagged.** Mine in this section: the 12-item ceiling on a More panel, A1·6's 5–20 comfort range and scrolling takeover, the drop of over-cap secondary links to the drawer group, the placeholder content each added item arrives with, and the read-only Ghost list behind an "Edit navigation in Ghost" row. That last one is the load-bearing decision: if the sidebar is expected to write Ghost's navigation setting, every nav list in the library becomes editable in place and this section changes.
 
@@ -904,7 +898,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 ## 21 · Reconciliation notes
 
-**Frames changed in this pass.** All sixteen control-panel frames (universal trio added outside the list; Height rows removed; new rows per design; footer counts updated). Section frames redrawn where visible content changed: **A1-6** (search icon button in the bar beside Subscribe and Menu) · **A1-7** (dates on bound-column posts; BY AUTHORS block under BY TOPIC with reused foot-link style; rail headline marked editable) · **A1-8** (mode toggle removed from the strip drawings) · **A1-11** (2 px leading accent bar removed from every rail frame; active row re-cut to weight + full-strength label; states and accessibility captions rewritten) · **A1-14** (member avatar, pill and account menu removed everywhere; signed-out cluster is the primary frame; signed-in shown as the member-aware labels; RSS wordmark replaced by an icon-slot glyph). No other section frame moved.
+**Frames changed in this pass.** All fifteen control-panel frames (universal trio added outside the list; Height rows removed; new rows per design; footer counts updated). Section frames redrawn where visible content changed: **A1-6** (search icon button in the bar beside Subscribe and Menu) · **A1-7** (dates on bound-column posts; BY AUTHORS block under BY TOPIC with reused foot-link style; rail headline marked editable) · **A1-8** (mode toggle removed from the strip drawings) · **A1-11** (2 px leading accent bar removed from every rail frame; active row re-cut to weight + full-strength label; states and accessibility captions rewritten) · **A1-14** (member avatar, pill and account menu removed everywhere; signed-out cluster is the primary frame; signed-in shown as the member-aware labels; RSS wordmark replaced by an icon-slot glyph). No other section frame moved.
 
 Conflicts between this patch and what the category had already ruled, one line each:
 
@@ -913,7 +907,7 @@ Conflicts between this patch and what the category had already ruled, one line e
 3. **Background role would recreate A1·10.** A Rail set to a contrast Background role is Contrast Band by §19's own rule, so the universal control offers Background · Surface only on A1; 4, 10 and 12 lock it with reasons. **A1·11's "Rail ground" merged into the universal control and its Contrast value is withdrawn by the same rule — the drawn Contrast rail is overruled; flag to the owner.**
 4. **Member Visibility is not offered on A1.** The patch's category rule adds it to CTA-bearing designs "unless a richer member-state model already subsumes it"; the P0·4 per-action states subsume it here, and a site header must render for every audience — recorded as the subsumption case, not an omission.
 5. **A1·8's toggle: "moves to the drawer" vs desktop.** The owner's line relocates the strip toggle to the drawer, but the drawer exists only ≤ 767; on desktop the On state renders the §0·4 standard icon button in the main bar's cluster. Interpretation recorded; overrule if the desktop toggle should not exist at all.
-6. **A1·9 vs the registry's `/search/` degradation.** The owner rules "never a `/search/` page that pretends to render results server-side"; the registry's no-JS sentence posts to `/search/`. Reconciled: `/search/` is A23's client-side surface, so the no-JS form lands there with the query prefilled and no server-rendered results exist — both texts stand.
+6. ~~A1·9 vs the registry's `/search/` degradation.~~ **Void: A1·9 is deleted and A23 with it** (Part B·B1, B2). No A1 design posts a query anywhere; the three trigger forms open Ghost's own search, and without script the click does nothing.
 7. **A1·14's descriptor and §19 tuple changed.** The signed-in avatar was the design's stated identity ("the signed-in state is the primary frame"); the owner's removal re-cuts descriptor, tuple (media `inline` → `none`) and primary frame. The uniqueness check still passes (vs A1·7 on media).
 8. **A1·14 previously ruled the avatar into the 390 bar** ("a signed-in reader's route to their account should not be two taps deep"); with the avatar gone the route is the bar's "Account" label — same tap count, ruling superseded rather than contradicted.
 9. **A1·15's §15 flag is resolved against the old ruling.** "Not rendering an image logo at all" is overturned by the owner's Logo control (Image Small 40 · Medium 56); the 26 px mark stays unoffered.
@@ -926,9 +920,57 @@ Conflicts between this patch and what the category had already ruled, one line e
 16. **A1·7 hover intent becomes a control** ("Panel opens on"); the drawn 120 ms hover-intent behaviour is the Hover-and-click value's, unchanged; Click only is new.
 17. **A1·3's date line becomes two controls** (Date, Date shown); the visitor-local browser date is deferred by owner ruling, and the site-timezone date is client-computed because a server-rendered "today" goes stale under page caching — this narrows the old always-server-rendered assumption.
 18. **The Ghost-prefix nav scheme, the `|` marker and the group reads have no no-JS design by owner ruling** — this is the one place the category's own no-JS-baseline duty is explicitly waived; the flat-list sentence in §0·5 is the entire degradation story.
-19. **"Preview" controls: none existed in A1** — verified against all sixteen panels; nothing to remove, rule recorded.
-20. **`searchEnabled` default off stands category-wide**, with A1·9's forced-On now shown as a locked control rather than a sidebar sentence.
+19. **"Preview" controls: none existed in A1** — verified against every panel; nothing to remove, rule recorded.
+20. ~~the old search boolean, default off, stood category-wide~~ — **superseded by Part B·B1**: the field is now `searchTrigger` (Off · Icon · Button · Bar), default **Icon**, standing on all fifteen.
 21. **The seven designs whose responsive or empty-state text referenced search without offering it** (3, 4, 6, 7, 8, 12, 13) now carry the control; their drawn search affordances were already the shared component, so only panels changed except A1·6 (§21 head).
 22. **Social rows are version-gated** (Facebook/X on Ghost 5.x; nine platforms ≥ 6.36) — the old "Ghost's social fields" line under-specified this; rows absent, not disabled, on the older surface.
+
+## 22 · Patch notes — design patch pass
+
+Frames updated: all fifteen design files and `A1-0 Category Proof`. Frames deleted: `A1-9 Search-Forward`.
+
+| Rule | Change |
+|---|---|
+| B1 | **Search becomes a four-value control** — Off · Icon · Button · Bar — standing on all fifteen, outside the per-design count (owner's ruling), default **Icon**. The three trigger forms are drawn in `A1-0`. Every search overlay, results panel and expanding field is removed; all three forms open **Ghost's native search**. The control is named **Search** everywhere, so "Search in pill / band / rail / at the top" are gone (also Part A·A6), and search leaves **A1·2's Right cluster** and **A1·14's Icons** values. The **link picker gains "Ghost search"** (P0·1). Field renamed `searchTrigger` → `searchTrigger`. |
+| B2 | **A1·9 Search-Forward deleted** — frame, spec section §9, roster row, descriptor-table row, fold-threshold list entry, and reconciliation item 6. **Numbering runs 1–8, 10–16; 9 stays retired** (Part B·B0). |
+| B5 | No design binds Ctrl-K. Nothing in A1 did; recorded. |
+| A1 | Ghost authors render **one initial**; A1 has no user-typed person list, so no two-initial case survives here. |
+| A2 | Authored lists keep **Remove active at the floor**, with this category's sentence: "A dropdown needs at least one child." |
+| A4 | A1·13's Nav spacing reads **Tight · Normal · Loose**. |
+| A5 | **"Nav items before More" becomes a stepper** (3 to each design's cap, reason stated). ⚑ **Auto survives as a separate "Fit to width" toggle** — flagged as an interpretation, since A5 bans fixed count buttons without saying where an automatic mode goes. |
+| A6 | Universals may narrow with a reason (A1·4's locked Background role) and may not be renamed or extended; swatch row is **Base**; **no "Inherit" value exists in A1**. |
+| A8 | **Hand-off retired** (§17.8 rewritten). **A1·4** keeps its own arrangement over the page ground, scrim off, normal lockup tokens. **A1·8** hides the utility strip with no secondary nav. **A1·15** narrows within its own stacked arrangement. **A1·16** renders its own resting bar without script. **A1·11 is redrawn:** below the threshold it collapses to a labelled **Menu** button in a 60 px bar and the **same 240 px column slides in from the left over a scrim** — rows, active treatment, 7-item cap and pinned foot actions unchanged; full width at 390; the threshold control is renamed **"Collapses to Menu"**. Ruled by the owner in this pass. |
+| A9 | Sign in / Subscribe carry the conditional note (self-signup off, no payment provider) and the Portal-needs-JavaScript line, via the P0·4 card. |
+| A10 | **Not applicable to A1** — the category contains no email field, so there is no form for the no-JavaScript notice to replace. Recorded so the omission is not read as a miss. |
+| A7 | **[Free]: 1 Rail and 13 Centre Nav**, confirmed by the owner this pass, marked in the roster. |
+| C·A1 | Overlay's transparency is decided **at build time from what is placed below it**; the "or if its image fails to load" clause is deleted from §4, from the frame and from the behaviour-module line. |
+| C·A1 | The scroll-direction header (A1·16) uses the shared scroll behaviour and renders its resting state without script — already true, restated without the "which is A1·1" phrasing. |
+
+### Second sweep — the same rulings applied where the first pass missed them
+
+No new decision was taken here except the one raised as open question 4. Frames touched in this sweep: `A1-0`, `A1-1`, `A1-2`, `A1-5`, `A1-6`, `A1-8`, `A1-11`, `A1-14`, `A1-15`.
+
+| Rule | Change |
+|---|---|
+| B1 | The per-design rows **"Search in header / in pill / in band / in rail / at the top"** are gone from designs 1, 3, 4, 5, 6, 8, 10, 11, 14, 15 and 16; each control list now names the standing **Search** control outside it, as 7, 12 and 13 already did. On 14 the **Icons** values lose search (see open question 4) and keep the mode toggle. |
+| B1 | The **search module leaves the module table and design 6's declared modules** — no A1 design declares one, and the retired `search-overlay` / `search-expand` names are recorded as retired rather than renamed. The shared **Search affordance** component no longer "opens the A23 surface": it opens Ghost's own search, and the Bar form's place in the drawer is stated. Field name **`searchTrigger`** replaces `searchEnabled` in every field list and on the frames that still carried the old name. |
+| B2 | The frames line no longer lists the deleted frame; the deleted design's two visitor-string rows, its item-count row and its "suggestion rows" mention are removed. **Category counts corrected from sixteen to fifteen throughout**, and the uniqueness check's tallies recomputed: ground `page` ×9, items `many` ×6, media `none` ×11, containment `none` in 13 of 15, and **`form` joins the unused archetypes** — it belonged to the deleted design. |
+| A5 | The remaining **"Auto · Four · Five · Six"** rows (designs 1, 4, 5, 10, 14, 15, 16) become the **stepper with its cap and the cap's reason**, with **Fit to width** as its own toggle above it. |
+| A8 | Design 8's empty strip no longer "degrades to Rail" — **the strip hides and the bar stands alone, still this design** (spec and frame). Design 15's stuck state is **its own 56 px bar**, not Rail (frame text corrected). |
+| One toggle per thing (new rule, §0·9) | **Every compound "A + B" control in the category is split into one toggle per thing**, drawn as a labelled group: **8's Strip content** → Social icons · Editorial note · **14's Icons** → RSS icon · Dark mode toggle · **16's Returned contents** → Wordmark · Subscribe · Sign in · **6's Menu button** → Icon · Label · **11's Icons** → a Row icons toggle. Single-axis choices (a form, a width, a placement, a ladder, a ground, a treatment, a behaviour state) stay as they are. Panels grew by one to two rows each; footer counts updated. **A1·2's local "Right cluster" becomes the shared Actions control.** The rule is written into the shared editor-controls document as well, since it governs every category. |
+| The active-row re-cut (design 11) | The **2 px leading accent bar** was still drawn in the collapsed panel at 834 and at 390 and still described in two places. Both frames now show **the fill with the label at 500 weight**, and the captions and spec text match. |
+
+### Open questions
+
+1. ~~Where "Auto" lives under A5.~~ **Confirmed by the owner:** it stays a separate **"Fit to width"** toggle above the stepper, and the stepper is disabled with its reason while the toggle is on.
+2. ~~The Bar trigger's honesty.~~ **Confirmed by the owner:** it stays **field-shaped**. It carries no caret and no typing placeholder, and clicking anywhere in it opens Ghost's search.
+3. **Social version gate — with the owner.** §0·8 and item 22 state Facebook/X on Ghost 5.x and nine platforms from 6.36; P0·2 states the seven arrived for staff profiles in 5.118 and for the site in Ghost 6. **The owner is checking both test servers**; until the figure comes back, A21 should not be run against either claim, and both documents keep their current wording so the disagreement stays visible.
+4. ~~The icon cluster on the header called Icon Utilities.~~ **Settled by the owner:** split it into one toggle per icon, and do the same to every compound control in the category — written up as §0·9 above. The question that ruling raises next:
+
+5. **Should the Sign in / Subscribe control become two switches as well?**
+   Every header has one control called Actions with four choices: none, sign in, subscribe, or both. By the new rule that is a compound choice and would become two switches — "Sign in" and "Subscribe" — but this control is not the header's own: it is one of the shared controls every one of the 33 categories uses, and it carries the per-audience editor (what a logged-out visitor sees, what a member sees). Changing it changes every category.
+   1. **Split it, and treat that as a library-wide change to be scheduled. (RECOMMENDED)** Consistent with the rule you just set — an editor never has to find "both" in a list. It costs a pass over every category's panels and the shared controls document, so it should be done deliberately rather than category by category. The editor would see two switches, each opening its own per-audience card.
+   2. **Leave Actions as it is, as a named exception.** Nothing else moves and the headers ship now; the cost is one visible inconsistency — the panel has switches for icons and a menu for buttons — and the exception will be asked about again in every later category.
+   3. **Split it in the headers only, for now.** Fastest to see, but the same control would then behave differently in different categories, which is the sort of thing that is expensive to unpick later. Not recommended.
 
 — End of specification —

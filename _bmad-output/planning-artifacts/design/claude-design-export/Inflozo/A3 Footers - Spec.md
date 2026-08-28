@@ -22,6 +22,19 @@ Frames: `A3-1 Minimal Line` · `A3-2 Columns` · `A3-3 Two-Tier` · `A3-4 Newsle
 
 ## 0 · Category-wide rules
 
+### 0·0 · What the design patch pass changed category-wide
+
+- **No design turns into another design (Part A·A8).** Every hand-off in A3 is withdrawn — six designs once resolved to **A3·1** or **A3·2** when their content ran out. Each now **hides what does not apply and keeps its own arrangement**: A3·2, A3·8 and A3·10 draw the brand block alone above the legal row when there are no columns; A3·15 draws its row with fewer items; **A3·7 shrinks a long name toward a 44 px floor and adds a line rather than cutting it** ⚑. Caps still exist, and the panel may **advise** — A3·5 and A3·12 advise A3·8 past four columns — but advice never switches a design. A3·1's own note that it "is the fallback five designs hand off to" is struck.
+- **Remove never greys (Part A·A2).** Every repeating list in A3 — columns, links, legal links, credits, chips — keeps **Remove visible and active at its floor**; the click states the floor in one clause, and **points at no other control**: **"A footer column needs at least one link."** · **"A legal line needs at least one item."**
+- **Counts are number pickers (Part A·A5).** Links per column, legal links, credit rows, chips and **How many posts (2–4)** are steppers; a design may cap its own maximum with the reason visible. **Columns stays a named arrangement control** (Auto · Two · Three · Four) — confirmed by the owner: A5 covers how many *items*, not how they are arranged.
+- **Universals (Part A·A6).** The trio may narrow with a stated reason — A3·5's Background role is locked at Contrast, A3·3's is locked to its ground pair, A3·4's band ground disables Contrast — and may never be renamed or extended. The swatch row is **Base**. **No "Inherit" value exists in A3.**
+- **Scale and gap names (Part A·A3, A·A4).** Vertical spacing keeps Compact · Comfortable · Spacious; A3·8's Density keeps its own title. Any gap control reads **Tight · Normal · Loose**.
+- **Member asks are conditional (Part A·A9).** A3·4 is the category's only design with a subscribe affordance. It does not render when the connected site has **self-signup off** or **members disabled**, and a paid ask needs a **payment provider**; the **Portal manage link does nothing with JavaScript off**.
+- **The no-JavaScript form notice (Part A·A10).** **A3·4 is the only design in A3 with a field**, so it is the only one that draws the notice: **Ghost's signup endpoint refuses a plain form submission**, so the earlier "posts natively, works without JavaScript" claim is withdrawn and the form is replaced by P0·4's notice at the band's own height. **The four form states stay exactly as drawn.**
+- **Avatars (Part A·A1).** A3 renders no person, so neither initial rule applies. A3·9's post rows carry no author avatar.
+- **Search (Part B·B1) and Ctrl-K (Part B·B5).** A3 draws no search affordance; any footer link may point at **Ghost search** through the link picker's new destination. Nothing in A3 bound Ctrl-K.
+- **[Free], two per category (Part A·A7): 1 Minimal Line and 16 Mini Bar** — confirmed by the owner this pass.
+
 These apply to all 16 designs and are not repeated per design.
 
 **Placement.** One `<footer role="contentinfo">` per page, the last landmark, a sibling of `<main>`. **One A3 per site**, on every template. A3·16's pinned bar and its released footer are the same element — never two landmarks.
@@ -33,7 +46,7 @@ These apply to all 16 designs and are not repeated per design.
 **The four settlements.**
 
 1. **Link columns — auto-fit by the authored count.** Two keep the 1fr width they would have had at four and sit against the brand block on a half measure, leaving the right quarter empty; the editor does not warn about it. Three or four fill the measure. Five or more move the brand block above the grid and wrap four across — 4 + 3 at seven, last cell empty, never justified. **Seven columns is the cap**: Add column is disabled with “Seven is the most a footer can hold. Consider a second column heading instead.” **Eight links per column** is the second cap: “Eight links is the most a column can hold.” Columns are top-aligned, never stretched, and links are never moved between them. At 1080 columns go two-across (three-across in A3·8). At ≤ 767, **two to four columns stack open** as a two-across grid with links padded to 44 px; **five to seven collapse to accordions**, one per row, 48 px rows on hairlines, count at the right end, first group open.
-2. **The newsletter form — one row only.** Visually-hidden label, email field, button, one 13 px reassurance line ≤ 90 characters. No heading, no body copy, no image: A22 Newsletter owns the persuasive version. Four states at one height — empty, invalid, submitting, done. Detail in §4.
+2. **The newsletter form — one row only.** Visually-hidden label, email field, button, one 13 px reassurance line ≤ 90 characters. No heading, no body copy, no image: A22 Newsletter owns the persuasive version. Four states at one height — **focus, invalid, submitting, done** — with the resting band serving as the empty state rather than being drawn twice. (Corrected this pass: the list had named "empty" where the frame draws focus.) Detail in §4.
 3. **The social row renders only what exists — and its glyphs are the Icon Picker's.** Icons come from the Icon Picker's Social / Brands group (Tabler, per P0·2's library ruling), **never typed two-letter boxes**; the drawn frames use neutral stroke placeholders for them. The split stands: **read-only rows from Ghost's social accounts plus an authored extension list** — and the Ghost rows are **version-gated**: Facebook and X only on Ghost 5.x, all nine platform fields as read-only rows on ≥ 6.36, each linking to the setting that owns it. With nothing set anywhere, the row and its gap are removed — never empty circles, never a heading over nothing. Two controls, category-wide: **Icon style** (Bare · Outlined box · Filled box) and the display control, extended — **Glyphs · Labels · Short labels (Fb, X, Li, In, Yt) · Off**. Per-icon size and colour role come from the P0·2 slot popover: roles, never hexes, and a role failing AA on its ground disables with the ratio shown. Geometry unchanged: 34 px box (bare, outlined or filled per Icon style), 30 px inside a legal line (A3·8, A3·15), a real 44 px box at ≤ 767. Names are platforms, not glyphs — the glyph is `aria-hidden`, the accessible name is the platform's; the list is a `<ul>` labelled “Orbit Weekly elsewhere”, links carry `rel="me"`.
 4. **The legal line.** One order everywhere: **copyright · Privacy · Terms · Built with Inflozo**, 13 px muted, middots in the border token generated as CSS. The year is generated, never typed. **`legalLinks[]` is a standard P0·3 repeater** — Add arrives with content (“New page” → `/`), Remove never disabled above zero, drag reorders, labels edit inline (P0·1), URLs open the Ghost-aware Link Picker — **capped at six, raised from four**: Privacy · Terms · Disclaimer · Imprint already makes four. **The credit reads “Built with Inflozo”, linking to inflozo.com. On the Free plan the control is disabled-on with the reason shown in the sidebar; only Pro may hide it.** The previous “Published with Ghost” with a free Show/Hide toggle is corrected across all sixteen designs — one change, every frame that draws the line. **Legal layout** is one category control — **One line · Copyright left, links right** — carrying the owner's “move Privacy / Terms right” asks: drawn at the split value on A3·4, A3·5, A3·7, A3·9 and A3·11 (copyright and the credit left, Privacy and Terms right); A3·6 keeps its stacked variant, locked, with © and the credit under the links; A3·16's bar defers to the released footer's own legal line. At ≤ 767 the split stacks back into the wrapped group, items never breaking mid-item.
 
@@ -61,7 +74,7 @@ These apply to all 16 designs and are not repeated per design.
 
 **Data from Ghost.** Site title, logo, Facebook and X from settings; posts, tags and counts from content. Everything else is section content — including the contact fields, the credits, the extra social platforms and `footerBelow`, the four **invented** groups. **Flagged:** a site with several footers keeps those four in step by hand; Ghost gives us nowhere else to put them.
 
-**Empty-data floor.** Every element that leaves takes its gap; nothing is substituted for what is missing. No site title → no footer, and the editor says the site needs a name. Where a design's own subject is absent, it falls back to a named sibling and the sidebar states which — the full list is in A3-0. Fields a design does not draw are kept, not cleared, and return on switching.
+**Empty-data floor.** Every element that leaves takes its gap; nothing is substituted for what is missing. No site title → no footer, and the editor says the site needs a name. Where a design's own subject is absent, **the design hides what does not apply and keeps its own arrangement** (Part A·A8); the sidebar states what is not drawn. No design names a sibling. Fields a design does not draw are kept, not cleared, and return on switching.
 
 **The Site-wide group.** `showAttribution` (disabled-on for Free with the reason shown; Pro may hide), Back to top and Shows on sit below each design's own controls, beside the universal Background role, Vertical spacing and Top divider and the category's Legal layout; none count against the design's own list.
 
@@ -87,15 +100,15 @@ These apply to all 16 designs and are not repeated per design.
 
 ## 1 · Minimal Line
 
-A brand-and-social row above the legal line's own second row, over one hairline. The baseline, the fallback for six other designs, and where the legal line, the locked attribution, the legalLinks repeater and the social row's disappearance are set. Spends no accent beyond the mark. **Reconciled from a single row:** the owner's legal-row move (patch items 1 and 4) gives the legal line its own second row.
+A brand-and-social row above the legal line's own second row, over one hairline. The baseline — the least a footer can be — and where the legal line, the locked attribution, the legalLinks repeater and the social row's disappearance are set. Spends no accent beyond the mark. **Reconciled from a single row:** the owner's legal-row move (patch items 1 and 4) gives the legal line its own second row.
 
-**Descriptor.** The category's floor — a brand row over a legal row with nothing added to them, spending no accent, and the arrangement six other designs resolve to rather than inventing one of their own.
+**Descriptor.** The category's floor — a brand row over a legal row with nothing added to them, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 
 **Structural descriptor.** `bar · none · page · none · none · brand row over legal row`
 
 **Archetype.** bar
 
-**Behaviour module.** **none.** The lockup, the glyph row, the legal line and the generated year are all server-rendered, and every state in the design is a CSS hover or focus. There is nothing to degrade: with JavaScript off this footer is identical, which is why it can be the fallback five designs hand off to. Back to top, when the shared Site-wide control is on, compiles as `<a href="#top">` and declares nothing — the category's finding, not this design's.
+**Behaviour module.** **none.** The lockup, the glyph row, the legal line and the generated year are all server-rendered, and every state in the design is a CSS hover or focus. There is nothing to degrade: with JavaScript off this footer is identical. **No design hands off to it** (Part A·A8) — five designs once did. Back to top, when the shared Site-wide control is on, compiles as `<a href="#top">` and declares nothing — the category's finding, not this design's.
 
 **Items.** `social[]` only: this design draws no columns.
 
@@ -151,7 +164,7 @@ Brand block at the left margin, link columns filling the measure, legal line on 
 - **Remove.** A column or a link at a time; links are never moved between columns to fill a gap. Disabled at two columns: “Two is the fewest this design draws — Minimal Line is the design for none.”
 - **Reorder.** Meaningful in both directions: columns left to right in authored order, links top to bottom within a column. Dragging column five to position two changes the grid rather than the wrap.
 - **Counts.** 2–7 columns, 1–8 links. Designed for three or four, which fill the measure. Two keep the 1fr they would have had at four and leave the right quarter empty on purpose — the editor does not warn. Five to seven re-arrange as the settlement says. **One column** renders on that same 1fr with three-quarters of the measure empty and the sidebar names A3·1.
-- **Zero.** No columns → the design renders as A3·1 Minimal Line, stated in the sidebar; the repeater shows Add column and a line saying what the footer draws until one exists.
+- **Zero.** No columns → the column grid is absent and the brand block sits alone above the legal row, still this design (Part A·A8); the repeater shows Add column and a line saying what the footer draws until one exists.
 - **Inside an item.** Column: `heading` (req) and its links. Link: `label` and `url`. A link whose target has been deleted keeps rendering and is flagged — the user's text is never removed on their behalf. Nothing else: the column's width, its gutter, its top alignment and its 11 px link rhythm are the section's, written once and read by all of them.
 
 **Content fields.** `wordmark` · `mark` · `tagline` (≤ 80) · `linkColumns[]` (2–7 groups; heading req ≤ 24, links 1–8 of label ≤ 28 + url) · `social[]` · `copyright` · `legalLinks[]` · `showAttribution`.
@@ -173,7 +186,7 @@ Universal, outside the list: Background role; Vertical spacing, resolving 40 · 
 
 **Responsive.** 1440–1081: brand block 300 px fixed, columns 1fr, 40 px gutters, 11 px link rhythm. Two columns stay 1fr and leave the right quarter empty. Five to seven put the brand block above a four-across wrapping grid. 1080–768: two columns across, brand block spanning at 260 px, gutters 32, row gap 36. ≤ 767: two to four columns become a two-across grid, open, links padded to 44 px (list gap 11 → 2 px, the padding does the spacing); five to seven become accordions, first open, count at the right end.
 
-**Empty state.** No columns → renders as A3·1 Minimal Line, stated in the sidebar. No tagline → lockup and social close up. No social → row and gap removed.
+**Empty state.** No columns → the grid is absent and the brand block sits alone above the legal row, still this design (Part A·A8). No tagline → lockup and social close up. No social → row and gap removed.
 
 **Accessibility.** Each column is `<nav aria-labelledby>` on its visible `<h2>` — four columns is four small navs, which is correct: they are four groupings, and one unlabelled list of sixteen links is what we are avoiding. Accordion headings keep their `<h2>` and use `aria-expanded`; closed groups are `hidden`. Focus order is reading order. Links 5.4:1 light / 6.4:1 dark; headings 12.1:1 / 11.8:1.
 
@@ -191,7 +204,7 @@ Links on one ground, a full-bleed legal bar on another. The lockup lives in the 
 
 **Archetype.** stack
 
-**Behaviour module.** `accordion`, on the same condition as A3·2 — ≤ 767 with five to seven columns in the tier. The bar is A3·1 verbatim and adds nothing; the ground pair, the fixed hairline and the 24 px bar padding are CSS. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” Both grounds and both tiers render, so the division a reader sees is the division without JavaScript too. The `<button aria-expanded>` correction A3·2 owes applies here unchanged. *Finding.*
+**Behaviour module.** `accordion`, on the same condition as A3·2 — ≤ 767 with five to seven columns in the tier. The bar repeats A3·1's composition and adds nothing; the ground pair, the fixed hairline and the 24 px bar padding are CSS. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” Both grounds and both tiers render, so the division a reader sees is the division without JavaScript too. The `<button aria-expanded>` correction A3·2 owes applies here unchanged. *Finding.*
 
 **Items.** A3·2's list, and the same repeater: the tier draws the columns and the bar never does.
 
@@ -238,7 +251,7 @@ A band across the top of the footer holding one form row, with the links beneath
 
 **Archetype.** form
 
-**Behaviour module.** `member-form`. Edit-safe: the form does not post while the section is being edited, and the four states are drawn rather than triggered. **JS off:** “The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state.” *Empty* and *invalid* survive without script — `type="email"`, `required` and the browser's own validation carry them — while *submitting* and the in-place *done* state are the JS path; the note keeps its `aria-describedby` either way and loses only `aria-live`. Members off in Ghost is not a JavaScript question: the field is replaced by the button-as-link at the server, and that substitution holds with or without the module.
+**Behaviour module.** `member-form`. Edit-safe: the form does not post while the section is being edited, and the four states are drawn rather than triggered. **JS off (corrected this pass — Part A·A10):** ~~the form posts natively to Ghost's members endpoint~~. **It cannot.** Tested against both live Ghost servers, **Ghost's signup endpoint will not accept a plain form submission**, so a scriptless field would take an address and lose it. The form is therefore **replaced by the no-JavaScript notice** (P0·4) — one line, the band's own height, the note kept beneath it: *“Signing up needs JavaScript — turn it on to subscribe.”* **The four working states are untouched:** empty, invalid, submitting and sent are Ghost's own script doing its job and stay exactly as drawn (Part D). What was withdrawn is only the claim that any of it survives without script. **Members off in Ghost is a separate question** and is not about JavaScript: the field is replaced by the button-as-link at the server, and that substitution holds either way.
 
 **Items.** One item list, and it is not the form: `linkColumns[]` beneath the band, plus `social[]`.
 
@@ -246,7 +259,7 @@ A band across the top of the footer holding one form row, with the links beneath
 - **Add link** as A3·2, 1–8 a column.
 - **Remove, reorder** as A3·2; drawn order for the three that are drawn, and a dragged fourth column becomes visible by arriving in the first three.
 - **Counts.** 0–3 columns drawn, 1–8 links. Three is the design's own high end because 1080 puts the columns two-across with the brand block as a cell.
-- **Zero.** Columns: Off, or none authored → the band sits directly above A3·1's bar. The band is the design, so this is a floor rather than a hand-off, and the sidebar says so instead of recommending another design.
+- **Zero.** Columns: Off, or none authored → the band sits directly above the legal row. The band is the design, so this is its floor (Part A·A8), and the sidebar says so instead of recommending another design.
 - **Inside an item.** As A3·2. The placeholder, button label, note and both success lines are section fields rather than items — one form to a footer, never a list of forms.
 
 **Content fields.** `newsletterPlaceholder` (opt, ≤ 28, default “you@example.com”) · `newsletterButtonLabel` (opt, ≤ 16, default “Subscribe”) · `newsletterNote` (opt, ≤ 90, one line) · `newsletterSuccess` (opt, ≤ 60) · `newsletterSuccessShort` (opt, ≤ 32, used ≤ 767) · `memberSubscribedLine` (opt, ≤ 60, default “You're subscribed to {site title}.”) · `memberManageLabel` (opt, ≤ 40, default “Manage your newsletters in your account”) · plus `wordmark`, `mark`, `linkColumns[]`, `social[]`, `copyright`, `legalLinks[]`, `showAttribution`. **There is no heading or body field** — that is the settlement, not an omission. The error line is a theme translation-catalog string, not a field: it has to match what was actually rejected.
@@ -260,19 +273,19 @@ A band across the top of the footer holding one form row, with the links beneath
 | Field width | Narrow 320 · Medium 400 · Wide 480 |
 | Band alignment | Centred · Left |
 | Columns | Auto · Two · Three · Off |
-| Signed-in members | Show form · Hide band · Show manage link (Portal account/newsletters) |
+| Signed-in members | Show form · Hide band · Show manage link (Portal account/newsletters) — **the manage link opens Portal, so with JavaScript off nothing happens** (Part A·A9) |
 
 Universal: Background role and Vertical spacing govern the section around the band; Top divider None (the band's ground change is the edge). Legal layout drawn at the split value — © and the credit left, Privacy and Terms right. **Signed-in members is the reconciliation item: today a subscriber is asked to subscribe.** A server-side member check — no JS, nothing flashes, the module stays `member-form` — decides what a signed-in reader gets: the form, no band, or a manage line linking to Portal's account / newsletters. Drawn at Show manage link; both sentences are editable fields with defaults (“You're subscribed to {site title}.” · “Manage your newsletters in your account”). This model subsumes the standard Member Visibility control (P0·4 scope: SECTION). The subscribe button accepts an optional icon, before or after the label, per P0·2.
 
 **States.** *Empty*: placeholder in muted. *Focus*: 1.5 px accent border on the field, library ring suppressed — it would collide with a button 10 px away; A2·5 Capture's documented departure, repeated so the two forms behave identically. *Invalid*: the error replaces the note at 13 px / 500 in `text`, field border 1.5 px `text`, **no red anywhere** — the seven roles contain no error colour; band height unchanged; checked on blur and submit, never per keystroke. *Submitting*: label “Subscribing…”, field disabled on the pack's hover surface, button label to 80%, width reserved for the longer label so the row does not twitch; no spinner. *Done*: field, button and note replaced in place by the confirmation and a way back, at identical height; session-lived — a reload shows the empty form, because Ghost's confirmation email is the record.
 
-**Data.** Posts to Ghost's members subscribe endpoint; Ghost sends its own confirmation. An already-subscribed address gets Ghost's response in the same slot. **Members off in Ghost** → the field is replaced by the button alone, linking to the subscribe page; the sidebar states the substitution and links to the setting; placeholder and note are kept.
+**Data.** Posts to Ghost's members subscribe endpoint **via Ghost's script**; Ghost sends its own confirmation. An already-subscribed address gets Ghost's response in the same slot. **Conditional on the connected site (Part A·A9):** with **self-signup switched off**, or **members disabled altogether**, the field does not render — the band keeps its own shape and drops the ask, the sidebar states which of the two conditions is in force and links to the setting, and placeholder and note are kept. Field width and Submit style stay in the panel, **disabled with the reason** (owner's ruling), since the site's settings can change without the author touching this footer. **A paid ask additionally needs a payment provider connected.** **The Portal manage link, and every button that opens Portal, does nothing with JavaScript off.**
 
 **Responsive.** 1440–1081: one row at the named field width, note under. 1080–768: field steps one value down (400 → 320), row holds, columns two-across with the brand block as a cell. ≤ 767: field and button take a row each at 48 px, field text 15 → 16 px so iOS does not zoom, note centred, success copy uses `newsletterSuccessShort`.
 
 **Empty state.** No note → the band is the row alone and loses 22 px. Columns: Off, or none authored → the band sits directly above A3·1's bar.
 
-**Accessibility.** A real visually-hidden `<label>Email address</label>`, plus `aria-label="Subscribe to {site title}"` on the form, since there is no visible heading. `type="email"`, `autocomplete="email"`, `inputmode="email"`, `required`; `aria-invalid` on error with focus held in the field. The note is both the `aria-describedby` target and the `aria-live="polite"` region, so the outcome is announced where the terms were. Button is `<button type="submit">` whose visible label is its whole name; disabled while submitting. Placeholder 5.1:1 light / 5.9:1 dark; button label on the darkened accent 4.6:1 light, 8.1:1 dark.
+**Accessibility.** A real visually-hidden `<label>Email address</label>`, plus `aria-label="Subscribe to {site title}"` on the form, since there is no visible heading. **The no-JavaScript notice is plain text in the band, not an alert** — nothing has changed for the reader, so there is nothing to announce. `type="email"`, `autocomplete="email"`, `inputmode="email"`, `required`; `aria-invalid` on error with focus held in the field. The note is both the `aria-describedby` target and the `aria-live="polite"` region, so the outcome is announced where the terms were. Button is `<button type="submit">` whose visible label is its whole name; disabled while submitting. Placeholder 5.1:1 light / 5.9:1 dark; button label on the darkened accent 4.6:1 light, 8.1:1 dark.
 
 **Flagged as mine.** The 90-character note cap, the suppressed focus ring, the reserved button width, the session-lived done state, the shortened mobile success line, and the rule that this design takes the footer's whole accent budget.
 
@@ -292,12 +305,12 @@ The whole footer on one contrast ground — brand, columns and legal together, n
 
 **Items.**
 
-- **Add column** as A3·2 up to four, then disabled: the editor caps this design at four and names A3·8 Sitemap.
+- **Add column** as A3·2 up to four, then disabled **with the reason visible** (Part A·A5): twenty-plus links on an inverted band is a wall. The panel **advises** that A3·8 Sitemap suits more — advice, never a switch (Part A·A8).
 - **Add link** as A3·2, 1–8 a column.
 - **Remove.** Disabled at two, as A3·2.
 - **Reorder.** Drawn order, left to right. At 834 an odd third list becomes a wrapping row and keeps its authored position rather than being moved to the end.
 - **Counts.** 2–4 columns, 1–8 links. Designed for three or four; two leaves the right quarter empty as A3·2 does, and the band's padding does not change to compensate.
-- **Zero.** The band holds the brand block and the legal line and keeps its full padding — a band is a band at any content length, and this is the one design whose empty state is not a hand-off.
+- **Zero.** The band holds the brand block and the legal line and keeps its full padding — a band is a band at any content length.
 - **Inside an item.** As A3·2. Nothing about an item changes on contrast: the carried 72% for links is the section's value, written once and read by every one of them, and there is no per-column opacity.
 
 **Content fields.** As A3·2, with `linkColumns[]` capped at 4. A logo image with a light background is the one content case this design cannot carry: the sidebar asks for a light-ground version and falls back to the initial square until one is supplied.
@@ -316,13 +329,13 @@ Universal: Vertical spacing resolves 44 · 64 · 88 — one step larger than the
 
 **Data.** As A3·2.
 
-**Responsive.** 1440–1081: brand block 340 px, columns 1fr. 1080–768: two-across with the brand block spanning; an odd third list takes the full remaining width and lays its links out as a wrapping row rather than a stub column — the one place in the category where a list changes direction at a width. ≤ 767: two-across as A3·2, legal left-aligned rather than centred, band full-bleed with no radius and no hairline. **Five to seven columns are not offered** — the editor caps this design at four and names A3·8 Sitemap.
+**Responsive.** 1440–1081: brand block 340 px, columns 1fr. 1080–768: two-across with the brand block spanning; an odd third list takes the full remaining width and lays its links out as a wrapping row rather than a stub column — the one place in the category where a list changes direction at a width. ≤ 767: two-across as A3·2, legal left-aligned rather than centred, band full-bleed with no radius and no hairline. **Five to seven columns are not offered** — the stepper is capped at four with the reason visible, and the panel advises A3·8 Sitemap for more (Part A·A5, A·A8).
 
 **Empty state.** No columns → the band holds the brand block and legal line and keeps its padding. No social → row and gap removed.
 
 **Accessibility.** Structure identical to A3·2. Hover and focus use the pack's lightest surface, never accent. No `color-scheme` switch inside the band — a band that flipped the UA's form colours would break any field a later design puts on it. Paper light: headings and wordmark 13.9:1, links at 72% 7.6:1. Paper dark: headings 13.2:1, links at 70% 7.1:1. Focus ring 13.9:1 / 13.2:1.
 
-**Flagged as mine.** The one-step-larger padding, the four-column cap and its hand-off, the derived strip and its lift-instead-of-darken rule, the wrapping odd list at 834, and the light-logo requirement.
+**Flagged as mine.** The one-step-larger padding, the four-column cap and its advice line, the derived strip and its lift-instead-of-darken rule, the wrapping odd list at 834, and the light-logo requirement.
 
 ---
 
@@ -414,19 +427,19 @@ Type: the pack's heading font, −0.045em at Huge, line-height 0.84, descender a
 
 **Data.** The name is Ghost's site title. No site title → no design.
 
-**Responsive.** Below 1080 the scale steps one named value down (Huge → Large) and Fill width recomputes against the new measure — the letters are never squeezed. ≤ 767 the scale is always Fill width whatever the control says, and the control's value is remembered and returns above the breakpoint; two words become two lines at about 62 px. Two lines is the cap: at the 72 px floor a longer name wraps on word boundaries, and beyond that the design hands off to A3·6 Centred Stack with the reason shown.
+**Responsive.** Below 1080 the scale steps one named value down (Huge → Large) and Fill width recomputes against the new measure — the letters are never squeezed. ≤ 767 the scale is always Fill width whatever the control says, and the control's value is remembered and returns above the breakpoint; a twelve-character name fills the 350 px measure on **one line at 64 px** — at the measured 0.442 em advance that is 339 px of ink, where 66 px would sit exactly on the measure and break at the space. The single line and the larger type are what the rule takes when the floor allows it. **Fill width sizes the name to span its measure on as few lines as the floor allows.** A name too long for one line shrinks until it fits two, and **a name too long for two at the floor takes a third rather than going below it** (owner's ruling this pass) — smaller type, the whole name, no cut and no switch to another design (Part A·A8). **The floor is 44 px at every width.** Measured on this design's own drawn names with `Range.getClientRects`, **a character costs 0.44 em** including the tracking, consistent at 76, 96, 128 and 158 px. That puts two lines at the floor near **134 characters** on the 1296 px measure and near **36** on a phone's 350 — a bound at both widths rather than one a publication name meets. **The second line arrives past about 67 characters on the desktop measure; the floor itself only past about 134** ⚑.
 
 **Empty state.** Floor is one legal line and the name, 192 px at 390. The name is never dropped.
 
 **Accessibility.** The name is an `aria-hidden` `<p>`, not a heading and not a link: the header's lockup has already announced the site title, and repeating it as an `h2` on every page adds an outline entry that says nothing new. **Flagged** — a real heading is defensible and I chose against it. The home link, when the theme adds one, is the link row's first item. Fill width recomputes under text zoom, so the name never overflows horizontally. Name 12.1:1 / 11.8:1.
 
-**Flagged as mine.** The 72–200 clamp, the dropped mark and tagline, the un-linked name, the `aria-hidden` decision, the dark tracking correction, the descender inset, the two-line cap with its hand-off, and this pass's Ink percentages and both crop geometries — the control names and value words are the owner's.
+**Flagged as mine.** The 44–200 clamp, the dropped mark and tagline, the un-linked name, the `aria-hidden` decision, the dark tracking correction, the descender inset, the 44 px floor, the measured 0.44 em advance the character figures rest on, and the shrink-then-add-a-line rule ⚑, and this pass's Ink percentages and both crop geometries — the control names and value words are the owner's.
 
 ---
 
 ## 8 · Sitemap
 
-Five to seven columns, every route, at the category's smallest link size. The only design above four columns, the only Density control, and where A3·5 and A3·12 hand off.
+Five to seven columns, every route, at the category's smallest link size. The only design above four columns, and the only Density control. A3·5 and A3·12 **advise** it when their own caps are reached; neither hands off to it (Part A·A8).
 
 **Descriptor.** The only design above four columns, drawn at the category's smallest link size, and the only one with a Density control — which is the control the extra columns pay for.
 
@@ -443,7 +456,7 @@ Five to seven columns, every route, at the category's smallest link size. The on
 - **Remove.** Below five the grid renders at the authored count and the sidebar recommends A3·2 rather than refusing — the opposite direction to A3·5's hard cap, and deliberate: shrinking a sitemap is ordinary, growing a contrast band is not. Disabled at one column.
 - **Reorder.** Drawn order across the grid and across the 1080 three-across wrap: five give 3 + 2, seven give 3 + 3 + 1, so dragging a column changes which row it lands in as well as its position. At ≤ 767 it is accordion order, first group open.
 - **Counts.** 5–7 designed, 1–7 possible, 1–8 links. **Density is a section value and applies to every column at once**; there is no per-column density, and a design that needed one would be two designs.
-- **Zero.** A group with no links is not drawn and its heading goes with it. No groups at all → the recommendation stands and what renders is A3·2's floor.
+- **Zero.** A group with no links is not drawn and its heading goes with it. No groups at all → the grid is absent and the brand block sits alone above the legal row, still this design (Part A·A8).
 - **Inside an item.** Heading and links. **A group generated from Ghost's tags — or, this pass, from Ghost's authors ranked by post count — is one item whose links are not editable:** the sidebar shows the count it will render and points at what owns them, rather than offering rows that would be overwritten on the next publish.
 
 **Content fields.** `wordmark` · `mark` · `linkColumns[]` (5–7 here; 2–4 makes the editor recommend A3·2, it does not refuse) · `social[]` · `copyright` · `legalLinks[]` · `showAttribution`. `tagline` and `description` are kept, not drawn.
@@ -499,7 +512,7 @@ The three most recent posts beside one link column. The only design whose conten
 
 | Control | Values |
 |---|---|
-| How many posts | Two · Three · Four — the Data group's Count stepper, capped by the design |
+| How many posts | **Number picker, 2–4** (Part A·A5), capped by the design with the reason visible |
 | Post style | With image · Title and date · Title only |
 | Which posts | Latest · Featured · By tag · By author · Hand-picked — the Data group's Filter, P0·5's full set |
 | Links | One column · Row under · Off |
@@ -537,7 +550,7 @@ A postal address, an email, a phone number and reply hours as a labelled block b
 - **The contact block is not a repeater.** Four fields in a fixed order — post, email, phone, replies — with no Add, no Remove and no reorder, which is what the fixed order means: Details chooses how many of the four are drawn and never which order they come in. A site needing a fifth detail does not get a fifth row; that is A16 Contact.
 - **Add, remove, reorder columns** as A3·2, two drawn.
 - **Counts.** 2 columns drawn (Columns: Auto · Two · Off), 1–8 links. A third authored column is kept, counted and not drawn — the two fixed 300 px blocks take the left half and there is no room for it.
-- **Zero.** No columns → the brand block and the contact block sit together at the left and the measure's right half stays empty. All four contact fields empty → block and heading removed and the design is A3·2, stated in the sidebar.
+- **Zero.** No columns → the brand block and the contact block sit together at the left and the measure's right half stays empty. All four contact fields empty → block and heading removed, the brand block keeps its 300 px and the links flex beside it, still this design (Part A·A8).
 - **Inside an item.** Link: label and URL. The contact values are section fields rather than items: each may be left empty and takes its 12 px label with it, and the heading is kept even for a single field — with it, a labelled group; without it, a stray address in a footer.
 
 **Content fields.** `contactHeading` (opt, ≤ 24, default “Get in touch”) · `address` (multi-line, opt, ≤ 120) · `email` (opt) · `phone` (opt) · `hours` (opt, ≤ 40) · plus `wordmark`, `mark`, `tagline`, `linkColumns[]` (2 drawn), `social[]`, `copyright`, `legalLinks[]`, `showAttribution`. **Field order is fixed** — post, email, phone, replies — and is not a control: a contact block whose order varies by site is one nobody can scan.
@@ -559,7 +572,7 @@ Labels 12 px muted, values 15 px in `text` — an address you cannot read is wor
 
 **Responsive.** 1440–1081: brand 300, contact 300, links flexing. 1080–768: two-across, and the contact block becomes a two-by-two field grid so it matches the brand block's height. ≤ 767: contact comes second, above the links — someone opening a footer on a phone is more often looking for a way to get in touch than for the archive — and the address renders as one comma-separated line, saving 44 px. Email and phone get 44 px targets.
 
-**Empty state.** Each missing field takes its label. All four empty → block and heading removed and the design is A3·2, stated in the sidebar. The heading is kept even for a single field: with it, a labelled group; without it, a stray address in a footer.
+**Empty state.** Each missing field takes its label. All four empty → block and heading removed, the brand block keeps its 300 px and the links flex beside it, still this design (Part A·A8). The heading is kept even for a single field: with it, a labelled group; without it, a stray address in a footer.
 
 **Accessibility.** `<address>` inside a section labelled by its visible `<h2>`, italics reset. Labels and values are a `<dl>`. Link text is the address itself, never “email us”. The phone number keeps its spaces visually and is unspaced in the `href`. The 12 px labels are the category's one type-floor exception, allowed because each `<dt>` names a 15 px value directly under it; 5.4:1 / 6.4:1, and set at 400 in dark rather than 500. **Flagged as a gap:** no jurisdiction's imprint rule is encoded — the field exists, what a country requires in it is the site owner's to know.
 
@@ -782,7 +795,7 @@ Every link in one wrapping block at reading size, no headings and no columns. Fo
 - **Add link** appends to the last authored group, which is the end of the field. **Add column** still exists and adds a group that is hidden rather than headed — the grouping is what survives a switch to A3·2, and a screen reader still hears “About, 4 items”.
 - **Remove.** Any link; removing a group's last link removes the hidden group with it and the field closes up.
 - **Reorder.** Authored order across groups and then within them, so the field reads as one sequence. Dragging changes where a link falls in the wrap; a separator never starts a line and the last item never carries one, whatever the order.
-- **Counts.** 24 links across all groups; a twenty-fifth is refused with A3·8 named. Fewer than four renders as A3·1, stated in the sidebar. Six with middots is the intended low end and stays composed, which is why pruning from twenty-two to six needs no design change.
+- **Counts.** A number picker to 24 links across all groups, capped with the reason visible and A3·8 **advised** (Part A·A5, A·A8). Fewer than four still draws as this design — the row simply has fewer items. Six with middots is the intended low end and stays composed, which is why pruning from twenty-two to six needs no design change.
 - **Zero.** No links → A3·1, and the repeater renders with Add link and a line saying what the footer draws until one exists.
 - **Inside an item.** Label and URL. The group heading is editable, never drawn, and becomes the visually-hidden list heading; left empty, that nested list is unlabelled rather than labelled with nothing. **Link size and separator are section values and apply to every link at once** — one link at 20 px among twenty at 15 px is not expressible here, and should not be.
 
@@ -803,7 +816,7 @@ Universal: Background role; Vertical spacing resolving 40 · 56 · 80; Top divid
 
 **Responsive.** 1440–768: the block reflows on the measure; gap 32 → 28 at 834, type held. ≤ 767: type steps one value down (17 → 16), horizontal gap 22, and the vertical gap is replaced by 7 px of padding per link for 44 px targets; social moves out of the legal row onto its own row.
 
-**Empty state.** Fewer than four links → the design renders as A3·1, stated in the sidebar. Six links with middots is the intended low end and stays composed — this design meets A3·1 there, one step of type size apart, deliberately: a site pruning from twenty-two links to six should not have to switch design.
+**Empty state.** Fewer than four links → the row draws with fewer items and the design stays itself (Part A·A8). Six links with middots is the intended low end and stays composed — this design meets A3·1 there, one step of type size apart, deliberately: a site pruning from twenty-two links to six should not have to switch design.
 
 **Accessibility.** One `<nav aria-label="Footer">` with a real `<ul>`; where the authored content has groups, each is a nested `<ul>` with a visually-hidden heading, so the grouping survives a switch to A3·2 and a screen reader still hears “About, 4 items”. Links are list items laid out with flex-wrap and gap — never space-separated inline text, never `display: contents`. Separators are `::after` content, so nothing reads “middot” twenty-one times and the marks cannot be copied into a pasted link list. A list of 22 unheaded links announces as “list, 22 items”, which is honest — this design is for the case where that is the truth; above 24 the editor recommends A3·8. 17 px muted 5.4:1 / 6.4:1.
 
@@ -904,7 +917,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 **Two names that do not match their archetype, stated plainly.** **3 Two-Tier** is a `stack` and not a `split`: two tiers on top of each other is a vertical stack, while `split` would mean two panels side by side, which no footer in A3 is. **16 Mini Bar** is `sticky` rather than `bar` — the archetype names the behaviour, because the pinning is the design and the bar shape is what six other designs already are.
 
-**Not used as a separator.** The universal Vertical spacing, Background role and Top divider, the category Legal layout, Columns, Social, the locked Attribution, Back to top and Shows on never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does the fallback web — that six designs resolve to A3·1 when their preconditions are absent is a hand-off, not a structure.
+**Not used as a separator.** The universal Vertical spacing, Background role and Top divider, the category Legal layout, Columns, Social, the locked Attribution, Back to top and Shows on never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does the fallback web — and after Part A·A8 there is no fallback web: **no A3 design resolves to another design.** Each hides what does not apply and states it.
 
 ---
 
@@ -916,7 +929,7 @@ Three of the registry's 31, and nothing coined. Eleven designs declare none at a
 |---|---|---|---|
 | 1 | Minimal Line | none | every part server-rendered; Back to top is an `<a href="#top">` |
 | 2 | Columns | `accordion` at ≤ 767, five to seven columns; **ARCHITECT: `nav-transform`** at Columns source: bound | markup disagreement — **finding** |
-| 3 | Two-Tier | `accordion`, same condition | the bar is A3·1 and adds nothing |
+| 3 | Two-Tier | `accordion`, same condition | the bar repeats A3·1's composition and adds no module |
 | 4 | Newsletter Band | `member-form` | native post; Ghost's response replaces the done state |
 | 5 | Contrast Band | none | the four-column cap is why |
 | 6 | Centred Stack | none | nothing collapses, so nothing to declare |
@@ -942,7 +955,7 @@ Four lists across the category — this pass gives `legalLinks[]` the P0·3 repe
 | # | Design | Columns drawn | Links a column | Social | Other list |
 |---|---|---|---|---|---|
 | 1 | Minimal Line | none (kept, not shown) | — | 0–6 | — |
-| 2 | Columns | 2–7 (1 renders, A3·1 named) | 1–8 | 0–6 | — |
+| 2 | Columns | 2–7; 1 renders as one column | 1–8 | 0–6 | — |
 | 3 | Two-Tier | 2–7 | 1–8 | 0–6 | — |
 | 4 | Newsletter Band | 0–3 drawn; above three kept | 1–8 | 0–6 | — |
 | 5 | Contrast Band | 2–4, capped | 1–8 | 0–6 | — |
@@ -987,14 +1000,14 @@ Five — four from the specification pass, one from the reconciliation patch —
 - **A3-1 Minimal Line:** primary, both state frames, DATA, CONTROL, DARK and tablet frames redrawn to the two-row arrangement (brand row over legal row); the CONTROL caption now reads “Attribution hidden — Pro plan only”; the panel adds Social position, Social display (with Short labels), Icon style and the drawn `legalLinks[]` repeater.
 - **A3-2 Columns:** panel adds Columns source, Fill column, Icon style; ARCHITECT: `nav-transform` stated on the panel.
 - **A3-3 Two-Tier:** panel adds Social position, Short labels, Icon style; universal trio drawn with two locked rows.
-- **A3-4 Newsletter Band:** new MEMBER frame (signed-in reader, Manage-link state); legal line split (© + credit left, links right) in the primary and dark frames; panel adds Signed-in members.
+- **A3-4 Newsletter Band:** new MEMBER frame (signed-in reader, Manage-link state); legal line split (© + credit left, links right) in the primary and dark frames; panel adds Signed-in members. **This pass:** new NO-JAVASCRIPT frame (P0·4 notice in place of the form) and a corrected self-signup-off state.
 - **A3-5 Contrast Band · A3-7 Big Type · A3-9 Latest Posts · A3-11 Colophon:** legal line split in every non-wrapping frame; panels gain their per-design rows (A3·7: Ink, Offset; A3·9: the P0·5 filter set; A3·11: Links source + ARCHITECT note).
 - **A3-6 Centred Stack:** all five legal lines redrawn stacked — Privacy · Terms above, © + credit beneath; Legal layout drawn locked.
 - **A3-8 Sitemap, A3-10 Contact Block, A3-12 Card, A3-13 Tags, A3-15 Wrap, A3-16 Mini Bar:** panel rebuilds as above; A3-14 Image Band adds the Image source row, A3-15 the five-value Separator row, A3-16 the fully-locked universal trio.
 
 **Rulings — where this patch met something the spec had already settled, one line each.**
 
-1. **Minimal Line's identity was “one row above a hairline”; the owner's legal-row move makes it two rows.** Applied; the tuple's emphasis is now “brand row over legal row” and the descriptor is rewritten — the design stays the category's baseline and fallback.
+1. **Minimal Line's identity was “one row above a hairline”; the owner's legal-row move makes it two rows.** Applied; the tuple's emphasis is now “brand row over legal row” and the descriptor is rewritten — the design stays the category's baseline.
 2. **The legal-line settlement's last item** read “Published with Ghost”, shown by default and removed by a free control. Corrected to “Built with Inflozo” → inflozo.com, disabled-on for Free with the reason shown, Pro-only hide.
 3. **Top edge (Hairline · Ground change · None) vs the universal Top divider (None · Line · Fade):** mapped — Hairline → Line, Ground change → None with the differing ground as the edge; Fade is newly available; A3·3 locks the row. Not a distinct ladder, so the old control is retired rather than kept.
 4. **A3·9's “Which posts” carried “A collection”; P0·5's filter set has no collections.** Aligned to P0·5 (Latest · Featured · By tag · By author · Hand-picked) — collections are route vocabulary. The old value is retired here, on record, not silently.
@@ -1007,5 +1020,28 @@ Five — four from the specification pass, one from the reconciliation patch —
 11. **A3·4's four form states and the fixed error line** stand; the error line is reclassified from “fixed copy” to a translation-catalog string, and the two new signed-in sentences are fields with defaults.
 12. **Defaults chosen by this pass, flagged as mine:** Signed-in members drawn at Show manage link; Icon style default Bare; the Ink percentages (100 / 55 / 24) and both Offset crop geometries; `creditsGroups[]` caps (0–2 groups, 0–6 rows); the split legal layout stacking back at ≤ 767.
 13. **A3·1's a11y frame** keeps its single-row crop as an annotated structural diagram; its notes still hold (landmark, lockup, labelled lists) and the layout change is documented on the redrawn frames beside it.
+
+## Patch notes — design patch pass
+
+Frames updated: `A3-0 Category Proof`, `A3-2 Columns`, `A3-4 Newsletter Band`, `A3-5 Contrast Band`, `A3-7 Big Type`, `A3-8 Sitemap`, `A3-10 Contact Block`, `A3-12 Card`, `A3-15 Wrap`, `A3-16 Mini Bar`.
+
+| Rule | Change |
+|---|---|
+| A8 | **All hand-offs withdrawn.** A3·2, A3·8, A3·10 draw the brand block alone when columns run out; A3·15 draws fewer items; **A3·7 shrinks a long name toward a 44 px floor, adding a line before going below it** instead of becoming A3·6 ⚑; A3·3's empty tier leaves the bar as its own composition; A3·5 and A3·12 **advise** A3·8 past their caps rather than handing off. A3·1's "fallback five designs hand off to" is struck, as is the structural-descriptor note about a "fallback web". A3·16's release is described as one element unpinning, not as a hand-off pattern borrowed from A1. |
+| A9 | A3·4's subscribe ask is conditional on self-signup, members being enabled, and — for a paid ask — a payment provider; the Portal manage link does nothing without script. Its field controls stay disabled with the reason (owner's ruling). |
+| A10 | **A3·4's "posts natively, works without JavaScript" claim is withdrawn** — Ghost's signup endpoint refuses a plain POST. The form is replaced by P0·4's notice at the band's height; **the four form states are untouched.** New frame. |
+| A2 | Remove is active at every floor, with one-clause sentences that point at no other control. |
+| A5 | **How many posts becomes a 2–4 picker**; item counts are steppers with visible cap reasons. **Columns keeps its named values** — owner's ruling that A5 covers items, not arrangement. |
+| A6 | Universals narrow with a reason, never rename or extend; swatch row is **Base**; no "Inherit" anywhere in A3. |
+| A1 | Not applicable: A3 renders no person. |
+| B1 | A3 draws no search affordance; footer links may point at **Ghost search** via the link picker. |
+| B5 | Ctrl-K unbound; nothing in A3 bound it. |
+| A7 | **[Free]: 1 Minimal Line and 16 Mini Bar**, confirmed by the owner. |
+
+### Open questions
+
+1. ~~A3·7's two-line clip.~~ **Closed by the owner:** the name **shrinks below 72 px rather than being cut**, to a **44 px floor**, and past the floor **the line count gives rather than the type size**. **One floor at every width.** The character figures come from measuring the drawn names (0.44 em per character): two lines at the floor hold about 134 characters on the desktop measure and about 36 on a phone's. Fill width is already measured at build, so none of this needs browser measurement or script. **Corrected twice in this pass** ⚑ — a first draft claimed 100 characters from an estimate, a second claimed 70 and invented a 28 px mobile floor from an advance mis-read off container widths rather than ink. **Both are withdrawn.** The 44 px floor is the one number here that is mine, and the stress frames now draw the same name at both measures so the arithmetic is checkable by looking.
+2. ~~A3·10's imprint gap.~~ **Closed by the owner: left as-is** — the fields exist and the site owner knows their own law; INFLOZO encodes no jurisdiction's rule and adds no panel note. Recorded for the record: Where a footer address is legally required, the field exists but no jurisdiction's rule is encoded, and **Ghost supplies no site address** (Fact 3), so the four contact fields are section content the author types. Unchanged by this pass, restated because Fact 3 makes it sharper: nothing can pre-fill them.
+3. **`nav-transform` still needs to exist** (finding 1, unchanged) — and it is the one place in A3 with a deliberate no-JS loss, which now sits beside A10's notice as the category's second script dependency.
 
 — End of specification —

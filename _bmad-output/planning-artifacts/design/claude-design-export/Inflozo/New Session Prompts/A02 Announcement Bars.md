@@ -139,7 +139,7 @@ Sixteen header designs are drawn and specified. Files: `A1-0 Category Proof.dc.h
 
 ## 8. Three decisions carried forward, unconfirmed
 
-1. **Designs may hand off to other designs.** A1·11 becomes A1·1 below 1200; A1·15's collapsed state is A1·1; A1·4 and A1·8 fall back to A1·1 when their preconditions are absent. A2 may rely on this — say so if it should not.
+1. **No design ever turns into another design.** ~~A1·11 becomes A1·1 below 1200; A1·15's collapsed state is A1·1; A1·4 and A1·8 fall back to A1·1 when their preconditions are absent.~~ **Settled by the design patch pass (Part A·A8), ruled to apply in all 33 categories:** a placed design is the design that renders. It hides what does not apply; the panel may advise, never switch. A2 may not rely on hand-off. **It still adapts, by four permitted moves only** — reflow, hide, scroll and collapse — all of which keep the design's own type, colour, spacing and claim. **Responsiveness is a requirement, not a control:** a design that cannot hold together at 390 is redrawn with its own narrow arrangement or cut and its number retired, never served as a different design.
 2. **`contrast` is defined per mode in every pack** — near-ink in light, pale warm neutral in dark. A2 will need it: a bar on contrast is the obvious default treatment.
 3. **The member block reads tier and renewal date from Ghost** (A1·14) — relevant to A2's audience targeting, which needs the same member state.
 

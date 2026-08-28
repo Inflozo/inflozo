@@ -135,7 +135,7 @@ Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigatio
 
 Content: message (inline link support), cta?, dismiss toggle. Controls: dismissible, rotation (for multi-message), show to (Everyone / Logged out / Free members / Paid members).
 <!-- roster:A2 -->
-1. **Rule** [Free] — The category's floor — one line on a contrast band with nothing added to it, spending no accent, and the arrangement five other designs resolve to rather than inventing one of their own.
+1. **Rule** [Free] — The category's floor — one line on a contrast band with nothing added to it, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 2. **Split** [Free] — The only single-row bar whose action is a filled button at the right margin, and the only one that breaks its row on a content threshold rather than at a width.
 3. **Badge** — The only design with a label before the sentence and no band of its own — a bar drawn with a single hairline on the page's own ground.
 4. **Two-Line** — The only design with two type sizes stacked — a heading-font line over a body line — and the only one that re-arranges on a stated usable-width trigger rather than at a breakpoint.
@@ -149,13 +149,13 @@ Content: message (inline link support), cta?, dismiss toggle. Controls: dismissi
 12. **Takeover** — The only design that carries imagery, and the only one tall enough to be mistaken for a hero.
 13. **Notice** — The only bottom-anchored bar in the top-stack's vocabulary — one sentence with an always-underlined policy link and a dismiss, recording nothing and gating nothing.
 14. **Edge** — The only design that is four pixels of furniture until it is pressed, and the only one whose collapsed and open states are two different designs.
-15. **Triple** — The only design that shows more than one message at once without moving, and the only one that hands off to another design below 768 instead of re-arranging itself.
+15. **Triple** — The only design that shows more than one message at once without moving. Below 768 it draws its first slot alone and hides the other two — it stays itself at every width (Part A·A8).
 <!-- /roster:A2 -->
 
 **A3. Footers (16)** — Site-wide.
 Content: logo/wordmark, description?, link columns (manual + auto nav), social links, newsletter toggle, legal line, credit toggle (Pro-gated — FR-J15). Controls: column count, social style (Icons/Labels), newsletter embed toggle, back-to-top toggle.
 <!-- roster:A3 -->
-1. **Minimal Line** [Free] — The category's floor — a brand row over a legal row with nothing added to them, spending no accent, and the arrangement six other designs resolve to rather than inventing one of their own.
+1. **Minimal Line** [Free] — The category's floor — a brand row over a legal row with nothing added to them, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 2. **Columns** [Free] — The design that settles the column grid — brand block at the left margin, authored columns filling the measure — and the only one whose column count is free to run the whole 2–7 range, which is what the seven-column cap, the eight-link cap and the accordion threshold are written against.
 3. **Two-Tier** — The only footer split across two grounds, with the lockup in the lower bar rather than in the tier — which is what lets the bar be the site's constant while the tier above it changes.
 4. **Newsletter Band** — The only footer that takes input — one form row as a band across the top of the footer, with no heading and no body copy, which is exactly what separates it from A22 Newsletter.
@@ -178,8 +178,8 @@ Content: logo/wordmark, description?, link columns (manual + auto nav), social l
 **A4. Heroes (17)** — Home, custom pages.
 Content: eyebrow?, headline, subhead?, primary cta, secondary cta?, media (image?/none), badge?. Controls: media side, text alignment, CTA arrangement, media frame (None/Rounded/Browser/Tilt).
 <!-- roster:A4 -->
-1. **Centred** [Free] — The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under resolves to without its band, and the design the type and action ladders are established on.
-2. **Flush Left** [Free] — The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 all resolve to when their picture is absent.
+1. **Centred** [Free] — The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under's own no-band state resembles, and the design the type and action ladders are established on.
+2. **Flush Left** [Free] — The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 each approach in their own no-picture states, none of which switch design (the rule that no design ever turns into another design), when their picture is absent.
 3. **Split** — The design that settles the two-column hero — text on seven columns, one contained 4:3 crop on five, both on the page's own ground — and the geometry 10, 11 and 13 borrow rather than restate.
 4. **Full Bleed** — The only design where the set sits on the photograph itself, and the design that settles the scrim, the crop floor and the honest contrast limit for text over an unknown picture.
 5. **Image Under** — The only design that puts its whole picture below the set as a captioned band, so no word in it ever sits on a photograph.

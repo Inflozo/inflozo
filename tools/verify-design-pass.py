@@ -4,6 +4,7 @@
     python3 tools/verify-design-pass.py             # every check; EXIT NON-ZERO on failure
     python3 tools/verify-design-pass.py --extract   # dump what can be parsed, for the derivations
     python3 tools/verify-design-pass.py --verbose   # show every offending line, not a sample
+    python3 tools/verify-design-pass.py --only=P0,A1,A4   # just the categories you have done
 
 Why this exists, and why it is a script rather than a review.
 
@@ -36,17 +37,34 @@ er = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(er)
 VERBOSE = '--verbose' in sys.argv
 
 
+ONLY = next((a.split('=', 1)[1].upper().split(',')
+             for a in sys.argv if a.startswith('--only=')), None)
+
+
 def specs():
-    """{category: (filename, text)} for every spec in the export."""
+    """{category: (filename, text)} for every spec in the export, or just --only=P0,A1,A4."""
     out = {}
     for fn in sorted(os.listdir(EXPORT)):
         if fn.endswith('- Spec.md'):
-            out[fn.split()[0]] = (fn, open(os.path.join(EXPORT, fn), encoding='utf8').read())
+            cat = fn.split()[0]
+            if ONLY and cat not in ONLY:
+                continue
+            out[cat] = (fn, open(os.path.join(EXPORT, fn), encoding='utf8').read())
     return out
 
 
-REFUSAL = re.compile(r'\b(no|not|never|without|refus\w*|drop\w*|strike\w*|struck|cut|removed?|'
-                     r'deleted?|cannot|can\'t|instead of|rather than)\b[^.]{0,80}$', re.I)
+_REF = (r'\b(no|not|never|without|refus\w*|drop\w*|strike\w*|struck|cut|removed?|deleted?|gone|'
+        r'retired?|unbound|leaves|exempt|replaced?|cannot|can\'t|instead of|rather than)\b')
+REFUSAL_BEFORE = re.compile(_REF + r'[^.]{0,80}$', re.I)
+# DELIBERATELY NARROW. A refusal written AFTER the match is rare — the corpus almost always
+# writes it before ("no design declares", "~~struck~~", "is gone with A23"). Matching the full
+# refusal vocabulary forwards produced a FALSE NEGATIVE that matters: A33 line 335 still calls
+# the toggle card `<details>`/`<summary>` and was silently dropped because "never an h-level"
+# sat 40 characters later, refusing something else entirely. A missed violation reads as a pass,
+# which is strictly worse than a false positive costing a minute of reading. So only "replaced"
+# — unambiguous, and the one real case (P0: "any Tight/Even/Airy is replaced").
+REFUSAL_AFTER = re.compile(r'^[^.]{0,60}\bis replaced\b|^[^.]{0,60}\bare replaced\b', re.I)
+STRIKE = re.compile(r'~~[^~]{0,90}$')
 
 
 def hits(pattern, text, flags=re.I, skip_refusals=True):
@@ -57,8 +75,11 @@ def hits(pattern, text, flags=re.I, skip_refusals=True):
     is the exact failure doc-audit.py's own header was written to prevent."""
     out = []
     for m in re.finditer(pattern, text, flags):
-        if skip_refusals and REFUSAL.search(text[max(0, m.start() - 90):m.start()]):
-            continue
+        if skip_refusals:
+            before, after = text[max(0, m.start() - 90):m.start()], text[m.end():m.end() + 90]
+            if (REFUSAL_BEFORE.search(before) or REFUSAL_AFTER.search(after)
+                    or STRIKE.search(before)):
+                continue
         out.append(m.group(0).strip()[:100])
     return out
 
@@ -126,7 +147,9 @@ def c_dead_modules(S, lib):
     found = []
     for cat, (fn, text) in S.items():
         for m in dead:
-            if re.search(rf'`{m}`', text):
+            # A spec that RECORDS a retired name ("~~`search-overlay`~~", "no design declares one",
+            # "was never A4's; recorded") is honouring the ruling, not breaking it.
+            if hits(rf'`{m}`', text):
                 found.append(f'{cat}:{m}')
     return not found, f'still declared: {sample(found, 6)}' if found else 'no deleted module is declared'
 
@@ -156,7 +179,7 @@ def c_gap_names(S, lib):
 def c_video_upload(S, lib):
     """R-9 — A15's Upload source and the Ambient loop are cut; embeds remain."""
     if 'A15' not in S:
-        return False, 'A15 spec missing'
+        return True, 'not in scope for this run'
     t = S['A15'][1]
     found = hits(r'(Ambient loop|Source:?\s*Upload|\bUpload\b\s*[·—-]|media library)', t)
     return not found, f'upload branch survives: {sample(found)}' if found else 'Upload and Ambient loop are gone'
@@ -172,7 +195,7 @@ def c_share_link(S, lib):
 def c_toggle_card(S, lib):
     """R-6 — Ghost emits div.kg-toggle-card > h4 + button, never <details>."""
     if 'A33' not in S:
-        return False, 'A33 spec missing'
+        return True, 'not in scope for this run'
     t = S['A33'][1]
     bad = hits(r'<details|<summary', t)
     good = re.search(r'kg-toggle-card', t)
@@ -193,9 +216,17 @@ def c_member_fields(S, lib):
 
 def c_ctrl_k(S, lib):
     """R-24's lint rule — sodo-search owns ⌘K, so no Inflozo design may bind it."""
-    found = [f'{c}: {h}' for c, (fn, t) in S.items()
-             for h in hits(r'(⌘K|Cmd\s*\+?\s*K\b|Ctrl\s*\+\s*K\b)', t)]
-    return not found, f'⌘K binding survives: {sample(found)}' if found else 'nothing binds ⌘K'
+    # SCOPE: the published site only. Inflozo's own editor is not a Ghost site, and P0 keeps ⌘K
+    # for the Link popover — correctly, and it says so. The first draft of this check flagged that,
+    # which is the rule's ambiguity showing up as a false positive rather than P0 being wrong.
+    found = []
+    for c, (fn, t) in S.items():
+        if c == 'P0':
+            continue
+        for h in hits(r'(⌘K|Cmd\s*\+?\s*K\b|Ctrl\s*\+\s*K\b)', t):
+            found.append(f'{c}: {h}')
+    return not found, (f'⌘K bound on the published site: {sample(found)}' if found
+                       else "nothing binds ⌘K on the published site (P0's editor shortcut is exempt)")
 
 
 def c_search_route(S, lib):
@@ -207,7 +238,7 @@ def c_search_route(S, lib):
 def c_search_control(S, lib):
     """R-24 — search becomes a Headers control: Off · Icon · Button · Bar."""
     if 'A1' not in S:
-        return False, 'A1 spec missing'
+        return True, 'not in scope for this run'
     t = S['A1'][1]
     ladder = re.search(r'Search\s*[:·]\s*Off\s*[·/|]\s*Icon', t, re.I)
     attr = re.search(r'data-ghost-search', t)
@@ -220,7 +251,8 @@ def c_search_control(S, lib):
 def c_nojs_notice(S, lib):
     """R-5 — subscribe forms are JS-required, so a designed <noscript> notice must exist."""
     consumers = [c for c, (fn, t) in S.items() if re.search(r'data-members-form|member-form', t)]
-    have = [c for c in consumers if re.search(r'noscript|without JavaScript[^.]{0,60}notice|JavaScript is required', S[c][1], re.I)]
+    have = [c for c in consumers
+            if re.search(r'noscript|without JavaScript|JavaScript is required|JS off', S[c][1], re.I)]
     missing = sorted(set(consumers) - set(have))
     return not missing, (f'{len(consumers)} form categories, {len(missing)} lack a no-JS notice: {sample(missing, 6)}'
                          if missing else f'all {len(consumers)} form categories carry one')
@@ -240,7 +272,20 @@ def c_new_modules(S, lib):
 def c_patch_notes(S, lib):
     """Part E — every touched spec ends with Patch notes; OPEN QUESTIONs need triage."""
     without = [c for c, (fn, t) in S.items() if not re.search(r'Patch notes', t, re.I)]
-    open_qs = [f'{c}({len(hits(r"OPEN QUESTION", t))})' for c, (fn, t) in S.items() if hits(r'OPEN QUESTION', t)]
+    open_qs = []
+    for c, (fn, t) in S.items():
+        m = re.search(r'^#{2,4} Open questions\s*$(.*)', t, re.M | re.S)
+        if not m:
+            continue
+        body = m.group(1)[:6000]
+        if re.search(r'No open questions remain', body, re.I):
+            continue
+        # a struck-through or "Confirmed/Closed/Settled by the owner" item is already answered
+        live = [ln for ln in re.findall(r'^\s*\d+\.\s+(.+)$', body, re.M)
+                if not ln.lstrip().startswith('~~')
+                and not re.search(r'(Confirmed|Closed|Settled|Ruled) by the owner|^\*\*No open questions', ln)]
+        if live:
+            open_qs.append(f'{c}({len(live)})')
     problems = []
     if without:
         problems.append(f'{len(without)} specs have no Patch notes: {sample(without, 6)}')

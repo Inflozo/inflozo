@@ -19,7 +19,7 @@
 </helmet>
 
 <section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
-  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">P0 EDITOR PRIMITIVES · 6 OF 6 · FOR EVERY STATE THAT NEVER SHOWS AT REST · FORM STATES (A16, A22, A30) · PAYWALL GATES (A32) · ERROR COPY SETS (A31) · SEARCH STATES (A23) · SCROLL-TRIGGERED BARS (A24, A27)</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">P0 EDITOR PRIMITIVES · 6 OF 6 · FOR EVERY STATE THAT NEVER SHOWS AT REST · FORM STATES (A16, A22, A30) · PAYWALL GATES (A32) · ERROR COPY SETS (A31) · THE NO-JAVASCRIPT FORM NOTICE · THE SIGNED-OUT ACCOUNT PAGE (A30) · SCROLL-TRIGGERED BARS (A24, A27)</span>
   <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">P0·6 · Editor state switcher</h1>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:760px;text-wrap:pretty">A small state switcher in the canvas chrome, beside the existing member-state toggle — never a sidebar control, never a per-section "Preview" control. Its options are contextual: it lists the states the selected section actually has, and switching re-renders the section in that state so its copy is editable inline, in place.</p>
 </section>
@@ -39,6 +39,7 @@
     <span style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:8px;font-size:13px;font-weight:600;background:#FFEDE8;cursor:pointer">Invalid<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
     <span style="padding:7px 10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:#6E6A64">Done</span>
     <span style="padding:7px 10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:#6E6A64">Subscribed <span style="font-size:11px;color:#A8A29A">— already a member</span></span>
+    <span style="padding:7px 10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:#6E6A64">No JavaScript <span style="font-size:11px;color:#A8A29A">— the notice</span></span>
   </div>
   <div style="position:absolute;bottom:14px;left:16px;right:16px;display:flex;justify-content:space-between"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">State ▾ — beside View as, only while the selected section has states ⚑</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">deselect → rest</span></div>
 </div>
@@ -132,10 +133,59 @@
   </div>
   <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">"SIMULATE SCROLL" IS ONE SWITCHER ENTRY, NOT A SCRUBBER ⚑ · IT RENDERS THE ELEMENT'S POST-THRESHOLD STATE (A24'S STICKY, A27'S IN-VIEW CAROUSEL) SO ITS COPY AND LAYOUT ARE EDITABLE · THRESHOLD VALUES STAY THE CATEGORY'S OWN, NOT EDITABLE HERE</span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE FULL STATE VOCABULARY THE SWITCHER SERVES: FORM STATES SENT / INVALID / FAILED / EXPIRED / SUBSCRIBED (A16, A22, A30) · PAYWALL GATES ×4 (A32) · ERROR COPY SETS 404 / 500 / GATE (A31) · SEARCH NO QUERY / RESULTS / NO MATCHES (A23) · SCROLL STATES (A24, A27) · EACH CATEGORY DECLARES ITS LIST; THE SWITCHER NEVER INVENTS ONE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE FULL STATE VOCABULARY THE SWITCHER SERVES: FORM STATES SENT / INVALID / FAILED / EXPIRED / SUBSCRIBED (A16, A22, A30) · NO JAVASCRIPT, ON EVERY DESIGN WITH A FORM (A2, A3, A6, A16, A22, A30, A31, A32) · SIGNED OUT, ON THE ACCOUNT PAGES (A30) · PAYWALL GATES ×4 (A32) · ERROR COPY SETS 404 / 500 / GATE (A31) · SCROLL STATES (A24, A27) · EACH CATEGORY DECLARES ITS LIST; THE SWITCHER NEVER INVENTS ONE · SEARCH STATES ARE GONE WITH A23 (PART B · B1)</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">One affordance for every never-at-rest state in the library</strong> — the same dropdown serves forms, gates, error pages, search and scroll bars, because its option list comes from the section's own declaration. It is canvas chrome beside View as, which is why every per-section "Preview" control in the library is removed by P0·8 rule 1: previewing is the editor's job, in one place.</p>
+</section>
+
+<section data-screen-label="P0-6 two new states" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TWO STATES THIS PASS ADDS · PART A · A10 AND MEMBERS PAGES (A30) · LEFT: THE SWITCHER ON NO JAVASCRIPT · RIGHT: THE ACCOUNT PAGE AS AN ANONYMOUS VISITOR RECEIVES IT</div>
+<div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+
+  <div style="width:560px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;flex-shrink:0">
+    <div style="height:48px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;gap:8px;background:#F7F5F2">
+      <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px"><span style="font-size:12px;font-weight:500;color:#6E6A64">View as</span><span style="font-size:12.5px;font-weight:600">Anonymous</span></div>
+      <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.25)"><span style="font-size:12px;font-weight:500;color:#6E6A64">State</span><span style="font-size:12.5px;font-weight:600">No JavaScript</span></div>
+    </div>
+    <div style="display:flex;gap:28px;padding:30px 32px;background:#F4EEE4;align-items:center;min-height:98px;box-sizing:border-box">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:Georgia,serif;font-size:19px;color:#232019">The Sunday orbit.</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#6B6459">One essay, every Sunday. Free forever.</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:flex-start;gap:10px;border:1px solid #DDD5C7;border-radius:8px;background:#FBF7F0;padding:12px 14px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"></circle><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span style="display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:12.5px;font-weight:600;color:#232019">Signing up needs JavaScript</span>
+          <span style="font-size:12px;line-height:1.5;color:#6B6459">It is switched off in this browser, so the form would not reach us. Turn it on and the form appears here.</span>
+        </span>
+      </div>
+    </div>
+    <div style="padding:9px 32px 12px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATE: NO JAVASCRIPT · P0·4'S NOTICE, RENDERED IN PLACE SO ITS TWO LINES ARE EDITABLE HERE ⚑ · THE HEADING AND THE SENTENCE ARE AUTHORED FIELDS WITH THE DRAWN COPY AS THEIR DEFAULT</span></div>
+  </div>
+
+  <div style="width:560px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;flex-shrink:0">
+    <div style="height:48px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;gap:8px;background:#F7F5F2">
+      <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px"><span style="font-size:12px;font-weight:500;color:#6E6A64">View as</span><span style="font-size:12.5px;font-weight:600">Anonymous</span></div>
+      <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.25)"><span style="font-size:12px;font-weight:500;color:#6E6A64">State</span><span style="font-size:12.5px;font-weight:600">Signed out</span></div>
+    </div>
+    <div style="padding:38px 48px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-height:98px;box-sizing:border-box">
+      <span style="font-family:Georgia,serif;font-size:24px;font-weight:700;color:#232019">Your account</span>
+      <span style="font-size:13.5px;line-height:1.6;color:#6B6459;max-width:340px">You are not signed in. Sign in and this page shows your subscription and your billing.</span>
+      <span style="padding:11px 20px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13.5px;font-weight:600;margin-top:2px">Sign in</span>
+      <span style="font-size:12.5px;color:#6B6459">No account yet? <span style="color:#232019;text-decoration:underline;text-underline-offset:3px">Subscribe</span></span>
+    </div>
+    <div style="padding:9px 32px 12px;border-top:1px solid #EBE5DB"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATE: SIGNED OUT · GHOST SERVES THE ACCOUNT PAGE TO ANYONE AND DOES NOT REDIRECT ⚑ · A30 OWNS THE FINISHED DESIGN OF THIS STATE FOR EACH OF ITS THIRTEEN; THE SWITCHER ENTRY IS DEFINED HERE</span></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">NO JAVASCRIPT IS OFFERED ON EVERY SECTION THAT DECLARES A FORM, AND ON NO OTHER SECTION · IT IS A PREVIEW LIKE THE REST — PER SESSION, NEVER SHIPPED AS A SETTING</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">SIGNED OUT IS OFFERED ON THE ACCOUNT DESIGNS ONLY · IT IS NOT THE SAME AS VIEW AS ANONYMOUS ON ANOTHER SECTION: HERE THE WHOLE PAGE IS THE MEMBER SURFACE, AND WHAT AN ANONYMOUS READER GETS IS A REAL PAGE THAT MUST BE DESIGNED ⚑</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE TWO COMPOSE WITH VIEW AS AS EVERY OTHER STATE DOES · NEITHER PRINTS A MEMBER'S NAME OR EMAIL — A30'S RULE, LIBRARY-WIDE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">SEARCH'S THREE STATES LEAVE THE LIST · A23 IS DELETED AND GHOST'S OWN SEARCH OWNS ITS RESULTS (PART B · B1)</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1290px"><strong style="font-weight:600">Both are states a visitor really receives, so both are designable in place.</strong> The no-JavaScript notice replaces a form that cannot work; the signed-out account page is what Ghost serves an anonymous visitor who reaches a member URL. Neither was in the switcher before this pass, which meant neither had anywhere to be drawn or edited.</p>
 </section>
 </x-dc>
 </body>
