@@ -122,35 +122,67 @@ def c_numbering(S, lib):
     return not problems, '; '.join(problems) or 'holes at A1 #9 and A4 #15 intact'
 
 
-def c_free(S, lib):
-    """R-17 — exactly two [Free] per category, and they must be the FIRST two.
+INV = os.path.join(ROOT, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17',
+                   'sections-inventory.md')
 
-    inventory-gen.py derives the pair positionally ("the first two designs of each live category
-    and nothing else"), which is R-17 made derivable rather than restated. So a spec that NAMES a
-    different pair does not merely use different notation — it contradicts what the merge will
-    publish. Counting occurrences of the literal "[Free]" missed exactly that: A1 named 1 Rail and
-    13 Centre Nav, the merge marked 1 Rail and 2 Split Rail, and the count-based check passed."""
-    NAMED = re.compile(r'(?:\[Free\][^\n]{0,80}?|free designs?[^\n]{0,40}?)'
-                       r'\*\*(\d+)\s+[^*]+\*\*\s*(?:and|·|,)\s*\*\*(\d+)\s', re.I)
-    missing, conflict = [], []
+
+def c_inventory_numbering(S, lib):
+    """B0 again, on the OTHER side. The export having the gap is only half the guarantee.
+
+    inventory-gen.py numbered rosters by position and silently closed A1's gap at #9, renumbering
+    Contrast Band from 10 to 9 and everything after it. This check reads the published inventory,
+    not the export, because that is where the renumbering happened and where every other document
+    reads design numbers from."""
+    try:
+        inv = open(INV, encoding='utf8').read()
+    except OSError:
+        return True, 'inventory not present — skipped'
+    problems = []
+    for cat, v in lib.items():
+        if v.get('deleted'):
+            continue
+        m = re.search(rf'<!-- roster:{cat} -->(.*?)<!-- /roster:{cat} -->', inv, re.S)
+        if not m:
+            continue
+        published = [int(x) for x in re.findall(r'^(\d+)\.\s', m.group(1), re.M)]
+        expected = [d['n'] for d in v['designs'] if not d.get('deleted')]
+        if published != expected:
+            problems.append(f'{cat}: inventory {published[:4]}… vs export {expected[:4]}…')
+    return not problems, ('renumbered in the inventory — ' + sample(problems, 3) if problems
+                          else 'inventory numbers match the export exactly')
+
+
+def c_free(S, lib):
+    """R-17 as the owner re-ruled it 2026-08-28: TWO per category, and WHICH two is his choice.
+
+    Claude Design shortlists the plainest designs, the owner picks, and the spec records it in one
+    machine-readable line so `inventory-gen.py` can publish the choice instead of guessing:
+
+        **[Free] designs:** 1 Rail · 13 Centre Nav
+
+    The previous rule derived the pair as "the first two", which is how A1 came to name 1 and 13
+    while the inventory published 1 and 2 — two documents disagreeing about which designs a free
+    customer gets, with the old count-based check reporting PASS."""
+    LINE = re.compile(r'^\*\*\[Free\] designs:\*\*\s*(.+)$', re.M)
+    missing, bad = [], []
     for cat, (fn, text) in S.items():
         if cat == 'P0' or lib.get(cat, {}).get('deleted'):
             continue
-        m = NAMED.search(text)
-        if m:
-            pair = {int(m.group(1)), int(m.group(2))}
-            live = sorted(d['n'] for d in lib.get(cat, {}).get('designs', []) if not d.get('deleted'))
-            want = set(live[:2])
-            if pair != want:
-                conflict.append(f'{cat} names {sorted(pair)}, the merge publishes {sorted(want)}')
-        elif not re.search(r'\[Free\]', text):
-            missing.append(cat)
+        m = LINE.search(text)
+        if not m:
+            missing.append(cat); continue
+        picked = [int(x) for x in re.findall(r'\b(\d+)\s', m.group(1) + ' ')]
+        live = {d['n'] for d in lib.get(cat, {}).get('designs', []) if not d.get('deleted')}
+        chosen = [n for n in picked if n in live]
+        if len(chosen) != 2:
+            bad.append(f'{cat} names {picked or "nothing"} — needs exactly two live design numbers')
     problems = []
-    if conflict:
-        problems.append('CONTRADICTS the merge — ' + sample(conflict, 4))
+    if bad:
+        problems.append('malformed — ' + sample(bad, 4))
     if missing:
-        problems.append(f'{len(missing)} name no free pair at all: {sample(missing, 6)}')
-    return not problems, '; '.join(problems) or 'every named free pair is the first two'
+        problems.append(f'{len(missing)} carry no "**[Free] designs:**" line, so the merge is '
+                        f'guessing the first two for them: {sample(missing, 6)}')
+    return not problems, '; '.join(problems) or 'every category records the owner\'s chosen pair'
 
 
 def c_dead_modules(S, lib):
@@ -319,6 +351,7 @@ CHECKS = [
     ('R-24  categories / A23 deleted', c_categories),
     ('B0    numbering holes preserved', c_numbering),
     ('R-17  two [Free] per category', c_free),
+    ('B0    inventory keeps the gaps', c_inventory_numbering),
     ('R-24  deleted modules gone', c_dead_modules),
     ('R-8   no render-time hand-off', c_runtime_handoff),
     ('R-1   no computed byline counts', c_computed_counts),

@@ -66,7 +66,20 @@ RULE 6 · A DESIGN MAY OFFER FEWER CHOICES ON A SHARED CONTROL, AND MUST SAY WHY
    design is always on a contrast background". It may never rename a shared control or add
    choices to it. The colour swatch row is called "Base". There is no "Inherit" choice
    anywhere; remove it.
-RULE 7 · MARK THE TWO FREE DESIGNS. Exactly two per category, marked [Free] in the roster.
+RULE 7 · THE TWO FREE DESIGNS ARE THE OWNER'S CHOICE — ASK HIM.
+   Exactly two per category. WHICH two is his decision: not yours, and not just the first
+   two in the roster. Shortlist the three to five PLAINEST designs — the ones a site could
+   ship without looking unfinished, and that do not depend on the customer having good
+   photography — give one line each on why it qualifies, recommend two, and ask him to
+   pick. Then record his answer in the spec as ONE line, on its own line, in exactly this
+   shape and no other:
+
+       **[Free] designs:** 1 Rail · 13 Centre Nav
+
+   The merge reads that line literally. Without it the merge falls back to the first two
+   and reports that it guessed — which is how one category came to name designs 1 and 13
+   while the published inventory said 1 and 2, two documents disagreeing about what a free
+   customer gets.
 RULE 8 · NO DESIGN EVER TURNS INTO ANOTHER DESIGN. Delete every phrase like "below this
    width it draws as design 1" or "if the hero has no image it becomes the solid header".
    A placed design is the design that renders. Instead the section HIDES what does not
@@ -139,6 +152,9 @@ Shape to follow:
        Safe and consistent, but every person without a photo looks identical.
     3. Hide the circle entirely.
        Cleanest, but the row reflows and the layout shifts depending on who is shown.
+
+EVERY category has at least one question: which two designs are free (RULE 7).
+Ask it even if the answer looks obvious.
 
 Collect your questions at the END of your work, in one numbered list, after you have done
 everything that does NOT depend on an answer. Do not stop the whole category over one

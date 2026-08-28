@@ -7,7 +7,7 @@ updated: 2026-08-19
 ## Appendix A — Complete Section Inventory (normative)
 
 <!-- totals -->
-**Totals: 33 categories · 468 designs · 66 [Free] · 440 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the first 2 designs of each category and nothing else (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
+**Totals: 33 categories · 468 designs · 66 [Free] · 440 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
 <!-- /totals -->
 **[Free] is positional and nothing else.** The first two designs of every category are Free; the two
 historical extras are struck (R-17). **A29 #7's and A31 #10's re-tiers are withdrawn** — A31's private
@@ -116,13 +116,13 @@ Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigatio
 6. **Drawer-First** — The only design with no nav in the bar at any width — navigation exists solely as a display-size takeover, which is why it is the only design with no cap on items.
 7. **Mega Bar** — The only design that expands into a full-width panel of bound or authored columns with descriptions and grandchild groups, instead of a 248 px dropdown.
 8. **Utility + Nav** — The only design with a second, thinner tier above the bar on its own ground, carrying secondary nav, social and a note.
-9. **Contrast Band** — The only design on the contrast token, where the accent's usual jobs are reassigned to other tokens rather than recoloured.
-10. **Side Rail** — The only design that is a vertical column instead of a horizontal band, and the only one that takes width out of the page layout rather than sitting above it.
-11. **Boxed** — The only design bounded by a box measured to the content column, so the nav's left edge and the body text's left edge are the same line.
-12. **Centre Nav** — The only design where the nav is centred on the page rather than on the slack between logo and actions, held there by equal outer grid columns whatever the CTA label says.
-13. **Icon Utilities** — The only design whose right side is an icon cluster beside the actions instead of labelled actions alone — and, since this pass, a design with no member furniture of its own: signed-in members see the member-aware action labels, not an avatar.
-14. **Big Type** — The only design where the wordmark is the display moment and the nav is subordinate to it.
-15. **Reveal** — The only design defined by scroll direction rather than scroll position: hidden going down the page, returned as a floating panel going up, in flow at the top.
+10. **Contrast Band** — The only design on the contrast token, where the accent's usual jobs are reassigned to other tokens rather than recoloured.
+11. **Side Rail** — The only design that is a vertical column instead of a horizontal band, and the only one that takes width out of the page layout rather than sitting above it.
+12. **Boxed** — The only design bounded by a box measured to the content column, so the nav's left edge and the body text's left edge are the same line.
+13. **Centre Nav** — The only design where the nav is centred on the page rather than on the slack between logo and actions, held there by equal outer grid columns whatever the CTA label says.
+14. **Icon Utilities** — The only design whose right side is an icon cluster beside the actions instead of labelled actions alone — and, since this pass, a design with no member furniture of its own: signed-in members see the member-aware action labels, not an avatar.
+15. **Big Type** — The only design where the wordmark is the display moment and the nav is subordinate to it.
+16. **Reveal** — The only design defined by scroll direction rather than scroll position: hidden going down the page, returned as a floating panel going up, in flow at the top.
 <!-- /roster:A1 -->
 
 **A2. Announcement Bars (15)** — Site-wide, above header. Part of the shell block (§4), and site-wide singletons like A1 and A3 — compiled into `default.hbs` once (FR-D5). `bindingContext: none` · `compileTarget: default.hbs`.
@@ -192,9 +192,9 @@ Content: eyebrow?, headline, subhead?, primary cta, secondary cta?, media (image
 12. **Offset Image** — The only design whose picture leaves the window, and the only one that corrects settlement 1 by refusing a transparent header outright.
 13. **Latest Post** — The only design carrying live content from Ghost, and the only one whose second half is a query result rather than an authored picture.
 14. **Full Height** — The only design measured against the window rather than against its own content, and the only one carrying a scroll cue.
-15. **Pull Quote** — The only design where the display position is spent on somebody else's sentence, and the only one where the publication's own headline is demoted to the eyebrow's treatment and is optional.
-16. **Slim** — The only design that is a page title rather than an argument — one row of about 160 px — the only one offered on every route, and the only one whose title can come from Ghost.
-17. **Overlap Card** — The only design that reaches into the section below it, and the only one where the headline sits on a measured surface over a photograph rather than on the photograph.
+16. **Pull Quote** — The only design where the display position is spent on somebody else's sentence, and the only one where the publication's own headline is demoted to the eyebrow's treatment and is optional.
+17. **Slim** — The only design that is a page title rather than an argument — one row of about 160 px — the only one offered on every route, and the only one whose title can come from Ghost.
+18. **Overlap Card** — The only design that reaches into the section below it, and the only one where the headline sits on a measured surface over a photograph rather than on the photograph.
 <!-- /roster:A4 -->
 
 **A5. Features (16)** — Home, custom pages.

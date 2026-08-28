@@ -448,6 +448,19 @@ at least three have no export counterpart) · the Synthesis Defaults (inventory 
 ---
 
 **R-17 · `[Free]` designs: exactly two per category, no exceptions**
+
+> **AMENDED 2026-08-28 by the owner, after checkpoint 1.** Two per category stands. **Which two is
+> now the owner's choice per category, not a positional derivation.** The design pass shortlists the
+> three to five plainest designs, recommends two, and asks; the answer is recorded in the spec as one
+> machine-readable line — `**[Free] designs:** 1 Rail · 13 Centre Nav` — and `tools/inventory-gen.py`
+> publishes that choice. Where the line is absent it falls back to the first two **and reports that it
+> guessed**, so a category that has not been asked is visible rather than silent.
+>
+> **Why it changed:** deriving the pair as "the first two" read as clean until A1 came back naming
+> **1 Rail and 13 Centre Nav** while the generated inventory published **1 Rail and 2 Split Rail** —
+> two documents disagreeing about which designs a free customer gets, with the count-based check
+> reporting PASS. The owner's ruling: the shortlist is a judgement about which designs look finished
+> without photography, and that judgement is his.
 **Ruled: the rule replaces the number.**
 
 The two historical extras are struck — A31 #10's re-tier is redundant (every A31 design draws the
