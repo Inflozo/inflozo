@@ -43,42 +43,47 @@ FACTS = """WHY THIS PASS EXISTS — four facts that caused nearly every change b
 4. INSIDE A BLOG POST'S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
    the ARIA attributes, not the text. Ghost renders those."""
 
-PART_A = """PART A — LIBRARY-WIDE RULES. These apply to this category too.
+PART_A = """PART A — THE TEN LIBRARY-WIDE RULES. These apply to this category too.
 
-A1. AVATARS WITH NO PHOTOGRAPH. Lists the user types themselves keep two initials ("JD").
-    Authors pulled from Ghost show ONE letter only ("J") — Ghost cannot produce two
-    initials from a name.
-A2. THE REMOVE BUTTON NEVER GOES GREY. In any repeating list with a minimum, Remove stays
-    visible and active at the minimum, and clicking it explains why it cannot go lower
-    ("a pricing table needs at least two tiers"). Never dimmed, never hidden.
-A3. SCALE LABELS. A slider's TITLE says what it affects; its three VALUES may reuse the
-    standard words. "Card padding: Compact · Comfortable · Spacious" is correct. Do not
-    invent a new three-word vocabulary per slider.
-A4. GAP NAMES ARE "Tight · Normal · Loose". Replace any Tight/Even/Airy or
-    Tight/Standard/Wide.
-A5. ITEM COUNTS ARE ALWAYS A NUMBER PICKER, never fixed buttons ("Three · Four · Six"). A
-    design may cap its own maximum and the panel states the reason. Locked values are
-    drawn disabled with the reason visible.
-A6. UNIVERSAL CONTROLS MAY OFFER FEWER VALUES, AND MUST SAY WHY — "this design is always
-    on a contrast background". They may never rename a universal control or add values to
-    it. The colour swatch row is named "Base". There is no "Inherit" value; remove it.
-A7. MARK THE FREE DESIGNS. Exactly two per category, marked [Free] in the roster.
-A8. NO DESIGN EVER TURNS INTO ANOTHER DESIGN. Delete every phrase like "below this width
-    it draws as design 1" or "if the hero has no image it becomes the solid header". A
-    placed design is the design that renders. Instead the section HIDES what does not
-    apply (a sideways-scrolling row whose track fits shows no arrows and no fade), and the
-    panel may ADVISE ("at this count, 1 Row reads better") — advice, never a switch.
-A9. MEMBER ASKS ARE CONDITIONAL, AND GHOST'S PORTAL NEEDS JAVASCRIPT. Every "Sign up
-    free" / "Subscribe" / paid-tier button gets a panel note: it does not render when the
-    connected site cannot support it (self-signup off, or no payment provider connected).
-    Every button opening Ghost's Portal gets the line: with JavaScript off, nothing
-    happens. Delete any claim that something is "subscribable without JavaScript".
-A10. THE NO-JAVASCRIPT NOTICE. Tested against both live Ghost servers: Ghost's signup
-    endpoint cannot accept a plain form submission, so a subscribe form is
-    JavaScript-required. Every design containing a subscribe or sign-in form needs a small
-    designed notice that replaces the form when JavaScript is unavailable, so a visitor is
-    told rather than typing an address that goes nowhere. The sent / error / loading
-    states you already drew all still work — Ghost's own script applies those. Keep them."""
+Each rule has a NAME. Use the name, never the number, whenever you refer to one — the
+letter-and-number codes in this project are filing labels and mean nothing to the owner.
+
+RULE 1 · AVATARS WITH NO PHOTOGRAPH. Lists the user types themselves keep two initials
+   ("JD"). Authors pulled from Ghost show ONE letter only ("J") — Ghost cannot produce two
+   initials from a name.
+RULE 2 · THE REMOVE BUTTON NEVER GREYS OUT. In any repeating list with a minimum, Remove
+   stays visible and clickable at the minimum, and clicking it explains why it cannot go
+   lower ("a pricing table needs at least two tiers"). Never dimmed, never hidden.
+RULE 3 · SLIDER LABELS. A slider's TITLE says what it affects; its three VALUES may reuse
+   the standard words. "Card padding: Compact · Comfortable · Spacious" is correct. Do not
+   invent a new three-word vocabulary for each slider.
+RULE 4 · GAP NAMES ARE "Tight · Normal · Loose". Replace any Tight/Even/Airy or
+   Tight/Standard/Wide.
+RULE 5 · ITEM COUNTS ARE A NUMBER PICKER, never a row of fixed buttons ("Three · Four ·
+   Six"). A design may cap its own maximum and the panel says why. Locked values are drawn
+   greyed with the reason visible.
+RULE 6 · A DESIGN MAY OFFER FEWER CHOICES ON A SHARED CONTROL, AND MUST SAY WHY — "this
+   design is always on a contrast background". It may never rename a shared control or add
+   choices to it. The colour swatch row is called "Base". There is no "Inherit" choice
+   anywhere; remove it.
+RULE 7 · MARK THE TWO FREE DESIGNS. Exactly two per category, marked [Free] in the roster.
+RULE 8 · NO DESIGN EVER TURNS INTO ANOTHER DESIGN. Delete every phrase like "below this
+   width it draws as design 1" or "if the hero has no image it becomes the solid header".
+   A placed design is the design that renders. Instead the section HIDES what does not
+   apply (a sideways-scrolling row whose track already fits shows no arrows and no fade),
+   and the panel may ADVISE ("at this count, 1 Row reads better") — advice, never a switch.
+RULE 9 · MEMBER BUTTONS ARE CONDITIONAL, AND GHOST'S SIGN-UP POP-UP NEEDS JAVASCRIPT.
+   Every "Sign up free" / "Subscribe" / paid-tier button gets a panel note: it does not
+   render when the connected site cannot support it (self-signup switched off, or no
+   payment provider connected). Every button that opens Ghost's own sign-up pop-up gets
+   the line: with JavaScript off, nothing happens. Delete any claim that something can be
+   subscribed to without JavaScript.
+RULE 10 · THE NO-JAVASCRIPT NOTICE. Tested against both live Ghost servers: Ghost's signup
+   endpoint cannot accept a plain form submission, so a subscribe form needs JavaScript.
+   Every design containing a subscribe or sign-in form needs a small designed notice that
+   replaces the form when JavaScript is unavailable, so a visitor is told rather than
+   typing an address that goes nowhere. The sent / error / loading states you already drew
+   all still work — Ghost's own script applies those. Keep them."""
 
 NUMBERING = """THE NUMBERING RULE — the instruction most likely to be broken by good intentions.
 
@@ -94,13 +99,51 @@ OUTPUT = """OUTPUT.
 1. Update this category's frames.
 2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
    the no-JavaScript line per design, and the behaviour each design declares.
-3. End the spec with a "Patch notes" section listing every change and the rule number that
-   required it. Where a ruling cannot be applied without inventing a decision, write it
+3. End the spec with a "Patch notes" section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
    there as an OPEN QUESTION rather than guessing.
 4. Export the updated library as a zip.
 
 If any instruction above contradicts another, or contradicts something already in the
 spec, STOP and list the conflict rather than choosing."""
+
+ASK = """IF YOU NEED A DECISION FROM THE OWNER — how to ask.
+
+The owner is a solo founder and is NOT an engineer. He reads every question you write.
+
+- STOP and ask rather than guessing. A guess that looks plausible costs far more to undo
+  later than a question costs now. If applying a rule needs a decision nobody has made,
+  ask it — do not pick and carry on.
+- Write the question in PLAIN ENGLISH. No jargon unless you explain it in the same
+  sentence. Never write "Handlebars", "compileTarget", "contentSchema", "the union" or
+  "the tuple" at him without saying what it means.
+- NEVER refer to anything by its code. Not "A7", not "P0", not "RULE 5", not "FR-H2".
+  Say "the Pricing and Tiers category", "the shared editor controls", "the rule that item
+  counts are a number picker". The codes are filing labels; they mean nothing to him.
+- Give NUMBERED OPTIONS — usually two or three, never more than four.
+- Mark exactly ONE option "(RECOMMENDED)" and say in one line why you recommend it.
+- For each option, say what it COSTS and what it gives up, concretely. "Editors lose the
+  ability to X" beats "less flexible".
+- Give a real example of what the visitor or the editor would see under each option.
+
+Shape to follow:
+
+    QUESTION 1 — Team photos when someone has no picture
+
+    Six of these designs draw a circle with a person's initials. Ghost can only give us
+    one letter, not two. What should the circle show?
+
+    1. A single letter — "Jane Doe" shows J. (RECOMMENDED)
+       Works everywhere, needs nothing extra, and still feels personal.
+    2. A grey silhouette icon.
+       Safe and consistent, but every person without a photo looks identical.
+    3. Hide the circle entirely.
+       Cleanest, but the row reflows and the layout shifts depending on who is shown.
+
+Collect your questions at the END of your work, in one numbered list, after you have done
+everything that does NOT depend on an answer. Do not stop the whole category over one
+open point — finish the rest and ask at the end."""
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Per-category work. Authored, because a ruling is not derivable from the export.
@@ -127,14 +170,14 @@ WORK = {
 - The link picker across the library gains "Ghost search" as a destination, so any button
   anywhere can open search with no new design.""",
 
- 'A2': """- Apply A9 and A10 to every signup, subscribe and sign-in affordance in the bars.
+ 'A2': """- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to every signup, subscribe and sign-in affordance in the bars.
 - Any bar offering a member action states which site settings make it render.""",
 
- 'A3': """- Apply A9 and A10 to the footer's subscribe form and any member links.
+ 'A3': """- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to the footer's subscribe form and any member links.
 - Footer social links must go through Ghost's own link helper rather than printing a
   handle as a URL.""",
 
- 'A6': """- Apply A9 and A10 to every banner's call to action.
+ 'A6': """- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to every banner's call to action.
 - THE SIGNER PICKER offers only authors who have PUBLISHED a post. A Ghost staff user with
   no published post returns nothing and the section silently loses its signature.
 - THE FEATURE-IMAGE DEFAULT is offered only on post, page and custom-entry templates. On a
@@ -150,7 +193,7 @@ WORK = {
   VISUALLY only; source order stays fixed.
 - THE MEMBER CARD: delete the join date. Ghost gives themes no member join date, so it
   would always render as today.
-- Every paid action renders only when a payment provider is connected (A9).""",
+- Every paid action renders only when a payment provider is connected (RULE 9).""",
 
  'A9': """- Part A only. Your one-at-a-time accordion is APPROVED EXACTLY AS DRAWN: it uses the
   native HTML grouping and needs no JavaScript. On an older browser more than one panel may
@@ -161,11 +204,11 @@ WORK = {
   nothing can decide which way the arrow points.
 - Stats the user types themselves are unaffected.""",
 
- 'A11': """- THE RAIL THAT "DRAWS AS ONE ROW WHEN IT FITS": see rule A8. It stays a rail. When the
+ 'A11': """- THE RAIL THAT "DRAWS AS ONE ROW WHEN IT FITS": see RULE 8. It stays a rail. When the
   track fits its container the module simply shows no arrows and no fade — same visual
   result, no second design. The panel may advise "at this count, 1 Row reads better".""",
 
- 'A12': """- AVATARS (rule A1) are the main work here: authors pulled from Ghost show ONE letter,
+ 'A12': """- AVATARS are the main work here (RULE 1): authors pulled from Ghost show ONE letter,
   not two initials. Restate every empty state that assumed two.
 - Any per-author role override keyed by name must be keyed by the author's slug instead.""",
 
@@ -191,7 +234,7 @@ WORK = {
   distinct set across a loop. Keep "All site tags" and "Chosen tags".
 - "LOAD MORE" is only available when this section is the site's MAIN FEED. Elsewhere there
   is no page 2 to load. Remove the option from the other placements.
-- Avatars in the meta row follow rule A1 — one letter for Ghost authors.""",
+- Avatars in the meta row follow RULE 1, avatars — one letter for Ghost authors.""",
 
  'A18': """- THE GROUPED LIST (by month, year or tag) needs a small script. Ghost cannot tell that
   the month changed between two posts. Without the script the list renders FLAT and
@@ -210,7 +253,7 @@ WORK = {
  'A21': """- "GROUP BY LETTER" needs the same small script, flat list as the no-script state.
 - AUTHOR SOCIAL LINKS must go through Ghost's own link helper. Printing the stored handle
   as a URL produces broken links, because Ghost stores handles in several shapes.
-- Avatars follow rule A1.""",
+- Avatars follow RULE 1, avatars.""",
 
  'A22': """- DELETE THE CADENCE LINE ("weekly", "twice a month"). Ghost's newsletters carry no
   cadence field, so half of that generated line can never be generated.
@@ -219,7 +262,7 @@ WORK = {
   a member has, so the design cannot know.
 - The design where ticking a paid newsletter swaps the field for a Portal link needs
   either a stated no-JavaScript state or a static link instead.
-- Apply A9 and A10 throughout — this category is mostly forms.""",
+- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) throughout — this category is mostly forms.""",
 
  'A24': """- BYLINES: "Jane and 2 others" becomes "Jane and others". No number, anywhere. Ghost
   cannot subtract one from the author count.
@@ -227,7 +270,7 @@ WORK = {
   DRAWN — its container has already left the screen, on every site. It becomes
   script-revealed and pinned at the threshold, and it does not appear at all without
   JavaScript.
-- Avatars follow rule A1.""",
+- Avatars follow RULE 1, avatars.""",
 
  'A25': """- DELETE the rule that captions over 140 characters are treated differently. CSS cannot
   count characters. All captions get the same treatment.
@@ -309,10 +352,10 @@ not the text. Ghost renders those.
 
  'P0': """These are the shared editor controls every category draws from.
 
-- THE REMOVE BUTTON (rule A2) is the single most-repeated correction in the review. It
+- THE REMOVE BUTTON (RULE 2, the Remove button) is the single most-repeated correction in the review. It
   stays visible and active at a list's minimum and explains why it cannot go lower.
-- EVERY ITEM COUNT IS A NUMBER PICKER (rule A5), never a row of fixed buttons.
-- UNIVERSAL CONTROLS may offer fewer values with a stated reason (rule A6); the swatch row
+- EVERY ITEM COUNT IS A NUMBER PICKER (RULE 5, number pickers), never a row of fixed buttons.
+- UNIVERSAL CONTROLS may offer fewer values with a stated reason (RULE 6); the swatch row
   is named "Base"; there is no "Inherit" value.
 - ADD TO THE STATE SWITCHER: the signed-out account page, and the no-JavaScript notice for
   member forms.
@@ -328,7 +371,7 @@ not the text. Ghost renders those.
   nine social platforms Ghost supports.""",
 }
 
-PART_A_ONLY = ("- No category-specific rulings. Apply PART A, confirm each rule against every design in "
+PART_A_ONLY = ("- No category-specific rulings. Apply the ten rules in PART A, confirm each rule against every design in "
                "the roster, and record in the Patch notes which rules changed something and which "
                "were already satisfied.")
 
@@ -372,6 +415,8 @@ PART B — {cat} {title}: THE SPECIFIC WORK.
 {DONT}
 
 {OUTPUT}
+
+{ASK}
 """
 
 
