@@ -115,7 +115,10 @@ OUTPUT = """OUTPUT.
 3. End the spec with a "Patch notes" section listing every change and the rule NAME that
    required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
    there as an OPEN QUESTION rather than guessing.
-4. Export the updated library as a zip.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category's numbers), and the "**[Free] designs:**" line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
 
 If any instruction above contradicts another, or contradicts something already in the
 spec, STOP and list the conflict rather than choosing."""
@@ -174,15 +177,75 @@ open point — finish the rest and ask at the end."""
 # "is this working?" before thirty-one more are spent.
 # ─────────────────────────────────────────────────────────────────────────────
 
+CORRECTION = """INFLOZO — DESIGN PATCH PASS · CORRECTION to P0, A1 Headers and A4 Heroes
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+RUN THIS BEFORE ANY OTHER CATEGORY. P0's module list is read by every later session.
+
+You patched these three in the last pass. Three corrections, then a question that was
+missed. Change nothing else in them.
+
+1 · P0 EDITOR PRIMITIVES — a deleted module is still listed as legal.
+P0 rule 11 lists the modules a design may name, and it still includes `search-overlay`.
+That module was deleted when the Search category went, and P0's own rule 10 already says
+so. Every other category reads this list to learn what it may declare, so leaving it there
+invites later sessions to declare a module that no longer exists.
+  - REMOVE `search-overlay` from that list.
+  - Confirm `search-expand` and `command-palette` are absent too — all three went together.
+  - ADD the three created in the same pass and missing from the list: `nav-transform`,
+    `contact-form`, `group-headings`.
+
+2 · THE TWO FREE DESIGNS — a question none of the three asked.
+Every category has exactly two [Free] designs, on the free plan. WHICH two is the owner's
+decision and it was not put to him. Headers chose 1 Rail and 13 Centre Nav on its own
+reasoning; Heroes chose 1 Centred and 2 Flush Left. Both were reasonable, neither was
+asked, and Headers' choice disagreed with what the merge published — so a free customer
+would have been given different designs from the ones the specification named.
+
+FOR HEADERS AND FOR HEROES, ASK THE OWNER. For each:
+  - Shortlist the three to five PLAINEST designs — the ones a site could ship without
+    looking unfinished, that do not depend on the customer having good photography.
+  - One line each on why it qualifies.
+  - Recommend two, with a one-line reason.
+  - Let him pick any two from the shortlist.
+Record his answer in that category's spec as ONE line, on its own line, in exactly this
+shape and no other:
+
+    **[Free] designs:** 1 Rail · 13 Centre Nav
+
+The merge reads that line literally. Each number must be the design's own number, and both
+designs must exist in the category. P0 is not a design category and has no free pair —
+skip it there.
+
+3 · NUMBERING — confirm, do not change.
+You got this right and it must stay right. Headers runs 1-8 then 10-16, with no 9. Heroes
+runs 1-14 then 16-18, with no 15. Those gaps are permanent; every other document in the
+project references designs by number. Confirm both are still open and nothing was
+renumbered.
+
+OUTPUT. Update the three specs and any frame the free-design marking touches. Add to each
+spec's existing Patch notes a short "Correction pass" entry saying what changed. Export the
+library as a zip.
+
+IF YOU NEED A DECISION: plain English, no codes — say "the Headers category", never "A1".
+Numbered options, two or three, exactly one marked (RECOMMENDED) with a one-line reason,
+and what each option costs."""
+
+
 WAVES = [
- ("Wave 1 · Checkpoint — run these three, export, then verify",
-  "P0 establishes the shared editor controls every other category inherits. A1 Headers and "
-  "A4 Heroes are the ONLY two categories with a deleted design, so they are the only two "
-  "that test the numbering rule — the one most likely to be broken by good intentions. "
-  "Export after these three and run the checker before spending thirty-one more sessions.",
+ ("Step 1 · Correction — run this first, before any other category",
+  "P0, A1 Headers and A4 Heroes came back from the checkpoint. The numbering held, which is why "
+  "the rest can be batched. Three things need correcting first, and one of them is urgent: P0's "
+  "list of legal behaviour modules still names one that was deleted, and every later session reads "
+  "that list. This also asks the free-designs question that none of the three put to you.",
+  ['CORRECTION']),
+
+ ("Done — kept for reference",
+  "Patched at the checkpoint. Re-run only if the correction above tells you to. A2 Announcement "
+  "Bars and A3 Footers were also partially patched by those sessions without being asked; they "
+  "keep their place in the order below and their prompts now say so.",
   ['P0', 'A1', 'A4']),
 
- ("Wave 2 · Pattern-setters — each draws something later categories reuse",
+ ("Step 2 · Pattern-setters — each draws something later categories reuse",
   "Newsletter draws the no-JavaScript notice first because it is the heaviest form "
   "category; About and Team draws the one-letter avatar; Post Lists draws the grouping "
   "behaviour and its plain fallback; Post Headers draws the \u201cand others\u201d byline. Every "
@@ -190,17 +253,17 @@ WAVES = [
   "re-deciding four times.",
   ['A22', 'A12', 'A18', 'A24']),
 
- ("Wave 3 · The heavy ones",
+ ("Step 3 · The heavy ones",
   "Substantial redraws and deletions. Koenig Card Treatments is the biggest single piece of "
   "work in the pass and deserves a fresh session of its own.",
   ['A33', 'A30', 'A7', 'A34', 'A25', 'A32', 'A28', 'A15', 'A17', 'A20', 'A21']),
 
- ("Wave 4 · Smaller specific work",
+ ("Step 4 · Smaller specific work",
   "A short, named list of changes each. Mostly applying the member-button and "
   "no-JavaScript rules that Wave 2 already designed.",
   ['A2', 'A3', 'A6', 'A9', 'A10', 'A11', 'A16', 'A26', 'A31']),
 
- ("Wave 5 · Sweep — the ten rules only",
+ ("Step 5 · Sweep — the ten rules only",
   "No category-specific rulings. Each still needs a pass to confirm the ten rules against "
   "every design, and to record in its Patch notes which rules changed something and which "
   "were already satisfied — so \u201cnothing to do\u201d is a recorded finding, not a silent skip.",
@@ -228,10 +291,17 @@ WORK = {
 - The link picker across the library gains "Ghost search" as a destination, so any button
   anywhere can open search with no new design.""",
 
- 'A2': """- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to every signup, subscribe and sign-in affordance in the bars.
+ 'A2': """- ALREADY PARTIALLY PATCHED. A previous session removed this category's render-time
+  hand-off language without being asked to, and left Patch notes. Read them first: confirm
+  what was done, do not redo it, and record in your own Patch notes which of the ten rules
+  were already satisfied.
+- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to every signup, subscribe and sign-in affordance in the bars.
 - Any bar offering a member action states which site settings make it render.""",
 
- 'A3': """- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to the footer's subscribe form and any member links.
+ 'A3': """- ALREADY PARTIALLY PATCHED. A previous session touched this category without being
+  asked to, and left Patch notes. Read them first: confirm what was done, do not redo it,
+  and record which of the ten rules were already satisfied.
+- Apply RULE 9 (member buttons are conditional) and RULE 10 (the no-JavaScript notice) to the footer's subscribe form and any member links.
 - Footer social links must go through Ghost's own link helper rather than printing a
   handle as a URL.""",
 
@@ -434,6 +504,22 @@ PART_A_ONLY = ("- No category-specific rulings. Apply the ten rules in PART A, c
                "were already satisfied.")
 
 
+RESEARCH = os.path.join(ROOT, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17',
+                        'research-section-js-libraries.md')
+
+
+def module_list():
+    """The legal module names, read from the registry — never typed here (standing rule 4).
+
+    P0's own copy of this list still named `search-overlay` after the module was deleted, in the
+    very list every other category reads to learn what it may declare. Deriving it means a prompt
+    cannot carry a stale one."""
+    mods = re.findall(r'^\| \d+ \| \*\*`([a-z][a-z0-9-]+)`\*\*',
+                      open(RESEARCH, encoding='utf8').read(), re.M)
+    assert len(mods) > 20, 'module registry did not parse — refusing to emit a short list'
+    return mods
+
+
 def build_prompt(cat, title, designs, holes):
     if cat == 'P0':
         scope = ("THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS\n"
@@ -450,6 +536,7 @@ def build_prompt(cat, title, designs, holes):
                      ', '.join(f'#{h["n"]} ({h["name"]}) is DELETED' for h in holes) +
                      '. That number is retired. Do not close the gap and do not reuse it.')
     work = WORK.get(cat, PART_A_ONLY)
+    modules = '  ' + ' · '.join(f'`{m}`' for m in module_list())
     return f"""INFLOZO — DESIGN PATCH PASS · {cat} {title}
 Paste into a NEW Claude Design chat. Self-contained: assume no other context.
 
@@ -469,6 +556,16 @@ The library as a whole is 33 categories and 468 designs. There is no A23 — the
 category was deleted and that number is retired.{hole_note}
 
 {NUMBERING}
+
+THE BEHAVIOUR MODULES THAT EXIST. If a design needs behaviour, it names one of these and
+nothing else. This list is complete and current:
+
+{modules}
+
+`search-overlay`, `search-expand` and `command-palette` were DELETED when the Search
+category went — never name them. If a design needs behaviour no module here covers, mark
+it "ARCHITECT: registry addition" in the spec and design its no-JavaScript state; never
+invent a module name.
 
 {PART_A}
 
@@ -507,7 +604,8 @@ border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:poin
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
 margin:0 0 14px;overflow:hidden}
-.cat.done{opacity:.55}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
 .chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
 .cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
 color:var(--accent);min-width:44px;text-align:center}
@@ -535,9 +633,12 @@ margin:14px 0 8px;font-size:.89rem;line-height:1.55}
 .gate code{background:transparent;font-weight:600}
 footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}"""
 
-JS = """const K='inflozo-design-patch-done';
-const done=new Set(JSON.parse(localStorage.getItem(K)||'[]'));
-function save(){localStorage.setItem(K,JSON.stringify([...done]));paint()}
+JS = """const K='inflozo-design-patch-done-v2';   // v2: seeded with the checkpoint's completed set
+const SEED=['P0','A1','A4'];
+let done;
+try{const raw=localStorage.getItem(K); done=new Set(raw?JSON.parse(raw):SEED);}
+catch(e){done=new Set(SEED);}
+function save(){try{localStorage.setItem(K,JSON.stringify([...done]))}catch(e){}paint()}
 function paint(){
   document.querySelectorAll('.cat').forEach(c=>{
     const id=c.dataset.cat, is=done.has(id);
@@ -569,6 +670,15 @@ def render():
     assert not missing, f'WAVES does not place every category: {missing}'   # never silently drop one
 
     def card(cat, step):
+        if cat == 'CORRECTION':
+            return f'''<div class="cat urgent" data-cat="CORRECTION">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark correction done">
+    <span class="step">{step}</span>
+    <span class="cid">FIX</span><span class="cname">Correction to P0, Headers and Heroes</span>
+    <span class="cmeta">run before anything else</span></div>
+  <div class="body"><span class="flag hole">unblocks every later session</span>
+    <pre>{html.escape(CORRECTION)}</pre>
+    <button class="btn copy">Copy prompt</button></div></div>'''
         if cat == 'P0':
             title, n_live, holes, designs = 'Editor Primitives', 0, [], []
         else:
@@ -596,18 +706,25 @@ def render():
 
     cards, step, n_designs = [], 0, sum(
         len([d for d in v['designs'] if not d.get('deleted')]) for v in live.values())
+    DONE_WAVE = 1                       # the "Done — kept for reference" group
     for wi, (wtitle, why, cats) in enumerate(WAVES):
         cards.append(f'<h2 class="wave">{html.escape(wtitle)}</h2>'
                      f'<p class="why">{why}</p>')
         for cat in cats:
-            step += 1
-            cards.append(card(cat, step))
-        if wi == 0:
-            cards.append('''<div class="gate"><b>Stop here and check before going further.</b>
-      Export the library, then run <code>python3 tools/verify-design-pass.py</code>. The tell is
-      simple: if Headers comes back numbered 1&ndash;15 straight through instead of 1&ndash;8 then
-      10&ndash;16, the numbering rule was broken and it will have been broken the same way in every
-      later session. Two sessions lost beats thirty-one.</div>''')
+            if wi == DONE_WAVE:
+                cards.append(card(cat, '&#10003;'))     # done: a tick, not a position
+            else:
+                step += 1
+                cards.append(card(cat, step))
+        if wi == 1:
+            cards.append('''<div class="gate"><b>The checkpoint passed.</b> Headers came back
+      numbered 1&ndash;8 then 10&ndash;16 and Heroes 1&ndash;14 then 16&ndash;18 &mdash; the gaps
+      held, so the rest can be batched. It also found three things worth knowing: your merge tool
+      was silently closing those gaps afterwards (fixed), the two free designs were being chosen by
+      the design session rather than by you (now a question every category must ask), and P0 still
+      listed a deleted module as legal (the correction above). Run the correction, then work
+      straight down. Export once at the end and run
+      <code>python3 tools/verify-design-pass.py</code>.</div>''')
 
     return f"""<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

@@ -374,6 +374,8 @@ def check():
     # 3b. generated HTML must match its sources
     import subprocess as _sp
     for tool, art, src in (('build-board.py', 'BUILD-BOARD.html', 'build-sequence.md'),
+                           ('design-patch-prompts.py', 'DESIGN-PATCH-PROMPTS.html',
+                            'the roster or the module registry'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
