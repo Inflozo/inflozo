@@ -123,22 +123,34 @@ def c_numbering(S, lib):
 
 
 def c_free(S, lib):
-    """R-17 — exactly two [Free] per category, marked in the spec's own roster."""
-    missing, wrong = [], []
+    """R-17 — exactly two [Free] per category, and they must be the FIRST two.
+
+    inventory-gen.py derives the pair positionally ("the first two designs of each live category
+    and nothing else"), which is R-17 made derivable rather than restated. So a spec that NAMES a
+    different pair does not merely use different notation — it contradicts what the merge will
+    publish. Counting occurrences of the literal "[Free]" missed exactly that: A1 named 1 Rail and
+    13 Centre Nav, the merge marked 1 Rail and 2 Split Rail, and the count-based check passed."""
+    NAMED = re.compile(r'(?:\[Free\][^\n]{0,80}?|free designs?[^\n]{0,40}?)'
+                       r'\*\*(\d+)\s+[^*]+\*\*\s*(?:and|·|,)\s*\*\*(\d+)\s', re.I)
+    missing, conflict = [], []
     for cat, (fn, text) in S.items():
         if cat == 'P0' or lib.get(cat, {}).get('deleted'):
             continue
-        n = len(re.findall(r'\[Free\]', text))
-        if n == 0:
+        m = NAMED.search(text)
+        if m:
+            pair = {int(m.group(1)), int(m.group(2))}
+            live = sorted(d['n'] for d in lib.get(cat, {}).get('designs', []) if not d.get('deleted'))
+            want = set(live[:2])
+            if pair != want:
+                conflict.append(f'{cat} names {sorted(pair)}, the merge publishes {sorted(want)}')
+        elif not re.search(r'\[Free\]', text):
             missing.append(cat)
-        elif n != 2:
-            wrong.append(f'{cat}={n}')
     problems = []
+    if conflict:
+        problems.append('CONTRADICTS the merge — ' + sample(conflict, 4))
     if missing:
-        problems.append(f'no [Free] marker at all in {len(missing)}: {sample(missing, 6)}')
-    if wrong:
-        problems.append(f'not exactly two in: {sample(wrong, 6)}')
-    return not problems, '; '.join(problems) or 'exactly two [Free] per category'
+        problems.append(f'{len(missing)} name no free pair at all: {sample(missing, 6)}')
+    return not problems, '; '.join(problems) or 'every named free pair is the first two'
 
 
 def c_dead_modules(S, lib):
