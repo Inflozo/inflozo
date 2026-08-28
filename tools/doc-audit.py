@@ -252,6 +252,10 @@ DOCS = [
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
+ ('tools/design-patch-prompts.py', 'tool', 'Per-category design patch prompts',
+  'Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here.'),
+ ('planning-artifacts/DESIGN-PATCH-PROMPTS.html', 'live', 'Design patch prompts, per category',
+  'The owner-facing page for the design patch pass: 34 prompts with copy buttons and browser-stored progress ticks. Run P0 first (the Remove-button and number-picker rulings originate there and every category inherits them), then A1 (it absorbs the deleted Search category). Verify each returned export with tools/verify-design-pass.py.'),
  ('tools/verify-design-pass.py', 'tool', 'Did the design pass apply the rulings?',
   'One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. --extract dumps the per-category fields and modules for the two deferred derivations, marking every spec the parser cannot read rather than reporting an empty list as success.'),
  ('tools/export-roster.py', 'tool', 'The library roster, from the export',
