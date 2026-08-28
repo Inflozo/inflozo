@@ -150,6 +150,48 @@ open point — finish the rest and ask at the end."""
 # Categories absent here get Part A only, which is stated in their prompt.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────────────────────
+# The run order. Not arbitrary: some categories DRAW a pattern the rest reuse, so they go
+# first. Wave 1 is a deliberate checkpoint — P0 sets the shared controls, and A1 and A4 are
+# the ONLY two categories with a deleted design, so they are the only two that test the
+# rule most likely to be broken (do not renumber). Three sessions buys the answer to
+# "is this working?" before thirty-one more are spent.
+# ─────────────────────────────────────────────────────────────────────────────
+
+WAVES = [
+ ("Wave 1 · Checkpoint — run these three, export, then verify",
+  "P0 establishes the shared editor controls every other category inherits. A1 Headers and "
+  "A4 Heroes are the ONLY two categories with a deleted design, so they are the only two "
+  "that test the numbering rule — the one most likely to be broken by good intentions. "
+  "Export after these three and run the checker before spending thirty-one more sessions.",
+  ['P0', 'A1', 'A4']),
+
+ ("Wave 2 · Pattern-setters — each draws something later categories reuse",
+  "Newsletter draws the no-JavaScript notice first because it is the heaviest form "
+  "category; About and Team draws the one-letter avatar; Post Lists draws the grouping "
+  "behaviour and its plain fallback; Post Headers draws the \u201cand others\u201d byline. Every "
+  "one of those is copied by categories further down, so drawing them well here saves "
+  "re-deciding four times.",
+  ['A22', 'A12', 'A18', 'A24']),
+
+ ("Wave 3 · The heavy ones",
+  "Substantial redraws and deletions. Koenig Card Treatments is the biggest single piece of "
+  "work in the pass and deserves a fresh session of its own.",
+  ['A33', 'A30', 'A7', 'A34', 'A25', 'A32', 'A28', 'A15', 'A17', 'A20', 'A21']),
+
+ ("Wave 4 · Smaller specific work",
+  "A short, named list of changes each. Mostly applying the member-button and "
+  "no-JavaScript rules that Wave 2 already designed.",
+  ['A2', 'A3', 'A6', 'A9', 'A10', 'A11', 'A16', 'A26', 'A31']),
+
+ ("Wave 5 · Sweep — the ten rules only",
+  "No category-specific rulings. Each still needs a pass to confirm the ten rules against "
+  "every design, and to record in its Patch notes which rules changed something and which "
+  "were already satisfied — so \u201cnothing to do\u201d is a recorded finding, not a silent skip.",
+  ['A5', 'A8', 'A13', 'A14', 'A19', 'A27', 'A29']),
+]
+
+
 WORK = {
  'A1': """- ADD THE SEARCH CONTROL. Search is no longer a category of its own — the whole Search
   category was deleted, because Ghost's own search opens in a sealed frame our stylesheet
@@ -377,7 +419,15 @@ PART_A_ONLY = ("- No category-specific rulings. Apply the ten rules in PART A, c
 
 
 def build_prompt(cat, title, designs, holes):
-    roster = '\n'.join(f'  {d["n"]:>2}. {d["name"]}' for d in designs)
+    if cat == 'P0':
+        scope = ("THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS\n"
+                 "every category's side panel draws from — the item list with its Add and Remove, the\n"
+                 "number pickers, the shared colour and spacing controls, the state switcher, the link\n"
+                 "picker and the icon picker. Change them here once and every category inherits it,\n"
+                 "which is why this runs first.")
+    else:
+        roster = '\n'.join(f'  {d["n"]:>2}. {d["name"]}' for d in designs)
+        scope = f"THIS CATEGORY — {cat} {title}, {len(designs)} designs:\n\n{roster}"
     hole_note = ''
     if holes:
         hole_note = ('\n\nNUMBERING GAP IN THIS CATEGORY: ' +
@@ -397,9 +447,7 @@ Work only on {cat}. Do not touch other categories.
 
 {FACTS}
 
-THIS CATEGORY — {cat} {title}, {len(designs)} designs:
-
-{roster}
+{scope}
 
 The library as a whole is 33 categories and 468 designs. There is no A23 — the Search
 category was deleted and that number is retired.{hole_note}
@@ -460,6 +508,15 @@ white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
 font-size:.87rem;margin:0 0 16px}
 .big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
 font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
 footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}"""
 
 JS = """const K='inflozo-design-patch-done';
@@ -489,34 +546,52 @@ paint();"""
 
 def render():
     lib, _ = er.build()
-    order = sorted((c for c in lib if not lib[c].get('deleted')),
-                   key=lambda c: int(c[1:]) if c[1:].isdigit() else 999)
-    cards, n_designs = [], 0
-    for cat in order:
-        v = lib[cat]
-        live = [d for d in v['designs'] if not d.get('deleted')]
-        holes = [d for d in v['designs'] if d.get('deleted')]
-        n_designs += len(live)
-        prompt = build_prompt(cat, v['title'], live, holes)
-        specific = cat in WORK
-        cards.append(f"""<div class="cat" data-cat="{cat}">
+    live = {c: v for c, v in lib.items() if not v.get('deleted')}
+
+    ordered = [c for _, _, cats in WAVES for c in cats]
+    missing = sorted(set(live) - set(ordered), key=lambda c: int(c[1:]))
+    assert not missing, f'WAVES does not place every category: {missing}'   # never silently drop one
+
+    def card(cat, step):
+        if cat == 'P0':
+            title, n_live, holes, designs = 'Editor Primitives', 0, [], []
+        else:
+            v = lib[cat]; title = v['title']
+            designs = [d for d in v['designs'] if not d.get('deleted')]
+            holes = [d for d in v['designs'] if d.get('deleted')]
+            n_live = len(designs)
+        prompt = build_prompt(cat, title, designs, holes)
+        meta = ('shared controls' if cat == 'P0' else f'{n_live} designs')
+        meta += ' · specific rulings' if cat in WORK else ' · the ten rules only'
+        flags = ''
+        if holes:
+            flags += '<span class="flag hole">numbering gap — tests the riskiest rule</span>'
+        if cat == 'A33':
+            flags += '<span class="flag big">biggest redraw in the pass</span>'
+        return f'''<div class="cat" data-cat="{cat}">
   <div class="chead"><input class="tick" type="checkbox" aria-label="mark {cat} done">
-    <span class="cid">{cat}</span><span class="cname">{html.escape(v['title'])}</span>
-    <span class="cmeta">{len(live)} designs · {'specific rulings' if specific else 'Part A only'}</span></div>
-  <div class="body">
-    {'<span class="big">Biggest redraw in the pass</span>' if cat in ('A33',) else ''}
+    <span class="step">{step}</span>
+    <span class="cid">{cat}</span><span class="cname">{html.escape(title)}</span>
+    <span class="cmeta">{meta}</span></div>
+  <div class="body">{flags}
     <pre>{html.escape(prompt)}</pre>
     <button class="btn copy">Copy prompt</button>
-  </div></div>""")
+  </div></div>'''
 
-    # P0 is not a category in the roster but has its own prompt.
-    p0 = build_prompt('P0', 'Editor Primitives', [], [])
-    cards.append(f"""<div class="cat" data-cat="P0">
-  <div class="chead"><input class="tick" type="checkbox" aria-label="mark P0 done">
-    <span class="cid">P0</span><span class="cname">Editor Primitives</span>
-    <span class="cmeta">shared controls · specific rulings</span></div>
-  <div class="body"><pre>{html.escape(p0)}</pre>
-  <button class="btn copy">Copy prompt</button></div></div>""")
+    cards, step, n_designs = [], 0, sum(
+        len([d for d in v['designs'] if not d.get('deleted')]) for v in live.values())
+    for wi, (wtitle, why, cats) in enumerate(WAVES):
+        cards.append(f'<h2 class="wave">{html.escape(wtitle)}</h2>'
+                     f'<p class="why">{why}</p>')
+        for cat in cats:
+            step += 1
+            cards.append(card(cat, step))
+        if wi == 0:
+            cards.append('''<div class="gate"><b>Stop here and check before going further.</b>
+      Export the library, then run <code>python3 tools/verify-design-pass.py</code>. The tell is
+      simple: if Headers comes back numbered 1&ndash;15 straight through instead of 1&ndash;8 then
+      10&ndash;16, the numbering rule was broken and it will have been broken the same way in every
+      later session. Two sessions lost beats thirty-one.</div>''')
 
     return f"""<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -532,13 +607,14 @@ Tick a category when its export is back. Progress is stored in this browser.</p>
 anything. Deleted designs leave permanent gaps — Headers has no #9, Heroes has no #15 — and every
 other document in the project references designs by number. If an export comes back with Headers
 numbered 1–15 contiguously, that is the tell.</p>
-<p class="note">Order is not enforced, but <b>P0 Editor Primitives</b> is worth running first: the
-Remove-button and number-picker rulings originate there and every category inherits them. <b>A1
-Headers</b> next, since it absorbs the deleted Search category.</p>
+<p class="note"><b>Run them in the order below, top to bottom.</b> It is not arbitrary: the first
+three are a deliberate checkpoint, and the four after that each draw something the later categories
+reuse, so drawing them well once saves re-deciding the same thing four times. Within a wave the
+order does not matter.</p>
 {''.join(cards)}
 <footer>Generated from <code>tools/design-patch-prompts.py</code>. Rosters derive from the design
 export via <code>export-roster.py</code>, so design numbers and names cannot drift; the rulings are
-authored in the generator. {len(order)} categories · {n_designs} designs · plus P0.
+authored in the generator. {len(live)} categories · {n_designs} designs · plus P0.
 Rulings: <code>prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md</code>.
 Verify a returned export with <code>python3 tools/verify-design-pass.py</code>.</footer>
 </div><script>{JS}</script></body></html>"""
