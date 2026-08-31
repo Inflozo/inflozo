@@ -705,6 +705,34 @@ A24-14, A25, A26-9 specs · `Appendix B` (Portal actions — add `share`, Ghost 
 
 ---
 
+## A2 · Rulings from the design patch pass, 2026-08-31
+
+The pass raised 28 questions across the 33 categories. **Fifteen the owner answered inside the
+sessions**; eleven more were ruled in the body but left with an un-updated heading (so an extraction
+that reads headings alone over-counts — worth knowing before trusting a question count from this
+corpus). **Two reached him afterwards**, and both are ruled here.
+
+**R-30 · "Count per row" in About and Team keeps its three named values — three · four · five.**
+Not a number picker. R-18's "item counts are always a number picker" was written for *how many items
+to show*, which in this category is a separate control; this row selects between **three drawn
+layouts**. At three the photograph is large and a job title has room to wrap; at five it is small and
+a long title wraps twice. Those are the only three widths any frame in the category has been drawn
+and checked at, against a long role and a wrapping name. A typed number would let an editor pick a
+width nobody has looked at — six across gives 196 px photographs, the size the wall-of-faces design
+uses precisely *because* it draws no roles.
+*Propagates to:* A12 spec · `Appendix C` (R-18 gains this carve-out, stated once: a count that
+selects between drawn layouts is a named set, not a stepper) · FR-H2.
+
+**R-31 · The sticky reading bar renders nothing without JavaScript.**
+No bar, no reserved space — the header scrolls away as every other Post Header design's does. The
+bar cannot be built without a script (a browser can only pin an element inside its containing box,
+and the header it belongs to has scrolled away by then — R-3). Of the three shapes offered, a
+persistent title bar costs every such visitor 56 px of phone screen for a feature they are not
+getting, and a bar drawn but not following reads as broken rather than as a choice.
+*Propagates to:* A24 spec (design 13's No-JS line) · research `§7` `header-scroll` row.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
