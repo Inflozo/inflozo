@@ -371,6 +371,18 @@ def c_extraction_health(S, lib):
                        f'for these): {sample(blind, 8)}' if blind else 'every spec is machine-readable')
 
 
+# REVIEWED 2026-08-31, all six cleared by hand against the patched export. Each fires because the
+# spec RECORDS its own fix, which no keyword filter distinguishes from a violation:
+#   R-8  A12 "the section draws as 1 Grid with no arrows, no fades" — the BEHAVIOUR rule 8 permits
+#        (hide the chrome, same visual result, no second design). Phrasing echoes the banned form.
+#   R-1  A21 "read *and 6 others*" and A26 "+4 more is now + more" — both are the patch notes.
+#   R-14 A15 "read Tight · Normal · Loose where they read Tight · Even · Airy" — the fix, recorded.
+#   R-9  A15 "~~Source: Upload~~ … that branch is deleted" — struck.
+#   R-6  A33 redrew the toggle as "a plain container with a heading and a button" — correct, just
+#        not by class name, which is what the check looks for.
+#   R-4  A30 "Member since … are deleted"; A8 "every 'member since' line is a sentence the site typed".
+# Re-check only after a spec changes; do not re-litigate them on an unchanged export.
+#
 # Prose scans. These read English rather than parsed data, so they cannot tell a violation from a
 # spec RECORDING that it removed the thing. They advise; they do not fail the run. Everything else
 # reads structured data and is precise enough to block.

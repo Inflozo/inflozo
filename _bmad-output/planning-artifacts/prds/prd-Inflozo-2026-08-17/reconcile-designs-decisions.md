@@ -733,6 +733,78 @@ getting, and a bar drawn but not following reads as broken rather than as a choi
 
 ---
 
+## A3 · The §F asks, ruled 2026-08-31
+
+§F listed nine asks the Ghost Build Room did not reach, owed before E4/E9 open. Seven were the
+owner's and are ruled here; three were architecture and are decided below rather than carried.
+
+**R-32 · Pack tokens are computed where they are derivable, and asked for only where they are taste.**
+*(closes R5)* ~20 categories need values `FR-E1` / `Appendix D` does not define — on-contrast text,
+dark elevation, scrim strength, tabular figures, pill radius, drop-cap ratio. Most FOLLOW from
+colours a pack already declares: the readable text colour on a contrast ground is calculable from
+that ground. Compute those; ask the pack author only for the handful that are genuine judgement
+(scrim strength, pill radius). Two or three real decisions per pack rather than twelve, and twelve
+packs cannot disagree about a value neither of them chose.
+*Propagates to:* FR-E1 · `Appendix D` (the token list, marked computed or authored per row) · AD-30.
+
+**R-33 · A control disabled by another is greyed, with the reason shown.** *(closes R14)*
+Not hidden, not silently ignored. Same shape as R-12's Remove button, and for the same reason: a
+control that vanishes teaches nothing, and one that accepts a value it will not honour is worse.
+Example: Features' "Icon in accent" spends the accent, so the Action button below the set greys with
+"not available while the media uses the accent colour". ~6 categories.
+*Propagates to:* FR-F7 / FR-D19 (the dependency vocabulary) · `Appendix C` · P0 · A5, A14, A17, A18, A19.
+
+**R-34 · No visitor dark-mode switch on a site whose colour scheme is pinned.** *(closes R20)*
+Pinning is the owner's deliberate choice; a visitor switch that overrides it makes the pin
+meaningless. The control is not offered, and the panel says why. `{{comments mode=…}}` derives from
+the same pinned value rather than being a second selector.
+*Propagates to:* FR-D7 / FR-Q5 / AD-30 · A1 · A28.
+
+**R-35 · Nothing fetches from a video provider. The customer supplies the title and image.**
+*(closes the oEmbed half of R23; owner chose more strictly than the room proposed)* Neither Inflozo's
+server nor the editor's browser contacts YouTube, Vimeo or any provider. The embed card's title,
+description and poster are authored fields the customer fills in — which A15 already declares
+(`title`, `description`, `poster`). **Consequences:** AD-10 and AD-23 need no oEmbed provision;
+probe family 36's oEmbed half is **cancelled**; no CORS question remains to test.
+*Propagates to:* AD-10 · AD-23 · FR-K · A15 spec (state that the fields are required, not fetched) ·
+`VERIFY-AT-BUILD.md` (strike family 36's oEmbed half).
+
+**R-36 · An empty feed shows its designed "nothing here yet" state.** *(closes R13's `fallback`)*
+Not hidden, and not silently back-filled with the newest posts — a visitor should never be shown
+posts nobody chose for that spot, and the fallback query that would need has never been proven to
+work in Ghost. **Mostly ratifies what is already drawn:** A17 carries 25 references to its empty
+state, A3 23, A21 17, A19/A20/A27/A29 16 each. The thin ones are A22, A13 and A34, which need the
+state written when they are next touched.
+*Propagates to:* FR-H4 · FR-H2's `fallback` field (its value set becomes the designed state alone) ·
+A22, A13, A34 specs.
+
+**R-37 · A post layout may carry exactly one Post Content section, and the editor prevents a second.**
+*(closes R25's first half)* Two would print the article twice on a live page. Refused at placement
+with the reason, not warned about — there is no reason to want it, so nothing is lost by making it
+impossible.
+*Propagates to:* FR-I1 · FR-D5 (the singleton rule) · A25.
+
+**R-38 · A design may declare the width below which its script runs.** *(closes R22)*
+"Collapses into sections under 768." Three designs need it today (A2-15, A13-15, A3's footer
+accordions) and the shape recurs. The declaration names the width; the module's no-JS line describes
+the state at BOTH sides of it.
+*Propagates to:* FR-G7 (a module declaration may carry a width) · research `§7` · A2, A3, A13.
+
+### Decided as architecture, not carried to the owner
+
+- **R18 · AD-27 row shapes.** The project doc gains a row per stored state: main-feed designation,
+  pager control values, per-card overrides, the membership-pages record, share destinations. Pure
+  schema; AD-27 already owns the pattern and each is one row.
+- **R24 · CSS emission order.** `cards.css` first, then the per-design stylesheet — the browser order
+  §7.4 already states, so per-design rules win on the `.kg-*` classes they legitimately style. The
+  `.kg-*` ownership line between A25 and A33: A33 owns card interiors, A25 owns the column they sit
+  in. R-6 fixed the claims; this fixes the order.
+- **R13's remainder** — the authors and tags source shapes, designation as a stored state, the
+  layout-level get budget, `feature_image:-null` as a precondition. Spec detail for the merge, each
+  following from a ruling already made.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
