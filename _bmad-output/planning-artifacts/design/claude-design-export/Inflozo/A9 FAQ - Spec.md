@@ -131,7 +131,22 @@ One column of hairline rows on a 780 px measure, centred in the 1,296 width. The
 
 **Fields** · every field except `image`, `imageAlt` and `groupLabel`; **every item of `items[]`, one to twenty-four**. `group` kept and ignored.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Medium 34 · Large 40 · Display 48, unavailable at head None. Question size: Row 17 · Large 20 · Feature 24. Marker: Chevron · Plus. **Open on load: All closed · First open** — shared with 8 Contrast Band after this pass, and refused in the other eight accordions with the reason stated in each panel. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48, unavailable at head None |
+| Question size | Row 17 · Large 20 · Feature 24 |
+| Marker | Chevron · Plus |
+| Open on load | **All closed · First open** — shared with 8 Contrast Band after this pass, and refused in the other eight accordions with the reason stated in each panel |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Arrangement** · list 780, answer 620 at the row's left edge; **row padding follows the question, 16 · 20 · 28**; **Rows shown is not a control — every authored question is drawn**, so the panel reads “24 of 24”. The list follows the head's alignment: centred on 780, or at the left margin.
 
@@ -168,7 +183,22 @@ Two independent lists of 632 on a 32 px gutter, split by count. Settlement 4, bu
 
 **Fields** · 1 Accordion's exactly, **six, eight or twelve items**. Switching to or from 1 Accordion changes the arrangement and nothing else.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Question size: Row 17 · Large 20** — Feature 24 not offered, Row forced at 834 and below. **Divider: Gutter · Rule**, the rule's inset 32 at 1440 and 20 at 834. **Rows shown: a number picker, 1–12, default 8**, twelve greyed with its reason. **Open rows: Many · One at a time**, one name group across both columns, so opening a row on the right closes the row open on the left. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | **Row 17 · Large 20** — Feature 24 not offered, Row forced at 834 and below |
+| Divider | **Gutter · Rule**, the rule's inset 32 at 1440 and 20 at 834 |
+| Rows shown | **a number picker, 1–12, default 8**, twelve greyed with its reason |
+| Open rows | **Many · One at a time**, one name group across both columns, so opening a row on the right closes the row open on the left |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Not offered, and stated in the panel** · Open on load, because First open would open the left column alone and read as a mistake in the right; Marker, because two columns of plus signs read as arithmetic.
 
@@ -207,7 +237,21 @@ Every answer drawn: question above answer, rows between hairlines, one column on
 
 **Fields** · 1 Accordion's, **four, six or eight items**. The `anchor` is drawn as an `id` on the `<h3>` even though nothing opens, so a link into this design lands where it would in every other one.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rules: Between · Above and below · None.** **Rows shown: a number picker, 1–8, default 6**, eight greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below, where the design draws its own top rule. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 · Feature 24 |
+| Rules | **Between · Above and below · None** |
+| Rows shown | **a number picker, 1–8, default 6**, eight greyed with its reason |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | **Locked None** at Rules Above and below, where the design draws its own top rule; None · Line · Fade otherwise |
+
+**Open rows is not offered:** nothing here closes. Plus the **Data group**.
 
 **Arrangement** · 1 Accordion's row with the button taken out: same 780 list, same 620 answer, same row padding and same step-linked gap. **At Rules None the rows sit 40 px apart whatever the padding control says** — the row padding is what a hairline needs on each side of it, and with no hairline 20 px does not end an answer. **The answer stays 16 px at every question size**, so the ratio narrows from 20:16 to 17:16 and the hierarchy is carried by weight.
 
@@ -244,7 +288,21 @@ One question and its answer per card, three of 416 on a 24 px gutter — A8·2's
 
 **Fields** · head fields, note, link pair, **three or six items**.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Columns: Two · Three.** **Questions shown: a number picker, 1–6, default 6**, six greyed with its reason. Cards: Surface · Ground. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** a card that has to be pressed to show its contents is a card with nothing in it. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**. The Cards row above sets the **card's** fill; Background role sets the **section's** ground, and the panel keeps the two apart.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Columns | **Two · Three** |
+| Questions shown | **a number picker, 1–6, default 6**, six greyed with its reason |
+| Cards | Surface · Ground |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+**Open rows is not offered:** a card that has to be pressed to show its contents is a card with nothing in it. Plus the **Data group**. The Cards row above sets the **card's** fill; Background role sets the **section's** ground, and the panel keeps the two apart.
 
 **Not offered** · Question size, fixed at Row 17 because 20 px in a 416 card runs most questions to three lines; Marker and Open on load; Hairline columns, refused as in A8·4 — a vertical rule that stops between two rows is a table's rule without a table's header.
 
@@ -283,7 +341,22 @@ The head in a 416 px column at the left margin, the accordion in an 824 px colum
 
 **Fields** · every field except `image`, `imageAlt` and `groupLabel`; **five or eight items**.
 
-**Controls** · **Title size: Medium 34 · Large 40** — Display 48 not offered in a 416 column. **Rows shown: a number picker, 1–8, default 5**, eight greyed with its reason. Head column: Left · Right. **Foot: Under the head · Under the rows.** Marker: Chevron · Plus. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | **Medium 34 · Large 40** — Display 48 not offered in a 416 column |
+| Rows shown | **a number picker, 1–8, default 5**, eight greyed with its reason |
+| Head column | Left · Right |
+| Foot | **Under the head · Under the rows** |
+| Marker | Chevron · Plus |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Not offered** · Question size, fixed at Large 20 — Row 17 in an 824 row reads as small print beside a 40 px title; Head alignment, because the head column is always left-aligned inside itself; Open on load.
 
@@ -322,7 +395,22 @@ Group labels with their own rows beneath, stacked down one column. The first of 
 
 **Fields** · `title`, `sub`, `note`, link pair, **every authored group drawn, one to six** ⛑ 29 August 2026, and every item with its `group`. **`eyebrow` is kept and never drawn** — the group labels take the eyebrow's type, and two ranks of 13 px uppercase in one section is one of them competing.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Question size: Row 17 · Large 20** — Feature not offered, because three labels and twelve questions is already three ranks. **Group label: Above the rows · Beside the rows.** Marker: Chevron · Plus. **Open rows: Many · One at a time**, one name group per group, so a reader can hold one row open in each. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | **Row 17 · Large 20** — Feature not offered, because three labels and twelve questions is already three ranks |
+| Group label | **Above the rows · Beside the rows** |
+| Marker | Chevron · Plus |
+| Open rows | **Many · One at a time**, one name group per group, so a reader can hold one row open in each |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Arrangement** · list 780 at both label values; at Beside, **200 · 56 · 780 = 1,036 centred**, the label top-aligned with its first row's text rather than with the hairline. **Group label 13 px / 600 / uppercase / .08em in `text`, never muted, never stepping with width** — a muted label above full-strength questions reads as a caption for them. Label to first row 20 · 16 · 14; **group to group 48 · 40 · 32**, the same 48 the head takes above a list. Every group's rows carry a hairline each and none under the last, so the gap is the only thing dividing two groups.
 
@@ -359,7 +447,22 @@ A jump list of group labels at the left margin, every group of rows at the right
 
 **Fields** · head fields, note, link pair, **every group and every item, up to twenty-four**. `anchor` is drawn as the row's `id` and as the copy button's clipboard value. **The index is generated from `groups[]` and is not a separate field** — a second list of labels to keep in step with the first is a list that goes wrong.
 
-**Controls** · Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. Index column: Left · Right. **Index behaviour: Sticky · Static.** **Copy links: Shown · Hidden.** **Open rows: Many · One at a time**, one name group per group. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 |
+| Index column | Left · Right |
+| Index behaviour | **Sticky · Static** |
+| Copy links | **Shown · Hidden** |
+| Open rows | **Many · One at a time**, one name group per group |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Not offered** · Head alignment — always flush left, because a centred head over a left-hand index is two alignments; Marker, fixed at Chevron; Open on load, fixed at All closed; Groups shown, because this design draws everything.
 
@@ -402,7 +505,23 @@ A jump list of group labels at the left margin, every group of rows at the right
 
 **Fields** · 1 Accordion's exactly, **four or six items**.
 
-**Controls** · Band width: Full bleed · Inset. Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Open on load: All closed · First open** — added in this pass: the value 1 Accordion had and this design silently dropped. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role **locked at Contrast**, the reason shown at the lock — the band is the design, not a value of it · Vertical spacing resolving the band's own **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where Band padding retired · Top divider **locked None** at Band width Full bleed. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Inset |
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 · Feature 24 |
+| Rows shown | **a number picker, 1–6, default 6**, six greyed with its reason |
+| Open on load | **All closed · First open** — added in this pass: the value 1 Accordion had and this design silently dropped |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | **Locked at Contrast**, the reason shown at the lock — the band is the design, not a value of it |
+| Vertical spacing (universal) | the band's own **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where Band padding retired |
+| Top divider (universal) | **Locked None** at Band width Full bleed |
+
+Plus the **Data group**.
 
 **Derived colours, all from the token pair** · muted = carried at **72% in light and 70% in dark** (A8·9's pair), hairline = carried at 18%, **hover plane and inline-code chip = carried at 6%**. Light `#232019` / `#FBF9F5` → `#BEBCB7`, `#4A4741`, `#302D26`. Dark `#EDE7DA` / `#171511` → `#57544D`, `#C6C1B6`, `#E0DACE`. Using `surface` or `border` here would put a light hairline on a dark band. No shadow at any value. **A hovered row's code chip disappears into the plane** — two 6% fields on one row is a boundary nobody needs to see.
 
@@ -441,7 +560,21 @@ Questions numbered in the pack's heading font at Display 40, the question at Fea
 
 **Fields** · head fields, note, link pair, **four or six items**. **There is no numeral field:** numbers come from the item's position in the repeater, so reordering renumbers and a site cannot type its own — a list whose sixth row says “09” is a list with a mistake in it.
 
-**Controls** · Head: Centred · Flush left · None. **Questions shown: a number picker, 1–12, default 6**, twelve greyed with its reason. **Numerals: Padded 01 · Plain 1.** **Numeral position: In a column · Above the question.** Rules: Between · None. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Questions shown | **a number picker, 1–12, default 6**, twelve greyed with its reason |
+| Numerals | **Padded 01 · Plain 1** |
+| Numeral position | **In a column · Above the question** |
+| Rules | Between · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+**Open rows is not offered:** nothing here closes. Plus the **Data group**.
 
 **Not offered** · **Title size — fixed at Medium 34**, because §2 allows one display moment per section and the numerals have taken it; Question size, fixed at Feature 24; Marker and Open on load.
 
@@ -480,7 +613,23 @@ A photograph on one half, the accordion on the other, both top-aligned, on a 32 
 
 **Fields** · head fields, note, link pair, **`image` and `imageAlt`**, and **four or six items**. The photograph is an uploaded file on the section, not a post's feature image. No `imageAlt` → `alt=""`.
 
-**Controls** · Title size: Medium 34 · Large 40. **Division: Even 632/632 · Rows-led 760/504** — an image-led division is refused, because a 504 px accordion is a column of two-line questions and a section whose photograph is wider than its content is A4's hero. Image side: Left · Right. **Crop: Portrait 4:5 · Square 1:1 · Landscape 3:2**, named and not computed, `object-fit: cover`. **No free focal point — Image focus (Centre · Top · Bottom) ships in the Image Picker popover and is the whole of it**: three named values are not a draggable point, and the old refusal was of the point. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 |
+| Division | **Even 632/632 · Rows-led 760/504** — an image-led division is refused |
+| Image side | Left · Right |
+| Crop | **Portrait 4:5 · Square 1:1 · Landscape 3:2**, named and not computed, `object-fit: cover` |
+| Image focus | Centre · Top · Bottom (in the Image Picker popover, not a panel row) |
+| Rows shown | **a number picker, 1–6, default 6**, six greyed with its reason |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+A 504 px accordion is a column of two-line questions, and a section whose photograph is wider than its content is A4's hero. **No free focal point** — three named values are not a draggable point, and the old refusal was of the point. Plus the **Data group**.
 
 **Not offered** · Question size, fixed at Large 20; Marker; Open on load; **any visible caption** — a caption under a photograph beside a FAQ is a third voice.
 
@@ -519,7 +668,21 @@ Group labels as a tab row, one group's questions shown at a time. **A5·12's tab
 
 **Fields** · head fields, note, link pair, **three or four groups** and every item belonging to a drawn group. **Ungrouped questions are not drawn at all and no “Other” tab is invented; the panel names the ones being left out** — “Do you take corporate subscriptions?” and “Where does the printed quarterly ship?” on the drawn frame — **rather than only counting them**: a count says something is missing, a name says which sentence a reader is not being shown. **This is the one place in A9 where an empty optional field silently costs a reader content**, which is why the warning is specific.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. Rules: Between · None. **Groups shown: a number picker, 1–4, default 4**, four greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** the rows inside a panel are always open. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 |
+| Rules | Between · None |
+| Groups shown | **a number picker, 1–4, default 4**, four greyed with its reason |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+**Open rows is not offered:** the rows inside a panel are always open. Plus the **Data group**.
 
 **Not offered** · a tab row below the panel; six groups — two rows of tabs above three questions is a section whose navigation is taller than its content; **an All tab**, because a tablist whose first tab contains every other tab is not a choice; **a disclosure inside the panel** — A9-0's refusal, since a disclosure inside a disclosure is two doors to one sentence.
 
@@ -562,7 +725,22 @@ The archetype names the arrangement — a field governing a list — and **not t
 
 **Fields** · head fields, note, **link pair used twice — in the foot and in the no-match state** — and **twelve, eighteen or twenty-four items**. **The placeholder and the no-match line are fields with defaults** — `filterPlaceholder` “Filter questions” and `noMatch` “No question here mentions “{term}”.”, with `{term}` filled at render — because a non-English site cannot ship an English literal. The defaults keep the ruling this design was protecting: a filter that says something other than what it does is the failure it is avoiding. **What stays the theme's is the visually hidden input label and the Clear button's name**, both catalog strings. The filter is client-side over the authored rows and queries nothing.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. **Field width: Full · Narrow 420.** **Rows shown: a number picker, 1–24, default 12**, twenty-four greyed at the field's ceiling. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 |
+| Field width | **Full · Narrow 420** |
+| Rows shown | **a number picker, 1–24, default 12**, twenty-four greyed at the field's ceiling |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **The field** · A4·15's — 48 px tall, `surface`, 1 px `border`, pack radius, 16 px text, a 19 px glyph inset 16, **32 px above the first row**, on the list's measure at Full. **No submit button and no `<form>`**; Enter is a no-op. A 44 px Clear button with a 15 px cross when there is text, labelled “Clear”; Escape clears and keeps focus in the field. **The placeholder's default says “Filter questions” rather than “Search”**, because it filters the rows on this page and does not search the site; a site may rewrite it, and the field it edits is `filterPlaceholder`.
 
@@ -603,7 +781,20 @@ Three or four rows in a tight band, no head, **its own 32 · 44 · 56 padding sc
 
 **Fields** · **three drawn** — `question`, `answer`, `anchor` — from three or four items. **Ten kept and never drawn**: `eyebrow`, `title`, `sub`, `note`, `linkLabel`, `linkUrl`, `image`, `imageAlt`, `groupLabel`, `group`. **The most any design in A9 keeps, and the reason switching away loses nothing.**
 
-**Controls** · **Rules: Above and below · Above only · None** — **Above and below is the default**, the only design in A9 whose Rules default is not Between: with no head above them, the rows need a top edge to start against. Question size: Row 17 · Large 20. **Rows shown: a number picker, 1–4, default 4**, four greyed with its reason. Marker: Chevron · Plus. **Open rows: Many · One at a time**. **Universal, outside this list:** Background role — the old Ground row, Surface being the `surface` panel and Background the page's own ground — Contrast disabled · Vertical spacing resolving this design's **32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390); the fixed 14 px row inside it is not a control · Top divider **locked None** at Rules Above and below and at Above only. Plus the **Data group**. **No Member visibility:** this design bears no ask at any value, and is the one section in A9 a site cannot hide from a member state.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Rules | **Above and below · Above only · None** — **Above and below is the default**, the only design in A9 whose Rules default is not Between: with no head above them, the rows need a top edge to start against |
+| Question size | Row 17 · Large 20 |
+| Rows shown | **a number picker, 1–4, default 4**, four greyed with its reason |
+| Marker | Chevron · Plus |
+| Open rows | Many · One at a time |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled — the old Ground row, Surface being the `surface` panel and Background the page's own ground |
+| Vertical spacing (universal) | this design's **32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390); the fixed 14 px row inside it is not a control |
+| Top divider (universal) | **Locked None** at Rules Above and below and at Above only |
+
+Plus the **Data group**. **No Member visibility:** this design bears no ask at any value, and is the one section in A9 a site cannot hide from a member state.
 
 **Not offered** · Head, at any value; Title size; Open on load.
 
@@ -648,7 +839,22 @@ The accordion with a contact panel at its foot: the section's `note` as one sent
 
 **The button needs a reason** · A6 CTA Banners owns the ask, and a FAQ that ends in “Subscribe” is a banner with questions as its copy. This button asks for nothing except the reader's own question. **It is a `mailto:`, a contact page or a help address and never a subscribe, a trial or a purchase** — **the editor warns on a link to a checkout, signup or trial and names A6·11 Reasons**, and the warning does not block the save, because a theme cannot know every URL. **The URL is picked, not typed:** the field opens the **Link Picker**, so a mailto:, a contact page or a help address is chosen from what the site has, and the warning fires on what comes back.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Ask panel: Card · Rule above · None.** **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members, through the **P0·4** member-aware action editor, because the panel's button is the ask it gates. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Question size | Row 17 · Large 20 · Feature 24 |
+| Rows shown | **a number picker, 1–6, default 6**, six greyed with its reason |
+| Ask panel | **Card · Rule above · None** |
+| Open rows | Many · One at a time |
+| Member visibility | Everyone · Logged out · Free members · Paid members, through the **P0·4** member-aware action editor, because the panel's button is the ask it gates |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | None · Line · Fade |
+
+Plus the **Data group**.
 
 **Arrangement** · at **Card**, the shared card at the list's width — `surface`, 1 px hairline, pack radius, **32 px padding, 24 at 834, 20 at 390, no shadow** — holding the note at 17 px in `text` on a 480 measure and the button at the right, **40 px below the last row**. **The note is `text` here and muted everywhere else in A9**: in the other fourteen designs it is a footnote under a list, and in this one it is the panel's whole sentence. At **Rule above**: no plane, the row's own hairline, 24 px either side, so the panel reads as the last item in the list. At **None**: the category's ordinary muted foot and an underlined text link — **not an empty state**, but a value, so a site can take the button off after a campaign without switching designs. **The panel is not drawn unless both the note and the link pair are authored.**
 
@@ -687,7 +893,21 @@ The question in a 300 px column at the left, the answer on 620 at the right, row
 
 **Fields** · `note`, link pair, and **four, six or eight items**. **`eyebrow`, `title`, `sub`, `image`, `imageAlt`, `groupLabel` and `group` are kept and never drawn** — seven fields, second only to 13 Slim's ten.
 
-**Controls** · Alignment: Centred · Flush left. Question size: Row 17 · Large 20. **Rules: Between · Above and below · None.** **Row padding: Compact 24 · Comfortable 32 · Spacious 44.** **Rows shown: a number picker, 1–8, default 6**, eight greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below. Plus the **Data group**. **Row padding keeps its own row**: it measures the space between two answers, not the space around the section.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Alignment | Centred · Flush left |
+| Question size | Row 17 · Large 20 |
+| Rules | **Between · Above and below · None** |
+| Row padding | **Compact 24 · Comfortable 32 · Spacious 44** |
+| Rows shown | **a number picker, 1–8, default 6**, eight greyed with its reason |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (8 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row under the name every section uses) |
+| Top divider (universal) | **Locked None** at Rules Above and below |
+
+**Open rows is not offered:** nothing here closes. Plus the **Data group**. **Row padding keeps its own row**: it measures the space between two answers, not the space around the section.
 
 **Not offered** · Head, at any value; Title size; Marker and Open on load.
 
@@ -895,3 +1115,15 @@ saved, kept, and never appear, with nothing an editor can press about it.
    written content off the page.
 3. **Leave it exactly as it is.** No new control and no change to the drawing, but a fifth group a site writes stays
    invisible with no explanation, which is the fault this question exists to close.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

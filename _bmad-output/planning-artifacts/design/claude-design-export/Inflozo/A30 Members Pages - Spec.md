@@ -300,11 +300,25 @@ are edited in Ghost.
    `rowLabels` · `endsLabel` · `paymentText` · `accessLabel`+`accessText` · `signOutLabel` ·
    `portalNote` · `signedInText`+`signedInCtaLabel` · `codeLabel`+`codeCta` · the sign-in and
    magic-link strings. **No image is drawn**; the field is stored ⚑.
-6. **Controls.** Column width (Narrow 380 · Medium 480 · Wide 560) · Fields (Email only · Name and
-   email) · Included list (Show · Hide) · Legal line (Show · Hide) · Sign-in link (Show · Hide) ·
-   **Eyebrow (Show · Hide)** · **Note line (Show · Hide)** · **List marker (Tick · Custom icon)** ·
-   **CTA icon (None · Before · After)**. **Nine**, plus the P0·3 `benefits[]` list. Then the
-   universal trio and the Data group, neither counted.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Column width | Narrow 380 · Medium 480 · Wide 560 |
+   | Fields | Email only · Name and email |
+   | Included list | Show · Hide |
+   | Legal line | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Nine**, plus the P0·3 `benefits[]` list. Then the universal trio and the Data group, neither
+   counted.
 7. **Data.** `@member` on /account/. `#get "tiers"` read and not drawn ⚑. 0, 1 and many tiers are the
    same page here. **Signed out on /account/ → Ghost does not redirect** ⚑ (patch pass): the page is served
    to an anonymous visitor exactly as it stands, so the design draws its own signed-out panel — a heading, one
@@ -350,9 +364,25 @@ catalog string rather than a template literal. "Continue" rather than "Subscribe
 5. **Content fields.** As 1. **`heading` has a real default here** — `{{@site.title}}` in the
    category's own fallback sentence ⚑ — and runs to two lines at 44 px; `benefits[]` is drawn at 0–6
    and the numbered treatment is designed for four.
-6. **Controls.** Case column (Wide 700 · Half 636) · Form side (Right · Left) · Included list
-   (Numbered rows · Ticks · Hide) · Fields · Legal line · **Sign-in link** · **Eyebrow** · **Note
-   line** · **List marker** (at Ticks) · **CTA icon**. **Ten**, plus the P0·3 list.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Case column | Wide 700 · Half 636 |
+   | Form side | Right · Left |
+   | Included list | Numbered rows · Ticks · Hide |
+   | Fields | Email only · Name and email |
+   | Legal line | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon (at Ticks) |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Ten**, plus the P0·3 list.
 7. **Data.** As 1. **The case column is authored, never queried**, so no data state can empty it ⚑.
 8. **Empty state.** No benefits → the list goes and **the 700 grid column is kept** ⚑. No blurb →
    heading then list. Both columns empty is not reachable; the heading's default is the site title
@@ -385,9 +415,23 @@ from prose than a heading does.
    rows stacked inside the card ⚑.
 5. **Content fields.** As 1. `benefits[]` is drawn at **three lines**; a fourth is stored and not
    drawn ⚑, and **P0·3's partial-display line says so** — "4 items · 3 shown in this design".
-6. **Controls.** Card width (Narrow 480 · Medium 560 · Wide 680) · Card depth (Raised · Flat) ·
-   Included list (Inside the card · Below the card · Hide) · Fields · Sign-in link (Inside the card ·
-   Below the card · **Hide** ⚑) · **Eyebrow** · **Note line** · **List marker** · **CTA icon**.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card width | Narrow 480 · Medium 560 · Wide 680 |
+   | Card depth | Raised · Flat |
+   | Included list | Inside the card · Below the card · Hide |
+   | Fields | Email only · Name and email |
+   | Sign-in link | Inside the card · Below the card · **Hide** |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · ~~Surface~~ disabled · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Nine**, plus the P0·3 list. **Background role is offered with Surface disabled** ⚑.
 7. **Data.** As 1. **The card's height is its content at every member type** ⚑ — four rows for a free
    member, six for a paid one, no minimum height.
@@ -422,10 +466,25 @@ carried from A19·3 rather than re-derived.
 5. **Content fields.** As 1. **`benefits[]` is the field this design leans on** — four lines is what
    the row is designed for; three draws three columns left-aligned; none hides the row and its
    hairline ⚑.
-6. **Controls.** Plane width (Content box 1,296 · Held 1,040) · Plane depth (Raised · Flat) ·
-   Included row (Four up · Two up · Hide) · Fields · Legal line · **Sign-in link** · **Eyebrow** ·
-   **Note line** · **List marker** · **CTA icon**. **Ten**, plus the P0·3 list. **Background role is
-   locked at Background** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane width | Content box 1,296 · Held 1,040 |
+   | Plane depth | Raised · Flat |
+   | Included row | Four up · Two up · Hide |
+   | Fields | Email only · Name and email |
+   | Legal line | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | **Locked at Background** |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Ten**, plus the P0·3 list. **Background role is locked at Background** ⚑.
 7. **Data.** As 1; on /account/ **the label column widens to 200** ⚑.
 8. **Empty state.** No benefits → hairline and row go. **The plane is never hidden** ⚑ — it is the
    ground, and a section with no ground is 1 Centred.
@@ -457,11 +516,27 @@ design's own and is not shared with 1's 168.
    column 440, heading 34. **≤ 767** inner 64, column = frame − 40, heading 28, field and button full
    width. **Band width: Content box resolves to full bleed below 1,440** ⚑.
 5. **Content fields.** As 1, and nothing more — **the band adds no field** ⚑.
-6. **Controls.** Band padding (Compact · Comfortable · Spacious — **kept: it is the band's own
-   ladder** ⚑) · Band width (Full bleed · Content box) · Alignment (Centred · Left) · Button (Carried
-   fill · Outline · ~~Accent~~ — **disabled at 4.0:1** ⚑) · Included list (Show · Hide) · Fields ·
-   **Sign-in link** · **Eyebrow** · **Note line** · **List marker** · **CTA icon**. **Eleven**, plus
-   the P0·3 list — the category's highest count. **All three universal rows are locked** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band padding | Compact · Comfortable · Spacious — **kept: it is the band's own ladder** |
+   | Band width | Full bleed · Content box |
+   | Alignment | Centred · Left |
+   | Button | Carried fill · Outline · ~~Accent~~ (**disabled at 4.0:1**) |
+   | Included list | Show · Hide |
+   | Fields | Email only · Name and email |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | **Locked** |
+   | Vertical spacing (universal) | **Locked** |
+   | Top divider (universal) | **Locked** |
+
+   **Eleven**, plus the P0·3 list — the category's highest count. **All three universal rows are
+   locked** ⚑.
 7. **Data.** As 1. **The band renders identically for every member type** and only its height changes.
 8. **Empty state.** No benefits → hairline and list go. **The band is never hidden** ⚑.
 9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
@@ -498,12 +573,26 @@ is invented.
    is a decorative cover and is allowed** ⚑) · `imageFocus` enum opt, **a field, reachable from the
    Image Picker's popover** ⚑. **The one required field in A30.** `benefits[]` is stored and not
    drawn, so **P0·3 never opens here** ⚑.
-6. **Controls.** Cover height (Compact 480 · Comfortable 620 · **Spacious** 760 — **renamed in the patch
-   pass to the standard three words** ⚑) · Scrim (Light 30 · Medium
-   45 · Heavy 60 — **the verify-against-a-real-photograph flag is in the row** ⚑) · Alignment
-   (Centred · Left) · Fields · Legal line · Account band (Picture band 200 · No picture) ·
-   **Sign-in link** · **Eyebrow** · **Note line** · **CTA icon**. **Ten.** **All three universal
-   rows are locked** ⚑, and Image and Image focus sit in the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Cover height | Compact 480 · Comfortable 620 · Spacious 760 |
+   | Scrim | Light 30 · Medium 45 · Heavy 60 |
+   | Alignment | Centred · Left |
+   | Fields | Email only · Name and email |
+   | Legal line | Show · Hide |
+   | Account band | Picture band 200 · No picture |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | **Locked** |
+   | Vertical spacing (universal) | **Locked** |
+   | Top divider (universal) | **Locked** |
+
+   **Ten.** **All three universal rows are locked** ⚑, and Image and Image focus sit in the Data
+   group.
 7. **Data.** As 1. **The image is authored, never queried** ⚑ — there is no post feature image to
    fall back to on a members page, which is why the field is required.
 8. **Empty state.** **No image → the picture is hidden and the cover keeps its plane, its height and its
@@ -542,10 +631,25 @@ account band is invented.
    picture on top, full bleed, 200 tall at 16:9; form on 350; **included list hidden** ⚑; spacing 64.
 5. **Content fields.** As 1, plus `image` **opt** ≥ 1,600 px · `imageAlt` · `imageFocus`. **Optional
    here and required in 6** — the same field, two obligations ⚑.
-6. **Controls.** Picture side (Right · Left) · Text column (Narrow 480 · Medium 560 · Wide 640) ·
-   Picture crop (Fill the column · Sixteen by nine) · Included list (Show · Hide) · Fields ·
-   **Sign-in link** · **Eyebrow** · **Note line** · **List marker** · **CTA icon**. **Ten**, plus the
-   P0·3 list. Image and Image focus are in the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Picture side | Right · Left |
+   | Text column | Narrow 480 · Medium 560 · Wide 640 |
+   | Picture crop | Fill the column · Sixteen by nine |
+   | Included list | Show · Hide |
+   | Fields | Email only · Name and email |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Ten**, plus the P0·3 list. Image and Image focus are in the Data group.
 7. **Data.** As 1. **No picture → the text column takes the content box** and the page is 2 without
    its case column ⚑; no hand-off, because the design still reads.
 8. **Empty state.** No image → as above, flagged without changing the design ⚑. On /account/ the
@@ -578,11 +682,25 @@ beside the Image row ⚑ rather than living as a hidden field.
 5. **Content fields.** As 1, plus `tierNote` · `freeRowHeading` · `freeRowText` · `freeCtaLabel` ·
    `periodLabels`. **No `note` field** — this design draws none. **Tier names, prices, descriptions
    and benefits are Ghost's and are not fields** ⚑.
-6. **Controls.** Period toggle (Monthly and yearly · Monthly only · Yearly only) · Card treatment
-   (Raised · Flat · Hairline rows) · Marked tier (Middle · Highest · None) · Benefits per card (**a number
-   picker, 0–3, the + disabled at three with the reason shown** ⚑ — patch pass) · Free row (Show · Hide) · **Order (Ghost's own · Price low–high · Price high–low)**
-   · **Sign-in link** · **Eyebrow** · **List marker** · **CTA icon**. **Ten**, and **no Note line
-   row**.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Period toggle | Monthly and yearly · Monthly only · Yearly only |
+   | Card treatment | Raised · Flat · Hairline rows |
+   | Marked tier | Middle · Highest · None |
+   | Benefits per card | **a number picker, 0–3**, the + disabled at three with the reason shown |
+   | Free row | Show · Hide |
+   | Order | Ghost's own · Price low–high · Price high–low |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Ten**, and **no Note line row**.
 7. **Data.** `#get "tiers"`. **0** → **cards and toggle are hidden and the head, the form and the free row stay** ⚑ (patch pass); the panel advises 1 Centred and never draws it. **1** →
    two cards centred, not stretched ⚑. **2–3** → as drawn. **4 or more** → rows at every width ⚑.
    **Order is Ghost's by default and is selectable** ⚑. **The card buttons are Portal tier deep
@@ -628,9 +746,23 @@ tier's benefit list to a theme in the shape drawn here needs verifying before bu
    heading 40 on 350, **form stacked**, blurb 16, spacing 64; name 34 with the badge below it ⚑.
 5. **Content fields.** As 1, with `heading` **capped at 60 characters in the editor** ⚑.
    `benefits[]` is **stored and not drawn** ⚑, so **P0·3 never opens here**.
-6. **Controls.** Heading size (Large 76 · Display 96 · Huge 132) · Alignment (Left · Centred) · Form
-   (Inline row · Stacked) · Blurb (Below the field · Hide) · Sign-in link · **Eyebrow** · **Note
-   line** · **CTA icon**. **Eight.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Heading size | Large 76 · Display 96 · Huge 132 |
+   | Alignment | Left · Centred |
+   | Form | Inline row · Stacked |
+   | Blurb | Below the field · Hide |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Eight.**
 7. **Data.** As 1. **The 72 px line is the authored `accountHeading`, not `@member.name`** ⚑ (patch pass), which
    retires the state that used to break this design: a 63-character address at display size. Status is Ghost's and
    is a badge, not a headline.
@@ -664,10 +796,25 @@ not a measurement.
    **rules kept** ⚑.
 5. **Content fields.** As 1. `benefitsLabel` defaults to "Included" here ⚑ — the compartment is short
    and the longer label wraps.
-6. **Controls.** Box width (Held 720 · Wide 960 · Content box 1,296) · Internal rules (Show · Hide) ·
-   Included list (Third compartment · Hide) · Fields · Sign-in link · **Eyebrow** · **Note line** ·
-   **List marker** · **CTA icon**. **Nine**, plus the P0·3 list. **Background role is offered in
-   full** ⚑ — the box has no fill, so the role shows through it.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Box width | Held 720 · Wide 960 · Content box 1,296 |
+   | Internal rules | Show · Hide |
+   | Included list | Third compartment · Hide |
+   | Fields | Email only · Name and email |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | List marker | Tick · Custom icon |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast — **offered in full**; the box has no fill, so the role shows through it |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Nine**, plus the P0·3 list. **Background role is offered in full** ⚑ — the box has no fill, so
+   the role shows through it.
 7. **Data.** As 1. **At every member type the box keeps its width and loses compartments** ⚑.
 8. **Empty state.** No benefits → the third compartment and its rule go. **The box with only a form
    in it is still a composition** ⚑ — with 4, one of the two designs whose zero states look finished.
@@ -700,10 +847,25 @@ is offered in full** — the box has no fill, which is what distinguishes this d
 5. **Content fields.** As 1, plus `railLabels` 4 × 24 ch on /account/ ⚑. `benefits[]` is what the
    /signup/ rail draws — **the same field is a tick list in 1, a numbered list in 2, a four-up row in
    4 and a rail here**.
-6. **Controls.** Rail side (Left · Right) · Rail width (Narrow 200 · Medium 240) · Rail sticks (On ·
-   Off) · Rail marks (Show · Hide) · Fields · **Sign-in link** · **Eyebrow** · **Note line** · **CTA
-   icon**. **Nine**, plus the P0·3 list, which is the /signup/ rail. **No List marker** — the rail
-   draws rows, not ticks.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Rail side | Left · Right |
+   | Rail width | Narrow 200 · Medium 240 |
+   | Rail sticks | On · Off |
+   | Rail marks | Show · Hide |
+   | Fields | Email only · Name and email |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Nine**, plus the P0·3 list, which is the /signup/ rail. **No List marker** — the rail draws
+   rows, not ticks.
 7. **Data.** `@member` as 1. **The /account/ rail's rows are fixed and not data** ⚑ except Billing,
    which is absent on a comped membership ⚑. **The rows open Portal's named panels** —
    `account/plans`, `account/newsletters`, `account/profile` ⚑ — **which exist.** **0 benefits** on
@@ -746,10 +908,22 @@ form of A1·1's underline.
 5. **Content fields.** As 1 **minus `eyebrow` and `note`, neither of which this design draws** ⚑,
    with `benefits[]` extended: **each line is a name (60 ch) and an optional detail (90 ch)** ⚑, 0–6
    lines. **The detail is stored by every other design and drawn only here** ⚑.
-6. **Controls.** Row density (Compact · Comfortable · Spacious) · Ordinals (Numerals · Rules only) ·
-   Row detail (One line · Name only) · Form position (At the foot · At the head) · **Sign-in link** ·
-   **CTA icon**. **Six**, plus the P0·3 list at **0–6** ⚑. **No Eyebrow or Note line row** — this
-   design draws neither.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Row density | Compact · Comfortable · Spacious |
+   | Ordinals | Numerals · Rules only |
+   | Row detail | One line · Name only |
+   | Form position | At the foot · At the head |
+   | Sign-in link | Show · Hide |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six**, plus the P0·3 list at **0–6** ⚑. **No Eyebrow or Note line row** — this design draws
+   neither.
 7. **Data.** As 1; tiers read and not drawn. **The rows are authored, not queried** ⚑. On /account/
    the rows are `@member`'s and the label column widens to 240.
 8. **Empty state.** **0 lines** → **rows and foot hairline are hidden and the heading, blurb and form stay** ⚑;
@@ -787,10 +961,25 @@ blurb field reused. The "wants four or more" editor note.
 5. **Content fields.** As 1, plus `stepLabels` 3 × 40 ch · `stepThreeText` opt 160 ch. **`benefits[]`
    is stored and not drawn** ⚑ — the steps are the page's structure — so **P0·3's authored list never
    opens here**.
-6. **Controls.** Plane width (Held 1,040 · Content box 1,296 · Narrow 720) · Step numbers (Numerals ·
-   Dots · Hide) · Step one (Two tiers · Every tier · Hide) · Step three (Show · Hide) · Fields ·
-   **Order** · **Sign-in link** · **Eyebrow** · **Note line** · **CTA icon**. **Ten.** **Background
-   role is locked at Background** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane width | Held 1,040 · Content box 1,296 · Narrow 720 |
+   | Step numbers | Numerals · Dots · Hide |
+   | Step one | Two tiers · Every tier · Hide |
+   | Step three | Show · Hide |
+   | Fields | Email only · Name and email |
+   | Order | Ghost's own · Price low–high · Price high–low |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Note line | Show · Hide |
+   | CTA icon | None · Before · After |
+   | Background role (universal) | **Locked at Background** |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Ten.** **Background role is locked at Background** ⚑.
 7. **Data.** `#get "tiers"` for step 01 — **two tiers means free and the lowest paid one** ⚑, which
    now reads the Order row; Every tier draws them all. **Step 01's tier links are Portal tier deep
    links** (`signup/{tierId}`) ⚑, the same targets as 8 Tiers' card buttons, **and prices render
@@ -1054,3 +1243,15 @@ inventing a decision it is written here as an **open question** and asked in pla
   and **10 Boxed** — both of which exist in this category.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** thirteen designs, numbered **1–13**.

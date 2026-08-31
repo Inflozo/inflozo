@@ -130,7 +130,20 @@ Three to six steps in equal cells, three or four across, each a numeral above a 
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to six steps reading `title` ≤ 80 and `body` ≤ 240. `label`, `icon`, `image`, `imageAlt`, section `body` and the section image pair kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Small 28 · Medium 34, unavailable at head None. Count per row: Three 416 · Four 306. Numerals: Above the title · None. Rule: None · Between columns. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Count per row · Numerals · Rule.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Small 28 · Medium 34, unavailable at head None |
+| Count per row | Three 416 · Four 306 |
+| Numerals | Above the title · None |
+| Rule | None · Between columns |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Count per row · Numerals · Rule.**
 
 **Editing** · **this is the category's statement and the other fourteen state only what they add to it.** `eyebrow`, `title`, `sub`, `note` and the link label edit inline on canvas with the **P0·1** toolbar — bold · italic · underline · link, the link popover carrying **Open in new tab** and rel **nofollow · noreferrer · sponsored**. `linkUrl` opens the Ghost-aware **Link Picker**, and the section link takes an optional **P0·2** icon before or after its label, off by default. **Per step, `title` and `body` edit inline in the cell**, the body as prose with the toolbar's four marks and nothing else. **The numeral is never editable.** **At Source From posts the title and body are Ghost-owned** and clicking says “Edit in Ghost”. `label` and `duration` are held by this design and edit in the item row.
 
@@ -173,7 +186,20 @@ Three to five steps in one line, each behind a 32 px marker, with a single hairl
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; three to five steps reading `title` ≤ 80 and `body` ≤ 240. Everything else kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Marker: Numeral · Dot. Connector: Through the markers · Under the row · None. Body: Shown · Hidden. Track: Content width · Full bleed. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Marker · Connector · Body.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Marker | Numeral · Dot |
+| Connector | Through the markers · Under the row · None |
+| Body | Shown · Hidden |
+| Track | Content width · Full bleed |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Marker · Connector · Body.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: at Body Hidden the step body is still edited in its item row rather than being unreachable, and **the marker, the dot and the connector are not fields** — a marker's figure is never typed. **Top divider composes with the connector and is not it**: the divider is the boundary above the section, the connector runs through the markers inside it.
 
@@ -216,7 +242,21 @@ Full-width rows: the numeral alone in a fixed gutter at the left, the title and 
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to eight steps reading `title` ≤ 80, `body` ≤ 400, `label` ≤ 16 and **`duration` ≤ 12 at Duration At the right** — one of two designs that draw it.
 
-**Controls** · Head: Centred · Flush left · None. Numeral column: Narrow 96 · Wide 160. Body measure: Wide 824 · Narrow 620. Label: Above the title · At the right of the row · None. **Duration: At the right of the row · None** — new in this pass, **disabled while Label holds that end**, with the reason shown. Rule: None · Between. **Six — the category's high-water mark, and the only design that gained a row.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Numeral column · Body measure · Label.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Numeral column | Narrow 96 · Wide 160 |
+| Body measure | Wide 824 · Narrow 620 |
+| Label | Above the title · At the right of the row · None |
+| Duration | **At the right of the row · None** — new in this pass, **disabled while Label holds that end**, with the reason shown |
+| Rule | None · Between |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own — the category's high-water mark, and the only design that gained a row. **Quick Controls: Numeral column · Body measure · Label.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **`label` and `duration` edit inline in the row's end slot**, whichever holds it — **one slot, two fields, never both** — and `body` takes 400 characters and **stops accepting characters rather than clamping**, the editor saying why.
 
@@ -259,7 +299,20 @@ One step per card on a plane with a hairline: a 44 px icon inline with the title
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to six steps reading `title`, `body` ≤ 240 and **`icon` — one of three designs that read it**.
 
-**Controls** · Head: Centred · Flush left · None. **Card padding: Compact 24 · Comfortable 32 · Spacious 40 — kept under its own name**, being the inside of the plane rather than the section's spacing. Count per row: Three 416 · Four 306. Icons: Shown · None. Cards: Surface · Ground. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Count per row · Card padding · Icons.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Card padding | **Compact 24 · Comfortable 32 · Spacious 40 — kept under its own name**, being the inside of the plane rather than the section's spacing |
+| Count per row | Three 416 · Four 306 |
+| Icons | Shown · None |
+| Cards | Surface · Ground |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Count per row · Card padding · Icons.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **`icon` is a P0·2 icon slot** — the Icon Picker on click, **size Small 20 · Medium 24** and **colour role Muted · Text** in its popover, and **an empty slot renders the numeral plate** rather than a placeholder on the published page. **The contained 1:1 upload alternative is dropped**; **accent stays refused** on a sequence mark. The 44 px box, its hover-surface fill and its radius are the design's and are not in the popover.
 
@@ -302,7 +355,20 @@ Head, prose and foot in a 416 column, the steps in the 824 beside it. A8·6's sp
 
 **Fields** · every section field except `image` and `imageAlt`, **including `body` ≤ 900 and ≤ 3 paragraphs**; two to six steps reading `title` and `body`. **`title` is required in practice** — with no title there is no `<h2>` and no accessible name, and the head column draws its prose and its foot alone, which the panel says.
 
-**Controls** · Head column: Left · Right. Title size: Medium 34 · Large 40. Count per row: One 756 · Two 400. Numerals: Shown · None. Foot: In the head column · Under the steps. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Head column · Count per row · Foot.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head column | Left · Right |
+| Title size | Medium 34 · Large 40 |
+| Count per row | One 756 · Two 400 |
+| Numerals | Shown · None |
+| Foot | In the head column · Under the steps |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Head column · Count per row · Foot.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **the section's `body` — ≤ 900 and ≤ 3 paragraphs — edits inline as prose** with the toolbar's four marks and nothing else, **paragraph breaks being content rather than a control**; and **the section `image` carries Image focus (Centre · Top · Bottom)** in the Image Picker popover, with `imageAlt` ≤ 60 beside it.
 
@@ -342,7 +408,20 @@ Head, prose and foot in a 416 column, the steps in the 824 beside it. A8·6's sp
 
 **Fields** · 1 Three Up's exactly.
 
-**Controls** · Band width: Full bleed · Inset · Head: Centred · Flush left · None · Count per row: Three · Four · Numerals: Above the title · None · Rule: None · Between columns. **Five.** **The old Band padding row is retired into Vertical spacing** — 40 · 56 · 72 at 834, 32 · 44 · 56 at 390 — rather than sitting beside it: the band is the section, so the band's padding *is* the section's vertical spacing. Universal, outside the list: **Background role** · **Vertical spacing**, resolving the band's own ladder, 44 · 64 · 88 · **Top divider**, **Background role locked at Contrast and Top divider locked at None**, both with the reason shown. **Quick Controls: Band width · Count per row · Rule.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Inset |
+| Head | Centred · Flush left · None |
+| Count per row | Three · Four |
+| Numerals | Above the title · None |
+| Rule | None · Between columns |
+| Background role (universal) | **Locked at Contrast**, with the reason shown |
+| Vertical spacing (universal) | the band's own ladder, **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390) — the old Band padding row retired into it |
+| Top divider (universal) | **Locked at None**, with the reason shown |
+
+Five controls of its own. The band is the section, so the band's padding *is* the section's vertical spacing. **Quick Controls: Band width · Count per row · Rule.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **the toolbar draws on the band's own ground** and its selection tint is the carried colour at 25% rather than the accent, which fails here at 2.3:1.
 
@@ -383,7 +462,20 @@ Two to four steps as full-width halves, the picture changing side at every step.
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to four steps reading `title`, `body`, `image` and `imageAlt` ≤ 60.
 
-**Controls** · Head: Centred · Flush left · None. Division: Even 632/632 · Text-led 504/760 · Media-led 760/504, all on a 32 px gutter. Crop: Landscape 3:2 · Square 1:1. First step's media: Left · Right. Numerals: Shown · None. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Division · Crop · First step's media.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Division | Even 632/632 · Text-led 504/760 · Media-led 760/504, all on a 32 px gutter |
+| Crop | Landscape 3:2 · Square 1:1 |
+| First step's media | Left · Right |
+| Numerals | Shown · None |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Division · Crop · First step's media.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **step `image` carries Image focus (Centre · Top · Bottom)** in the Image Picker popover — **the field does its most visible work here**, at 632 × 421 and 632 × 632 — with `imageAlt` ≤ 60 beside it. **A focal point is a field, not a control**: the crop stays a section value and there is still no per-step crop and no per-step side.
 
@@ -426,7 +518,20 @@ One line of step cards wider than the window, scrolled by the reader. A11·9's r
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to eight steps reading `title`, `body`, `image`, `imageAlt`.
 
-**Controls** · Head: Centred · Flush left · None, **Centred unavailable at Arrows Above the rail** — the pair needs the head's right end. Card width: Narrow 306 · Standard 380. Crop: Landscape 3:2 · Square 1:1 · None. Numerals: Shown · None. Arrows: In the margins · Above the rail. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Card width · Crop · Arrows.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None, **Centred unavailable at Arrows Above the rail** — the pair needs the head's right end |
+| Card width | Narrow 306 · Standard 380 |
+| Crop | Landscape 3:2 · Square 1:1 · None |
+| Numerals | Shown · None |
+| Arrows | In the margins · Above the rail |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Card width · Crop · Arrows.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **step `image` carries Image focus** in the Image Picker popover; **the two arrows are A1·14 icon buttons and their glyphs come from the Icon Picker** at 20 px, colour role Text; and **“How it works, scrollable”, “Scroll left” and “Scroll right” are theme translation-catalog strings**, not authored fields — nothing visitor-facing here is fixed English.
 
@@ -473,7 +578,20 @@ Two to four steps with the numerals at display size. **The only place in A13 the
 
 **Fields** · `eyebrow`, `title` — **required in practice, and fixed at Large 40 when the head is shown** — `note`, the link pair; two to four steps reading `title` ≤ 80 and `body` ≤ 240. **`sub` is kept and not drawn**, the one section field this design holds.
 
-**Controls** · Head: Shown · None. Numeral size: Large 72 · Display 104, **Display unavailable at four steps**. Numeral position: Above the title · Beside the title, **Beside at Large 72 only**. Alignment: Flush left · Centred, **Centred disables Rule**. Rule: None · Between. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Numeral size · Numeral position · Alignment.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Shown · None |
+| Numeral size | Large 72 · Display 104, **Display unavailable at four steps** |
+| Numeral position | Above the title · Beside the title, **Beside at Large 72 only** |
+| Alignment | Flush left · Centred, **Centred disables Rule** |
+| Rule | None · Between |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Numeral size · Numeral position · Alignment.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: nothing. **The figure is not a field at any size** — `count-up` is refused with it, a numeral being a position rather than a statistic — and `sub` is held by this design, edited in the sidebar and not drawn.
 
@@ -516,7 +634,20 @@ The whole sequence inside one `surface` panel with a hairline, the steps as hair
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to six steps reading `title`, `body` and **`icon` — one of three designs that read it**.
 
-**Controls** · Head: Centred · Flush left · None. **Panel padding: Compact 32 · Comfortable 48 · Spacious 64 — kept under its own name**, being the inside of the panel rather than the section's spacing. Steps: Stacked rows · Two columns. Icons: Shown · None. Divider: Hairlines · None. **Five.** **Background role is not locked here**, the panel being a plane inside the section rather than the section's ground: at Contrast the panel lifts to the carried colour at 10% and its hairline to 18%, and **a Ground panel stays refused**. Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Panel padding · Steps · Icons.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Panel padding | **Compact 32 · Comfortable 48 · Spacious 64 — kept under its own name**, being the inside of the panel rather than the section's spacing |
+| Steps | Stacked rows · Two columns |
+| Icons | Shown · None |
+| Divider | Hairlines · None |
+| Background role (universal) | Background · Surface · Contrast — **not locked here**, the panel being a plane inside the section rather than the section's ground; at Contrast the panel lifts to the carried colour at 10% and its hairline to 18%, and **a Ground panel stays refused** |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Panel padding · Steps · Icons.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **`icon` is a P0·2 icon slot** with the size (Small 20 · Medium 24) and colour role (Muted · Text) popover; **an empty slot renders the numeral plate in the 44 px box and the right-hand figure is kept**, unlike 4 Cards. **The contained 1:1 upload alternative is dropped**; accent stays refused.
 
@@ -559,7 +690,20 @@ The steps as a list of tabs down the left, one panel at a time on the right. **T
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; three to six steps reading `title`, `body`, `label` ≤ 16, `image` and `imageAlt`. **The only design where a step's `label` and its `image` are drawn together.**
 
-**Controls** · Head: Centred · Flush left · None. Tab column: Narrow 306 · Wide 416. Panel media: Landscape 3:2 · Square 1:1 · None. Tabs: Numbered · Plain. Marker: Accent bar · Fill. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Tab column · Panel media · Marker.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Tab column | Narrow 306 · Wide 416 |
+| Panel media | Landscape 3:2 · Square 1:1 · None |
+| Tabs | Numbered · Plain |
+| Marker | Accent bar · Fill |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Tab column · Panel media · Marker.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **the tab titles are the step titles and edit inline in the tab**, the panel updating as they are typed; `label` and `body` edit inline in the panel; **step `image` carries Image focus** in the Image Picker popover. **Selecting a tab in the editor is selection rather than a control** — **P0·6**, the editor state switcher, is what draws every panel at once.
 
@@ -604,7 +748,20 @@ The steps as a list of tabs down the left, one panel at a time on the right. **T
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; two to four steps reading `title`, `body` ≤ 240, `image`, `imageAlt` ≤ 60.
 
-**Controls** · Head: Centred · Flush left · None. Count per row: Three 416 · Four 306. Crop: Landscape 3:2 · Square 1:1 · Portrait 4:5, **Portrait unavailable at Count Four**. Numerals: On the image · Above the title · None. Body: Shown · Hidden. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Count per row · Crop · Numerals.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | Three 416 · Four 306 |
+| Crop | Landscape 3:2 · Square 1:1 · Portrait 4:5, **Portrait unavailable at Count Four** |
+| Numerals | On the image · Above the title · None |
+| Body | Shown · Hidden |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Count per row · Crop · Numerals.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **step `image` carries Image focus (Centre · Top · Bottom)** in the Image Picker popover — **and this design's old answer, “the answer to a badly cropped picture is a different upload”, is withdrawn** — while the crop stays a section value with no per-step crop.
 
@@ -647,7 +804,20 @@ A 96 to 144 px band: a lead-in sentence, then three to five pills with a chevron
 
 **Fields** · **`title` ≤ 104, drawn as one sentence at 15 px in `text` rather than as a heading**, and the link pair; three to five steps reading `title` ≤ 80 and `icon`. **Kept and never drawn: `eyebrow`, `sub`, `note`, section `body`, the section image pair, and per-step `body`, `label`, `image` and `imageAlt`** — **the most held fields of any design in A13**, and the panel names the count.
 
-**Controls** · Lead: Shown · None. Separator: Chevron · Hairline · None, **disabled at ≤ 767**. Pills: Filled · Bare. Icons: Shown · None. Width: Content · Full bleed. **Five.** **The band's own 32 · 44 · 56 is retired into Vertical spacing** and the band still measures 96 · 120 · 144; **Width remains the only edge control this design has.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving the band's own ladder, 32 · 44 · 56, giving a band of 96 · 120 · 144 · **Top divider**, **Top divider locked at None**, the band drawing both of its own edges. **Quick Controls: Separator · Pills · Icons.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Lead | Shown · None |
+| Separator | Chevron · Hairline · None, **disabled at ≤ 767** |
+| Pills | Filled · Bare |
+| Icons | Shown · None |
+| Width | Content · Full bleed |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | the band's own ladder, **32 · 44 · 56**, giving a band of 96 · 120 · 144 |
+| Top divider (universal) | **Locked at None**, the band drawing both of its own edges |
+
+Five controls of its own. **Width remains the only edge control this design has.** **Quick Controls: Separator · Pills · Icons.**
 
 **Editing** · **the lead-in sentence — `title` ≤ 104, drawn at 15 px and never as a heading — and the link label edit inline with P0·1**; `linkUrl` opens the **Link Picker**; the section link takes an optional **P0·2** icon. **Per step the pill's title edits inline in the pill**, and **a title too long for the row wraps rather than being clamped or truncated** — the stylesheet cannot see how long a title is, so the pill grows and the panel advises about 24 characters. **`icon` is a P0·2 icon slot** with the size (Small 20 · Medium 24) and colour role (Muted · Text) popover, drawn as a glyph with no box; **an empty slot draws the numeral in the glyph's 16 px place**, so that pill shows its figure twice and both are kept. **`eyebrow`, `sub` and `note` are held by this design and are not editable here** — there is nowhere on the band to draw them. The numeral is never editable.
 
@@ -690,7 +860,20 @@ Four to eight steps as hairline rows with the numeral, the label, the title and 
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; four to eight steps reading `title`, `body`, `label` and **`duration` ≤ 12 at Columns + duration** — the design the field was added for.
 
-**Controls** · Head: Centred · Flush left · None. **Columns: Number + title + body · Number + label + title + body · Number + title + body + duration** — the third value new in this pass, at **48 · 340 · 702 · 110** with the duration at the row's right end; **a row carries the label or the duration, never both.** Density: Compact · Comfortable. Rule: Hairlines · None. Body: Shown · Hidden. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: Columns · Density · Body.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Columns | **Number + title + body · Number + label + title + body · Number + title + body + duration** — the third value new in this pass, at **48 · 340 · 702 · 110** with the duration at the row's right end; **a row carries the label or the duration, never both** |
+| Density | Compact · Comfortable |
+| Rule | Hairlines · None |
+| Body | Shown · Hidden |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: Columns · Density · Body.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **`title`, `body`, `label` and `duration` edit inline in their columns** — **a column is a place, not a field**, so an empty one stays empty rather than showing a placeholder.
 
@@ -733,7 +916,20 @@ A sticky list of the steps at the left, the steps themselves at full length at t
 
 **Fields** · every section field except `image` and `imageAlt`, **including `body` ≤ 900 — one of two designs that read it**; four to eight steps reading `title` ≤ 80, **`body` ≤ 400 — one of two designs with that ceiling** — and `label` ≤ 16.
 
-**Controls** · Head: Centred · Flush left · None. List column: Left · Right. List: Numbered · Plain. Body measure: Wide 824 · Narrow 620. Marker: Accent bar · Weight only. **Five.** Universal, outside the list: **Background role** · **Vertical spacing**, resolving 64 · 96 · 132 · **Top divider**. **Quick Controls: List column · Body measure · Marker.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| List column | Left · Right |
+| List | Numbered · Plain |
+| Body measure | Wide 824 · Narrow 620 |
+| Marker | Accent bar · Weight only |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Five controls of its own. **Quick Controls: List column · Body measure · Marker.**
 
 **Editing** · the category's, stated at 1 Three Up, plus: **the section's `body` — ≤ 900 and ≤ 3 paragraphs — edits inline as prose**; per step `title`, `body` and `label` edit inline in the right column, and **the list row is not a second copy of the title** — it renders the same field and updates as it is typed. **“Steps”, the sticky list's name, is a theme translation-catalog string.**
 
@@ -1003,3 +1199,15 @@ Every change below carries the **name** of the rule or the platform fact that re
 
 1. **The free designs are 1 Three Up and 3 Rows** — *the two free designs are the owner's choice*. A grid and a stack: between them a free site can draw two steps or eight, short steps or long ones, with no picture, no icon and no extra prose needed for either to look finished. The pairs he refused: **1 with 14 Index** (the ledger looks unfinished below four steps, leaving a three-step site one usable free design) and **1 with 2 Track** (the track caps at five steps, so the free tier would have nothing for a long process).
 2. **11 Walkthrough draws its two tabs and the panel advises** — *no design ever turns into another design*. At two steps the design draws two tabs and two panels and the line reads "two tabs read as a toggle; 7 Alternating Media shows both at once" — advice the site can ignore. The alternatives were refused: greying the design out in the picker would stop an editor choosing it before typing content, and stacking the two panels open until a third step exists would change the section's shape as content is typed, which is the behaviour this pass exists to delete. **This closes the two-step question for the category.**
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

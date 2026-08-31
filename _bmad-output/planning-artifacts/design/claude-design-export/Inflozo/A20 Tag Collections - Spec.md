@@ -321,9 +321,21 @@ draws are the roster and the repeating-items table on the proof frame.
   five inline-editable, the URL on the Link Picker and the label taking an optional icon. Read:
   `name`, `url`, `count.posts`, and `accent_color` at Tag colour: Tag's own ⚑. Not read:
   `description`, `feature_image`.
-- **6 · Controls.** Heading · Tag size Compact 13 · Comfortable 15 · Spacious 17 · Counts Off ·
-  Number · Posts · Alignment Left · Centre · All topics link Off · On · **Tag colour Theme · Tag's
-  own** ⚑. **Six.** Quick: Tag size, Counts, Alignment, All topics link. **Cut:** pill shape, a hash
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Tag size | Compact 13 · Comfortable 15 · Spacious 17 |
+  | Counts | Off · Number · Posts |
+  | Alignment | Left · Centre |
+  | All topics link | Off · On |
+  | Tag colour | Theme · Tag's own |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Six.** Quick: Tag size, Counts, Alignment, All topics link. **Cut:** pill shape, a hash
   prefix, which tags (the Data group's).
 - **7 · Data.** `{{#get "tags" filter="visibility:public" include="count.posts" limit=12
   order="count.posts desc"}}`. Designed for 6–18; correct at 1–40. **0 → no section** ⚑ · **1 → one
@@ -364,9 +376,22 @@ design draws changed.
   three 235 · ≤ 767 two 165, image 110, name 17 ⚑. Per row stops applying below 834.
 - **5 · Fields.** Head four, inline-editable. Read: `name`, `url`, `count.posts`, `feature_image` opt,
   `accent_color` at Tag colour ⚑.
-- **6 · Controls.** Heading · Per row Three · Four · Five · Image ratio Landscape 3:2 · Wide 16:9 ·
-  Square 1:1 · Portrait 4:5 · Counts · All topics link · **Tag colour** ⚑. **Six.** Quick: Per row,
-  Image ratio, Counts. **Cut:** a per-tag ratio, a hover zoom, a card plane, **an Image focus** ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Per row | Three · Four · Five |
+  | Image ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+  | Counts | Off · Number · Posts |
+  | All topics link | Off · On |
+  | Tag colour | Theme · Tag's own |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Six.** Quick: Per row, Image ratio, Counts. **Cut:** a per-tag ratio, a hover zoom, a card
+  plane, **an Image focus** ⚑.
 - **7 · Data.** Designed for 4, 8, 12; correct at 1–20. **0 → no section** · **1 → one cell-width
   tile, left-aligned, not stretched** ⚑ · a count that is not a multiple of the columns leaves a
   short last row, left-aligned ⚑.
@@ -401,9 +426,22 @@ number picker, 1–20**, with Ghost's 100-tag cap stated. Nothing this design dr
   32, two 333 · ≤ 767 inset 24, one 302, name 20, min height released ⚑.
 - **5 · Fields.** Head four, inline-editable; `linkLabel` and `linkUrl` are read at All topics link:
   On. Read: `name`, `url`, `count.posts`, `description` opt 300 ch.
-- **6 · Controls.** Heading · Per row Two · Three · Four · Descriptions Off · Two lines · Full ·
-  Plane Surface · Hairline · Counts · **All topics link Off · On** ⚑. **Six.** Quick: Per row,
-  Descriptions, Plane. **Cut:** a card image, a card shadow, a per-card colour.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Per row | Two · Three · Four |
+  | Descriptions | Off · Two lines · Full |
+  | Plane | Surface · Hairline |
+  | Counts | Off · Number · Posts |
+  | All topics link | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Six.** Quick: Per row, Descriptions, Plane. **Cut:** a card image, a card shadow, a per-card
+  colour.
 - **7 · Data.** Designed for 3, 6, 9; correct at 1–12. **0 → no section, plane included** ⚑ · **1 →
   one card at cell width, the plane keeping the full content width** ⚑.
 - **8 · Empty state.** No `description` → name and count only; **the card keeps the row's height and
@@ -434,9 +472,21 @@ own.
   rows 754, thumb 56 · ≤ 767 rows 350, thumb 48, count under the description ⚑.
 - **5 · Fields.** Head four, inline-editable. Read: `name`, `url`, `count.posts`, `description`
   opt, `feature_image` opt — **the only design in A20 that reads both optional Ghost fields** ⚑.
-- **6 · Controls.** Heading · Thumbnails Off · On · Descriptions Off · On · Density Compact 10 ·
-  Comfortable 18 · Spacious 26 · Counts. **Five.** Quick: Thumbnails, Descriptions, Density. **Cut:**
-  a per-row sort, a divider style, an alignment, a thumbnail shape, **the chevron** ⚑, an Image focus.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Thumbnails | Off · On |
+  | Descriptions | Off · On |
+  | Density | Compact 10 · Comfortable 18 · Spacious 26 |
+  | Counts | Off · Number · Posts |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five.** Quick: Thumbnails, Descriptions, Density. **Cut:** a per-row sort, a divider style, an
+  alignment, a thumbnail shape, **the chevron** ⚑, an Image focus.
 - **7 · Data.** Designed for 4–10; correct at 1–20. **0 → no section** · **1 → one row between two
   hairlines**, no hand-off ⚑. Beyond 20 the panel suggests 7 Index.
 - **8 · Empty state.** No `description` → name and count only, name centred against the thumb, **no
@@ -468,10 +518,20 @@ link opens the Link Picker and takes an icon. Five controls of its own.
   < 1200 head above at full width, intro clamped 620 · 834 two 357 · ≤ 767 one 350.
 - **5 · Fields.** Head four, inline-editable; `introText` is effectively required ⚑. Read: `name`,
   `url`, `count.posts`.
-- **6 · Controls.** Head width Narrow 264 · Standard 320 · Wide 384 · List columns One · Two ·
-  Three · Counts · All topics link. **Four.** Quick: Head width, List columns, Counts. **Cut:** a
-  Heading control ⚑, a divider style, a head alignment, descriptions, **a second ground for the head
-  column** ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Head width | Narrow 264 · Standard 320 · Wide 384 |
+  | List columns | One · Two · Three |
+  | Counts | Off · Number · Posts |
+  | All topics link | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Four.** Quick: Head width, List columns, Counts. **Cut:** a Heading control ⚑, a divider
+  style, a head alignment, descriptions, **a second ground for the head column** ⚑.
 - **7 · Data.** Designed for 8–18; correct at 1–30. **0 → no section** · **1–3 → one column, the
   second not drawn and not widened** ⚑ · the list fills column one first, down then across ⚑.
 - **8 · Empty state.** No `introText` → the head column carries the heading and link only and keeps
@@ -499,9 +559,22 @@ opens the Link Picker and takes an icon; the introduction, still effectively req
   ≤ 767 band padding 56, head stacks, link under the heading ⚑, bleed kept.
 - **5 · Fields.** Head four, inline-editable, all in `onContrast`; `linkLabel`/`linkUrl` effectively
   required ⚑. Read: `name`, `url`, `count.posts`, `accent_color` at Tag colour ⚑.
-- **6 · Controls.** Heading · Tag size · Counts · Band edges Full bleed · Inset · **All topics link
-  Off · On** ⚑ · **Tag colour** ⚑. **Six.** Quick: Tag size, Counts, Band edges. **Cut:** a band
-  colour ⚑, an accent on the band, an alignment.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Tag size | Compact 13 · Comfortable 15 · Spacious 17 |
+  | Counts | Off · Number · Posts |
+  | Band edges | Full bleed · Inset |
+  | All topics link | Off · On |
+  | Tag colour | Theme · Tag's own |
+  | Background role (universal) | **Contrast (locked)** — the inverted band is the design; the panel names 1 Chips as the design to place for a plain pill row |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade (drawn **above** the band, never inside it) |
+
+  **Six.** Quick: Tag size, Counts, Band edges. **Cut:** a band colour ⚑, an accent on the band,
+  an alignment.
 - **7 · Data.** Designed for 8–18; correct at 1–40. **0 → the band goes with the section** ⚑ ·
   **1 → a full-height band carrying one pill** ⚑, which the panel calls out.
 - **8 · Empty state.** No `introText` → heading-only, band height unchanged. No `linkUrl` → the link
@@ -543,10 +616,21 @@ its Ghost version requirement.** **Show is a number picker, 1–40.** Nothing th
 - **5 · Fields.** Eyebrow, heading and intro, inline-editable. **The letter heads are derived from the
   names and are not authored strings** ⚑. **No all-topics link.** Read: `name`, `url`, `count.posts`.
   **No optional Ghost field is read**, which is why it is correct at forty tags.
-- **6 · Controls.** Heading · Columns Three · Four · Five · Group by Initial · Nothing · Counts.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Columns | Three · Four · Five |
+  | Group by | Initial · Nothing |
+  | Counts | Off · Number · Posts |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
   **Four.** Quick: Columns, Group by, Counts. **Cut:** sortable columns, a letter jump-bar, an
-  all-topics link. **At Group by: Initial the design declares `group-headings`** ⚑ *29 August 2026*,
-  and the row says so; at Nothing no module is declared.
+  all-topics link. **At Group by: Initial the design declares `group-headings`** ⚑ *29 August
+  2026*, and the row says so; at Nothing no module is declared.
 - **7 · Data.** `order="name asc"` with `limit` from the Data group's *Show*, **a number picker whose
   ceiling here is 100** ⚑ *29 August 2026* — `limit="all"` trips Ghost's own warning and silently
   returns 100 anyway, so the panel states the cap and the truncation rather than promising every tag.
@@ -594,9 +678,21 @@ The frame gained the flat no-JavaScript state; nothing else it draws changed.
 - **5 · Fields.** `eyebrowText` ⚑ and `linkLabel`/`linkUrl`, inline-editable, the URL on the Link
   Picker and the label taking an optional icon. **No `headingText` and no `introText`** ⚑ — both are
   kept, unread, for the design the user switches to next. Read: `name`, `url`, `count.posts`.
-- **6 · Controls.** Type size Compact 44 · Comfortable 56 · Spacious 72 · Label Off · On · Counts ·
-  Rules Off · On · **All topics link Off · On** ⚑ *29 August 2026*. **Five.** Quick: Type size, Counts,
-  Rules. **Cut:** alignment, a heading, a per-line size, an auto-fit ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Type size | Compact 44 · Comfortable 56 · Spacious 72 |
+  | Label | Off · On |
+  | Counts | Off · Number · Posts |
+  | Rules | Off · On |
+  | All topics link | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five.** Quick: Type size, Counts, Rules. **Cut:** alignment, a heading, a per-line size, an
+  auto-fit ⚑.
 - **7 · Data.** Designed for 4–10; correct at 1–14. **0 → no section** · **1 → one ruled line at full
   display size** ⚑ · above 10 the section is taller than a screen and the panel suggests 7 ⚑.
 - **8 · Empty state.** **A tag name is never absent in Ghost, so this design has no missing-field
@@ -633,9 +729,22 @@ out**.
 - **5 · Fields.** Eyebrow, heading and intro, inline-editable. **The arrows' labels are theme
   translation-catalog strings** ⚑, not authored fields. Read: `name`, `url`, `count.posts`,
   `feature_image` opt, `accent_color` at Tag colour ⚑.
-- **6 · Controls.** Heading · Cell width Compact 240 · Comfortable 306 · Spacious 416 · Image ratio ·
-  Controls Arrows · Dots · Both · **Tag colour** ⚑ · **Counts Off · Number · Posts** ⚑ *29 August 2026*.
-  **Six.** Quick: Cell width, Image ratio, Controls. **Cut:** autoplay ⚑, loop, an interval, a peek amount, an Image focus ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Cell width | Compact 240 · Comfortable 306 · Spacious 416 |
+  | Image ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+  | Controls | Arrows · Dots · Both |
+  | Tag colour | Theme · Tag's own |
+  | Counts | Off · Number · Posts |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Six.** Quick: Cell width, Image ratio, Controls. **Cut:** autoplay ⚑, loop, an interval, a
+  peek amount, an Image focus ⚑.
 - **7 · Data.** Designed for 6–14; correct at 1–20. **0 → no section** · **1 → one tile, no arrows,
   no dots** ⚑ · **when the fetched set fits the track, arrows disable and dots are not drawn** ⚑ —
   the design does not become a grid. At Hand-picked **picked order is track order**, which is the one
@@ -678,10 +787,22 @@ older Ghost. **Show is a number picker, 1–20.** Nothing this design draws chan
   is derived from `tagOrder`** ⚑ — "Most published" at Most posts first, "First alphabetically" at
   A–Z, "Featured" at Ghost's order, **and blank at Fewest first and at Hand-picked**, where no honest
   phrase exists. Read: `name`, `url`, `count.posts`; lead only: `description` opt, `feature_image` opt.
-- **6 · Controls.** Heading · Lead side Left · Right · Lead ratio Landscape · Square · Portrait
-  (**Wide disabled with its reason shown** ⚑) · Lead label Off · On · Counts. **Five.** Quick: Lead
-  side, Lead ratio, Lead label. **Cut:** a second lead, a lead excerpt length, an Image focus ⚑, **a
-  featured-tag control** — which Hand-picked now answers as a source ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Lead side | Left · Right |
+  | Lead ratio | Landscape · Square · Portrait (**Wide disabled with its reason shown**) |
+  | Lead label | Off · On |
+  | Counts | Off · Number · Posts |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five.** Quick: Lead side, Lead ratio, Lead label. **Cut:** a second lead, a lead excerpt
+  length, an Image focus ⚑, **a featured-tag control** — which Hand-picked now answers as a source
+  ⚑.
 - **7 · Data.** **The lead is the first item of the ordered set** ⚑, and **at Hand-picked that is the
   first reference**, which the panel says under the list. Designed for 5–10; correct at 1–14. **0 →
   no section** · **1 → the lead alone keeping its 624 column, picture not widened** ⚑ · 2 → a lead
@@ -719,9 +840,20 @@ spacing**. Five controls of its own.
 - **5 · Fields.** Head four plus `colTopic`, `colCovers`, `colPosts` ⚑ (defaults "Topic", "What it
   covers", "Posts"), **all seven inline-editable — the three column labels in place at the head of
   their column** ⚑. Read: `name`, `url`, `count.posts`, `description` opt.
-- **6 · Controls.** Heading · Column head Off · On · Descriptions Off · One line · Full · Density
-  Compact 10 · Comfortable 15 · Spacious 22. **Four.** Quick: Column head, Descriptions, Density.
-  **Cut:** sortable columns ⚑, a fourth column, zebra striping, column widths, an all-topics link.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Column head | Off · On |
+  | Descriptions | Off · One line · Full |
+  | Density | Compact 10 · Comfortable 15 · Spacious 22 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Four.** Quick: Column head, Descriptions, Density. **Cut:** sortable columns ⚑, a fourth
+  column, zebra striping, column widths, an all-topics link.
 - **7 · Data.** Designed for 5–20; correct at 1–40. **0 → no section, plane included** · **1 → a
   one-row table that keeps its column head** ⚑.
 - **8 · Empty state.** No `description` → an empty middle column, **the row keeps its 44 px
@@ -753,10 +885,21 @@ sorting is still refused.
 - **4 · Responsive.** 1440 box 1,296 inset 40, head over a rule, three 391 columns on a 32 gutter,
   lines 17/44 · 834 inset 32, two 313 · ≤ 767 inset 24, one 300, head stacked, rule kept.
 - **5 · Fields.** Head four, inline-editable, all inside the box. Read: `name`, `url`, `count.posts`.
-- **6 · Controls.** Box inset Compact 28 · Comfortable 40 · Spacious 56 · Columns Two · Three ·
-  Four · Counts · All topics link. **Four.** Quick: Box inset, Columns, Counts. **Cut:** a box fill
-  ⚑, a box shadow ⚑, a border weight, a corner radius, and **the hand-off itself** ⚑ *29 August 2026*
-  — deleted, not turned into a control.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Box inset | Compact 28 · Comfortable 40 · Spacious 56 |
+  | Columns | Two · Three · Four |
+  | Counts | Off · Number · Posts |
+  | All topics link | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Four.** Quick: Box inset, Columns, Counts. **Cut:** a box fill ⚑, a box shadow ⚑, a border
+  weight, a corner radius, and **the hand-off itself** ⚑ *29 August 2026* — deleted, not turned
+  into a control.
 - **7 · Data.** Designed for 8–24; **correct at 1–40** ⚑ *29 August 2026*. **0 → no section** ·
   **1–3 → the box is drawn with the one column the set fills**, head, link, hairline and spacing
   unchanged, and **the panel advises that 1 Chips reads better at that count** ⚑ — at Hand-picked too ·
@@ -796,10 +939,21 @@ lost its hand-off panel and gained a three-topics-in-the-box panel.
   name 24 ⚑ — **shorter, not just narrower**.
 - **5 · Fields.** Eyebrow, heading and intro, inline-editable. **No all-topics link.** Read: `name`,
   `url`, `count.posts`, `feature_image` opt.
-- **6 · Controls.** Heading · Tile height Compact 260 · Comfortable 340 · Spacious 440 · Name size
-  Compact 22 · Comfortable 26 · Spacious 32 · Counts · **Scrim Light · Medium · Strong** ⚑. **Five.**
-  Quick: Tile height, Name size, Scrim. **Cut:** a ratio ⚑, a focal point and an Image focus ⚑, a
-  per-tile height, a hover zoom.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Heading | Label · Heading · Heading and intro · None |
+  | Tile height | Compact 260 · Comfortable 340 · Spacious 440 |
+  | Name size | Compact 22 · Comfortable 26 · Spacious 32 |
+  | Counts | Off · Number · Posts |
+  | Scrim | Light · Medium · Strong |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five.** Quick: Tile height, Name size, Scrim. **Cut:** a ratio ⚑, a focal point and an Image
+  focus ⚑, a per-tile height, a hover zoom.
 - **7 · Data.** **Show is expected at Four or fewer** ⚑. Designed for 2–4; correct at 1–6. **0 → no
   section** · **1 → one tile at the full 1,296 width** ⚑ · **5 → three and two, the second row at
   636** ⚑. Hand-picked is the closest this design has to choosing which two or three it shows.
@@ -839,10 +993,21 @@ its own.
 - **5 · Fields.** `eyebrowText` opt, default "Topics" ⚑, and `linkLabel`/`linkUrl`, all
   inline-editable, the URL on the Link Picker and the label taking an optional icon. **Reads neither
   `headingText` nor `introText`** ⚑. Read: `name`, `url`, **and `count.posts` at Counts Number** ⚑.
-- **6 · Controls.** Label Off · On · Rules Above and below · Above only · Below only · None · All
-  topics link · **Counts Off · Number** ⚑ · **Separator Middot · Slash · Icon** ⚑. **Five.** Quick:
-  Label, Separator, All topics link. **Cut:** tag size, alignment, a clamp ⚑, Counts: Posts (a
-  spelled-out count on a one-line bar is the reason this design exists) ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Label | Off · On |
+  | Rules | Above and below · Above only · Below only · None |
+  | All topics link | Off · On |
+  | Counts | Off · Number |
+  | Separator | Middot · Slash · Icon |
+  | Background role (universal) | **Background (locked)** — the category's only `transparent` ground; the panel names 15 Filter Bar as the design to place for a bar on a surface |
+  | Vertical spacing (universal) | Compact 40 · Comfortable 64 · Spacious 96 |
+  | Top divider (universal) | **Disabled** where Rules already draws that hairline |
+
+  **Five.** Quick: Label, Separator, All topics link. **Cut:** tag size, alignment, a clamp ⚑,
+  Counts: Posts (a spelled-out count on a one-line bar is the reason this design exists) ⚑.
 - **7 · Data.** `{{#get "tags" filter="visibility:public" limit=9}}`, **plus
   `include="count.posts"` at Counts Number** ⚑. Designed for 6–10; correct at 1–20. **0 → no section,
   rules included** · **1 → one name, no separator** ⚑ · **many → the line wraps and is not clamped**
@@ -889,10 +1054,22 @@ this design draws changed.
 - **5 · Fields.** `eyebrowText` opt, default "Filter" ⚑, and `allChipLabel` opt 16 ch, default "All"
   ⚑, **both inline-editable**. **No heading, no intro, no all-topics link** ⚑. Read: `name`, `url`,
   `count.posts`, `accent_color` at Tag colour ⚑; from the route, the current tag slug ⚑.
-- **6 · Controls.** Label · All chip Off · On · Counts Off · Number · Bar Surface · Hairline · **Tag
-  colour** ⚑. **Five.** Quick: Label, All chip, Counts. **Cut:** sticky ⚑, a chip shape, a
-  multi-select, a clear-filter control, **an accent for the active chip** — the accent is the active
-  mark and is not a choice ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Label | Off · On |
+  | All chip | Off · On |
+  | Counts | Off · Number |
+  | Bar | Surface · Hairline |
+  | Tag colour | Theme · Tag's own |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 40 · Comfortable 64 · Spacious 96 |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five.** Quick: Label, All chip, Counts. **Cut:** sticky ⚑, a chip shape, a multi-select, a
+  clear-filter control, **an accent for the active chip** — the accent is the active mark and is
+  not a choice ⚑.
 - **7 · Data.** Same query plus `{{#match}}` on the current route ⚑. Designed for 5–12; correct at
   1–20. **0 → no section** · **1 → All plus one chip, drawn** ⚑ · many → the bar scrolls; nothing is
   clamped or hidden behind a "more". At Hand-picked the shortlist is the bar and **the active mark
@@ -1196,3 +1373,15 @@ his words' effect, and applied throughout this document and the frames.
 
 **Nothing else was decided here.** Where this pass could not apply a ruling without inventing a decision
 it is written as a finding, not as a fact.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

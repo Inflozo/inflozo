@@ -127,7 +127,21 @@ Three to twelve people, photo above name and role, three to five across. The def
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; three to twelve people reading `name`, `role`, `photo`, `url`. `bio`, `group`, `body`, `image`, `imageAlt` kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Small 28 · Medium 34, unavailable at head None. Photo size: Small 56 · Medium 72 · Large 96, **Large unavailable at Count Five**. Count per row: Three · Four · Five. Cells: Flush left · Centred. Socials: Off · Shown, **new this pass**. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role — Contrast is available here and brings 7 Contrast Band’s derived values with it, no second upload needed; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Small 28 · Medium 34, unavailable at head None |
+| Photo size | Small 56 · Medium 72 · Large 96, **Large unavailable at Count Five** |
+| Count per row | Three · Four · Five |
+| Cells | Flush left · Centred |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast — Contrast is available here and brings 7 Contrast Band’s derived values with it, no second upload needed |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. In Ghost mode a name links to the author page **only where the site’s routes publish author pages**, and nothing is generated where they do not.
 
@@ -174,7 +188,22 @@ One person per card on a plane with a hairline. **The only design in A12 with a 
 
 **Fields** · 1 Grid's, plus `bio` ≤ 240.
 
-**Controls** · Head · Card padding: Compact 24 · Comfortable 32 · Spacious 40 · Count per row: Three · Four · Photo size: Small 56 · Medium 72 · Cards: Surface · Ground. Bios: Shown · Hidden and Socials: Off · Shown, **both new this pass**. **Seven of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Card padding keeps its own row**, because it measures the card rather than the section.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Card padding | Compact 24 · Comfortable 32 · Spacious 40 |
+| Count per row | Three · Four |
+| Photo size | Small 56 · Medium 72 |
+| Cards | Surface · Ground |
+| Bios | Shown · Hidden |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Seven controls of its own, plus the universal trio and the Data group. **Card padding keeps its own row**, because it measures the card rather than the section.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **Bios Hidden is the only way to remove a Ghost bio**: it arrives with the author record and deleting it there is not an option, and the card keeps its plane and re-equalises without it.
 
@@ -223,7 +252,22 @@ Full-width rows: photograph at the left, name, role and the longest bio in the c
 
 **Fields** · 1 Grid's, plus `bio` ≤ 400.
 
-**Controls** · Head · Photo size: Small 56 · Medium 72 · **Large 96, the default** · Bio measure: Wide 824 · Narrow 620 · Meta: Under the name · At the right of the row · Rule: None · Between. Bios: Shown · Hidden and Socials: Off · Shown, **both new this pass** — at Bios Hidden a row is a photograph, a name and a role, and the panel advises 1 Grid. **Seven of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Photo size | Small 56 · Medium 72 · **Large 96, the default** |
+| Bio measure | Wide 824 · Narrow 620 |
+| Meta | Under the name · At the right of the row |
+| Rule | None · Between |
+| Bios | Shown · Hidden — at Hidden a row is a photograph, a name and a role, and the panel advises 1 Grid |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Seven controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **Bios Hidden is the only way to drop a Ghost bio**, which arrives with the author record; the widest measure in A12 is also the one that clamps an unlimited Ghost bio latest, at four lines.
 
@@ -270,7 +314,21 @@ The about paragraphs and a group photograph above the team. **The design the cat
 
 **Fields** · `eyebrow`, `title`, **`body` ≤ 900 and ≤ 3 paragraphs**, `image`, `imageAlt`, `note`, the link pair; up to twelve people reading `name`, `role`, `photo`, `url`. `sub`, `bio`, `group` kept, not drawn.
 
-**Controls** · Head · Story: Above the photograph · Beside it · Photograph: Band 3:1 · Landscape 3:2 · None · Team count per row: Four · Five · Team photo size: Small 56 · Medium 72. Socials: Off · Shown, **new this pass**. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Image focus is live on `image` as well as on every `photo`** — a Band 3:1 crop of a landscape group shot discards most of its height, and Top is what keeps the faces.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Story | Above the photograph · Beside it |
+| Photograph | Band 3:1 · Landscape 3:2 · None |
+| Team count per row | Four · Five |
+| Team photo size | Small 56 · Medium 72 |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group. **Image focus is live on `image` as well as on every `photo`** — a Band 3:1 crop of a landscape group shot discards most of its height, and Top is what keeps the faces.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **The story is always authored at both sources** — nothing in Ghost holds an about paragraph, and the group photograph is a site upload.
 
@@ -319,7 +377,21 @@ Head and story in a 416 column, the people in the 824 beside it. A8·6's split, 
 
 **Fields** · every section field except `image` and `imageAlt`, including `body` ≤ 900; three to twelve people. `title` required in practice.
 
-**Controls** · Head column: Left · Right · Title size: Medium 34 · Large 40 · Count per row: Two · Three · Four · Photo size: Small 56 · Medium 72 · Foot: In the head column · Under the people. Socials: Off · Shown, **new this pass**. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head column | Left · Right |
+| Title size | Medium 34 · Large 40 |
+| Count per row | Two · Three · Four |
+| Photo size | Small 56 · Medium 72 |
+| Foot | In the head column · Under the people |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **The story in the head column is always authored**, and it edits inline as prose with the P0·1 toolbar at 16/1.7 on a 416 measure.
 
@@ -368,7 +440,21 @@ Two or three editorial portraits at a named crop, the name under the image or se
 
 **Fields** · 1 Grid's, two or three people. Crop family.
 
-**Controls** · Head · Count: Two · Three · Crop: Portrait 4:5 · Square 1:1 · Caption: Under the image · Overlaid · Name size: Medium 20 · Large 27. Socials: Off · Shown, **new this pass** — under the caption at both Caption values, because a link target does not go on the scrim. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Image focus (Centre · Top · Bottom) is a field on the image**, in the Image Picker’s popover: this is the design it was adopted for.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count | Two · Three |
+| Crop | Portrait 4:5 · Square 1:1 |
+| Caption | Under the image · Overlaid |
+| Name size | Medium 20 · Large 27 |
+| Socials | Off · Shown — under the caption at both Caption values, because a link target does not go on the scrim |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group. **Image focus (Centre · Top · Bottom) is a field on the image**, in the Image Picker’s popover: this is the design it was adopted for.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 3 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. A Ghost `profile_image` is often 400 px square and a 632 × 790 cell upscales it — the editor warns and draws it, the one place the Ghost source is visibly weaker than an upload.
 
@@ -414,7 +500,21 @@ Two or three editorial portraits at a named crop, the name under the image or se
 
 **Fields** · 1 Grid's exactly.
 
-**Controls** · Band width: Full bleed · Inset · Head · Count per row: Three · Four · Five · Photo size: Small 56 · Medium 72 · Cells: Flush left · Centred. Socials: Off · Shown, **new this pass**. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** **Background role locked at Contrast with the reason shown** — the one lock in A12, and the reason is the artwork rather than the aesthetics; **Vertical spacing resolving the band’s own 44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where the Band padding row went; Top divider at None, landing above the band on the page ground.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Inset |
+| Head | Centred · Flush left · None |
+| Count per row | Three · Four · Five |
+| Photo size | Small 56 · Medium 72 |
+| Cells | Flush left · Centred |
+| Socials | Off · Shown |
+| Background role (universal) | **Contrast (locked)**, with the reason shown — the one lock in A12, and the reason is the artwork rather than the aesthetics |
+| Vertical spacing (universal) | the band’s own **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where the Band padding row went |
+| Top divider (universal) | None · Line · Fade (at None, landing above the band on the page ground) |
+
+Six controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 12 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **No extra upload of any kind is needed for the band**, and that holds for Ghost author photographs too.
 
@@ -461,7 +561,21 @@ One person: portrait, name, role and the 900-character letter. **The team of one
 
 **Fields** · `eyebrow`, `title`, `body` ≤ 900 and ≤ 3 paragraphs, `note`, the link pair; **the first item of `people[]` only**, reading `name`, `role`, `bio`, `photo`, `url`. **The text is `body`, falling back to `bio`**; with both authored, `body` wins and the editor says so.
 
-**Controls** · **Division: Even 632/632 · Text-led 504/760 · Image-led 760/504**, all on a 32 px gutter · Image side: Left · Right · Crop: Portrait 4:5 · Square 1:1 · **Landscape 3:2** · Name size: Medium 20 · Large 27 · Head: Shown · None. Socials: Off · Shown, **new this pass** — directly under the name and role, above the letter, where at the foot they would collide with the note and the section link. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Image focus is a field on the image**, and this is the largest photograph in A12 — a 760 × 950 crop, or 3:2 forced at 1080 and below.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Division | **Even 632/632 · Text-led 504/760 · Image-led 760/504**, all on a 32 px gutter |
+| Image side | Left · Right |
+| Crop | Portrait 4:5 · Square 1:1 · **Landscape 3:2** |
+| Name size | Medium 20 · Large 27 |
+| Head | Shown · None |
+| Socials | Off · Shown — directly under the name and role, above the letter |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group. **Image focus is a field on the image**, and this is the largest photograph in A12 — a 760 × 950 crop, or 3:2 forced at 1080 and below.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 1 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **At Authors All the drawn person is whoever the Order returns first** — alphabetically, or by post count — so **Hand-picked is the only honest way to choose a founder**, and the Limit is 1 by construction.
 
@@ -511,7 +625,20 @@ Eight to twenty-four people, four to eight across, a circle and a name and nothi
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; **eight to twenty-four** people reading `name`, `photo`, `url`. **`role` and `bio` are kept and never drawn**, and the panel names the count it is leaving out.
 
-**Controls** · Head · Count per row: Four · **Six** · Eight · Photo size: Small 56 · Medium 72, **fixed at 44 and Medium unavailable at Count Eight** · Names: Under the face · None · Row gap: Tight 24 · Normal 32 — two values rather than three, because a loose gap breaks the wall into rows. **No row is added: socials are refused here**, with the reason shown — this design refuses even the role, and four 28 px slots under a 14 px name in a 141 px cell would be a control row larger than the name. **Five of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. Row gap keeps its own row, because it measures between rows rather than around the section.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | Four · **Six** · Eight |
+| Photo size | Small 56 · Medium 72, **fixed at 44 and Medium unavailable at Count Eight** |
+| Names | Under the face · None |
+| Row gap | Tight 24 · Normal 32 — two values rather than three, because a loose gap breaks the wall into rows |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Five controls of its own, plus the universal trio and the Data group. **No socials row: socials are refused here**, with the reason shown — this design refuses even the role, and four 28 px slots under a 14 px name in a 141 px cell would be a control row larger than the name. Row gap keeps its own row, because it measures between rows rather than around the section.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **This is the design for Source Ghost authors** — the one whose field list matches what the API returns — and **Order: Name A–Z is the Ghost-mode equivalent of the Sort A–Z button**.
 
@@ -559,7 +686,20 @@ Names and roles in hairline rows, in one, two or three columns. **The one design
 
 **Fields** · `eyebrow` ≤ 26, `title` ≤ 104, `note` ≤ 120, the link pair; **four to twenty-four** people reading `name`, `role`, `url`. `photo`, `bio`, `group`, `body`, `sub`, `image`, `imageAlt` kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Columns: One 1,296 · **Two 636** · Three 416. Rule: **Hairlines** · None. Role: **Beside the name** · Under the name. Density: Compact · **Comfortable**. **No row is added: socials are refused here** — a hairline row is two aligned fields, and a third would break the alignment the design is built on. **Five of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Image focus is present on `photo` and has no effect at any setting here**, and the field says so rather than hiding.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Columns | One 1,296 · **Two 636** · Three 416 |
+| Rule | **Hairlines** · None |
+| Role | **Beside the name** · Under the name |
+| Density | Compact · **Comfortable** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Five controls of its own, plus the universal trio and the Data group. **No socials row: socials are refused here** — a hairline row is two aligned fields, and a third would break the alignment the design is built on. **Image focus is present on `photo` and has no effect at any setting here**, and the field says so rather than hiding.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **At Ghost authors a ledger of names is what arrives** until the Role overrides are typed; Name A–Z is the order an index wants.
 
@@ -608,7 +748,20 @@ A 96 to 144 px band: a line of overlapped faces, one sentence, and the section l
 
 **Fields** · **`title` ≤ 104, drawn as one sentence at 15 px in `text` rather than as a heading**, and the link pair; three to twenty-four people reading `photo` and `name` — the name for the initials block only. **Kept and never drawn: `eyebrow`, `sub`, `note`, `body`, `image`, `imageAlt`, `role`, `bio`, `group` and `url`** — the only design in A12 that keeps `url` without drawing it, because no name is drawn to carry it.
 
-**Controls** · Faces side: **Left** · Right. Faces: **Overlapped** · Spaced, **Spaced unavailable above sixteen people** — 16 spaced faces are 632 px, 24 are 952, and the sentence and link need about 470. Rule: None · Above · **Above and below**. Width: **Content** · Full bleed. Sentence: **Beside the faces** · Under them. **No row is added: socials are refused here** — no name is drawn at any setting, so there is nothing for a person’s links to hang from. **Five of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; **Vertical spacing resolving 32 · 44 · 56, a band of 96 · 120 · 144** — the retired Padding row, and the one ladder in A12 that does not step with width; **Top divider locked at None**, because this design’s own Rule row draws the top edge and the bottom one too.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Faces side | **Left** · Right |
+| Faces | **Overlapped** · Spaced, **Spaced unavailable above sixteen people** |
+| Rule | None · Above · **Above and below** |
+| Width | **Content** · Full bleed |
+| Sentence | **Beside the faces** · Under them |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | **32 · 44 · 56, a band of 96 · 120 · 144** — the retired Padding row, and the one ladder in A12 that does not step with width |
+| Top divider (universal) | **Locked at None**, because this design’s own Rule row draws the top edge and the bottom one too |
+
+Five controls of its own, plus the universal trio and the Data group. **No socials row: socials are refused here** — no name is drawn at any setting, so there is nothing for a person’s links to hang from. 16 spaced faces are 632 px, 24 are 952, and the sentence and link need about 470.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **The thinnest author record survives here**: `profile_image` and `name` are all this design reads.
 
@@ -657,7 +810,21 @@ One sentence at Display 48 on a 1,040 measure, with a single row of three or fou
 
 **Fields** · `eyebrow` ≤ 26, **`title` ≤ 104 and required in practice**, the link pair; **the first three or four of `people[]`** reading `name`, `role`, `photo`, `url`. **Kept and not drawn: `sub` and `note`** — the only design in A12 that holds two authored section fields at once — plus `bio`, `group`, `body`, `image`, `imageAlt` and every person past the count.
 
-**Controls** · Title size: Large 40 · **Display 48**. Alignment: **Flush left** · Centred. Count: Three 416 · **Four 306**. Photo size: **Medium 72** · Large 96. Rule: **None** · Between. Socials: Off · Shown, **new this pass**. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Large 40 · **Display 48** |
+| Alignment | **Flush left** · Centred |
+| Count | Three 416 · **Four 306** |
+| Photo size | **Medium 72** · Large 96 |
+| Rule | **None** · Between |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **Limit says how many authors arrive; Count says how many are drawn** — set Limit above Count and the panel reads “4 of 9 drawn”, exactly as for an authored list.
 
@@ -706,7 +873,21 @@ One line of portrait cards wider than the window, scrolled by the reader. **A11�
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; **five to twenty-four** people reading `name`, `role`, `bio` ≤ 240, `photo`, `url`. `group`, `body`, `image`, `imageAlt` kept, not drawn.
 
-**Controls** · Head: Centred · **Flush left** · None. Card width: Narrow 240 · **Standard 306**. Crop: **Portrait 4:5** · Square 1:1. Bios: **Shown** · Hidden. Arrows: **In the margins** · Above the rail. Socials: Off · Shown, **new this pass**; **the Bio row is renamed Bios**, the category-wide name. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None. **Image focus is adopted on `photo`** — a 306 card at 4:5 is 382 px tall, so Top is what keeps a head — while the crop stays a section value.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · **Flush left** · None |
+| Card width | Narrow 240 · **Standard 306** |
+| Crop | **Portrait 4:5** · Square 1:1 |
+| Bios | **Shown** · Hidden |
+| Arrows | **In the margins** · Above the rail |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group. **The Bio row is renamed Bios**, the category-wide name. **Image focus is adopted on `photo`** — a 306 card at 4:5 is 382 px tall, so Top is what keeps a head — while the crop stays a section value.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. A Ghost bio clamps by line here — three in a Standard card, four in a Narrow one.
 
@@ -759,7 +940,21 @@ One line of portrait cards wider than the window, scrolled by the reader. **A11�
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; three to twenty-four people reading `name`, `role`, `bio` ≤ 240, `photo`, `url`. `group`, `body`, `image`, `imageAlt` kept, not drawn.
 
-**Controls** · Head: Centred · **Flush left** · None. Count per row: Three 416 · **Four 306** · Five 240. Photo size: **Medium 72** · Large 96, **Large unavailable at Count Five**. Bio opens: **In the card** · Under the row, **forced Under at Count Five and at ≤ 767**. Start: **All closed** · First open. Socials: Off · Shown, **new this pass** — under the role and above the disclosure, so the button stays the last thing in the card and the panel it opens stays next to it. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · **Flush left** · None |
+| Count per row | Three 416 · **Four 306** · Five 240 |
+| Photo size | **Medium 72** · Large 96, **Large unavailable at Count Five** |
+| Bio opens | **In the card** · Under the row, **forced Under at Count Five and at ≤ 767** |
+| Start | **All closed** · First open |
+| Socials | Off · Shown — under the role and above the disclosure, so the button stays the last thing in the card |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group.
 
 **Data** · **Source: Authored · Ghost authors**, in the Data group outside this design’s list. At Ghost authors: **Authors** All · Hand-picked · **Limit** 1 to 24 · **Order** Name A–Z · Most posts. **Only authors with at least one published post appear** — the Content API returns no others, so an invited colleague who has not published cannot be drawn at any Limit. The repeater becomes P0·3’s read-only Ghost card with **one editable field per row, a Role override keyed by the author’s slug**; Image focus is stored the same way. Socials arrive from the author’s own handles, version-gated: Facebook and X on Ghost 5.x, all nine platform fields on ≥ 6.36. **While the section is selected the editor draws every panel open**, so every bio edits in place; the resting state returns on deselect, and no “Preview” control exists here or anywhere in A12.
 
@@ -812,7 +1007,21 @@ People under labelled headings — Editorial, Art and photo, Operations. **The o
 
 **Fields** · `eyebrow`, `title`, `sub`, `note`, the link pair; **four to twenty-four** people reading `name`, `role`, `bio` ≤ 240, `photo`, `url` and **`group` ≤ 24 — the one design in A12 that reads it.** `body`, `image`, `imageAlt` kept, not drawn.
 
-**Controls** · Head: Centred · **Flush left** · None. Count per row: Three 416 · **Four 306**, and 336 · 246 at label Beside. Photo size: Small 56 · **Medium 72**, **Large 96 not offered**. Group label: **Above the row** · Beside the row. Bios: Shown · **Hidden**. Socials: Off · Shown, **new this pass**; **the Bio row is renamed Bios**, the category-wide name. **Six of its own**, plus the universal trio and the Data group. **Universal, outside this list:** Background role; Vertical spacing, resolving the retired Padding row’s 64 · 96 · 132; Top divider, drawn at None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · **Flush left** · None |
+| Count per row | Three 416 · **Four 306**, and 336 · 246 at label Beside |
+| Photo size | Small 56 · **Medium 72**, **Large 96 not offered** |
+| Group label | **Above the row** · Beside the row |
+| Bios | Shown · **Hidden** |
+| Socials | Off · Shown |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row) |
+| Top divider (universal) | None · Line · Fade (drawn at None) |
+
+Six controls of its own, plus the universal trio and the Data group. **The Bio row is renamed Bios**, the category-wide name.
 
 **Not offered** · a group order control; an alphabetical sort; a per-group note; a collapsible group; a filter; a count in the label.
 
@@ -1040,3 +1249,15 @@ should it be?
    for a role".
    *It costs:* it looks like a free field and behaves like three buttons, which is the most confusing of
    the three for the least gain.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

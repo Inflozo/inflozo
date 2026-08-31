@@ -366,9 +366,21 @@ renamed or deleted page leaves a dead link until somebody edits it. **The panel 
    beneath, links a wrapping row.
 5. **Content fields.** `code` · `eyebrow` · `heading` · `blurb` · `primaryLabel` · `secondaryLabel` ·
    `links[]` · `linksLabel` — **and the first six again for each of the three pages** ⚑. `image` stored, not drawn.
-6. **Controls.** Alignment (Centred · Flush left) · Measure (Narrow 520 · Standard 620 · Wide 720) ·
-   Code (Chip · Plain · Eyebrow · Hidden) · Recovery links (Show ·
-   Hide) · Height (Fill the viewport · Content height). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Alignment | Centred · Flush left |
+   | Measure | Narrow 520 · Standard 620 · Wide 720 |
+   | Code | Chip · Plain · Eyebrow · Hidden |
+   | Recovery links | Show · Hide |
+   | Height | Fill the viewport · Content height |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** The 404 may query freely; **the 500 queries nothing** ⚑; the gate queries title and
    description only ⚑. **0 links** → list and hairline leave. **1** → the row holds. **many** → it
    wraps at the measure and never scrolls.
@@ -400,9 +412,21 @@ decision. 620 and the 520 field width are A31's own numbers.
    340 · 356 on a 56 gap, heading 34. **≤ 833** one column, **left column first** ⚑, 32 between them,
    heading 28, the button full width, **the divider dropped** ⚑.
 5. **Content fields.** As the union, less `image`. **The widest user of the list** ⚑.
-6. **Controls.** Split (Even · Text-heavy · Action-heavy) · Gap (Tight 48 · Normal 80 · Loose 112) ·
-   Divider (None · Hairline between) · Code (Chip · Plain · Hidden)
-   · Recovery links (Show · Hide). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Even · Text-heavy · Action-heavy |
+   | Gap | Tight 48 · Normal 80 · Loose 112 |
+   | Divider | None · Hairline between |
+   | Code | Chip · Plain · Hidden |
+   | Recovery links | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** As 1. **At 0 links the right column is field and button and does not stretch** ⚑; at many
    it grows with the page and never scrolls internally.
 8. **Empty state.** No sentence → the left column is chip and heading and **the columns stay
@@ -433,9 +457,21 @@ call.
    padding 40. **≤ 767** card 350 on the 20 margin, padding 24, heading 28, field and button full
    width, top-aligned. **The radius is the pack's at every width** ⚑.
 5. **Content fields.** As the union, less `image` (stored).
-6. **Controls.** Card width (Narrow 560 · Standard 720 · Wide 880) · Depth (Raised · Flat) · Alignment
-   (Centred · Flush left) · Code (Chip · Plain · Hidden) · Recovery
-   links (Show · Hide). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card width | Narrow 560 · Standard 720 · Wide 880 |
+   | Depth | Raised · Flat |
+   | Alignment | Centred · Flush left |
+   | Code | Chip · Plain · Hidden |
+   | Recovery links | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** As 1. The card renders at every data state, **including the 500 where nothing is
    queried** ⚑.
 8. **Empty state.** Missing fields close the stack; **the card does not shrink below 320 of content
@@ -467,9 +503,21 @@ dissolving it is this design's decision and the one most likely to be argued wit
    width, top-aligned.
 5. **Content fields.** As the union, less `image`. **The only design that draws `links[].url` as
    text** ⚑.
-6. **Controls.** Box width (Narrow 560 · Standard 720 · Wide 880) · **Box padding** (Compact 24 ·
-   Comfortable 36 · Spacious 52) ⚑ · Recovery links (Ruled rows · Plain list · Hide) · Code (Plain ·
-   Chip · Hidden). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group. **Five now — Eyebrow joined the five and the search row is struck** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Box width | Narrow 560 · Standard 720 · Wide 880 |
+   | Box padding | Compact 24 · Comfortable 36 · Spacious 52 |
+   | Recovery links | Ruled rows · Plain list · Hide |
+   | Code | Plain · Chip · Hidden |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group. **Five now —
+   Eyebrow joined the five and the search row is struck** ⚑.
 7. **Data.** As 1. **At 0 links the box loses its rows and internal hairlines** ⚑; at 6 it grows and
    **never scrolls internally** ⚑.
 8. **Empty state.** A row with an empty `url` draws the label and reserves nothing ⚑. No links → no
@@ -503,9 +551,21 @@ than six is a deliberate departure from the working norm. The 48 → 44 row ladd
    width.
 5. **Content fields.** As the union, less `image`. **The only design that draws the links as a second
    column** ⚑.
-6. **Controls.** Panel height (Content · Fill the viewport) · Depth (Raised · Flat) · Block position
-   (Flush left · Centred) · Recovery links (Beside the text · Under the text · Hide) · Code (Chip ·
-   Plain · Hidden). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Panel height | Content · Fill the viewport |
+   | Depth | Raised · Flat |
+   | Block position | Flush left · Centred |
+   | Recovery links | Beside the text · Under the text · Hide |
+   | Code | Chip · Plain · Hidden |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** As 1. **At 0 links the column and its hairline leave and the left side keeps its
    measure** ⚑; at 6 the column grows and the plane grows with it.
 8. **Empty state.** No sentence → the stack closes. No links → no column. On the 500 there is no
@@ -536,9 +596,21 @@ advising against it is a judgement. Naming the column a nav landmark should be c
    80 · 40, measure 560. **≤ 767** padding 56 · 20, measure 350, **block still centred** ⚑,
    the button full width. **The band never collapses, narrows or gains a margin** ⚑.
 5. **Content fields.** As the union, less `image` — **an image behind a band is 7 Cover** ⚑.
-6. **Controls.** Band height (Fill the viewport · Content height) · Alignment (Centred · Flush left) ·
-   Button (Carried colour · Outline · ~~Accent~~ disabled, 4.0:1) · Code (Chip · Plain · Hidden) ·
-   Recovery links (Show · Hide). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band height | Fill the viewport · Content height |
+   | Alignment | Centred · Flush left |
+   | Button | Carried colour · Outline · ~~Accent~~ disabled, 4.0:1 |
+   | Code | Chip · Plain · Hidden |
+   | Recovery links | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** As 1. **This design's 500 loses nothing but the list** ⚑ — no image, no plane, no query,
    which makes it the safest of the ten on a 500.
 8. **Empty state.** As 1.
@@ -569,8 +641,21 @@ category floor.
    block centred, the button full width. **The scrim never changes with width** ⚑.
 5. **Content fields.** The union plus `image` · `imageAlt` · `imageFocus` — **required here, drawn
    nowhere else** ⚑. **No image → the photograph and the scrim hide** ⚑.
-6. **Controls.** Scrim (Light 30 · Standard 45 · Heavy 60) · Alignment (Centred · Flush left · Bottom
-   left) · Image height (Fill the viewport · Fixed 640) · Code (Chip · Plain · Hidden) · Recovery links (Show · Hide). Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Scrim | Light 30 · Standard 45 · Heavy 60 |
+   | Alignment | Centred · Flush left · Bottom left |
+   | Image height | Fill the viewport · Fixed 640 |
+   | Code | Chip · Plain · Hidden |
+   | Recovery links | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: the universal trio, the Content group and the page source group.
 7. **Data.** **404**: an uploaded file on the section, drawn directly. **500**: the photograph hides ⚑ — no file, no query, no settings value, and the block draws on the page ground. **Gate**: the image draws; it leaks nothing about the site's
    contents ⚑.
 8. **Empty state.** **No image is the one empty state that changes what the page looks like** ⚑ — the photograph and the scrim hide and the block draws on the page ground, rather than an empty grey plate. **The design does not become 6 Contrast Band**; the panel may advise it ⚑. **No alt text is an editor warning, not a blocked save** ⚑.
@@ -601,7 +686,21 @@ ring's 40 % ink offset is A31's one departure from A6. Whether a 500 may safely 
    21. **834** message 560, rows 674, five rows. **≤ 767** message 350, rows 350, **three rows, no
    excerpt** ⚑, title 18, density 18, the button full width. **Top-aligned at every width** ⚑.
 5. **Content fields.** The union less `image` and less `links[]` — **stored, not drawn** ⚑: the rows are the recovery. Adds `postsLabel` and **`posts[]`, the authored row list** ⚑.
-6. **Controls.** Row (Title only · Title and meta · Title, meta and note) · Thumbnails (None · Small 96 · Standard 128) · Code (Chip · Plain · Hidden). **Four with Eyebrow** ⚑ — *How many posts* and *Posts* are struck on 30 August 2026: with the rows authored, the count is the number of rows and there is no source to choose. Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Row | Title only · Title and meta · Title, meta and note |
+   | Thumbnails | None · Small 96 · Standard 128 |
+   | Code | Chip · Plain · Hidden |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Four with Eyebrow** ⚑ — *How many posts* and *Posts* are struck on 30 August 2026: with the
+   rows authored, the count is the number of rows and there is no source to choose. Then **Eyebrow
+   (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
 7. **Data.** **None — nothing is queried on any of the three pages** ⚑ 30 Aug 2026. `posts[]` is authored and hard-coded, so **P0·5's "Populate from…" panel never opens here** and **the list carries Add, Remove and drag reorder** like the recovery list. **0 rows** → label and hairline leave with the list ⚑. **1** → one row, no stretch. **8** → the cap, with the reason on Add. **The cost is on the panel** ⚑: a hand-written list goes stale on its own. **The list is absent on the 500 and the gate** ⚑ — on the 500 because `error.hbs` carries only the message, and on the gate because titles are what a private site withholds.
 8. **Empty state.** **The list is absent, never empty** ⚑. No excerpt → the row closes up. No image on a row at Thumbnails = Standard → **the row draws without one and reserves nothing** ⚑ (A18’s rule).
 9. **Behaviour module.** **None; `core` assumed. No-JS: pixel-identical** ⚑. **It does not declare
@@ -627,7 +726,23 @@ a 404 may safely query at all is flagged for the architect.
    19. **834** two columns on a 32 gap, items 56, labels 18. **≤ 767** one column in source order,
    items 48, labels 17, the button full width, top-aligned.
 5. **Content fields.** The union less `image` and less `links[]` — **stored, not drawn** ⚑. Adds `directoryLabel` and **`directory[]`, the authored item list** ⚑.
-6. **Controls.** Columns (One · Two · Three) · Item size (Standard 17 · Large 19 · Display 24) · Rules (Hairline per item · None) · Code (Chip · Plain · Hidden). **Five with Eyebrow** ⚑ — *Which navigation* and *Nav children* are struck on 30 August 2026 with the query: there is no Ghost navigation to pick a set from and no label prefix to transform. Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | One · Two · Three |
+   | Item size | Standard 17 · Large 19 · Display 24 |
+   | Rules | Hairline per item · None |
+   | Code | Chip · Plain · Hidden |
+   | Eyebrow | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five with Eyebrow** ⚑ — *Which navigation* and *Nav children* are struck on 30 August 2026
+   with the query: there is no Ghost navigation to pick a set from and no label prefix to
+   transform. Then **Eyebrow (Show · Hide)** ⚑, the universal trio, the Content group and the page
+   source group.
 7. **Data.** **None — nothing is queried** ⚑ 30 Aug 2026. `directory[]` is authored and hard-coded, label and address only, **with Add, Remove and drag reorder** on P0·3. **0 items** → the directory, its label and its rules hide ⚑ and the design draws message and action alone; the panel may advise that 1 Centred suits a site with no map to draw. **1–3** → one column whatever Columns says ⚑. **many** → columns fill down then across, capped at 24. **The list is absent on the 500 and the gate** ⚑ — the 500 carries only the message, and a map describes a site the gate's visitor has not been admitted to. **The cost is on the panel**: a hand-written map goes stale on its own ⚑.
 8. **Empty state.** **An empty list hides the directory rather than turning this design into another** ⚑. A very long label wraps to two lines inside its row and the row grows; **it is never clipped** ⚑ — a truncated section name is a wrong section name.
 9. **Behaviour module.** **None; `core` assumed. No-JS: pixel-identical** ⚑ — **`nav-transform` is withdrawn** ⚑ 30 Aug 2026 with the navigation query that needed it. The header’s own `nav-drawer` at ≤ 767 is A1’s, not this section’s ⚑.
@@ -667,10 +782,20 @@ an error template is flagged for the architect.
    button full width.
 5. **Content fields.** The union less `image`. **`code` is the field this design is built on** ⚑. Adds
    `gateDisplayWord` (default "Private") ⚑.
-6. **Controls.** Display size (Large 120 · Standard 156 · Huge 200) · Split (Code 38 / 62 · Even) ·
-   The gate's display slot (The word Private · The site title · Nothing) · Band height (Fill the
-   viewport · Content height) · Recovery links (Show · Hide). Then
-   the page source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Display size | Large 120 · Standard 156 · Huge 200 |
+   | Split | Code 38 / 62 · Even |
+   | The gate's display slot | The word Private · The site title · Nothing |
+   | Band height | Fill the viewport · Content height |
+   | Recovery links | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Outside the list: Then the page source group.
 7. **Data.** `statusCode` on the error pages ⚑ — **the numeral is Ghost's, not the author's**. Nothing
    is queried. On the gate the slot is the authored word.
 8. **Empty state.** **No code cannot happen on an error page** ⚑. **On the gate an empty display word
@@ -840,3 +965,15 @@ applied without inventing a decision, it is written as an **open question** belo
   **confirmed by the owner on 30 August 2026**.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** ten designs, numbered **1–10**.

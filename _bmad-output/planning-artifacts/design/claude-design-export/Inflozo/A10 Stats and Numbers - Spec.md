@@ -97,7 +97,24 @@ Two, three or four stats in one row of equal cells. The default — what a site 
 
 **Fields** · every section field except `image`, `imageAlt` and `lede`; two, three or four items reading `value`, `prefix`, `suffix`, `label`. `note`, `prev` and `share` kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Small 28 · Medium 34, unavailable at head None. Value size: Row 40 · Large 52 · Display 68, **Display unavailable at Count Four**. **Count: a number picker, 1–4** (maximum 4, with the reason at the control). Dividers: Rules · None, **unavailable at Count Four**. **Order: Value first · Label above.** Seven — the only design in A10 at the ceiling.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Small 28 · Medium 34, unavailable at head None |
+| Value size | Row 40 · Large 52 · Display 68, **Display unavailable at Count Four** |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Dividers | Rules · None, **unavailable at Count Four** |
+| Order | **Value first · Label above** |
+| Count up | Off · On |
+| Icons | None · Shown |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Eight controls of its own — the widest list in A10, and still well inside the PRD's ~15. **Quick Controls:** Count · Value size · Dividers · Order · Icons.
 
 **Arrangement** · 632 · 32 · 632 at two, 416 · 24 at three, 306 · 24 at four; dividers 1 px in the gutter's centre at the tallest cell's height; head on 780, sub and source on 620; head to stats 48, source 32 under the row, link 20 under the source; value to label 8 · 10 · 12 with the value's step. **At Order Label above the label block is equalised to the tallest label in the row** so the values still share a baseline — the only equalisation of a text block in A10.
 
@@ -138,7 +155,23 @@ One stat per surface card. For a page whose ground is already busy and needs the
 
 **Fields** · 1 Row's exactly, two, three or four items. Switching to or from 1 Row changes the container and nothing else.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Small 28 · Medium 34. **Count: a number picker, 1–4** (maximum 4, with the reason at the control). **Cards: Surface · Ground.** Card padding: Compact 24 · Comfortable 32 · Spacious 40 (24 · 28 · 32 at 834, 20 · 24 · 28 at 390).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Small 28 · Medium 34 |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Cards | **Surface · Ground** — the item's plane, not the section's ground |
+| Card padding | Compact 24 · Comfortable 32 · Spacious 40 (24 · 28 · 32 at 834, 20 · 24 · 28 at 390) |
+| Count up | Off · On |
+| Icons | None · Shown |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Count · Cards · Card padding · Icons.
 
 **Not offered** · Value size, fixed at Large 52 and at Row 40 at Count Four, because a 306 cell minus 48 of padding is a 242 px measure; Dividers, because a card has an edge and a rule beside it is a second one; Order, because a label on a card's top edge reads as the card's title.
 
@@ -181,7 +214,23 @@ A hairline matrix in one block. The only design that holds five and six comforta
 
 **Fields** · 1 Row's, four, five to eight items.
 
-**Controls** · Head: Centred · Flush left · None. **Count: a number picker, 1–8** (maximum 8, with the reason at the control). **Columns: Two · Three, Two forced at Count Four.** **Frame: None · Boxed.** Value size: Row 40 · Large 52.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count | **a number picker, 1–8** (maximum 8, with the reason at the control; Eight is 4 × 2 at the 306 px cell, and Count Seven stays refused) |
+| Columns | **Two · Three**, Two forced at Count Four, **unavailable at Eight** |
+| Frame | **None · Boxed** |
+| Value size | Row 40 · Large 52 |
+| Count up | Off · On |
+| Icons | None · Shown |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Count · Columns · Frame · Icons.
 
 **Not offered** · Title size, fixed at Medium 34 — this design's head is a label on a block and Small 28 above six values disappears; Dividers, because the hairlines are the design; Card padding; Order.
 
@@ -224,7 +273,23 @@ One number as the whole section, at up to 128 px. **The design eight others advi
 
 **Fields** · 1 Row's section fields, one item.
 
-**Controls** · Alignment: Centred · Flush left. **Value size: Display 96 · Huge 128** (72 / 96 at 834, 52 / 64 at 390) — **Display forced at Frame Panel**. Label: Under the value · Beside the value. Head: Shown · None. Frame: None · Panel.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Alignment | Centred · Flush left |
+| Value size | **Display 96 · Huge 128** (72 / 96 at 834, 52 / 64 at 390) — **Display forced at Frame Panel** |
+| Label | Under the value · Beside the value |
+| Head | Shown · None |
+| Frame | None · Panel |
+| Count up | Off · On |
+| Icons | None · Shown (**the slot is 32 px** — the only off-ladder icon size in A10) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Value size · Label · Frame · Icons.
 
 **Not offered** · Count, because the design is one stat; Title size, fixed at Medium 34; Dividers; Order, since Label Beside is the position control here.
 
@@ -265,7 +330,23 @@ One value at Display beside the rest at Row. For a site with one number it wants
 
 **Fields** · 1 Row's, three or four items; **the first item in the repeater is the lead**.
 
-**Controls** · Head: Flush left · None. **Lead position: Beside the rest · Above the rest. Lead side: Left · Right.** **Count: a number picker, 1–4** (maximum 4, with the reason at the control). Rules: Between the rest · None.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Flush left · None |
+| Lead position | **Beside the rest · Above the rest** |
+| Lead side | **Left · Right** |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Rules | Between the rest · None |
+| Count up | Off · On — a section value: **every figure counts or none** |
+| Icons | None · Shown (**24 px on the lead, 20 on the supporting set**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Lead position · Lead side · Count · Icons.
 
 **Not offered** · Head Centred, because the arrangement is a left-to-right reading; Title size, fixed at Medium 34; **Value size — fixed at Display 68 for the lead and Row 40 for the rest**, since the pair is the design and a control over it would let a site set them equal.
 
@@ -306,7 +387,23 @@ Head in a 416 column at the left, a 2 × 2 of stats at the right. A8·6's split 
 
 **Fields** · 1 Row's, two or four items.
 
-**Controls** · **Head column: Left · Right.** **Count: a number picker, 1–4** (maximum 4, with the reason at the control). **Foot: Under the head · Under the stats.** Dividers: Rules · None. Value size: Row 40 · Large 52.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head column | **Left · Right** |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Foot | **Under the head · Under the stats** |
+| Dividers | Rules · None |
+| Value size | Row 40 · Large 52 |
+| Count up | Off · On |
+| Icons | None · Shown (20 px in each of the four cells; **the head column takes no icon**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own, and **two of the seven have no effect at ≤ 767**, which the panel discloses. **Quick Controls:** Head column · Count · Dividers · Icons.
 
 **Not offered** · Head alignment, because the head column is always left-aligned inside itself; Title size, fixed at Medium 34; Display 68, which does not fit a 384 cell; Order.
 
@@ -347,7 +444,23 @@ Head in a 416 column at the left, a 2 × 2 of stats at the right. A8·6's split 
 
 **Fields** · 1 Row's exactly, two, three or four items.
 
-**Controls** · **Band width: Full bleed · Inset.** Head: Centred · Flush left · None. **Count: a number picker, 1–4** (maximum 4, with the reason at the control). Dividers: Rules · None, unavailable at Four. Value size: Row 40 · Large 52 · Display 68, Display unavailable at Four.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | **Full bleed · Inset** |
+| Head | Centred · Flush left · None |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Dividers | Rules · None, unavailable at Four |
+| Value size | Row 40 · Large 52 · Display 68, Display unavailable at Four |
+| Count up | Off · On |
+| Icons | None · Shown (the slot takes **the band's carried colour** and never the accent, unavailable here at 2.3:1) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | **Contrast (locked)**, with the reason drawn at the control — the band is the design, and 1 Row is this arrangement on the page ground |
+| Vertical spacing (universal) | **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), this design's ladder rather than a second row |
+| Top divider (universal) | **Locked None at Band width Full bleed** — a divider above a full-bleed band is a line drawn on nothing |
+
+Seven controls of its own. **Quick Controls:** Band width · Count · Dividers · Value size.
 
 **Derived colours, from one token pair** · muted = the carried colour at 72% in light and 70% in dark; hairline = the carried colour at 18%. Light `#232019` / `#FBF9F5` → `#BEBCB7`, `#4A4741`. Dark `#EDE7DA` / `#171511` → `#57544D`, `#C6C1B6`. **The accent is unavailable at 2.3:1; links and the focus ring take the carried colour in both modes.** No shadow at any value.
 
@@ -386,7 +499,23 @@ Label at the left, value at the right, hairline rows. A9·15's geometry, and the
 
 **Fields** · 1 Row's, three, four or six items.
 
-**Controls** · Head: Flush left · None. **Count: a number picker, 1–6** (maximum 6, with the reason at the control). **Rules: Between · Above and below · None.** Row padding: Compact 24 · Comfortable 32 · Spacious 44 (20 · 28 · 36 at 834, 16 · 24 · 32 at 390). Value size: Row 40 · Large 52.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Flush left · None |
+| Count | **a number picker, 1–6** (maximum 6, with the reason at the control) |
+| Rules | **Between · Above and below · None** |
+| Row padding | Compact 24 · Comfortable 32 · Spacious 44 (20 · 28 · 36 at 834, 16 · 24 · 32 at 390) |
+| Value size | Row 40 · Large 52 |
+| Count up | Off · On |
+| Icons | None · Shown (**the slot leads the label at the row's left edge, not above the value**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | **Locked None at Rules Above and below** — the design already draws that line — and offered at Rules Between and Rules None |
+
+Seven controls of its own. **Quick Controls:** Count · Rules · Row padding · Icons.
 
 **Not offered** · Head Centred; Title size, fixed at Medium 34; Display 68, which overruns the 300 column; Dividers, since the rules are the dividers; Order, because the order is the design.
 
@@ -427,7 +556,23 @@ A proportional bar per stat. The only design that draws anything other than type
 
 **Fields** · 1 Row's, three or four items, **and `share` — the only design that reads it**. `share` is 0–100; **a drawn stat without one draws no track, and the editor names it**. The theme does not check that the set sums to 100; a share above 100 is held to the track by CSS rather than by arithmetic, and the editor says so.
 
-**Controls** · Head: Flush left · None. **Count: a number picker, 1–4** (maximum 4, with the reason at the control). **Bar height: Thin 4 · Medium 8 · Thick 16**, the same at every width. **Share figure: Shown · Hidden.** Row padding: Compact 24 · Comfortable 32 · Spacious 44.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Flush left · None |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Bar height | **Thin 4 · Medium 8 · Thick 16**, the same at every width |
+| Share figure | **Shown · Hidden** |
+| Row padding | Compact 24 · Comfortable 32 · Spacious 44 |
+| Count up | Off · On — at On **the figure counts and the bar does not** |
+| Icons | None · Shown (the slot leads the label on the row's first line) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Count · Bar · Share figure · Icons.
 
 **Not offered** · Value size, fixed at Row 40 — a 52 px value over a bar makes the bar read as its underline; Head Centred; Title size; **a colour per bar, a second series, an axis, gridlines, a legend, a tooltip, a sparkline, a dial, a donut and a pie**, all refused as charts.
 
@@ -470,7 +615,24 @@ A photograph on one half and everything else on the other. **The only design in 
 
 **Fields** · every section field, **including `image` and `imageAlt`**; `lede` kept, not drawn. Two or four items. The image is a site upload, never a post's feature image.
 
-**Controls** · **Division: Even 632/632 · Stats-led 504/760. Image side: Left · Right. Crop: Portrait 4:5 · Square 1:1 · Landscape 3:2.** **Count: a number picker, 1–4** (maximum 4, with the reason at the control). Value size: Row 40 · Large 52.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Division | **Even 632/632 · Stats-led 504/760** |
+| Image side | **Left · Right** |
+| Crop | **Portrait 4:5 · Square 1:1 · Landscape 3:2** |
+| Image focus | Centre · Top · Bottom (in the Image Picker popover beside Crop, default Centre) |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Value size | Row 40 · Large 52 |
+| Count up | Off · On |
+| Icons | None · Shown (the stat cells only; **the photograph takes no icon and no badge**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Division · Image side · Crop · Count.
 
 **Not offered** · Title size, fixed at Medium 34; Head None, because a column of numbers beside a photograph with no title is a caption; Count Three, since a 2 × 2 with a hole is a missing cell; Display 68; a scrim, an overlay, a caption, a second image, and any crop the site did not name.
 
@@ -513,7 +675,22 @@ The values set inside a sentence, at 34 px in a 20 px paragraph. **The one desig
 
 **Fields** · `eyebrow`, `title`, **`lede` rich text ≤ 280**, `source`, `sourceUrl`, `linkLabel`, `linkUrl`. `sub`, `image` and `imageAlt` kept, not drawn. Two or three items reading `value`, `prefix`, `suffix`; **`label` kept and not drawn, and the panel says how many.** **The lede carries one chip per stat**, inserted from the editor's toolbar, showing the stat's number and its current value; a figure cannot be typed into the sentence by hand. Allowed inside the lede: inline links, bold, italic. Refused: lists, headings, code, images, a second paragraph.
 
-**Controls** · Head: Flush left · Centred · None. **Measure: Wide 780 · Narrow 620.** **Lede size: Body 20 · Large 24. Value size: Inline 34 · Large 44** (30 · 38 at 834, 26 · 32 at 390). **Count: a number picker, 1–3** (maximum 3, with the reason at the control).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Flush left · Centred · None |
+| Measure | **Wide 780 · Narrow 620** |
+| Lede size | **Body 20 · Large 24** |
+| Value size | **Inline 34 · Large 44** (30 · 38 at 834, 26 · 32 at 390) |
+| Count | **a number picker, 1–3** (maximum 3, with the reason at the control) |
+| Count up | Off · On |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six of its own — the shortest list in A10, because **Icons is not offered here**: its values sit inside a sentence, and there is no position for a 20 px slot that is not a hole in somebody's prose. The panel names **1 Row** for a site that wants them. **Quick Controls:** Measure · Lede size · Value size · Count.
 
 **Not offered** · Title size, fixed at Medium 34; Display 68, because at 68 the figure is the line and 15 Big Type draws that; Count Four; Dividers; drawing the labels.
 
@@ -556,7 +733,26 @@ Numbered footnotes, one per stat. For numbers that came from different places an
 
 **Fields** · `eyebrow`, `title`, `sub`, `linkLabel`, `linkUrl`. **`source` and `sourceUrl` kept and not drawn**, with `image`, `imageAlt` and `lede`. Three, four or six items reading `value`, `prefix`, `suffix`, `label` **and `note` ≤ 60**. **`note` ≤ 60 takes an optional `noteUrl`**, which makes the footnote’s text a link at the section-link treatment; with no URL the note is muted text after its numeral and nothing is focusable.
 
-**Controls** · Head: Centred · Flush left · None. **Count: a number picker, 1–6** (maximum 6, with the reason at the control). Value size: Row 40 · Large 52. **Notes: At the foot · Under each stat.** **Per note, inside the item: the marker is a typed field, and Show marker and Show note are separate switches.** Dividers: None · Rules, **Rules unavailable at Count Four**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count | **a number picker, 1–6** (maximum 6, with the reason at the control) |
+| Value size | Row 40 · Large 52 |
+| Notes | **At the foot · Under each stat** |
+| Marker (per note) | a typed field |
+| Show marker (per note) | On · Off |
+| Show note (per note) | On · Off |
+| Dividers | None · Rules, **Rules unavailable at Count Four** |
+| Count up | Off · On |
+| Icons | None · Shown (20 px above the value, **the marker staying after the suffix**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own, the per-note switches inside the item. **Quick Controls:** Count · Notes · Value size · Icons.
 
 **Not offered** · Title size, fixed at Medium 34; Display 68; Count Five, which 3 Grid draws; a back-reference; a fragment to jump to; drawing the section source line beside the notes. **A note as a link is offered after the controls pass** — the optional `noteUrl`.
 
@@ -599,7 +795,23 @@ A band 128 px tall with no head, no source line and no link, on its own padding 
 
 **Fields** · two or three items reading `value`, `prefix`, `suffix`, `label`, **and nothing else in the whole section**. **Eight section fields kept and not drawn:** `eyebrow`, `title`, `sub`, `source`, `sourceUrl`, `linkLabel`, `linkUrl`, `lede`; also `image`, `imageAlt`, and `note`, `prev`, `share` in the repeater. Switching to 1 Row draws all of them.
 
-**Controls** · Alignment: Spread · Left · Centred. **Label position: Beside · Under.** Rule: None · Above · Both. **Count: a number picker, 1–3** (maximum 3, with the reason at the control). Value size: Small 30 · Row 40.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Alignment | Spread · Left · Centred |
+| Label position | **Beside · Under** |
+| Rule | None · Above · Both |
+| Count | **a number picker, 1–3** (maximum 3, with the reason at the control) |
+| Value size | Small 30 · Row 40 |
+| Count up | Off · On |
+| Icons | None · Shown (**before the value on its baseline at Label Beside, above it at Under**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | **32 · 44 · 56 at every width** — the one ladder in A10 that does not step, kept as this design's resolution |
+| Top divider (universal) | **Locked None at Rule Above and Rule Both**, where the design already draws the line, and offered at Rule None |
+
+Seven controls of its own. **Quick Controls:** Alignment · Label position · Rule · Count.
 
 **Not offered** · a head at any value; a source line; a link; Count Four, because four groups across 1,296 leaves 60 px between them at ordinary label lengths; **Large 52, which beside a 15 px label puts the label at 29% of the value's size**; Dividers; a surface panel; a ground of its own.
 
@@ -642,7 +854,23 @@ Each value with the figure it replaced: a glyph, a word and the previous number.
 
 **Fields** · every section field except `image`, `imageAlt` and `lede`. Two, three or four items reading `value`, `prefix`, `suffix`, `label` **and `prev` ≤ 12**. **`prev` is text, like `value`**, and takes the same prefix and suffix as its stat when it parses as a number.
 
-**Controls** · Head: Centred · Flush left · None. **Count: a number picker, 1–4** (maximum 4, with the reason at the control). Value size: Row 40 · Large 52. **Change line: Under the value · Beside.** Dividers: None · Rules, unavailable at Count Four.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count | **a number picker, 1–4** (maximum 4, with the reason at the control) |
+| Value size | Row 40 · Large 52 |
+| Change line | **Under the value · Beside** |
+| Dividers | None · Rules, unavailable at Count Four |
+| Count up | Off · On — at On **the current figure counts and the previous one does not** |
+| Icons | None · Shown (20 px **above the stack**) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Count · Change line · Value size · Icons.
 
 **Not offered** · Title size, fixed at Medium 34; Display 68; **a colour for direction, a computed difference, a percentage change, an arrow-only line, a bold direction word, a per-stat period, a sparkline and a second previous figure.**
 
@@ -685,7 +913,23 @@ One stat per full-width row, the value at 96 px on the left margin and the label
 
 **Fields** · `eyebrow`, `title`, `source`, `sourceUrl`, `linkLabel`, `linkUrl`. **`sub` kept and not drawn** — a 17 px paragraph above a 96 px numeral is read after it — with `image`, `imageAlt` and `lede`. Two or three items reading `value`, `prefix`, `suffix`, `label`. **This is the design the 12-character ceiling on `value` was set for**: twelve characters plus a prefix is 633 px at Big 96, and with the label column and gutter that is 1,113 of 1,296.
 
-**Controls** · Head: Flush left · None. **Count: a number picker, 1–3** (maximum 3, with the reason at the control). **Value size: Display 68 · Big 96** (56 · 72 at 834, **46 at both at ≤ 767**). Label position: Right · Under. Row padding: Compact 24 · Comfortable 32 · Spacious 44.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Flush left · None |
+| Count | **a number picker, 1–3** (maximum 3, with the reason at the control) |
+| Value size | **Display 68 · Big 96** (56 · 72 at 834, **46 at both at ≤ 767**) |
+| Label position | Right · Under |
+| Row padding | Compact 24 · Comfortable 32 · Spacious 44 |
+| Count up | Off · On |
+| Icons | None · Shown (**28 px at Big 96, 24 at Display 68** — the slot follows the value) |
+| Value source (per stat) | Authored · Member count · Paid member count |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (7 Contrast Band named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own. **Quick Controls:** Value size · Label position · Count · Row padding.
 
 **Not offered** · Title size, fixed at Medium 34; Head Centred, because the rows have two edges; Count One and Four — four Big rows is a 980 px section; a hover plane; a row link; an accent value; **a count-up at any motion setting**; the `sub`.
 
@@ -856,3 +1100,15 @@ Every change below carries the **name** of the rule or the platform fact that re
 1. **The free designs are 1 Row and 8 Ledger** — *the two free designs are the owner's choice*. Two different shapes, both photograph-proof: a row across the page and a list down it. The line at the head of this document is his answer, not a recommendation, and `A10-0` carries the same words.
 2. **A bar with no proportion draws its row with its value and its label and no track at all**, and the editor names the stat. The empty-track and hidden-row alternatives are refused: an empty track reads as a nought the site did not type, and a hidden row loses a figure somebody wrote.
 3. **The footnote marker becomes an editable field, and the marker and the note each carry a show-or-hide switch** — the owner's answer to the numbering question, and a better one than either option offered. **`noteMarker`, ≤ 3 characters, optional:** left empty the marker is the stat's own position, which is all a Ghost template can produce; typed, it is whatever the site wants, so notes on the first and third stats can read 1 and 2, or take a dagger. **Show marker** Hidden draws no numeral beside the value and keeps the note at the foot with no numeral, still joined to its stat by `aria-describedby`. **Show note** Hidden draws neither the note nor its marker, and **hiding a note hides its marker with it** — a numeral pointing at nothing is worse than no numeral. **Nothing is deleted in either case:** the text is held and returns exactly as typed. Three fields join the repeater and are read by 12 Sourced alone; the numbering rule that a template cannot compute is now a default rather than the only answer, and *Ghost's templates cannot count, add, or remember* is satisfied without asking a site to accept a gap.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

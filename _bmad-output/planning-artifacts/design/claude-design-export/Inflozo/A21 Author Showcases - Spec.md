@@ -418,10 +418,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `emptyText` · `roleOverride` · `authorPicks[]`. From
    Ghost: name, `profile_image`, `bio`, `count.posts`, `url`, and **at *Social links: On* the nine
    handles and the website** ⚑.
-6. **Controls.** Columns *Two · Three · Four* (**Four disabled below six writers** ⚑) — Portrait
-   *Circle · Rounded square* — Portrait size *Compact · Comfortable · Spacious* — Bio *Show · Hide* —
-   Post count *Under the name · Beside the name · Off* — **Social links *Off · On*** ⚑. **Six.**
-   Quick: Columns, Portrait size, Bio, Post count.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four (**Four disabled below six writers**) |
+   | Portrait | Circle · Rounded square |
+   | Portrait size | Compact · Comfortable · Spacious |
+   | Bio | Show · Hide |
+   | Post count | Under the name · Beside the name · Off |
+   | Social links | Off · On |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Columns, Portrait size, Bio, Post count.
 7. **Data.** `{{#get "authors" include="count.posts" limit=6 order="count.posts desc"}}` ⚑, or the
    picked references. **0** → head and notice, or nothing at *Hide the section*. **1** → one 416
    column, left, no stretch; the panel **suggests 6 Founder without switching** ⚑. **many** → wraps to
@@ -457,10 +468,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    spacing 96. **834** two of 365, the third wraps. **≤ 767** one of 350, **card padding 22** ⚑,
    portrait 56.
 5. **Fields.** As 1, plus the social handles at *On*.
-6. **Controls.** Columns *Two · Three · Four* — Card *Raised · Flat* (**dark forces Flat** ⚑) —
-   Portrait *Circle · Rounded square* — Bio *Show · Hide* — Link line *Show · Hide* (hidden, the name
-   is still the link ⚑) — **Social links *Off · On*** ⚑. **Six.** Quick: Columns, Card, Bio, Social
-   links.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Card | Raised · Flat (**dark forces Flat**) |
+   | Portrait | Circle · Rounded square |
+   | Bio | Show · Hide |
+   | Link line | Show · Hide (hidden, the name is still the link) |
+   | Social links | Off · On |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Columns, Card, Bio, Social links.
 7. **Data.** As 1, **How many defaulting to Three** ⚑. **0** → notice on the page ground, **no empty
    card** ⚑. **1** → one 416 card, no span ⚑. **many** → wraps; above six the panel suggests 1 Grid.
 8. **Empty.** No bio → a short card that still matches its row ⚑. No picture → initials. No handles →
@@ -491,10 +513,20 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    count 15 and link 14 right, 24 row padding. **834** unchanged, bio takes the remaining 466.
    **≤ 767** portrait 48 ⚑, name 19, count and link under the bio on one line, row padding 20.
 5. **Fields.** As 1, minus the social handles; plus `roleOverride`.
-6. **Controls.** Heading *Show · Hide* — Portrait size *Compact · Comfortable · Spacious* — Bio *Two
-   lines · One line · Off* (**Off is the twelve-writer setting** ⚑) — Right column *Count and link ·
-   Count only · Off* — Divider *Hairline · None* (**None raises row padding to 32** ⚑). **Five.**
-   Quick: Bio, Right column, Divider, Portrait size.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Heading | Show · Hide |
+   | Portrait size | Compact · Comfortable · Spacious |
+   | Bio | Two lines · One line · Off (**Off is the twelve-writer setting**) |
+   | Right column | Count and link · Count only · Off |
+   | Divider | Hairline · None (**None raises row padding to 32**) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Quick: Bio, Right column, Divider, Portrait size.
 7. **Data.** As 1. **0** → head and notice, **no rules drawn** ⚑. **1** → one row keeping both
    hairlines ⚑. **many** → the design's best state; twelve is 1,344 px at two bio lines.
 8. **Empty.** No bio → the row falls to 88 ⚑. No picture → initials at the same 64. No role → the
@@ -525,10 +557,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `actionLabel` (default "Write for us" ⚑, with an
    optional icon slot) · `actionUrl` (Link Picker) · `emptyText` · `roleOverride` · `authorPicks[]`.
    From Ghost as 1.
-6. **Controls.** Split *Even · Wide head · Wide roster* (400·808, 520·688, 320·888 on a fixed 88
-   gutter ⚑) — Roster columns *Two · Three* (**Three drops the bio** ⚑) — Portrait size — Bio *Show ·
-   Hide* — Action *Button · Link · Off* (**default Link** ⚑) — **Member visibility *Everyone · Logged
-   out · Free members · Paid members*** ⚑. **Six.** Quick: Split, Roster columns, Bio, Action.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Even · Wide head · Wide roster (400·808, 520·688, 320·888 on a fixed 88 gutter) |
+   | Roster columns | Two · Three (**Three drops the bio**) |
+   | Portrait size | Compact · Comfortable · Spacious |
+   | Bio | Show · Hide |
+   | Action | Button · Link · Off (**default Link**) |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Split, Roster columns, Bio, Action.
 7. **Data.** As 1, plus the authored action. **0** → the notice takes the roster column, head and
    action unchanged ⚑. **1** → one 392 item in an 808 column; the panel suggests 6 Founder ⚑.
    **many** → six rows at twelve.
@@ -563,12 +606,23 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    165** ⚑, portrait 64. **No collapse at any width.**
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `emptyText` · `authorPicks[]`. From Ghost: name,
    `profile_image`, `count.posts`, `url`. **`bio` and `roleOverride` are stored and never drawn** ⚑.
-6. **Controls.** Band padding *Compact · Comfortable · Spacious* (48 · 72 · 104 **inside the band** ⚑)
-   — Alignment *Left · Centre* — Heading size *Regular · Large · Display* — Portraits across *Four ·
-   Six · Eight* (**Eight drops the count** ⚑) — Post count *Show · Hide* — Blurb *Show · Hide*.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band padding | Compact · Comfortable · Spacious (48 · 72 · 104 **inside the band**) |
+   | Alignment | Left · Centre |
+   | Heading size | Regular · Large · Display |
+   | Portraits across | Four · Six · Eight (**Eight drops the count**) |
+   | Post count | Show · Hide |
+   | Blurb | Show · Hide |
+   | Background role (universal) | **Contrast (locked)**, with the reason shown |
+   | Vertical spacing (universal) | **Locked at 0**, with the reason shown |
+   | Top divider (universal) | None · Line · Fade |
+
    **Six.** Quick: Portraits across, Heading size, Alignment, Blurb. **Background role locked at
-   Contrast and Vertical spacing at 0** ⚑, each with the reason shown; Data group with **Bio locked to
-   Off** ⚑.
+   Contrast and Vertical spacing at 0** ⚑, each with the reason shown; Data group with **Bio locked
+   to Off** ⚑.
 7. **Data.** As 1. **0** → the band shortens to head and notice, **no minimum height** ⚑. **1** → one
    column at the band's left, not centred ⚑. **many** → wraps to a second row above six.
 8. **Empty.** No picture → initials on a **14% white plate in light, 10% black in dark** ⚑ — the one
@@ -607,9 +661,20 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    authored at *Action label: Custom*** ⚑) · `actionUrl` · `emptyText` · `roleOverride` ·
    `authorPicks[]`. From Ghost: name, `profile_image`, `bio`, `count.posts`, `location`, `website`,
    **the nine handles** ⚑, `url`. **The category's widest field use.**
-6. **Controls.** Portrait side *Left · Right* — Portrait ratio *Portrait 4:5 · Square 1:1* (A8's
-   ladder minus its landscape values ⚑) — Card *Raised · Flat* (**dark forces Flat** ⚑) — Action
-   *Button · Link · Off* — **Action label *Generated · Custom*** ⚑ — **Member visibility** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Portrait side | Left · Right |
+   | Portrait ratio | Portrait 4:5 · Square 1:1 |
+   | Card | Raised · Flat (**dark forces Flat**) |
+   | Action | Button · Link · Off |
+   | Action label | Generated · Custom |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Six.** Quick: Portrait side, Portrait ratio, Action, Action label. Data group with **How many
    fixed at 1** ⚑ 29 August 2026, the reason shown in place of the number.
 7. **Data.** `{{#get "authors" include="count.posts" limit=1}}` ⚑. **0** → no card, notice on the
@@ -654,10 +719,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `emptyText` · `authorPicks[]`. **No `blurb`** — the plane's
    head is one line ⚑. From Ghost: name, `profile_image`, `count.posts`, `url`,
    `pagination.total`. **`bio` and `roleOverride` stored, not drawn** ⚑.
-6. **Controls.** Plane *Raised · Flat* — Columns *One · Two* — Portraits *Show · Hide* (hidden, the
-   row falls to 52 ⚑) — Post count *Show · Hide* — Writer count *Show · Hide*. **Five.** Quick:
-   Columns, Portraits, Post count, Plane. **The plane's inside is fixed at 44 × 48 and is not a
-   control** ⚑. Data group with **Bio locked to Off** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane | Raised · Flat |
+   | Columns | One · Two |
+   | Portraits | Show · Hide (hidden, the row falls to 52) |
+   | Post count | Show · Hide |
+   | Writer count | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Quick: Columns, Portraits, Post count, Plane. **The plane's inside is fixed at 44 × 48
+   and is not a control** ⚑. Data group with **Bio locked to Off** ⚑.
 7. **Data.** As 1, plus `pagination.total`. **0** → **the plane renders and holds the notice**; the
    count line is hidden ⚑. **1** → one row, left column, **right column empty and staying empty** ⚑.
    **many** → twelve is six rows a column.
@@ -692,10 +768,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    authored, label editable, link hideable** ⚑ 29 August 2026) · `emptyText` ·
    `authorPicks[]`. **No heading and no blurb** ⚑ — both stored. From Ghost: name, `profile_image`,
    `url`, `pagination.total`. **`bio` and `roleOverride` stored, not drawn** ⚑.
-6. **Controls.** **Bar padding** *Compact · Comfortable · Spacious* (**32 · 48 · 72, the bar's own
-   ladder** ⚑) — **Faces shown *a number picker, 0–8*** ⚑ 29 August 2026 (0 draws no portraits and keeps the sentence) — Portrait size *Compact · Comfortable ·
-   Spacious* (overlap scales −11 · −14 · −18 ⚑) — **Names in the line *a number picker, 0–8*** ⚑ 29 August 2026 — Link *Show ·
-   Hide* — Rules *Above and below · None* (**None raises the padding** ⚑) — **Member visibility** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Bar padding | Compact · Comfortable · Spacious (**32 · 48 · 72, the bar's own ladder**) |
+   | Faces shown | **a number picker, 0–8** (0 draws no portraits and keeps the sentence) |
+   | Portrait size | Compact · Comfortable · Spacious (overlap scales −11 · −14 · −18) |
+   | Names in the line | **a number picker, 0–8** |
+   | Link | Show · Hide |
+   | Rules | Above and below · None (**None raises the padding**) |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | **Disabled** where Rules draws that hairline |
+
    **Seven.** Quick: Faces shown, Names in the line, Link, Rules. **Top divider is disabled** where
    Rules draws that hairline ⚑. Data group with **Bio locked to Off** ⚑.
 7. **Data.** As 1, plus `pagination.total` for the remainder ⚑. **0** → the rules stay and the notice
@@ -736,10 +823,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `blurb` · `emptyText` · `authorPicks[]`. **No `heading`** ⚑ — stored,
    never drawn. From Ghost: name, `profile_image`, `count.posts`, `url`. **`bio` and
    `roleOverride` stored, not drawn** ⚑.
-6. **Controls.** Name size *Regular · Large · Display* — Portraits *Show · Hide* — Post count
-   *Trailing · Under the name · Off* — Head *Eyebrow and blurb · Eyebrow only · Off* — Rules *Above
-   each row · None*. **Five.** Quick: Name size, Portraits, Post count, Head. Data group with **How
-   many defaulting to Three** ⚑ and **Bio locked to Off** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Regular · Large · Display |
+   | Portraits | Show · Hide |
+   | Post count | Trailing · Under the name · Off |
+   | Head | Eyebrow and blurb · Eyebrow only · Off |
+   | Rules | Above each row · None |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Quick: Name size, Portraits, Post count, Head. Data group with **How many defaulting
+   to Three** ⚑ and **Bio locked to Off** ⚑.
 7. **Data.** As 1. **0** → eyebrow, blurb and notice, no rules ⚑. **1** → one name at 72, which is
    the design working ⚑. **many** → grows; above six the panel suggests 3 Rows.
 8. **Empty.** **Nothing auto-fits** ⚑ — a 37-character name wraps to two lines and the section grows;
@@ -771,11 +869,21 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · **`colWriter` · `colWhere` · `colPosts`** ⚑ ·
    `emptyText` · `roleOverride` · `authorPicks[]`. From Ghost: name, `profile_image`, `location`,
    `count.posts`, `url`.
-6. **Controls.** Columns *Writer and posts · Writer, where and posts* — Portrait *Show · Hide* — Row
-   height *Compact · Comfortable · Spacious* (**Compact disabled while Portrait is Show** ⚑) — Header
-   row *Show · Hide* — Group by letter *Off · On* (**disabled unless Order is Name A–Z, and at
-   Hand-picked** ⚑; **declares `group-headings` at On** ⚑ 29 August 2026). **Five.** Quick: Columns, Portrait, Row height, Group by letter. Data group with
-   **Order defaulting to Name A–Z** ⚑ and **Bio locked to Off** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Writer and posts · Writer, where and posts |
+   | Portrait | Show · Hide |
+   | Row height | Compact · Comfortable · Spacious (**Compact disabled while Portrait is Show**) |
+   | Header row | Show · Hide |
+   | Group by letter | Off · On (**disabled unless Order is Name A–Z, and at Hand-picked**; declares `group-headings` at On) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Quick: Columns, Portrait, Row height, Group by letter. Data group with **Order
+   defaulting to Name A–Z** ⚑ and **Bio locked to Off** ⚑.
 7. **Data.** As 1, plus `location`. **0** → head and notice, **no header row** ⚑. **1** → header and
    one row ⚑. **many** → the design's best state.
 8. **Empty.** No location → **an em dash in the cell** ⚑, **the category's only placeholder**, drawn
@@ -813,10 +921,22 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    icon slot) · `actionUrl` (Link Picker) · `emptyText` · `authorPicks[]`. **No `heading` and no
    `blurb`** ⚑. From Ghost: name, `count.posts`, `url`. **`bio` and `roleOverride` stored, not
    drawn** ⚑.
-6. **Controls.** Rail contents *Count only · Count and line · Count, line and action* ⚑ — Name size
-   *Regular · Large · Display* — Columns *One · Two* — Post count *Show · Hide* — Rules *Hairline ·
-   None* — **Member visibility** ⚑. **Six.** Quick: Rail contents, Name size, Columns, Post count.
-   Data group with **Bio locked to Off** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Rail contents | Count only · Count and line · Count, line and action |
+   | Name size | Regular · Large · Display |
+   | Columns | One · Two |
+   | Post count | Show · Hide |
+   | Rules | Hairline · None |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Rail contents, Name size, Columns, Post count. Data group with **Bio locked to
+   Off** ⚑.
 7. **Data.** As 1, **without `profile_image`** ⚑. **0** → the rail reads "No writers yet" and the body
    is the notice ⚑. **1** → "1 writer", one row ⚑. **many** → twelve is six rows a column.
 8. **Empty.** **No photograph anywhere means nothing to be empty** — that is the design ⚑. The count
@@ -852,10 +972,22 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    **≤ 767** **cards 260** ⚑, arrows dropped, dots kept.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `emptyText` · `roleOverride` · `authorPicks[]`.
    From Ghost as 1, with `bio` and, at *Social links: On*, the nine handles and the website ⚑.
-6. **Controls.** Card width *Compact · Comfortable · Spacious* — Portrait ratio *Portrait 4:5 · Square
-   1:1* — Bio *Show · Hide* — Strip controls *Arrows and dots · Arrows only · Dots only · None* — Edge
-   *Bleed · Contained* — **Social links *Off · On*** ⚑. **Six.** Quick: Card width, Portrait ratio,
-   Bio, Strip controls. Data group with **How many defaulting to Twelve** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card width | Compact · Comfortable · Spacious |
+   | Portrait ratio | Portrait 4:5 · Square 1:1 |
+   | Bio | Show · Hide |
+   | Strip controls | Arrows and dots · Arrows only · Dots only · None |
+   | Edge | Bleed · Contained |
+   | Social links | Off · On |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Card width, Portrait ratio, Bio, Strip controls. Data group with **How many
+   defaulting to Twelve** ⚑.
 7. **Data.** As 1. **0** → head and notice, no strip ⚑. **1** → one card at the left, arrows and dots
    absent ⚑. **many** → the design. **Arrows and dots render only when the strip overflows** ⚑, decided
    server-side from the item count and card width, **not by the module at runtime** ⚑. **At Hand-picked
@@ -897,10 +1029,22 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `emptyText` · `roleOverride` · `authorPicks[]`.
    From Ghost: name, `profile_image`, `bio`, `count.posts`, `location`, `website`, `url`, and **at
    *Social links: On* the lead's nine handles and website** ⚑.
-6. **Controls.** Lead portrait *Compact · Comfortable · Spacious* — Lead bio *Two lines · Three lines ·
-   Full* — Lead meta *Show · Hide* — List columns *Two · Three* — List counts *Show · Hide* — **Social
-   links *Off · On*, the lead's bio only** ⚑. **Six.** Quick: Lead portrait, Lead bio, List columns,
-   List counts. Data group with **How many defaulting to Eight** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Lead portrait | Compact · Comfortable · Spacious |
+   | Lead bio | Two lines · Three lines · Full |
+   | Lead meta | Show · Hide |
+   | List columns | Two · Three |
+   | List counts | Show · Hide |
+   | Social links | Off · On, the lead's bio only |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Quick: Lead portrait, Lead bio, List columns, List counts. Data group with **How many
+   defaulting to Eight** ⚑.
 7. **Data.** As 1. **0** → head and notice, no rule ⚑. **1** → **the lead alone, no rule and no
    list** ⚑ — the design's strongest small state, which is why it does not suggest 6 Founder. **2** →
    a lead and one list item, **columns not reflowed to fill** ⚑. **many** → the design. **Order decides
@@ -939,13 +1083,24 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · **`backgroundImage` — an authored upload, the
    category's only image field** ⚑ · **`imageFocus`** ⚑ · `emptyText` · `authorPicks[]`. From Ghost:
    name, `profile_image`, `count.posts`, `url`. **`bio` and `roleOverride` stored, not drawn** ⚑.
-6. **Controls.** Height *Short · Standard · Tall* (**a minimum, not a crop** ⚑) — Scrim *Light ·
-   Medium · Strong* (**Light disabled against light images**, checked on the bottom third ⚑ — A29·5's
-   test) — **Image focus *Centre · Top · Bottom*** ⚑ — Head position *Top · Bottom* (**never both at
-   the foot** ⚑) — Portraits across *Four · Six · Eight* — Post count *Show · Hide* — Blurb *Show ·
-   Hide*. **Seven.** Quick: Height, Scrim, Image focus, Portraits across. **Background role is locked —
-   the photograph is the ground — and Vertical spacing at 0** ⚑. Data group with **Bio locked to Off**
-   ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Height | Short · Standard · Tall (**a minimum, not a crop**) |
+   | Scrim | Light · Medium · Strong (**Light disabled against light images**, checked on the bottom third) |
+   | Image focus | Centre · Top · Bottom |
+   | Head position | Top · Bottom (**never both at the foot**) |
+   | Portraits across | Four · Six · Eight |
+   | Post count | Show · Hide |
+   | Blurb | Show · Hide |
+   | Background role (universal) | **Locked** — the photograph is the ground |
+   | Vertical spacing (universal) | **Locked at 0** |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven.** Quick: Height, Scrim, Image focus, Portraits across. **Background role is locked —
+   the photograph is the ground — and Vertical spacing at 0** ⚑. Data group with **Bio locked to
+   Off** ⚑.
 7. **Data.** As 1. **0** → the band, the head and the notice ⚑. **1** → one portrait at the foot's
    left. **many** → wraps and **the band grows past its minimum; nothing is ever cropped** ⚑. **No
    picture at any width → the band draws itself on the contrast ground** ⚑ 29 August 2026 — picture,
@@ -988,14 +1143,26 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    editable, link hideable) · `emptyText` · `authorPicks[]`. **No eyebrow, heading or
    blurb** ⚑ — all stored, none drawn. From Ghost: name, `url`, `pagination.total`, **`@site.title`**
    ⚑. **`bio` and `roleOverride` stored, not drawn** ⚑.
-6. **Controls.** Strip padding *Compact · Comfortable · Spacious* (16 · 24 · 36 **inside the strip**
-   ⚑) — **Names in the line *a number picker, 1–8*** ⚑ 29 August 2026 — Link *Show · Hide* — Rules *Above and below · Below
-   only · None* — **Member visibility** ⚑. **Five.** Quick: Names in the line, Link, Rules, Strip
-   padding. **The old *Ground* row is retired into Background role** ⚑ — Surface is the strip, **at
-   Background the strip's fill goes and the credits sit on the page ground — **still 15 Slim** ⚑ 29 August 2026, with 8 Faces named as the design to place if you want portraits in the line** ⚑, and Contrast is newly
-   reachable, deriving its ink from A17·7's two contrast tokens. **Vertical spacing locked at 0** and
-   **Top divider disabled** against Rules ⚑. Data group with **How many defaulting to Four** ⚑ and
-   **Bio locked to Off** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Strip padding | Compact · Comfortable · Spacious (16 · 24 · 36 **inside the strip**) |
+   | Names in the line | **a number picker, 1–8** |
+   | Link | Show · Hide |
+   | Rules | Above and below · Below only · None |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast — the old *Ground* row retired into it; Surface is the strip, at Background the strip's fill goes, and Contrast derives its ink from A17·7's two contrast tokens |
+   | Vertical spacing (universal) | **Locked at 0** |
+   | Top divider (universal) | **Disabled** against Rules |
+
+   **Five.** Quick: Names in the line, Link, Rules, Strip padding. **The old *Ground* row is
+   retired into Background role** ⚑ — Surface is the strip, **at Background the strip's fill goes
+   and the credits sit on the page ground — **still 15 Slim** ⚑ 29 August 2026, with 8 Faces named
+   as the design to place if you want portraits in the line** ⚑, and Contrast is newly reachable,
+   deriving its ink from A17·7's two contrast tokens. **Vertical spacing locked at 0** and **Top
+   divider disabled** against Rules ⚑. Data group with **How many defaulting to Four** ⚑ and **Bio
+   locked to Off** ⚑.
 7. **Data.** As 1, minus `profile_image` and `bio`, plus `pagination.total` and the site title ⚑.
    **0** → the strip stays and the notice takes the line ⚑. **1** → a one-name sentence with no
    remainder ⚑. **many** → four named, the rest counted. **At Hand-picked the references are the names
@@ -1253,3 +1420,15 @@ name**, so neither is closed here.
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
   required shape, and names **3 Rows** and **11 Rail** — both of which exist in this category's roster.
   It is **the owner's own choice, ruled on 29 August 2026**.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

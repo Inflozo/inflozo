@@ -362,9 +362,19 @@ width, 28 to the block, padding 64.
 **Content fields.** `headingText` · `rulesText` · `closedNotice` · the count's three words. From Ghost:
 `{{comment_count}}`, `{{#if comments}}`. **No post field, no image, no author.**
 
-**Controls.** Heading (Label · Heading · Count only · None) · Count (Beside · Under · Off) · House
-rules (On · Off) · Width (Measure · Content). **Four.** Then the universal trio and the Data group.
-**Quick: Heading, Count, House rules.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Count | Beside · Under · Off |
+| House rules | On · Off |
+| Width | Measure · Content |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Four.** Then the universal trio and the Data group. **Quick: Heading, Count, House rules.**
 
 **Data.** `{{comment_count singular=countSingular plural=countPlural empty=countEmpty}}` and
 `{{comments title="" count=false}}`. **0** → the `countEmpty` line and the block renders its editor.
@@ -416,10 +426,20 @@ the heading, rules full width, padding 80. **≤ 767** stacked at 350, count und
 **Content fields.** `headingText` · `rulesText` (at One line) · `rules[]` **1–4 × 60 ch, authored and
 ordered** ⚑ · `closedNotice` · the count's three words.
 
-**Controls.** Heading · Head column (Narrow 280 · Standard 320 · Wide 384) · House rules (Off · One
-line · List) · *the rules item list, P0·3* · Sticky head (On · Off). **Four.** Then the universal trio
-and the Data group. **The item list is not counted** — it edits content. **Quick: Heading, Head column,
-House rules, Sticky head.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Head column | Narrow 280 · Standard 320 · Wide 384 |
+| House rules | Off · One line · List |
+| Sticky head | On · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Four.** Then the universal trio and the Data group. **The item list is not counted** — it
+edits content. **Quick: Heading, Head column, House rules, Sticky head.**
 
 **Data.** As 1 Rule. The count sits under the heading and **is not repeated anywhere else** ⚑.
 
@@ -464,10 +484,21 @@ it, block 720. **834** plane 754, inset 32, block 690, padding 80. **≤ 767** p
 
 **Content fields.** `headingText` · `rulesText` · `closedNotice` · the count's three words.
 
-**Controls.** Heading · Panel width (Measure · Content) · Inset (Compact 32 · Comfortable 48 ·
-Spacious 64) · House rules (On · Off) · Plane edge (Soft · Hairline — **Soft disabled in dark with its
-reason shown** ⚑, because the shadow token is `none` in every pack's dark mode). **Five.** Then the
-universal trio and the Data group. **Quick: Heading, Panel width, Inset, House rules.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Panel width | Measure · Content |
+| Inset | Compact 32 · Comfortable 48 · Spacious 64 |
+| House rules | On · Off |
+| Plane edge | Soft · Hairline (**Soft disabled in dark with its reason shown**) |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Five.** Then the universal trio and the Data group. **Quick: Heading, Panel width, Inset,
+House rules.**
 
 **Data.** As 1 Rule. **At Panel width Content the block is 1,200 wide and its lines are not clamped** ⚑
 — clamping would mean styling inside the block.
@@ -515,10 +546,23 @@ Band edges Content the inset drops 72 → 40 → 24** ⚑.
 
 **Content fields.** `headingText` · `rulesText` · `closedNotice` · the count's three words.
 
-**Controls.** Heading · Band edges (Full bleed · Content) · Alignment (Left · Centre) · House rules
-(On · Off) · Width (Measure · Content). **Five.** Then the universal trio — **Background role locked at
-Contrast and Top divider locked at None**, reasons shown — and the Data group, **whose Block colour row is gone** ⚑ — there is nothing left to force: the box's colour is
-Ghost's own setting and this design needs it pointed at the band. **Quick: Heading, Band edges, Alignment, Width.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Band edges | Full bleed · Content |
+| Alignment | Left · Centre |
+| House rules | On · Off |
+| Width | Measure · Content |
+| Background role (universal) | **Locked at Contrast**, reason shown |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | **Locked at None**, reason shown |
+
+**Five.** Then the universal trio — **Background role locked at Contrast and Top divider locked
+at None**, reasons shown — and the Data group, **whose Block colour row is gone** ⚑ — there is
+nothing left to force: the box's colour is Ghost's own setting and this design needs it pointed
+at the band. **Quick: Heading, Band edges, Alignment, Width.**
 
 **Data.** As 1 Rule. **No `mode` attribute is passed at all** ⚑ — the comment box takes its colour from a
 setting inside Ghost, which this design needs pointed at the band: dark in a light pack, light in a dark one.
@@ -567,11 +611,22 @@ under the label, padding 64. **Box width stops applying below 1,200** ⚑.
 
 **Content fields.** `headingText` · `rulesText` · `closedNotice` · the count's three words.
 
-**Controls.** Heading · Box width (Measure · Content) · Head row (Divided · Plain) · House rules (On ·
-Off) · Inset (Compact 28 · Comfortable 40 · Spacious 56). **Five.** Then the universal trio and the
-Data group. **No fill control** ⚑ — a box with a surface fill is 3 Panel with an extra hairline, and a
-value that lets one design impersonate another breaks the roster. **Quick: Heading, Box width, Head
-row, Inset.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Box width | Measure · Content |
+| Head row | Divided · Plain |
+| House rules | On · Off |
+| Inset | Compact 28 · Comfortable 40 · Spacious 56 |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Five.** Then the universal trio and the Data group. **No fill control** ⚑ — a box with a
+surface fill is 3 Panel with an extra hairline, and a value that lets one design impersonate
+another breaks the roster. **Quick: Heading, Box width, Head row, Inset.**
 
 **Data.** As 1 Rule.
 
@@ -616,11 +671,21 @@ padding 80. **≤ 767** count under the label, padding 64. **Rail side and Stick
 **Content fields.** `headingText` (the rail's label) · `rulesText` · `rules[]` 1–4 × 60 ch ·
 `closedNotice` · the count's three words.
 
-**Controls.** Rail side (Left · Right) · House rules (Off · One line · List) · *the rules item list,
-P0·3* · Sticky rail (On · Off) · Count (Under the label · Beside it · Off). **Four, and no Heading
-control** ⚑ — the rail is the head, so a control offering four head values would be offering to draw a
-second one. A27·7 Rail made the same call. Then the universal trio and the Data group. **Quick: Rail
-side, House rules, Count, Sticky rail.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Rail side | Left · Right |
+| House rules | Off · One line · List |
+| Sticky rail | On · Off |
+| Count | Under the label · Beside it · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Four, and no Heading control** ⚑ — the rail is the head, so a control offering four head
+values would be offering to draw a second one. A27·7 Rail made the same call. Then the universal
+trio and the Data group. **Quick: Rail side, House rules, Count, Sticky rail.**
 
 **Data.** As 1 Rule. **The rail draws the count at 22 px, so `countEmpty` reads at display size when the post is quiet** ⚑ — and
 with JavaScript off neither the number nor that word renders at all ⚑ — the one place in A28 where a zero state is the biggest thing in the section, and
@@ -667,11 +732,21 @@ bar 350, 52 tall, count beside the label, **the word kept rather than reduced to
 **Content fields.** `headingText` · `rulesText` · `closedNotice` · `showLabel` / `hideLabel` text opt
 12 ch, defaults "Show" and "Hide" ⚑ · the count's three words.
 
-**Controls.** Heading (**Label · Heading only** ⚑ — Count only and None would leave a bar with nothing
-to click) · Default state (Open · Closed) · Bar width (Measure · Content) · House rules (On · Off,
-**inside the disclosure** ⚑). **Four.** Then the universal trio and the Data group. **Default state is
-Open** ⚑: the bar exists so a reader can put a long thread away, not so a publication can hide it.
-**Quick: Heading, Default state, Bar width, House rules.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | **Label · Heading only** — Count only and None would leave a bar with nothing to click |
+| Default state | Open · Closed |
+| Bar width | Measure · Content |
+| House rules | On · Off (**inside the disclosure**) |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Four.** Then the universal trio and the Data group. **Default state is Open** ⚑: the bar
+exists so a reader can put a long thread away, not so a publication can hide it. **Quick:
+Heading, Default state, Bar width, House rules.**
 
 **Data.** As 1 Rule. **The count is on the bar, so it is readable while the block is closed** ⚑ — the
 reason the bar carries it. **At Closed the block still mounts and Ghost's script still loads** ⚑;
@@ -733,11 +808,22 @@ up" ⚑ · `signinLabel` opt 40 ch · `upgradeHeading` req 40 ch, default "Comme
 ⚑ · `upgradeButton` req 20 ch, default "Upgrade" ⚑ · `rulesText` · `closedNotice` · the count's three
 words.
 
-**Controls.** Heading · Prompt style (Panel · Hairline) · Form (Email field · Link only) ·
-**Signed-out readers (The prompt only · The prompt and the block)** ⚑ · **Free members (The upgrade
-prompt only · The upgrade prompt and the block)** ⚑ · House rules (On · Off, **off by default here** ⚑).
-**Six — the most in A28.** Then the universal trio and the Data group. **Quick: Prompt style, Form,
-Signed-out readers, Free members.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · Count only · None |
+| Prompt style | Panel · Hairline |
+| Form | Email field · Link only |
+| Signed-out readers | The prompt only · The prompt and the block |
+| Free members | The upgrade prompt only · The upgrade prompt and the block |
+| House rules | On · Off (**off by default here**) |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Six — the most in A28.** Then the universal trio and the Data group. **Quick: Prompt style,
+Form, Signed-out readers, Free members.**
 
 **Data.** `{{#if @member}}` **and the Ghost commenting setting** decide between **three arrangements**
 ⚑. **Signed out** → head, count and the prompt; the count comes from `{{comment_count}}`, which renders without the block ⚑ — **but only with JavaScript**:
@@ -810,11 +896,22 @@ words — **this design draws `countPlural` at 17 px beside a 76 or 104 px figur
 whole zero state** ⚑. From Ghost: **`{{comment_count}}` twice — once bare for the figure, once
 pluralised for the word** ⚑, so "1 comments" cannot happen.
 
-**Controls.** Label (On · Off) · Count size (Large 76 · Display 104) · Number position (Left · Above) ·
-House rules (On · Off) · **At zero (Figure · Count line)** ⚑. **Five, and no Heading control** ⚑ — the
-figure is the head. **Count size does not move the layout**: both sizes sit in the same 416 column ⚑.
-Then the universal trio and the Data group. **Quick: Count size, Number position, At zero, House
-rules.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Label | On · Off |
+| Count size | Large 76 · Display 104 |
+| Number position | Left · Above |
+| House rules | On · Off |
+| At zero | Figure · Count line |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+**Five, and no Heading control** ⚑ — the figure is the head. **Count size does not move the
+layout**: both sizes sit in the same 416 column ⚑. Then the universal trio and the Data group.
+**Quick: Count size, Number position, At zero, House rules.**
 
 **Data.** **0** → **At zero decides** ⚑: at **Count line**, the default, the column draws the 15 px
 `countEmpty` line and **no figure at all**; at **Figure** it draws 0 at 76 or 104. **1** → "1" and the
@@ -868,11 +965,22 @@ spacing 28. **The head is 17 at every width** ⚑.
 · the count's three words — **at Heading Count only the count line is the whole of the theme's visible
 text** ⚑.
 
-**Controls.** Heading (Count only · Label · None — **Heading is not offered** ⚑) · Alignment (Left ·
-Centre) · House rules (On · Off, **off by default**) · Width (Measure · Content). **Four — still the
-shortest panel in A28.** Then the universal trio — **Vertical spacing running this design's own 40 · 64
-· 96 ladder at Compact by default**, and **Background role locked at *None: show whatever is behind*** ⚑ — the shared row's new fourth value — and
-the Data group, **defaulting to Hide the section** ⚑. **Quick: Heading, Alignment, House rules, Width.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Count only · Label · None (**Heading is not offered**) |
+| Alignment | Left · Centre |
+| House rules | On · Off (**off by default**) |
+| Width | Measure · Content |
+| Background role (universal) | **Locked at *None: show whatever is behind*** — the shared row's new fourth value |
+| Vertical spacing (universal) | this design's own **40 · 64 · 96** ladder, at Compact by default |
+| Top divider (universal) | None · Line · Fade |
+
+**Four — still the shortest panel in A28.** Then the universal trio — **Vertical spacing running
+this design's own 40 · 64 · 96 ladder at Compact by default**, and **Background role locked at
+*None: show whatever is behind*** ⚑ — the shared row's new fourth value — and the Data group,
+**defaulting to Hide the section** ⚑. **Quick: Heading, Alignment, House rules, Width.**
 
 **Data.** As 1 Rule. **0** → the `countEmpty` line at 17 px above Ghost's editor, which at this scale is
 the whole section.
@@ -1188,3 +1296,15 @@ renders to a signed-in free member inside the block when commenting is set to pa
   owner's own choice, **confirmed on 29 August 2026**.
 - **No registry module was invented.** A28 declares `accordion` (7) and `member-form` (8) — both existing
   entries — and no frame carries an "ARCHITECT: registry addition" note.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** ten designs, numbered **1–10**.

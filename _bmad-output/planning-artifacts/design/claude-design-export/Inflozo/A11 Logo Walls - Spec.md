@@ -121,7 +121,21 @@ Three to six logos in one row of equal cells, each contained in a fixed-height b
 
 **Fields** · every section field except `lede`, `leadLabel` and `restLabel`; three to six items reading `logo`, `logoDark`, `alt`, `url`. `caption` kept, not drawn.
 
-**Controls** · Head: Centred · Flush left · None. Title size: Small 28 · Medium 34, unavailable at head None. Logo size: Small 28 · Medium 36 · Large 48, **Large unavailable at Count Six**. Count: **a number picker, 3–6**, six the maximum with its reason at the control. Treatment: Full colour · Muted · Greyscale. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Small 28 · Medium 34, unavailable at head None |
+| Logo size | Small 28 · Medium 36 · Large 48, **Large unavailable at Count Six** |
+| Count | **a number picker, 3–6**, six the maximum with its reason at the control |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Arrangement** · cells 416 · 306 · 240 · 196 on a 24 px gutter across 1,296; every cell the box's height; logos centred on both axes at 100 / 88 / 72% of the box by class; head on 780, sub and note on 620; head to wall 48, note 32 under, link 20 under the note. Head Centred centres the head, the note and the link — **not the wall**, which is already the content width.
 
@@ -162,7 +176,21 @@ A short label in a 196 px column at the left and the logos filling the 1,056 tha
 
 **Fields** · 1 Row's exactly, three to five items. **`eyebrow` is required in practice** — it is the caption, and with none authored the column and the rule are absent and the wall takes the whole content width.
 
-**Controls** · **Label side: Left · Right.** **Rule: None · Between.** Logo size: Small 28 · Medium 36. Count: **a number picker, 3–5**. Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Label side | **Left · Right** |
+| Rule | **None · Between** |
+| Logo size | Small 28 · Medium 36 |
+| Count | **a number picker, 3–5** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · a Head control, since the title and sub are drawn when authored; Title size, fixed at Medium 34; Large 48, which beside a 13 px label makes the caption a footnote; Count Six, where six cells inside 1,056 is 156 px each.
 
@@ -205,7 +233,22 @@ Six to eighteen logos in rows of equal cells, with or without a hairline matrix.
 
 **Fields** · 1 Row's, six to eighteen items.
 
-**Controls** · Head: Centred · Flush left · None · Count per row: Four · Five · Six · Logo size: Small 28 · Medium 36 · Large 48, **Large unavailable at Count Six** · **Cells: None · Hairlines** · **Last row: Centred · Left, forced to Left at Cells Hairlines** · Treatment. **Hover: Resolve to colour · None.** **Seven of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | Four · Five · Six |
+| Logo size | Small 28 · Medium 36 · Large 48, **Large unavailable at Count Six** |
+| Cells | **None · Hairlines** |
+| Last row | **Centred · Left**, forced to Left at Cells Hairlines |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own, with the universal trio and the Data group outside them.
 
 **Arrangement** · at Cells None, cells 306 / 240 / 196 on a 24 px gutter with rows 40 apart. At Cells Hairlines the gutters close and the columns are **324 / 259 / 216, the odd pixel in the last column at Count Five**; cell padding 24; hairlines on the shared edges as `border-left` and `border-top`, **the odd pixel to the cell below and right — A10·3's rule verbatim**; no outer rule, since a frame around the wall is 4 Boxed. **The wrap is authored order and nothing is re-sorted** — not by width, not by class, not to fill the last row.
 
@@ -246,7 +289,21 @@ The whole wall inside one `surface` panel with a hairline and the pack's radius.
 
 **Fields** · 1 Row's, four to twelve items.
 
-**Controls** · Head: Centred · Flush left · None · **Panel padding: Compact 32 · Comfortable 48 · Spacious 64** (28 · 40 · 52 at 834, 20 · 28 · 36 at 390) · Count per row: Four · Five · Six · Logo size: Small 28 · Medium 36 · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Panel padding | **Compact 32 · Comfortable 48 · Spacious 64** (28 · 40 · 52 at 834, 20 · 28 · 36 at 390) |
+| Count per row | Four · Five · Six |
+| Logo size | Small 28 · Medium 36 |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; Large 48, since the panel is already 96 px of inset at Comfortable; **a Ground value for the panel**, because a panel filled with the section's own ground is 3 Grid at Cells None; a shadow at any value; a head inside the panel, which makes it a card; a link on the panel; hairlines inside it.
 
@@ -289,7 +346,21 @@ One logo per card, every card the same height. **The design that answers §8.4's
 
 **Fields** · 1 Row's, three to twelve items. **This is the design to choose when the logos are links**, and the editor says so when two or more URLs are authored elsewhere.
 
-**Controls** · Head: Centred · Flush left · None · Count per row: Three · Four · Five · Six · **Card height: Compact 88 · Comfortable 112 · Spacious 136** (80 · 100 · 120 at 834, 72 · 88 · 104 at 390) · **Cards: Surface · Ground** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | Three · Four · Five · Six |
+| Card height | **Compact 88 · Comfortable 112 · Spacious 136** (80 · 100 · 120 at 834, 72 · 88 · 104 at 390) |
+| Cards | **Surface · Ground** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; **Logo size — the box is Medium 36 at Count Three and Four and Small 28 at Five and Six**, because a card is a fixed frame and the artwork's size in it is the design's; a shadow; a lift or scale on hover; a caption inside the card, which is 11 Named's.
 
@@ -332,7 +403,21 @@ Head, sub, note and link in a 416 column at one side; the wall in the 824 at the
 
 **Fields** · 1 Row's, four to twelve items. **`title` is required in practice** — with none authored the head column draws empty and the section takes no accessible name. **This is the design for a long `sub`**: the head column absorbs 178 characters without moving the wall.
 
-**Controls** · **Head column: Left · Right** · **Title size: Medium 34 · Large 40** · Count per row: Two · Three · Four · Logo size: Small 28 · Medium 36 · Large 48, **Large unavailable at Count Four** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head column | **Left · Right** |
+| Title size | **Medium 34 · Large 40** |
+| Count per row | Two · Three · Four |
+| Logo size | Small 28 · Medium 36 · Large 48, **Large unavailable at Count Four** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Head alignment, because the column is always left-aligned inside itself; Head None; Display 48, which is 15 Big Type's; a sticky head; a rule between the columns.
 
@@ -375,7 +460,21 @@ Head, sub, note and link in a 416 column at one side; the wall in the 824 at the
 
 **Fields** · 1 Row's, three to twelve items. **`logoDark` is effectively required**, and the editor's wording differs in this design alone: “this band needs the version for a dark background, which your site will use in light mode too”.
 
-**Controls** · **Band width: Full bleed · Inset** · Head: Centred · Flush left · None · Count: Three · Four · Five · Six · Logo size: Small 28 · Medium 36 · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, **Background role locked to Contrast with the reason shown**, and Vertical spacing resolving 44 · 64 · 88 here — with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | **Full bleed · Inset** |
+| Head | Centred · Flush left · None |
+| Count | Three · Four · Five · Six |
+| Logo size | Small 28 · Medium 36 |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | **Contrast (locked)**, with the reason shown |
+| Vertical spacing (universal) | **44 · 64 · 88** here |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Derived from one token pair** · muted = the carried colour at 72% (`#BEBCB7` light, `#57544D` dark); hairline = 18%, never drawn; **hover surface = 10%** (`#3A362F` / `#D4CFC3`), because the pack supplies a hover surface for a ground and a surface but not for a band; **Muted treatment = 70% in both modes**, since the band's lightness does not follow the mode's. **The accent is unavailable at 2.3:1 and links and rings take the carried colour.** No shadow at any value.
 
@@ -418,7 +517,22 @@ Eight to twenty-four logos on a track that runs continuously in one or two rows.
 
 **Fields** · 1 Row's, eight to twenty-four items. **Eight is the floor because a shorter list needs three copies to fill 1440 and the same mark appears twice on screen.** URLs are allowed and advised against, and the panel says why: the target moves.
 
-**Controls** · Head: Centred · Flush left · None · **Rows: One · Two** · **Speed: Slow · Steady · Brisk** · **Gap: Tight 40 · Normal 64 · Loose 96** (32 · 56 · 80 at 834, 24 · 40 · 56 at 390) · **Edge: Fade · Hard** · Treatment. **Hover: Resolve to colour · None.** **Seven of its own**, and the pause button is still not one of them; with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Rows | **One · Two** |
+| Speed | **Slow · Steady · Brisk** |
+| Gap | **Tight 40 · Normal 64 · Loose 96** (32 · 56 · 80 at 834, 24 · 40 · 56 at 390) |
+| Edge | **Fade · Hard** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Seven controls of its own, and the pause button is still not one of them; the universal trio and the Data group sit outside them.
 
 **Not offered** · Title size, fixed at Medium 34; **Logo size — Medium 36 at Rows One and Small 28 at Rows Two**; Count, because a track has no cells; a direction control; **pause on hover**; a control to remove the pause button; a gradient overlay instead of a mask.
 
@@ -461,7 +575,21 @@ One line of logos wider than the window, scrolled by the reader. **The distincti
 
 **Fields** · 1 Row's, six to twenty-four items. **The arrows and the fade are decided at render, not counted**: where the track is not wider than its container, neither is drawn — so the same list scrolls at 834 and sits still at 1440, **and it is a rail at both.**
 
-**Controls** · Head: Centred · Flush left · None · Logo size: Small 28 · Medium 36 · Large 48, **no condition on Large** · **Gap: Tight 40 · Normal 64 · Loose 96** (32 · 56 · 80 at 834, 24 · 40 · 56 at 390) · **Arrows: At the ends · Above the rail** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, and the arrows are still not one of them; with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Logo size | Small 28 · Medium 36 · Large 48, **no condition on Large** |
+| Gap | **Tight 40 · Normal 64 · Loose 96** (32 · 56 · 80 at 834, 24 · 40 · 56 at 390) |
+| Arrows | **At the ends · Above the rail** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, and the arrows are still not one of them; the universal trio and the Data group sit outside them.
 
 **Not offered** · Title size; Count, because a rail has no cells; **scroll snapping**, since a snap point has to be a logo's edge and a 216 px wordmark and a 26 px mark cannot share one; a dot or page indicator; a drag cursor; auto-advance, which is 8 Marquee; removing the arrows above 767.
 
@@ -504,7 +632,21 @@ A band 92 to 148 px tall with no head, no note and no link: three to six marks a
 
 **Fields** · three to six items reading `logo`, `logoDark`, `alt`, `url`, **and nothing else in the whole section**. **Ten of the fourteen fields are kept and not drawn**: `eyebrow`, `title`, `sub`, `note`, `linkLabel`, `linkUrl`, `lede`, `leadLabel`, `restLabel`, `caption`. The panel names the count and says how many 1 Row would draw.
 
-**Controls** · Alignment: Spread · Left · Centred · Count: **a number picker, 3–6** · Logo size: Small 28 · Medium 36 · **Rule: None · Above · Both** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, Vertical spacing resolving 32 · 44 · 56 the same at every width, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Alignment | Spread · Left · Centred |
+| Count | **a number picker, 3–6** |
+| Logo size | Small 28 · Medium 36 |
+| Rule | **None · Above · Both** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | **32 · 44 · 56**, the same at every width |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · a head at any value; a note; a link; a caption; Large 48, since a 48 px box in a 32 px padding is a 112 px band; a surface panel; a ground of its own; **a second row.**
 
@@ -547,7 +689,21 @@ A caption under each logo. **The only design in A11 that draws `caption`**, and 
 
 **Fields** · 1 Row's section fields; three to twelve items reading `logo`, `logoDark`, `alt`, `url` **and `caption` ≤ 40**.
 
-**Controls** · Head: Centred · Flush left · None · Count per row: Three · Four · Five · Logo size: Small 28 · Medium 36 · **Captions: Centred · Left** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | Three · Four · Five |
+| Logo size | Small 28 · Medium 36 |
+| Captions | **Centred · Left** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; Count Six, where a 40-character caption is four lines in a 196 px cell; Large 48, since a 48 px mark over a 13 px caption is a headline over a footnote; a caption above the logo; a caption beside it; a second caption line; a `<figcaption>`.
 
@@ -590,7 +746,21 @@ Two groups at two box sizes: the first one, two or three logos at Huge 64 or Lar
 
 **Fields** · 1 Row's section fields **plus `leadLabel` ≤ 20 and `restLabel` ≤ 20, which no other design draws**; four to sixteen items. **The first N items in the repeater are the lead tier** — A10·5's rule — and **there is no per-logo tier field**: a site reorders the repeater instead. Both labels are optional and either may be drawn alone.
 
-**Controls** · Head: Centred · Flush left · None · **Lead count: a number picker, 1–3** · **Lead size: Large 48 · Huge 64** (40 · 48 at 834, 32 · 40 at 390) · **Rest count per row: Four · Five · Six** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Lead count | **a number picker, 1–3** |
+| Lead size | **Large 48 · Huge 64** (40 · 48 at 834, 32 · 40 at 390) |
+| Rest count per row | **Four · Five · Six** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; **a size for the rest tier, fixed at Small 28** — a control over both would let a site set them equal and lose the hierarchy it chose the design for; a third tier; a rule between the tiers, which makes two sections out of one; a per-logo tier field; a label that is a heading.
 
@@ -633,7 +803,21 @@ Twelve to twenty-four marks at Tiny 22, six to ten across. For a site whose hone
 
 **Fields** · 1 Row's, twelve to twenty-four items. **Twenty-four is the ceiling of `logos[]` in the whole category and this design is where it is reached.** **The `note` earns its place here** — “and four more asked not to be listed” is a sentence only a dense wall needs.
 
-**Controls** · Head: Centred · Flush left · None · **Count per row: Six · Eight · Ten** · **Row gap: Tight 24 · Normal 32** · **Last row: Left · Centred, Left the default — the reverse of 3 Grid** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Count per row | **Six · Eight · Ten** |
+| Row gap | **Tight 24 · Normal 32** |
+| Last row | **Left · Centred**, Left the default — the reverse of 3 Grid |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; **Logo size — the box is Tiny 22, off the ladder, and this is the only design that uses it**; a gutter control; hairlines, which are 3 Grid's; cards; a caption.
 
@@ -676,7 +860,21 @@ Two to four marks set inside a sentence, on the line. **The one design in A11 wh
 
 **Fields** · `eyebrow`, `title`, **`lede` rich text ≤ 280**, `note`, `linkLabel`, `linkUrl`. `sub`, `leadLabel`, `restLabel` and `caption` kept, not drawn. Two to four items reading `logo`, `logoDark`, `alt`; **`url` kept and not drawn — the only field any design in A11 ignores outright.** **The lede carries one chip per mark, inserted from the toolbar**; a mark cannot be typed, a chip is one atomic character to the cursor, and deleting a logo takes its chip with it. Allowed inside the lede: inline links, bold, italic. Refused: lists, headings, code, a second paragraph, a blockquote, **and any image that is not a chip.**
 
-**Controls** · Head: Centred · Flush left · None · **Measure: Wide 780 · Narrow 620** · **Lede size: Body 20 · Large 24** · **Logo height: Inline 24 · Large 32** · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Measure | **Wide 780 · Narrow 620** |
+| Lede size | **Body 20 · Large 24** |
+| Logo height | **Inline 24 · Large 32** |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Title size, fixed at Medium 34; Count, since the chips are the count; **a link on a mark** — a 24 px underlined mark inside a 20 px sentence reads as a typographic accident and the target would be a 90 × 24 sliver mid-paragraph; a caption; an alignment for the marks, which the sentence decides.
 
@@ -719,7 +917,21 @@ A title at Display 48 on a 1,040 measure with three marks at Huge 64 beneath it,
 
 **Fields** · `eyebrow`, `title`, `note`, `linkLabel`, `linkUrl`; **`sub` kept and not drawn — the only design in A11 that draws the eyebrow and refuses the sub**, because a 17 px paragraph between a 48 px line and a 64 px mark is read by nobody. Three or four items. **This is the design the title's 104-character limit was worth checking**: three lines at Display 48 on 1,040, two at Large 40.
 
-**Controls** · **Title size: Large 40 · Display 48 — the only Display 48 in A11** · Count: **a number picker, 3–4** · **Logo size: Large 48 · Huge 64, Huge unavailable at Count Four** · Alignment: Flush left · Centred · Treatment. **Hover: Resolve to colour · None.** **Six of its own**, with the universal trio — Background role, Vertical spacing, Top divider — and the Data group outside them.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | **Large 40 · Display 48** — the only Display 48 in A11 |
+| Count | **a number picker, 3–4** |
+| Logo size | **Large 48 · Huge 64**, Huge unavailable at Count Four |
+| Alignment | Flush left · Centred |
+| Treatment | Full colour · Muted · Greyscale |
+| Hover | **Resolve to colour · None** |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade |
+
+Six controls of its own, with the universal trio and the Data group outside them.
 
 **Not offered** · Head None, because the title is the design; the sub; Count Two or Five; a caption; a rule; a hover plane on an unlinked mark.
 
@@ -878,3 +1090,15 @@ Every change below carries the **name** of the rule or the platform fact that re
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Row** and **10 Slim** — both of which exist in this category's roster. It is **the owner's own choice, ruled on 30 August 2026**, and the merge's only input.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

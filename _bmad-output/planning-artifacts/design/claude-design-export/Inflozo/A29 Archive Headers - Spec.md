@@ -317,10 +317,21 @@ the universal trio and the Data group follow each list and are not counted.
    **≤ 767** measure = frame less its 20 margins, name 34, description 16, gaps 12 and 14, spacing 64.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `backLabel`/`backUrl` · `emptyText`.
    From Ghost: name, description or bio, `{{pagination.total}}`.
-6. **Controls.** Name size *Regular · Large · Display* — Eyebrow *Show · Hide* (**new** ⚑) —
-   Description *Show · Hide* — Post count *Under the description · Beside the eyebrow · Off* — Back
-   link *Show · Hide* — **Bottom rule** *On · Off* (**was Divider** ⚑). **Six.** Plus the trio —
-   Vertical spacing is the old Padding — and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Under the description · Beside the eyebrow · Off |
+   | Back link | Show · Hide |
+   | Bottom rule | On · Off (was Divider) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Plus the trio — Vertical spacing is the old Padding — and the Data group.
 7. **Data.** `{{#tag}}` / `{{#author}}` / the route's title ⚑. **0** → name, the catalog zero count,
    notice. **1** → singular via `{{plural}}`. **many** → unchanged.
 8. **Empty.** No description → the stack closes up and the count moves 18 px under the name. Zero
@@ -344,11 +355,22 @@ the universal trio and the Data group follow each list and are not counted.
    name 48, spacing 96. **834** stacked, name 40, description full 754, gaps 16, spacing 80.
    **≤ 767** stacked, name 32, description 16, spacing 64.
 5. **Fields.** As 1. No field is unique to this design.
-6. **Controls.** Split *Even · Wide name · Wide description* — Name size *Regular · Large · Display*
-   (**Display disabled at Wide description**, ratio shown ⚑) — Eyebrow *Show · Hide* (**new** ⚑) —
-   Description *Show · Hide* — Post count *In the right column · Under the name · Off* — Back link
-   *Show · Hide* — **Bottom rule** *On · Off* (**was Divider** ⚑). **Seven.** Plus the trio and the
-   Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Even · Wide name · Wide description |
+   | Name size | Regular · Large · Display (**Display disabled at Wide description**, ratio shown) |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | In the right column · Under the name · Off |
+   | Back link | Show · Hide |
+   | Bottom rule | On · Off (was Divider) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven.** Plus the trio and the Data group.
 7. **Data.** As 1. **0** → the notice takes the description's place at the top of the right column.
    **No description** → the right column is a count and a link, and the panel **suggests 1 Centred
    without switching** ⚑.
@@ -375,13 +397,24 @@ the universal trio and the Data group follow each list and are not counted.
    name 32, **button stays auto-width** ⚑. **No collapse at any width.**
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `actionLabel` (default "Subscribe" ⚑,
    **per member state**) · `actionUrl` (default `#/portal/signup` ⚑) · `actionIcon` · `emptyText`.
-6. **Controls.** **Band depth** *Compact · Comfortable · Spacious* — 48 · 72 · 104 inside the band,
-   **the band's own ladder, renamed from Padding** ⚑ — Name size — Eyebrow *Show · Hide* (**new** ⚑) —
-   Description — Post count *Beside the eyebrow · Under the description · Off* — Alignment *Left ·
-   Centre* — Action *Button · Link · Off* (**accent fill disabled in Paper at 4.0:1; each pack
-   re-checks its own accent on its own band** ⚑) — **Member visibility** *Everyone · Logged out · Free
-   members · Paid members* (**new** ⚑). **Eight.** Plus the trio — **Background role locked at
-   Contrast**, Vertical spacing resolving 0, Top divider locked None — and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band depth | Compact · Comfortable · Spacious — 48 · 72 · 104 inside the band, the band's own ladder, renamed from Padding |
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Beside the eyebrow · Under the description · Off |
+   | Alignment | Left · Centre |
+   | Action | Button · Link · Off (**accent fill disabled in Paper at 4.0:1**) |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | **Locked at Contrast** |
+   | Vertical spacing (universal) | Resolving 0 |
+   | Top divider (universal) | **Locked None** |
+
+   **Eight.** Plus the trio — **Background role locked at Contrast**, Vertical spacing resolving 0,
+   Top divider locked None — and the Data group.
 7. **Data.** As 1, plus the authored action. **0** → notice in `onContrastMuted`, action stays.
 8. **Empty.** No description → the band shortens to its content; **no minimum height** ⚑.
 9. **Module.** None. **No-JS: the band is pixel-identical and the action does nothing** ⚑ — it opens Ghost's own sign-up pop-up, which needs JavaScript. **The action also does not render when the connected site cannot support it** ⚑ — self-signup switched off, or no payment provider connected. **P0·4's per-state rules compile server-side** — no module either.
@@ -404,11 +437,22 @@ the universal trio and the Data group follow each list and are not counted.
    right, offset 8 px. **834** plane 754, padding 36 × 40, name 38. **≤ 767** plane 350, padding 24,
    name 30, count and link under the name.
 5. **Fields.** As 1.
-6. **Controls.** Plane *Raised · Flat* (**dark forces Flat** ⚑) — Name size *38 · 44 · 56* ⚑ —
-   Eyebrow *Show · Hide* (**new** ⚑) — Description — Post count *Right of the name · Under the name ·
-   Off* — Back link *Show · Hide*. **Six.** Plus the trio — **Vertical spacing is the old Padding, the
-   space around the plane; the plane's internal 44 × 48 stays fixed and uncontrolled** ⚑ — and the
-   Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane | Raised · Flat (**dark forces Flat**) |
+   | Name size | 38 · 44 · 56 |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Right of the name · Under the name · Off |
+   | Back link | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — the space around the plane; the plane's internal 44 × 48 stays fixed and uncontrolled |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Plus the trio — **Vertical spacing is the old Padding, the space around the plane; the
+   plane's internal 44 × 48 stays fixed and uncontrolled** ⚑ — and the Data group.
 7. **Data.** As 1. **0** → notice inside the plane; **this is the design's strongest state** ⚑.
    **No description** → the plane closes to 138 px, no minimum ⚑.
 8. **Empty.** Every case stays inside the plane; **the plane never renders empty**.
@@ -430,12 +474,24 @@ the universal trio and the Data group follow each list and are not counted.
    560. **834** 834 × 380, name 44. **≤ 767** 390 × 420, name 34, description full width, text 32
    above the foot. **No image at any width** → the frame keeps its stated height and its type on the pack's contrast ground ⚑.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `featureImage` — **the one field a design in A29 is built around** ⚑ — **`imageFocus`** · `emptyText`.
-6. **Controls.** Height *Short · Standard · Tall* — **the image's own depth, 440 at Standard on 1440**
-   ⚑, which is why it keeps its name against Vertical spacing — Scrim *Light · Medium · Strong*
-   (**Light disabled against light images**, checked on the bottom third **in the editor when the picture is chosen — CSS cannot see a photograph, and the check does not re-run when the publication swaps the Ghost image** ⚑) — Name size — Eyebrow
-   *Show · Hide* (**new** ⚑) — Description — Post count — Alignment *Left · Centre*. **Seven.** Plus
-   the trio — **Background role locked at Image**, Vertical spacing resolving 0, Top divider locked
-   None — and the Data group, which carries **Image focus *Centre · Top · Bottom*** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Height | Short · Standard · Tall — the image's own depth, 440 at Standard on 1440 |
+   | Scrim | Light · Medium · Strong (**Light disabled against light images**, checked on the bottom third in the editor when the picture is chosen) |
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Under the description · Beside the eyebrow · Off |
+   | Alignment | Left · Centre |
+   | Background role (universal) | **Locked at Image** |
+   | Vertical spacing (universal) | Resolving 0 |
+   | Top divider (universal) | **Locked None** |
+
+   **Seven.** Plus the trio — **Background role locked at Image**, Vertical spacing resolving 0,
+   Top divider locked None — and the Data group, which carries **Image focus *Centre · Top ·
+   Bottom*** ⚑.
 7. **Data.** `{{#tag}}{{feature_image}}` or `{{#author}}{{cover_image}}` ⚑ — the cover, not the
    profile picture. **0** → notice on the scrim, image unchanged. **No image** → the picture slot resolves to the contrast ground and the design renders itself ⚑; the panel advises and never switches.
 8. **Empty.** **The no-picture state is drawn on the states strip** — the frame, the flat contrast ground and the white type.
@@ -460,8 +516,20 @@ the universal trio and the Data group follow each list and are not counted.
    stacked, text 754 then image 754 × 300, name 38. **≤ 767** stacked, image 350 × 220, name 30.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `featureImage` · **`imageFocus`** ·
    `backLabel`/`backUrl` · `emptyText`.
-6. **Controls.** Image side *Left · Right* (visual only ⚑) — Image shape *Landscape 3:2 · Four by
-   three · Square* — Name size — Eyebrow *Show · Hide* (**new** ⚑) — Description — Post count.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Image side | Left · Right (visual only) |
+   | Image shape | Landscape 3:2 · Four by three · Square |
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Under the description · Beside the eyebrow · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
    **Six.** Plus the trio (Vertical spacing is the old Padding) and the Data group with **Image
    focus** ⚑.
 7. **Data.** As 5 for the image. **No image** → the column goes and **the text keeps 636** ⚑; no
@@ -487,10 +555,22 @@ the universal trio and the Data group follow each list and are not counted.
    stacked, gap 20, name 32, description 16.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `backLabel`/`backUrl` ·
    `actionLabel`/`actionUrl`/`actionIcon` (only at Rail contents: action) · `emptyText`.
-6. **Controls.** Rail side *Left · Right* (visual only ⚑) — Rail contents *Label and count · Label,
-   count and link · Label, count and action* — Name size — Eyebrow *Show · Hide* (**new** ⚑) —
-   Description — **Gutter rule** *On · Off* (**was Divider** ⚑) — **Member visibility** (**new** ⚑,
-   greyed unless the rail carries the action). **Seven.** Plus the trio and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Rail side | Left · Right (visual only) |
+   | Rail contents | Label and count · Label, count and link · Label, count and action |
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Gutter rule | On · Off (was Divider) |
+   | Member visibility | Everyone · Logged out · Free members · Paid members (greyed unless the rail carries the action) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven.** Plus the trio and the Data group.
 7. **Data.** As 1. **0** → the rail reads the catalog zero count and the body carries the notice ⚑.
    **No description** → the body is the name alone at 76 px tall, drawn.
 8. **Empty.** **The rail never renders empty** — always at least a label and a count.
@@ -515,12 +595,22 @@ the universal trio and the Data group follow each list and are not counted.
 5. **Fields.** `eyebrow` · `titleOverride` · `backLabel`/`backUrl` · `emptyText`. **`description`,
    `featureImage` and `imageFocus` are in the union and are not drawn here** ⚑ — kept, not discarded,
    and `description` is now **drawn greyed in the Content group** so the user can see it survives.
-6. **Controls.** **Bar height** *Compact · Comfortable · Spacious* — 88 at Comfortable, **a real
-   height, not padding; renamed from Height** ⚑ — Name size *Regular · Large* (**no Display** ⚑) —
-   Eyebrow *Show · Hide* — Post count *At the right · After the name · Off* — Back link *Show · Hide*
-   — Rules *Top and bottom · Bottom only · None*. **Six.** Plus the trio — **Vertical spacing
-   resolving 0, Top divider locked None because Rules owns the bar's top edge** ⚑ — and the Data
-   group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Bar height | Compact · Comfortable · Spacious — 88 at Comfortable, a real height, not padding; renamed from Height |
+   | Name size | Regular · Large (**no Display**) |
+   | Eyebrow | Show · Hide |
+   | Post count | At the right · After the name · Off |
+   | Back link | Show · Hide |
+   | Rules | Top and bottom · Bottom only · None |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Resolving 0 |
+   | Top divider (universal) | **Locked None** because Rules owns the bar's top edge |
+
+   **Six.** Plus the trio — **Vertical spacing resolving 0, Top divider locked None because Rules
+   owns the bar's top edge** ⚑ — and the Data group.
 7. **Data.** As 1. **0** → count reads the catalog zero string and **the notice renders below the bar
    on the page ground** ⚑. **Long names** → ellipsise at the count's left edge; never wrap ⚑.
 8. **Empty.** **The bar itself has no empty state** — it always has a name and a count.
@@ -550,8 +640,22 @@ the universal trio and the Data group follow each list and are not counted.
    12.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `emptyText`. **No image, no back link** —
    a 104 px name with a 14 px link under it is two designs arguing ⚑.
-6. **Controls.** Name size *Large · Display · Poster* (its own ladder and its own value names ⚑) —
-   Eyebrow *Show · Hide* — Description — Post count *In the corner · Under the name · Off* — Count animation *On · Off*, **off by default** ⚑. **Five — the category's shortest list.** Plus the trio — **Background role open and resting at Background; Inherit is removed** ⚑ — **the owner's ruling, 30 August 2026** — Vertical spacing the old Padding, and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Large · Display · Poster (its own ladder and its own value names) |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | In the corner · Under the name · Off |
+   | Count animation | On · Off (**off by default**) |
+   | Background role (universal) | Background · Surface · Contrast — open and resting at Background; **Inherit is removed** (the owner's ruling, 30 August 2026) |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five — the category's shortest list.** Plus the trio — **Background role open and resting at
+   Background; Inherit is removed** ⚑ — **the owner's ruling, 30 August 2026** — Vertical spacing
+   the old Padding, and the Data group.
 7. **Data.** As 1. **0** → the catalog zero string in the corner, notice under the name; **Count
    animation does nothing at zero** ⚑. **Long names** wrap, never shrink — **no auto-fit** ⚑.
 8. **Empty.** No description → name and count alone, the design's best state.
@@ -575,11 +679,23 @@ the universal trio and the Data group follow each list and are not counted.
 4. **Responsive.** **1440** box 1,296, padding 48 × 56, measure 720 centred, name 40. **834** box 754,
    padding 40, measure 600, name 36. **≤ 767** box 350, padding **28 × 24** ⚑, measure full, name 28.
 5. **Fields.** As 1.
-6. **Controls.** **Box padding** *Compact · Comfortable · Spacious* — inside the box, **renamed from
-   Padding** ⚑ — Alignment *Left · Centre* — Name size *36 · 40 · 52* ⚑ — Eyebrow *Show · Hide*
-   (**new** ⚑) — Description — Post count — Back link. **Seven.** Plus the trio — **Vertical spacing
-   now owns the space around the box, which this design had fixed at 96 with no control** ⚑ — and the
-   Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Box padding | Compact · Comfortable · Spacious — inside the box, renamed from Padding |
+   | Alignment | Left · Centre |
+   | Name size | 36 · 40 · 52 |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Post count | Under the description · Beside the eyebrow · Off |
+   | Back link | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — now owns the space around the box, which this design had fixed at 96 with no control |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven.** Plus the trio — **Vertical spacing now owns the space around the box, which this
+   design had fixed at 96 with no control** ⚑ — and the Data group.
 7. **Data.** As 1. **0** → notice inside the box. **No description** → the box closes to 174 px and
    **keeps its width** ⚑.
 8. **Empty.** **The box never renders empty and never shrinks to its content** ⚑.
@@ -602,10 +718,22 @@ the universal trio and the Data group follow each list and are not counted.
    sideways, forced** ⚑, with the link as its last item.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `links[]` 2–12 ⚑ · **`allTopicsLabel`**
    (default "All topics →" ⚑) · **`allTopicsUrl`** · `emptyText`.
-6. **Controls.** Name size — Eyebrow *Show · Hide* (**new** ⚑) — Description — Tag row *Most used ·
-   Alphabetical · Chosen tags* (+ **P0·3's item list** at that value ⚑) — Counts on tags *Show · Hide*
-   — Row overflow *Wrap · Scroll* (**forced Scroll at 390** ⚑) — **All topics link** *Show · Hide*
-   (**new** ⚑). **Seven**, plus the item list. Plus the trio and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Tag row | Most used · Alphabetical · Chosen tags (+ **P0·3's item list** at that value) |
+   | Counts on tags | Show · Hide |
+   | Row overflow | Wrap · Scroll (**forced Scroll at 390**) |
+   | All topics link | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven**, plus the item list. Plus the trio and the Data group.
 7. **Data.** `{{#get "tags" limit="12" order="count.posts desc" include="count.posts"}}` ⚑. **0 tags on the site** → no row and no link; **the design is its own head, left-aligned on the content box** ⚑, and it does not become another design. **1 tag** → "All posts"
    plus one pill. **More than 12** → truncated by the limit, **and the all-topics link is what says so** — a 44 px text link, never a pill, so it cannot be read as a tag. **It carries no number** ⚑: a template cannot count what the query left out. **0 posts** → the row is the most
    useful thing on the route.
@@ -641,10 +769,23 @@ the universal trio and the Data group follow each list and are not counted.
    `actionLabel`/`actionUrl`/`actionIcon` · `emptyText`. From Ghost:
    `{{#author}}{{profile_image}} {{location}} {{website}}` ⚑ and, at *Socials: Show*, **the nine
    handles and the website** — **all optional and commonly empty**.
-6. **Controls.** Card width *Inset · Wide* — Portrait *Large · Small · Off* (**greys on a tag route**
-   ⚑) — Eyebrow *Show · Hide* (**new** ⚑) — Description — Meta line *Location, posts and site · Posts
-   only · Off* — **Socials** *Show · Hide* (**new** ⚑, **Hide by default**) — Action *Button · Link ·
-   Off* — **Member visibility** (**new** ⚑). **Eight.** Plus the trio and the Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card width | Inset · Wide |
+   | Portrait | Large · Small · Off (**greys on a tag route**) |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Meta line | Location, posts and site · Posts only · Off |
+   | Socials | Show · Hide (**Hide by default**) |
+   | Action | Button · Link · Off |
+   | Member visibility | Everyone · Logged out · Free members · Paid members |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Eight.** Plus the trio and the Data group.
 7. **Data.** `{{#author}}` on an author route; on a tag route the portrait slot is empty and the card
    holds the tag head ⚑. **0** → an author with no posts yet — card, bio, social row and action all
    stay ⚑. **Socials** reads the author's own fields, **never `social_url`** ⚑, and is
@@ -677,9 +818,21 @@ the universal trio and the Data group follow each list and are not counted.
    truncated** ⚑, Columns inert.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `links[]` 2–12 ⚑ · `backLabel`/`backUrl`
    · `emptyText`.
-6. **Controls.** Name size — Eyebrow *Show · Hide* (**new** ⚑) — Description — Index list *Most used ·
-   Alphabetical · Chosen tags* (+ **P0·3's item list** ⚑) — **Columns** a number picker, **2–3, default 3** (**was two fixed words; 3 is the ceiling, greyed with its reason on the control — a fourth column is 202 px and clipped tag names over 22 characters** ⚑) — Counts *Show · Hide*. **Six**, plus the item list. Plus the trio and the Data
-   group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Regular · Large · Display |
+   | Eyebrow | Show · Hide |
+   | Description | Show · Hide |
+   | Index list | Most used · Alphabetical · Chosen tags (+ **P0·3's item list**) |
+   | Columns | **a number picker, 2–3, default 3** — 3 is the ceiling, greyed with its reason on the control |
+   | Counts | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six**, plus the item list. Plus the trio and the Data group.
 7. **Data.** `{{#get "tags" limit="12" order="count.posts desc" include="count.posts"}}` ⚑. **0
    tags** → no index; the head takes the content box ⚑. **Fewer than the column count** → the last columns are empty and the panel advises 2 ⚑. **More than 12** → **truncated silently, and
    deliberately so**: 11 Filter's all-topics link is this pass's answer and **13 does not take it**,
@@ -714,12 +867,22 @@ the universal trio and the Data group follow each list and are not counted.
 5. **Fields.** `eyebrow` · `titleOverride` · `description` · `backLabel`/`backUrl` · `emptyText`.
    **The bar authors nothing of its own** — it is a second rendering of the head's fields ⚑, so every
    string is written once and edited once.
-6. **Controls.** Name size *(head only; the bar is fixed at 17 ⚑)* — Eyebrow *Show · Hide* (**new** ⚑,
-   and it takes the bar's label with it) — Description *(head only; **never in the bar** ⚑)* — Post
-   count *In the bar · In both · Off* — Bar contents *Label, name and count · Label, name, count and
-   link · Name and count only* — Bar rule *Hairline · None* (**None disabled while pinned, with the reason on the control** ⚑ — an edgeless surface bar over a scrolling grid has no boundary at all in a light pack).
-   **Six.** Plus the trio — **Vertical spacing above only; below stays 0 at every value** ⚑ — and the
-   Data group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Name size | Regular · Large · Display (head only; the bar is fixed at 17) |
+   | Eyebrow | Show · Hide (it takes the bar's label with it) |
+   | Description | Show · Hide (head only; **never in the bar**) |
+   | Post count | In the bar · In both · Off |
+   | Bar contents | Label, name and count · Label, name, count and link · Name and count only |
+   | Bar rule | Hairline · None (**None disabled while pinned, with the reason on the control**) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — above only; below stays 0 at every value |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.** Plus the trio — **Vertical spacing above only; below stays 0 at every value** ⚑ — and
+   the Data group.
 7. **Data.** As 1. **0** → the bar renders and never pins ⚑. **many** → the bar pins for the length
    of the grid and **unpins at A34's pagination**, because the sticky context ends with the page ⚑.
 8. **Empty.** No description → head is eyebrow and name, 36 px above the bar. Zero posts → notice in
@@ -1060,3 +1223,15 @@ visitor sees exactly what they see today. What should the setting do?
 **Still open with the architect, unchanged by this pass:** the address the "All topics →" link points at.
 Ghost provides no tag-index page, so the link has no default target and does not render until the product
 makes that decision.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fourteen designs, numbered **1–14**.

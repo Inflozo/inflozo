@@ -1132,3 +1132,15 @@ Carried forward, unchanged: **`nav-transform` still needs to exist** (finding 1)
 **One item for the architect, arising from ruling 3 rather than from a rule:** the theme needs one icon partial per platform for Ghost's nine — x, facebook, linkedin, bluesky, threads, mastodon, tiktok, youtube, instagram — plus the neutral fallback glyph that the block-form dynamic partial falls back to. **Ghost 5.x has no `social_accounts` helper**, so the 5.x branch stays Facebook and X through their own link helpers; that branch is now the only place in A3 where a stored handle exists at all, and it is Ghost's helper that resolves it.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** sixteen designs, numbered **1–16**.

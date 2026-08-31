@@ -356,7 +356,18 @@ A capsule on `surface`, inset from three sides, with the page ground visible aro
 
 **Content fields.** Shared list, no additions.
 
-**Controls.** Pill width (Narrow · Page gutter · Edge to edge) · On scroll (Static · Stick · Stick and narrow) · Lift (Flat · Subtle · Lifted) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role sets the page ground around the capsule; the capsule stays `surface` — that is the design.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Pill width | Narrow · Page gutter · Edge to edge |
+| On scroll | Static · Stick · Stick and narrow |
+| Lift | Flat · Subtle · Lifted |
+| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role sets the page ground around the capsule; the capsule stays `surface` — that is the design.
 
 **Data.** Ghost primary nav. Empty nav → the pill shrinks to logo + actions and stays centred at Page-gutter width. Members off → both actions hidden; with no actions and no search the pill narrows to its content, the one case where it stops tracking the page gutter.
 
@@ -429,7 +440,19 @@ Rail's bar with a full-width panel behind it: children in columns with descripti
 
 **Content fields.** Shared list plus `panelTags` (tag list, opt), `featuredPost` → the rail's binding (Data group), `railHeading` (text, default "Latest", editable inline), `byTopicHeading` (default "By topic", editable inline), `byAuthorsHeading` (default "By authors", editable inline), and `panelColumns[]` — the per-column binding record: `{title, source, tagOrAuthor, navGroup, order, count, secondLine, footLink, whenEmpty, links[]}`. Uses `children[].description` (≤ 60 chars) and grandchildren (≤ 6 per child) — the design where both earn their place.
 
-**Controls.** Panel width (Full bleed · Page gutter · Under trigger) · Columns (Two · Three · Four) · Second line (Show · Hide) · Panel opens on (Click only · Hover and click) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Panel width | Full bleed · Page gutter · Under trigger |
+| Columns | Two · Three · Four |
+| Second line | Show · Hide |
+| Panel opens on | Click only · Hover and click |
+| On scroll | Static · Sticky · Shrink |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **Second line, defined.** One section value. On **authored** columns the second line is `children[].description`, editable inline with P0·1. On **bound** columns it is post data — the date, or the excerpt, per the column's Second line field — plain-text-locked, **never editable**. Hide removes the line everywhere and the panel loses half its height.
 
@@ -525,7 +548,19 @@ Rail's arrangement on the `contrast` token. The structure is settled; the design
 
 **Content fields.** Shared list. Uses `logoLight` — an image logo on the band needs its inverted file; without one the wordmark renders as text rather than being tinted.
 
-**Controls.** Band width (Full bleed · Page gutter) · Nav position (Beside logo · Centre · Right) · Primary action (Surface fill · Outline · Accent) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role is **locked**, with the reason shown: the contrast band is this design.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Page gutter |
+| Nav position | Beside logo · Centre · Right |
+| Primary action | Surface fill · Outline · Accent |
+| On scroll | Static · Sticky · Shrink |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Background role (universal) | Contrast (locked — the contrast band is this design) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role is **locked**, with the reason shown: the contrast band is this design.
 
 **Data.** Identical to Rail. No data of its own.
 
@@ -607,7 +642,20 @@ A hairline box aligned to the content column, so the nav's left edge is the head
 
 **Content fields.** Shared list, no additions. Children two deep.
 
-**Controls.** Box width (Content column · Page gutter · Narrow) · Box treatment (Hairline · Filled · Both) · Nav position (Beside logo · Centre · Right) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · On scroll (Static · Stick and fill · Hide) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No radius control — the box takes the pack token exactly, which is what distinguishes it from A1·5. Background role is **locked**, with the reason shown: the box sits on the page ground; its fill is the Box treatment control.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Box width | Content column · Page gutter · Narrow |
+| Box treatment | Hairline · Filled · Both |
+| Nav position | Beside logo · Centre · Right |
+| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| On scroll | Static · Stick and fill · Hide |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Background role (universal) | Background (locked — the box sits on the page ground; its fill is the Box treatment control) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No radius control — the box takes the pack token exactly, which is what distinguishes it from A1·5. Background role is **locked**, with the reason shown: the box sits on the page ground; its fill is the Box treatment control.
 
 **Data.** Identical to Rail. Empty nav → the box holds logo and actions and keeps its width, which comes from the content column, not its contents.
 
@@ -637,7 +685,19 @@ Logo left, actions right, nav centred between them in a three-column grid.
 
 **Content fields.** Shared list, no additions.
 
-**Controls.** Centring (True centre · Optical · Space between) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav spacing (Tight 20 · Normal 30 · Loose 40) · On scroll (Static · Sticky · Shrink) · Divider under (Hairline · Shadow · None) · Nav items before More (**stepper 3–6**, with Fit to width as its own toggle — Part A·A5) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Centring | True centre · Optical · Space between |
+| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Nav spacing | Tight 20 · Normal 30 · Loose 40 |
+| On scroll | Static · Sticky · Shrink |
+| Divider under | Hairline · Shadow · None |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
 **Data.** Identical to Rail. Empty nav → the centre column is removed and the grid becomes logo left, actions right, at full height.
 
@@ -671,7 +731,19 @@ Rail's bar with a bare-icon cluster at the right: search, RSS, dark mode, beside
 
 **Content fields.** Shared list, and the design that renders `socialLinks[]` as icons in the bar — capped at 2 alongside search and the mode toggle, bound per §0·8. No new fields.
 
-**Controls.** **RSS icon** (On · Off) · **Dark mode toggle** (On · Off) — one toggle per icon, drawn as the labelled cluster group (§0·9) · Icon style (Bare · Outlined · Filled) · Actions (None · Sign in · Subscribe · Sign in + Subscribe) · Nav position (Beside logo · Centre · Right) · On scroll (Static · Sticky · Shrink) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). At **Icon** its glyph draws in this cluster beside the others, and it takes no toggle of its own here because the standing control owns it. **The old compound "Icons" menu is gone** (§0·9): the cluster is composed one toggle at a time, and dark mode is its own row here as on every other header.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| RSS icon | On · Off (a toggle in the labelled cluster group, §0·9) |
+| Dark mode toggle | On · Off (a toggle in the same cluster group; offered only when the project ships both modes) |
+| Icon style | Bare · Outlined · Filled |
+| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Nav position | Beside logo · Centre · Right |
+| On scroll | Static · Sticky · Shrink |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). At **Icon** its glyph draws in this cluster beside the others, and it takes no toggle of its own here because the standing control owns it. **The old compound "Icons" menu is gone** (§0·9): the cluster is composed one toggle at a time, and dark mode is its own row here as on every other header.
 
 **Data.** Signed-in rendering is the P0·4 compile — server-side member checks, nothing flashes. Members disabled in Ghost → the action cards collapse to plain Label + Link (§0·3) and the icon cluster stands alone. Dark mode appears only if the pack ships both modes. Social icons per §0·8.
 
@@ -744,7 +816,20 @@ Rail's bar, hidden while the reader goes down the page and back on any upward sc
 
 **Content fields.** Shared list, no additions. The three returned-panel toggles decide what the panel carries.
 
-**Controls.** Hides after (Immediately · Short scroll 200 px · Long scroll) · Returned ground (Surface · Contrast · Page) · Returned shape (Inset panel · Full-width bar) · In the returned panel: **Wordmark** · **Subscribe** · **Sign in**, one toggle each (§0·9 — the nav is always in the panel) · Nav items before More (**stepper 3–6**, with **Fit to width** as its own toggle) · Dark mode toggle (On · Off). **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No On-scroll control — the scroll behaviour is the design.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Hides after | Immediately · Short scroll 200 px · Long scroll |
+| Returned ground | Surface · Contrast · Page |
+| Returned shape | Inset panel · Full-width bar |
+| Wordmark in returned panel | On · Off (a toggle in the labelled returned-panel group, §0·9) |
+| Subscribe in returned panel | On · Off (same group) |
+| Sign in in returned panel | On · Off (same group) |
+| Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
+| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+
+**Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No On-scroll control — the scroll behaviour is the design.
 
 **Data.** Identical to Rail. Empty nav → the panel carries the wordmark and the action. On pages shorter than two viewports the header never hides, since there is no scroll for it to respond to.
 
@@ -984,3 +1069,15 @@ No new decision was taken here except the one raised as open question 4. Frames 
    3. **Split it in the headers only, for now.** Fastest to see, but the same control would then behave differently in different categories, which is the sort of thing that is expensive to unpick later. Not recommended.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–8 and 10–16** — 9 stays retired.

@@ -374,7 +374,22 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **One departure:** the ladder collapses side furniture at 834 and **this design collapses it at 1,200** ⚑, because 288 px of margin decides rather than a breakpoint.
 - **4 · Responsive rule. 1440** margin 72, content 1,296, measure 720 centred, index 240 in the left margin on a 48 gap, share mark 38 at the inner edge of the right margin on the same gap. **1,200 and below** furniture leaves both margins: index → a closed `<details>` above the first block, rail → a row at the foot; **the measure is unchanged**. **834** margin 40, measure 754, body 18, h2 28. **≤ 767** margin 20, measure 350, body 17, h2 25, share buttons 44 px. Drop cap holds at every width ⚑.
 - **5 · Content fields.** Read: `{{content}}` whole and `post.access` — **and no `post.url` or `post.title`, because Ghost's share modal supplies both** ⚑. Derived: the index, from the `h2`/`h3` in `{{content}}`, ids from Ghost's slugs ⚑. Authored: `indexLabel` and `shareLabel` — optional, 24 ch, with defaults, **both inline-editable**. Unread: `indexNote`.
-- **6 · Controls, in sidebar order.** **Measure** Narrow 620 · Comfortable 720 · Wide 840. **Type scale** Compact 17 · Comfortable 19 · Spacious 21. **Drop cap** Off · Drop — three lines · Raised. **Paragraph rhythm** Spaced · Indented. **Table of contents** Off · Left · Right. **Share rail** Off · Rail · Under — **one mark linking to Ghost's share modal**, never a list of platforms ⚑. **Anchor links** Off · On hover · Always — **the ⌗ is inserted by script and needs JavaScript** ⚑. Seven, and the universal trio outside them. **Cut:** index width, rail position, index depth.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Table of contents | Off · Left · Right |
+  | Share rail | Off · Rail · Under — **one mark linking to Ghost's share modal**, never a list of platforms |
+  | Anchor links | Off · On hover · Always (**the ⌗ is inserted by script and needs JavaScript**) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** index width, rail position, index depth.
 - **7 · Data.** The route's `post` and `{{content}}` as Ghost renders it. Headings: **0, 1 or 2 → no index and an empty margin** ⚑; 3 → as drawn; **12+ → the index scrolls with the page**, since it is not sticky — an index that follows is 7 Sticky Index. **Sharing is one `<a href="#/share">` and Ghost's own modal does the rest** ⚑ — no destination list, no `post.url`, nothing for this design to choose but where the mark sits. **At the paywall cut the index lists only the headings above it** ⚑.
 - **8 · Empty state.** Empty `{{content}}` → **nothing renders**: no margins, no furniture, no padding. Editor: "This post has no body yet. Write it in Ghost." No headings → no index, margin empty. Share rail Off → the right margin is empty and the measure holds. An empty `indexLabel` falls back rather than rendering an unlabelled list.
 - **9 · Behaviour module.** **One module, and one behaviour the registry has no module for** ⚑: `toc` builds the index, and **the ⌗ beside a heading needs JavaScript of its own — ARCHITECT: registry addition**, no module name coined. **With JavaScript off no ⌗ renders** and nothing was reserved for one. No-JS, quoted: `toc` — "No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied." **The share mark declares nothing**: `<a href="#/share">` is an ordinary anchor, and Ghost's modal is Ghost's own client-side flow. Edit-safe.
@@ -392,7 +407,21 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **No departure, and nothing to collapse.**
 - **4 · Responsive rule. 1440** margin 72, measure 720 centred, body 19/1.7, h2 32, h3 24. **834** margin 40, measure 754, body 18, h2 28. **≤ 767** margin 20, measure 350, body 17, h2 25, images break to the screen edges with captions returning to the measure. Drop cap and Paragraph rhythm hold at every width ⚑.
 - **5 · Content fields.** Read: `{{content}}`, `post.access`. **Authored: none** ⚑ — the only design in A25 with no authored field, and **the only section in the category where selecting it offers no text**. Unread: `indexLabel`, `indexNote`, `shareLabel`.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** Spaced · Indented · **Anchor links** Off · On hover · Always — **the ⌗ needs JavaScript** ⚑. **Five — still the shortest panel in A25, and four of the five are now the shared quartet** ⚑. **Cut:** a justified value, a small-caps opening, a paragraph spacing ladder.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Anchor links | Off · On hover · Always (**the ⌗ is inserted by script and needs JavaScript**) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Five — still the shortest panel in A25, and four of the five are now the shared quartet** ⚑.
+  **Cut:** a justified value, a small-caps opening, a paragraph spacing ladder.
 - **7 · Data.** `{{content}}` and nothing else. **Headings: any number, including none** — the one design indifferent to them ⚑. **At the paywall cut the article simply stops**; no element spans the cut, **which makes it the safest of the twelve on a members post** ⚑.
 - **8 · Empty state.** Empty `{{content}}` → nothing at all. Editor: one greyed line. **There is no second empty state, because there is nothing else that can be absent.**
 - **9 · Behaviour module.** None for the article; `core` assumed — **and the ⌗ beside a heading is behaviour the registry has no module for** ⚑: **ARCHITECT: registry addition**, no module name coined. **No-JS: at Anchor links Off the page is pixel-identical; at On hover and Always no ⌗ renders** — the headings, their ids and their 96 px scroll margin are untouched, nothing was reserved for the anchor, and the measure does not move. Edit-safe. **11 Ruled, not this design, is the one A25 design that is the same document at every setting** ⚑ — it offers no anchor row at all.
@@ -410,7 +439,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **One departure: the sheet is not drawn below 767** ⚑ and the section reverts to the page ground.
 - **4 · Responsive rule. 1440** sheet 1,296 on the 72 margin, inset 64/96/132 symmetrical, measure 720 centred, images 720 or 1,296 clipped to the radius, share row above the lower inset. **834** sheet 754, inset 64 with 32 px horizontally, **measure inside 690** ⚑. **≤ 767** **no sheet**: ground reverts, measure 350, share row kept, images to the screen edges.
 - **5 · Content fields.** Read: `{{content}}`, `post.access`. Authored: `shareLabel`, inline-editable — the share link's own text. Unread: `indexLabel`, `indexNote`.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Sheet inset** Compact 64 · Comfortable 96 · Spacious 132 · **Media in the sheet** In measure · To the edge · **Share rail** Off · Under — **one mark linking to Ghost's share modal** ⚑. Seven, and the universal trio outside them. **Cut:** a sheet edge value, a sheet width, a sheet radius.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Sheet inset | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Media in the sheet | In measure · To the edge |
+  | Share rail | Off · Under — one mark linking to Ghost's share modal |
+  | Background role (universal) | **Locked to Surface** |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a sheet edge value, a sheet width, a sheet
+  radius.
 - **7 · Data.** `{{content}}` whole; indifferent to headings. **An image marked wide or full takes the sheet's edge at To the edge and 720 at In measure** ⚑ — **this design overrules the Cards module's breakout setting**, and after this pass it is the only one that does at its default. **At the paywall cut the sheet closes above the cut** with its lower inset intact ⚑.
 - **8 · Empty state.** Empty `{{content}}` → **nothing, and in particular no sheet** ⚑. Editor: the greyed line inside a dashed sheet outline. Share rail Off removes the row and its 24 px; the inset does not change.
 - **9 · Behaviour module.** **None** ⚑ — `share` left with the destinations: the row at Share rail Under is one `<a href="#/share">` and Ghost's own modal does the rest. `core` assumed at both values. Edit-safe.
@@ -428,7 +473,24 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **One departure: the band does not collapse at any width** ⚑.
 - **4 · Responsive rule. 1440** band full bleed or 1,296 inset, padding 64/96/132 inside it, measure 720 centred, index 240 in band margin, **share row above the lower padding at Share rail Under**. **1,200 and below** the index collapses to a `<details>` **inside the band**. **834** padding 80, measure 754, body 18. **≤ 767** padding 64, measure 350, body 17; **at Band edges Inset the padding drops to 32** ⚑.
 - **5 · Content fields.** Read: `{{content}}`, `post.access`. Derived: the index. Authored: `indexLabel`, and **`shareLabel` — new to this design in this pass** ⚑; both inline-editable. **Nothing else is read for the share mark**: Ghost's modal supplies the URL, the title and the platforms. Unread: `indexNote`.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Band padding** Compact 64 · Comfortable 96 · Spacious 132 · **Band edges** Full bleed · Inset to the content width · **Table of contents** Off · Left · **Share rail** Off · Under. **Eight — the largest panel in A25**, and the universal trio outside them. **Cut:** a band colour, dimmed images, a band height minimum, the Right index value.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Band padding | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Band edges | Full bleed · Inset to the content width |
+  | Table of contents | Off · Left |
+  | Share rail | Off · Under |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Eight — the largest panel in A25**, and the universal trio outside them. **Cut:** a band
+  colour, dimmed images, a band height minimum, the Right index value.
 - **7 · Data.** `{{content}}` whole. Headings: **0–2 → no index, and the measure stays centred** ⚑ rather than shifting. Code cards deepen to `#171511`, callouts keep the accent fill, **a photograph is untouched — no filter, no dim, no border** ⚑. **At Share rail Under the mark stands on a surface derived at 6% of the band's own text** ⚑ — `#302D26` on `#232019` — with the hairline at 18% and the glyph at the band's muted. **It is one link to Ghost's share modal**, so the band never has to draw a row of brand glyphs: one mark is all the on-band treatment it needs. At the paywall cut the band closes above it.
 - **8 · Empty state.** Empty `{{content}}` → **no band at all** ⚑. Editor: the greyed line on the band's ground. No index → no column and no gap. Share rail Off is the default and removes the row and its hairline.
 - **9 · Behaviour module.** **One: `toc`**, at Table of contents Left ⚑ — the share row is a plain `<a href="#/share">` and declares nothing. No-JS, quoted: `toc` — "No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied." **The band, its colours and its bleed are CSS and are unaffected** ⚑. Edit-safe.
@@ -446,7 +508,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** media frame. **One departure: the measure does not become the page measure at 834** ⚑ — the gap between the column and the picture is the design.
 - **4 · Responsive rule. 1440** margin 72, measure 620 by default, media to the card's own width or to both viewport edges with no radius, space 48/72/96, caption on the measure or 200 px in the right margin. **1,200 and below** **Caption In the margin resolves to Under** ⚑. **834** margin 40, **measure held**, space 56, body 18. **≤ 767** margin 20, measure 350, space 40, body 17.
 - **5 · Content fields.** Read: `{{content}}` and specifically its `<figure>` elements **and the width each Koenig card carries**, `post.access`. Authored: none. Unread: the other six.
-- **6 · Controls.** **Measure** (defaulting to **Narrow** ⚑) · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Breakout** **Follow the card widths** · Full bleed · Wide · **Caption** Under · In the margin · **Space around media** Compact 48 · Comfortable 72 · Spacious 96. Seven, and the universal trio outside them. **Cut:** a per-image override, a crop ratio, a first-image-only value.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 (defaulting to **Narrow**) |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Breakout | **Follow the card widths** · Full bleed · Wide |
+  | Caption | Under · In the margin |
+  | Space around media | Compact 48 · Comfortable 72 · Spacious 96 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a per-image override, a crop ratio, a
+  first-image-only value.
 - **7 · Data.** `{{content}}` whole. **Breakout Follow the card widths reads Ghost's own per-card width — normal, wide or full — and is the default** ⚑, so one post can hold a picture at the measure, one at the content width and one at the viewport; **Full bleed and Wide remain blanket overrides** that ignore it. **Images: 0 → the design is 2 Plain at Narrow and the panel says so** ⚑; many → every one breaks out. Galleries and video embeds behave identically; **a bookmark card and a callout never break out** ⚑. At the cut, a broken-out image keeps its space below it.
 - **8 · Empty state.** Empty `{{content}}` → nothing. A body with no figures → the measure alone, no reserved space, no placeholder. Editor: "This design is for posts with pictures. Without them it is 2 Plain at Narrow."
 - **9 · Behaviour module.** `lightbox`, and **the registry's quoted degradation does not describe this design** ⚑ — it assumes thumbnails the theme wrapped in a link to the original, and inside a post's body the theme owns the stylesheet and nothing else: Ghost's pictures are not linked unless the author linked them. **No-JS: the picture is the picture** — no modal and no link — while the breakout, the caption placement and the space ladder are unaffected, all three being CSS. **It must not run while editing** ⚑: clicking a picture on the canvas selects the section and says "Edit in Ghost", so a caption someone is editing never has a modal opened over it. **Declared here and nowhere else in A25** ⚑ — an image at 1,440 is already at its useful size, so the module earns its place only where the original is larger than the viewport.
@@ -464,7 +542,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** split. **One departure:** the archetype collapses a side column above the text, and **here each heading returns to the top of its own section** ⚑ — a stack of headings above the first paragraph would be an index, which is 8 Index Top.
 - **4 · Responsive rule. 1440** heading column 180 or 240 hanging off the measure's left edge on a constant 48 gutter, measure 720 centred, section gap 56, paragraph gap 24, anchor under the hanging heading. **1,200 and below** **headings return above their text in the measure**; **an H3 set to hang keeps `text-muted`** ⚑. **834** measure 754, body 18, section gap 48. **≤ 767** measure 350, body 17, section gap 40.
 - **5 · Content fields.** Read: `{{content}}` and specifically its `h2`/`h3`, **moved by grid placement and never taken out of the flow** ⚑; `post.access`. Authored: none.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Heading column** Compact 180 · Comfortable 240 · **Levels that hang** H2 only · H2 and H3 · **Anchor links** Off · On hover · Always — **the ⌗ needs JavaScript** ⚑. Seven, and the universal trio outside them. **Cut:** heading alignment in its column, a rule between column and text, a right-hand heading column.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Heading column | Compact 180 · Comfortable 240 |
+  | Levels that hang | H2 only · H2 and H3 |
+  | Anchor links | Off · On hover · Always (**the ⌗ is inserted by script and needs JavaScript**) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** heading alignment in its column, a rule
+  between column and text, a right-hand heading column.
 - **7 · Data.** `{{content}}` whole. Headings: **0 → the design is 2 Plain and nothing is reserved** ⚑; 1 → one hanging heading; many → as drawn. **An H4 or deeper never hangs** ⚑. **At the paywall cut a hanging heading keeps its section; the cut never lands between a heading and its text** ⚑.
 - **8 · Empty state.** Empty `{{content}}` → nothing. No headings → the measure alone with the left column collapsed; no empty column, no reserved 288. Editor: "This post has no headings. This design will read as 2 Plain."
 - **9 · Behaviour module.** None for the arrangement; `core` assumed — **and the ⌗ beside a heading is behaviour no registry module covers** ⚑: **ARCHITECT: registry addition**, no module name coined. **No-JS: the hanging column is pixel-identical** — it is CSS grid placement and the headings are in the DOM where Ghost put them — **and no ⌗ renders under any heading**; nothing was reserved for it, so neither column moves. Edit-safe. **The first of two A25 designs that rearrange the page with no module**, which is the category's argument that arrangement is not behaviour.
@@ -482,7 +576,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** sticky. **One departure:** the archetype assumes a bar across the top; here it is a column in a margin, so **it stops sticking below 1,200 rather than becoming a bar** ⚑ (A24·13 owns the bar).
 - **4 · Responsive rule. 1440** index 240 in either margin on a 48 gap, held at 96 with a maximum height of the viewport less 192 and its own scroll beyond, measure 720 centred, share buttons under the index behind a hairline. **1,200 and below** the index stops holding and becomes a closed disclosure above the first block ⚑; the buttons become a row at the foot. **834** measure 754, body 18. **≤ 767** measure 350, body 17, open-index entries at 44 px targets, **closing when one is followed** ⚑.
 - **5 · Content fields.** Read: `{{content}}`, `post.access` — **and no `post.url` or `post.title`, because Ghost's share modal supplies both** ⚑. Derived: the index, its numerals at Numbered, and **the current entry — the only value in A25 that is not in the markup at render time** ⚑. Authored: `indexLabel` and `shareLabel`, both inline-editable.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Index position** Left · Right · **Index style** Plain · Numbered · **Share rail** Off · With the index · Under — **one mark linking to Ghost's share modal** ⚑. Seven, and the universal trio outside them. **Cut:** a hold position, a sticky-off value, index depth, a progress meter, a back-to-top entry.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Index position | Left · Right |
+  | Index style | Plain · Numbered |
+  | Share rail | Off · With the index · Under — one mark linking to Ghost's share modal |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a hold position, a sticky-off value, index
+  depth, a progress meter, a back-to-top entry.
 - **7 · Data.** `{{content}}` whole. Headings: 0–2 → no index, no column, no disclosure ⚑; **12+ → the index scrolls inside its own held column and keeps the current entry in view**. **At the paywall cut the index lists only the headings above it and stops holding at the cut** ⚑.
 - **8 · Empty state.** Empty `{{content}}` → nothing. Fewer than three headings → no index, empty margin, measure unmoved. Editor: "This post has two headings. The index needs three." Share rail Off → the hairline goes with the buttons.
 - **9 · Behaviour module.** **Two: `toc` and `scroll-spy`** — it was three, the largest declaration in the library, until the native-share pass took `share` out ⚑. No-JS, quoted in order: `toc` — "No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied." `scroll-spy` — "The sticky list renders with the first item marked current; no active-item tracking." **The first governs**: `scroll-spy`'s degradation assumes a server-rendered list and here there is none, **so with JavaScript off there is no index to mark** ⚑, and FR-G4 holds through `toc`'s own clause. Both edit-safe, and **the share mark declares nothing** — `<a href="#/share">` is an ordinary anchor.
@@ -500,7 +610,25 @@ platform names and the copy confirmation.
 - **3 · Archetype.** stack. **One departure: the column count is forced to One below 767** ⚑ — the only control value a width overrides in the category.
 - **4 · Responsive rule. 1440** index on the measure between two hairlines, 20 px internal padding, head at 11 px uppercase with the count and reading time at 13, entries at 15 in one to three columns filled down then across, 40 px to the first block. **834** unchanged but for the measure. **≤ 767** **columns forced to One** ⚑, padding 16, gap 28, entries on 44 px rows. **The index never becomes a disclosure at any width** ⚑.
 - **5 · Content fields.** Read: `{{content}}`, **`post.reading_time` — the only design in A25 that reads it** ⚑, `post.access`. Derived: the index, the section count, the numerals. Authored: `indexLabel`, **`indexNote` — the only design that reads it** ⚑, and `shareLabel`; **all three inline-editable, and the first two are the reason that rule exists** ⚑.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Index columns** One · Two · Three · **Index style** Plain · Numbered · Ruled · **Share rail** Off · Under — **one mark linking to Ghost's share modal** ⚑. Seven, and the universal trio outside them. **Cut:** an open-by-default value, index depth, a per-design heading threshold. **Ruled constrains Index columns to One** ⚑ — the category's third pattern for an impossible combination, after disable-with-a-reason and absent-rather-than-offered.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Index columns | One · Two · Three |
+  | Index style | Plain · Numbered · Ruled (**Ruled constrains Index columns to One**) |
+  | Share rail | Off · Under — one mark linking to Ghost's share modal |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** an open-by-default value, index depth, a
+  per-design heading threshold. **Ruled constrains Index columns to One** ⚑ — the category's third
+  pattern for an impossible combination, after disable-with-a-reason and
+  absent-rather-than-offered.
 - **7 · Data.** `{{content}}` whole. Headings: 0–2 → no index, no hairlines, no gap ⚑; **12+ → drawn whole and taller than the first paragraph**, which the design accepts. **Reading time comes from Ghost and is not recalculated**; on a page template the head carries the section count alone ⚑. At the cut, the index lists and counts only what is above it.
 - **8 · Empty state.** Empty `{{content}}` → **nothing, no hairlines** ⚑. Fewer than three headings → no index. Editor: "This post has two headings. The index needs three." An empty `indexNote` renders nothing and leaves no gap; an empty `indexLabel` falls back.
 - **9 · Behaviour module.** **`toc` alone** ⚑ — the share row at Under is a plain `<a href="#/share">` and declares nothing. No-JS, quoted: `toc` — "No TOC renders. Because it is built from `{{content}}` client-side there is no server-side equivalent — the article itself is unaffected, which is why FR-G4 is still satisfied." **With JavaScript off this design is 2 Plain with a share link that opens nothing, and it loses more than any other A25 design** ⚑.
@@ -518,7 +646,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** edge rail. **One departure:** the ladder puts a rail above the content when it collapses; **this one goes to the foot** ⚑.
 - **4 · Responsive rule. 1440** mark 38 px at the inner edge of either margin, 48 from the text, at the first line, static; `shareLabel` beside it at Share style Icon and label, and **no rotated label at either value** ⚑ — it named a group of destinations that no longer exists. **1,200 and below** the mark becomes a row at the foot. **834** measure 754, body 18. **≤ 767** measure 350, **the visible box grows from 38 to 44** ⚑.
 - **5 · Content fields.** Read: `{{content}}`, `post.access` — **and neither `post.url` nor `post.title` any more** ⚑, because Ghost's `#/share` modal supplies both. Authored: `shareLabel` (optional, 24 ch, default "Share this piece") — **the mark's own text and accessible name**, inline-editable. **Deleted:** `copiedLabel` ⚑. Unread: `indexLabel`, `indexNote`.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Rail position** Left · Right · **Share style** Icon · Icon and label. **Six, and the universal trio outside them — the only panel in A25 that lost a control in this pass** ⚑, because Links had nothing left to count. **Cut:** a sticky value, share counts, share-a-selection, a destination picker.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Rail position | Left · Right |
+  | Share style | Icon · Icon and label |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  **Six, and the universal trio outside them — the only panel in A25 that lost a control in this
+  pass** ⚑, because Links had nothing left to count. **Cut:** a sticky value, share counts,
+  share-a-selection, a destination picker.
 - **7 · Data.** `{{content}}` for the article, and nothing else: **the mark is `<a href="#/share">` and Ghost builds the share flow itself** ⚑ — copy link, email and the social platforms, with the post's title and URL already filled in — **so the theme composes no destination URLs and reads no `post.url`**. **The destinations, their order and their names are Ghost's** ⚑; a site that wants a different set changes it in Ghost, not in a theme setting, **which retires A24·14's Share-destinations setting as far as A25 is concerned** — a finding, because A24·14 and A26·9 still read it. **The rail draws on posts and pages alike** ⚑: `#/share` works on any post or page, so the old rule — no rail where there is no `post.url` — could never have fired. **It is absent only on non-post contexts**, where there is no article to share. At the paywall cut the mark stays at the first line above the cut.
 - **8 · Empty state.** Empty `{{content}}` → nothing, mark included. **There is no count and no empty-list case left** ⚑ — the old floor of two and the Copy-link-alone fallback went with the destination list, and a design that draws one link cannot be empty while the article exists. An empty `shareLabel` falls back rather than drawing an unnamed mark.
 - **9 · Behaviour module.** **None** ⚑ — **and this is the design that used to be the reason `share` was in the category at all.** The mark is one `<a href="#/share">` and Ghost's native modal carries the platforms, the email option and the copy confirmation. **No-JS:** the anchor renders and Ghost's modal — Ghost's own client-side flow — does not open; a platform limitation the theme cannot fill. Edit-safe: nothing runs while editing, and Ghost's modal never opens on the canvas.
@@ -536,7 +680,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** edge rail. **One departure: the rail is not one element but one per row** ⚑, so it collapses per block rather than as a column.
 - **4 · Responsive rule. 1440** margin column 240 in either margin on a 48 gap, notes top-aligned with their block, right-aligned at Left and left-aligned at Right, captions 13, margin quotes 19 with a 2 px accent rule above. **1,200 and below** every note returns to its DOM position. **834** measure 754, body 18. **≤ 767** measure 350, body 17.
 - **5 · Content fields.** Read: `{{content}}` and specifically its `<figcaption>` and `<blockquote>` elements, `post.access`. Authored: none — `indexLabel`, `indexNote` and `shareLabel` sit dormant.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Margin column** Left · Right · **What moves out** Captions · Captions and quotes · **Anchor links** Off · On hover · Always — **the ⌗ needs JavaScript** ⚑. Seven, and the universal trio outside them. **Cut:** a column width, both margins at once, a caption size, a user-set threshold.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Margin column | Left · Right |
+  | What moves out | Captions · Captions and quotes |
+  | Anchor links | Off · On hover · Always (**the ⌗ is inserted by script and needs JavaScript**) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a column width, both margins at once, a
+  caption size, a user-set threshold.
 - **7 · Data.** `{{content}}` whole. Captions: **0 → the margin is empty and the measure does not move** ⚑; many → one note per figure, **and every caption is treated the same way however long it runs** ⚑ — a stylesheet cannot count characters. **A note longer than its row is clipped to it and scrolls inside it** ⚑ — the row never grows, the article's rhythm never changes, and no words are lost — **with a three-line minimum** ⚑ so a short block leaves a readable note rather than a peephole. The scrollbar is 2 px in the ground's own hairline, and **the scroller is a labelled, keyboard-reachable region** ⚑. At Captions and quotes every `<blockquote>` moves, **including one inside a list** — the one case where a note and its context part company, drawn on the proof's stress frame. At the cut, a note stays with its block.
 - **8 · Empty state.** Empty `{{content}}` → nothing. No captions and no quotes → **the design is 2 Plain with an empty margin and no reserved column** ⚑. Editor: "Nothing in this post moves to the margin yet. Captions and quotes do." A figure with no caption leaves its cell empty and the picture does not widen.
 - **9 · Behaviour module.** None for the arrangement; `core` assumed — **and the ⌗ beside a heading is behaviour no registry module covers** ⚑: **ARCHITECT: registry addition**, no module name coined. **No-JS: the notes are pixel-identical** — placement is CSS grid — **and the character rule that used to sit beside it is deleted** ⚑, because a stylesheet cannot count the characters in a caption. **No ⌗ renders without JavaScript** and nothing was reserved for one. Edit-safe.
@@ -554,7 +714,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **One departure: the box is kept at every width** ⚑ where 3 Sheet's plane leaves below 767, and at Frame Rules only the horizontal inset is dropped.
 - **4 · Responsive rule. 1440** box 720 plus a 40/56/72 inset each side — 800, 832 or 864 — at the pack's radius, centred; a hairline above every heading or between every block, **always the full inner width**. **834** box at 754, inset 40, **measure inside 674** ⚑. **≤ 767** box kept, inset 20, **measure 310**; **at Frame Rules only the measure is 350** ⚑.
 - **5 · Content fields.** Read: `{{content}}`, `post.access`. Authored: none.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Rules** Between sections · Every block · **Frame** Hairline box · Rules only · **Inset** Compact 40 · Comfortable 56 · Spacious 72. Seven, and the universal trio outside them. **Cut:** a rule weight, a rule colour, a fill, a paragraphs-only value.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Rules | Between sections · Every block |
+  | Frame | Hairline box · Rules only |
+  | Inset | Compact 40 · Comfortable 56 · Spacious 72 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a rule weight, a rule colour, a fill, a
+  paragraphs-only value.
 - **7 · Data.** `{{content}}` whole. Headings: **0 → at Between sections there are no rules and the design is a box around 2 Plain** ⚑. **Rules suppress themselves above the five Ghost cards that draw their own edge** — callout, code, bookmark, table, toggle ⚑ — **and above the first block**. At the cut the box closes above it.
 - **8 · Empty state.** Empty `{{content}}` → **nothing, no box** ⚑. One block → the box around one paragraph and no rules, which is composed rather than broken.
 - **9 · Behaviour module.** None; `core` assumed. **No-JS: pixel-identical** — every line is a CSS border ⚑. Edit-safe. **The one A25 design that is the same document with and without JavaScript at every setting** ⚑ — 2 Plain, 6 Hanging Heads, 10 Marginalia and 12 Numbered hold that only at Anchor links Off, because a ⌗ beside a heading has to be inserted by a script, and this design offers no anchor row.
@@ -572,7 +748,23 @@ platform names and the copy confirmation.
 - **3 · Archetype.** article body. **One departure: the hanging numeral column resolves to Above the heading below 1,200** ⚑ rather than collapsing to nothing, because the numbering is the design.
 - **4 · Responsive rule. 1440** numeral column 72 px, 32 px gutter, hanging 104 left of the measure, right-aligned, mono 13 px in `text-muted`, zero-padded to two digits; section gap 44. **1,200 and below** In the margin resolves to Above the heading, numeral 12 px with a 6 px gap. **834** measure 754, body 18, section gap 40. **≤ 767** measure 350, body 17, **numerals 12 px and decimals 11** ⚑, section gap 34.
 - **5 · Content fields.** Read: `{{content}}` and specifically its heading order, `post.access`. **Generated: the numerals** ⚑ — not stored, not authored, not in the source, not copied with a heading. Authored: none.
-- **6 · Controls.** **Measure** · **Type scale** · **Drop cap** · **Paragraph rhythm** · **Numbering** H2 only · H2 and H3 · **Number position** In the margin · Above the heading · **Anchor links** Off · On hover · Always — **the ⌗ needs JavaScript** ⚑. Seven, and the universal trio outside them. **Cut:** a starting number, a numeral style, numbered paragraphs, an index.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Measure | Narrow 620 · Comfortable 720 · Wide 840 |
+  | Type scale | Compact 17 · Comfortable 19 · Spacious 21 |
+  | Drop cap | Off · Drop — three lines · Raised |
+  | Paragraph rhythm | Spaced · Indented |
+  | Numbering | H2 only · H2 and H3 |
+  | Number position | In the margin · Above the heading |
+  | Anchor links | Off · On hover · Always (**the ⌗ is inserted by script and needs JavaScript**) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, and the universal trio outside them. **Cut:** a starting number, a numeral style,
+  numbered paragraphs, an index.
 - **7 · Data.** `{{content}}` whole. Headings: **0 → no numerals and the design is 2 Plain** ⚑; 1 → a lone 01; many → zero-padded to two digits and right-aligned so the column never moves; **past 99 the padding stops and the numeral grows into the gutter**, which holds to 999. **An H3 before any H2 takes 00.1** ⚑. **At the paywall cut the numbering stops at the cut and the counter is recomputed on the unlocked page rather than continued** ⚑.
 - **8 · Empty state.** Empty `{{content}}` → nothing. No headings → the measure alone, **no numeral column reserved** ⚑. Editor: "This post has no headings. There is nothing to number." A single heading renders 01 and the panel does not warn — one numbered section is a legitimate post.
 - **9 · Behaviour module.** None; `core` assumed. **No-JS: pixel-identical** ⚑ — CSS counters are a stylesheet feature, **so the numbering survives with JavaScript off**, which distinguishes this design from every index in the category. **The anchor is the exception** ⚑ — a ⌗ beside a heading needs JavaScript, **ARCHITECT: registry addition** with no module name coined — so this design is the same document either way **at Anchor links Off**, and 11 Ruled is the only one that is so at every setting. Edit-safe.
@@ -985,3 +1177,15 @@ entries — and the heading anchor is marked **ARCHITECT: registry addition** wi
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
   required shape, and names **2 Plain** and **5 Full Bleed** — both of which exist in this category's
   roster. It is the owner's own choice, confirmed on 29 August 2026.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** twelve designs, numbered **1–12**.

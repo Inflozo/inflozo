@@ -326,17 +326,24 @@ is always safe.
    text, gallery one column (Ghost's collapse).
 5. **Content fields.** The whole union. Ignored at their default values: nothing — 1 Plain is the only
    treatment that draws every field in its default state.
-6. **Controls, in sidebar order.** **Space around cards** Compact 32 · Comfortable 48 · Spacious 64.
-   **Captions** Under, left · Under, centred · Hidden. **Credit line** With the caption · Its own
-   line · Hidden. **Rules** Above and below · Below only · None — on bookmark, toggle, audio, file and product only ⚑;
-   **the HTML card leaves this list**, because Ghost emits no wrapper element for it ⚑. **Tinted cards** Tinted · Hairline
-   box · None — governs the callout and the call to action ⚑. **Emoji** Shown · Hidden. Then the
-   module's **Callout colours** mapping and the five read-only rows, not counted. **The Credit line's
-   help text documents the convention** — "a caption's trailing italic segment renders as the credit" —
-   and the treatment preview draws one example ⚑. **The divider card's panel carries the centred glyph
-   as an icon slot** (P0·2): Icon Picker on click, popover with swap · Size Small/Medium/Large ·
-   Colour role Text/Muted/Accent · Remove; empty is a dashed 20 px slot visible only while the card is
-   selected, and at rest with no icon the divider is a bare rule ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 48 · Spacious 64 |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Rules | Above and below · Below only · None — on bookmark, toggle, audio, file and product only |
+   | Tinted cards | Tinted · Hairline box · None — governs the callout and the call to action |
+   | Emoji | Shown · Hidden |
+
+   Then the module's **Callout colours** mapping and the five read-only rows, not counted. **The
+   Credit line's help text documents the convention** — "a caption's trailing italic segment
+   renders as the credit" — and the treatment preview draws one example ⚑. **The divider card's
+   panel carries the centred glyph as an icon slot** (P0·2): Icon Picker on click, popover with
+   swap · Size Small/Medium/Large · Colour role Text/Muted/Accent · Remove; empty is a dashed 20 px
+   slot visible only while the card is selected, and at rest with no icon the divider is a bare
+   rule ⚑.
 7. **Data.** `{{content}}` as Ghost renders it; A33 adds no markup ⚑. **0 cards → nothing renders**,
    no wrapper and no padding. **1** → it takes its own space. **Many** → the space value repeated, and
    two cards of the same type in a row keep one space, not two ⚑. Renders on pages, and above a
@@ -392,10 +399,18 @@ is always safe.
 5. **Content fields.** The whole union. **The header card's fields are drawn without a panel** ⚑, and
    **the HTML card gets no panel either** ⚑ — Ghost emits no wrapper element for it, so there is
    nothing to put a panel on (the owner's ruling of 28 August 2026, closing Finding 8).
-6. **Controls, in sidebar order.** **Space around cards** 32 · 48 · 64. **Captions** Under, left ·
-   Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Panel**
-   Hairline · Hairline and shadow · Fill only. **Panel padding** Compact 16 · Comfortable 24 ·
-   Spacious 32. **Image in the panel** Inset · To the panel edge. Then What Ghost owns.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 48 · Spacious 64 |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Panel | Hairline · Hairline and shadow · Fill only |
+   | Panel padding | Compact 16 · Comfortable 24 · Spacious 32 |
+   | Image in the panel | Inset · To the panel edge |
+
+   Then What Ghost owns.
 7. **Data.** As 1 Plain.
 8. **Empty state.** **The panel keeps its shape and padding whatever is absent** ⚑ — a missing field
    shortens the panel and never leaves a hole. No caption → the bottom padding closes the gap. No
@@ -433,11 +448,18 @@ is always safe.
    content box** ⚑, and **the HTML card takes no plane at all** ⚑ — Ghost emits no wrapper element for
    it, so it renders in the content column on the page ground (the owner's ruling of 28 August 2026,
    closing Finding 8).
-6. **Controls, in sidebar order.** **Space around cards** Compact 32 · Comfortable 56 · Spacious 72 —
-   **this treatment's ladder, one step above 1 Plain's** ⚑. **Captions** Under, left · Under, centred ·
-   Hidden. **Credit line** With the caption · Its own line · Hidden. **Plane width** Measure 720 ·
-   Wide 1040 · Content 1296. **Plane** Surface · Tinted · Hairline box. **Media on the plane** In
-   measure · On the plane. Then What Ghost owns.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 56 · Spacious 72 — **this treatment's ladder, one step above 1 Plain's** |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Plane width | Measure 720 · Wide 1040 · Content 1296 |
+   | Plane | Surface · Tinted · Hairline box |
+   | Media on the plane | In measure · On the plane |
+
+   Then What Ghost owns.
 7. **Data.** As 1 Plain.
 8. **Empty state.** **The plane is only ever as tall as its content plus its padding** ⚑ — no minimum
    height, and a one-line callout on a 1,040 plane is allowed to be one line. No caption → no
@@ -477,15 +499,20 @@ is always safe.
    **≤ 767** everything 350, space 32, **caption alignment has no meaning**.
 5. **Content fields.** The whole union. **`image.width` is read and then overruled** ⚑ — the one
    treatment that does not honour the authored value as given.
-6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
-   Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Media steps
-   up** One rung · Two rungs · Not at all. **What steps up** Images · **Images and video** — **two values, and the reason is Ghost's** ⚑: a
-   gallery and an embed keep the width Ghost fixes for them and a theme may not override it, so
-   neither can step up. Images and video is the default, being everything that can move. Never the
-   bookmark's thumbnail, which is furniture rather than media, and **never the product card's
-   photograph** ⚑, which belongs to a copy card and moves only with it. **Caption alignment** To the measure · To the media. Then What Ghost owns. **The panel
-   says in one line: "Regular images render at the wide column."** ⚑ This is the one treatment that
-   overrules the author's width class, and without the line it reads as a bug.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 56 · Spacious 72 |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Media steps up | One rung · Two rungs · Not at all |
+   | What steps up | Images · **Images and video** (default) — two values, and the reason is Ghost's |
+   | Caption alignment | To the measure · To the media |
+
+   Then What Ghost owns. **The panel says in one line: "Regular images render at the wide
+   column."** ⚑ This is the one treatment that overrules the author's width class, and without the
+   line it reads as a bug.
 7. **Data.** As 1 Plain. **A post with no media cards has nothing for this treatment to
    step up** ⚑ — every card renders at the measure and nothing looks broken; 4 Wide is still the
    treatment in force and never becomes another design.
@@ -524,12 +551,17 @@ is always safe.
    space 32.
 5. **Content fields.** The whole union. `image.width` is honoured and **full is re-pointed at the
    viewport** ⚑.
-6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
-   Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Full resolves
-   to** Content 1296 · Viewport edge. **Bleed applies to** **Images** (default) · Images and video — **two values, and the reason is
-   Ghost's** ⚑: a gallery and an embed keep the width Ghost fixes for them. The old default included
-   galleries, so the default carries down to Images. **Caption on a bleed** In the measure · Under, full width · Over the image, at the foot —
-   **the last value disabled with its ratio shown where the carried colour fails AA on the scrim** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 56 · Spacious 72 |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Full resolves to | Content 1296 · Viewport edge |
+   | Bleed applies to | **Images** (default) · Images and video — two values, and the reason is Ghost's |
+   | Caption on a bleed | In the measure · Under, full width · Over the image, at the foot (**the last value disabled with its ratio shown where the carried colour fails AA on the scrim**) |
+
    Then What Ghost owns.
 7. **Data.** As 1 Plain. **An author who marks no card full sees no bleed at all** ⚑ — regular at
    the measure, wide at 1,296, and 5 Full Bleed still the treatment in force.
@@ -571,14 +603,18 @@ is always safe.
    padding 24, space 32 ⚑.
 5. **Content fields.** The whole union. **`image.caption` is always on the page ground** in this
    treatment, because media never takes the band ⚑.
-6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
-   Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Band width**
-   Measure 720 · Wide 1040 · Content 1296. **Which cards invert** Callout only · **Every copy card** — **two values** ⚑. The third, Copy cards
-   and the header, is gone: the header card carries the author's own inline colours. The help line
-   names the seven — "callout, toggle, bookmark, button, product, file and audio" — so the value label
-   stays a value ⚑, and it says why signup, the call to action, the header and the HTML card are not
-   on the list. **Action on the band** The carried colour · The accent, re-checked —
-   **the second value disabled in Paper with 3.4:1 shown** ⚑. Then What Ghost owns.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Space around cards | Compact 32 · Comfortable 56 · Spacious 72 |
+   | Captions | Under, left · Under, centred · Hidden |
+   | Credit line | With the caption · Its own line · Hidden |
+   | Band width | Measure 720 · Wide 1040 · Content 1296 |
+   | Which cards invert | Callout only · **Every copy card** — two values |
+   | Action on the band | The carried colour · The accent, re-checked (**the second value disabled in Paper with 3.4:1 shown**) |
+
+   Then What Ghost owns.
 7. **Data.** As 1 Plain. **A post whose only cards are images renders with no band at all** ⚑ — the
    treatment is invisible, which is correct rather than broken.
 8. **Empty state.** As 1 Plain, plus: **a bookmark with no scraped thumbnail takes the whole content
@@ -869,3 +905,15 @@ recorded conflict, with its reason corrected against Ghost's own documentation.
   Band. Six designs, numbers 1–6, nothing renumbered, no gap closed or created.
 - **The `**[Free] designs:**` line is present**, on its own line in the roster, in the required shape,
   and names two designs that exist: **1 Plain** and **4 Wide** — the owner's choice.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** six treatments, numbered **1–6**.

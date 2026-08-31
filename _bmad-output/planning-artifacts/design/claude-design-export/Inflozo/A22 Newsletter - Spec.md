@@ -469,9 +469,21 @@ all sixteen**; only departures from its standard degradation are restated per de
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `placeholder` · `buttonLabel` · `note` ·
    `proofLine` · `doneHeading` · `doneText` · `invalidText` · `subscribedText` · `manageLabel`. From
    Ghost: members on or off, the signed-in member and their subscriptions, `total_members`.
-6. **Controls.** Alignment *Centred · Left* — Heading size *Regular · Large · Display* (**Display
-   disabled at Field width: Wide** ⚑) — Field width *Narrow 320 · Medium 400 · Wide 480* — Below the
-   field *Note · Nothing* — Blurb *Show · Hide* — **Social proof *Off · Member count*** ⚑. **Six.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Alignment | Centred · Left |
+   | Heading size | Regular · Large · Display (**Display disabled at Field width: Wide**) |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Below the field | Note · Nothing |
+   | Blurb | Show · Hide |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.**
 7. **Data.** Posts to Ghost's members endpoint with the contract attributes. **0** — no repeating
    unit; the count that matters is the newsletter count. **1 newsletter** is the design. **many** →
    posts to the site default and **the sidebar names it** ⚑, with 10 and 15 named as the designs that
@@ -518,9 +530,21 @@ five state strings through P0·6; the button taking a P0·2 icon.
    field 400. **834** card 754 — the whole box — padding 44, heading 34, field 320. **≤ 767** card
    350, padding 28, heading 28, field and button a row each at 48.
 5. **Fields.** As 1. No field is unique to this design.
-6. **Controls.** Card padding *Compact 48 · Comfortable 64 · Spacious 88* — Card *Raised · Flat*
-   (**dark forces Flat** ⚑) — Card width *Narrow 880 · Medium 1104 · Full 1296* — Field width —
-   Alignment *Centred · Left* — **Social proof** ⚑. **Six.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card padding | Compact 48 · Comfortable 64 · Spacious 88 |
+   | Card | Raised · Flat (**dark forces Flat**) |
+   | Card width | Narrow 880 · Medium 1104 · Full 1296 |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Alignment | Centred · Left |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.**
 7. **Data.** As 1. **Members off** → the card renders and the field inside it is replaced ⚑; the card
    is the design and is not withdrawn.
 8. **Empty.** No blurb → a shorter card, **nothing reserved** ⚑. No note → 22 px less. **Never an
@@ -553,10 +577,21 @@ form contract, editing and the footer strip as category-wide.
    heading 34, blurb 560, field 400, spacing 96. **834** stacked ⚑, head on 620, field 320. **≤ 767**
    stacked, field and button a row each at 48, heading 28.
 5. **Fields.** As 1.
-6. **Controls.** Split *Even · Wide head · Wide form* (620·580, 720·480, 520·680 **on a fixed 96 px
-   gutter** ⚑) — Form side *Right · Left* — Field *In a row · Stacked* (**Stacked forced at Wide
-   head** ⚑) — Heading size *Regular · Large* (**no Display value** ⚑) — Below the field *Note ·
-   Nothing* — **Social proof** ⚑. **Six.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Even · Wide head · Wide form (620·580, 720·480, 520·680 **on a fixed 96 px gutter**) |
+   | Form side | Right · Left |
+   | Field | In a row · Stacked (**Stacked forced at Wide head**) |
+   | Heading size | Regular · Large (**no Display value**) |
+   | Below the field | Note · Nothing |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.**
 7. **Data.** As 1. **Members off** → the right column holds the button-as-link and the head is
    untouched ⚑.
 8. **Empty.** No blurb → the head is an eyebrow and a heading and **the form column does not move
@@ -589,9 +624,22 @@ behind **both** columns, never one ⚑. Source group, form contract, editing, fo
    720, blurb 600, field 400. **834** 56 inside, field 320. **≤ 767** 40 inside, **full bleed forced**
    ⚑, field and button a row each at 48. **No collapse at any width.**
 5. **Fields.** As 1.
-6. **Controls.** Band padding *Compact 48 · Comfortable 72 · Spacious 104* (**inside the band** ⚑) —
-   Alignment *Centred · Left* — Heading size *Regular · Large · Display* — Field width — Band edges
-   *Full bleed · Page margin* — Blurb *Show · Hide* — **Social proof** ⚑. **Seven.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band padding | Compact 48 · Comfortable 72 · Spacious 104 (**inside the band**) |
+   | Alignment | Centred · Left |
+   | Heading size | Regular · Large · Display |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Band edges | Full bleed · Page margin |
+   | Blurb | Show · Hide |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven.**
 7. **Data.** As 1. **Members off** → the band renders with the button-as-link in the carried colour ⚑.
 8. **Empty.** No blurb → the band shortens, **no minimum height** ⚑. With neither heading nor blurb
    the band is a 46 px row inside its padding and the panel names 9 Slim Bar ⚑.
@@ -628,9 +676,21 @@ band to draw it on. Source group, form contract, editing, footer strip.
    96. **834** plane 754, padding 44 × 40, heading 30, field 320. **≤ 767** plane 350, padding
    28 × 24, heading 26, field and button a row each at 48 ⚑.
 5. **Fields.** As 1.
-6. **Controls.** Plane *Raised · Flat* — Alignment *Left · Centred* — Field width — Blurb *Show ·
-   Hide* — **Social proof** ⚑. **Five.** **Internal padding stays fixed at 56 × 64** ⚑ and is not a
-   control; the space *around* the plane is Vertical spacing.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane | Raised · Flat |
+   | Alignment | Left · Centred |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Blurb | Show · Hide |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** **Internal padding stays fixed at 56 × 64** ⚑ and is not a control; the space *around*
+   the plane is Vertical spacing.
 7. **Data.** As 1. **Members off** → the plane renders and holds the button-as-link ⚑.
 8. **Empty.** No blurb → a shorter plane ⚑. **The plane renders whatever is inside it and is never
    drawn empty**; with no heading and no blurb the panel names 9 Slim Bar ⚑.
@@ -663,9 +723,21 @@ form contract, editing, footer strip.
    heading 34, field 340 stacked. **834** 366 · 388, picture pinned 4:3, words padded 32, heading 28.
    **≤ 767** picture above at 350 × 220, bleed forced, **Picture side ignored** ⚑, words padded 24.
 5. **Fields.** As 1, plus `image` (≥ 1,440 px), `imageAlt` ⚑ and **`imageFocus`** ⚑.
-6. **Controls.** Picture side *Left · Right* — Split *Even · Wide picture · Wide words* — Picture
-   treatment *Bleed · Inset* — **Image focus *Centre · Top · Bottom*** ⚑ — Plane *Raised · Flat* —
-   Field *Stacked · In a row* (**In a row disabled at Wide picture** ⚑) — **Social proof** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Picture side | Left · Right |
+   | Split | Even · Wide picture · Wide words |
+   | Picture treatment | Bleed · Inset |
+   | Image focus | Centre · Top · Bottom |
+   | Plane | Raised · Flat |
+   | Field | Stacked · In a row (**In a row disabled at Wide picture**) |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Seven.**
 7. **Data.** As 1. **No image authored → hands off to 5 Panel** ⚑, drawn in place, flagged in the
    editor, invisible on the site. **Members off** → the picture stays and the words half holds the
@@ -706,10 +778,23 @@ spacing.** Source group, form contract, editing (the alt edits in the Image Pick
    40 inside, full bleed forced, field and button a row each at 48. **Every stated height is a floor.**
 5. **Fields.** As 1, plus `image` (**required here**, ≥ 2,400 px) and **`imageFocus`** — **a control
    since this pass** ⚑. `imageAlt` is kept and not drawn ⚑.
-6. **Controls.** Height *Short · Standard · Tall* (**a minimum, not a crop** ⚑) — Scrim *Light ·
-   Medium · Strong* (**Light disabled against light images**, checked on the bottom third ⚑) —
-   **Image focus *Centre · Top · Bottom*** ⚑ — Content position *Centre · Bottom* — Field width —
-   Band edges *Full bleed · Page margin* — Blurb *Show · Hide* — **Social proof** ⚑. **Eight.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Height | Short · Standard · Tall (**a minimum, not a crop**) |
+   | Scrim | Light · Medium · Strong (**Light disabled against light images**, checked on the bottom third) |
+   | Image focus | Centre · Top · Bottom |
+   | Content position | Centre · Bottom |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Band edges | Full bleed · Page margin |
+   | Blurb | Show · Hide |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Eight.**
 7. **Data.** As 1. **No image at any width → hands off to 4 Contrast Band** ⚑. **Members off** → the
    picture and the head render with the button-as-link in white ⚑.
 8. **Empty.** No blurb → the band shortens toward its floor and stops there ⚑. **No background image →
@@ -749,9 +834,20 @@ Source group, form contract, editing, footer strip.
    at 48. **The scale ladder is per width** ⚑ — Display 76 · 52 · 34, Huge 96 · 64 · 40.
 5. **Fields.** `eyebrow` · `heading` · `placeholder` · `buttonLabel` · `note` · `proofLine` · the
    state fields. **`blurb` is stored and never drawn** ⚑.
-6. **Controls.** Heading scale *Display · Huge* — Rule under the heading *Show · Hide* — Field width
-   (**Wide is the default** ⚑) — Eyebrow *Show · Hide* (**hidden by default at Huge** ⚑) — **Social
-   proof** ⚑. **Five.** **Vertical spacing: Compact is advised at Huge** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Heading scale | Display · Huge |
+   | Rule under the heading | Show · Hide |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 (**Wide is the default**) |
+   | Eyebrow | Show · Hide (**hidden by default at Huge**) |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (**Compact advised at Huge**) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** **Vertical spacing: Compact is advised at Huge** ⚑.
 7. **Data.** As 1. **Members off** → the heading and rule render with the button-as-link beneath ⚑.
 8. **Empty.** No eyebrow → the heading rises to the spacing ⚑. **No heading is not a supported
    state** ⚑ — the display line is the design.
@@ -790,9 +886,19 @@ low-opacity page chrome exactly as it does to a masthead. Source group, form con
 5. **Fields.** `label` (opt, ≤ 20, **default the newsletter's name from Ghost** ⚑) · `placeholder` ·
    `buttonLabel` · `invalidText` · `doneHeading` · `subscribedText` · `manageLabel`. **`eyebrow`,
    `heading`, `blurb` and `note` are stored and never drawn** ⚑.
-6. **Controls.** Strip padding *Compact 16 · Comfortable 24 · Spacious 36* (**inside the strip** ⚑) —
-   Rules *Above and below · Below only · None* (**None raises the padding** ⚑) — Field width *Narrow
-   320 · Medium 400* (**no Wide value** ⚑) — Label *Newsletter name · Custom*. **Four.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Strip padding | Compact 16 · Comfortable 24 · Spacious 36 (**inside the strip**) |
+   | Rules | Above and below · Below only · None (**None raises the padding**) |
+   | Field width | Narrow 320 · Medium 400 (**no Wide value**) |
+   | Label | Newsletter name · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Four.**
 7. **Data.** As 1, plus the newsletter's `name`. **Members off** → the strip holds the label and the
    button-as-link ⚑.
 8. **Empty.** No label at *Custom* → falls back to the newsletter name ⚑. **The strip never renders
@@ -831,9 +937,21 @@ editing (the newsletter's own name says "Edit in Ghost"), footer strip.
    padding 24 × 22, **description wraps and the row grows** ⚑, field and button a row each at 48.
 5. **Fields.** As 1, plus `membersBadge`. From Ghost, per newsletter: `name` (req), `description`
    (opt), `visibility`, `id`; and `@site.paid_members_enabled`.
-6. **Controls.** Plane *Raised · Flat* — Row detail *Name and description · Name only* — **Members
-   badge *Off · On*** ⚑ — Pre-ticked *All · The first · None* (**None enabled in this pass** ⚑) —
-   Dividers *Hairline · None* — Field width. **Six.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane | Raised · Flat |
+   | Row detail | Name and description · Name only |
+   | Members badge | Off · On |
+   | Pre-ticked | All · The first · None (**None enabled in this pass**) |
+   | Dividers | Hairline · None |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.**
 7. **Data.** `{{#get "newsletters"}}` ⚑ — **the whole set, in Ghost's own order, with no limit
    control**. **0** not reachable ⚑. **1** → the rows are not drawn and the panel names 5 Panel
    without switching ⚑. **many** → two to four is the design; five or more grows the plane and
@@ -891,9 +1009,20 @@ editing (names, descriptions and visibility say "Edit in Ghost"), footer strip.
    on hairlines. **834** stacked ⚑, order head → form → reasons. **≤ 767** stacked, reasons 16, field
    and button a row each at 48.
 5. **Fields.** As 1, plus `reasons[]` (opt, 1–3, each `{ text ≤ 40, icon? }` ⚑).
-6. **Controls.** Split *Even · Wide head · Wide reasons* — Reasons side *Right · Left* — Reason marks
-   *Numbers · Rules only · **Icons*** ⚑ — Reason size *Regular · Large* — Below the field *Note ·
-   Nothing*. **Five.** The Reasons repeater follows and is not counted.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Even · Wide head · Wide reasons |
+   | Reasons side | Right · Left |
+   | Reason marks | Numbers · Rules only · **Icons** |
+   | Reason size | Regular · Large |
+   | Below the field | Note · Nothing |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** The Reasons repeater follows and is not counted.
 7. **Data.** As 1; the reasons are authored, not read. **0 reasons** → the right column is empty and
    the panel names 3 Split without switching ⚑. **1** → one line, its mark and no rule above it ⚑.
    **many** → three is the ceiling; Add disables there with its reason readable.
@@ -934,9 +1063,20 @@ reasons are this design's proof. Source group, form contract, editing, footer st
    80 × 60. **≤ 767** listed, thumbnails 72 × 54, titles 16, field and button a row each at 48.
 5. **Fields.** As 1, plus `issuesLabel`, `archiveLabel` and `membersBadge`. From Ghost, per post:
    `title`, `published_at`, `feature_image` (opt), `reading_time` (opt), `visibility`, `url`.
-6. **Controls.** Issue layout *Across · Listed* — Thumbnails *Show · Hide* — Issue meta *Date · Date
-   and reading time · Off* — **Members badge *Off · On*** ⚑ — Archive link *Show · Hide*. **Five.**
-   **The Data group is P0·5's panel** and is not counted.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Issue layout | Across · Listed |
+   | Thumbnails | Show · Hide |
+   | Issue meta | Date · Date and reading time · Off |
+   | Members badge | Off · On |
+   | Archive link | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** **The Data group is P0·5's panel** and is not counted.
 7. **Data.** **The shared P0·5 "Populate from…" panel** ⚑ *(new in this pass, replacing this design's
    bespoke source)*: **Source** *Static (authored) · From posts* with **Static disabled** — Ghost has
    no newsletter-issue object, so there is nothing to author — then **Filter** *Latest · Featured ·
@@ -992,8 +1132,20 @@ does have a `public` value, so "not public" is a real gate here and the conditio
    400. **834** box 754, padding 40, heading 34, field 320. **≤ 767** box 350, padding 26, heading 28,
    field and button a row each at 48.
 5. **Fields.** As 1.
-6. **Controls.** Box padding *Compact 40 · Comfortable 56 · Spacious 76* — Box width *Narrow 880 ·
-   Medium 1104 · Full 1296* — Field width — Alignment *Centred · Left* — **Social proof** ⚑. **Five.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Box padding | Compact 40 · Comfortable 56 · Spacious 76 |
+   | Box width | Narrow 880 · Medium 1104 · Full 1296 |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Alignment | Centred · Left |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.**
 7. **Data.** As 1. **Members off** → the box renders and holds the button-as-link ⚑.
 8. **Empty.** No blurb → a shorter box ⚑. **Never an empty box**: the panel names 1 Inline Row ⚑.
 9. **Module.** `member-form`. The box is a border.
@@ -1028,10 +1180,21 @@ editing, footer strip.
    disabled** ⚑, **Wide disabled** ⚑.
 5. **Fields.** As 1, with **`heading` capped at 40 rather than 60** ⚑ and **`blurb` at 90 rather than
    240** ⚑ — truncating at render is worse than capping at authoring.
-6. **Controls.** Arrives *Halfway down the page · At the page foot · After twenty seconds* (**never
-   on load** ⚑) — Corner *Bottom right · Bottom left* — Card width *Narrow 320 · Medium 380 · Wide
-   440* — Card *Raised · Flat* — Blurb *Show · Hide* — Once dismissed *Not again this session · Not
-   again for thirty days* (**where the memory lives is a finding** ⚑). **Six.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Arrives | Halfway down the page · At the page foot · After twenty seconds (**never on load**) |
+   | Corner | Bottom right · Bottom left |
+   | Card width | Narrow 320 · Medium 380 · Wide 440 |
+   | Card | Raised · Flat |
+   | Blurb | Show · Hide |
+   | Once dismissed | Not again this session · Not again for thirty days |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six.**
 7. **Data.** As 1. **Members off** → **the card does not render at all** ⚑. **A signed-in subscriber
    never sees it** ⚑, at either value of the shared control. **Member visibility applies as
    everywhere** — a publication that wants paid readers left alone sets it here rather than accepting
@@ -1082,9 +1245,20 @@ its lines on the ask. Source group (Member visibility included), form contract, 
 5. **Fields.** `eyebrow` · `heading` · `blurb` for the section; the form and state fields **shared
    across both cards** ⚑ — there is no per-card copy. From Ghost, per newsletter: `name`,
    `description`, `visibility`, `id`; and `@site.paid_members_enabled`.
-6. **Controls.** Cards across *Two · Three · Auto* — Card padding *Compact 24 · Comfortable 32 ·
-   Spacious 44* — Card *Raised · Flat* — Card meta *Show · Hide* (**generated, never typed** ⚑) —
-   Description *Show · Hide*. **Five.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Cards across | Two · Three · Auto |
+   | Card padding | Compact 24 · Comfortable 32 · Spacious 44 |
+   | Card | Raised · Flat |
+   | Card meta | Show · Hide (**generated, never typed**) |
+   | Description | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.**
 7. **Data.** `{{#get "newsletters"}}` in Ghost's own order ⚑. **0** not reachable ⚑. **1** → one card
    at the grid's left, no stretch; the panel names 2 Card ⚑. **2** → the design. **3** → three of 416;
    **4** → two rows of two; **5 or more** → the panel names 10 Choice ⚑. **A paid-only letter's card
@@ -1132,8 +1306,19 @@ Source group, form contract, editing, footer strip.
    heading 20, field and button a row each at 48. **The quote and the heading never cross** ⚑.
 5. **Fields.** As 1, plus `quote` (opt, ≤ 140 ⚑), `quoteAttrib` (≤ 40) and `quoteDetail` (≤ 30) —
    **all three authored** ⚑. **`blurb` is stored and never drawn** ⚑.
-6. **Controls.** Quote size *Regular · Large* (**Large drops the heading** ⚑) — Rule under the quote
-   *Show · Hide* — Field width — Attribution *Name and detail · Name only* — **Social proof** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Quote size | Regular · Large (**Large drops the heading**) |
+   | Rule under the quote | Show · Hide |
+   | Field width | Narrow 320 · Medium 400 · Wide 480 |
+   | Attribution | Name and detail · Name only |
+   | Social proof | Off · Member count |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Five.**
 7. **Data.** As 1 — **the quote is authored and nothing about it is read from Ghost** ⚑. **Members
    off** → the quote, rule and heading render with the button-as-link ⚑.
@@ -1499,3 +1684,15 @@ sentence is the shared `member-form` registry line, and **A2·5 Capture, A3·4 N
 quote it too**. Correcting it there is a registry job, not this category's, and finding 9 names it.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** sixteen designs, numbered **1–16**.

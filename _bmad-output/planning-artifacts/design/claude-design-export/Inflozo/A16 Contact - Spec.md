@@ -500,14 +500,26 @@ failed banner are the script path.
    `buttonLabel` · `consentText` · `sentHeading` · `sentText` · `invalidText` · `failedText` · the
    four contact rows · `socials[]`. From Ghost: nothing but the site title, used as the form's
    `aria-label` where no heading is drawn.
-6. **Controls — seven of its own.** Fields *Email and message · Name, email, message · Name, email,
-   subject, message · Name, email, phone, subject, message* — Details column *Left · Right* — Message
-   height *Short · Medium · Tall* — Blurb *Show · Hide* — Socials display *Icons · Short labels · Full
-   labels · Off* — Contact rows *Post · Email · Phone · Replies*, **one toggle a row** — Row icons
-   *Show · Hide*, **one icon slot a row**. Then the socials item list, Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is
-   retired into Vertical spacing** ⚑ and **the three-value Contact-block enum is retired into the four
-   toggles** ⚑. Quick Controls: Fields · Details column · Contact rows · Socials display.
+6. **Controls — seven of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Details column | Left · Right |
+   | Message height | Short · Medium · Tall |
+   | Blurb | Show · Hide |
+   | Socials display | Icons · Short labels · Full labels · Off |
+   | Contact rows | Post · Email · Phone · Replies (one toggle a row) |
+   | Row icons | Show · Hide (one icon slot a row) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the socials item list, Then **the universal trio** — Background role · Vertical spacing ·
+   Top divider — the **Delivery group** and the **Data group**, none of which count toward the
+   budget. **Padding is retired into Vertical spacing** ⚑ and **the three-value Contact-block enum
+   is retired into the four toggles** ⚑. Quick Controls: Fields · Details column · Contact rows ·
+   Socials display.
 7. **Data.** Nothing is read from Ghost. **0 socials** → row and gap removed ⚑. **1** → one 44 px
    box, not stretched. **many** → wraps at six, the ceiling. **All four contact rows empty** → block
    and gap removed and the left column is head and socials alone ⚑.
@@ -558,11 +570,22 @@ still the accessible text.
    and stacked, field text 16 ⚑, button full width, padding 64.
 5. **Fields.** As 1 Split minus the contact rows and `socials[]`, which are **stored and never
    drawn** ⚑.
-6. **Controls — five of its own.** Fields (the four-value set) — Labels *Above · Hidden* — Form width
-   *Narrow 480 · Medium 560 · Wide 640* — Message height *Short · Medium · Tall* — Blurb *Show ·
-   Hide*. Then Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is retired into Vertical spacing** ⚑. Quick Controls: Fields ·
-   Form width · Message height.
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Labels | Above · Hidden |
+   | Form width | Narrow 480 · Medium 560 · Wide 640 |
+   | Message height | Short · Medium · Tall |
+   | Blurb | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
+   group** and the **Data group**, none of which count toward the budget. **Padding is retired into
+   Vertical spacing** ⚑. Quick Controls: Fields · Form width · Message height.
 7. **Data.** Nothing from Ghost. **There is no repeating unit, so 0, 1 and many do not arise** ⚑ —
    the counts that matter are the field count, which is a control, and the character counts on the
    authored strings.
@@ -602,13 +625,24 @@ destination, Spam as a caption); **A11y** gains the no-script state.
    above on 720. **834** card 640, inside 40, padding 80. **≤ 767** card 350 — **the full content
    measure** ⚑ — inside 24, fields 48 and stacked, field text 16, button full width, padding 64.
 5. **Fields.** As 2 Centred. The contact rows and `socials[]` are stored and never drawn ⚑.
-6. **Controls — six of its own.** Fields — Card width *Narrow 560 · Medium 680 · Wide 800* (**the
-   value sets the inside padding too: 32 · 40 · 48** ⚑ — a card ladder, not the section's seam) — Head
-   *Above the card · On the card · None* — Message height — Depth *Raised · Flat* — Blurb *Show ·
-   Hide*. Then Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is retired into Vertical spacing** ⚑, and **Background role is
-   the ground under the card, never the card's own fill** ⚑. Quick Controls: Fields · Card width ·
-   Head.
+6. **Controls — six of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Card width | Narrow 560 · Medium 680 · Wide 800 (the value sets the inside padding too: 32 · 40 · 48) |
+   | Head | Above the card · On the card · None |
+   | Message height | Short · Medium · Tall |
+   | Depth | Raised · Flat |
+   | Blurb | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast — the ground under the card, never the card's own fill |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
+   group** and the **Data group**, none of which count toward the budget. **Padding is retired into
+   Vertical spacing** ⚑, and **Background role is the ground under the card, never the card's own
+   fill** ⚑. Quick Controls: Fields · Card width · Head.
 7. **Data.** Nothing from Ghost; no repeating unit.
 8. **Empty.** At *Head: None* the card is the whole section and takes the form's `aria-label` ⚑.
    Everything else as 2 Centred. **A card with an empty form cannot happen** — the field set is a
@@ -646,14 +680,26 @@ card's own hairline and its Flat-in-dark rule are untouched.
    48, field text 16, button full width, padding 64.
 5. **Fields.** As 1 Split, minus `socials[]`, which is stored and never drawn ⚑. The four contact
    rows are section fields, not items: each may be left empty and takes its 12 px label with it ⚑.
-6. **Controls — eight of its own.** Fields — Contact row *Across the top · Under the form* (**the
-   old *Off* value is retired** ⚑ — all four toggles off says it) — Contact rows *Post · Email · Phone
-   · Replies* — Row icons *Show · Hide* — Plane padding *Compact 32 · Comfortable 44 · Spacious 64*
-   (**kept: a plane ladder, not the section's seam** ⚑) — Message height — Depth *Raised · Flat* —
-   Blurb *Show · Hide*. Then Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is retired into Vertical spacing** ⚑, and
-   **Background role is the plane's own fill** — at Contrast the panel names 5 Contrast Band. Quick
-   Controls: Fields · Contact row · Contact rows · Plane padding.
+6. **Controls — eight of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Contact row | Across the top · Under the form |
+   | Contact rows | Post · Email · Phone · Replies (one toggle a row) |
+   | Row icons | Show · Hide (one icon slot a row) |
+   | Plane padding | Compact 32 · Comfortable 44 · Spacious 64 |
+   | Message height | Short · Medium · Tall |
+   | Depth | Raised · Flat |
+   | Blurb | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast — the plane's own fill; at Contrast the panel names 5 Contrast Band |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
+   group** and the **Data group**, none of which count toward the budget. **Padding is retired into
+   Vertical spacing** ⚑, and **Background role is the plane's own fill** — at Contrast the panel
+   names 5 Contrast Band. Quick Controls: Fields · Contact row · Contact rows · Plane padding.
 7. **Data.** Nothing from Ghost. **0 filled contact rows** → the row and its hairline are removed and
    the plane holds the form alone ⚑, which the panel names as 3 Card at full width. **1** → one block
    at the plane's left, not stretched ⚑. **4** is the ceiling; the block is not a repeater.
@@ -694,15 +740,28 @@ no-script state and the `<dl>` is unchanged.
    **Inset forced to full bleed** ⚑, fields 48, field text 16, button full width.
 5. **Fields.** As 1 Split. **`replyHours` is drawn at last** ⚑ — the Replies toggle is what draws
    it, and it ships off, so the band shows three rows at its defaults and four when it is turned on.
-6. **Controls — eight of its own.** Fields — Band width *Full bleed · Inset* — Arrangement *Head
-   left, form right · Head above* — Message height — Socials display *Icons · Short labels · Full
-   labels · Off* — Contact rows *Post · Email · Phone · Replies* (**the Replies toggle is what finally
-   draws `replyHours`, and it ships off** ⚑) — Row icons *Show · Hide* — Blurb *Show · Hide*. Then
-   the socials item list, Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Band padding is retired into Vertical spacing**, which
-   resolves onto the band's own inside padding — 64 · 88 · 120 — because the section's padding is 0 at
-   every value ⚑; **Background role is locked at Contrast with the reason shown** ⚑; **Top divider is
-   None by default**, since a full-bleed band is its own edge. Quick Controls: Fields · Band width ·
+6. **Controls — eight of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Band width | Full bleed · Inset |
+   | Arrangement | Head left, form right · Head above |
+   | Message height | Short · Medium · Tall |
+   | Socials display | Icons · Short labels · Full labels · Off |
+   | Contact rows | Post · Email · Phone · Replies (the Replies toggle draws `replyHours`, and it ships off) |
+   | Row icons | Show · Hide (one icon slot a row) |
+   | Blurb | Show · Hide |
+   | Background role (universal) | **Contrast (locked)**, with the reason shown |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious, resolving onto the band's own inside padding — 64 · 88 · 120 |
+   | Top divider (universal) | None · Line · Fade (None by default — a full-bleed band is its own edge) |
+
+   Then the socials item list, Then **the universal trio** — Background role · Vertical spacing ·
+   Top divider — the **Delivery group** and the **Data group**, none of which count toward the
+   budget. **Band padding is retired into Vertical spacing**, which resolves onto the band's own
+   inside padding — 64 · 88 · 120 — because the section's padding is 0 at every value ⚑;
+   **Background role is locked at Contrast with the reason shown** ⚑; **Top divider is None by
+   default**, since a full-bleed band is its own edge. Quick Controls: Fields · Band width ·
    Arrangement · Contact rows.
 7. **Data.** Nothing from Ghost. `socials[]` at **0** → row and gap removed; **1** → one box;
    **many** → wraps, six the ceiling. Contact rows as 4 Panel, three of the four drawn.
@@ -746,12 +805,23 @@ band.
 5. **Fields.** The four contact rows, each ≤ 140 characters · `eyebrow` · `heading` · `blurb` ·
    `socialsLabel` (default "Elsewhere") · `socials[]`. **Every form field and every form string is
    stored and never drawn** ⚑.
-6. **Controls — five of its own.** Columns *Auto · Two · Three · Four* — Head *Centred · Flush left ·
-   None* — Socials display *Icons · Short labels · Full labels · Off* (**Full labels is the default
-   here** ⚑) — Dividers *Hairlines · None* — Cell icons *Show · Hide*, **one icon slot a cell**. Then
-   the socials item list, **the universal trio** and **the Data group** (Social accounts). **No
-   delivery group** ⚑ and **no Member visibility** ⚑ — this design draws no form and no action.
-   **Padding is retired into Vertical spacing** ⚑. Quick Controls: Columns · Head · Socials display.
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Auto · Two · Three · Four |
+   | Head | Centred · Flush left · None |
+   | Socials display | Icons · Short labels · Full labels · Off (**Full labels the default here**) |
+   | Dividers | Hairlines · None |
+   | Cell icons | Show · Hide (one icon slot a cell) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the socials item list, **the universal trio** and **the Data group** (Social accounts).
+   **No delivery group** ⚑ and **no Member visibility** ⚑ — this design draws no form and no
+   action. **Padding is retired into Vertical spacing** ⚑. Quick Controls: Columns · Head · Socials
+   display.
 7. **Data.** Nothing from Ghost. **0 filled contact rows** → the grid is removed and the section is
    head and socials ⚑; if socials are also off, the section does not render and the editor says so.
    **1** → one cell at the left, not stretched. **many** → four is the ceiling.
@@ -801,14 +871,25 @@ design as the fallback.
     the map an upload** ⚑ — plus `phone` and `email`, stored here and drawn in 8, and the form's fields and
    strings. **The first location is the one drawn** ⚑; further entries are kept and 8 Locations is
    named as the design that draws them all.
-6. **Controls — six of its own.** Fields (**Message is fixed at Short here** ⚑) — Map side *Left ·
-   Right* — Map height *Short 400 · Medium 560 · Tall 720* — Beside the map *Address and hours ·
-   Address only · Off* — Depth *Raised · Flat* — Directions link *From address · Custom URL · Off*
-   (**From address builds a maps-search URL out of the location's own address** ⚑). Then the location
-   item list — **the first entry is the one drawn**, with **Map image** and the optional **Map image
-   (dark)** from the Image Picker and **Image focus** in its popover — Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is
-   retired into Vertical spacing** ⚑. Quick Controls: Fields · Map side · Beside the map.
+6. **Controls — six of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message (**Message fixed at Short here**) |
+   | Map side | Left · Right |
+   | Map height | Short 400 · Medium 560 · Tall 720 |
+   | Beside the map | Address and hours · Address only · Off |
+   | Depth | Raised · Flat |
+   | Directions link | From address · Custom URL · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the location item list — **the first entry is the one drawn**, with **Map image** and the
+   optional **Map image (dark)** from the Image Picker and **Image focus** in its popover — Then
+   **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
+   group** and the **Data group**, none of which count toward the budget. **Padding is retired into
+   Vertical spacing** ⚑. Quick Controls: Fields · Map side · Beside the map.
 7. **Data.** Nothing from Ghost. `locations[]` at **0** → the map half is removed and the plane holds
    the form at full width ⚑, which the panel names as 4 Panel. **1** is the design. **many** → the
    first is drawn, the rest kept, and **the sidebar names which one is on the page** ⚑.
@@ -855,13 +936,23 @@ A19's **Reflow**, and *Directions link: From address* means the missing-URL case
    **≤ 767** inside 64 × 20, one per row, **thumb 150** ⚑, name 20.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `locations[]` (1–6) · `directionsLabel`. Every form
    field and `socials[]` are stored and not drawn ⚑.
-6. **Controls — five of its own.** Columns *Auto · Two · Three* (**no Four value** ⚑) — Map thumbs
-   *Show · Hide* — Hours *Show · Hide* — Head *Centred · Flush left · None* — Directions link *From
-   address · Custom URL · Off* (**From address builds a maps-search URL out of each card's own
-   address** ⚑). Then the locations item list, **the universal trio** and **the Data group**. **No
-   delivery group** ⚑ and **no Member visibility** ⚑. **Ground padding is retired into Vertical
-   spacing**, which resolves onto the ground's own inside padding — 64 · 96 · 132 inside the surface
-   fill — because the section's padding is 0 at every value ⚑. Quick Controls: Columns · Map thumbs ·
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Auto · Two · Three (**no Four value**) |
+   | Map thumbs | Show · Hide |
+   | Hours | Show · Hide |
+   | Head | Centred · Flush left · None |
+   | Directions link | From address · Custom URL · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious, resolving onto the ground's own inside padding — 64 · 96 · 132 inside the surface fill |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the locations item list, **the universal trio** and **the Data group**. **No delivery
+   group** ⚑ and **no Member visibility** ⚑. **Ground padding is retired into Vertical spacing**,
+   which resolves onto the ground's own inside padding — 64 · 96 · 132 inside the surface fill —
+   because the section's padding is 0 at every value ⚑. Quick Controls: Columns · Map thumbs ·
    Directions link.
 7. **Data.** Nothing from Ghost — **Ghost has no location object** ⚑, which is a finding. **0** → the
    section does not render and the editor says a location is needed ⚑. **1** → one card at 640 at the
@@ -907,17 +998,26 @@ inside the card's `<address>` as real links, and **the whole card is still not a
    inside, **three rows** ⚑ — label, address at 16, glyphs — total 190.
 5. **Fields.** `label` (opt, ≤ 20, defaults to `@site.title`) ⚑ · `email` (**req — the whole
    design**) · `phone` · `socials[]`. **Everything else in the category is stored and not drawn** ⚑.
-6. **Controls — five of its own.** Strip padding *Compact 16 · Comfortable 24 · Spacious 36*
-   (**kept: a strip height is its own ladder** ⚑) — Rules *Above and below · Below only · None* (at
-   None the padding rises one named step ⚑) — Phone *Show · Hide* — Socials display *Icons · Short
-   labels · Full labels · Off* — Label *Site name · Custom*. Then the socials item list, **the
-   universal trio** and **the Data group**. **No delivery group** ⚑ and **no Member visibility** ⚑.
-   **The three-value *The strip carries* enum is retired** ⚑ — Phone and Socials display are
-   independent rows, so **phone and socials together** is finally expressible and *Off* is where the
-   old third value went. **The design's own Ground row became Background role** ⚑; **Vertical spacing
-   is the seam above and below the strip — 0 · 24 · 48, drawn at Compact** ⚑; **Top divider is locked
-   at None while *Rules* draws an upper rule** ⚑. Quick Controls: Strip padding · Rules · Socials
-   display.
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Strip padding | Compact 16 · Comfortable 24 · Spacious 36 |
+   | Rules | Above and below · Below only · None (at None the padding rises one named step) |
+   | Phone | Show · Hide |
+   | Socials display | Icons · Short labels · Full labels · Off |
+   | Label | Site name · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | the seam above and below the strip — 0 · 24 · 48, drawn at Compact |
+   | Top divider (universal) | **Locked at None** while Rules draws an upper rule |
+
+   Then the socials item list, **the universal trio** and **the Data group**. **No delivery group**
+   ⚑ and **no Member visibility** ⚑. **The three-value *The strip carries* enum is retired** ⚑ —
+   Phone and Socials display are independent rows, so **phone and socials together** is finally
+   expressible and *Off* is where the old third value went. **The design's own Ground row became
+   Background role** ⚑; **Vertical spacing is the seam above and below the strip — 0 · 24 · 48,
+   drawn at Compact** ⚑; **Top divider is locked at None while *Rules* draws an upper rule** ⚑.
+   Quick Controls: Strip padding · Rules · Socials display.
 7. **Data.** `@site.title` for the label at its default. `socials[]` at **0** → the glyph row goes and
    **the label and address centre in the strip** ⚑. **1** → one box at the right. **many** → six is
    the ceiling.
@@ -966,14 +1066,24 @@ the strip is still a `<section aria-label="Contact">` with no heading.
    design**, and *Address shown* picks which is drawn ⚑) · `socialsLabel` (default "Also on") ·
    `socials[]`. **Everything else is stored and not
    drawn** ⚑.
-6. **Controls — five of its own.** Address size *Large 64 · Display 76 · Full 96* (**Full disabled
-   above 24 characters, with the count shown** ⚑) — Alignment *Flush left · Centred* — Above the
-   address *Eyebrow · Heading · Nothing* — Socials display *Icons · Short labels · Full labels · Off*
-   (**Full labels is the default here** ⚑) — Address shown *Email · Phone* ⚑. Then the socials item
-   list, **the universal trio** and **the Data group**. **No delivery group** ⚑ and **no Member
-   visibility** ⚑. **Padding is retired into Vertical spacing** ⚑ and **Background role is locked at
-   Transparent, with the reason shown** ⚑ — this is the one section in A16 that paints no ground of
-   its own. Quick Controls: Address size · Address shown · Alignment.
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Address size | Large 64 · Display 76 · Full 96 (**Full disabled above 24 characters, with the count shown**) |
+   | Alignment | Flush left · Centred |
+   | Above the address | Eyebrow · Heading · Nothing |
+   | Socials display | Icons · Short labels · Full labels · Off (**Full labels the default here**) |
+   | Address shown | Email · Phone |
+   | Background role (universal) | **Locked at Transparent**, with the reason shown — the one section in A16 that paints no ground of its own |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the socials item list, **the universal trio** and **the Data group**. **No delivery group**
+   ⚑ and **no Member visibility** ⚑. **Padding is retired into Vertical spacing** ⚑ and
+   **Background role is locked at Transparent, with the reason shown** ⚑ — this is the one section
+   in A16 that paints no ground of its own. Quick Controls: Address size · Address shown ·
+   Alignment.
 7. **Data.** Nothing from Ghost. `socials[]` at **0** → row and rule removed together ⚑; **1** → one
    label; **many** → six the ceiling, wrapping to a second line at 390.
 8. **Empty.** **No email → the section does not render** ⚑ and the editor says so. No eyebrow → the
@@ -1018,14 +1128,25 @@ address, at either value.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `enquiries[]` (2–4) with `label` req ≤ 28 ·
    `address` req · `note` ≤ 60 — plus the form's fields and strings. `socials[]`, the contact rows
    and `locations[]` are stored and not drawn ⚑.
-6. **Controls — four of its own.** Fields (**the chosen type is not one of them** ⚑) — Type row
-   *Flush left · Centred · Full width* — Message height — The line beneath *Show · Hide*. Then the
-   enquiry item list, Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Ground padding is retired into Vertical spacing**, which resolves
-   onto the ground's own inside padding — 64 · 96 · 132 inside the full-bleed fill ⚑ — and **the
-   design's own Ground row became Background role** ⚑. **In the delivery group the destination is the
-   fallback**, because each type carries its own address; with neither, the section is editor-only.
-   Quick Controls: Fields · Type row · The line beneath.
+6. **Controls — four of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message (**the chosen type is not one of them**) |
+   | Type row | Flush left · Centred · Full width |
+   | Message height | Short · Medium · Tall |
+   | The line beneath | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious, resolving onto the ground's own inside padding — 64 · 96 · 132 inside the full-bleed fill |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the enquiry item list, Then **the universal trio** — Background role · Vertical spacing ·
+   Top divider — the **Delivery group** and the **Data group**, none of which count toward the
+   budget. **Ground padding is retired into Vertical spacing**, which resolves onto the ground's
+   own inside padding — 64 · 96 · 132 inside the full-bleed fill ⚑ — and **the design's own Ground
+   row became Background role** ⚑. **In the delivery group the destination is the fallback**,
+   because each type carries its own address; with neither, the section is editor-only. Quick
+   Controls: Fields · Type row · The line beneath.
 7. **Data.** Nothing from Ghost. `enquiries[]` at **0 or 1** → the row is not drawn and the form posts
    to the delivery group's single destination, **which is 2 Centred and the panel names it** ⚑.
    **2–4** is the design. **5 or more** → the field refuses a fifth and **names 13 Directory** ⚑.
@@ -1076,14 +1197,24 @@ are unchanged.
    **≤ 767** **head flush left** ⚑, box 350 with 22 inside, contact rows stacked, fields 48, field
    text 16, button full width, padding 64.
 5. **Fields.** As 1 Split. `locations[]` and `enquiries[]` are stored and not drawn ⚑.
-6. **Controls — six of its own.** Fields — Box width *Narrow 560 · Medium 680 · Wide 1,296* (**at
-   Wide the fields stay 640** ⚑) — Contact row *Under the box · Inside the box · Off* (**kept as an
-   enum, and the asymmetry with 1 and 4 is recorded rather than resolved by inventing a fourth control
-   here** ⚑) — Message height — Socials display *Icons · Short labels · Full labels · Off* — Blurb
-   *Show · Hide*. Then the socials item list, Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is retired into Vertical
-   spacing** ⚑, and **Background role is the ground under the box, never a fill for it** ⚑. Quick
-   Controls: Fields · Box width · Contact row.
+6. **Controls — six of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Box width | Narrow 560 · Medium 680 · Wide 1,296 (**at Wide the fields stay 640**) |
+   | Contact row | Under the box · Inside the box · Off |
+   | Message height | Short · Medium · Tall |
+   | Socials display | Icons · Short labels · Full labels · Off |
+   | Blurb | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast — the ground under the box, never a fill for it |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the socials item list, Then **the universal trio** — Background role · Vertical spacing ·
+   Top divider — the **Delivery group** and the **Data group**, none of which count toward the
+   budget. **Padding is retired into Vertical spacing** ⚑, and **Background role is the ground
+   under the box, never a fill for it** ⚑. Quick Controls: Fields · Box width · Contact row.
 7. **Data.** Nothing from Ghost. Contact rows: **0** → the row and its rule go and the box stands
    alone, which is 3 Card without a fill ⚑; **1** → one block at the left, not stretched; **4** is the
    ceiling. Socials 0–6 as everywhere.
@@ -1128,11 +1259,21 @@ toggles this pass named, and extending them here was refused as scope the patch 
    **≤ 767** **stacked blocks, no header row** ⚑, label 19, note 15, address a 32 px link, padding 64.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `enquiries[]` (1–12) · `columnLabels` (defaults
    "What it is", "Use it for", "Where it goes") ⚑. Everything else is stored and not drawn ⚑.
-6. **Controls — four of its own.** Columns *Label and address · With the note* — Head *Centred ·
-   Flush left · None* — Rules *Every row · Head and foot* — Row height *Compact 14 · Comfortable 20 ·
-   Spacious 28* (A9·1's ladder). Then the enquiry item list, **the universal trio** and **the Data
-   group**. **No delivery group** ⚑ and **no Member visibility** ⚑. **Padding is retired into Vertical
-   spacing** ⚑. Quick Controls: Columns · Row height · Rules.
+6. **Controls — four of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Label and address · With the note |
+   | Head | Centred · Flush left · None |
+   | Rules | Every row · Head and foot |
+   | Row height | Compact 14 · Comfortable 20 · Spacious 28 (A9·1's ladder) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the enquiry item list, **the universal trio** and **the Data group**. **No delivery group**
+   ⚑ and **no Member visibility** ⚑. **Padding is retired into Vertical spacing** ⚑. Quick
+   Controls: Columns · Row height · Rules.
 7. **Data.** Nothing from Ghost — **Ghost exposes no author emails to a theme** ⚑, so this table
    cannot be generated from the site's users and every row is authored. That is a finding. **0** → the
    section does not render ⚑. **1** → header removed, a labelled pair, 9 Slim Bar named. **2** → the
@@ -1182,11 +1323,23 @@ exposes no author emails to a theme** ⚑ — the finding stands, and the table 
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `reasons[]` (1–3, ≤ 40 characters each, text only) ⚑
    · the form's fields and strings. The contact rows, `socials[]`, `locations[]` and `enquiries[]`
    are stored and not drawn ⚑.
-6. **Controls — five of its own.** Fields — Reasons column *Right · Left* — Reasons *Numbered ·
-   Ruled · Plain* (**no icon value at any setting** ⚑) — Message height — Blurb *Show · Hide*. Then
-   the reasons item list, Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Padding is retired into Vertical spacing** ⚑. Quick Controls:
-   Fields · Reasons column · Reasons.
+6. **Controls — five of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Fields | Email and message · Name, email, message · Name, email, subject, message · Name, email, phone, subject, message |
+   | Reasons column | Right · Left |
+   | Reasons | Numbered · Ruled · Plain (**no icon value at any setting**) |
+   | Message height | Short · Medium · Tall |
+   | Blurb | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the reasons item list, Then **the universal trio** — Background role · Vertical spacing ·
+   Top divider — the **Delivery group** and the **Data group**, none of which count toward the
+   budget. **Padding is retired into Vertical spacing** ⚑. Quick Controls: Fields · Reasons column
+   · Reasons.
 7. **Data.** Nothing from Ghost. `reasons[]` at **0** → the column is not drawn and the form takes 640
    at the left with 656 empty, **which the panel names as 1 Split** ⚑. **1** → one row, ruled top and
    bottom, at the column's top — **a supported state, not a degraded one** ⚑. **2–3** is the design;
@@ -1236,16 +1389,27 @@ no-script state and the `<ol>`/`<ul>` rule is unchanged.
    photograph**) · `imageAlt` · `imageFocus` (**Centre · Top · Bottom — now a control as well as a field** ⚑) ·
    the form's email and message strings. **Name, subject and phone are stored and never drawn** ⚑,
    along with the contact rows, `socials[]`, `locations[]` and `enquiries[]`.
-6. **Controls — eight of its own.** Image height *Short 560 · Medium 700 · Tall 840* (**kept: the
-   picture, not the seam** ⚑) — Fields **fixed at *Email and message*, shown disabled** ⚑ — Form
-   position *Centred · Flush left* — Scrim *Light · Medium · Heavy* (**Light disabled against an image
-   lighter than 60% mean luminance, with the measurement shown** ⚑) — Message height *Short · Medium*
-   (**no Tall** ⚑) — Head *Show · Hide* — Image focus *Centre · Top · Bottom* ⚑ — Blurb *Show · Hide*
-   (**disabled at *Head: Hide***). Then Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
-   group** and the **Data group**, none of which count toward the budget. **Background role is locked at Image, with the
-   reason shown** ⚑; **Vertical spacing resolves onto the head-and-form block's inset inside the image
-   — 64 · 96 · 132, clamped so the block stays out of the top quarter** ⚑. Quick Controls: Image
-   height · Scrim · Form position · Image focus.
+6. **Controls — eight of its own.**
+
+   | Control | Values |
+   |---|---|
+   | Image height | Short 560 · Medium 700 · Tall 840 |
+   | Fields | **Fixed at Email and message, shown disabled** |
+   | Form position | Centred · Flush left |
+   | Scrim | Light · Medium · Heavy (**Light disabled against an image lighter than 60% mean luminance, with the measurement shown**) |
+   | Message height | Short · Medium (**no Tall**) |
+   | Head | Show · Hide |
+   | Image focus | Centre · Top · Bottom |
+   | Blurb | Show · Hide (**disabled at Head: Hide**) |
+   | Background role (universal) | **Locked at Image**, with the reason shown |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious, resolving onto the head-and-form block's inset inside the image — 64 · 96 · 132 |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
+   group** and the **Data group**, none of which count toward the budget. **Background role is
+   locked at Image, with the reason shown** ⚑; **Vertical spacing resolves onto the head-and-form
+   block's inset inside the image — 64 · 96 · 132, clamped so the block stays out of the top
+   quarter** ⚑. Quick Controls: Image height · Scrim · Form position · Image focus.
 7. **Data.** Nothing from Ghost. No repeating unit. **No image** → A19's vocabulary: **Hand off** ⚑ —
    the section renders as 2 Centred on the page ground and **the sidebar says which design is on the
    page and why** ⚑, because a cover design with no cover is not a degraded cover, it is a different
@@ -1575,3 +1739,15 @@ whoever reads it forwards the odd message. The per-type addresses stay on the it
 the script path.
 
 **No open questions remain in this category.**
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

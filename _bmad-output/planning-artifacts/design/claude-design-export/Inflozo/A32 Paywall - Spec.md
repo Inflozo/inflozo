@@ -360,7 +360,25 @@ Only 7 Tiers draws a repeated item, and the item is Ghost's, not the user's.
 5. **Content fields.** `eyebrow` · `heading` · `blurb` · `ctaLabel` · `signinPrompt`+`signinLinkLabel`
    · `manageLinkLabel` · `legal` · `benefits[]` · `benefitsLabel` — **and the first five again for each
    of the four gates** ⚑. **No image is drawn**; the field is stored ⚑.
-6. **Controls.** Fade (None · Short 96 · Standard 160 · Deep 240) · Blur the last block (Off · On) · Action (Button · Button and email field · Text link) · Included list (Show · Hide) · Included list items (P0·3) · Eyebrow (Show · Hide) · Sign-in link (Show · Hide) · Button icon (None · Before label · After label). Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **Padding is gone** — it was Vertical spacing under a second name.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Fade | None · Short 96 · Standard 160 · Deep 240 |
+   | Blur the last block | Off · On |
+   | Action | Button · Button and email field · Text link |
+   | Included list | Show · Hide |
+   | Included list items | the P0·3 item controls |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **Padding is gone** — it was Vertical
+   spacing under a second name.
 7. **Data.** `post.visibility` decides the gate; `post.access` decides whether the section renders at
    all ⚑. The preview is Ghost's and the section cannot change it. Tiers read and **not drawn**.
    **0 tiers** → the price clause leaves the sentence and the button reads "See membership" ⚑. **1** →
@@ -404,7 +422,25 @@ than a script. The four-gate copy set is invented — Ghost supplies the visibil
    **button full width, shadow kept** ⚑, gap 52.
 5. **Content fields.** As 1. `benefits[]` is drawn at **three lines** and a fourth is stored and not
    drawn ⚑.
-6. **Controls.** Card width (Narrow 560 · The measure 720 · Content box 1,040) · Card depth (Raised · Flat) · Overlap (Sits below the fade · Rises into it by 40) · Fade (None · Short 96 · Standard 160) · Included list (Inside the card · Hide) · Included list items (P0·3) · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card width | Narrow 560 · The measure 720 · Content box 1,040 |
+   | Card depth | Raised · Flat |
+   | Overlap | Sits below the fade · Rises into it by 40 |
+   | Fade | None · Short 96 · Standard 160 |
+   | Included list | Inside the card · Hide |
+   | Included list items | the P0·3 item controls |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group.
 7. **Data.** As 1. **The card's height is its content in every gate** ⚑ — the upgrade gate is four
    elements tall and the paid gate seven, and neither is padded to match. Tiers read, not drawn.
 8. **Empty state.** No benefits → the hairline goes with the list and the card ends at the sign-in row.
@@ -437,7 +473,25 @@ an image** — the card would be overlapping nothing, or a photograph.
 5. **Content fields.** As 1. `benefits[]` is the field this design leans on — **three authored lines is
    what the row is designed for**, two draws two columns left-aligned, none hides the row and its
    hairline ⚑.
-6. **Controls.** Plane width (Content box 1,296 · Held 1,040 · The measure 720) · Plane depth (Raised · Flat) · Alignment (Centred · Left to the measure) · Included row (Three up · Hide) · Included list items (P0·3) · Fade (None · Short 96 · Standard 160 · Deep 240) · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Plane width | Content box 1,296 · Held 1,040 · The measure 720 |
+   | Plane depth | Raised · Flat |
+   | Alignment | Centred · Left to the measure |
+   | Included row | Three up · Hide |
+   | Included list items | the P0·3 item controls |
+   | Fade | None · Short 96 · Standard 160 · Deep 240 |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group.
 7. **Data.** As 1. **The plane is never hidden** ⚑ — it is the ground, and a section with no ground is
    1. Tiers read, not drawn; 0, 1 and many are the same plane.
 8. **Empty state.** No benefits → hairline and row both go and the plane shortens to the copy. No blurb
@@ -468,7 +522,26 @@ Contrast value would make it 4 — two designs that differ by one control value 
    full width, fade 120, padding 64.
 5. **Content fields.** As 1. `benefitsLabel` is **stored and not drawn** ⚑ — a section heading above
    three lines on a band is one hierarchy level too many.
-6. **Controls.** Band padding (Compact 48 · Comfortable 72 · Spacious 104 — **a band-internal ladder, so it keeps its own name** ⚑) · Band edges (Full bleed · Inset to the content box) · Alignment (Centred · Left to the measure) · Included list (Show · Hide) · Included list items (P0·3) · Fade (None · Short 96 · Standard 160) · Sign-in link (Show · Hide) · Eyebrow (Show · Hide) · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **Background role is locked to Contrast, with the reason shown** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band padding | Compact 48 · Comfortable 72 · Spacious 104 — **a band-internal ladder, so it keeps its own name** |
+   | Band edges | Full bleed · Inset to the content box |
+   | Alignment | Centred · Left to the measure |
+   | Included list | Show · Hide |
+   | Included list items | the P0·3 item controls |
+   | Fade | None · Short 96 · Standard 160 |
+   | Sign-in link | Show · Hide |
+   | Eyebrow | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | **Locked to Contrast**, with the reason shown |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **Background role is locked to Contrast,
+   with the reason shown** ⚑.
 7. **Data.** As 1. Tiers read, not drawn.
 8. **Empty state.** No benefits → the 20 % hairline goes with the list. No blurb → heading then button,
    and **the band's padding is unchanged** ⚑ — a band that shrinks to fit its shortest gate reads as a
@@ -501,7 +574,26 @@ carried, not re-derived.
    article above it** ⚑, and at Box rule = Top and bottom only that inset disappears and the copy lines
    up with the article again — **the two values are now the whole control** ⚑.
 5. **Content fields.** As 1. No field added, none dropped; `benefits[]` draws three ⚑.
-6. **Controls.** Box width (Narrow 560 · The measure 720 · Content box 1,296) · **Box rule (All round · Top and bottom only)** · Fade (None · Short 96 · Standard 160 · Deep 240) · Included list (Show · Hide) · Included list items (P0·3) · Action (Button · Text link) · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **Left edge only is dropped** ⚑ — a lone left rule is the ornament class the owner killed in A1's Side Rail.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Box width | Narrow 560 · The measure 720 · Content box 1,296 |
+   | Box rule | All round · Top and bottom only |
+   | Fade | None · Short 96 · Standard 160 · Deep 240 |
+   | Included list | Show · Hide |
+   | Included list items | the P0·3 item controls |
+   | Action | Button · Text link |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **Left edge only is dropped** ⚑ — a lone
+   left rule is the ornament class the owner killed in A1's Side Rail.
 7. **Data.** As 1. Tiers read, not drawn.
 8. **Empty state.** No benefits → the inner hairline goes with the list. **An empty box is not
    reachable** ⚑. At Top and bottom only with no benefits the box is two rules around four lines,
@@ -536,7 +628,25 @@ minus one property is not a design.
 5. **Content fields.** As 1, plus nothing. `heading`'s limit is the difference — **60 characters here
    rather than 40**, because the column takes two lines at 40 px ⚑. `benefits[]` is drawn at four in the
    numbered treatment.
-6. **Controls.** Split (Wide left 700 · Even 636) · Action side (Right · Left) · Included list (Numbered rows · Ticks · Hide) · Included list items (P0·3) · Action (Button · Button and email field) · Fade · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Split | Wide left 700 · Even 636 |
+   | Action side | Right · Left |
+   | Included list | Numbered rows · Ticks · Hide |
+   | Included list items | the P0·3 item controls |
+   | Action | Button · Button and email field |
+   | Fade | None · Short 96 · Standard 160 · Deep 240 |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group.
 7. **Data.** As 1. **The reason column is authored and never queried**, so no data state can empty it ⚑.
    Tiers read, not drawn; 0, 1 or many changes nothing here.
 8. **Empty state.** No benefits → the list goes and the reason column ends at the sentence; **the 700
@@ -577,7 +687,25 @@ as a table).
 5. **Content fields.** As 1, plus `periodLabels` (2 × 12 ch) and `tierNote` (opt 90 ch — the price and
    cancellation line under the cards). `benefits[]` is **stored and not drawn** ⚑: the benefits on the
    cards are the tiers' own, from Ghost.
-6. **Controls.** Tiers shown (The lowest paid · The two lowest paid · All paid tiers · All, including free) · Order (Ghost's own · Price, low to high · Price, high to low) · Period (Toggle · Monthly only · Yearly only) · Benefits per card (**a number picker, 0–6, default 3** ⚑, capped at six with the reason drawn — past six a card stands taller than the tier beside it; a tier with fewer benefits shows what it has) · Mark a tier (None · Most popular) · Eyebrow (Show · Hide) · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **No Add and no item controls** ⚑ — the cards are Ghost's. **No Sign-in link**: the cards are the action, and a sign-in line under four buttons is a fifth decision.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Tiers shown | The lowest paid · The two lowest paid · All paid tiers · All, including free |
+   | Order | Ghost's own · Price, low to high · Price, high to low |
+   | Period | Toggle · Monthly only · Yearly only |
+   | Benefits per card | **a number picker, 0–6, default 3**, capped at six with the reason drawn |
+   | Mark a tier | None · Most popular |
+   | Eyebrow | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **No Add and no item controls** ⚑ — the
+   cards are Ghost's. **No Sign-in link**: the cards are the action, and a sign-in line under four
+   buttons is a fifth decision.
 7. **Data.** `#get "tiers"` filtered to paid, plus `post.visibility` and `@member`. **0 paid tiers → the cards and the toggle are hidden and the design draws its head, sentence and action
    with the free copy** ⚑, and the editor says so — never another design. **1** → one card centred at 636
    and Mark a tier greyed ⚑. **2–3** → as drawn. **4+** → A7·3's tier rows, never a 4-up ⚑. A tier with
@@ -617,7 +745,25 @@ description, button. **After an image the panel recommends 1 and does not force 
 5. **Content fields.** As 1, and `benefits[]` is the field this design is built on: 0–6 items of name 60
    ch and detail 90 ch, and **the detail is drawn only here** ⚑. `benefitsLabel` is stored and not drawn
    ⚑; the heading is the label.
-6. **Controls.** Row density (Compact 12 · Comfortable 16 · Spacious 20 — **a row-internal ladder** ⚑) · Detail line (Show · Hide) · Ordinals (Mono numerals · None) · Action position (Beside the heading · Under the rows) · Rows shown (**a number picker, 1–6, default 6** ⚑, capped at six because the authored list itself stops at six, the + drawn greyed with that reason at the cap) · Rows (P0·3 item controls) · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Row density | Compact 12 · Comfortable 16 · Spacious 20 — **a row-internal ladder** |
+   | Detail line | Show · Hide |
+   | Ordinals | Mono numerals · None |
+   | Action position | Beside the heading · Under the rows |
+   | Rows shown | **a number picker, 1–6, default 6**, the + drawn greyed with its reason at the cap |
+   | Rows | the P0·3 item controls |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group.
 7. **Data.** As 1. **The rows are authored, not queried** ⚑. **0 rows → the rows and their hairlines are hidden and the design draws its heading, sentence and action** ⚑ — never another design. **1** → one
    row between two hairlines, drawn and coherent. **7+** → the cap in Rows shown applies and nothing is
    truncated mid-row ⚑. A row with no detail closes to 40 px and its neighbours do not ⚑.
@@ -653,7 +799,25 @@ so the rows read as prose rather than as a table.
 5. **Content fields.** As 1, and `heading`'s limit is the difference: **60 characters, enforced in the
    editor** ⚑ — the only enforced limit in A32, because at 84 px an over-long heading does not wrap
    badly, it wraps into the button. `benefits[]` and `benefitsLabel` are stored and not drawn ⚑.
-6. **Controls.** Display size (Large 64 · Larger 84 · Largest 104) · Alignment (Left · Centred) · Sentence (Show · Hide) · Action (Button · Text link) · Fade (None · Short 96 · Standard 160 · Deep 240) · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **This design's shifted ladder rides on Vertical spacing** — 96 · 116 · 132, default Spacious ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Display size | Large 64 · Larger 84 · Largest 104 |
+   | Alignment | Left · Centred |
+   | Sentence | Show · Hide |
+   | Action | Button · Text link |
+   | Fade | None · Short 96 · Standard 160 · Deep 240 |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | **96 · 116 · 132, default Spacious** — this design's shifted ladder rides on the universal row |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **This design's shifted ladder rides on
+   Vertical spacing** — 96 · 116 · 132, default Spacious ⚑.
 7. **Data.** As 1. Tiers read, not drawn; **the paid gate's price clause is in the sentence and
    disappears with it** ⚑ — at Sentence = Hide the design never states a price, which the panel says
    plainly.
@@ -687,7 +851,28 @@ and inventing one here would be one design's private rule. Flagged, and left.
 5. **Content fields.** As 1, plus `image` (**required** ⚑, ≥ 2,400 px), `imageAlt` (opt 120 ch) and
    `imageFocus` (enum, nine positions — **a field, not a control** ⚑). `benefits[]` is drawn only at
    Included list = Show ⚑.
-6. **Controls.** Cover height (Compact 420 · Comfortable 520 · Spacious 640 — **the cover's own measurement** ⚑) · Scrim (30 % · 45 % · 60 %) · Cover edges (Full bleed · Inset to the content box) · Alignment (Centred · Left to the measure) · Included list (Show · Hide, default Hide) · Included list items (P0·3) · Fade (None · Short 96 · Standard 160) · **Image focus (Centre · Top · Bottom)** · Eyebrow (Show · Hide) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **Background role is locked to Image, with the reason shown** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Cover height | Compact 420 · Comfortable 520 · Spacious 640 — **the cover's own measurement** |
+   | Scrim | 30 % · 45 % · 60 % |
+   | Cover edges | Full bleed · Inset to the content box |
+   | Alignment | Centred · Left to the measure |
+   | Included list | Show · Hide, default Hide |
+   | Included list items | the P0·3 item controls |
+   | Fade | None · Short 96 · Standard 160 |
+   | Image focus | Centre · Top · Bottom |
+   | Eyebrow | Show · Hide |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | **Locked to Image**, with the reason shown |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **Background role is locked to Image, with
+   the reason shown** ⚑.
 7. **Data.** As 1. **No image → the cover draws its scrim colour as a flat ground at the same height** ⚑ and the gate sits on it exactly as drawn, stated in the editor; **the panel advises 4 Contrast Band and never switches to it**. **An image
    narrower than 1,600 px → the editor warns and the cover still renders** ⚑; a warning a publication
    can act on beats a section that refuses to draw. Tiers read, not drawn.
@@ -725,7 +910,24 @@ image the panel recommends 1 and does not force it** — two photographs 96 px a
    **At Held to the content box the bar becomes full bleed at ≤ 767** ⚑.
 5. **Content fields.** As 1, plus `barLine` (opt 60 ch — defaults to the gate's heading ⚑) and `barSub`
    (opt 60 ch). `blurb` is **drawn only in the twin** ⚑ and never in the bar.
-6. **Controls.** Bar height (Compact 64 · Comfortable 76 · Spacious 88 — **strip height, not section spacing** ⚑) · Bar ground (Surface · Contrast) · Bar width (Full bleed · Held to the content box) · At the cut (The twin, in flow · Nothing) · Dismissible (No · Yes) · **Sign-in link (Show · Hide) — the row formerly called "Secondary link", renamed rather than duplicated** ⚑ · Eyebrow (Show · Hide) · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Bar height | Compact 64 · Comfortable 76 · Spacious 88 — **strip height, not section spacing** |
+   | Bar ground | Surface · Contrast |
+   | Bar width | Full bleed · Held to the content box |
+   | At the cut | The twin, in flow · Nothing |
+   | Dismissible | No · Yes |
+   | Sign-in link | Show · Hide — the row formerly called "Secondary link", renamed rather than duplicated |
+   | Eyebrow | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group.
 7. **Data.** As 1. **A long tier name in the bar clips and keeps the whole string in the DOM** ⚑ —
    A18·3's rule. Tiers read, not drawn.
 8. **Empty state.** No `barLine` → the gate's heading fills it, clipped to one line ⚑. At the cut =
@@ -767,7 +969,25 @@ px of padding.
    heading 24, button full width, fade 120, padding 48.
 5. **Content fields.** As 1, minus `eyebrow` (**stored and not drawn** ⚑) and plus `meterLabel` (opt 90
    ch, with `{read}` and `{total}` as its only tokens ⚑). `benefits[]` stored, not drawn.
-6. **Controls.** Meter style (Rule · Segments) · Meter label (**Reading time, in words · Hide** — **Share of the piece is deleted** ⚑: a share needs the preview's own word count and no template can produce one) · Meter width (The measure 720 · Content box 1,296) · Action (Button · Text link) · Fade (**default Short 96** ⚑) · **Sign-in link (Show · Hide), added** · Button icon. Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top divider), the Data group and the Access source group. **Vertical spacing keeps this design's Compact default** ⚑, and **there is no Eyebrow control because there is no eyebrow** — the one design in A32 without one.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Meter style | Rule · Segments |
+   | Meter label | **Reading time, in words · Hide** |
+   | Meter width | The measure 720 · Content box 1,296 |
+   | Action | Button · Text link |
+   | Fade | None · Short 96 · Standard 160 · Deep 240 (**default Short 96**) |
+   | Sign-in link | Show · Hide |
+   | Button icon | None · Before label · After label |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (**this design keeps its Compact default**) |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then, **outside this design's count**: the universals (Background role · Vertical spacing · Top
+   divider), the Data group and the Access source group. **Vertical spacing keeps this design's
+   Compact default** ⚑, and **there is no Eyebrow control because there is no eyebrow** — the one
+   design in A32 without one.
 7. **Data.** `post.reading_time` and nothing else ⚑ — **the label is a static line built from it**, which is
    why the words are in the HTML before any script runs, and **the proportional fill is `reading-progress`'s**,
    drawn from the reader's scroll through the preview and **hidden on a very short post** ⚑. **As drawn the
@@ -997,3 +1217,15 @@ and no question in this category is open.**
 - **No registry module was invented.** A32 declares `core`, `member-form`, `price-toggle`, `dismiss` and
   `reading-progress` — all existing entries — and the meter's scripted fill is what `reading-progress` already
   does. **Nothing was named that the registry does not have.**
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** twelve designs, numbered **1–12**.

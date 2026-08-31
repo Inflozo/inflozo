@@ -246,8 +246,22 @@ sidebar order.**
 
 5. **Content fields.** Section: five authored, all optional; `eyebrow` defaults to “Featured”, `linkLabel` to “Read the piece”; **`linkUrl` is deleted from the union** ⚑. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `primary_author.profile_image` at Meta With photograph, `reading_time`. Writes `mediaSide`, `ratio`, `titleSize`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Media side** Left · Right. **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time · With photograph. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group outside the list, in that sidebar order. **Quick: Media side, Ratio, Title size, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Media side | Left · Right |
+   | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+   | Title size | Small · Medium · Large |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time · With photograph |
+   | Tag | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group outside the list, in that sidebar
+   order. **Quick: Media side, Ratio, Title size, Excerpt.**
 7. **Data.** Ghost's `#get "posts"` at `filter: featured:true` by default, `limit: 1`. **Designed for exactly one post; Count is the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**, unless *When nothing matches* is Show the latest post, in which case the query re-runs without the filter and the eyebrow still reads whatever is authored. **0 in the editor →** the outline plus “No posts are marked featured. Star a post in Ghost, or change Source.” **Many → the first by Order is drawn and the rest are not**; the count line reports both numbers. **Order** Newest first · Oldest first; `shuffle` is not declared here or anywhere in A19.
 
 8. **Empty state.** **No feature image → Reflow**: the image column is removed, the text measure goes 560 → 720, the section is 268 px tall rather than 424, and **no plate is drawn**. No tag → the eyebrow line is the section's “Featured” alone; if that is also absent the title starts the block. No excerpt → nothing drawn, the block is shorter, the columns stay centred. No author photograph at Meta With photograph → A1·6's fallback at **one letter** ⚑ — the author comes from Ghost, and Ghost cannot make two initials out of a name; drawn that way in the primary frame. No section fields → the split starts at the top padding.
@@ -275,13 +289,30 @@ sidebar order.**
 
 5. **Content fields.** Section: five authored, `linkUrl` deleted; `title` and `sub` **are not drawn by this design** and are the only fields in A19 a design refuses — a section head above a full-bleed picture would sit on the page above the section's own edge. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` **required** + `feature_image_alt`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **No `primary_tag`** — the eyebrow is the section's. Writes `height`, `textPosition`, `scrim`, `titleSize`, `excerpt`, `meta`.
 
-6. **Controls.** **Height** Short · Tall · Full screen. **Text position** Lower left · Lower centre · Centre. **Scrim** Soft · Medium · Strong, **a value disabled with its measured ratio when it fails on the set image — and the measurement exists at Source: Hand-picked alone** ⚑ *amended in the design patch pass*: a stylesheet cannot see a photograph, so the editor measures the picked picture and writes the result; at a query Source the post can change long after the editor closed, so **nothing is disabled there and the panel advises Strong**. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines. **Meta** None · Date only · Name and date · Name, date and reading time. Six of its own, plus the universal trio and the Data group. **No Ratio control** — the picture is cropped to the section, not fitted to a ratio — and **no Tag row**, since no `primary_tag` is read. **Universal: Background role locked at the image ground, Vertical spacing locked as no-effect, Top divider locked None**, each with its reason drawn. **Quick: Height, Text position, Scrim, Title size.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Height | Short · Tall · Full screen |
+   | Text position | Lower left · Lower centre · Centre |
+   | Scrim | Soft · Medium · Strong (a value disabled with its measured ratio when it fails on the set image, at Source: Hand-picked alone) |
+   | Title size | Small · Medium · Large |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Background role (universal) | **Locked at the image ground**, with its reason drawn |
+   | Vertical spacing (universal) | **Locked as no-effect**, with its reason drawn |
+   | Top divider (universal) | **Locked None**, with its reason drawn |
+
+   Six of its own, plus the universal trio and the Data group. **No Ratio control** — the picture
+   is cropped to the section, not fitted to a ratio — and **no Tag row**, since no `primary_tag` is
+   read. **Universal: Background role locked at the image ground, Vertical spacing locked as
+   no-effect, Top divider locked None**, each with its reason drawn. **Quick: Height, Text
+   position, Scrim, Title size.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; with *When nothing matches* at Show the latest post **the latest post is drawn whether or not it has a feature image** ⚑ *amended in the design patch pass* — with Ground there is no longer a case where the fallback fails, and the sentence that said there was is deleted. **0 in the editor →** the outline at Tall plus the standard line. Many → the first by Order.
 
 8. **Empty state.** **No feature image → Ground** ⚑ *changed in the design patch pass*: the picture's box is a flat field of the pack's contrast colour at the set Height, **the scrim is not drawn** (there is nothing to lift text off), and the eyebrow, title, excerpt, meta and call to action sit exactly where Text position puts them. **The section renders — on the site as well as in the editor.** An editor-only line names the missing picture and advises 1 Split; **nothing switches, and there is no Switch button.** No excerpt → not drawn, the block is 27 px shorter, the inset is unchanged. No author name → the date alone. **No `feature_image_alt` → the `alt` is empty and the picture is decorative**, because the title beside it already carries the meaning.
 
-9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** The scrim is a gradient, the height is CSS, the crop is `object-fit: cover`. **Considered and refused: `reveal`** (a hero that fades in is a hero nobody photographs) and **`video-facade`** — a featured post's video is A15's business and a poster frame here would need a play affordance the section has no field for. **Parallax was considered and refused outright**: no module covers it, and inventing one is not this pass's licence.
+9. **Behaviour module.** **None**; `core` assumed. **Edit-safe: yes** — nothing runs; the scrim and the crop are CSS and the resting state is the only state. **No-JS: pixel-identical.** The scrim is a gradient, the height is CSS, the crop is `object-fit: cover`. **Considered and refused: `reveal`** (a hero that fades in is a hero nobody photographs) and **`video-facade`** — a featured post's video is A15's business and a poster frame here would need a play affordance the section has no field for. **Parallax was considered and refused outright**: no module covers it, and inventing one is not this pass's licence.
 
 10. **Accessibility.** The picture is a `<img>` inside the anchor, not a CSS background, so it prints and is announced; **the scrim is a sibling `<div aria-hidden>`**. Post title is the `<h2>` — this design never draws a section title, so the level never steps. **Every scrim value is measured against the image's mean luminance at the text box and a failing value is disabled with its ratio**, which is the project's rule 4 applied to a photograph rather than to a colour. **⚑ At a query Source there is no measurement to make** — the picture is not known while the editor is open — so the panel advises the strongest value instead of disabling a weaker one, and at Ground the question does not arise: the field is a token and its ratio is fixed. A6's ring on the whole picture at a 4 px inset, drawn inside the section because there is no page margin to draw it in ⚑. Reduced motion is not a factor: nothing moves.
 
@@ -304,8 +335,23 @@ sidebar order.**
 
 5. **Content fields.** Section: the six; the head, when authored, **renders outside the card and suppresses the card's eyebrow**. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag` (eyebrow when no head, and the plate's word when there is no picture), `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **No `profile_image`**. Writes `card`, `ratio`, `titleSize`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Card** Surface · Outline. **Ratio** Landscape 3:2 · Square 1:1 · Portrait 4:5 — **no Wide 16:9**, which at 480 wide is a 270 px letterbox inside a 400 px card. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group; **Vertical spacing is the space around the card**, which is what the old Padding row was. **Quick: Card, Ratio, Title size, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Card | Surface · Outline |
+   | Ratio | Landscape 3:2 · Square 1:1 · Portrait 4:5 — **no Wide 16:9** |
+   | Title size | Small · Medium · Large |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — the space around the card, which is what the old Padding row was |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group; **Vertical spacing is the space
+   around the card**, which is what the old Padding row was. **Quick: Card, Ratio, Title size,
+   Excerpt.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render and the card goes with it**; an empty card is a hole with a border around it. **0 in the editor →** the card's outline at its set ratio plus the standard line. **1 → the design's designed case.** Many → the first by Order; the count line reports both. **This design is the strongest in A19 at exactly one post** and the panel says so, because a container is a claim that what is inside it is complete.
 
 8. **Empty state.** **No feature image → Plate**: A17's tag plate at the image box, `#F4F0E8` light and `#2A251E` dark, the primary tag centred at 13 px uppercase, `aria-hidden`, **capped at 320 px tall** so Portrait and Square fall back to Landscape's box. **Untagged and no picture → the plate is drawn empty**, never with the date or the author's name. No excerpt → the card is shorter and the picture sets its height. No tag and a head authored → no eyebrow line at all.
@@ -333,8 +379,23 @@ sidebar order.**
 
 5. **Content fields.** Section: the six; **the eyebrow joins the post's tag with a middle dot** ⚑, either half falling away when absent. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` **required** + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author` including `profile_image`, `reading_time`. Writes `columnWidth`, `ratio`, `alignment`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Width** Narrow · Medium · Wide. **Ratio** Portrait 4:5 · Square 1:1 · Landscape 3:2. **Alignment** Centred · Flush left. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time · With photograph. **Tag** Show · Hide — at Hide the eyebrow is the section's word alone. Six of its own, plus the universal trio and the Data group. **No Title size** — the column is the variable and 34 is the only size that holds at all three widths. **Quick: Width, Ratio, Alignment, Meta.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Width | Narrow · Medium · Wide |
+   | Ratio | Portrait 4:5 · Square 1:1 · Landscape 3:2 |
+   | Alignment | Centred · Flush left |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time · With photograph |
+   | Tag | Show · Hide — at Hide the eyebrow is the section's word alone |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No Title size** — the column is
+   the variable and 34 is the only size that holds at all three widths. **Quick: Width, Ratio,
+   Alignment, Meta.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; at Show the latest post **the latest post is drawn whether or not it has a picture** ⚑, since the column reflows. **0 in the editor →** the column's outline at the set ratio plus the standard line. Many → the first by Order.
 
 8. **Empty state.** **No feature image → Reflow** ⚑ *changed in the design patch pass*: the crop is dropped and the narrow centred column draws eyebrow, title, excerpt, meta and call to action at its set Width — the column is the design and it holds without a picture. An editor-only line advises 1 Split; **nothing switches, and there is no Switch button.** A 560 × 700 plate is still refused, for the reason it always was. No tag → the eyebrow is “Featured” alone. No excerpt → the block is 54 px shorter and the gap under the picture is unchanged. No author photograph → A1·6's fallback at **one letter** ⚑. **No author at all → the meta line is the date, and the avatar is not reserved**.
@@ -362,8 +423,24 @@ sidebar order.**
 
 5. **Content fields.** Identical to 1 Split's, minus `profile_image`: **Meta has no With photograph value here**, because a 24 px avatar on a dark band needs a derived ring to be visible and that is a fourth derivation for one small circle. Writes `band`, `mediaSide`, `ratio`, `titleSize`, `excerpt`, `meta`, `tag`. **`ratio` is written now** ⚑ — it was refused, and the refusal is overruled in this pass.
 
-6. **Controls.** **Band edge** Full bleed · Inset. **Media side** Left · Right. **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 — **new in this pass** ⚑, the refusal overruled. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Seven of its own, plus the universal trio and the Data group. **Universal: Background role locked at Contrast, Top divider locked None; Vertical spacing resolves 80 · 96 · 132 here** — this row's resolution, not a second ladder. **Quick: Band edge, Ratio, Title size, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Band edge | Full bleed · Inset |
+   | Media side | Left · Right |
+   | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 (**new in this pass**, the refusal overruled) |
+   | Title size | Small · Medium · Large |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | Background role (universal) | **Contrast (locked)** |
+   | Vertical spacing (universal) | **80 · 96 · 132 here** — this row's resolution, not a second ladder |
+   | Top divider (universal) | **Locked None** |
+
+   Seven of its own, plus the universal trio and the Data group. **Universal: Background role
+   locked at Contrast, Top divider locked None; Vertical spacing resolves 80 · 96 · 132 here** —
+   this row's resolution, not a second ladder. **Quick: Band edge, Ratio, Title size, Excerpt.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render and the band goes with it** — the strongest case for the category's hide rule, since an empty band is a coloured stripe with nothing in it. **0 in the editor →** the band drawn at 30% opacity with the standard line on it ⚑, the one editor state in A19 that is not an outline, because an outline on a dark band is invisible. Many → the first by Order.
 
 8. **Empty state.** **No feature image → Plate**, at the derived `#322F28` with the tag in the derived muted, capped at 320 px tall. **This design plates where 1 Split reflows** and the panel states the difference, because switching between the two is a one-click move and the behaviour changes under the user. No excerpt → the block is shorter, the columns stay centred. No tag and no picture → the plate is empty.
@@ -391,8 +468,22 @@ sidebar order.**
 
 5. **Content fields.** Section: the six; the eyebrow joins the post's tag with a middle dot as in 4 Poster. Data group: all six, Hand-picked included. Post: `title`, `url`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **Reads no `feature_image` and no `profile_image`** — the shortest read list in A19. Writes `titleSize`, `alignment`, `rule`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Title size** Small 52 · Medium 64 · Large 72. **Alignment** Flush left · Centred. **Rule** Off · Above · Above and below — **the hairline inside the section**, distinct from the universal Top divider, which draws above it. **Excerpt** Off · One line · Two lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group. **No image control of any kind**, which is the design. **Quick: Title size, Alignment, Rule, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Title size | Small 52 · Medium 64 · Large 72 |
+   | Alignment | Flush left · Centred |
+   | Rule | Off · Above · Above and below — **the hairline inside the section**, distinct from the universal Top divider |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No image control of any kind**,
+   which is the design. **Quick: Title size, Alignment, Rule, Excerpt.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; **at Show the latest post this design's fallback can never fail**, because it needs no picture — the only design in A19 of which that is true, and the panel says so as advice for sites that want a guaranteed section. **0 in the editor →** a rule and two grey title lines plus the standard message. Many → the first by Order.
 
 8. **Empty state.** **No feature image is not a case** — nothing reads it. No tag → the eyebrow is “Featured” alone; both absent → no eyebrow line, and at Rule Above the hairline moves to the top of the block. No excerpt → the title sits directly above the meta with 22 px between them. No author → the date alone. **Everything this design can lose leaves it composed**, which is why seven other designs point at it.
@@ -420,8 +511,22 @@ sidebar order.**
 
 5. **Content fields.** Section: the six; **the head, when authored, sits above the picture** and suppresses the card's eyebrow, as in 3 Card. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` **required** + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Writes `cardPosition`, `imageWidth`, `titleSize`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Card position** Lower left · Lower right · Centred. **Image width** Content · Full bleed. **Title size** Small · Medium · Large (disabled — 40 px overflows the card). **Excerpt** Off · One line · Two lines · Three lines, **drawn one line shorter**. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group. **No Ratio control** (16:9 only) and **no overlap control** (64 only). **Quick: Card position, Image width, Excerpt, Meta.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Card position | Lower left · Lower right · Centred |
+   | Image width | Content · Full bleed |
+   | Title size | Small · Medium · ~~Large~~ (disabled — 40 px overflows the card) |
+   | Excerpt | Off · One line · Two lines · Three lines, **drawn one line shorter** |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No Ratio control** (16:9 only) and
+   **no overlap control** (64 only). **Quick: Card position, Image width, Excerpt, Meta.**
 7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render.** At Show the latest post **the latest post is drawn whether or not it has a picture** ⚑ — Ground gives the card something to overlap. **0 in the editor →** the picture's outline with the card's outline over it, plus the standard line. Many → the first by Order.
 
 8. **Empty state.** **No feature image → Ground** ⚑ *changed in the design patch pass*: the picture's box is a flat field of the pack's contrast colour at 1,296 × 486, or full bleed at that value, and **the card overlaps it by 64 px exactly as it always does** — the overlap is the design and it survives a post with no picture. An editor-only line advises 3 Card; **nothing switches, and there is no Switch button.** No excerpt → the card is 27 px shorter and the overlap is unchanged. No tag → the card's eyebrow is “Featured” alone. **No `feature_image_alt` → empty `alt`**; the card carries the meaning.
@@ -449,8 +554,22 @@ sidebar order.**
 
 5. **Content fields.** Section: the six. Data group: all six, **Count the stepper at min 1 · max 3**. Lead: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Followers: `title`, `url`, `primary_tag`, `published_at`, `primary_author.name` — **no image and no excerpt, ever**. Writes `leadRatio`, `divider`, `titleSize`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Lead ratio** Landscape 3:2 · Square 1:1 · Wide 16:9. **Divider** Off · Between followers · Column rule. **Title size** Small · Medium · Large, **lead only**. **Excerpt** Off · One line · Two lines · Three lines, **lead only**. **Meta** None · Date only · Name and date · Name, date and reading time, **all three posts together**. **Tag** Show · Hide, all three together. Six of its own, plus the universal trio and the Data group. **No follower-image control** — that is the design. **Quick: Lead ratio, Divider, Excerpt, Meta.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Lead ratio | Landscape 3:2 · Square 1:1 · Wide 16:9 |
+   | Divider | Off · Between followers · Column rule |
+   | Title size | Small · Medium · Large, **lead only** |
+   | Excerpt | Off · One line · Two lines · Three lines, **lead only** |
+   | Meta | None · Date only · Name and date · Name, date and reading time, **all three posts together** |
+   | Tag | Show · Hide, all three together |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No follower-image control** — that
+   is the design. **Quick: Lead ratio, Divider, Excerpt, Meta.**
 7. **Data.** `featured:true` at `limit: 2` or `3`. **Designed for 3; correct at 1, 2 and 3.** **0 → the section does not render.** **1 → the lead alone, keeping its 848**, the right-hand 448 left as page, and the panel advising 1 Split without switching. **2 → lead and one follower, no rule drawn.** **More featured than Show → the extras are not drawn** and the count line reports it. Order decides which post leads; there is no lead picker.
 
 8. **Empty state.** **Lead without a picture → Reflow**: text to 720 inside the 848 column, followers unchanged, no plate. **Follower without a tag → the eyebrow line is not drawn and the entry is 21 px shorter**; entries are never equalised. Follower without an author at Meta Name and date → the date alone. No excerpt on the lead → the lead is shorter and the columns stay top-aligned. **Both followers untagged → the column is titles and dates**, which reads like a rail at a larger size and is noted rather than corrected.
@@ -478,8 +597,27 @@ sidebar order.**
 
 5. **Content fields.** Section: `eyebrow`, `title`, `sub`, `note`, `linkLabel` — all optional; **`linkUrl` deleted from the union** ⚑. Data group: `source` (Hand-picked included), `filterValue`, `pickedPosts`, `count` **the stepper at min 1 · max 3**, `order`, `fallback`. Per band: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **No `profile_image`** — a face beside a 672 px photograph is a second picture. Writes `ratio`, `mediaSide`, `divider`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1. **Starts** Picture left · Picture right. **Divider** Off · Between bands. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide, every band together. Six of its own, plus the universal trio and the Data group; **the 96 between bands is still not exposed** ⚑. **⚑ No Title size**, fixed at 34, **with its reason drawn** ⚑ *added in the design patch pass*: two or three bands of 40 px titles down one page is three headlines competing for the same page, and 28 makes a band read as a follower. **⚑ No Portrait 4:5, also with its reason drawn**: at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it, and the band stops being a band. Both are narrowings of a shared control; neither renames it and neither adds to it. **Quick: Ratio, Starts, Excerpt, Meta.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
+   | Starts | Picture left · Picture right |
+   | Divider | Off · Between bands |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide, every band together |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group; **the 96 between bands is still not
+   exposed** ⚑. **⚑ No Title size**, fixed at 34, **with its reason drawn** ⚑ *added in the design
+   patch pass*: two or three bands of 40 px titles down one page is three headlines competing for
+   the same page, and 28 makes a band read as a follower. **⚑ No Portrait 4:5, also with its reason
+   drawn**: at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it, and the band
+   stops being a band. Both are narrowings of a shared control; neither renames it and neither adds
+   to it. **Quick: Ratio, Starts, Excerpt, Meta.**
 7. **Data.** `featured:true` at `limit: 2` or `3`, ordered by `published_at`. **Designed for 3; correct at 2.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws one band. **1 → one band, drawn at full size**, and the panel says “1 post is featured. This design is composed for 2 or 3 — 1 Split draws one post better” and switches nothing. **More featured than Show → the extras are not drawn** and the count line reports it. **Order is selectable from Newest first · Oldest first only**; no hand-ordering exists on `featured`, and there is no Add or Remove anywhere in the panel.
 
 8. **Empty state.** **Band without a picture → Reflow**: text to 720 at the band's leading edge whichever side its turn was, no plate, the alternation of the remaining bands unchanged. **Band without an excerpt → 41 px shorter, nothing equalised**; the picture still sets the height. **Band without a tag → the eyebrow line is not drawn** and the text block starts at the title. No author at Meta Name and date → the date alone. **Every band missing its picture → three reflowed bands**, which is a stack of headlines and is noted rather than corrected; 12 Picks is the design for that content.
@@ -510,8 +648,24 @@ sidebar order.**
 
 5. **Content fields.** Section: `eyebrow`, `title`, `sub`, `note`, `linkLabel`, all optional; **`linkUrl` deleted from the union** ⚑. Data group: `source` (Hand-picked included), `filterValue`, `pickedPosts`, `count` **the stepper, locked at 2**, `order`, `fallback`. Per cell: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. No `profile_image`. Writes `ratio`, `titleSize`, `excerpt`, `meta`, `divider`, `tag`.
 
-6. **Controls.** **Ratio** Wide 16:9 · Landscape 3:2 · Square 1:1 · Portrait 4:5. **Title size** Small 28 · Medium 34 · Large 40, both cells together. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Divider** Off · Column rule. **Tag** Show · Hide, both cells together. Six of its own, plus the universal trio and the Data group. **Count is present, greyed and locked at 2** ⚑ — drawn rather than hidden, with the reason and the design to switch to. **Quick: Ratio, Title size, Excerpt, Divider.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Ratio | Wide 16:9 · Landscape 3:2 · Square 1:1 · Portrait 4:5 |
+   | Title size | Small 28 · Medium 34 · Large 40, both cells together |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Divider | Off · Column rule |
+   | Tag | Show · Hide, both cells together |
+   | Count | **Greyed and locked at 2**, drawn rather than hidden, with the reason and the design to switch to |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **Count is present, greyed and
+   locked at 2** ⚑ — drawn rather than hidden, with the reason and the design to switch to.
+   **Quick: Ratio, Title size, Excerpt, Divider.**
 7. **Data.** `featured:true` at `limit: 2`. **Designed for exactly 2.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws one cell. **1 → the left cell alone at 636, the right half left as page**, the panel advising 1 Split and switching nothing. **More than 2 featured → the first two in query order are drawn** and the count line reports “5 posts are featured. 2 drawn.” **Order is selectable from Newest first · Oldest first and decides left and right**; there is no swap control, no lead picker, and no Add or Remove.
 
 8. **Empty state.** **Cell without a picture → Plate**, A17's: hover-surface fill at the picture's exact ratio, the post's tag centred in 13 px muted capitals, `aria-hidden`. **Untagged and pictureless → the plate is empty**, never filled with a glyph or the publication name. Cell without an excerpt → shorter cell, no equalisation, the picture and the title's first line still aligned. No author at Meta Name and date → the date alone. **Both cells pictureless → two plates**, which is honest and ugly, and the panel suggests 12 Picks.
@@ -542,8 +696,23 @@ sidebar order.**
 
 5. **Content fields.** Section: the six, **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper at min 1 · max 8**. Lead: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Rail: `title`, `url`, `published_at`, `primary_tag` — **never `feature_image`, never `custom_excerpt`, never an author**. Writes `ratio`, `columnWidth`, `railDetail`, `railHeading`, `excerpt`, `meta`, **`tag`** ⚑; reads the authored `railLabel`.
 
-6. **Controls.** **Ratio** Wide 16:9 · Landscape 3:2 · Square 1:1. **Rail width** Narrow · Standard. **Rail detail** Title only · Title and date · Title, date and tag. **Rail heading** Hidden · Shown — **new in this pass** ⚑, drawing the authored `railLabel` above the rail at eyebrow size. **Excerpt** Off · One line · Two lines · Three lines, lead only. **Meta** None · Date only · Name and date · Name, date and reading time, lead only. **Tag** Show · Hide, **the lead's eyebrow alone** — new in the design patch pass ⚑, **ruled by the owner on 30 August 2026**; Rail detail still governs the rail's tags, so a site can carry topics in the rail and none on the lead. **Seven of its own**, plus the universal trio and the Data group. **No rail-side control** — the rail is always right. **Quick: Ratio, Rail detail, Rail heading, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Ratio | Wide 16:9 · Landscape 3:2 · Square 1:1 |
+   | Rail width | Narrow · Standard |
+   | Rail detail | Title only · Title and date · Title, date and tag |
+   | Rail heading | Hidden · Shown (**new in this pass**, drawing the authored `railLabel` above the rail at eyebrow size) |
+   | Excerpt | Off · One line · Two lines · Three lines, lead only |
+   | Meta | None · Date only · Name and date · Name, date and reading time, lead only |
+   | Tag | Show · Hide — **the lead's eyebrow alone** |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Seven of its own**, plus the universal trio and the Data group. **No rail-side control** — the
+   rail is always right. **Quick: Ratio, Rail detail, Rail heading, Excerpt.**
 7. **Data.** `featured:true` at `limit: 3` or `5`. **Designed for 5; correct at 3, 2 and 1.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws the lead with no rail. **1 → the lead alone at 848, no rail, the right 424 left as page**; the panel advises 1 Split and switches nothing. **2 → a rail of one entry with no rules**, which is the design at its thinnest and still composed. **More featured than Show → the extras are not drawn**, the count line reports it, and there is no “more” link. Order selectable from Newest first · Oldest first; **the first post in that order leads and the rest fill the rail in the same order**. No Add, no Remove, no lead picker.
 
 8. **Empty state.** **Lead without a picture → Plate**, A17's, at the ratio's exact size, tag centred in muted capitals, `aria-hidden`; never a reflow, because the rail is beside it. **Lead without an excerpt → shorter lead, rail unchanged.** **Rail entry without a tag at Title, date and tag → no eyebrow line, entry 21 px shorter, nothing equalised.** Rail entry titles are never clamped or truncated, at any width. No head authored → the lead's title becomes the `<h2>`.
@@ -574,8 +743,23 @@ sidebar order.**
 
 5. **Content fields.** Section: the six, **`linkUrl` deleted from the union** ⚑ and **`linkLabel` unread as well** ⚑ — the one design in A19 that draws no call to action, so the label has nothing to label. Data group: all six, **`count` the stepper at min 1 · max 10**. Per pick: `title`, `url`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **`feature_image` is never read**, which is unique in the category. Writes `numeralSize`, `rowDensity`, `divider`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Numeral size** Small · Medium · Large (28/40/56 in a 64/96/128 column). **Row density** Compact · Comfortable · Spacious — the space inside a row, kept distinct from the universal Vertical spacing. **Divider** Off · Between picks. **Excerpt** Off · One line · Two lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group. **No Ratio, no Title size** — the first because there is no picture, the second because Numeral size is this design's scale. **Quick: Numeral size, Row density, Divider, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Numeral size | Small · Medium · Large (28/40/56 in a 64/96/128 column) |
+   | Row density | Compact · Comfortable · Spacious — the space inside a row, kept distinct from the universal Vertical spacing |
+   | Divider | Off · Between picks |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No Ratio, no Title size** — the
+   first because there is no picture, the second because Numeral size is this design's scale.
+   **Quick: Numeral size, Row density, Divider, Excerpt.**
 7. **Data.** `featured:true` at `limit: 3` or `5`. **Designed for 5; correct at 3, 2 and 1** — nothing about a row changes with the count. **0 → the section does not render** unless `fallback` is Show the latest post, which draws one pick numbered 01. **1 → one row, still numbered 01, not promoted**; the panel advises 6 Big Type or 14 Slim and switches nothing. **More featured than Show → the extras are not drawn** and the count line reports it. **At a query Source the numerals are positions in the order and not a ranking**, and the panel says which; **at Source: Hand-picked the picked order *is* the ranking** ⚑ and the panel says that instead. **The old advisory line under Order is deleted** — it existed because the feature was missing. No Add, no Remove.
 
 8. **Empty state.** **Pick with no excerpt → the row is 27 px shorter** and nothing is padded or equalised. **Pick with no tag → no eyebrow line**, the row starts at the title, 21 px shorter. No author at Meta Name and date → the date alone. **A pick has no picture to miss, so the category's plate and reflow rules do not apply here at all** — the reason this design is the panel's recommendation when a site's featured posts have no images. Head absent → the first pick's title is the `<h2>` and the rest stay `<h3>`.
@@ -606,8 +790,25 @@ sidebar order.**
 
 5. **Content fields.** Section: `eyebrow` (drawn only in the thin state), `linkLabel`; `title`, `sub` and `note` are in the union and **this design draws none of them** ⚑ — a section headline above a pull quote is two voices; **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper, locked at 1**. From the post: **`custom_excerpt` — required, not optional, here alone**, `title`, `url`, `published_at`, `primary_author.name` + `profile_image`. **No `feature_image` and no `primary_tag`**. Writes `quoteSize`, `quoteMark`, `alignment`, `attribution`, `authorPhoto`.
 
-6. **Controls.** **Quote size** Small 28 · Medium 34 · Large 40. **Quote mark** Off · Glyph · Rule. **Alignment** Left · Centred. **Attribution** Title only · Title and author · Title, author and date. **Author photo** Hidden · Shown. Five of its own, plus the universal trio and the Data group. **No Excerpt control** — the excerpt renders whole, never clamped — and **no Tag row**, since no `primary_tag` is read. **Count greyed and locked at 1.** **Universal: Background role locked at Surface, Top divider locked None**, each with its reason; Vertical spacing is the band's own padding. **Quick: Quote size, Quote mark, Alignment, Attribution.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Quote size | Small 28 · Medium 34 · Large 40 |
+   | Quote mark | Off · Glyph · Rule |
+   | Alignment | Left · Centred |
+   | Attribution | Title only · Title and author · Title, author and date |
+   | Author photo | Hidden · Shown |
+   | Count | **Greyed and locked at 1** |
+   | Background role (universal) | **Locked at Surface**, with its reason |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — the band's own padding |
+   | Top divider (universal) | **Locked None**, with its reason |
+
+   Five of its own, plus the universal trio and the Data group. **No Excerpt control** — the
+   excerpt renders whole, never clamped — and **no Tag row**, since no `primary_tag` is read.
+   **Count greyed and locked at 1.** **Universal: Background role locked at Surface, Top divider
+   locked None**, each with its reason; Vertical spacing is the band's own padding. **Quick: Quote
+   size, Quote mark, Alignment, Attribution.**
 7. **Data.** `featured:true` at `limit: 1`. **0 → the section does not render** unless `fallback` is Show the latest post. **1 → the design as drawn.** **Many → the first in query order is drawn and the count line reports “5 posts are featured. 1 drawn.”** Order selectable from Newest first · Oldest first and it is the only thing that decides which post appears; no picker, no Add, no Remove. **⚑ The post that Order lands on may be the one without an excerpt**, which is how a site meets the thin state without changing anything — the spec's most likely real-world path, and the reason the design draws a thin state rather than an error.
 
 8. **Empty state.** **No `custom_excerpt` → this design's own thin state** ⚑ *changed in the design patch pass*: the band, its ground and its padding stay, **the quote mark and the quote are not drawn**, and the title takes the quote's display size on the band with the eyebrow above it — the design with the part that is missing hidden, not another design's arrangement. **An editor-only notice** names the missing field, offers the fix and **advises 6 Big Type**; **nothing is switched and the notice never reaches the site.** No author photograph → A1·6's fallback at **one letter** ⚑. No author at all at Attribution Title, author and date → the date alone on that line. **A very long excerpt renders whole and the band grows**; the panel suggests Quote size Small rather than truncating.
@@ -638,8 +839,24 @@ sidebar order.**
 
 5. **Content fields.** Section: `eyebrow` (drawn at Label Eyebrow); `title`, `sub`, `note` and `linkLabel` **all unread** ⚑, and `linkUrl` is deleted from the union — the bar has no room for a head and no room for a labelled action. From the post: `title`, `url`, `primary_tag` (at Label Post tag), `published_at` or `reading_time` (at Detail). **No image, no excerpt, no author** — the leanest read in the category. Data group: all six, **`count` fixed at 1**. Writes `rowDensity`, `label`, `detail`, `alignment`, `rule`, `trailing`.
 
-6. **Controls.** **Density** Compact 48 · Comfortable 64 · Spacious 80 — **the strip's height, and now only that**. **Label** Off · Eyebrow · Post tag. **Detail** Title only · Title and date · Title and reading time. **Alignment** Left · Centred (Centred does not draw the detail). **Rule** Off · Above · Above and below — the strip's own hairline, distinct from the universal Top divider, which is locked None here. **Trailing** Off · Arrow. Six of its own, plus the universal trio and the Data group. **Vertical spacing is new to this design** ⚑ and resolves 32 · 48 · 64 around the strip; **Count greyed and locked at 1**; **no Tag row**, because Label governs the tag. **Quick: Density, Label, Detail, Trailing.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Density | Compact 48 · Comfortable 64 · Spacious 80 — **the strip's height, and now only that** |
+   | Label | Off · Eyebrow · Post tag |
+   | Detail | Title only · Title and date · Title and reading time |
+   | Alignment | Left · Centred (Centred does not draw the detail) |
+   | Rule | Off · Above · Above and below — the strip's own hairline |
+   | Trailing | Off · Arrow |
+   | Count | **Greyed and locked at 1** |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | **32 · 48 · 64 around the strip** — new to this design |
+   | Top divider (universal) | **Locked None** here |
+
+   Six of its own, plus the universal trio and the Data group. **Vertical spacing is new to this
+   design** ⚑ and resolves 32 · 48 · 64 around the strip; **Count greyed and locked at 1**; **no
+   Tag row**, because Label governs the tag. **Quick: Density, Label, Detail, Trailing.**
 7. **Data.** `featured:true` at `limit: 1`. **0 → the section does not render** unless `fallback` is Show the latest post — **the fallback matters more here than anywhere**, since a 64 px bar that vanishes leaves a page that still reads, which is why a site can safely leave it on. **1 → the design as drawn.** **Many → the first in query order**, the count line reporting “5 posts are featured. 1 drawn.” Order selectable from Newest first · Oldest first and it is the only thing deciding which post appears. No Add, no Remove, no picker.
 
 8. **Empty state.** **No tag at Label Post tag → the section's eyebrow is drawn instead** ⚑, and if that is empty too the label is not drawn and the title starts at the margin. **No date is impossible** — `published_at` is required by Ghost. **A post with no picture, no excerpt and no author changes nothing**, because the bar reads none of them: **this is the design that survives the thinnest content in the category**, and the panel recommends it for a site whose featured posts are bare. A very long title wraps and the bar grows.
@@ -670,8 +887,23 @@ sidebar order.**
 
 5. **Content fields.** Section: the six, **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper at min 1 · max 8**. Per slide: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. No `profile_image`. Writes `ratio`, `navigation`, `titleSize`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1. **Navigation** Dots · Arrows · Dots and arrows. **Title size** Small 28 · Medium 34 · Large 40. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide, every slide together. Six of its own, plus the universal trio and the Data group. **No Autoplay, no Interval, no Loop** ⚑ — refused, **owner-ratified in the reconciliation pass**, with the reasons kept in the panel and here. **Quick: Ratio, Navigation, Title size, Excerpt.**
+6. **Controls.**
 
+   | Control | Values |
+   |---|---|
+   | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
+   | Navigation | Dots · Arrows · Dots and arrows |
+   | Title size | Small 28 · Medium 34 · Large 40 |
+   | Excerpt | Off · One line · Two lines · Three lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide, every slide together |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Six of its own, plus the universal trio and the Data group. **No Autoplay, no Interval, no
+   Loop** ⚑ — refused, **owner-ratified in the reconciliation pass**, with the reasons kept in the
+   panel and here. **Quick: Ratio, Navigation, Title size, Excerpt.**
 7. **Data.** `featured:true` at `limit: 3` or `5`. **Designed for 5; correct at 3 and 2.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws one still slide. **1 → a still spotlight: no track, no dots, no arrows, and the module is not declared for that render** ⚑; the panel says “Nothing to page through — 1 Split draws one post better” and switches nothing. **2 → two dots and both arrows**, one disabled at each end. **More featured than Show → the extras are not drawn** and the count line reports it. Order selectable from Newest first · Oldest first; **it is the slide order, and the first slide is always the one at rest.** No Add, no Remove, no per-slide anything.
 
 8. **Empty state.** **Slide without a picture → Plate**, A17's, at the ratio's exact size with the tag centred, `aria-hidden` — **never a reflow, because slides must be the same height or the section changes size as the reader pages.** Untagged and pictureless → an empty plate. Slide without an excerpt → shorter text column, the picture still setting the slide's height, nothing equalised. No author at Meta Name and date → the date alone. **All slides pictureless → a track of plates**, which is worse than 12 Picks at the same content and the panel says so.
@@ -1055,6 +1287,40 @@ pack or spacing step changed.**
    designs already carry. **What Ground adds to the build's list: one token used as a picture's
    substitute, at the picture's exact box, in two designs.**
 
+### Module declarations added — 31 August 2026
+
+Every design in this category now carries a **Behaviour module.** line at field 9 naming its script or
+declaring none, stating whether it is edit-safe, and saying what a visitor sees with JavaScript off.
+**Fourteen of the fifteen already carried the line in the required shape and were not touched**; the
+work in this category was one omission and one audit.
+
+| # | Design | Declared |
+|---|---|---|
+| 1 | Split | **None** · edit-safe: yes · JS off: pixel-identical |
+| 2 | Full Bleed | **None** · edit-safe: yes *(added in this pass — the line stated the script and the JS-off branch but not the editor branch)* · JS off: pixel-identical |
+| 3 | Card | **None** · edit-safe: yes · JS off: pixel-identical |
+| 4 | Poster | **None** · edit-safe: yes · JS off: pixel-identical |
+| 5 | Contrast Band | **None** · edit-safe: yes · JS off: pixel-identical |
+| 6 | Big Type | **None** · edit-safe: yes · JS off: pixel-identical |
+| 7 | Overlap | **None** · edit-safe: yes · JS off: pixel-identical |
+| 8 | Lead and Two | **None** · edit-safe: yes · JS off: pixel-identical |
+| 9 | Alternating | **None** · edit-safe: yes · JS off: pixel-identical |
+| 10 | Pair | **None** · edit-safe: yes · JS off: pixel-identical |
+| 11 | Lead and Rail | **None** · edit-safe: yes · JS off: pixel-identical |
+| 12 | Picks | **None** · edit-safe: yes · JS off: pixel-identical |
+| 13 | Quote | **None** · edit-safe: yes · JS off: pixel-identical |
+| 14 | Slim | **None** · edit-safe: yes · JS off: pixel-identical |
+| 15 | Carousel | **`carousel`** · **edit-safe: no** — the module does not run in the editor and the resting slide is what the canvas draws · JS off: the slide track is a native horizontally-scrollable `scroll-snap` strip, fully usable; only the dots and the arrow buttons are hidden |
+
+**Fourteen declare none and one declares a script.** No name outside the registry was used, no deleted
+name appears anywhere in this document, and no module was copied onto a design because the category
+mentions it: `reveal`, `typewriter`, `lightbox`, `count-up`, `shuffle`, `dismiss`, `load-more`,
+`video-facade` and `mode-toggle` are each named at the one design that considered them, and each is
+refused there.
+
+**Numbering.** Unchanged — **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15**: fifteen designs, no
+gap created or closed, no number reused, nothing added, removed or renumbered.
+
 ### Confirmations
 
 1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
@@ -1064,3 +1330,17 @@ pack or spacing step changed.**
    category's roster. It is **the owner's own choice, ruled on 30 August 2026**.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Behaviour declared, design by design.** Every design in this category already carried a **Behaviour module** line at field 9 naming its script in backticks or stating **None**, saying whether it is edit-safe, and saying concretely what a visitor with JavaScript off sees. The lines were re-read design by design in this pass and confirmed; **nothing was added, renamed or removed**, and no script outside the registry is named anywhere in the category.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

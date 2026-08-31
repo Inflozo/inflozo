@@ -102,7 +102,18 @@ The whole set centred on a 720 px measure with no picture. The category's floor:
 
 **Fields.** `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction` · `note`.
 
-**Controls.** Measure (Narrow 620 · Medium 720 · Wide 860, less if the window is narrower) · Headline size · Actions · Note under the actions (Show · Hide) · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Measure | Narrow 620 · Medium 720 · Wide 860 (less if the window is narrower) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Note under the actions | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None. Padding and Ground retired into the trio.
 
@@ -143,7 +154,18 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **Fields.** As 1, plus `proof[]` — 0–3 rows of value ≤ 8 characters and label ≤ 24, authored; each pair carries `valueSource` (typed · member-count).
 
-**Controls.** Text block width (Half 620 · Two-thirds 780 — the right side stays empty either way) · Headline size · Below the sub (Note · Proof row · Nothing) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Text block width | Half 620 · Two-thirds 780 (the right side stays empty either way) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Below the sub | Note · Proof row · Nothing |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
@@ -173,7 +195,18 @@ Text on seven columns, one picture on five, both on the page's own ground. The d
 
 **Fields.** As 1, plus `image` · `imageAlt` · `imageFocus`.
 
-**Controls.** Picture side (Right · Left — on a phone the picture is always under the text) · Picture (Flush · Framed inset, a mount for photographs with pale edges) · Headline size (Display is offered but not advised beside a picture) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Picture side | Right · Left (on a phone the picture is always under the text) |
+| Picture | Flush · Framed inset (a mount for photographs with pale edges) |
+| Headline size | Medium 48 · Large 60 · Display 76 (Display offered but not advised beside a picture) |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
@@ -205,7 +238,19 @@ One 16:9 photograph edge to edge with the set over it, anchored to the lower thi
 
 **Fields.** `image` (2400 px or wider) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction` · `pictureFocus`.
 
-**Controls.** Text position (Bottom left · Centred — both sit in the lower third) · Over the picture (Everything · Headline and actions · Headline only) · Scrim (Subtle · Standard · Strong) · Headline size · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Text position | Bottom left · Centred (both sit in the lower third) |
+| Over the picture | Everything · Headline and actions · Headline only |
+| Scrim | Subtle · Standard · Strong |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Locked — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured from the picture's bottom edge) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role **locked** — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel, not another role. Vertical spacing resolving 64 · 96 · 132, still measured from the picture's bottom edge. Top divider default None. Picture focus leaves the panel for the Image Picker popover, where every image field now carries it.
 
@@ -239,7 +284,18 @@ The set centred above a wide band of picture, with a caption under it.
 
 **Fields.** As 1, plus `image` · `imageAlt` · `imageFocus` · `imageCaption` (≤ 80).
 
-**Controls.** Band width (Full bleed · Page margin — always full bleed on a phone) · Headline size · Caption under the band (Show · Hide) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Page margin (always full bleed on a phone) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Caption under the band | Show · Hide |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured above the set) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132, measured above the set; Top divider default None.
 
@@ -271,7 +327,18 @@ The headline set large enough to be the page, flush left across the whole measur
 
 **Fields.** `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. No eyebrow field is offered on this design.
 
-**Controls.** Headline scale (Display 76 · Huge 96 · Fill width — measured, between 64 and 160; always Fill width on a phone) · Sub under the rule (Show · Hide) · Rule under the headline (Show · Hide) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Headline scale | Display 76 · Huge 96 · Fill width (measured, between 64 and 160; always Fill width on a phone) |
+| Sub under the rule | Show · Hide |
+| Rule under the headline | Show · Hide |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
@@ -299,7 +366,21 @@ The publication's nameplate at the top of its own front page: the site's name se
 
 **Fields.** Site title (from Ghost) · `headline` (req) · `sub` · `issueLine` (≤ 40, **flagged as invented** — Ghost has no issue number) · `primaryAction`.
 
-**Controls.** Nameplate scale (Medium 56 · Large 72 · Huge 96) · Rules (Above and below · Below only · None) · Issue line (Show · Hide) · Issue line source (Typed · Latest post date) · Standfirst source (Authored · Site description) · Sub under the standfirst (Show · Hide) · Actions (None · Primary — a masthead usually carries none, and there is no second action on this design) · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Nameplate scale | Medium 56 · Large 72 · Huge 96 |
+| Rules | Above and below · Below only · None |
+| Issue line | Show · Hide |
+| Issue line source | Typed · Latest post date |
+| Standfirst source | Authored · Site description |
+| Sub under the standfirst | Show · Hide |
+| Actions | None · Primary (a masthead usually carries none, and there is no second action on this design) |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role — new; the masthead previously had no ground control at all. Vertical spacing resolving 64 · 96 · 132. Top divider default None — the design's own Rules stay its own control: they hold the nameplate, not the section's edge.
 
@@ -331,7 +412,21 @@ The hero as a surface panel inset from the page's edges, page ground visible aro
 
 **Fields.** As 1, plus `note`.
 
-**Controls.** Card padding (Compact 48 · Comfortable 64 · Spacious 88 — one step above A3·12's 32 · 48 · 64, because a hero's card carries a headline; **flagged**) · Inset (Snug 16 · Comfortable 40 · Wide 72 at the sides and foot — A3·12's values reused unchanged; the gap under the header is always 24) · Card ground (Surface · Contrast) · Alignment (Centred · Left) · Headline size · Actions · Card at 390 (Keep the card · Full bleed) · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card padding | Compact 48 · Comfortable 64 · Spacious 88 (one step above A3·12's 32 · 48 · 64, because a hero's card carries a headline; **flagged**) |
+| Inset | Snug 16 · Comfortable 40 · Wide 72 at the sides and foot (A3·12's values reused unchanged; the gap under the header is always 24) |
+| Card ground | Surface · Contrast |
+| Alignment | Centred · Left |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Card at 390 | Keep the card · Full bleed |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (the ground behind the card; the card's own ground keeps its control) |
+| Vertical spacing (universal) | Locked — Card padding measures inside the card and Inset around it, and a third ladder would fight both; reason shown |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role — the ground behind the card; the card's own ground keeps its control. Vertical spacing **locked** — Card padding measures inside the card and Inset around it, and a third ladder would fight both; reason shown. Top divider default None.
 
@@ -363,7 +458,20 @@ The whole hero on the inverted ground. Ground is not a control here: it is the d
 
 **Fields.** As 1, plus `note`.
 
-**Controls.** Band edges (Full bleed · Page margin — always full bleed on a phone) · Headline size · Primary action (Surface fill · Outline · Accent) · Below the sub (Note · Nothing) · Alignment (Centred · Left) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band edges | Full bleed · Page margin (always full bleed on a phone) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Primary action | Surface fill · Outline · Accent (Accent disabled with its ratio shown in any pack where it fails — 3.1:1 in Paper) |
+| Below the sub | Note · Nothing |
+| Alignment | Centred · Left |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Contrast (locked — the inverted ground is the design, and on any other role this is 1 Centred) |
+| Vertical spacing (universal) | Compact 44 · Comfortable 64 · Spacious 88 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role **locked** at Contrast, reason shown — the inverted ground is the design, and on any other role this is 1 Centred. Vertical spacing resolving 44 · 64 · 88 — the tighter ladder survives as a resolution. Top divider default None.
 
@@ -395,7 +503,19 @@ A 16:9 poster with a labelled play control at its centre and the set in the lowe
 
 **Fields.** `videoUrl` · `videoPoster` (falls back to `image`) · `videoDuration` (typed, ≤ 8, **flagged as invented**) · the set as 4.
 
-**Controls.** Play control (Large centred · Inline — always inline on a phone, unless nothing else is over the poster) · Show how long it runs (Show · Hide) · Over the poster (Everything · Headline and play · Play only) · Headline size · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Play control | Large centred · Inline (always inline on a phone, unless nothing else is over the poster) |
+| Show how long it runs | Show · Hide |
+| Over the poster | Everything · Headline and play · Play only |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Locked — the poster is the ground; with neither poster nor image the section draws its own flat contrast panel |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured from the poster's bottom edge) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role **locked** — the poster is the ground; with neither poster nor image the section draws its own flat contrast panel. Vertical spacing resolving 64 · 96 · 132, measured from the poster's bottom edge. Top divider default None.
 
@@ -427,7 +547,20 @@ The set with A3·4's one-row form standing where the actions would be. The hero'
 
 **Fields.** The set as 1, minus the actions, plus the five `email*` fields — placeholder, button label, note, success, short success — with A3·4's names and caps, and `deadline` (**flagged as invented**).
 
-**Controls.** Field width (Narrow 320 · Medium 400 · Wide 480 — steps down one value on a tablet) · Headline size · Above the form (Nothing · Deadline line) · Note under the form (Show · Hide) · When a member is signed in (Show a members line · Hide the section) · Show member count (On · Off) · Email form fields (Site defaults · This section only).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Field width | Narrow 320 · Medium 400 · Wide 480 (steps down one value on a tablet) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Above the form | Nothing · Deadline line |
+| Note under the form | Show · Hide |
+| When a member is signed in | Show a members line · Hide the section |
+| Show member count | On · Off |
+| Email form fields | Site defaults · This section only |
+| Background role (universal) | Background · Surface · Contrast (Contrast disabled — a field on a contrast band needs a surface step the packs do not define) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role, with Contrast disabled in the same words as before — a field on a contrast band needs a surface step the packs do not define. Vertical spacing resolving 64 · 96 · 132. Top divider default None. **Member visibility does not appear** — the signed-in model below subsumes it, per the ground rule.
 
@@ -461,7 +594,19 @@ Text on a 620 px measure at the left margin with the picture running off the rig
 
 **Fields.** As 3.
 
-**Controls.** Picture side · Picture height (Short 420 · Medium 520 · Tall 620) · Bleed (Off the edge · To the margin — off the edge needs a picture 2000 px or wider) · Headline size · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Picture side | Right · Left |
+| Picture height | Short 420 · Medium 520 · Tall 620 |
+| Bleed | Off the edge · To the margin (off the edge needs a picture 2000 px or wider) |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role — new; this design previously had no ground control. Vertical spacing resolving 64 · 96 · 132. Top divider default None.
 
@@ -491,7 +636,21 @@ Universal: Background role — new; this design previously had no ground control
 
 **Fields.** Authored: the set as 3, where `image` is the fall-back picture. From Ghost: the newest published post's title, feature image, primary tag, date and members access. Drafts, scheduled posts and pages excluded. **No excerpt, author, reading time or second post** — all A19's.
 
-**Controls.** Which post (Latest published · Latest in a tag · Featured only · By author · Hand-picked) · Card style (With image · Title and date) · Card side (Right · Left) · Show tag (On · Off) · Show date (On · Off) · Headline size · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Which post | Latest published · Latest in a tag · Featured only · By author · Hand-picked |
+| Card style | With image · Title and date |
+| Card side | Right · Left |
+| Show tag | On · Off |
+| Show date | On · Off |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
@@ -527,7 +686,19 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **Fields.** As 4, plus `scrollCueLabel` (≤ 24, default “Read on”). Picture focus is 4's field and applies here; it is not a control on this design.
 
-**Controls.** Height (Full window 100svh · Three-quarters 75svh — a window measure, not a spacing ladder, so it keeps its name) · Text position · Scroll cue (Show · Hide) · Headline size · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Height | Full window 100svh · Three-quarters 75svh (a window measure, not a spacing ladder, so it keeps its name) |
+| Text position | Bottom left · Centred |
+| Scroll cue | Show · Hide |
+| Headline size | Medium 48 · Large 60 · Display 76 |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Locked — the picture is the ground behind a window-height set; the empty state keeps the height and swaps in the flat contrast panel |
+| Vertical spacing (universal) | Compact 56 · Comfortable 88 · Spacious 120 (from the foot, above the cue) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role **locked** — the picture is the ground behind a window-height set; the empty state keeps the height and swaps in the flat contrast panel. Vertical spacing resolving 56 · 88 · 120, from the foot, above the cue. Top divider default None.
 
@@ -565,7 +736,18 @@ Somebody else's sentence in the display position, with the publication's own hea
 
 **Fields.** `quote` (req, ≤ 240 **hard**, quotation marks typed by the author) · `quoteName` (req, ≤ 40) · `quoteRole` (opt, ≤ 60) · `quotePortrait` (opt, square, ≥ 88 px) · `headline` (**optional here** — the only design in A4 where it is) · `primaryAction` · `secondaryAction`. `eyebrow` and `sub` are kept and not drawn. Nothing from Ghost — there is no reviews API, and the editor says so.
 
-**Controls.** Quote size (Medium 36 · Large 46 · Display 60) · Attribution (With portrait · Name and role · Name only) · Alignment (Centred · Left) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Quote size | Medium 36 · Large 46 · Display 60 |
+| Attribution | With portrait · Name and role · Name only |
+| Alignment | Centred · Left |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
@@ -605,7 +787,19 @@ A page title, not an argument: one row, about 160 px, for the top of an archive 
 
 **Fields.** `headline` (req, the page title) · `eyebrow` · `sub` (the description, ≤ 120 here) · `meta` (≤ 32) · `primaryAction`. `secondaryAction`, `image` and `imageAlt` are kept and not drawn.
 
-**Controls.** Arrangement (Title and meta · Title only · Title and description · Title and action) · Title size (Small 32 · Medium 40 · Large 52, no Display) · Rule (Below · Band · None) · Alignment (Left · Centred) · Eyebrow (Show · Hide) · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Arrangement | Title and meta · Title only · Title and description · Title and action |
+| Title size | Small 32 · Medium 40 · Large 52 (no Display) |
+| Rule | Below · Band · None |
+| Alignment | Left · Centred |
+| Eyebrow | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 36 · Comfortable 56 · Spacious 80 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role — new. Vertical spacing resolving **36 · 56 · 80** — the page-title scale survives as a resolution, not a duplicate row. Top divider default None — the header above already ends in a rule, which is why the design's own Rule control never offered Above.
 
@@ -641,7 +835,20 @@ A wide picture with the text on a surface card pulled up over its bottom edge, t
 
 **Fields.** `image` (required in practice — without it the overlap has nothing to overlap) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. Picture focus applies. Nothing from Ghost, except a post or page's feature image offered as the picture's default with its source named.
 
-**Controls.** Picture height (Standard 440 · Tall 520) · Card side (Left · Right · Centred, where the card widens to 820 and the text stays left) · Overlap (Small 48 · Medium 96 · Large 144, how far the card is pulled up onto the picture) · Headline size (Medium · Large · ~~Display~~, disabled — 76 px on a 660 px card leaves under 8 characters a line) · Overlap on a phone (On · Off) · Actions · Member visibility.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Picture height | Standard 440 · Tall 520 |
+| Card side | Left · Right · Centred (the card widens to 820 and the text stays left) |
+| Overlap | Small 48 · Medium 96 · Large 144 (how far the card is pulled up onto the picture) |
+| Headline size | Medium 48 · Large 60 · ~~Display 76~~ (disabled — 76 px on a 660 px card leaves under 8 characters a line) |
+| Overlap on a phone | On · Off |
+| Actions | Both · Primary · None |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (the ground under the card and past the picture) |
+| Vertical spacing (universal) | Locked — the overlap is this design's spacing, as the missing padding control always said; reason shown |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 Universal: Background role — the ground under the card and past the picture. Vertical spacing **locked** — the overlap is this design's spacing, as the missing padding control always said; reason shown. Top divider default None. Image focus and the feature-image default were already this design's and now follow the shared placement: the Image Picker popover, source named.
 
@@ -851,3 +1058,15 @@ Each of the ten rules was read against each of the seventeen. Only the designs w
 5. **The free pair stays 1 Centred and 2 Flush Left.** Both are picture-free, so a free theme is never gated on having photography.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** seventeen designs, numbered **1–14 and 16–18** — 15 stays retired.

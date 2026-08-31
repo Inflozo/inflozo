@@ -352,9 +352,20 @@ Heading Heading only). Per post: `title` · `url` · `feature_image` + `feature_
 `primary_tag.name` (the plate, and the eyebrow at Tag: Primary tag) · `custom_excerpt` · `published_at` ·
 `primary_author.name` + `profile_image` · `reading_time`.
 
-**Controls.** Heading (Label · Heading · None) · Ratio (Landscape 3:2 · Wide 16:9 · Square 1:1) · Excerpt
-(Off · One line · Two lines) · Meta (Author and date · Date only · Date and reading time · Off) · **Tag
-(Off · Primary tag)**. Then the universal trio and the Data group. **Quick: Heading, Ratio, Excerpt, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
+| Excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Tag | Off · Primary tag |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **Quick: Heading, Ratio, Excerpt, Meta.**
 
 **Data.** The Data group's query. **0** → When empty. **1** → one 416 cell at the left; nothing stretches,
 centres or promotes. **Many** → the first N in the chosen order; the rest are not drawn and are not counted
@@ -414,9 +425,21 @@ to the date** ⚑, hairline inset 20, spacing 64.
 `title` · `url` · `custom_excerpt` · `published_at` · `primary_author.name` + `profile_image` ·
 `reading_time`. **It reads no image field at all** — the one design in A27 that does not.
 
-**Controls.** Heading · Width (On the measure · Content width) · Rule (Hairlines · None) · Excerpt (Off ·
-One line · Two lines) · Meta. Then the universal trio and the Data group. **No Tag row** ⚑ — this design
-draws no card eyebrow and no picture, which is its reason to exist. **Quick: Heading, Width, Excerpt, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Width | On the measure · Content width |
+| Rule | Hairlines · None |
+| Excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **No Tag row** ⚑ — this design draws no card eyebrow
+and no picture, which is its reason to exist. **Quick: Heading, Width, Excerpt, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one row and its rule; no reserved space below it.
 **Many** → the first N. **Show 4 costs one row, 88 px** — the cheapest Four in the category.
@@ -463,11 +486,23 @@ clamped line at 720, date at the right edge, hairline between rows at 22 px eith
 `title` · `url` · `feature_image` + `feature_image_alt` · `primary_tag.name` (plate only) ·
 `custom_excerpt` · `published_at` · `primary_author.name` · `reading_time`.
 
-**Controls.** Heading · Thumbnail (Small 96 · Medium 128) · Ratio (Landscape 3:2 · Square 1:1 — **Wide 16:9 and Portrait 4:5 refused, with their reasons now on the panel** ⚑: a 72 px crop beside two lines of type reads as a strip, a 160 px crop sets the row's height instead of the words) · Meta (Date
-· Date and reading time · Author and date · Off) · Rule (Hairlines · None). Then the universal trio and the
-Data group. **No Excerpt control** ⚑: on at one line above 767, off below. **No Tag row** ⚑ — the tag is
-already drawn here, as the plate's one word when a picture is missing, and a second place for it would
-print it twice in the same row. **Quick: Heading, Thumbnail, Ratio, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Thumbnail | Small 96 · Medium 128 |
+| Ratio | Landscape 3:2 · Square 1:1 — **Wide 16:9 and Portrait 4:5 refused, with their reasons on the panel** |
+| Meta | Date · Date and reading time · Author and date · Off |
+| Rule | Hairlines · None |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **No Excerpt control** ⚑: on at one line above 767,
+off below. **No Tag row** ⚑ — the tag is already drawn here, as the plate's one word when a
+picture is missing, and a second place for it would print it twice in the same row. **Quick:
+Heading, Thumbnail, Ratio, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one row, no reserved height, no second hairline.
 **Many** → the first N. Four rows is 532 px, the count this design is built for.
@@ -513,10 +548,23 @@ full bleed** ⚑.
 **Content fields.** `headingText` · `fallbackHeading` · `archiveLinkLabel` + `archiveLinkUrl`. Per post:
 as 1, unchanged, including the eyebrow at Tag: Primary tag.
 
-**Controls.** Heading · Panel (Filled · Outlined) · Ratio · Excerpt · Meta · **Tag (Off · Primary tag)**.
-Then the universal trio and the Data group. **The 40 px inset is fixed and has no control** ⚑ — unlike
-A17·17 Panel's Inset ladder, and that difference is recorded rather than resolved. **Quick: Heading, Panel,
-Ratio, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Panel | Filled · Outlined |
+| Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
+| Excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Tag | Off · Primary tag |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **The 40 px inset is fixed and has no control** ⚑ —
+unlike A17·17 Panel's Inset ladder, and that difference is recorded rather than resolved.
+**Quick: Heading, Panel, Ratio, Meta.**
 
 **Data.** As the category. **0** → When empty; on Hide **the panel goes with the section** — there is no
 empty plane ⚑. **1** → one 392 cell at the left of a full-width panel. **Many** → the first N.
@@ -567,10 +615,22 @@ step less, inset 48 above 767 and 24 below.
 **Content fields.** `headingText` · `fallbackHeading` · `archiveLinkLabel` + `archiveLinkUrl`. Per post:
 as 1.
 
-**Controls.** Heading · Band (Full bleed · Inset) · Ratio · Excerpt (**disabled at Show 4, with its
-reason shown** ⚑) · Meta · **Tag (Off · Primary tag)**. Then the universal trio — **Background role locked
-at Contrast and Top divider locked at None**, both with the reason shown — and the Data group. **Quick:
-Heading, Band, Ratio, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Band | Full bleed · Inset |
+| Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
+| Excerpt | Off · One line · Two lines (**disabled at Show 4, with its reason shown**) |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Tag | Off · Primary tag |
+| Background role (universal) | **Locked at Contrast**, with the reason shown |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | **Locked at None**, with the reason shown |
+
+Then the universal trio — **Background role locked at Contrast and Top divider locked at None**,
+both with the reason shown — and the Data group. **Quick: Heading, Band, Ratio, Meta.**
 
 **Data.** As the category. **0** → When empty; on Hide **the band goes with it** — an empty inverted band is
 the loudest possible nothing ⚑. **1** → one 416 cell at the left; the band keeps its height. **Many** → the
@@ -623,9 +683,21 @@ stack at 350, lead title 22, lead excerpt one line, meta date only, spacing 64.
 and the lead's eyebrow at Lead tag: Primary tag) · `custom_excerpt` (lead only) · `published_at` ·
 `primary_author.name` + `profile_image` (lead only) · `reading_time`.
 
-**Controls.** Heading · Lead (Left · Right) · Lead excerpt (Off · One line · Two lines) · Meta · **Lead tag
-(Off · Primary tag)**. Then the universal trio and the Data group. **Still no Ratio** ⚑. **Quick: Heading,
-Lead, Lead excerpt, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Lead | Left · Right |
+| Lead excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Lead tag | Off · Primary tag |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **Still no Ratio** ⚑. **Quick: Heading, Lead, Lead
+excerpt, Meta.**
 
 **Data.** As the category, and **the set's order decides the lead** ⚑ — so **Order Newest · Oldest now
 changes which post leads**, which is the sharpest thing this pass did to any design. **0** → When empty.
@@ -680,10 +752,21 @@ its name and its controls, and Rail Left / Rail Right stop applying ⚑.
 "Browse the archive") + `archiveLinkUrl`. Per post: `title` · `url` · `custom_excerpt` · `published_at` ·
 `primary_author.name` · `reading_time`. **No image field** — as 2 Rows.
 
-**Controls.** Rail (Left · Right) · Rail contents (Label · Label and link · Label and count — **the count is the topic's total** ⚑, ruled 30 August 2026) · Excerpt ·
-Meta. Then the universal trio and the Data group. **No Heading control** ⚑ — the rail is the head, so the
-head string is edited on canvas and named in the Content group instead. **Quick: Rail, Rail contents,
-Excerpt, Meta.** **Four controls of its own — the joint minimum in A27.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Rail | Left · Right |
+| Rail contents | Label · Label and link · Label and count (**the count is the topic's total**) |
+| Excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **No Heading control** ⚑ — the rail is the head, so
+the head string is edited on canvas and named in the Content group instead. **Quick: Rail, Rail
+contents, Excerpt, Meta.** **Four controls of its own — the joint minimum in A27.**
 
 **Data.** As the category. **0** → When empty; on Hide the rail goes with the body ⚑. **1** → one row beside
 the rail; the columns hold and nothing re-centres. **Many** → the first N. **The count value is the topic's total, not the posts drawn** ⚑ — *corrected in the design patch pass, and* **ruled by the owner on 30 August 2026**: a Ghost template cannot count what it drew, so the number is the total Ghost's query matched — "Keep reading · 12 posts · Browse the archive" — and **the panel says what it counts**, because the total does not match the rows below it. It comes from the get helper's own `pagination.total` and nothing computes it here.
@@ -735,9 +818,23 @@ inside, spacing 80. **≤ 767** one 350 × 437 tile per row, 24 row gap, title 1
 `reading_time` are kept and never drawn** ⚑ — so **A24's `readingTimeSuffix` is not read here** either, and
 the panel says so rather than offering a row that does nothing.
 
-**Controls.** Heading · Ratio (Portrait 4:5 · Landscape 3:2 · Square 1:1) · Scrim (Light · Medium) · Meta
-(Date · Author and date · Off). Then the universal trio and the Data group. **No Excerpt control** ⚑ — **the reason is now on the panel**: a second block of white type under the title competes with it for one scrim's worth of contrast. **No Tag row** ⚑ — the tag is already the plate tile's one word, and a tag over a photograph is a third thing
-competing with the title for a scrim's worth of contrast. **Quick: Heading, Ratio, Scrim, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Ratio | Portrait 4:5 · Landscape 3:2 · Square 1:1 |
+| Scrim | Light · Medium |
+| Meta | Date · Author and date · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **No Excerpt control** ⚑ — **the reason is now on
+the panel**: a second block of white type under the title competes with it for one scrim's worth
+of contrast. **No Tag row** ⚑ — the tag is already the plate tile's one word, and a tag over a
+photograph is a third thing competing with the title for a scrim's worth of contrast. **Quick:
+Heading, Ratio, Scrim, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one tile at the left at its full 416 × 520. **Many**
 → the first N. **A set with no pictures at all draws twelve — or three — plates and the design stays itself** ⚑; the panel advises 9 Big Type and the site decides.
@@ -788,9 +885,23 @@ spacing 64.
 `primary_author.name` · `reading_time`. **`feature_image`, `custom_excerpt` and `primary_tag` are kept and
 never drawn** ⚑ — this design reads the fewest fields in A27.
 
-**Controls.** Heading · Title size (Large 44 · Display 56) · Alignment (Left · Centre) · Meta. Then the
-universal trio and the Data group. **No Rule control** ⚑. **No Tag row** ⚑ — this design reads no tag at any value, which is exactly what makes it the design to place when an archive is not illustrated. **No Rule control** now carries its reason ⚑: the hairline between 44 px titles is what stops two of them reading as one paragraph, so it is structure here rather than decoration. **Quick: Heading, Title size,
-Alignment, Meta.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Title size | Large 44 · Display 56 |
+| Alignment | Left · Centre |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group. **No Rule control** ⚑. **No Tag row** ⚑ — this
+design reads no tag at any value, which is exactly what makes it the design to place when an
+archive is not illustrated. **No Rule control** now carries its reason ⚑: the hairline between
+44 px titles is what stops two of them reading as one paragraph, so it is structure here rather
+than decoration. **Quick: Heading, Title size, Alignment, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one title and its byline, no hairline at all ⚑.
 **Many** → the first N. **Nothing arrives here by substitution** ⚑ — 8 Overlay draws its own plate tiles and stays itself. This is the design a site *places* when its archive is not illustrated, which is a choice made in the panel.
@@ -838,9 +949,22 @@ snap are the overflow signal, and that needs no control** ⚑.
 **Content fields.** `headingText` · `fallbackHeading`. Per post: as 1, including the eyebrow at Tag: Primary
 tag. **`archiveLinkLabel` is kept and not drawn** — the head's right belongs to the arrows ⚑.
 
-**Controls.** Heading · Card size (Small 306 · Medium 360 · Large 416) · Ratio (Landscape 3:2 · Square 1:1) ·
-Meta · Arrows (On · Off) · **Tag (Off · Primary tag)**. Then the universal trio and the Data group,
-**shipping at Show 4 here** ⚑. **Quick: Card size, Ratio, Meta, Arrows.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Card size | Small 306 · Medium 360 · Large 416 |
+| Ratio | Landscape 3:2 · Square 1:1 |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Arrows | On · Off |
+| Tag | Off · Primary tag |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group, **shipping at Show 4 here** ⚑. **Quick: Card size,
+Ratio, Meta, Arrows.**
 
 **Data.** As the category. **0** → When empty. **1** → one card at the left; no strip, no arrows, no snap ⚑.
 **2–3** → no overflow on a desktop, so no arrows; the strip still snaps at 834 and below. **4** → the design
@@ -897,10 +1021,21 @@ spacing 80. **≤ 767** **stacked**: number and tag above the title, date and re
 `published_at` · `reading_time`. **`feature_image`, `custom_excerpt` and the author fields are kept and
 never drawn** ⚑.
 
-**Controls.** Heading · Columns (Date · Date and tag · Date, tag and reading time) · Numbering (Numbers ·
-None) · Rule (Hairlines · None). Then the universal trio and the Data group, **shipping at Show 4 here**
-⚑. **No Tag row** ⚑ — the tag is already a *column* here, governed by Columns, and an eyebrow above a title
-inside a ruled grid would print it twice in the same row. **Quick: Columns, Numbering, Rule, Heading.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Columns | Date · Date and tag · Date, tag and reading time |
+| Numbering | Numbers · None |
+| Rule | Hairlines · None |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group, **shipping at Show 4 here** ⚑. **No Tag row** ⚑ —
+the tag is already a *column* here, governed by Columns, and an eyebrow above a title inside a
+ruled grid would print it twice in the same row. **Quick: Columns, Numbering, Rule, Heading.**
 
 **Data.** As the category. **0** → When empty. **1** → one row, numbered 01, no hairline. **2** → two rows;
 **the columns keep their widths and do not redistribute** ⚑. **Many** → the first N, numbered in drawn order.
@@ -953,9 +1088,22 @@ to 767.
 `feature_image` + `feature_image_alt` · `primary_tag.name` (the plate, and the eyebrow at Tag: Primary tag) ·
 `custom_excerpt` · `published_at` · `primary_author.name` + `profile_image` · `reading_time`.
 
-**Controls.** Heading · Media (Left · Right) · Ratio (Landscape 3:2 · Square 1:1) · Excerpt · Meta · **Tag
-(Off · Primary tag)**. Then the universal trio and the Data group, **with Show forced to One and disabled,
-its reason shown** ⚑ — **reviewed in this pass and kept**. **Quick: Heading, Media, Ratio, Excerpt.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Heading | Label · Heading · None |
+| Media | Left · Right |
+| Ratio | Landscape 3:2 · Square 1:1 |
+| Excerpt | Off · One line · Two lines |
+| Meta | Author and date · Date only · Date and reading time · Off |
+| Tag | Off · Primary tag |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact · Comfortable · Spacious |
+| Top divider (universal) | None · Line · Fade |
+
+Then the universal trio and the Data group, **with Show forced to One and disabled, its reason
+shown** ⚑ — **reviewed in this pass and kept**. **Quick: Heading, Media, Ratio, Excerpt.**
 
 **Data.** As the category, and **the query's first result is the post** ⚑ — so **Order decides which post it
 is**, and at Related by: Featured "next up" becomes the site's best rather than its newest, which is a real
@@ -1235,3 +1383,15 @@ Ghost will answer; it cannot say "3 of 12". So the number can be the topic's tot
    roster. It is **the owner's own choice, ruled on 30 August 2026**.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** twelve designs, numbered **1–12**.

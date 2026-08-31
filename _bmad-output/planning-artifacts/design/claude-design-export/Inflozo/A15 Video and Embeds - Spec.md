@@ -406,10 +406,21 @@ poster opens a player), `reveal` (decoration on a frame the reader is already lo
    `transcriptLabel` ≤ 20 · `videos[]` 1–24, **this design drawing item 1**. Inside an item: URL or
    file (req), title ≤ 70, description ≤ 160, poster with its Image focus, duration ≤ 8, `start` ≤ 8,
    transcript link — everything but the URL optional ⚑.
-6. **Controls.** Width *Content · Wide · Full* — Aspect *16:9 · 4:3 · 1:1 · 9:16* — Alignment *Left ·
-   Centred* — Meta *Duration and transcript · Duration only · Off* — Plays *In the frame · In a
-   theatre*. **Five.** Universal, outside the list: **Background role · Vertical spacing · Top
-   divider**. Then the videos block and the Data group. **Quick: Width · Aspect · Plays.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Width | Content · Wide · Full |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Alignment | Left · Centred |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal, outside the list: **Background role · Vertical spacing · Top divider**.
+   Then the videos block and the Data group. **Quick: Width · Aspect · Plays.**
 7. **Data.** Nothing from Ghost's content API ⚑; `img_url` derivatives for the poster's `srcset`; the
    provider derived from the URL ⚑. A **provider URL** draws the facade; **a media URL on the
    site's own Ghost** draws a native player ⚑. **0** → the section does not render; one paste field in the
@@ -454,9 +465,21 @@ and counter are catalog strings.
    name here unless the author types both** ⚑. **`playLabel` ≤ 20, default "Play"** ⚑ — new this pass,
    inline-editable, **with the duration suffix generated**: "Play · 12:40" is a label plus a span,
    never one typed string. The action may carry an icon before or after the label, off by default.
-6. **Controls.** Media side *Left · Right* — Columns *Even · Media-led* — Aspect — Action *Button ·
-   Text link · None* — Meta. **Five.** Universal trio outside the list; then the videos block and the
-   Data group. **Quick: Media side · Action · Aspect.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Media side | Left · Right |
+   | Columns | Even · Media-led |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Action | Button · Text link · None |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list; then the videos block and the Data group. **Quick:
+   Media side · Action · Aspect.**
 7. **Data.** As 1 Player. **At Aspect 9:16** the frame is 405 wide inside its 720 column and
    **left-aligned within it, never stretched** ⚑.
 8. **Empty state.** No description → the text column closes up ⚑. **No heading and no title** → the
@@ -483,10 +506,22 @@ and counter are catalog strings.
    **834** plane 754 · padding 32 · frame 690 × 388 · heading 30 · spacing 80. **≤ 767** plane 350 ·
    padding 20 · frame 310 × 174 · play 44 · heading 26 · spacing 64. **The plane never bleeds** ⚑.
 5. **Content fields.** The section strings and `videos[]` item 1.
-6. **Controls.** Head *Inside the plane · Above it* — Aspect — Alignment *Left · Centred* — Meta —
-   Plays. **Five.** Universal trio outside the list — **Background role's Surface value is this
-   design's state**, and the plane reads from the role rather than from a fill of its own ⚑. **Quick:
-   Head · Aspect · Plays.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Head | Inside the plane · Above it |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Alignment | Left · Centred |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | Background · Surface · Contrast — **Surface is this design's state**, and the plane reads from the role rather than from a fill of its own |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list — **Background role's Surface value is this design's
+   state**, and the plane reads from the role rather than from a fill of its own ⚑. **Quick: Head ·
+   Aspect · Plays.**
 7. **Data.** As 1 Player. At Head: Above it with no head authored, the plane holds the film alone and
    **is identical to this design with every string empty** ⚑ — stated rather than prevented.
 8. **Empty state.** Absent strings close up inside the plane ⚑. **The plane is drawn even when only the
@@ -510,12 +545,24 @@ and counter are catalog strings.
    **834** inner 754 on 40, frame 690 × 388, 80. **≤ 767** inner 350 on 20, frame 310 × 174, play 44,
    64, **band always full bleed** ⚑.
 5. **Content fields.** The section strings and `videos[]` item 1.
-6. **Controls.** Band edges *Full bleed · Page margin* — Aspect — Alignment — Meta — Plays. **Five.**
-   Universal trio outside the list: **Background role is locked at Contrast, with the reason in the
-   row** ⚑ — the inverted band *is* this design; a Background value makes it 1 Player and a Surface
-   value 3 Panel. **Vertical spacing resolves onto the band's inner padding** ⚑ rather than sitting
-   beside it, and **Top divider is drawn above the band on the page ground, never inside it** ⚑.
-   **Quick: Band edges · Aspect · Meta.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band edges | Full bleed · Page margin |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Alignment | Left · Centred |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | **Contrast (locked)**, with the reason in the row — a Background value makes it 1 Player and a Surface value 3 Panel |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list: **Background role is locked at Contrast, with the
+   reason in the row** ⚑ — the inverted band *is* this design; a Background value makes it 1 Player
+   and a Surface value 3 Panel. **Vertical spacing resolves onto the band's inner padding** ⚑
+   rather than sitting beside it, and **Top divider is drawn above the band on the page ground,
+   never inside it** ⚑. **Quick: Band edges · Aspect · Meta.**
 7. **Data.** As 1 Player.
 8. **Empty state.** Absent strings close up and **the band keeps its padding** ⚑. No poster → the
    inverted stripe ⚑.
@@ -539,12 +586,23 @@ and counter are catalog strings.
    **834** frame 834 × 469, play 64, margin 40, spacing 80. **≤ 767** frame 390 × 219, play 44, margin
    20, spacing 64. **Corners square at every width** ⚑.
 5. **Content fields.** The section strings and `videos[]` item 1, `description` drawn as the caption.
-6. **Controls.** Aspect *16:9 · 4:3* with **1:1 and 9:16 disabled** ⚑ (both taller than the viewport at
-   1,440; A9·8's convention) — Head *Above the film · Below it · None* — Meta — Caption *Under the frame
-   · Off* — Plays *In the frame*, **theatre disabled** ⚑. **Five.** Universal trio outside the list:
-   **Background role is locked** ⚑ — the section paints no ground at all, so a role would draw a band
-   behind a picture that already covers it; **Vertical spacing is vertical only** and **Top divider is
-   drawn on the page's margin above the film, never across it** ⚑. **Quick: Aspect · Head · Caption.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Aspect | 16:9 · 4:3, with **1:1 and 9:16 disabled** (both taller than the viewport at 1,440) |
+   | Head | Above the film · Below it · None |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Caption | Under the frame · Off |
+   | Plays | In the frame (**theatre disabled**) |
+   | Background role (universal) | **Locked** — the section paints no ground at all |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (vertical only) |
+   | Top divider (universal) | None · Line · Fade (drawn on the page's margin above the film, never across it) |
+
+   **Five.** Universal trio outside the list: **Background role is locked** ⚑ — the section paints
+   no ground at all, so a role would draw a band behind a picture that already covers it;
+   **Vertical spacing is vertical only** and **Top divider is drawn on the page's margin above the
+   film, never across it** ⚑. **Quick: Aspect · Head · Caption.**
 7. **Data.** As 1 Player. **many** → item 1 drawn, the rest kept ⚑; the panel names 8 Lead and Grid.
 8. **Empty state.** Head: None with every string empty → the film alone, edge to edge ⚑. No poster →
    the plate at full width with its label at 13 px ⚑.
@@ -569,14 +627,25 @@ and counter are catalog strings.
    picture** ⚑, heading 28 beneath, play 44.
 5. **Content fields.** `eyebrow` · `heading` · `credit` and `videos[]` item 1. **`blurb` is stored and
    not drawn** ⚑.
-6. **Controls.** Height *Short · Tall · Full screen* (**ignored at 390** ⚑) — Text position *Bottom
-   left · Centred*, **never the top** ⚑ — Scrim *Soft · Standard* (**4.9:1 and 3.6:1, stated** ⚑) —
-   Play control *Centred · Beside the head* — Meta — Plays **locked at In a theatre** ⚑. **Six** — the
-   widest panel in A15. Universal trio outside the list: **Background role is locked at the poster** ⚑
-   — the picture *is* the ground, which is what separates this design from 5 Full Bleed — and
-   **Vertical spacing is new here** ⚑: this design had no padding row, and the row sets only the space
-   above and below the picture while **Height still sizes the picture**. Top divider sits above the
-   picture, never on it ⚑. **Quick: Height · Text position · Scrim.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Height | Short · Tall · Full screen (**ignored at 390**) |
+   | Text position | Bottom left · Centred, **never the top** |
+   | Scrim | Soft · Standard (4.9:1 and 3.6:1, stated) |
+   | Play control | Centred · Beside the head |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | **Locked at In a theatre** |
+   | Background role (universal) | **Locked at the poster** — the picture is the ground, which is what separates this design from 5 Full Bleed |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious — **new here**: it sets only the space above and below the picture, Height still setting the picture |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Six** — the widest panel in A15. Universal trio outside the list: **Background role is locked
+   at the poster** ⚑ — the picture *is* the ground, which is what separates this design from 5 Full
+   Bleed — and **Vertical spacing is new here** ⚑: this design had no padding row, and the row sets
+   only the space above and below the picture while **Height still sizes the picture**. Top divider
+   sits above the picture, never on it ⚑. **Quick: Height · Text position · Scrim.**
 7. **Data.** As 1 Player. **The ambient loop that played under the wash is deleted** ⚑ — the poster is
    what sits under the wash, and the play control opens the theatre on the reader's action.
 8. **Empty state.** **No poster → the pack's contrast band** ⚑, not the striped plate, with the head and
@@ -604,9 +673,20 @@ and counter are catalog strings.
    frame 350 × 197, spacing 64.
 5. **Content fields.** The section strings and `videos[]` 1–24, **all drawn**; `description` stored and
    not drawn ⚑.
-6. **Controls.** Columns *Two · Three · Four* — Aspect — Gap *Tight · Normal · Loose* — Meta *Duration and
-   transcript · Duration and provider · Off* — Plays. **Five.** Universal trio outside the list. **Quick:
-   Columns · Aspect · Gap.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Gap | Tight · Normal · Loose |
+   | Meta | Duration and transcript · Duration and provider · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. **Quick: Columns · Aspect · Gap.**
 7. **Data.** **1** → one cell at its column width, not stretched ⚑. **2–3** → one short row. **many** →
    wraps; **the last row is left-aligned and short** ⚑. **Designed for 3–12** ⚑.
 8. **Empty state.** **A cell with no title is its poster and meta line alone** ⚑ — no "Untitled" is
@@ -636,8 +716,20 @@ and counter are catalog strings.
    play 88 and 44. **834** lead 754 × 424, title 24, row of two 367 × 206, spacing 80. **≤ 767** one
    column at 350 × 197, all frames equal ⚑, play 44, spacing 64.
 5. **Content fields.** The section strings and `videos[]` 1–24, all drawn. **The lead is item 1** ⚑.
-6. **Controls.** Lead size *Full box · Two thirds* — Aspect — Gap — Meta — Plays. **Five.** Universal
-   trio outside the list. **Quick: Lead size · Gap · Aspect.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Lead size | Full box · Two thirds |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Gap | Tight · Normal · Loose |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. **Quick: Lead size · Gap · Aspect.**
 7. **Data.** **1** → the lead alone, no empty row ⚑. **2–3** → lead and a short row. **many** → rows of
    three continue and **the lead is never repeated** ⚑. **Designed for 4–10** ⚑.
 8. **Empty state.** As 7 Grid, including the provider fallback for an untitled frame. **A lead with no
@@ -664,8 +756,20 @@ and counter are catalog strings.
    **dots and counter only** ⚑, play 44, spacing 64.
 5. **Content fields.** The section strings and `videos[]` 1–24, each slide carrying `title`,
    `duration`, `start` and `transcriptUrl`.
-6. **Controls.** Aspect — Peek *On · Off* — Controls *Dots · Arrows · Both* — Meta — Plays. **Five.**
-   Universal trio outside the list. **Quick: Peek · Controls · Aspect.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Peek | On · Off |
+   | Controls | Dots · Arrows · Both |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Plays | In the frame · In a theatre |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. **Quick: Peek · Controls · Aspect.**
 7. **Data.** **1** → one frame, no dots, arrows or counter ⚑. **2** → both reachable. **many** → the
    track runs to the end and **stops; it does not wrap** ⚑. **Designed for 3–12** ⚑.
 8. **Empty state.** As 7 Grid. **A slide is never skipped for being incomplete** ⚑ — the counter would
@@ -695,9 +799,20 @@ and counter are catalog strings.
    350, padding 16, player 318 × 179, **thumbs 84 × 47 and four rows** ⚑.
 5. **Content fields.** The section strings, `queueLabel` ≤ 20 (default "In this series") ⚑ and
    `videos[]` 1–24, all drawn as rows.
-6. **Controls.** Queue side *Left · Right* — Queue height *Four rows · Six rows · All* — Aspect —
-   Numbering *On · Off* — Meta. **Five.** Universal trio outside the list. **Quick: Queue side · Queue
-   height · Numbering.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Queue side | Left · Right |
+   | Queue height | Four rows · Six rows · All |
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Numbering | On · Off |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. **Quick: Queue side · Queue height · Numbering.**
 7. **Data.** **1** → the queue is not drawn and the player keeps the plane on its own; **it is still
    10 Playlist** ⚑ and the panel names 3 Panel as the better arrangement. **2** → a queue of one other
    film. **many** → the queue scrolls inside the plane at Four and Six rows ⚑. **The running total is
@@ -733,10 +848,21 @@ and counter are catalog strings.
 5. **Content fields.** The section strings, `videos[]` item 1, and `chapters[]` 1–24 with `time` ≤ 8 and
    `label` ≤ 70, **both required** ⚑. **The film's own `start` is independent of the chapter list** ⚑ —
    one sets where the film opens, the other lists where a reader can go.
-6. **Controls.** Aspect — Chapter list *Under the film · Beside it* — Rules *Hairline · None* —
-   Timecodes *Shown · Hidden* — Plays **locked at In the frame** ⚑. **Five.** Universal trio outside
-   the list. Then the videos block **and the chapters block** ⚑, and the Data group. **Quick: Chapter
-   list · Timecodes · Aspect.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 |
+   | Chapter list | Under the film · Beside it |
+   | Rules | Hairline · None |
+   | Timecodes | Shown · Hidden |
+   | Plays | **Locked at In the frame** |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. Then the videos block **and the chapters block** ⚑,
+   and the Data group. **Quick: Chapter list · Timecodes · Aspect.**
 7. **Data.** **0 chapters** → the list and its head are not drawn ⚑; the film stands alone under the head and **it is still 11 Chapters**. **1** →
    one row. **many** → rows continue; **the list does not scroll and the section grows** ⚑. Films 2–24
    are kept, not drawn ⚑.
@@ -771,10 +897,21 @@ and counter are catalog strings.
    **`openLabel` ≤ 24, default "Open on {provider}"** ⚑ — new this pass, inline-editable and able to
    carry an icon after it — and `videos[]` item 1, **where an item may be any embed the provider list
    allows** ⚑.
-6. **Controls.** Shape *16:9 · 4:3 · 1:1 · Audio bar* (**a height, not a ratio** ⚑) — Label *Kind and
-   provider · Custom · Off* — Notice *Above the frame · On the frame*, **no Off** ⚑ — Open link *Shown ·
-   Hidden* — Meta. **Five.** Universal trio outside the list — **the box's own 24 px inner padding is
-   not Vertical spacing** ⚑ and has no control. **Quick: Shape · Label · Notice.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Shape | 16:9 · 4:3 · 1:1 · Audio bar (**a height, not a ratio**) |
+   | Label | Kind and provider · Custom · Off |
+   | Notice | Above the frame · On the frame, **no Off** |
+   | Open link | Shown · Hidden |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list — **the box's own 24 px inner padding is not Vertical
+   spacing** ⚑ and has no control. **Quick: Shape · Label · Notice.**
 7. **Data.** The provider is derived from the URL and the kind from the provider ⚑. **This design is the
    home of the recognised-provider list** ⚑ — video: YouTube · Vimeo; audio: **Soundcloud · Spotify ·
    Apple Podcasts · Bandcamp · Mixcloud** — and **its unrecognised-provider fallback is now the
@@ -808,8 +945,19 @@ and counter are catalog strings.
    first, title 20, play 44, spacing 64, **the rule between rows kept** ⚑.
 5. **Content fields.** The section strings and `videos[]` 1–24, all drawn, **with `description` drawn
    here and in 15 and nowhere else** ⚑.
-6. **Controls.** Thumb side *Left · Right* — Thumb size *Small · Medium · Large* — Rules *Hairline ·
-   None* — Description *Shown · Hidden* — Meta *Duration and transcript · Duration and provider · Off*.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Thumb side | Left · Right |
+   | Thumb size | Small · Medium · Large |
+   | Rules | Hairline · None |
+   | Description | Shown · Hidden |
+   | Meta | Duration and transcript · Duration and provider · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Five.** Universal trio outside the list. **Quick: Thumb side · Thumb size · Description.**
 7. **Data.** **1** → one row, no rule ⚑. **many** → rows continue; **nothing is paged** ⚑. **Designed for
    2–6** ⚑.
@@ -839,11 +987,21 @@ and counter are catalog strings.
    eyebrow drawn in the meta line — and `videos[]` item 1. **`watchLabel` ≤ 20, default "Watch"** ⚑ —
    new this pass, inline-editable, **the duration suffix still generated**, and the action may carry an
    icon.
-6. **Controls.** Thumbnail *Shown · Hidden* — Action *Button · Text link* — Meta *Duration and provider ·
-   Duration only · Off* — Edges *Content box · Full bleed*. **Four** ⚑ — there is no Aspect row (the
-   thumbnail is 16:9 and nothing else) and no Plays row (the theatre, always). Universal trio outside
-   the list — **the 88 px bar height is not Vertical spacing** ⚑ and has no control. **Quick: Thumbnail ·
-   Action · Edges.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Thumbnail | Shown · Hidden |
+   | Action | Button · Text link |
+   | Meta | Duration and provider · Duration only · Off |
+   | Edges | Content box · Full bleed |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Four** ⚑ — there is no Aspect row (the thumbnail is 16:9 and nothing else) and no Plays row
+   (the theatre, always). Universal trio outside the list — **the 88 px bar height is not Vertical
+   spacing** ⚑ and has no control. **Quick: Thumbnail · Action · Edges.**
 7. **Data.** **1** → as drawn. **many** → item 1 drawn, the rest kept ⚑; the panel names 13 Thumb Rows.
    No duration → the action reads its label alone ⚑. **The struck Ambient loop value goes with the deleted Playback
    row** ⚑ — this design's film is summoned into the theatre rather than played in the bar.
@@ -874,9 +1032,20 @@ and counter are catalog strings.
    **strip scrolls** ⚑, frame 350 × 197, play 44, spacing 64.
 5. **Content fields.** The section strings, `videos[]` 2–24 all drawn, and `tabLabel` ≤ 26 per item ⚑ —
    drawn at Tab labels: Custom only, and inline-editable there.
-6. **Controls.** Aspect (**one box for every tab** ⚑) — Tab labels *Film titles · Numbers · Custom* — Tab
-   alignment *Left · Centred* — Caption *Description · Title · Off* — Meta. **Five.** Universal trio
-   outside the list. **Quick: Tab labels · Tab alignment · Caption.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Aspect | 16:9 · 4:3 · 1:1 · 9:16 (**one box for every tab**) |
+   | Tab labels | Film titles · Numbers · Custom |
+   | Tab alignment | Left · Centred |
+   | Caption | Description · Title · Off |
+   | Meta | Duration and transcript · Duration only · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **Five.** Universal trio outside the list. **Quick: Tab labels · Tab alignment · Caption.**
 7. **Data.** **1** → **the strip is not drawn and the one film takes the shared frame** ⚑ — still 15 Tabs, and the picker names 1 Player. **2–6** → as drawn. **7+**
    → **the strip scrolls horizontally at every width** ⚑. **Designed for 2–6** ⚑.
 8. **Empty state.** A film with no title at Tab labels: Film titles → **its tab shows its position,
@@ -1172,3 +1341,15 @@ not be meant to reach it.
    One control fewer, and nothing to explain. Costs: a twelve-film queue makes the section very tall on a laptop,
    and the design's own balance — player beside a short list — goes with it.
    The editor sees no row; a visitor scrolls the page instead of the queue.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

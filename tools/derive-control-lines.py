@@ -33,7 +33,7 @@ dc = importlib.util.module_from_spec(_d); _d.loader.exec_module(dc)
 # Anchor EXACTLY on **Controls** / **Controls.** — `**Controls-reconciliation pass…**` is a
 # section heading, and matching it swallowed eight categories' worth of prose as if it were a
 # control list.
-CONTROLS_LINE = re.compile(r'^\*\*Controls\.?\*\*[ ·:]*(.+?)(?:\n\*\*|\n#{2,5} |\n\n)', re.M | re.S)
+CONTROLS_LINE = re.compile(r'^[ \t]*(?:\d+\.\s*)?\*\*Controls\.?\*\*[ ·:]*(.+?)(?:\n\*\*|\n#{2,5} |\n\n)', re.M | re.S)
 
 # THREE NAMING SHAPES, all in use:
 #   "Head: Centred · Flush left · None."      name before a colon        (A9–A13)
@@ -50,7 +50,7 @@ NOT_A_CONTROL = {
 }
 
 
-CONTROL_TABLE = re.compile(r'^\|\s*Control\s*\|[^\n]*\n\|[ :|-]+\|[ \t]*\n((?:\|[^\n]*\n)+)', re.M)
+CONTROL_TABLE = re.compile(r'^[ \t]*\|\s*Control\s*\|[^\n]*\n[ \t]*\|[ :|-]+\|[ \t]*\n((?:[ \t]*\|[^\n]*\n)+)', re.M)
 
 
 def table_control_names(text):

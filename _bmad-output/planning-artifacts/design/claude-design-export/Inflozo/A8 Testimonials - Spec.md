@@ -121,8 +121,21 @@ One quotation at Feature 27 on a 780 px measure, the attribution beneath it, no 
 
 **Fields** · head fields, note, link pair, and **the first item of `quotes[]` only**. `image` kept, not drawn.
 
-**Controls · six** · **Head: Eyebrow · Eyebrow and title · None** — the title is fixed at Medium 34 with no size control, the only capped head in A8. Quote size: Card 20 · Feature 27 · Display 40. Alignment: Centred · Flush left. Attribution: Below · Above. **Avatars: Shown · Hidden** — Hidden draws the no-avatar case this design already frames. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named; the old Ground row retires here — with no card the ground is the only plane the section has) · Vertical spacing resolving 64 · 96 · 132 (the old Padding row) · Top divider, all three available. **Quick Controls:** Head · Quote size · Alignment · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Eyebrow · Eyebrow and title · None (the title is fixed at Medium 34 with no size control, the only capped head in A8) |
+| Quote size | Card 20 · Feature 27 · Display 40 |
+| Alignment | Centred · Flush left |
+| Attribution | Below · Above |
+| Avatars | Shown · Hidden (Hidden draws the no-avatar case this design already frames) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) — the old Ground row retires here; with no card the ground is the only plane the section has |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the old Padding row) |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Six controls. **Quick Controls:** Head · Quote size · Alignment · Avatars.
 
 **Arrangement** · one column on 780, centred in the 1,296 width or set at the left margin; no card, border or shadow; avatar 44. Eyebrow to quote 20, quote to attribution 20, attribution to note 32, note to link 10; head to quote 48 where a title is drawn. **Attribution Above drops the eyebrow** and is offered here, on 8 Portrait and on 10 Big Quote only.
 
@@ -159,8 +172,22 @@ Three cards of 416 on a 24 px gutter under a centred head. **The quote card's ho
 
 **Fields** · head fields, note, link pair, **first three of `quotes[]`**. `image` kept, not drawn.
 
-**Controls · seven** · Head: Centred · Flush left · None. Title size: Medium 34 · Large 40 · Display 48, unavailable at head None. **Cards: Surface · Ground · Hairline columns.** Card padding: Compact 20 · Comfortable 28 · Spacious 36, **relabelled “Column inset” at Hairline columns** — the one place in A8 a control changes what it measures, and the reason it survives the trio as its own row. Quote size: Small 17 · Card 20. **Avatars: Shown · Hidden.** Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 · Top divider, all three available — the column rules run vertically and never meet it. **Quick Controls:** Title size · Cards · Quote size · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48, unavailable at head None |
+| Cards | Surface · Ground · Hairline columns |
+| Card padding | Compact 20 · Comfortable 28 · Spacious 36, **relabelled “Column inset” at Hairline columns** |
+| Quote size | Small 17 · Card 20 |
+| Avatars | Shown · Hidden |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade, all three available — the column rules run vertically and never meet it |
+
+Seven controls. Card padding is the one place in A8 a control changes what it measures, and the reason it survives the trio as its own row. **Quick Controls:** Title size · Cards · Quote size · Avatars.
 
 **Arrangement** · 416 · 24 · 416 · 24 · 416 = 1,296, equal height, `surface` fill, hairline border, pack radius, **no shadow at any value**. Blockquote takes the slack, figcaption pinned to the foot, 20 px gap, avatar 36. Head to cards 48, cards to note 40, note to link 10; **the foot follows the head's alignment**. At Hairline columns: no gutter, a 1 px rule with a 32 px inset either side, running the full height of the tallest column.
 
@@ -197,8 +224,22 @@ Two cards of 632 on a 32 px gutter, the quotation at Feature 27 inside the card.
 
 **Fields** · as 2 Three Up, **first two of `quotes[]`**.
 
-**Controls · seven** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Cards: Surface · Ground · Hairline columns. **Card padding: Compact 24 · Comfortable 32 · Spacious 40** — one step above Three Up's, and a card ladder rather than a section one. Quote size: Card 20 · Feature 27. **Avatars: Shown · Hidden** — Hidden closes up both card feet, the case the phone frame already draws. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 · Top divider, all three available. **Quick Controls:** Title size · Cards · Quote size · Avatars. **Every one of the seven is 2 Three Up's at this card's scale, so switching still keeps every value.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Cards | Surface · Ground · Hairline columns |
+| Card padding | **Compact 24 · Comfortable 32 · Spacious 40** — one step above Three Up's, and a card ladder rather than a section one |
+| Quote size | Card 20 · Feature 27 |
+| Avatars | Shown · Hidden (Hidden closes up both card feet, the case the phone frame already draws) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls. **Quick Controls:** Title size · Cards · Quote size · Avatars. **Every one of the seven is 2 Three Up's at this card's scale, so switching still keeps every value.**
 
 **Arrangement** · 632 · 32 · 632 = 1,296. The 32 px gutter because two planes need a wider gap than three to read as two things. Feature 27 in a 632 card is a 42-character line — the only card in A8 that takes the step. Avatar stays 36. Shared card otherwise verbatim.
 
@@ -237,8 +278,22 @@ Six cards, three columns and two rows, on Three Up's 416 / 24 grid. **Settles th
 
 **Fields** · head fields, note, link pair, **the first one to six of `quotes[]`** by Quotes shown.
 
-**Controls · seven** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Columns: Two · Three** — the number of planes across the page, not a count of items. **Quotes shown: a number picker, 1 to 6, default six** — *item counts are a number picker*; the cap is this design's own and the control says why: "past six the grid outruns its two rows — 5 Wall is built for a longer list". Cards: Surface · Ground. **Avatars: Shown · Hidden** — Hidden closes up every card; row heights are set by each row's longest quotation, so the grid does not reflow. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 · Top divider, all three available. **Card padding is still not a control** — it follows the column count, which is why nothing retired from it. **Quick Controls:** Columns · Quotes shown · Cards · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Columns | Two · Three — the number of planes across the page, not a count of items |
+| Quotes shown | **a number picker, 1 to 6, default six** — the cap is this design's own and the control says why: “past six the grid outruns its two rows — 5 Wall is built for a longer list” |
+| Cards | Surface · Ground |
+| Avatars | Shown · Hidden (Hidden closes up every card; row heights are set by each row's longest quotation, so the grid does not reflow) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls. **Card padding is still not a control** — it follows the column count, which is why nothing retired from it. **Quick Controls:** Columns · Quotes shown · Cards · Avatars.
 
 **Arrangement** · 416 cells on a 24 px column and row gap at three columns; 632 on 32 at two. **Card padding is not a control — it follows the column count**, 28 at three and 32 at two. Shared card verbatim. Each row is as tall as its own tallest quotation; the slack falls at the foot of the short cards inside a row. **Equal-across-the-grid is refused** (every short quote pays for one long one) and **packed is refused** (that is 5 Wall, which uses columns and no equal heights). **Hairline columns is not offered**: a vertical rule that stops between two rows is a table's rule without a table's header, and 12 Rows is the honest version of that idea.
 
@@ -275,8 +330,22 @@ Up to twelve quotations in three or four CSS columns at their natural heights. *
 
 **Fields** · head fields, note, link pair, **the first one to twelve of `quotes[]`** by Quotes shown. `avatar` is read at Cards Surface and Ground and **not drawn at Cards None**.
 
-**Controls · seven** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Columns: Three · Four.** **Quotes shown: a number picker, 1 to 12, default nine** — *item counts are a number picker*; **twelve is the category ceiling** and the control says why: "twelve is as many quotations as a page can hold before it is an archive". Cards: Surface · Ground · None. **There is no quote-size control: the quote is Small 17.** **Avatars: Shown · Hidden**, and **Hidden wins at every Cards value, Cards None included** — Cards None already drops the circle, Hidden drops it at Surface and Ground too, and the two controls never disagree because Hidden is the stronger of them. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 — the 24 px rhythm down a column, 32 at Cards None, stays uncontrolled · Top divider, all three available. **Quick Controls:** Columns · Quotes shown · Cards · Avatars. **This design proved the Hidden mechanism before the control existed**, which is why the control reads as a promotion of a behaviour rather than a new one.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Columns | Three · Four |
+| Quotes shown | **a number picker, 1 to 12, default nine** — **twelve is the category ceiling** and the control says why: “twelve is as many quotations as a page can hold before it is an archive” |
+| Cards | Surface · Ground · None |
+| Avatars | Shown · Hidden, and **Hidden wins at every Cards value, Cards None included** |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — the 24 px rhythm down a column, 32 at Cards None, stays uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls. **There is no quote-size control: the quote is Small 17.** Cards None already drops the circle, Hidden drops it at Surface and Ground too, and the two controls never disagree because Hidden is the stronger of them. **Quick Controls:** Columns · Quotes shown · Cards · Avatars. **This design proved the Hidden mechanism before the control existed**, which is why the control reads as a promotion of a behaviour rather than a new one.
 
 **Arrangement** · `column-count` on the list — 306 px columns at four, 416 at three, 24 px column gap — items 24 px apart down a column (32 at Cards None), `break-inside: avoid` on each. Card padding 20, **internal gap 16 rather than the category's 20**, avatar 32, name 14/600, role 13 muted. No shadow. **Natural heights, no stretch, an uneven bottom edge** — the shortest column finishes above the tallest and the section's padding starts from the lowest. **Cards None drops the avatar and opens the rhythm to 32.**
 
@@ -317,8 +386,22 @@ A5·5's division: the head in a 416 px column at the left margin, the quotations
 
 **Fields** · every field except `image`, **the first one to four of `quotes[]`** by Quotes shown.
 
-**Controls · seven** · **Title size: Medium 34 · Large 40** — Display 48 is not offered in a 416 px column. **Quotes shown: a number picker, 1 to 4, default three** — *item counts are a number picker*; the cap is this design's own: "past four the right column outruns the head beside it". Rows: Hairline · Cards. Head column: Left · Right. **Foot: Under the head · Under the quotes.** **Avatars: Shown · Hidden** — Hidden closes up every row, at both Rows values. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 — the 32 px above and below each rule stays uncontrolled · Top divider, all three available. **Quick Controls:** Quotes shown · Rows · Head column · Avatars. **The foot control is where the link and note live, so Member visibility and the Link Picker both land on this design's second column** and the panel says so at the Foot row.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | **Medium 34 · Large 40** — Display 48 is not offered in a 416 px column |
+| Quotes shown | **a number picker, 1 to 4, default three** — the cap is this design's own: “past four the right column outruns the head beside it” |
+| Rows | Hairline · Cards |
+| Head column | Left · Right |
+| Foot | Under the head · Under the quotes |
+| Avatars | Shown · Hidden (Hidden closes up every row, at both Rows values) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — the 32 px above and below each rule stays uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls. **Quick Controls:** Quotes shown · Rows · Head column · Avatars. **The foot control is where the link and note live, so Member visibility and the Link Picker both land on this design's second column** and the panel says so at the Foot row.
 
 **Arrangement** · 416 · 56 · 824 = 1,296; the 56 px gutter is A5·5's, the widest in A8, because the two columns are two kinds of thing. Both columns top-aligned; **the head never sticks and is never vertically centred**. Rows: quote Card 20 on a 60-character measure, attribution 20 px under it, **32 px above and below each rule, rules between the quotations and never around them**, avatar 36. At Rows Cards: the shared card, padding 28, 16 px apart, no rules. Head to sub 12, sub to foot 20.
 
@@ -359,8 +442,22 @@ A5·5's division: the head in a 416 px column at the left margin, the quotations
 
 **Fields** · head fields, note, link pair, **every item of `quotes[]` up to twelve, all drawn**. **`sub` is not drawn at 834 and below.**
 
-**Controls · seven** · Title size: 34 · 40 · 48. **Card width: Narrow 320 · Medium 416 · Wide 632** — A8's own scale, wider than A5·14's 280/320/380 because a card holding only type needs a reading measure. Rail edges: Bleeds right · Contained. Rail controls: Arrows · None. Cards: Surface · Ground. **Avatars: Shown · Hidden** — Hidden shortens every card without reflowing the rail, since height is set by the longest quotation in the set. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 — the rail's 24 px gutter stays uncontrolled · Top divider, all three available. **Quick Controls:** Card width · Rail edges · Rail controls · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Card width | **Narrow 320 · Medium 416 · Wide 632** — A8's own scale, wider than A5·14's 280/320/380 because a card holding only type needs a reading measure |
+| Rail edges | Bleeds right · Contained |
+| Rail controls | Arrows · None |
+| Cards | Surface · Ground |
+| Avatars | Shown · Hidden (Hidden shortens every card without reflowing the rail, since height is set by the longest quotation in the set) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — the rail's 24 px gutter stays uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls. **Quick Controls:** Card width · Rail edges · Rail controls · Avatars.
 **Strings and icons** · **the arrow labels “Previous quotes” and “Next quotes” are catalog strings**, not fields: they are accessible names for a control rather than content. **The arrows keep A1·14's glyph pair and are not Icon-Picker editable** — they are `carousel`'s affordance, not an action, and the Icon Picker's offer in A8 lands on the section link alone. *Flagged: both rulings.*
 
 **The rail** · 24 px gutter; **proximity snap, not mandatory** — a reader who drags halfway between two cards is left between them. One card per arrow press (the card plus its gutter). A1·14's outlined 38 px icon button with a 19 px glyph in the head's right; **40% and `disabled` at an end**; **no dots at any value**; bleeding past the right margin at rest and both margins once scrolled, the first card sliced by the page's left margin. **No loop**: at the last card the right arrow goes to 40% and stays there. **Every card is as tall as the longest quotation in the set**, not the tallest on screen, so the section never jumps as it scrolls — this design's cost, disclosed at the count control.
@@ -400,8 +497,21 @@ One quotation beside one photograph of the person who said it. With 15 Overlap t
 
 **Fields** · `eyebrow`, `note`, link pair, **`image` and `imageAlt`**, and the first item of `quotes[]` (`quote`, `name`, `role`, `org`). **`title`, `sub` and `avatar` are kept and never drawn.**
 
-**Controls · six** · **Division: Even 632/632 · Quote-led 760/504 · Image-led 504/760**, all on a 32 px gutter. Image side: Left · Right. **Crop: Portrait 4:5 · Square 1:1 · Match the text.** Quote size: Card 20 · Feature 27 — Display is not offered. Attribution: Below · Above · Under the image. Member visibility: Everyone · Logged out · Free · Paid. **No Avatars control:** this design suppresses the avatar at every value already, and the panel says so where a site would look for the row.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 · Top divider, all three available. **Quick Controls:** Division · Image side · Crop · Quote size.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Division | **Even 632/632 · Quote-led 760/504 · Image-led 504/760**, all on a 32 px gutter |
+| Image side | Left · Right |
+| Crop | **Portrait 4:5 · Square 1:1 · Match the text** |
+| Quote size | Card 20 · Feature 27 — Display is not offered |
+| Attribution | Below · Above · Under the image |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Six controls. **No Avatars control:** this design suppresses the avatar at every value already, and the panel says so where a site would look for the row. **Quick Controls:** Division · Image side · Crop · Quote size.
 **The focal refusal, and the escape hatch that lets it stand** · **Image focus is drawn disabled in the Image Picker popover, with its reason**, rather than left absent — a user who goes looking for it finds the answer instead of nothing. **The help line ships in the panel beside Crop:** “a wide face in a narrow box — crop the file, or switch Crop to Match the text.” Without that line the centre crop is a bug report waiting to be filed; with it the refusal is a stated design decision. *Flagged: shipping the refusal as a disabled field.*
 
 **Arrangement** · two halves **vertically centred against each other** — the only centred pairing in A8, because a 790 px photograph beside a 260 px quotation would otherwise hang the words off a corner. Image radius the pack token, `object-fit: cover`, **centred on its own centre with no focal-point control**; a site that needs a different focal point crops the file, and the editor says so. **No scrim: nothing is laid over this photograph.** Eyebrow to quote 24, quote to attribution 24, attribution to note 32. **At Image-led the quote steps down one** — a width decision, disclosed like a length one.
@@ -441,8 +551,22 @@ The section inverted onto the `contrast` token, the quotations drawn as panels o
 
 **Fields** · 2 Three Up's exactly, **the first one to three of `quotes[]`**. **Switching between this design and 2 Three Up changes nothing but the colours** — the tokenisation claim at its hardest.
 
-**Controls · seven** · Band width: Full bleed · Inset. Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Quotes shown: a number picker, 1 to 3, default three** — *item counts are a number picker*; the cap is the band's: "past three the panels are narrower than their own type on a coloured field". Panels: Panels · Hairline columns, **drawn greyed with the reason at a count of one** — there is no panel at one quotation. **Avatars: Shown · Hidden** — Hidden closes up the panels and the bare band alike. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · **Background role locked at Contrast, with the reason shown:** the band is the design and not a value, and 2 Three Up is this same arrangement on the page's ground — switching design is how a site leaves the band, which is also why this design never had a Ground row. **Vertical spacing resolves this design's own 44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390): **the old Band padding row retires into it** rather than beside it, because on this design the band is the section. **Top divider locked None at Band width Full bleed** — the band's own top edge is the divider — and available at Inset. **Quick Controls:** Band width · Quotes shown · Panels · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band width | Full bleed · Inset |
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Quotes shown | **a number picker, 1 to 3, default three** — the cap is the band's: “past three the panels are narrower than their own type on a coloured field” |
+| Panels | Panels · Hairline columns, **drawn greyed with the reason at a count of one** |
+| Avatars | Shown · Hidden (Hidden closes up the panels and the bare band alike) |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | **Contrast (locked, with the reason shown)** — the band is the design and not a value |
+| Vertical spacing (universal) | **this design's own 44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390); the old Band padding row retires into it |
+| Top divider (universal) | **Locked None at Band width Full bleed** — the band's own top edge is the divider — and available at Inset |
+
+Seven controls. 2 Three Up is this same arrangement on the page's ground — switching design is how a site leaves the band, which is also why this design never had a Ground row. **Quick Controls:** Band width · Quotes shown · Panels · Avatars.
 
 **Derived mixes, all from the token pair** · muted = carried at **72% in light and 70% in dark (A4·9's pair)**, panel = carried at 6%, hairline = carried at 18%. Light band `#232019` / `#FBF9F5` → `#BEBCB7`, `#302D26`, `#4A4741`. **Dark band `#EDE7DA` / `#171511`** → `#57544D`, `#E0DACE`, `#C6C1B6`. Using `surface` or `border` here would put a light card on a dark band. **The striped image placeholder takes the light stripe pair on a light band in either mode.** No shadow at any value. **At Quotes shown One the panel is dropped entirely** — a single 6%-lighter rectangle on a band is a box around nothing. Inset takes the pack radius; Full bleed has no corners to round.
 
@@ -481,8 +605,21 @@ One quotation at **Display 40**, flush left on a 1,000 px measure, the attributi
 
 **Fields** · `eyebrow`, `note`, link pair, first item of `quotes[]`. **`title` and `sub` kept and never drawn** — a Display 40 quotation is the section's largest voice and a title above it would be a second one.
 
-**Controls · six** · **Measure: Narrow 780 · Wide 1000** — the width-not-height control. Quote size: Feature 27 · Display 40. Alignment: Flush left · Centred. Attribution: Below · Above. **Avatars: Shown · Hidden** — Attribution Above already drops the circle, so at that value the control has nothing left to do and the panel says so. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) — **the old Ground row retires here, and Ground Surface was always the whole section rather than a card**, which it still is · Vertical spacing resolving 64 · 96 · 132; the repeated 32 px separation inside the design stays uncontrolled · Top divider, all three available. **Quick Controls:** Measure · Quote size · Alignment · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Measure | **Narrow 780 · Wide 1000** — the width-not-height control |
+| Quote size | Feature 27 · Display 40 |
+| Alignment | Flush left · Centred |
+| Attribution | Below · Above |
+| Avatars | Shown · Hidden — Attribution Above already drops the circle, so at that value the control has nothing left to do and the panel says so |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) — the old Ground row retires here, and Ground Surface was always the whole section rather than a card, which it still is |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132; the repeated 32 px separation inside the design stays uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Six controls. **Quick Controls:** Measure · Quote size · Alignment · Avatars.
 
 **Arrangement** · one column on the measure; no card, border, shadow or title. Display 40 / 1.2 / −0.02em, roman and regular. **Every separation is 32 px** — eyebrow to quote, quote to attribution, attribution to foot — one measurement repeated, because at this size a 20 px gap reads as a collision. Avatar 44, **dropped at Attribution Above**. **The foot is one row**, note and link 24 px apart. **Ground Surface is the whole section, not a card.** The measure is capped at 1,000 of the 1,296 available: at 1,296 a 40 px line is 65 characters and past what a reader can track.
 
@@ -519,8 +656,21 @@ The attributions become the control: a row of avatars and names, one quotation s
 
 **Fields** · `eyebrow`, `title`, `note`, link pair, **the first one to six of `quotes[]`** by Quotes shown. **`sub` kept and not drawn** — the tab row sits where a sub would. **The tab shows `org` if authored, otherwise `role`, never both**; the figcaption under the quotation shows the full comma-joined line.
 
-**Controls · six** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Tabs: Avatar and name · Name only** — **Avatar and name is drawn greyed from five quotations, with the reason visible**: "six faces do not fit one row; Name only from five". A locked value is greyed and never hidden. Tab row: Above the quote · Below. **Quotes shown: a number picker, 1 to 6, default four** — *item counts are a number picker*; the cap is the row's, and the control says so. Member visibility: Everyone · Logged out · Free · Paid. **No Avatars control, and this is the one exemption worth arguing:** the tab row is a fixed row of circles with an initials fallback, so Hidden would leave a row of names pretending to be tabs. **Tabs Name only is the nearest thing this design has to it**, and **12 Rows is the text-only arrangement the panel names as advice** — this design draws its own tab row at every count and at every width.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132; the 48 px under the tab row stays uncontrolled · Top divider, all three available. **Quick Controls:** Tabs · Tab row · Quotes shown · Title size.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Tabs | **Avatar and name · Name only** — Avatar and name is drawn greyed from five quotations, with the reason visible: “six faces do not fit one row; Name only from five” |
+| Tab row | Above the quote · Below |
+| Quotes shown | **a number picker, 1 to 6, default four** — the cap is the row's, and the control says so |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132; the 48 px under the tab row stays uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Six controls. A locked value is greyed and never hidden. **No Avatars control, and this is the one exemption worth arguing:** the tab row is a fixed row of circles with an initials fallback, so Hidden would leave a row of names pretending to be tabs. **Tabs Name only is the nearest thing this design has to it**, and **12 Rows is the text-only arrangement the panel names as advice** — this design draws its own tab row at every count and at every width. **Quick Controls:** Tabs · Tab row · Quotes shown · Title size.
 
 **The behaviour** · 44 px targets at every width with a 36 px avatar inside (32 at 834); name 15/500 resting in `text-muted` and 15/600 active in `text`; **avatar 70% → 100%**; hover surface behind the tab — **the weights and the plane are this design's, not A5·12's**; **2 px accent underline over the row's hairline**. **Active is never colour alone** — underline, weight and avatar change together. Quote Feature 27 on a 900 px measure, 48 px below the row. **The panel is as tall as the longest quotation in the set**, so switching never moves the page. First tab active on load at every value and never remembered. **Instant under reduced motion; nothing on a timer; nothing while editing.**
 
@@ -559,8 +709,21 @@ Quotations as rows between hairlines: the words at the left on 780, the attribut
 
 **Fields** · `note`, link pair, **the first one to six of `quotes[]`** by Quotes shown. **`eyebrow`, `title`, `sub`, `avatar`, `image` and `imageAlt` are kept and never drawn** — six of the fourteen fields, the most any design in A8 keeps, every one waiting for the design a site switches to next.
 
-**Controls · six** · **Quotes shown: a number picker, 1 to 6, default four** — *item counts are a number picker*; the cap is this design's own: "past six rows the section is a page of quotations, and 5 Wall is built for that". Attribution: Right column · Under the quote. **Rules: Between · Above and below · None.** Quote size: Small 17 · Card 20 · **Feature 27 — the only multi-quote design that offers it.** Row padding: Compact 24 · Comfortable 32 · Spacious 44 — a rule ladder, not a section one, which is why it keeps its row. Member visibility: Everyone · Logged out · Free · Paid. **No Avatars control:** no avatar is drawn at any value, and the field stays on every item waiting for the design a site switches to next.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 · **Top divider locked None at Rules Above and below** — that value already draws a rule across the section's top edge and two hairlines 24 px apart is a mistake — available at Between and None. **Quick Controls:** Quotes shown · Attribution · Rules · Quote size. **This design can still contain no accent pixel**: the only accent A8 has left here is the optional link's underline, and a site that authors no link has none.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Quotes shown | **a number picker, 1 to 6, default four** — the cap is this design's own: “past six rows the section is a page of quotations, and 5 Wall is built for that” |
+| Attribution | Right column · Under the quote |
+| Rules | **Between · Above and below · None** |
+| Quote size | Small 17 · Card 20 · **Feature 27 — the only multi-quote design that offers it** |
+| Row padding | Compact 24 · Comfortable 32 · Spacious 44 — a rule ladder, not a section one, which is why it keeps its row |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | **Locked None at Rules Above and below** — that value already draws a rule across the section's top edge and two hairlines 24 px apart is a mistake — available at Between and None |
+
+Six controls. **No Avatars control:** no avatar is drawn at any value, and the field stays on every item waiting for the design a site switches to next. **Quick Controls:** Quotes shown · Attribution · Rules · Quote size. **This design can still contain no accent pixel**: the only accent A8 has left here is the optional link's underline, and a site that authors no link has none.
 
 **Arrangement** · 780 · 56 · 300, **160 px of the content width left unused** — the attribution column is a caption column, not a second text column — both halves top-aligned so the name is level with the quotation's first line. Rules are `border-top` on the items with the row padding above and below each; at Rules Above and below the outer two are borders on the `<ul>`. **At Rules None the rows take the Spacious spacing whatever the control says**, because 32 px of nothing between two quotations is not enough to end one. Foot 32 px under the last row.
 
@@ -599,8 +762,22 @@ One quotation at Display 40 in an 848 px card with two at Small 17 stacked in 41
 
 **Fields** · `eyebrow`, `title`, `note`, link pair, **first three of `quotes[]` — item one is the lead**. `sub` and `image` kept, not drawn. The lead's attribution shows the full role line; **the pair's is trimmed to `org`, or `role` where there is no organisation** — 11 Faces' trim reused. **Which quotation leads is the repeater's order, never a flag**, so nothing about “featured” is stored.
 
-**Controls · seven** · Head: Centred · Flush left · None. **Title size: Medium 34 · Large 40** — Display 48 would outrun the lead. Lead: Left · Right. **Lead size: Feature 27 · Display 40**, against Small 17 at both. Cards: Surface · Ground. **Avatars: Shown · Hidden** — **Hidden drops the lead's 44 and the pair's 36 together; there is no per-slot value**, as there is no per-item control anywhere in A8. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · Background role (Contrast disabled, 9 named) · Vertical spacing resolving 64 · 96 · 132 — the lead's 40 and the pair's 28 follow the type and stay uncontrolled · Top divider, all three available. **Quick Controls:** Lead · Lead size · Cards · Avatars.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head | Centred · Flush left · None |
+| Title size | **Medium 34 · Large 40** — Display 48 would outrun the lead |
+| Lead | Left · Right |
+| Lead size | **Feature 27 · Display 40**, against Small 17 at both |
+| Cards | Surface · Ground |
+| Avatars | Shown · Hidden — **Hidden drops the lead's 44 and the pair's 36 together; there is no per-slot value** |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — the lead's 40 and the pair's 28 follow the type and stay uncontrolled |
+| Top divider (universal) | None · Line · Fade, all three available |
+
+Seven controls, and there is no per-item control anywhere in A8. **Quick Controls:** Lead · Lead size · Cards · Avatars.
 
 **Arrangement** · 848 · 32 · 416; the two small cards divide the right column's height evenly, so the pair reads as a pair rather than a leftover. **Lead padding 40 and small padding 28; lead internal gap 32 and small internal gap 16** — the only design in A8 that departs from the card's step-linked gap in both directions, because the type does. Lead avatar 44, small avatars 36. **The lead never takes a lighter plane than the pair**: a card that was lighter as well as larger would be two signals for one hierarchy.
 
@@ -639,8 +816,19 @@ One short quotation on a single line between rules, the attribution inline after
 
 **Fields** · **four drawn** — `quote`, `name`, `role`, `org` from the first item. **Ten kept and never drawn**, including `avatar`, both image fields, the whole head, the note, the link and every quote after the first: the most any design in A8 keeps, and the reason switching away loses nothing. **The field stores up to 300 characters; one line of this design holds about 120, and a longer quotation wraps.**
 
-**Controls · four, the shortest list in A8** · Rules: Above and below · Above only · None. Alignment: Centred · Flush left. Quote size: Small 17 · Card 20 — **Feature and Display would not sit on one line with a source after them**. Attribution: Inline · At the right. **No Avatars control** (none is drawn at any value) and **no Member visibility** — the section link is never drawn here, so there is no ask to gate and nothing member-aware in the design. *Flagged: the Member visibility exemption is mine, and it is the one place in A8 a site cannot hide a section from a member state.*
-**Universal** · Background role (Contrast disabled, 9 named; the old Ground row retires here) · **Vertical spacing resolving this design's own 32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390) — **the old Padding row retires into the trio and keeps its compact ladder as this design's resolution** · **Top divider locked None at Rules Above and below and at Rules Above only**, because the design already draws a rule at its top edge; available at Rules None. **Quick Controls:** Rules · Alignment · Quote size · Attribution.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Rules | Above and below · Above only · None |
+| Alignment | Centred · Flush left |
+| Quote size | Small 17 · Card 20 — **Feature and Display would not sit on one line with a source after them** |
+| Attribution | Inline · At the right |
+| Background role (universal) | Background · Surface · ~~Contrast~~ disabled (9 named); the old Ground row retires here |
+| Vertical spacing (universal) | **this design's own 32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390) — the old Padding row retires into the trio and keeps its compact ladder as this design's resolution |
+| Top divider (universal) | **Locked None at Rules Above and below and at Rules Above only**, because the design already draws a rule at its top edge; available at Rules None |
+
+Four controls, the shortest list in A8. **No Avatars control** (none is drawn at any value) and **no Member visibility** — the section link is never drawn here, so there is no ask to gate and nothing member-aware in the design. *Flagged: the Member visibility exemption is mine, and it is the one place in A8 a site cannot hide a section from a member state.* **Quick Controls:** Rules · Alignment · Quote size · Attribution.
 
 **Arrangement** · one line, baseline-aligned, 16 px between quotation and source; the attribution **one inline string** — name 14/600 in `text`, comma, role and organisation 14 in `text-muted`. **Rules run the full content width at every value**, not the length of the type, because a rule that stops where the quotation stops is an underline. No avatar, no accent, nothing focusable. **At Attribution at the right a short quotation and a long role line can end up 900 px apart**, and the sidebar names Inline for that case rather than centring the pair automatically.
 
@@ -679,8 +867,22 @@ One short quotation on a single line between rules, the attribution inline after
 
 **Fields** · `eyebrow`, `title`, `note`, link pair, **`image` and `imageAlt`**, and the first item of `quotes[]` **including `avatar` — unlike 8 Portrait, the avatar is drawn here**, because the band is a scene rather than a portrait of the speaker. `sub` kept, not drawn.
 
-**Controls · seven** · **Band height: Short 320 · Tall 420.** Head: Over the band · Above the band · None. Card width: Narrow 632 · Wide 848. Card position: Left · Centre. **Overlap: Compact 48 · Comfortable 72** — it measures the card's pull, not the section, which is why it keeps its row. **Avatars: Shown · Hidden** — Hidden drops the 44 px circle on the card; **the band's photograph is a section field and is unaffected**, because it is a scene rather than a portrait of the speaker. Member visibility: Everyone · Logged out · Free · Paid.
-**Universal** · **Background role locked, with the reason shown: the photograph is the ground.** **With no image the lock lifts** and the row becomes available, because the card is then on the page's own ground; the panel says so at the control. **Vertical spacing resolving 64 · 96 · 132 above the band** (the old Padding row). **Top divider locked None at head Over the band and at head None** — a hairline above a full-bleed photograph is a line on nothing — available at head Above the band. **Quick Controls:** Band height · Head · Card width · Overlap.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band height | **Short 320 · Tall 420** |
+| Head | Over the band · Above the band · None |
+| Card width | Narrow 632 · Wide 848 |
+| Card position | Left · Centre |
+| Overlap | **Compact 48 · Comfortable 72** — it measures the card's pull, not the section, which is why it keeps its row |
+| Avatars | Shown · Hidden — Hidden drops the 44 px circle on the card; **the band's photograph is a section field and is unaffected** |
+| Member visibility | Everyone · Logged out · Free · Paid |
+| Background role (universal) | **Locked, with the reason shown: the photograph is the ground.** **With no image the lock lifts** and the row becomes available, because the card is then on the page's own ground |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 above the band (the old Padding row) |
+| Top divider (universal) | **Locked None at head Over the band and at head None** — a hairline above a full-bleed photograph is a line on nothing — available at head Above the band |
+
+Seven controls. The band's photograph is a scene rather than a portrait of the speaker. **Quick Controls:** Band height · Head · Card width · Overlap.
 **The band image carries Image focus — Centre · Top · Bottom** — in its Image Picker popover, beside its alt text. **8 Portrait is the only image field in A8 without it**, and its refusal is stated there rather than inherited here.
 
 **Arrangement** · full-bleed band; card pulled up by the overlap; quote Feature 27, card padding 40, avatar 44; **the md warm shadow — the only shadow in A8, and dropped in dark** where the plane step from `background` to `surface` plus the hairline does the work. The shadow is allowed because **the card is in front of something**. **The card grows downward with a long quotation and the band never stretches to match it.**
@@ -841,3 +1043,15 @@ Every change below carries the **name** of the rule or the platform fact that re
 
 1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** — fifteen designs, no gap created or closed, no number reused, nothing renumbered.
 2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Single** and **2 Three Up** — both of which exist in this category's roster. It is **the owner's own choice, ruled on 30 August 2026**.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

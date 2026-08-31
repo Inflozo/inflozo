@@ -119,7 +119,18 @@ A centred head over three bare items on the page's own ground. The category's fl
 
 **Fields.** `eyebrow` · `title` · `sub` · `items[]` (`itemTitle` req · `itemBody` · `itemIcon` · `itemLinkLabel` · `itemLinkUrl`) · `primaryAction` · `note`. `itemImage`, `itemImageAlt`, `itemMeta`, `tabLabel` kept and not drawn.
 
-**Controls.** Media (Icon · Icon in a tint · Icon in accent · None) · Head alignment (Centred · Left) · Below the set (Action · Note · Nothing) · Item link (None · Text link) · Member visibility. Universal: Background role (the old Ground row, all three values — Contrast is still the band without 10's own controls) · Vertical spacing resolving 64 · 96 · 132 · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Media | Icon · Icon in a tint · Icon in accent · None |
+| Head alignment | Centred · Left |
+| Below the set | Action · Note · Nothing |
+| Item link | None · Text link |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (the old Ground row, all three values — Contrast is still the band without 10's own controls) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Picture is not offered.** A photograph needs an edge to sit against and these items have none — a picture on the page ground with text under it is 8 Media Top without its card. **Icon in accent disables the Action value** of Below the set, with the reason shown: six accent squares and an accent button is the accent spent seven times.
 
@@ -161,7 +172,19 @@ Two items across a 632 px column each, for features that need a sentence rather 
 
 **Fields.** As 1.
 
-**Controls.** Media (48 px container) · Item arrangement (Icon beside the text · Stacked) · Head alignment (Left · Centred, **Left being the default**) · Below the set (Action · Note · Nothing, **Note the default**) · Item link (None · Text link) · Member visibility. Universal: Background role · Vertical spacing · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Media | Icon · Icon in a tint · Icon in accent · None (48 px container) |
+| Item arrangement | Icon beside the text · Stacked |
+| Head alignment | Left · Centred (**Left** the default) |
+| Below the set | Action · Note · Nothing (**Note** the default) |
+| Item link | None · Text link |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Ground, reconciled.** The old "no Ground control" ruling meets the universal Background role and loses the row-refusal, not the argument: the control ships, and its advice line still names 16 Panel for two items on `surface` and 10 Contrast Band for two on `contrast`. Recorded in the Reconciliation notes.
 
@@ -200,7 +223,18 @@ Four items across 300 px each, the densest grid the ladder allows, and the desig
 
 **Fields.** As 1.
 
-**Controls.** Media (36 px container) · **Body copy (Show · Hide)** · Head alignment · Item link (None · Text link at a **14 px label**, unavailable at Body copy Hide) · Member visibility. Universal: Background role (the old Ground row) · Vertical spacing · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Media | Icon · Icon in a tint · Icon in accent · None (36 px container) |
+| Body copy | Show · Hide |
+| Head alignment | Centred · Left |
+| Item link | None · Text link at a **14 px label** (unavailable at Body copy Hide) |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (the old Ground row) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Why no fifth column.** A fifth column on 1296 px is a 233 px item, where a 19 px title takes twelve characters a line and the body would fall to 13 px, under the brief's floor of 15. The answer is Body copy Hide at four columns rather than a fifth column.
 
@@ -239,7 +273,21 @@ Four items across 300 px each, the densest grid the ladder allows, and the desig
 
 **Fields.** As 1. At Whole item the card's accessible name is `itemTitle` and `itemLinkLabel` is unused and kept.
 
-**Controls.** Card treatment (Hairline · Tinted · Raised) · Media · Head alignment · Item link (None · Text link · Whole item) · Below the set · Member visibility. Universal: Background role with Contrast unavailable (planes on an inverted band are drawn nowhere in A5; 10 draws bare items) · Vertical spacing · Top divider. The 28 px card padding stays fixed and is no control.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card treatment | Hairline · Tinted · Raised |
+| Media | Icon · Icon in a tint · Icon in accent · None |
+| Head alignment | Centred · Left |
+| Item link | None · Text link · Whole item |
+| Below the set | Action · Note · Nothing |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — planes on an inverted band are drawn nowhere in A5; 10 draws bare items) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+The 28 px card padding stays fixed and is no control.
 
 **The card.** Three 410 px columns, `surface`, the pack radius on all four corners, **28 px of padding as a fixed value rather than a control**, 32 px between columns and rows. Hairline adds one `border` hairline and the sm shadow; Tinted is the hover surface with neither; Raised is the md shadow with neither, and **a hairline instead of the shadow in dark** — A4·18's rule, carried, which makes Raised and Hairline the same object in dark, and the editor says so rather than hiding the value.
 
@@ -280,7 +328,21 @@ The head as a left column beside a two-across grid, with the section's one actio
 
 **Fields.** As 1, with `primaryAction` and `note` drawn **in the head column**. The section title is effectively required — a head column with no title is a column of sub, and the editor says so rather than rendering it.
 
-**Controls.** Head width (Narrow 380 · Medium 440 · Wide 520, gutter 64 at all three) · Head behaviour (Stays at the top · Follows the scroll) · Media (Icon · Icon in a tint · None, **default None**; Icon in accent not offered, the accent being spent on the action) · Below the head (Action · Note · Nothing) · Item link (None · Text link) · Member visibility. Universal: Background role · Vertical spacing · Top divider. Where the head's action targets a Portal action it takes P0·4's member-aware editor, scope-tagged apart from the section row.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Head width | Narrow 380 · Medium 440 · Wide 520 (gutter 64 at all three) |
+| Head behaviour | Stays at the top · Follows the scroll |
+| Media | Icon · Icon in a tint · None (**default None**; Icon in accent not offered, the accent being spent on the action) |
+| Below the head | Action · Note · Nothing |
+| Item link | None · Text link |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+Where the head's action targets a Portal action it takes P0·4's member-aware editor, scope-tagged apart from the section row.
 
 **The division.** 440 + 64 + 792 at the default, the grid in two 380 px columns. **The item title is read off the column's measure rather than the count** — 380 px is Three Up's column within thirty pixels — and at Head width Wide it steps 21 → 19, since 340 px is Four Up's.
 
@@ -319,7 +381,19 @@ One item per full-width row, a hairline between. The only arrangement in A5 wher
 
 **Fields.** As 1, **plus `itemMeta`** (≤ 24) — the design that introduces it. `itemBody` is **unclamped** here, as on 13.
 
-**Controls.** Rules (Between · Between and outer · None) · Media (40 px, at the row's left, top-aligned to the title) · Item meta at the right (Show · Hide) · Head alignment (Left · Centred, Left default) · Item link (None · Text link · **Whole row**) · Member visibility. Universal: Background role · Vertical spacing · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Rules | Between · Between and outer · None |
+| Media | Icon · Icon in a tint · Icon in accent · None (40 px, at the row's left, top-aligned to the title) |
+| Item meta at the right | Show · Hide |
+| Head alignment | Left · Centred (Left default) |
+| Item link | None · Text link · **Whole row** |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **The row.** 28 px of padding above and below, fixed; a 40 px container; a 24 px title; a 16 px body on a **620 px measure**; the meta 13 px muted, never wrapping, top-aligned to the title with a 6 px optical lift — A4·17's rule, carried. **Rules None steps the row padding 28 → 36**, since with no hairline the space between two titles was doing all the separating.
 
@@ -358,7 +432,20 @@ Picture-and-text rows whose sides alternate, for two to four features that each 
 
 **Fields.** As 1 plus `itemImage` (≥ 1200 px) and `itemImageAlt`. `itemIcon`, `itemMeta`, `tabLabel`, `primaryAction` and `note` kept and not drawn — four rows each carrying a link is already four asks. **Two to four items;** above four the editor names 8 Media Top and the items are kept. The frames draw items 1–4 of the category's six, the only place in A5 a design's frames carry less than the authored set.
 
-**Controls.** First row's picture (Left · Right) · Alternate sides (On · Off, **no effect at ≤ 767**) · Picture treatment (Flush · Framed inset) · Head alignment · Item link (None · Text link). Universal: Background role with Contrast unavailable (a photograph on a band needs a scrim A5 does not have) · Vertical spacing · Top divider. No Member visibility: no section action is drawn. Every picture carries Image focus in the Image Picker popover.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| First row's picture | Left · Right |
+| Alternate sides | On · Off (**no effect at ≤ 767**) |
+| Picture treatment | Flush · Framed inset |
+| Head alignment | Centred · Left |
+| Item link | None · Text link |
+| Background role (universal) | Background · Surface (Contrast unavailable — a photograph on a band needs a scrim A5 does not have) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+No Member visibility: no section action is drawn. Every picture carries Image focus in the Image Picker popover.
 
 **The row.** Two 620 px halves on a 56 px gutter, the picture **3:2 and fixed** (620 × 413) to agree with A24 and A4·13, 72 px between rows, item title 28 px — the largest in A5 — body 16 px on a 520 px measure. The picture centres against the text where the text is taller. **Framed inset** is A4·3's mount unchanged: 14 px of surface, one hairline, the picture at half the pack radius, and the row grows 413 → 441 px.
 
@@ -397,7 +484,22 @@ A picture across the top of every item, three across, on 4 Cards' plane. Where 7
 
 **Fields.** As 7, with `primaryAction` and `note` drawn.
 
-**Controls.** Item plane (Card · None) · Head alignment · Item link (None · Text link · Whole item, **available at both planes**) · Below the set · Member visibility. Universal: Background role with Contrast unavailable — six photographs on an inverted band is 10's problem, and 10 draws icons — · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — picture ← feature image, title ← post title, body ← excerpt, item link ← the post; **How many, a number picker, 1 to 9, default six** — Ghost has no "posts per page" setting a theme can read, so the number belongs to this section; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. Image focus rides in the Image Picker popover.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Item plane | Card · None |
+| Head alignment | Centred · Left |
+| Item link | None · Text link · Whole item (**available at both planes**) |
+| Below the set | Action · Note · Nothing |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Content source (data) | Authored · From posts (the P0·5 panel) |
+| How many (data) | number picker 1–9, default 6 |
+| Background role (universal) | Background · Surface (Contrast unavailable — six photographs on an inverted band is 10's problem, and 10 draws icons) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**Data:** Content source (Authored · From posts) with the P0·5 panel — picture ← feature image, title ← post title, body ← excerpt, item link ← the post; **How many, a number picker, 1 to 9, default six** — Ghost has no "posts per page" setting a theme can read, so the number belongs to this section; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. Image focus rides in the Image Picker popover.
 
 **The card.** 4 Cards' plane and gaps unchanged, with the picture **16:9, fixed** (410 × 231), flush to the top corners at the card's radius under `overflow: hidden`, and 24 px of text padding rather than 28.
 
@@ -440,7 +542,20 @@ One tile at four times the size of the others, with the rest filling the cells a
 
 **Fields.** As 8, and **only the first item's `itemImage` is drawn**; the small tiles use `itemIcon`. Pictures on later items are kept and unused, and the editor says which item's picture is showing. **Three items minimum, six intended, nine advised as the ceiling** — below three it names 4 Cards, above nine it advises it.
 
-**Controls.** Large tile (Left · Right — **grid placement, never a source reorder**) · Large tile media (Picture · Icon · None) · Small tile media (Icon · Icon in a tint · None, **no Picture**) · Item link (None · Text link · Whole item) · Head alignment. Universal: Background role locked at Background (the tiles are the surfaces) · Vertical spacing · Top divider. No Member visibility: no section action is drawn. Item 1's picture carries Image focus in the Image Picker popover.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Large tile | Left · Right (**grid placement, never a source reorder**) |
+| Large tile media | Picture · Icon · None |
+| Small tile media | Icon · Icon in a tint · None (**no Picture**) |
+| Item link | None · Text link · Whole item |
+| Head alignment | Centred · Left |
+| Background role (universal) | Background (locked — the tiles are the surfaces) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+No Member visibility: no section action is drawn. Item 1's picture carries Image focus in the Image Picker popover.
 
 **Background role, reconciled.** The old refusal becomes the universal control's lock: Background role ships locked at Background with the old argument as its shown reason — a surface ground needs 4 Cards' step-up on every tile, and six lifted tiles on a lifted ground read as one block with seams; `contrast` is 10 Contrast Band, which the lock's note still names.
 
@@ -481,7 +596,19 @@ The whole set on the inverted ground. Ground is not a control here: it is the de
 
 **Fields.** As 1. **One band per page** is the editor's advice, not a rule.
 
-**Controls.** Band edges (Full bleed · Page margin; pack radius and 56 px inner padding there, always full bleed at ≤ 767) · Media (Icon · **Icon in a lift** · None) · Head alignment · Below the set · Item link (None · Text link) · Member visibility. Universal: Background role locked at Contrast — the ground is the design — · Vertical spacing resolving **44 · 64 · 88** (one step tighter, A4·9's values carried; a departure survives as a resolution, never a duplicate row) · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band edges | Full bleed · Page margin (pack radius and 56 px inner padding there, always full bleed at ≤ 767) |
+| Media | Icon · **Icon in a lift** · None |
+| Head alignment | Centred · Left |
+| Below the set | Action · Note · Nothing |
+| Item link | None · Text link |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Contrast (locked — the ground is the design) |
+| Vertical spacing (universal) | Compact 44 · Comfortable 64 · Spacious 88 (one step tighter, A4·9's values carried) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **What the band changes.** The icon container is a **10% lift of the carried colour** rather than a surface tint — there is no surface on a band and the packs do not define one. Hairlines are **28% of the carried colour** (A4·9's). The action is a **solid `text`-coloured fill carrying the band's colour**, hovering 3% darker. **Focus rings are the carried colour rather than the accent** — 12.8:1 against 3.2:1, the one design in A5 where the ring's colour changes. The 40 px container holds at every width, because the lift is the only thing separating a glyph from the band.
 
@@ -520,7 +647,19 @@ Two columns of one-line items with a small mark at the left. The design settleme
 
 **Fields.** `eyebrow` · `title` · `sub` · `items[]` with **`itemTitle` only** · `primaryAction` · `note`. Everything else is kept and not drawn — the largest set of kept-and-unused fields in A5 — and the editor names **3 Four Up at Body copy Show** for a site that wants a line under each entry. Two to twelve items, and twelve is comfortable here; about 40 characters an entry advised, 24 for the two-column phone.
 
-**Controls.** Mark (Check · Dot · Rule) · Density (Compact 12 · Comfortable 16 · Spacious 24) · Rules between entries (Show · Hide) · On a phone (Keep two columns · One column) · Below the set · Member visibility. Universal: Background role · Vertical spacing (section spacing; Density stays the entry ladder, a genuinely different name) · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Mark | Check · Dot · Rule |
+| Density | Compact 12 · Comfortable 16 · Spacious 24 |
+| Rules between entries | Show · Hide |
+| On a phone | Keep two columns · One column |
+| Below the set | Action · Note · Nothing |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (section spacing; Density stays the entry ladder, a genuinely different name) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **No head alignment** — the head is always left, because the list is. **No item link and no media:** eight one-line links is a navigation list, and a glyph beside a check mark is two marks doing one job.
 
@@ -563,7 +702,19 @@ One item at a time behind a labelled row of tabs. The category's only behaviour,
 
 **Fields.** As 8 **plus `tabLabel`** (≤ 20, hard) — the only design that draws it; absent, the tab reads `itemTitle` **clipped by the tab's own width**; the 20-character cap is enforced **on the field, in the editor**, where a string can be counted. `itemIcon`, `itemMeta`, `primaryAction` and `note` kept and not drawn — a section action under a panel would look like the panel's own. **Two to six items; six is the ceiling** and seven names 6 Rows or 4 Cards.
 
-**Controls.** Tabs and head (Left · Centred — one control for both) · Panel media (Picture · None, **no Icon**) · Picture side (Right · Left, **the same on every panel, no alternation**) · Item link (None · Text link). Universal: Background role with Contrast unavailable (a tab row on a band needs an active state the packs do not define) · Vertical spacing · Top divider. No Member visibility: no section action is drawn. Every panel picture carries Image focus in the Image Picker popover.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Tabs and head | Left · Centred (one control for both) |
+| Panel media | Picture · None (**no Icon**) |
+| Picture side | Right · Left (**the same on every panel, no alternation**) |
+| Item link | None · Text link |
+| Background role (universal) | Background · Surface (Contrast unavailable — a tab row on a band needs an active state the packs do not define) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+No Member visibility: no section action is drawn. Every panel picture carries Image focus in the Image Picker popover.
 
 **The tab** is A1·1's nav item verbatim: 15 px, muted resting, `text` at 500 with a 2 px accent underline active, **hover to full strength with no underline** — a hover that borrows the underline makes every pass of the pointer look like a selection. 28 px apart at 1440, 20 at 834, 18 on a phone; 44 px tall at every width. The accent's one appearance in the design.
 
@@ -604,7 +755,23 @@ One feature at picture scale with the rest reduced to single lines beneath it. W
 
 **Fields.** As 8. **Only the first item's `itemImage`, `itemBody`, `itemLinkLabel` and `itemLinkUrl` are drawn**; the rest contribute their `itemTitle` alone. `itemBody` is **unclamped** on the spotlight. **The spotlight is the first item and there is no control for it** — a user drags an item to the top. The frames spotlight the full archive rather than the weekly letter, which is that re-ordering, stated.
 
-**Controls.** Spotlight media (Picture · None; 3:2 fixed, no Icon; **at None the title steps 34 → 30**) · Picture side (Left · Right) · The rest (Entries under the spotlight · Beside the text · Hidden) · Mark (Check · Dot · Rule — 11's values) · Item link (None · Text link, **on the spotlight only**) · Member visibility. Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — the spotlight is the first post, the entries the rest; picture ← feature image, title ← post title, body ← excerpt, spotlight link ← the post; **How many, a number picker, 1 to 9, default six**, Ghost having no "posts per page" setting a theme can read; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. **The note naming A19 Featured and Spotlight for a post-shaped spotlight is drawn on the design itself**, beside the source control. Image focus rides in the Image Picker popover.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Spotlight media | Picture · None (3:2 fixed, no Icon; **at None the title steps 34 → 30**) |
+| Picture side | Left · Right |
+| The rest | Entries under the spotlight · Beside the text · Hidden |
+| Mark | Check · Dot · Rule (11's values) |
+| Item link | None · Text link (**on the spotlight only**) |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Content source (data) | Authored · From posts (the P0·5 panel) |
+| How many (data) | number picker 1–9, default 6 |
+| Background role (universal) | Background · Surface (Contrast unavailable — the photograph-scrim rule) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**Data:** Content source (Authored · From posts) with the P0·5 panel — the spotlight is the first post, the entries the rest; picture ← feature image, title ← post title, body ← excerpt, spotlight link ← the post; **How many, a number picker, 1 to 9, default six**, Ghost having no "posts per page" setting a theme can read; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. **The note naming A19 Featured and Spotlight for a post-shaped spotlight is drawn on the design itself**, beside the source control. Image focus rides in the Image Picker popover.
 
 **No head alignment:** the head is always left, as on 11. **The entries are never links** — 11's rule, carried. **Whole item is not offered:** a link over a 760 px picture and its text is a target the size of a window.
 
@@ -643,7 +810,22 @@ A rail of cards that overflows sideways instead of wrapping. The library's overf
 
 **Fields.** As 8; `itemMeta`, `tabLabel`, `primaryAction` and `note` kept and not drawn — the head carries the arrows where the action would sit. **Five items minimum** (below five the editor names 4 Cards: a rail with nothing off-screen is a grid with a scrollbar), **nine advised as the ceiling**, naming 4 Cards again and A17 Post Grids for a long set. **One rail per page**, flagged rather than prevented. **Never for pricing or anything a reader compares.**
 
-**Controls.** Card width (Narrow 280 · Medium 320 · Wide 380 — **Wide steps the title to 21 and the body to 16**, the measure rule) · Media (Picture · Icon · None; 16:9 fixed, a missing picture becoming 8's text tile) · Rail edges (Bleeds right · Page margin — always bleeds right at ≤ 767, and **at Page margin, Rail controls None is unavailable**) · Rail controls (Arrows · A rule · None, **no dots at any value**, None by default on a phone) · Item link (None · Text link · Whole item). Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. No Member visibility: no section action is drawn — the head carries the arrows instead. **Data:** Content source (Authored · From posts) with the P0·5 panel, the same mapping as 8; bound, the Items list loses Add, Remove and drag, **the five-card floor is not enforced against a feed** — nobody can count what a feed will return before the page is served — and **rail behaviour is unchanged: same snap, same card width, same bleed**, with the arrows and the rule drawn only where the track does not fit. **How many is a number picker, 1 to 9, default six**, advising at the control that below five nothing sits off-screen. Image focus rides in the Image Picker popover. The arrow labels are theme translation-catalog strings.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card width | Narrow 280 · Medium 320 · Wide 380 (**Wide steps the title to 21 and the body to 16**, the measure rule) |
+| Media | Picture · Icon · None (16:9 fixed, a missing picture becoming 8's text tile) |
+| Rail edges | Bleeds right · Page margin (always bleeds right at ≤ 767; **at Page margin, Rail controls None is unavailable**) |
+| Rail controls | Arrows · A rule · None (**no dots at any value**, None by default on a phone) |
+| Item link | None · Text link · Whole item |
+| Content source (data) | Authored · From posts (the P0·5 panel, the same mapping as 8) |
+| How many (data) | number picker 1–9, default 6 |
+| Background role (universal) | Background · Surface (Contrast unavailable — the photograph-scrim rule) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+No Member visibility: no section action is drawn — the head carries the arrows instead. **Data:** Content source (Authored · From posts) with the P0·5 panel, the same mapping as 8; bound, the Items list loses Add, Remove and drag, **the five-card floor is not enforced against a feed** — nobody can count what a feed will return before the page is served — and **rail behaviour is unchanged: same snap, same card width, same bleed**, with the arrows and the rule drawn only where the track does not fit. **How many is a number picker, 1 to 9, default six**, advising at the control that below five nothing sits off-screen. Image focus rides in the Image Picker popover. The arrow labels are theme translation-catalog strings.
 
 **The rail.** Cards 24 px apart (20 at 834, 16 on a phone), the card 8 Media Top's narrowed with 20 px of text padding. **The right bleed is the affordance:** a card sliced by the window says “more this way” better than an arrow, and the rail does not bleed past a final card. Arrows are A1·14's 38 px icon button, outlined, in the head's right, 40% and `disabled` at an end. **Where the track already fits the window the arrows and the rule are not drawn at all** — the section hides what does not apply rather than showing an inert control. The rule is a 3 px track 240 px wide, 24 px under the rail, **not draggable and not a scrollbar**. Snap is **`proximity`**; an arrow press moves one card to the left margin.
 
@@ -678,7 +860,19 @@ A large numeral where the icon would be. The editorial answer to the media quest
 
 **Fields.** `eyebrow` · `title` · `sub` · `items[]` with `itemTitle`, `itemBody` (not at Compact) and `itemMeta` · `primaryAction` · `note`. **The numeral is not a field** — it is generated from the item's position. Two to twelve items; Letters run A to L.
 
-**Controls.** Numeral (**01 · 1 · A**; 01 pads to two digits so every rule starts at the same x) · Numeral colour (Muted · Accent, Accent advised for three or four items) · Arrangement (Full · Compact) · Rule under the numeral (Show · Hide) · Item meta (Show · Hide) · Member visibility. Universal: Background role · Vertical spacing · Top divider.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Numeral | **01 · 1 · A** (01 pads to two digits so every rule starts at the same x) |
+| Numeral colour | Muted · Accent (Accent advised for three or four items) |
+| Arrangement | Full · Compact |
+| Rule under the numeral | Show · Hide |
+| Item meta | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **No item link, no head alignment, no media control:** the numeral is the media and the head is always left.
 
@@ -719,7 +913,21 @@ The whole set on one surface panel, inset from the page, divided internally by h
 
 **Fields.** As 1 plus `itemMeta`, drawn on the icon's line at the cell's right. `primaryAction` and `note` are kept and not drawn: **an action under a panel belongs to the page rather than the panel**, and A6 CTA Banners is the section for one.
 
-**Controls.** Panel padding (**Compact 32 · Comfortable 48 · Spacious 64** — A3·12's values; the section's own spacing is fixed at 96) · Inset (**Snug 16 · Comfortable 40 · Wide 72** inside the page margin — A4·8 Card's values unchanged, so a site running both reads one shape) · Dividers (Both · Between rows · None) · Media (Icon · Icon in a tint · None — **no accent value and no Picture**) · Item meta · Item link (None · Text link · Whole item). Universal: Background role locked at Background (the panel is the surface, and the inset needs the page's own ground around it) · Vertical spacing locked at the fixed 96, reason shown — Panel padding and Inset are genuinely different ladders and keep their names · Top divider. No Member visibility: `primaryAction` is kept and not drawn.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Panel padding | **Compact 32 · Comfortable 48 · Spacious 64** (A3·12's values; the section's own spacing is fixed at 96) |
+| Inset | **Snug 16 · Comfortable 40 · Wide 72** inside the page margin (A4·8 Card's values unchanged) |
+| Dividers | Both · Between rows · None |
+| Media | Icon · Icon in a tint · None (**no accent value and no Picture**) |
+| Item meta | Show · Hide |
+| Item link | None · Text link · Whole item |
+| Background role (universal) | Background (locked — the panel is the surface, and the inset needs the page's own ground around it) |
+| Vertical spacing (universal) | Locked at the fixed 96, reason shown — Panel padding and Inset are genuinely different ladders and keep their names |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+No Member visibility: `primaryAction` is kept and not drawn.
 
 **The panel.** A3·12's plane — `surface`, one hairline, sm shadow, pack radius; **a hairline and no shadow in dark**. 32 px between a cell and the divider beside it, so two items are 64 px apart across a 1 px line, and **no divider reaches the panel's edge**: a line that touches the border makes a cell, and a cell implies a column of comparable things. At Between rows a 32 px gutter returns between columns; at None the gaps are 32 and 24. The head sits above the panel at the page margin, and **the gap under it is always 48** whatever the inset.
 
@@ -984,3 +1192,14 @@ Every change below carries the **name** of the rule or the platform fact that re
 2. **How many is a control the site sets** — *item counts are a number picker*. A number picker, **1 to 9, default six**, in the Data group on 8 Media Top, 13 Spotlight and 14 Scroller. Six is only the starting value: a site that wants three features from its posts sets three, and one that wants nine sets nine. **A fixed six with no control was refused**, and so was a range running to twelve — past nine the set belongs in A17 Post Grids. 14 Scroller advises at the control that below five nothing sits off-screen.
 3. **The rail draws whatever the posts give it, and hides its arrows and its rule when the track already fits** — *no design ever turns into another design*, with *Ghost's templates cannot count, add, or remember* behind it. A reader never sees a control that does nothing, and three bound posts still draw three tidy cards. **The greyed-arrows alternative was refused** — two dead buttons teach a reader to distrust them — and so was refusing to render below five posts, which would make a section appear on a home page the day a fifth post was published, with nobody touching the editor.
 
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** sixteen designs, numbered **1–16**.

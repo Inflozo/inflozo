@@ -348,8 +348,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read from the post: `title`, `custom_excerpt`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Read as HTML: `post.feature_image_caption`. Authored: `readingTimeSuffix` (text, optional, 16 chars, default "min read"). **In the union, unread:** `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Alignment** Left · Centre. **Title size** Small 40 · Medium 50 · Large 64. **Standfirst lines** Two · Three · Full. **Image ratio** Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5. **Rule** None · Above the tag · Below the meta. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four, **all at their defaults and none narrowed, set, locked, ignored or interpreted. Cut:** title colour, an eyebrow chip, an updated-date toggle, caption position.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Alignment | Left · Centre |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Standfirst lines | Two · Three · Full |
+  | Image ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+  | Rule | None · Above the tag · Below the meta |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four, **all at their defaults and none narrowed, set, locked, ignored or
+  interpreted. Cut:** title colour, an eyebrow chip, an updated-date toggle, caption position.
 - **7 · Data.** The route's `post`, on any post or page template. **There is no zero case** — no post, no route, no section — which is the one respect in which A24 is easier than every collection category. **Tags: 0 → no eyebrow; 1 → as drawn; 3 → three at All tags, dot-separated; 4+ → the first three in Ghost's order and the rest dropped, with no counter** ⚑. **Authors: 1 → as drawn; 2 → two overlapping avatars and "and"; 3+ → three avatars and "Name and others"**, each name its own link. On a page with no author, Meta resolves to Date only.
 
 - **8 · Empty state. No picture → Reflow:** the picture's box and its 40 px gap are both removed and nothing replaces them — **no plate, no placeholder, no striped rectangle on a live page.** No standfirst → its 20 px goes with it. No tag → the eyebrow slot is removed, not filled. **All four absent leaves a title and a byline, and that is still this design**, drawn in the stress frame. **In the editor an absent picture draws the box greyed with "This post has no feature image. Add one in Ghost, or set Feature image to Off."** — the only place a placeholder appears anywhere in A24.
@@ -379,8 +392,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix`. **Not read, and the design says so in the panel:** `feature_image`, `feature_image_alt`, `post.feature_image_caption`. **In the union, unread:** `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Title size** Small 40 · Medium 50 · Large 64 (on 720). **Standfirst lines** Two · Three · Full. **Meta placement** Above the title · Below the title. **Rule** None · Above · Below · Above and below. **Padding** Compact · Comfortable · Spacious. Five, then the block's four with **Feature image inert**. **Cut: Alignment** (it would make this 1 Centred) and **a drop cap** (the article's, not the header's).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Title size | Small 40 · Medium 50 · Large 64 (on 720) |
+  | Standfirst lines | Two · Three · Full |
+  | Meta placement | Above the title · Below the title |
+  | Rule | None · Above · Below · Above and below |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Feature image inert**. **Cut: Alignment** (it would make this
+  1 Centred) and **a drop cap** (the article's, not the header's).
 - **7 · Data.** The route's `post`. **No zero case. Tags: 0 → no eyebrow, and at Meta above the title the byline row simply starts with the author; 1 → as drawn; 3 → dot-separated at All tags; 4+ → three drawn, the rest dropped, no counter. Authors: 1 → as drawn; 2 → overlapping avatars and "and"; 3+ → "Name and others". The picture is not read at any setting**, so a post with one and a post without one produce the same header.
 
 - **8 · Empty state. No picture is not an empty state here — it is the design.** No standfirst → the lower hairline moves up to 20 under the byline. No tag → the eyebrow is removed. **Title and byline alone between two rules is the floor**, and it is composed. **In the editor nothing is greyed and no placeholder appears**: this is the one design in A24 with no editor-only state at all, because it has no absent element to explain.
@@ -410,8 +435,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `post.feature_image_caption` (optional, 90 chars — **the one authored string that can change this section's height**), `readingTimeSuffix`. Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Split** Seven and five · Half · Five and seven. **Image side** Left · Right. **Image ratio** Landscape 3:2 · Square 1:1 · Portrait 4:5 — **Wide 16:9 not offered**. **Title size** Small 34 · Medium 40 · Large 50. **Vertical alignment** Top · Centre. **Padding** Compact · Comfortable · Spacious. Six, then the block's four, all live; **Image side and Image ratio grey out when Feature image is Off. Cut:** caption placement, image shape, a gutter control.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Split | Seven and five · Half · Five and seven |
+  | Image side | Left · Right |
+  | Image ratio | Landscape 3:2 · Square 1:1 · Portrait 4:5 — **Wide 16:9 not offered** |
+  | Title size | Small 34 · Medium 40 · Large 50 |
+  | Vertical alignment | Top · Centre |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four, all live; **Image side and Image ratio grey out when Feature image
+  is Off. Cut:** caption placement, image shape, a gutter control.
 - **7 · Data.** The route's `post`. **No zero case.** Tags 0 / 1 / 3 / 4+ and authors 1 / 2 / 3+ exactly as 1 Centred. **The picture is the one field whose absence changes the arrangement**, and it does so by dropping a column rather than by leaving one empty.
 
 - **8 · Empty state. No picture → Reflow, and the text keeps its 560 measure rather than spreading to 1,296** ⚑ — so the header narrows into the left half of the page and does not become a different design. That is deliberate: a user who adds a photograph an hour later gets the same type at the same size beside it. **No caption → the picture ends its column** and the section's height comes from the picture alone. No standfirst → its 20 px goes with it and the byline rises. **In the editor an absent picture draws the 476 column greyed with the cause and the words "the header will narrow on the site".**
@@ -441,8 +479,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `post.feature_image_caption`, `readingTimeSuffix`. Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Image ratio** Landscape 3:2 · Wide 16:9 · Panorama 21:9. **Gap to the words** Tight 32 · Normal 40 · Loose 56. **Alignment** Left · Centre. **Title size** Small 40 · Medium 50 · Large 64. **Padding** Compact · Comfortable · Spacious. Five, then the block's four, all live; **Image ratio and Gap to the words grey out together when Feature image is Off. Cut:** a pixel image height, caption position, Portrait 4:5.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Image ratio | Landscape 3:2 · Wide 16:9 · Panorama 21:9 |
+  | Gap to the words | Tight 32 · Normal 40 · Loose 56 |
+  | Alignment | Left · Centre |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four, all live; **Image ratio and Gap to the words grey out together when
+  Feature image is Off. Cut:** a pixel image height, caption position, Portrait 4:5.
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors behave as in 1 Centred at 0, 1, 3, 4+ and 1, 2, 3+. **Ghost crops the feature image from the centre at every named ratio** and A24 does not offer a focal point ⚑ — a crop control belongs to the image, not to the section, and Ghost owns the image.
 
 - **8 · Empty state. No picture → Reflow.** The picture's box and the gap under it are dropped, **nothing replaces them**, and the words keep this design's own arrangement — **at Alignment Centre they resemble 1 Centred without becoming it** ⚑. The panel says the post has no feature image and may advise 1 Centred; **it never announces a switch.** No caption → the foot hairline goes with it. No standfirst, no tag → their gaps go with them. **In the editor the picture's absence draws the box greyed with the cause and the sentence about 1 Centred.**
@@ -472,8 +522,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix`. **Not drawn:** `custom_excerpt` (inert, returns on a design switch). ~~And `imageCaption`, withheld because a credit on a picture already carrying a headline is the fourth thing in the same rectangle, with A26 named as its home.~~ **Struck by this pass** ⚑: **Ghost's `post.feature_image_caption` is read, as a credit line below the picture** — on the page ground rather than in the rectangle — and A26·14 draws the same field rather than being promised it.
 
-- **6 · Controls, in sidebar order. Height** Compact 480 · Comfortable 620 · Spacious 760. **Text position** Bottom left · Bottom centred · Centred. **Scrim** Soft 45 · Medium 62 · Strong 78. **Title size** Medium 50 · Large 64 · Display 76. **Text measure** Narrow 620 · Wide 820. Five, and **no Padding control at all** (A19·2's rule). Block: **Feature image locked**, **Standfirst inert**, Tag line and Meta live. **Cut:** a darken toggle, a focal point, parallax.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Height | Compact 480 · Comfortable 620 · Spacious 760 |
+  | Text position | Bottom left · Bottom centred · Centred |
+  | Scrim | Soft 45 · Medium 62 · Strong 78 |
+  | Title size | Medium 50 · Large 64 · Display 76 |
+  | Text measure | Narrow 620 · Wide 820 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | **No control at all on this design** (A19·2's rule) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, and **no Padding control at all** (A19·2's rule). Block: **Feature image locked**,
+  **Standfirst inert**, Tag line and Meta live. **Cut:** a darken toggle, a focal point, parallax.
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors as elsewhere, drawn in the contrast text at 82%. **A picture is the one thing this design cannot do without**, and the panel says so before the post proves it.
 
 - **8 · Empty state. No picture → Hide** ⚑ — **the hand-off to 1 Centred is deleted by this pass**, because no design ever turns into another design. The picture and the scrim are not drawn; **the band keeps its Height, its Text position and its Title size on the pack's own ground**, and **the words take the page's own text colour** ⚑, since contrast text on a pale ground cannot be read. The standfirst stays inert, as it is in this design at every setting. **Scrim greys with "Needs a feature image".** The picker still reads Full Bleed, nothing is re-set and nothing is switched, and **the panel may advise 1 Centred for a site whose posts rarely carry a picture — advice, never a switch.** **In the editor the state is drawn as it will render**, not as an error state.
@@ -503,8 +566,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `post.feature_image_caption`, `readingTimeSuffix`. Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Image ratio** Landscape 3:2 · Wide 16:9 · Panorama 21:9. **Gap to the picture** Tight 32 · Normal 40 · Loose 56. **Alignment** Left · Centre. **Title size** Small 40 · Medium 50 · Large 64. **Padding** Compact · Comfortable · Spacious. Five, then the block's four with **Feature image locked. Cut:** an inset value at wide viewports — **a page-level maximum belongs to the page, and the finding goes to the architect.**
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Image ratio | Landscape 3:2 · Wide 16:9 · Panorama 21:9 |
+  | Gap to the picture | Tight 32 · Normal 40 · Loose 56 |
+  | Alignment | Left · Centre |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Feature image locked. Cut:** an inset value at wide viewports
+  — **a page-level maximum belongs to the page, and the finding goes to the architect.**
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors as in 1 Centred. **The picture is the only field whose absence changes the design, and its absence is answered by dropping it** — the design is still this design.
 
 - **8 · Empty state. No picture → Reflow** ⚑ — **the hand-off to 2 Flush Left is deleted by this pass**: the picture, its caption and the gap above them are dropped, **nothing replaces them**, and the words keep this design's own arrangement, order and measure on the page margin, the article's 64 measured from the byline. **Image ratio, Gap to the picture, Image focus and Caption grey with "Needs a feature image".** The picker still reads Edge to Edge, nothing is switched, and the panel may advise 2 Flush Left — advice, never a switch. **No caption → the picture ends the section** and the article's gap is measured from its edge. No standfirst or tag → their gaps go with them. **In the editor the reflowed state is drawn as it will render.**
@@ -534,8 +609,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image` + `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix`. **Not drawn:** `post.feature_image_caption` ⚑ — **a caption inside a card has no edge to sit under and outside it belongs to nothing**; the panel names 3 Split as the design that carries one.
 
-- **6 · Controls, in sidebar order. Card style** Hairline · Filled · Filled with a hairline. **Image side** Left · Right. **Picture width** Narrow 380 · Comfortable 476 · Wide 560. **Title size** Small 34 · Medium 40 · Large 50. **Card padding** Compact 28 · Comfortable 40 · Spacious 56. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four, all live. **Cut:** a radius control, a shadow strength, an image ratio.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Card style | Hairline · Filled · Filled with a hairline |
+  | Image side | Left · Right |
+  | Picture width | Narrow 380 · Comfortable 476 · Wide 560 |
+  | Title size | Small 34 · Medium 40 · Large 50 |
+  | Card padding | Compact 28 · Comfortable 40 · Spacious 56 (a genuinely different ladder, kept) |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four, all live. **Cut:** a radius control, a shadow strength, an image
+  ratio.
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors as in 1 Centred. **The card's height is set by the words at every setting** — a two-line title with no standfirst gives a 220 px card, a four-line title with three lines of standfirst gives 420 — **and the picture re-crops rather than letterboxing.**
 
 - **8 · Empty state. No picture → Plate** — A17's tag plate at the picture's box exactly, uncapped, carrying the primary tag at eyebrow size and `aria-hidden`, because the tag is already in the words beside it. **With no tag either, the plate is the flat plate tone and carries nothing. Below 767 the plate is dropped**, its justification being an alignment that no longer exists. No standfirst → the card shortens. **In the editor the plate is what renders**, with a line naming the cause — **the one design in A24 whose editor state and live state are the same thing.**
@@ -565,8 +653,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `tags[]`, `authors[]`, `published_at`, `reading_time`; `feature_image` + `feature_image_alt` and `post.feature_image_caption` **only when the user turns Feature image back on**, and then below the band. Authored: `readingTimeSuffix`, `post.feature_image_caption` (conditional). Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Band height** Compact 320 · Comfortable 400 · Spacious 480. **Alignment** Left · Centre. **Title size** Small 40 · Medium 50 · Large 64. **Edge** Full bleed · Inset. **Padding Flush 0** · Compact 64 · Comfortable 96 · Spacious 132. Five, then the block's four with **Feature image set to Off. Cut:** a band colour, an accent underline on the title (2.31:1 in dark, A34·8's measurement).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Band height | Compact 320 · Comfortable 400 · Spacious 480 |
+  | Alignment | Left · Centre |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Edge | Full bleed · Inset |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | this design's ladder, **0 · 64 · 96** — Compact is the retired Flush value and is the default |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Feature image set to Off. Cut:** a band colour, an accent
+  underline on the title (2.31:1 in dark, A34·8's measurement).
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors as in 1 Centred, drawn in the derived muted. **Turning Feature image on adds a picture below the band** at the content measure with 20 px above it, its radius and its caption; the band's height does not change.
 
 - **8 · Empty state. No picture is the default state, not an empty one.** No standfirst → the band keeps its minimum height and the type centres in it. No tag → the eyebrow is removed. **In the editor an empty band is never drawn** — there is always a title — and **the one editor-only line this design carries sits beneath the band rather than inside it** ⚑, because a notice on a contrast ground would need a fourth derived colour (A34·8's finding, inherited).
@@ -596,8 +696,22 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image`, `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `post.feature_image_caption` (optional, 90 ch), `readingTimeSuffix`. Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Picture height** Compact 420 · Comfortable 520 · Spacious 620. **Card width** Narrow 620 · Comfortable 700 · Wide 800. **Overlap** Slight 48 · Comfortable 80 · Deep 120. **Alignment** Left · Centre. **Title size** Small 34 · Medium 40 · Large 50. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four with **Feature image locked to From the post. Cut:** a card-style control (7 Card's, unavailable here — the card always needs its edge), a shadow control, a ratio control (Picture height governs the crop).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Picture height | Compact 420 · Comfortable 520 · Spacious 620 |
+  | Card width | Narrow 620 · Comfortable 700 · Wide 800 |
+  | Overlap | Slight 48 · Comfortable 80 · Deep 120 |
+  | Alignment | Left · Centre |
+  | Title size | Small 34 · Medium 40 · Large 50 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four with **Feature image locked to From the post. Cut:** a card-style
+  control (7 Card's, unavailable here — the card always needs its edge), a shadow control, a ratio
+  control (Picture height governs the crop).
 - **7 · Data.** The route's `post`. **No zero case** — a post header has one post. **Tags:** 0 removes the eyebrow and the card closes by 24; 1 draws it; 3 draws three dot-separated; 4+ draws the first three silently. **Authors:** 1 as drawn; 2 join with "and", avatars overlapping at −8 with a 2 px ring in the card's own surface colour; 3+ draw the first name and "and others" with three avatars. **The picture is the design's ground, and its absence is answered by hiding it — the card renders without it.**
 
 - **8 · Empty state. No picture → Hide** ⚑ — **the hand-off to 7 Card is deleted by this pass**: the picture is not drawn and **no plate, placeholder or striped rectangle replaces it**, while **the card stays at its Card width on the page ground at the page margin**, keeping its padding, its hairline and its shadow, and the article's 64 is measured from the card. **Picture height and Overlap grey with "Needs a feature image"**; Card width, Alignment and Title size still govern. The Design picker still reads Overlap, nothing is switched, and the panel may advise 7 Card — advice, never a switch. No standfirst → the card closes by 20 and keeps its padding. No tag → the eyebrow is removed. **No caption → nothing renders and the article's 64 is measured from the card** ⚑, which is the only case where the header's last element changes identity.
@@ -627,8 +741,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix`. **Unread, and this is the shortest read list in the category:** `custom_excerpt`, `feature_image`, `feature_image_alt`, `post.feature_image_caption`, `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`. **All of them survive dormant and every one is drawn by some other design.**
 
-- **6 · Controls, in sidebar order. Title size** Small 72 · Medium 88 · Large 104. **Alignment** Left · Centre. **Meta** Above the title · Below the title. **Rule** None · Above the title · Below the meta. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Five, then the block's four with **Standfirst and Feature image both inert. Cut:** a weight control, a title colour, an avatar-size control (set to Medium by the design, not chosen).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Title size | Small 72 · Medium 88 · Large 104 |
+  | Alignment | Left · Centre |
+  | Meta position | Above the title · Below the title |
+  | Rule | None · Above the title · Below the meta |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Standfirst and Feature image both inert. Cut:** a weight
+  control, a title colour, an avatar-size control (set to Medium by the design, not chosen).
 - **7 · Data.** The route's `post`. **No zero case. Tags:** 0 removes the eyebrow and the title moves up 24; 3 dot-separated on one line at 13 px; 4+ draws three. **Authors:** 1 as drawn; 2 join with "and" with two 36 px avatars overlapping at −12 ⚑ (the floor's −8 is for 24 px circles and does not scale); 3+ the first name and "and others". **At Meta Date only the avatar leaves with the name** and the row is a single 15 px date.
 
 - **8 · Empty state. Not applicable to the picture or the standfirst — neither is ever drawn**, at any setting, so there is no absence to answer for. No tag → the eyebrow is removed and nothing replaces it. **At Meta Off the byline row is removed and the rule stays** ⚑, which leaves a title, a hairline and the article; that is the minimum this design can draw and it is still a composition.
@@ -658,8 +784,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `bylinePrefix` (optional, 16 ch, default "Written by" — **one of two designs that read it**), `readingTimeSuffix` (default "min read", drawn as the cell's value). Unread: `custom_excerpt`, `feature_image`, `feature_image_alt`, `post.feature_image_caption`, `shareLabel`, `copiedLabel`, `post.url`.
 
-- **6 · Controls, in sidebar order. Cells** a number picker, 2 to 4, default 4 ⚑ — **new in this pass**, where the row drew Two · Three · Four; **the + is greyed at four with the reason visible**: a fifth cell falls under 260 px on the content measure and its label wraps. **Cell position** Above the title · Below the title. **Labels** Above the value · Inline. **Rules** Full · Between cells · None. **Title size** Small 40 · Medium 50 · Large 64. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four: **Meta narrowed (Off removed, struck through with its reason)**, Standfirst and Feature image inert. **Cut:** per-cell labels, cell order, a fifth cell.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Cells | **a number picker, 2 to 4, default 4** — the + is greyed at four with the reason visible |
+  | Cell position | Above the title · Below the title |
+  | Labels | Above the value · Inline |
+  | Rules | Full · Between cells · None |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four: **Meta narrowed (Off removed, struck through with its reason)**,
+  Standfirst and Feature image inert. **Cut:** per-cell labels, cell order, a fifth cell.
 - **7 · Data.** The route's `post`. **No zero case. Tags:** at Cells 4 the tag fills the fourth cell and the eyebrow is removed; 3 tags draw dot-separated inside that cell and it grows in height; 4+ draw three; **0 removes the fourth cell entirely and the remaining three redivide the measure.** At Cells 2 and Three the eyebrow returns above the title and behaves as it does everywhere else. **Authors:** 1 as drawn with a 24 px avatar; 2 join with "and" and **the avatar leaves** ⚑ (two overlapping circles plus two names in a 324 cell wraps to three lines); 3+ the first name and "and others". **The avatar also leaves at Cells 2 and Three**, where the cells are wider but the value is a name in a half-width box.
 
 - **8 · Empty state. A cell with no value is never drawn** ⚑ — it is removed and the row redivides. That is the design's whole empty-state rule and it applies to every cell: no tag removes Filed under; a post with no reading time (Ghost always supplies one) would remove Reading time. **At Cells 2 with no tag the row is two cells and the header still reads.** The picture and the standfirst are never drawn, so their absence is not a case. **In the editor a post with no author** — which Ghost does not permit — **would draw the row with Written by absent and one line naming it.**
@@ -689,8 +828,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image`, `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `bylinePrefix` (optional, 16 ch, default "Written by"), `post.feature_image_caption` (optional, 90 ch), `readingTimeSuffix`. **Three authored fields is the most any A24 design reads.** Unread: `shareLabel`, `copiedLabel`, `post.url`.
 
-- **6 · Controls, in sidebar order. Rail side** Left · Right. **Rail width** Narrow 180 · Comfortable 240 · Wide 300. **Rail rule** Hairline · None. **Title size** Small 40 · Medium 50 · Large 64. **Picture ratio** Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four, **Meta reinterpreted as the rail's line count. Cut:** rail alignment, a sticky rail, a rail ground (a filled rail is 7 Card's business).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Rail side | Left · Right |
+  | Rail width | Narrow 180 · Comfortable 240 · Wide 300 |
+  | Rail rule | Hairline · None |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Picture ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four, **Meta reinterpreted as the rail's line count. Cut:** rail
+  alignment, a sticky rail, a rail ground (a filled rail is 7 Card's business).
 - **7 · Data.** The route's `post`. **No zero case. Tags:** the rail's first line; 0 removes it and the rail's remaining lines move up 18; 3 wrap inside the rail's width, dot-separated, up to four lines at Narrow 180; 4+ draw three. **Authors:** 1 as drawn; 2 join with "and" on up to three lines at Narrow with the avatars overlapping at −8; 3+ the first name and "and others". **Meta's four values set the rail's lines** — three, two, one, or the tag alone. **Meta Off with Tag line Off removes the rail and the column takes the full 1,296** ⚑, the only case where a design's own geometry is decided by two block fields together.
 
 - **8 · Empty state. No picture → Reflow**, A19's first answer: the picture's box and its 40 px gap are dropped, **the rail and the column keep their widths**, and the article's 64 is measured from the standfirst. No standfirst → the column closes by 24. No caption → nothing renders. **Picture ratio greys out at Feature image Off** with "Needs a feature image". **In the editor a rail emptied by both block fields draws its outline greyed with one line naming the two values**, then renders nothing on the site.
@@ -720,8 +872,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix`. Unread: `custom_excerpt`, `feature_image`, `feature_image_alt`, `post.feature_image_caption`, `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`. **The bar draws no field the resting header does not already draw.**
 
-- **6 · Controls, in sidebar order. Title size** Small 40 · Medium 50 · Large 64. **Bar height** Compact 48 · Comfortable 56 · Spacious 64. **Bar contents** Title · Title and meter · Title, meter and byline. **Bar edge** Hairline · Shadow · None. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Five, then the block's four with **Standfirst and Feature image inert. Cut:** bar position, meter colour, a back-to-top glyph, a share button in the bar (14's).
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Bar height | Compact 48 · Comfortable 56 · Spacious 64 |
+  | Bar contents | Title · Title and meter · Title, meter and byline |
+  | Bar edge | Hairline · Shadow · None |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Standfirst and Feature image inert. Cut:** bar position,
+  meter colour, a back-to-top glyph, a share button in the bar (14's).
 - **7 · Data.** The route's `post`. **No zero case. Tags:** the resting header only — 0 removes the eyebrow, 3 draw dot-separated, 4+ draw three; **the bar never draws a tag** at any count. **Authors:** resting row as the floor; in the bar at Title, meter and byline **only the avatar is drawn, never the name** ⚑ — one avatar for one author, two overlapping at −8 for two, three for three or more, and no "and others" because there is no name to attach it to. **The meter's value is the only thing in A24 that is not in the markup at render.**
 
 - **8 · Empty state.** Neither the picture nor the standfirst is ever drawn, so neither has one. No tag → the eyebrow is removed. **At Meta Off the bar loses its byline and its reading time and is a title and a meter**; at Meta Off with Bar contents Title the bar is a single truncated line, which is the design's minimum and still a control. **In the editor the bar is not drawn at all** — behaviours do not run while editing — **and the panel's warning is the only place the user meets it before publishing** ⚑, which is a gap the picker should close rather than this design.
@@ -751,8 +915,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `tags[]`, `authors[]`, `published_at`, `reading_time`, **`post.url` — the only design that reads it.** Authored: `shareLabel` (optional, 24 ch, default "Share this piece"), `copiedLabel` (optional, 24 ch, default "Link copied"), `readingTimeSuffix`. Unread: `feature_image`, `feature_image_alt`, `post.feature_image_caption`, `bylinePrefix`.
 
-- **6 · Controls, in sidebar order. Links** a number picker, 2 to 4, default 4 ⚑ — **new in this pass**, where the row drew Two · Three · Four — **drawing the first N of the site's enabled share destinations, in the site's own order**; **the + is greyed at four with the reason visible**: a fifth link takes the row onto a second line at 1440, and the design is one row. **Link style** Words · Words and glyphs. **Alignment** Left · Centre. **Divider** Hairline above · None. **Title size** Small 40 · Medium 50 · Large 64. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then a Content group holding the two labels, then the block's four with **Feature image inert. Cut:** a per-platform picker, a "Share on" prefix, a row position, a share count.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Links | **a number picker, 2 to 4, default 4** — drawing the first N of the site's enabled share destinations, in the site's own order; the + is greyed at four with the reason visible |
+  | Link style | Words · Words and glyphs |
+  | Alignment | Left · Centre |
+  | Divider | Hairline above · None |
+  | Title size | Small 40 · Medium 50 · Large 64 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then a Content group holding the two labels, then the block's four with **Feature image
+  inert. Cut:** a per-platform picker, a "Share on" prefix, a row position, a share count.
 - **7 · Data.** The route's `post`, plus `post.url` and `post.title` as the share payload — **the title is sent unshortened and the row sends no excerpt** ⚑. **No zero case. Tags:** as the floor. **Authors:** as the floor; the row does not name them. **The link count is the design's own value and not data**, so there is no 0, 1 or many case for it: **the row is two to four links and cannot be fewer** except with JavaScript off, where Copy link is hidden.
 
 - **8 · Empty state.** No picture is the permanent state. No standfirst → the header closes by 20. No tag → the eyebrow is removed. **At Meta Off the hairline and the row move up under the standfirst** and the row is the header's last element either way. **An empty `shareLabel` draws the row starting with its first link**, keeping the hairline; **an empty `copiedLabel` falls back to "Link copied" rather than confirming nothing** ⚑ — the only authored field in A24 that cannot be genuinely empty, because it is a state and not a label.
@@ -782,8 +959,20 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `tags[]`, `authors[]`, `published_at`, `reading_time`. Authored: `readingTimeSuffix` — **drawn as "min" rather than "min read" at Layout one line** ⚑, which is the one place in A24 an authored string is shortened by a design; at Meta beneath it is drawn whole. Unread: `custom_excerpt`, `feature_image`, `feature_image_alt`, `post.feature_image_caption`, `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Title size** Small 24 · Medium 28 · Large 34. **Layout** Title and meta on one line · Meta beneath the title. **Rule** Above · Below · None. **Measure** Article 720 · Content 1,296. **Padding** Compact 48 · Comfortable 64 · Spacious 96. Five, then the block's four with **Standfirst and Feature image inert. Cut:** alignment, an avatar step, a date format, a fourth title size.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Title size | Small 24 · Medium 28 · Large 34 |
+  | Layout | Title and meta on one line · Meta beneath the title |
+  | Rule | Above · Below · None |
+  | Measure | Article 720 · Content 1,296 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 48 · Comfortable 64 · Spacious 96 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, then the block's four with **Standfirst and Feature image inert. Cut:** alignment, an
+  avatar step, a date format, a fourth title size.
 - **7 · Data.** The route's `post`. **No zero case. Tags: the meta line's first term, not a slot above the title** — 0 starts the line at the next term, 1 as drawn, **3 draws only the primary tag at Layout one line** ⚑ (three tags plus a date plus a reading time is a 300 px meta column against a 28 px title) and all three at Meta beneath; 4+ draws three there. **Authors:** the name is absent at Layout one line with Measure Article and present in every other combination; **2 authors join with "and"**; 3+ draw the first name and "and others". **No avatar at any count** — the one design in A24 that draws none.
 
 - **8 · Empty state.** Neither the picture nor the standfirst is drawn, so neither has one. No tag → the meta line starts at the next term. **At Meta Off the line is the tag alone, right-aligned**; with Tag line Off as well, **the header is a title and a rule** ⚑ — 30 px tall, and still a header, which is the smallest thing A24 renders. **In the editor that state draws one line naming the two values**, because a user who has switched from another design may not know where their meta went.
@@ -813,8 +1002,21 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **5 · Content fields.** Read: `title`, `custom_excerpt`, `feature_image`, `feature_image_alt`, `tags[]`, `authors[]`, `published_at`, `reading_time` — **all eight of the post's fields the category reads.** Authored: `post.feature_image_caption` (optional, 90 ch), `readingTimeSuffix`. Unread: `shareLabel`, `copiedLabel`, `bylinePrefix`, `post.url`.
 
-- **6 · Controls, in sidebar order. Column split** Even 6/6 · Title-led 7/5 · Text-led 5/7. **Column gap** Tight 48 · Normal 72 · Loose 96. **Rule** Hairline between · None. **Title size** Small 34 · Medium 40 · Large 50. **Picture ratio** Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5. **Padding** Compact 64 · Comfortable 96 · Spacious 132. Six, then the block's four, **all live at their defaults. Cut:** 8/4 and 4/8 splits, vertical alignment, a picture width.
+- **6 · Controls, in sidebar order.**
 
+  | Control | Values |
+  |---|---|
+  | Column split | Even 6/6 · Title-led 7/5 · Text-led 5/7 |
+  | Column gap | Tight 48 · Normal 72 · Loose 96 |
+  | Rule | Hairline between · None |
+  | Title size | Small 34 · Medium 40 · Large 50 |
+  | Picture ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (the retired Padding row, under the universal name) |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, then the block's four, **all live at their defaults. Cut:** 8/4 and 4/8 splits, vertical
+  alignment, a picture width.
 - **7 · Data.** The route's `post`. **No zero case. Tags:** top of the left column; 0 removes the eyebrow and the title moves up 24; 3 dot-separated, wrapping inside the column; 4+ draw three. **Authors:** foot of the right column; 1 as drawn; 2 join with "and" with avatars overlapping at −8 and a 2 px ring in the page colour; 3+ the first name and "and others". **Picture ratio greys out at Feature image Off**, the same dependency 4 Image Top and 12 Rail carry.
 
 - **8 · Empty state. No picture → Reflow:** the picture's box and its 40 px gap are dropped, the columns keep their widths, and the article's 64 is measured from the taller column. **No standfirst → the right column is a byline alone**, bottom-aligned on the title's last line; the panel warns and names 2 Flush Left, and **the column is not removed and the split does not change** ⚑ — a design that silently became one column when an excerpt was missing would be two designs wearing one name. No tag → the eyebrow is removed. No caption → nothing renders and the gap to the article is measured from the picture. **At Meta Off and Standfirst Off together the right column is empty and the rule is removed with it**, leaving a title alone on a 612 column; the editor draws one line naming both values.
@@ -1184,3 +1386,15 @@ photographs, 1 Centred reads better" — and the editor has nowhere to say it.
    on the four designs that used to hand off (4 Image Top, 5 Full Bleed, 6 Edge to Edge, 9 Overlap):
    the line sits **directly below the control it belongs to**, says what the post is missing and which
    plainer design reads better, and switches nothing. No canvas note, no overlay, no tinted banner.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** sixteen designs, numbered **1–16**.

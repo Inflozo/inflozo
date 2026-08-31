@@ -94,7 +94,18 @@ Three tier cards in one row under a centred head. The floor the other fourteen d
 
 **Fields.** The authored eight and the six read per tier, as §0. Everything else in the shared list kept and not drawn.
 
-**Controls.** Padding · Ground (Background · Surface — **no Contrast**, since a band needs its own edges and refusals and 5 is the design for it) · Billing period (Monthly · Yearly · Both) · Title size · Head alignment (Centred · Left, where the switch and note go to the left margin with the head and the cards do not move) · Benefits (Show · Hide).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Head alignment | Centred · Left (the switch and note go to the left margin with the head and the cards do not move) |
+| Benefits | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface — **no Contrast**, since a band needs its own edges and refusals and 5 is the design for it |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into the universal **Vertical spacing** (64 · 96 · 132) and Ground into **Background role**, where Contrast stays disabled with the same reason. **Description (Show · Hide)** and **Member Visibility** join, and the list reads Billing period · Title size · Head alignment · Benefits · Description · Member Visibility — **six controls, plus the trio and the Data group.** Nothing drawn moved; the card's 32 stays fixed, and this design remains the panel the other fourteen depart from.
 
@@ -126,7 +137,18 @@ Benefits as rows, tiers as columns, prices and actions in the head. **The only r
 
 **The matrix is literal: one row per tier-and-benefit pair.** Ghost stores benefits as a list of strings per tier with nothing shared between them, and a template can neither compare one tier's list with another's nor count what they have in common — so every tier's benefit line becomes a row of its own, in Ghost's tier order, **ticked in that tier's column and nowhere else**. **The de-duplication of shared benefits is withdrawn, and so is reading “Everything in Free” as inheritance**: neither is buildable, and “Everything in Free” is now an ordinary row of Reader's. **The consequences, both stated in the panel:** a benefit two tiers both claim is drawn twice, once in each tier's block, and the table is longer than a de-duplicated one would be — eleven rows for this document's three tiers rather than nine. **Where a site would rather read one list per tier the panel advises 1 Cards** — advice, never a switch.
 
-**Controls.** Padding · Ground · Billing period · Title size · **Row marks (Check and blank · Check and dash)** · **Rows (Hairlines · Tinted alternate**, where the hairlines go — a tint and a rule doing the same work is two edges per row).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Row marks | Check and blank · Check and dash |
+| Rows | Hairlines · Tinted alternate, where the hairlines go — a tint and a rule doing the same work is two edges per row |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding and Ground retire into the trio; **Member Visibility** joins and the list reads Billing period · Title size · Row marks · Rows · Member Visibility — **five**. **No Description control**, since this design drops the description. The cell's visually-hidden **“Included” and “Not included” become catalog strings**, not fields — a hidden English word cannot ship fixed and cannot be a site's to type. And **the matrix rule is drawn as it now is**: one row per tier-and-benefit pair, every row belonging to exactly one tier, which the panel states at the design rather than letting a site find out at eleven rows and two columns of blanks — with 1 Cards **advised** for a site that would rather read one list per tier.
 
@@ -158,7 +180,19 @@ One full-width row per tier: name and price at the left, benefits in the middle,
 
 **Fields.** As 1, unchanged.
 
-**Controls.** **Row padding (Compact 24 · Comfortable 32 · Spacious 40**, the section's own fixed at 96) · Ground · Billing period · Title size · **Row planes (Cards · Hairline between · None)** · **Benefit columns (One · Two)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Row padding | Compact 24 · Comfortable 32 · Spacious 40 (the section's own fixed at 96) |
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Row planes | Cards · Hairline between · None |
+| Benefit columns | One · Two |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Locked at 96, reason shown — this design controls its rows' padding (A5·16's rule) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Ground retires into **Background role**; **Vertical spacing is drawn locked at Comfortable 96** with the reason shown, because this design controls its rows' padding (A5·16's rule), and **Row padding keeps its own name and row** as the genuinely different ladder. **Member Visibility** joins: Row padding · Billing period · Title size · Row planes · Benefit columns · Member Visibility — **six**. No Description control is needed here: the row's description sits in the name column and follows the row, not a switch.
 
@@ -192,7 +226,20 @@ A5·5's division: the head held at the left margin, the tiers in a column of row
 
 **Fields.** As 1. **Everything authored is in the left column and everything from Ghost is in the right one**, which is the design's whole argument.
 
-**Controls.** Padding (row padding fixed at 28) · Ground · Billing period · Title size (**Display 48 unavailable at Head narrow**) · **Division (Head narrow 440/792 · Head wide 560/672)** · **Divider (Show · Hide)**. Both divisions and the divider are unavailable at 1080 and below.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 (**Display 48 unavailable at Head narrow**) |
+| Division | Head narrow 440/792 · Head wide 560/672 |
+| Divider | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (row padding fixed at 28) |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+Both divisions and the divider are unavailable at 1080 and below.
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (64 · 96 · 132, row padding still fixed at 28) and Ground into **Background role**; **Member Visibility** joins: Billing period · Title size · Division · Divider · Member Visibility — **five**. Division and Divider stay unavailable at 1080 and below, Display 48 stays refused at Head narrow, and the switch keeps the head's first tab stop.
 
@@ -226,7 +273,19 @@ The whole section on the inverted ground, the tiers drawn as panels on it. Groun
 
 **Fields.** As 1. **`image` is kept and not drawn** — a photograph behind an already-inverted ground needs a scrim the packs do not define.
 
-**Controls.** **Band padding (Compact 44 · Comfortable 64 · Spacious 88** — A4·9's tighter scale, because an inverted block reads as bigger than it is) · **Band edges (Full bleed · Page margin**, the latter taking the pack radius and 56 px of inner padding, 40 at 834; **always full bleed at ≤ 767)** · Billing period · Title size · **Panel style (Hairline · Solid)** · Head alignment.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band edges | Full bleed · Page margin (the latter taking the pack radius and 56 px of inner padding, 40 at 834; **always full bleed at ≤ 767**) |
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Panel style | Hairline · Solid |
+| Head alignment | Centred · Left |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Contrast (locked — the ground is the design) |
+| Vertical spacing (universal) | Compact 44 · Comfortable 64 · Spacious 88 — A4·9's tighter scale, because an inverted block reads as bigger than it is |
+| Top divider (universal) | Locked None — the band carries its own edge |
 
 **Reconciled — this pass.** **Background role is drawn locked at Contrast**, with the reason shown — the inverted ground is this design's identity and not a setting, which is what §0 already said and this pass now says in the control itself. **Band padding retires into Vertical spacing** at the band's own 44 · 64 · 88; the inner padding at Band edges Page margin stays fixed at 56 / 40. **Top divider locks None**: a band carries its own edge. **Description** and **Member Visibility** join: Band edges · Billing period · Title size · Panel style · Head alignment · Description · Member Visibility — **seven**, the longest list in A7 after the ceiling was lifted, and the reason is that this design's ground is spent rather than chosen.
 
@@ -260,7 +319,18 @@ One card at 480, centred, with the free tier beside it. **Settlement 4 built rat
 
 **Fields.** As 1 minus two: **`recommendedTier` and `badgeLabel` are kept and not drawn** — with one paid tier there is nothing to recommend — and both are kept so a site adding a second tier keeps its answer.
 
-**Controls.** Padding · **Card padding (24 · 32 · 40** — one card can afford the control three could not, and the section's padding stays a control too because there is only one plane to argue with) · Ground · Billing period (**unavailable where there is no paid tier**) · Title size · **Free tier (Beside it · Under it · Hide)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card padding | Compact 24 · Comfortable 32 · Spacious 40 — one card can afford the control three could not, and the section's padding stays a control too because there is only one plane to argue with |
+| Billing period | Monthly · Yearly · Both (**unavailable where there is no paid tier**) |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Free tier | Beside it · Under it · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing**, which **stays a control here** — with one plane on the ground there is one padding to argue with, which is the argument the old panel already made — and **Card padding keeps its own name and row**. Ground retires into **Background role**. **Description** and **Member Visibility** join: Card padding · Billing period · Title size · Free tier · Description · Member Visibility — **six**. **New field: `freeLine`** (opt, ≤ 60, default “Or keep reading free — ”), editable inline with the P0·1 toolbar, still wrapping the authored `freeLabel` at Free tier Under it. A7's one fixed phrase is now a site's own sentence, and clearing it leaves the label alone.
 
@@ -292,7 +362,18 @@ The recommended tier at two thirds of the width with the others stacked beside i
 
 **Fields.** As 1, with **`recommendedTier` required rather than optional** — it *is* the design. Without one the section draws its tiers as equal cards — its own state, with nothing enlarged — the sidebar names the empty field and advises 1 Cards, and the picker sits under the message; **the theme never picks a tier by position.**
 
-**Controls.** Padding (card padding fixed at 40 and 24) · Ground · Billing period · Title size · **Division (Two thirds 848/424 · Half and half 636/636)** · **Small tiers (Benefits shown · Benefits hidden)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Division | Two thirds 848/424 · Half and half 636/636 |
+| Small tiers | Benefits shown · Benefits hidden |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (card padding fixed at 40 and 24) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (card padding still fixed at 40 and 24) and Ground into **Background role**; **Description** and **Member Visibility** join: Billing period · Title size · Division · Small tiers · Description · Member Visibility — **six**. **Description is symmetric like Small tiers** — every tier or none — and, like it, may not hide a price, a name or an action: the recommendation may take more room and may not take away information.
 
@@ -324,7 +405,21 @@ The tier names and prices on one line, no benefits, and **one action for the who
 
 **Fields.** `note` · `payLabel` · a section action label (≤ 20, default “See all plans”). **Kept and not drawn: `eyebrow`, `title`, `sub`, `recommendedTier`, `badgeLabel`, `freeLabel`** — the largest kept-and-unused set in A7, and the design's whole argument. **Benefits and descriptions are not read at all.**
 
-**Controls.** **Padding (Compact 32 · Comfortable 44 · Spacious 56**, its own scale, measured inside the rules) · Ground (Background · Surface · **Contrast** — offered here and nowhere outside 5, because one line of prices is small enough to invert without a design of its own) · Billing period · **Prices (Beside the names · Under the names)** · **Rules (Above and below · Above only · None**, the last on a plane only) · **Action (Button · Text link)** · Alignment (Split · Centred). **Seven controls — the category's ceiling, and the only design that reaches it.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Prices | Beside the names · Under the names |
+| Rules | Above and below · Above only · None, the last on a plane only |
+| Action | Button · Text link |
+| Alignment | Split · Centred |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · **Contrast** — offered here and nowhere outside 5, because one line of prices is small enough to invert without a design of its own |
+| Vertical spacing (universal) | Compact 32 · Comfortable 44 · Spacious 56, its own scale, measured inside the rules |
+| Top divider (universal) | None · Line · Fade (locked None at Rules Above and below — the divider and the design's own upper rule would be one line drawn twice) |
+
+**Seven controls — the category's ceiling, and the only design that reaches it.**
 
 **Reconciled — this pass.** The ceiling is lifted and this design stops being the exception. Padding retires into **Vertical spacing** at its own **32 · 44 · 56**, measured inside the rules; **Ground retires into Background role and keeps its Contrast value — the only Contrast offered outside 5** — with Rules None still plane-only. **Alignment is now drawn as a control** rather than named in the sidebar's data note. **Top divider is stated distinct from Rules**: the divider is the boundary with the section above, Rules are this design's own two lines, and the divider **locks None at Rules Above and below**, because two lines 0 px apart is one line drawn twice. **Member Visibility** joins: Billing period · Prices · Rules · Action · Alignment · Member Visibility — **six**. **The section action picks its target in the Link Picker** — the site's pricing page, or the picker's Portal · Sign up at one paid tier — and takes an optional icon. No Description control: this design reads neither descriptions nor benefits.
 
@@ -358,7 +453,18 @@ The price set large enough to be the section: 88 or 112 px, flush left, a rule u
 
 **Fields.** As 1. **The free tier is drawn as one sentence with a link** — fixed copy, the tier's own description and `freeLabel` — because the design has room for one alternative.
 
-**Controls.** Padding (Compact advised at Huge) · Ground · Billing period · **Price scale (Display 88 · Huge 112)** · **Rule (Show · Hide**, the gap 32 → 24) · **Benefits (Two columns · One column · Hide**, the rule going with them).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Price scale | Display 88 · Huge 112 |
+| Rule | Show · Hide, the gap 32 → 24 |
+| Benefits | Two columns · One column · Hide, the rule going with them |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (**Compact advised at Huge**) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (Compact still advised at Huge) and Ground into **Background role**; **Member Visibility** joins: Billing period · Price scale · Rule · Benefits · Member Visibility — **five**. **New field: `freeLine`** (opt, ≤ 60, default “Or read free — ”), editable inline. The sentence's other half stays the tier's own description and `freeLabel` still closes it, so what was fixed copy wrapping two bound values is now an authored lead wrapping them. No Description control: the description sits on the price's own line.
 
@@ -392,7 +498,18 @@ Tier names as a tab row, one tier's card at a time. A5·12's tabs verbatim, plus
 
 **Fields.** As 1. **The recommendation does one extra thing here: it sets which tab opens** — never the first, never the most expensive. With none authored the free tier opens. **Flagged twice**, because a default selection is a stronger nudge than a badge.
 
-**Controls.** Padding (panel padding fixed at 40) · Ground · Billing period · Title size · **Tab style (Underline · Pill)** · **Panel width (Measure 880 · Content width**, unavailable at 1080 and below).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Tab style | Underline · Pill |
+| Panel width | Measure 880 · Content width, unavailable at 1080 and below |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (panel padding fixed at 40) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** **The drawing pass this document owed is done.** The frames and the spec card now carry the registry's names — **`tabs`** for the tier switch, **`price-toggle`** at Billing period Both — and the a11y claim is corrected in the same words as §10 below: **all three panels are server-rendered and the unselected ones hidden by CSS scoped to the module's own enabled class.** Padding retires into **Vertical spacing** (panel padding still fixed at 40) and Ground into **Background role**; **Description** and **Member Visibility** join: Billing period · Title size · Tab style · Panel width · Description · Member Visibility — **six**.
 
@@ -426,7 +543,18 @@ Two tiers drawn as what they are: **an open door and an offer.** The free tier i
 
 **Fields.** As 1, and **both tiers draw all six of their facts** — nothing is summarised or dropped on either side. **Exactly two tiers, one free and one paid.**
 
-**Controls.** Padding (card padding fixed at 32, the free half 32 top and bottom and nothing at the sides) · Ground · Billing period · Title size · **Division (Even halves 632/632 · Weighted to the paid tier 440/824**, where the card's benefits go to two columns; unavailable at 1080 and below) · **Free tier action (Text link · Outlined button)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Division | Even halves 632/632 · Weighted to the paid tier 440/824, where the card's benefits go to two columns; unavailable at 1080 and below |
+| Free tier action | Text link · Outlined button |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (card padding fixed at 32, the free half 32 top and bottom and nothing at the sides) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (card padding still fixed at 32, the free half 32 top and bottom) and Ground into **Background role**; **Description** and **Member Visibility** join: Billing period · Title size · Division · Free tier action · Description · Member Visibility — **six**. **Description writes one value onto both halves** — a control that hid the description on one side would be two designs, which is the same argument that keeps both halves at the same type sizes.
 
@@ -458,7 +586,18 @@ No planes at all: hairline rows, the name at the left, the price at the right, t
 
 **Fields.** `note` · `recommendedTier` · `badgeLabel` · `payLabel` · `freeLabel`. **Kept and not drawn: `eyebrow`, `title`, `sub`** — with 8 Slim Row, the only two designs in A7 with no head — **and the tier description**, whose work the benefit line does in the same place.
 
-**Controls.** Padding · Ground · Billing period · **Row height (Compact 20 · Comfortable 28 · Spacious 40)** · **Benefits (One line · As a list · Hide)** · **Actions (At each row · One for the section · None** — offered here and nowhere else in A7).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Row height | Compact 20 · Comfortable 28 · Spacious 40 |
+| Benefits | One line · As a list · Hide |
+| Actions | At each row · One for the section · None — offered here and nowhere else in A7 |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | Locked None — the first row carries a `border-top` |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** and Ground into **Background role**; **Row height keeps its own name and row** as the genuinely different ladder, and **Top divider locks None** because the first row's own `border-top` is already the section's top line. **Member Visibility** joins: Billing period · Row height · Benefits · Actions · Member Visibility — **five**. **Each row's text-link action picks its target in the Link Picker**, and the section-level action at Actions One for the section does the same; both take an optional icon, which is the first ornament this design has ever been offered and is still off by default. No Description control: the benefit line does that work in the same place.
 
@@ -494,7 +633,19 @@ No planes at all: hairline rows, the name at the left, the price at the right, t
 
 **Data — and only this:** signed in or not, paid or not, **which tier**, and one date — **the renewal date, and only for a paid member. Ghost gives a theme no member join date**, so a free member's card carries no line at all rather than a date that would read as today on every live site. **Not the reader's name, email, avatar, card, billing history or amount paid.** A cancelled or expired subscription **reads as a visitor**. Four states: visitor, free member, member on a lower tier, member on the top tier.
 
-**Controls.** Padding · Ground · Billing period · Title size · **Current tier (Marked · Marked, no accent · Not marked)** · **Member head (Show · Hide)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Current tier | Marked · Marked, no accent · Not marked |
+| Member head | Show · Hide |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**No Member visibility** — this design's four reader states are a richer model of the same thing and subsume it.
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (card padding still fixed at 32) and Ground into **Background role**. **Description** joins; **Member Visibility does not** — the four reader states are a richer model of the same thing and subsume it, stated at the place a site would look for the control. The list reads Billing period · Title size · Current tier · Member head · Description — **five**. **New fields:** `yourPlanLabel` (≤ 18, default “Your plan”), `upgradeLabel` (≤ 20, default “Upgrade”) and `changeLabel` (≤ 20, default “Change plan”), all three editable inline; the renewal date stays Ghost's and stays uneditable, and **there is no join date to draw**. **One Data sentence added: `status: comped` reads as Paid** — a comped member is on a tier without paying for it, the tier is the fact this design draws, and the reader sees the paid arrangement. Cancelled and expired still read as a visitor.
 
@@ -526,7 +677,18 @@ The tiers with three short lines under a hairline saying what happens at checkou
 
 **The settlement.** **The field is empty by default and the theme writes nothing into it.** The editor offers three suggestions as chips — cancel, Stripe, card details — which a site can accept, edit or ignore. **A theme that shipped “Secure checkout” as a default would be publishing a security claim on behalf of a site that never read it.** **No badge, seal, lock, shield or card-brand logo at any value**; no guarantee, trial or refund copy the site did not write. **A fourth line is refused** and the editor names A5·11 Checklist.
 
-**Controls.** Padding (card padding fixed at 32) · Ground · Billing period · Title size · **Assurances (Row of three · Stacked)** · **Mark (Rule · Check · Dot)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Billing period | Monthly · Yearly · Both |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Assurances | Row of three · Stacked |
+| Mark | Rule · Check · Dot |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (card padding fixed at 32) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (card padding still fixed at 32; the 40 px above the strip's hairline holds at every width) and Ground into **Background role**; **Description** and **Member Visibility** join: Billing period · Title size · Assurances · Mark · Description · Member Visibility — **six**. **The three suggestion chips insert as ordinary editable inline text** into `reasons[]`, never locked strings — a suggestion a site cannot then edit is a default wearing a chip's clothes — and the list carries the **P0·3 item controls**: Add arrives with content, Remove is never disabled, drag reorders, per-item content only. The field still ships empty and the theme still writes nothing into it.
 
@@ -558,7 +720,19 @@ Both cadences on every card — yearly at the price size, monthly muted beneath 
 
 **Fields.** As 1, unchanged. **Both of a tier's prices are drawn and nothing about the pair is authored**: the second price is Ghost's other one, and **no saving is computed here at all** — that arithmetic belongs to the switch's script, which this design does not have. **Nothing is struck through and no percentage is ever shown** — “Save 17%” is a number Stripe never charges and a rounding a site never chose.
 
-**Controls.** Padding (card padding fixed at 32) · Ground · Title size · **Lead price (Yearly · Monthly)** · **Second price (Under it · Beside it · Two prices)**. **There is no Billing period control, and no saving line.**
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Lead price | Yearly · Monthly |
+| Second price | Under it · Beside it · Two prices |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — 5 Contrast Band is the design for an inverted ground) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (card padding fixed at 32) |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**There is no Billing period control, and no saving line.**
 
 **Reconciled — this pass.** Padding retires into **Vertical spacing** (card padding still fixed at 32) and Ground into **Background role**; **Description** and **Member Visibility** join: Title size · Lead price · Second price · Description · Member Visibility — **five**, one fewer than before: **the Saving line control goes with the saving itself.** **New field: `freeSecondLine`** (opt, ≤ 40, default “No card, no renewal”), editable inline — the free card's line in the second price's place, which was the one invented string on this design. The cadence words and the computed saving stay catalog strings, and **there is still no Billing period control** for the gate to disable: the paid gate closing here removes the paid cards themselves.
 
@@ -745,3 +919,15 @@ JavaScript off nothing opens — the section reads but cannot be subscribed from
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
   required shape, and names **1 Cards** and **12 Ledger** — both of which exist in this category's
   roster. It is the owner's own choice, confirmed this pass.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

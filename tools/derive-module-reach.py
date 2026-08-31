@@ -25,7 +25,7 @@ RESEARCH = os.path.join(ROOT, '_bmad-output/planning-artifacts/prds/prd-Inflozo-
 _s = importlib.util.spec_from_file_location('er', os.path.join(ROOT, 'tools/export-roster.py'))
 er = importlib.util.module_from_spec(_s); _s.loader.exec_module(er)
 
-BEHAVIOUR_LINE = re.compile(r'^\*\*Behaviour modules?\.?\*\*(.+?)(?:\n\*\*|\n#{2,5} |\Z)',
+BEHAVIOUR_LINE = re.compile(r'^[ \t]*(?:\d+\.\s*)?\*\*Behaviour modules?\.?\*\*(.+?)(?:\n\s*\n|\n[ \t]*\*\*|\n#{2,5} |\Z)',
                             re.M | re.S)
 TICKED = re.compile(r'`([a-z][a-z0-9-]+)`')
 

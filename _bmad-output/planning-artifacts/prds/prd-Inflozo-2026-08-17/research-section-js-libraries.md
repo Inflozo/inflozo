@@ -68,51 +68,48 @@ Derived by walking every one of the 485 variant descriptors in `sections-invento
 > A name that merely appears in a category's prose is not a declaration — that distinction is what
 > keeps every A1 design from claiming `accordion` and `mode-toggle` by association.
 >
-> **Three categories are not covered and are NOT guessed at: A17, A18 and A19.** They name modules
-> only in flowing prose, with no per-design declaration to read, so their designs appear in no row
-> below. Candidates exist (A17-16 and A18-15 read as `load-more` + `infinite-scroll`, A19-15 as
-> `carousel`) but a mention is not a declaration, and inferring one is the exact over-match this
-> derivation exists to avoid. **Those three specs should gain a per-design module line like the
-> other thirty.**
+> **All 33 categories are now covered.** A17, A18 and A19 named modules only in flowing prose
+> until 2026-08-31, when a corrective Claude Design pass gave all 48 of their designs the
+> per-design declaration the other thirty already had. Nothing here is inferred from a mention.
 >
-> **`confetti` is declared by no design in the library.** Its only appearances are in A2's and A4's
-> "modules this category deliberately does not use" lists. It is a candidate for removal, alongside
-> the already-struck `search-overlay`, `search-expand` and `command-palette`.
+> **`confetti` was declared by no design and is DELETED** (owner's ruling, 2026-08-31), alongside
+> `search-overlay`, `search-expand` and `command-palette`. Every remaining module in this table is
+> claimed by at least one design.
 
 | # | Module | Designs requiring it | Control reach | Trigger in the inventory |
 |---|---|---|---|---|
-| 0 | **`core`** (shared runtime) | 27 | all | **Declared by:** A27-1, A31-1, A31-2, A31-3, A31-4, A31-5, A31-6, A31-7, A31-8, A31-9, A31-10, A32-1, A32-2, A32-3, A32-4, A32-5, A32-6, A32-8, A32-9, A32-10, A32-11, A33-1, A33-2, A33-3, A33-4, A33-5, A33-6. Module registry, `data-i18n-*` reader, one shared `IntersectionObserver` factory, `matchMedia('(prefers-reduced-motion: reduce)')` gate, `AbortController` teardown |
-| 1 | **`nav-drawer`** (off-canvas + focus containment) | 15 | 16 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16. Every A1 header needs a mobile nav at 390 px (FR-G4). |
+| 0 | **`core`** (shared runtime) | 43 | all | **Declared by:** A17-1, A18-1, A19-1, A19-2, A19-3, A19-4, A19-5, A19-6, A19-7, A19-8, A19-9, A19-10, A19-11, A19-12, A19-13, A19-14, A27-1, A31-1, A31-2, A31-3, A31-4, A31-5, A31-6, A31-7, A31-8, A31-9, A31-10, A32-1, A32-2, A32-3, A32-4, A32-5, A32-6, A32-8, A32-9, A32-10, A32-11, A33-1, A33-2, A33-3, A33-4, A33-5, A33-6. Module registry, `data-i18n-*` reader, one shared `IntersectionObserver` factory, `matchMedia('(prefers-reduced-motion: reduce)')` gate, `AbortController` teardown |
+| 1 | **`nav-drawer`** (off-canvas + focus containment) | 16 | 16 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A31-9. Every A1 header needs a mobile nav at 390 px (FR-G4). |
 | 2 | **`header-scroll`** (sticky / shrink / overlay→solid) | 17 | 16 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A4-14, A24-13. A1 control `sticky (None/Sticky/Sticky-shrink)`; A1's overlay design "gains surface on scroll" intrinsically; **and ruling R-3 gives it two more consumers** — A24's condensed bar (`position: fixed` at the threshold, hidden with no JS; as drawn it could never hold, because its containing block has already left the viewport), A1's direction-watch and A4's scroll cue. |
 | ~~3~~ | ~~**`command-palette`** (⌘K / Ctrl-K binding)~~ **DELETED — ruling R-24** | — | — | **Its only consumer was A23 #4, and A23 is deleted; and the ruling's own lint rule — "sodo binds ⌘K, so no Inflozo design may bind ⌘K" — forbids the module's entire job.** The row is struck rather than removed, because "add a command palette" is a proposal that will otherwise be made again. A visitor still gets ⌘K: it is `sodo-search`'s, and it works on every Ghost without a theme doing anything |
-| 4 | **`dismiss`** (with persistence) | 18 | 15 | **Declared by:** A2-1, A2-2, A2-3, A2-4, A2-5, A2-6, A2-7, A2-8, A2-9, A2-10, A2-11, A2-12, A2-13, A2-14, A2-15, A6-10, A7-8, A32-11. A2 `dismissible` control across all 15 bars; A2 #2 *Slim Dismissable* intrinsic |
+| 4 | **`dismiss`** (with persistence) | 19 | 15 | **Declared by:** A2-1, A2-2, A2-3, A2-4, A2-5, A2-6, A2-7, A2-8, A2-9, A2-10, A2-11, A2-12, A2-13, A2-14, A2-15, A6-10, A7-8, A19-14, A32-11. A2 `dismissible` control across all 15 bars; A2 #2 *Slim Dismissable* intrinsic |
 | 5 | **`rotator`** (crossfade between messages) | 2 | 15 | **Declared by:** A2-9, A4-16. A2 #9 *Rotating Messages* (up to 3 crossfading), A2 `rotation` control, A8 #9 *Avatar Row* ("one rotating quote") |
 | 6 | **`countdown`** | 3 | — | **Declared by:** A2-6, A4-11, A10-14. A2 #6 *Countdown*, A6 #11 *Countdown CTA* |
 | 7 | **`marquee`** (ticker) | 2 | 30 | **Declared by:** A2-8, A11-8. A2 #3, A4 #18, A8 #3, A8 #14, A9 #15, A11 #3, A11 #4, A19 #15 — plus A8 `motion: Marquee` (15) and A11 `motion: Marquee/Dual-marquee` (15) |
 | ~~8~~ | ~~**`confetti`** (particles)~~ **DELETED 2026-08-31 — owner's ruling** | — | — | **No design in the library declares it.** Derived from the export by `tools/derive-module-reach.py`: its only appearances anywhere are in A2's and A4's "modules this category deliberately does not use" lists, which is the finding `reconcile-designs.md` §37.3 first raised and this pass confirmed. Struck rather than removed, so "add a confetti burst" is not proposed again. |
-| 9 | **`accordion`** | 41 | 15 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A2-14, A3-2, A3-3, A3-7, A3-8, A3-14, A9-1, A9-2, A9-5, A9-6, A9-7, A9-8, A9-10, A9-12, A9-13, A9-14, A10-12, A12-14, A12-15, A28-7, A33-1, A33-2, A33-3, A33-4, A33-5, A33-6. A9 #1,#2,#3,#6,#7,#11,#12,#13,#14 + A9 `default state` control; A5 #8 *Accordion Features*; A28 #3 *Toggle Reveal* |
+| 9 | **`accordion`** | 42 | 15 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A2-14, A3-2, A3-3, A3-7, A3-8, A3-14, A9-1, A9-2, A9-5, A9-6, A9-7, A9-8, A9-10, A9-12, A9-13, A9-14, A10-12, A12-14, A12-15, A18-12, A28-7, A33-1, A33-2, A33-3, A33-4, A33-5, A33-6. A9 #1,#2,#3,#6,#7,#11,#12,#13,#14 + A9 `default state` control; A5 #8 *Accordion Features*; A28 #3 *Toggle Reveal* |
 | 10 | **`tabs`** | 7 | — | **Declared by:** A5-12, A7-10, A8-11, A9-11, A13-11, A15-10, A15-15. A5 #9 *Tabs Showcase*, A9 #8 *Category Tabs*, A13 #9 *Tabbed Stages*, A20 #4 *Topic Tabs* |
-| 11 | **`carousel`** | 12 | 15 | **Declared by:** A1-3, A5-14, A8-7, A11-9, A12-13, A13-8, A14-7, A14-8, A15-9, A20-9, A21-12, A27-10. A8 #7, A14 #3, A15 #15, A19 #4, A20 #9, A27 #4, A27 #9 — plus A8 `motion: Carousel` (15) |
-| 12 | **`lightbox`** (modal media) | 23 | 15 | **Declared by:** A3-14, A4-4, A5-7, A5-8, A8-8, A9-10, A10-10, A14-1, A14-2, A14-3, A14-4, A14-5, A14-6, A14-7, A14-8, A14-9, A14-10, A14-11, A14-12, A14-13, A14-14, A14-15, A25-5. A14 `lightbox` toggle across 15 galleries; A4 #17 *Video Poster*, A15 #3 *Poster Modal*, A15 #8 *Background Poster Band* |
-| 13 | **`video-facade`** (click-to-load embed) | 17 | 15 | **Declared by:** A4-10, A10-10, A15-1, A15-2, A15-3, A15-4, A15-5, A15-6, A15-7, A15-8, A15-9, A15-10, A15-11, A15-12, A15-13, A15-14, A15-15. Every A15 embed variant; A4 #17. |
+| 11 | **`carousel`** | 13 | 15 | **Declared by:** A1-3, A5-14, A8-7, A11-9, A12-13, A13-8, A14-7, A14-8, A15-9, A19-15, A20-9, A21-12, A27-10. A8 #7, A14 #3, A15 #15, A19 #4, A20 #9, A27 #4, A27 #9 — plus A8 `motion: Carousel` (15) |
+| 12 | **`lightbox`** (modal media) | 27 | 15 | **Declared by:** A3-14, A4-4, A5-7, A5-8, A8-8, A9-10, A10-10, A14-1, A14-2, A14-3, A14-4, A14-5, A14-6, A14-7, A14-8, A14-9, A14-10, A14-11, A14-12, A14-13, A14-14, A14-15, A18-2, A18-10, A19-4, A25-5, A33-5. A14 `lightbox` toggle across 15 galleries; A4 #17 *Video Poster*, A15 #3 *Poster Modal*, A15 #8 *Background Poster Band* |
+| 13 | **`video-facade`** (click-to-load embed) | 18 | 15 | **Declared by:** A4-10, A10-10, A15-1, A15-2, A15-3, A15-4, A15-5, A15-6, A15-7, A15-8, A15-9, A15-10, A15-11, A15-12, A15-13, A15-14, A15-15, A19-2. Every A15 embed variant; A4 #17. |
 | 14 | **`price-toggle`** (billing period swap) | 17 | 40 | **Declared by:** A7-1, A7-2, A7-3, A7-4, A7-5, A7-6, A7-7, A7-8, A7-9, A7-10, A7-11, A7-12, A7-13, A7-14, A7-15, A30-8, A32-7. A7 `billing toggle` (15) + A7 #4 *Toggle Cards* intrinsic; A30 `billing toggle` (13); A32 `billing toggle` (12) |
 | 15 | **`member-form`** (states of `data-members-form`) | 26 | 11 | **Declared by:** A2-5, A3-4, A4-11, A6-6, A6-14, A9-14, A26-3, A26-5, A26-12, A26-15, A28-8, A30-1, A30-2, A30-3, A30-4, A30-5, A30-6, A30-7, A30-8, A30-9, A30-10, A30-11, A30-12, A30-13, A32-1, A32-6. A30 #1–#10 each carry designed **sent-state** copy (heading, body, resend); A31 #10 *Private Site Gate* error line |
-| 16 | **`count-up`** | 6 | 15 | **Declared by:** A4-2, A10-14, A12-15, A13-9, A28-9, A29-9. A10 `count-up animation` toggle (15); A10 #6 *Count-Up Ticker*, #10 *Percent Bars*, #15 *Circle Rings* |
-| 17 | **`reveal`** (animate-on-scroll) | 5 | — | **Declared by:** A1-16, A4-18, A8-15, A10-15, A12-14. A13 #10 *Checklist Journey* (progressive path), A13 #14 *Path Curve* (SVG draw), A34 #9 *Infinite Fade* skeleton. |
-| 18 | **`scroll-spy`** (active-item tracking) | 7 | — | **Declared by:** A5-5, A12-5, A13-5, A13-15, A25-7, A27-7, A30-11. A5 #12 *Sticky Scroll*, A13 #6 *Sticky Progress*. |
+| 16 | **`count-up`** | 7 | 15 | **Declared by:** A4-2, A10-14, A12-15, A13-9, A19-12, A28-9, A29-9. A10 `count-up animation` toggle (15); A10 #6 *Count-Up Ticker*, #10 *Percent Bars*, #15 *Circle Rings* |
+| 17 | **`reveal`** (animate-on-scroll) | 10 | — | **Declared by:** A1-16, A4-18, A8-15, A10-15, A12-14, A18-9, A19-1, A19-2, A19-7, A19-9. A13 #10 *Checklist Journey* (progressive path), A13 #14 *Path Curve* (SVG draw), A34 #9 *Infinite Fade* skeleton. |
+| 18 | **`scroll-spy`** (active-item tracking) | 8 | — | **Declared by:** A5-5, A12-5, A13-5, A13-15, A14-5, A25-7, A27-7, A30-11. A5 #12 *Sticky Scroll*, A13 #6 *Sticky Progress*. |
 | 19 | **`reading-progress`** | 3 | 16 | **Declared by:** A1-3, A24-13, A32-12. A24 `reading-progress` toggle (16) + A24 #15 *Progress Attached*; A32 #12 *Progress Tease* |
 | 20 | **`toc`** (build + scroll-spy) | 7 | 12 | **Declared by:** A3-11, A10-12, A12-10, A25-1, A25-4, A25-7, A25-8. A25 `TOC (Off/Left/Right, auto-hidden < 3 headings)` across 12; A25 #3 *TOC Left*, #4 *TOC Right*. |
 | 21 | **`share`** (+ copy-link) | 15 | 27 | **Declared by:** A10-9, A10-12, A24-14, A26-1, A26-2, A26-3, A26-4, A26-5, A26-6, A26-9, A26-10, A26-11, A26-13, A26-14, A26-15. A25 `share rail` toggle (12) + #5 *Share Rail*; A26 `share row` toggle (15) + #2 *Tags + Share Row*, #10 *Share Band* |
-| 22 | **`load-more`** | 4 | — | **Declared by:** A3-9, A4-13, A12-12, A34-6. A34 #2 *Load More Solid*, #7 *Load More Ghost*, #8 *Load More Ticker* |
+| 22 | **`load-more`** | 8 | — | **Declared by:** A3-9, A4-13, A12-12, A17-16, A18-15, A19-11, A31-8, A34-6. A34 #2 *Load More Solid*, #7 *Load More Ghost*, #8 *Load More Ticker* |
 | 23 | **`infinite-scroll`** | 3 | — | **Declared by:** A3-9, A4-13, A34-7. A34 #9 *Infinite Fade*, #10 *Infinite Dot Pulse*. |
-| 24 | **`shuffle`** (client-side randomize) | 2 | — | **Declared by:** A3-9, A4-13. A27 #11 *Discover Shuffle* ("randomized picks with refresh glyph") |
+| 24 | **`shuffle`** (client-side randomize) | 3 | — | **Declared by:** A3-9, A4-13, A19-8. A27 #11 *Discover Shuffle* ("randomized picks with refresh glyph") |
 | 25 | **`slide-in-card`** | 3 | — | **Declared by:** A2-11, A3-16, A22-14. A27 #12 *Continue Sticky* ("slide-in next-article card near page end") |
-| 26 | **`filter-strip`** (filter / sort) | 9 | 14 | **Declared by:** A3-13, A4-17, A9-12, A10-8, A12-10, A12-15, A13-14, A20-15, A29-11. A29 #13 *Filter Bar Attached* + A29 `filter/sort strip` toggle across 14 |
-| 27 | **`typewriter`** | 1 | — | **Declared by:** A8-10. A4 #13 *Typewriter Minimal* ("monospace accent line with animated caret") |
-| 28 | **`mode-toggle`** (light/dark) | 16 | site-wide | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A11-7. Named in FR-J4; FR-E4's Auto mode is the `prefers-color-scheme` media query and needs no JS — only the *manual* toggle does |
+| 26 | **`filter-strip`** (filter / sort) | 11 | 14 | **Declared by:** A3-13, A4-17, A9-12, A10-8, A12-10, A12-15, A13-14, A17-15, A18-3, A20-15, A29-11. A29 #13 *Filter Bar Attached* + A29 `filter/sort strip` toggle across 14 |
+| 27 | **`typewriter`** | 5 | — | **Declared by:** A8-10, A17-9, A18-9, A19-6, A19-13. A4 #13 *Typewriter Minimal* ("monospace accent line with animated caret") |
+| 28 | **`mode-toggle`** (light/dark) | 17 | site-wide | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A11-7, A19-5. Named in FR-J4; FR-E4's Auto mode is the `prefers-color-scheme` media query and needs no JS — only the *manual* toggle does |
 | 29 | **`nav-transform`** (Ghost prefix navigation — **D2**) | 18 | 16 | Every A1 header in prefix mode (16), A3-2, A3-11, A31-9. Ghost navigation is flat and Handlebars cannot strip a `+` / `−` / `\|` label prefix server-side. **JavaScript-required by owner ruling; no no-JS accommodation is built** |
 | 30 | **`contact-form`** (honest `mailto:` composition — **D28**) | 10 | 10 | **Declared by:** A16-1, A16-2, A16-3, A16-4, A16-5, A16-7, A16-11, A16-12, A16-14, A16-15. Every A16 contact design. |
-| 31 | **`group-headings`** (heading on a key change — **ruling R-1**) | 2 | 3 | **Declared by:** A20-7, A21-10. A18-5 *Grouped*, A20-7 *Index* (group by initial), A21-10 *Directory* (group by letter). |
+| 31 | **`group-headings`** (heading on a key change — **ruling R-1**) | 3 | 3 | **Declared by:** A18-5, A20-7, A21-10. A18-5 *Grouped*, A20-7 *Index* (group by initial), A21-10 *Directory* (group by letter). |
 ### 2.2 Things that look like modules and are not — the deletions
 
 The laziest win in this whole document is the list of behaviours that need **zero JS** once the baseline in §6 is fixed. Each of these is a module Inflozo does not have to write, test, ship, or fit in the budget.

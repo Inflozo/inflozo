@@ -110,7 +110,18 @@ The ask centred on the page's own ground: eyebrow, title, sub, one action, a not
 
 **Fields.** `eyebrow` · `title` · `sub` · `primaryLabel` (req) · `primaryUrl` (req) · `secondaryLabel` · `secondaryUrl` · `note`, plus **`fallbackLabel` (≤ 24) and `fallbackUrl` — this pass, shared by all fifteen** — the label and link the button takes when the ask it would have made is one the connected site cannot support. Everything else in the shared list kept and not drawn.
 
-**Controls.** Title size · Actions · Secondary style (Ghost text · Text link, unavailable at Actions Primary) · Below the actions (Note · Nothing) · Member visibility, plus the universal trio.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Actions | Both · Primary |
+| Secondary style | Ghost text · Text link (unavailable at Actions Primary) |
+| Below the actions | Note · Nothing |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** Padding retires into Vertical spacing and Ground into Background role, where Contrast keeps this design's substitution and its refusal. Eyebrow, title, sub, both labels and the note edit inline with P0·1; both URLs open the Link Picker — a signup ask is the Portal · Sign up action, never a literal; both actions take an optional button icon.
 
@@ -144,7 +155,17 @@ The ask centred on the page's own ground: eyebrow, title, sub, one action, a not
 
 **Fields.** As 1. **The note is always drawn where authored** — no Below the actions control — because the empty right half means an absent note costs the arrangement nothing.
 
-**Controls.** Title size · **Measure (Narrow 520 · Medium 620 · Wide 720)** · Actions · Member visibility, plus the universal trio — Contrast unavailable in Background role (a band supplies its own edge and a divider above it would draw a second one), and **Rule above retired into Top divider, defaulted Line here**, the first of the two designs in A6 that default it on.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Measure | **Narrow 520 · Medium 620 · Wide 720** |
+| Actions | Both · Primary |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — a band supplies its own edge and a divider above it would draw a second one) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (**default Line** here — the old Rule above retired into it, the first of the two designs in A6 that default it on) |
 
 **Reconciled.** The rule's page-margin rule and the never-two-lines advice survive as the divider's advice line — a recorded conflict. Eyebrow, title, sub, labels and the note edit inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -182,7 +203,18 @@ The words on the left of one row and the actions on the right of it. The shortes
 
 **Fields.** As 1, with **the note drawn in the actions column**. `secondaryLabel` is capped at 24 as everywhere and the editor advises 18 at Even halves.
 
-**Controls.** Title size (34 · 40 · **Display 48 unavailable** — a 48 px line beside a 46 px button makes the button a caption) · **Division (Text-weighted 780/440 · Even halves 632/632**, gutter 76 fixed at both) · Actions · **Actions alignment (Centred on the text · Top of the row** — the title's cap height, a 3 px lift, A5·2's rule) · Member visibility, plus the universal trio (Background role defaulting Surface).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title size | Medium 34 · Large 40 · **~~Display 48~~ unavailable** — a 48 px line beside a 46 px button makes the button a caption |
+| Division | **Text-weighted 780/440 · Even halves 632/632** (gutter 76 fixed at both) |
+| Actions | Both · Primary |
+| Actions alignment | **Centred on the text · Top of the row** (the title's cap height, a 3 px lift, A5·2's rule) |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (defaulting Surface) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** Padding and Ground retire into the trio, Surface kept as the default. Every text edits inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -216,7 +248,20 @@ The banner on one `surface` card, inset from the page margin, page ground visibl
 
 **Fields.** As 1, unchanged.
 
-**Controls.** **Card padding (Compact 48 · Comfortable 64 · Spacious 88** — one step tighter than the section scale it replaces, since a plane's edge does part of the work the space was doing; **the section's own padding is fixed at 96)** · **Inset (Snug 16 · Comfortable 40 · Wide 72** inside the page margin — A4·8's values unchanged, so a site running both reads one shape at two scales) · **Card treatment (Hairline · Tinted · Raised** — A5·4's, with its dark substitution: Raised is a hairline and no shadow in dark, which makes it Hairline there, and the editor says so rather than hiding the value) · Title size · Actions · Alignment (Centred · Left, where the measure is 620 inside the card and the card's right stays empty) · Member visibility, plus the universal trio — **Background role locked at Background** (page ground on all four edges is the identity, and the surface card needs a ground one step away) and **Vertical spacing locked at 96**; Card padding and Inset keep their names as genuinely different ladders.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card padding | **Compact 48 · Comfortable 64 · Spacious 88** (one step tighter than the section scale it replaces; the section's own padding is fixed at 96) |
+| Inset | **Snug 16 · Comfortable 40 · Wide 72** inside the page margin (A4·8's values unchanged) |
+| Card treatment | **Hairline · Tinted · Raised** (A5·4's, with its dark substitution: Raised is a hairline and no shadow in dark, and the editor says so rather than hiding the value) |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Actions | Both · Primary |
+| Alignment | Centred · Left (the measure is 620 inside the card and the card's right stays empty) |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background (locked — page ground on all four edges is the identity, and the surface card needs a ground one step away) |
+| Vertical spacing (universal) | Locked at 96 — Card padding and Inset keep their names as genuinely different ladders |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** Every text edits inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -250,7 +295,19 @@ The whole banner on the inverted ground. Ground is not a control here: it is the
 
 **Fields.** As 1. **`image` is kept and not drawn:** a photograph on a band needs a scrim over an already-inverted ground, and 7 Full Bleed Image is the design that has one. **No inline form at any value** — A3·4's and A4·11's refusal carried a third time.
 
-**Controls.** **Band edges (Full bleed · Page margin**, the latter taking the pack radius and 56 px of inner padding, 40 at 834; **always full bleed at ≤ 767**) · Title size · **Action style (Carried colour fill · ~~Accent fill~~, disabled at 3.2:1** in every pack) · Actions · Alignment (Centred · Left) · Member visibility, plus the universal trio — **Background role locked at Contrast** (the band is the design; the carried fill, hover, muted line and ring re-derive from it) and **Vertical spacing resolving one step tighter, 44 · 64 · 88**, A4·9's scale carried, because an inverted block is read as bigger than it is.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band edges | **Full bleed · Page margin** (the latter taking the pack radius and 56 px of inner padding, 40 at 834; **always full bleed at ≤ 767**) |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Action style | **Carried colour fill · ~~Accent fill~~ (disabled at 3.2:1** in every pack) |
+| Actions | Both · Primary |
+| Alignment | Centred · Left |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Contrast (locked — the band is the design; the carried fill, hover, muted line and ring re-derive from it) |
+| Vertical spacing (universal) | Compact 44 · Comfortable 64 · Spacious 88 (one step tighter, A4·9's scale, because an inverted block is read as bigger than it is) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** The old Padding scale survives as Vertical spacing's resolution; the old "no Ground control" line becomes the lock, reason shown. Every text edits inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -284,7 +341,19 @@ The banner with A3·4's one-row form standing where the actions would be. Settle
 
 **Fields.** `eyebrow` · `title` · `sub`, plus **the five shared `newsletter*` fields** — placeholder (≤ 28, default “you@example.com”) · button label (≤ 16, default “Subscribe”) · note (≤ 90, one line) · success (≤ 60) · short success (≤ 32, used ≤ 767) — **shared with A3·4's footer form and A4·11's hero: change them once and all three follow.** `primaryLabel`, `primaryUrl`, `secondaryLabel`, `secondaryUrl` and `note` are kept and not drawn. **The error line is a theme translation-catalog string, not a field** — it has to match what Ghost rejected — as is the Members-off substitution label; no fixed English ships. **The no-JavaScript notice's sentence and its link label are catalog strings too** — the notice is not authored per section, and a fixed English string cannot ship. **`membersLine`** (≤ 90) is added this pass for the signed-in state.
 
-**Controls.** **Field width (Narrow 320 · Medium 400 · Wide 480**, A3·4's) · Title size · Alignment · **Note under the form (Show · Hide** — it hides the authored note, not the live region) · **When a member is signed in (Show a members line · Hide the section)** · Member visibility, plus the universal trio (Background role defaulting Surface, ~~Contrast~~ **unavailable** — a field on a band needs a surface step the packs do not define, A3·4's refusal kept).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Field width | **Narrow 320 · Medium 400 · Wide 480** (A3·4's) |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Alignment | Centred · Left |
+| Note under the form | **Show · Hide** (it hides the authored note, not the live region) |
+| When a member is signed in | **Show a members line · Hide the section** |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (defaulting Surface; ~~Contrast~~ **unavailable** — a field on a band needs a surface step the packs do not define, A3·4's refusal kept) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **When a member is signed in — this pass.** The form asks members for an address Ghost already has, so the default substitutes **a members line** — `membersLine`, an editable field, default "You're on the list — manage your subscription from your account.", one sentence with one underlined link whose target is the Portal · Account action, replaceable in the Link Picker. The other value hides the section for signed-in members. **Rendered on the server, as 14's states are** — the other state's markup is not in the page, nothing swaps after load, and no module is added; `member-form` stays the only declaration. 14 Members is the richer sibling and the editor names it at the control. It composes with Member visibility: visibility picks who sees the section at all; this control what a signed-in member who can see it gets.
 
@@ -322,7 +391,20 @@ The ask over a photograph that fills the section. The third of §8's grounds, an
 
 **Fields.** As 1, plus `image` (req, **2400 px or wider**) · `imageAlt` (kept, unused here) · `imageFocus` (Centre · Top · Bottom, **in the Image Picker popover this pass** — never a hidden field, ground rule 10).
 
-**Controls.** Band edges (Full bleed · Page margin — pack radius, **no inner padding**; always full bleed at ≤ 767) · **Text position (Centred · Bottom left)** · Title size · Actions · Note · Member visibility, plus the universal trio — **Background role locked** (the photograph is the ground, the design's identity) and **Vertical spacing setting the picture's height**, there being no crop — and **the Data group: Content source (Authored · From a post)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Band edges | Full bleed · Page margin (pack radius, **no inner padding**; always full bleed at ≤ 767) |
+| Text position | **Centred · Bottom left** |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Actions | Both · Primary |
+| Note | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Content source (data) | Authored · From a post |
+| Background role (universal) | Locked — the photograph is the ground, the design's identity |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (it sets the picture's height, there being no crop) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Data — this pass, the owner's ruling.** Content source: Authored · From a post, the P0·5 panel at count one — Latest · Featured · By tag · Hand-picked. Bound: **image ← the post's feature image, title ← the post title, primary action ← the post's URL**; the bound title is plain-text-locked ("Edit in Ghost"); eyebrow, sub, note and the action's label stay authored, so "Read this week's issue" stands over its own cover without retyping. A bound post with no feature image, or no post matching → the section renders as authored and the Data panel says so; the no-picture state beneath it is unchanged.
 
@@ -360,7 +442,19 @@ A photograph on one half and the ask on the other, with no scrim between them. T
 
 **Fields.** As 1, plus `image` (**1440 px or wider**) and `imageAlt` — **the one design in A6 where the alt is drawn as an alt**, and the editor asks what the picture adds instead of defaulting it empty. `imageFocus` is read.
 
-**Controls.** **Picture side (Right · Left** — grid placement, never a source reorder; A5·9's rule) · **Picture treatment (Flush to the edge · Framed inset**, A4·3's mount unchanged: 14 px of surface, one hairline, the picture at half the pack radius, costing 28 px of width; **on a surface ground the mount takes `background`** so it does not disappear) · Title size (34 · 40 · **Display 48 unavailable**) · Actions · Member visibility, plus the universal trio — Vertical spacing on the text half, **what the picture's height derives from**; Contrast unavailable in Background role (a photograph beside an inverted half is two grounds arguing) — and **the Data group: Content source (Authored · From a post)**, as 7.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Picture side | **Right · Left** (grid placement, never a source reorder; A5·9's rule) |
+| Picture treatment | **Flush to the edge · Framed inset** (A4·3's mount unchanged: 14 px of surface, one hairline, the picture at half the pack radius, costing 28 px of width; **on a surface ground the mount takes `background`**) |
+| Title size | Medium 34 · Large 40 · **~~Display 48~~ unavailable** |
+| Actions | Both · Primary |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Content source (data) | Authored · From a post (as 7) |
+| Background role (universal) | Background · Surface (Contrast unavailable — a photograph beside an inverted half is two grounds arguing) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — on the text half, and what the picture's height derives from |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Data — this pass.** As 7 — image ← feature image, title ← post title, primary action ← the post's URL, the bound title plain-text-locked. And **the picture defaults to the entry's feature image on a post, a page or a custom entry only** — A4·18's pattern — replaceable in the Image Picker. **A list route has none:** home, tag and author templates carry no feature image, so the field starts empty there and the panel says so rather than rendering an empty half.
 
@@ -396,7 +490,18 @@ The ask set large enough to be the section, flush left across the whole content 
 
 **Fields.** `title` (req, ≤ 90, **≤ 40 advised at Huge**) · `sub` · `primaryLabel` · `primaryUrl` · `secondaryLabel` · `secondaryUrl`. **No eyebrow is offered** — A4·6's refusal, carried: a 13 px tracked line above a 76 px one is a label on a poster. **`note` is kept and not drawn:** the line under the rule already holds two things.
 
-**Controls.** **Title scale (Display 76 · Huge 96)** · **Rule under the title (Show · Hide**, the gap 40 → 28 at Hide, A5·6's logic; it sits mid-section and is not a divider, so it keeps its name) · **Sub under the rule (Show · Hide**, where **the actions keep the right end of the line**) · Actions · Member visibility, plus the universal trio (Vertical spacing keeping the **Compact advised at Huge** line — the type is already the space).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Title scale | **Display 76 · Huge 96** |
+| Rule under the title | **Show · Hide** (the gap 40 → 28 at Hide, A5·6's logic; it sits mid-section and is not a divider, so it keeps its name) |
+| Sub under the rule | **Show · Hide** (where **the actions keep the right end of the line**) |
+| Actions | Both · Primary |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (**Compact advised at Huge** — the type is already the space) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** Padding and Ground retire into the trio. Title, sub and labels edit inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -430,7 +535,20 @@ One line of text and one action on a single row, at the tightest padding in the 
 
 **Fields.** `title` (opt, ≤ 90, **60 advised**) · `primaryLabel` (req) · `primaryUrl` (req) · `note`. **`eyebrow`, `sub`, `secondaryLabel` and `secondaryUrl` are kept and not drawn** — the largest set of kept-and-unused fields in A6, and the design's whole argument: one line, one action.
 
-**Controls.** **Action style (Button · Text link)** · **Rule below (Show · Hide** — the lower of the bar's two rules, dropped directly above the footer whatever the value) · Alignment (Split · Centred, **Centred disabling the note**) · Note · Member visibility, plus the universal trio — **Vertical spacing resolving the bar's own 20 · 28 · 36**, and **Top divider defaulted Line** (the bar's upper rule, retired into it — the rules are what make one row a section). At Background role Surface or Contrast both rules drop as before: Rule below disables and Top divider locks None, reasons shown.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Action style | **Button · Text link** |
+| Rule below | **Show · Hide** (the lower of the bar's two rules, dropped directly above the footer whatever the value) |
+| Alignment | Split · Centred (**Centred disabling the note**) |
+| Note | Show · Hide |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast |
+| Vertical spacing (universal) | Compact 20 · Comfortable 28 · Spacious 36 (the bar's own ladder) |
+| Top divider (universal) | None · Line · Fade (**default Line** — the bar's upper rule, retired into it; the rules are what make one row a section) |
+
+At Background role Surface or Contrast both rules drop as before: Rule below disables and Top divider locks None, reasons shown.
 
 **Reconciled.** The old Rules control split into the universal divider and Rule below — a recorded conflict. Title, note and the action label edit inline; the URL opens the Link Picker; the button takes an optional icon.
 
@@ -476,7 +594,20 @@ The ask with up to three short lines saying what comes with it. Where A6 borrows
 
 **Fields.** As 1, plus **`reasons[]`** — one to three, each ≤ 40 characters (20 advised at Under the actions), **text only: no icon, no body, no link**. This is the design that introduces the field; the rest of A6 keeps it and does not draw it. A fourth is refused and the editor names **A5·11 Checklist with a section action**.
 
-**Controls.** **Reasons position (Beside the text · Under the actions)** · **Mark (Check · Dot · Rule · Custom icon** — Custom opens the P0·2 Icon Picker; section-level, never per reason) · Title size (**Display 48 unavailable at Beside the text**) · Actions · Member visibility, plus the universal trio (Background role defaulting Surface). **No alignment control:** Beside the text is left-aligned, Under the actions is centred, and the position decides it — a centred title next to a left-aligned list has two axes.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Reasons position | **Beside the text · Under the actions** |
+| Mark | **Check · Dot · Rule · Custom icon** (Custom opens the P0·2 Icon Picker; section-level, never per reason) |
+| Title size | Medium 34 · Large 40 · Display 48 (**Display 48 unavailable at Beside the text**) |
+| Actions | Both · Primary |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface · Contrast (defaulting Surface) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**No alignment control:** Beside the text is left-aligned, Under the actions is centred, and the position decides it — a centred title next to a left-aligned list has two axes.
 
 **The mark is `text-muted` at all four values and an accent mark is not offered.** **Custom icon — this pass — draws the picked icon in the mark's own 16 px box and colour**: the slot's Size and Colour rows are hidden, as on button icons, so the one-value-per-section rule and the accent refusal hold at the fourth value; an empty slot falls back to Check. A5·11 spends its accent once per entry because a checklist has no action under it; this design has an accent button 40 px away, and three accent ticks beside it is the accent spent four times. Geometry is A5·11's unchanged: 16 px box, 14 px gap, 3 px optical lift.
 
@@ -513,7 +644,19 @@ Two asks side by side, each with its own words and its own action. **The only de
 
 **Fields.** `eyebrow` (above the pair, and **the section's accessible name**) · column one: `title` · `sub` · `primaryLabel` · `primaryUrl` · column two: **`secondTitle` (≤ 60) · `secondSub` (≤ 140)** · `secondaryLabel` · `secondaryUrl`. This design introduces the two `second*` fields and **reuses the secondary action's fields as the second column's action**, so a site switching from 1 keeps both labels and both URLs. `note` kept and not drawn: two columns of terms is a table.
 
-**Controls.** **Column planes (Cards · Hairline between · None** — A5·4's Hairline plane at Cards, **the gutter following the plane**: 32 at Cards, 80 at the other two) · Division (Even halves 632/632 · Weighted to the first 780/440, 3 Split's, unavailable at 1080 and below) · **Column title size (Medium 28 · Large 34** — one step below A6's ladder, since there are two of them) · **Actions (Button · Text link, one control for both columns)** · Alignment (Left · Centred) · Member visibility, plus the universal trio — Vertical spacing the section's (**the cards' own padding stays fixed at 48**, 32 at 834, 24 on a phone), Contrast unavailable in Background role (two accent fills on an inverted band are 3.2:1 each — the accent budget's own arithmetic).
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Column planes | **Cards · Hairline between · None** (A5·4's Hairline plane at Cards, **the gutter following the plane**: 32 at Cards, 80 at the other two) |
+| Division | Even halves 632/632 · Weighted to the first 780/440 (3 Split's, unavailable at 1080 and below) |
+| Column title size | **Medium 28 · Large 34** (one step below A6's ladder, since there are two of them) |
+| Actions | **Button · Text link** (one control for both columns) |
+| Alignment | Left · Centred |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background · Surface (Contrast unavailable — two accent fills on an inverted band are 3.2:1 each, the accent budget's own arithmetic) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 — the section's (**the cards' own padding stays fixed at 48**, 32 at 834, 24 on a phone) |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** **Swap asks lands at the field-group head** — one click exchanges the eight fields between the two groups, an editor operation, not a design control; the old refusal loses and is recorded. Both titles, both subs and both labels (`secondTitle` and `secondSub` included) edit inline; both URLs open the Link Picker; both actions take optional icons. The per-column styling refusals are untouched.
 
@@ -554,7 +697,22 @@ A card that crosses the footer's top edge, so the last ask on the page and the e
 - Footer is A3·5 Contrast Band or A3·14 Image Band → the design at its best; on A3·14 the card **keeps its md shadow in both modes**, a photograph not being a ground a hairline reads against.
 - Two overlapping sections on one page (with A4·18's hero card) → allowed, and advised against once.
 
-**Controls.** Card padding (48 · 64 · 88, 4 Card's; the section's own fixed at 96) · Inset (16 · 40 · 72, A4·8's) · **Overlap (Shallow 48 · Standard 88)**, absolute rather than proportional, **clamped to 40% of the card's height** — A4·18's ceiling, carried — with Standard behaving as Shallow on a short card and the sidebar saying so · Title size · Actions · Alignment · Member visibility, plus the universal trio — **Background role locked at Background and Vertical spacing locked at 96**, as 4, reasons shown. **No treatment control: the card is always Raised**, since it sits over an edge.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Card padding | Compact 48 · Comfortable 64 · Spacious 88 (4 Card's; the section's own fixed at 96) |
+| Inset | Snug 16 · Comfortable 40 · Wide 72 (A4·8's) |
+| Overlap | **Shallow 48 · Standard 88** — absolute rather than proportional, **clamped to 40% of the card's height** (A4·18's ceiling), with Standard behaving as Shallow on a short card and the sidebar saying so |
+| Title size | Medium 34 · Large 40 · Display 48 |
+| Actions | Both · Primary |
+| Alignment | Centred · Left |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Background role (universal) | Background (locked, as 4, reason shown) |
+| Vertical spacing (universal) | Locked at 96 (as 4, reason shown) |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**No treatment control: the card is always Raised**, since it sits over an edge.
 
 **Reconciled.** Member visibility composes with the precondition: a section hidden for an audience drops the overlap and the footer's padding returns to its own value, server-side. Every text edits inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -594,7 +752,19 @@ The signup ask with its sign-in line, and **the one design in A6 that reads Ghos
 
 **Members off in Ghost** → visitor state only, no sign-in line, the primary linking to the site's subscribe page (A3·4's substitution). **Self-signup switched off, or no payment provider connected** → the ask it would have made does not render: at Signup Portal button the primary is dropped, and since a banner with no action is not a banner the section does not render at all, with the sidebar naming the setting. **Ruled by the owner:** the primary is not dropped — it takes `fallbackLabel` and `fallbackUrl`, the label and link the site chose for exactly this case, and at Signup Inline form the field is replaced by that button alone (A3·4's substitution, now with the site's own words on it).
 
-**Controls.** **Signup (Portal button · Inline form** — 6 Inline Form's row and its four states, unchanged and unextended) · **Sign-in line (Under the action · In the action row · Hide**, unavailable in the member state) · Title size (one value for both states) · **When a member is signed in (Show a members line · Hide the section)**, plus the universal trio (Background role defaulting Surface, **Contrast unavailable at both signup values**, so the two look like one design). **No Member visibility — the three-state model subsumes it**, A6's one exemption, per the audit.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Signup | **Portal button · Inline form** (6 Inline Form's row and its four states, unchanged and unextended) |
+| Sign-in line | **Under the action · In the action row · Hide** (unavailable in the member state) |
+| Title size | Medium 34 · Large 40 · Display 48 (one value for both states) |
+| When a member is signed in | **Show a members line · Hide the section** |
+| Background role (universal) | Background · Surface (defaulting Surface; **Contrast unavailable at both signup values**, so the two look like one design) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
+
+**No Member visibility — the three-state model subsumes it**, A6's one exemption, per the audit.
 
 **Reconciled.** **The sign-in line is an editable field now** — `signinLine`, default kept, edited inline with P0·1; its link is the picker's Portal · Sign in action. **`upgradeLabel`'s target defaults to Portal · account/plans and opens the Link Picker for override** — a site may route upgrades to its own pricing page; A7 still owns tiers and prices, and no tier name enters a label by data. `memberTitle` and `memberSub` edit inline in the member state through the P0·6 switcher; every Portal target is the picker's action, no literal fragment shipping.
 
@@ -628,7 +798,19 @@ The ask written in the first person and signed by the person making it. The only
 
 **Fields.** As 1, plus **`portrait` (≥ 200 px square) · `signerName` (req, ≤ 40) · `signerRole` (opt, ≤ 40)**. **`note` is kept and not drawn:** the signature is what sits under the words. **No `portraitAlt` exists** — the alt is always empty, the name being beside it in text (A1·6's rule at 96 px). **The signer may come from Ghost this pass — Signer source (Authored · Ghost staff user), the owner's ruling:** bound, `signerName` ← the staff user's name (plain-text-locked, "Edit in Ghost") and `portrait` ← their profile image, the initials circle when they have none — **one letter there, not two: Ghost cannot produce two initials from a name**, where an authored signer keeps both ("MO"). **The picker offers only staff users who have published a post** — Ghost gives a theme nothing for a user with none, so an unpublished staff user is not in the list; **and if a bound signer's posts are later unpublished the section falls back to the site's own signer** — ruled by the owner on 29 August 2026: at Signer source Ghost staff user the portrait keeps its Image Picker and the name and role keep their inline editing, so a site sets what the signature says when Ghost has nobody to give. The bound name still shows the plain-text lock pill while the binding resolves. The signature is never lost silently. `signerRole` stays authored — Ghost staff users carry no public role field. **Authored stays the default**: a banner on a page has no author, and binding is the one-person site's shortcut, not a claim of authorship.
 
-**Controls.** **Portrait (Circle 64 · Circle 96 · None** — two sizes, both circles, no square and no rounded rectangle) · **Portrait position (Beside the text · Above the text**, the latter centred with the portrait fixed at 64 and **the eyebrow moving under it**, the one place in A6 the eyebrow is not first) · Title size (**Medium 34, the default here and nowhere else in A6** · Large 40 · **Display 48 unavailable** — a first-person sentence at 48 px is a slogan with a photograph next to it) · Actions · Member visibility, plus the universal trio (Contrast unavailable in Background role — a portrait on an inverted band needs a scrim or a border the packs do not define, and a first-person note on a band is a poster) — and **the Data group: Signer source (Authored · Ghost staff user)**.
+**Controls.**
+
+| Control | Values |
+|---|---|
+| Portrait | **Circle 64 · Circle 96 · None** (two sizes, both circles, no square and no rounded rectangle) |
+| Portrait position | **Beside the text · Above the text** (the latter centred with the portrait fixed at 64 and **the eyebrow moving under it**, the one place in A6 the eyebrow is not first) |
+| Title size | **Medium 34** (the default here and nowhere else in A6) · Large 40 · **~~Display 48~~ unavailable** — a first-person sentence at 48 px is a slogan with a photograph next to it |
+| Actions | Both · Primary |
+| Member visibility | Everyone · Logged out · Free members · Paid members |
+| Signer source (data) | Authored · Ghost staff user |
+| Background role (universal) | Background · Surface (Contrast unavailable — a portrait on an inverted band needs a scrim or a border the packs do not define, and a first-person note on a band is a poster) |
+| Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
+| Top divider (universal) | None · Line · Fade (default None) |
 
 **Reconciled.** Image focus rides in the portrait's Image Picker popover — Centre · Top · Bottom against the square crop. Signer name and role edit inline when authored; bound, the name shows the plain-text lock pill. Eyebrow, title, sub and labels edit inline; both URLs open the Link Picker; the actions take optional icons.
 
@@ -861,3 +1043,15 @@ Every change below carries the **name** of the rule or the platform fact that re
 
 - **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** — fifteen designs, no gap created or closed, no number reused, nothing renumbered.
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Centred** and **10 Slim** — both of which exist in this category's roster. It is **the owner's own choice, ruled on 29 August 2026**.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

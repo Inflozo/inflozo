@@ -336,10 +336,24 @@ post has been updated at all** ⚑.
   `post.url`, `post.title`, and `post.updated_at` at Updated line On. Authored: `shareLabel`,
   `copiedLabel`, `authorLinkLabel`. Unread: the subscribe strings, `tagsLabel`, `archiveLabel`,
   `archiveUrl`.
-- **6 · Controls.** **Blocks** (five values) · **Width** On the measure 720 · Content width 1,296 ·
-  **Avatar** Compact 48 · Comfortable 56 · Spacious 72 · **Bio lines** One · Two · Full · **Rules**
-  None · Above each block · Full · **Share links** a number picker, 2 to 4, default 4 ⚑ · **Author socials** Off · Icons · Icons and names · **Updated line** Off · On. Eight, plus the universal trio. **Cut:** block order,
-  block gap, a tag limit, a next/prev picture, a per-handle socials choice ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Width | On the measure 720 · Content width 1,296 |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Bio lines | One · Two · Full |
+  | Rules | None · Above each block · Full |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Updated line | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Eight, plus the universal trio. **Cut:** block order, block gap, a tag limit, a next/prev
+  picture, a per-handle socials choice ⚑.
 - **7 · Data.** Tags 0 → no row, no hairline; many → all of them, wrapping ⚑. Authors 1 → as drawn;
   2 → two rows and a hairline ⚑; 3+ → avatars and a names line ⚑. Socials 0 → no row ⚑; on Ghost
   < 6.36 only Facebook and X can render. Prev/next 2 → the pair; **1 → one destination at the full
@@ -387,11 +401,22 @@ post has been updated at all** ⚑.
 - **5 · Content fields.** Read: `tags[]`, `authors[]`, `prev_post`, `next_post`, `post.url`,
   `post.title`. Authored: **the four `rowLabels`** — "Filed under", "Written by", "Share", "Read
   next" — plus `shareLabel`, `copiedLabel`, `authorLinkLabel`.
-- **6 · Controls.** **Blocks** · **Width** — **defaulting to Content width, the only design that
-  does** ⚑ · **Row padding** Compact 20 · Comfortable 28 · Spacious 40 · **Labels** On · Off ·
-  **Rules** Hairlines · None · **Share links** a number picker, 2 to 4, default 4 ⚑. Six, plus the universal trio.
-  **Cut:** width, alignment, per-row padding. **No longer cut: the label text**, which is now four
-  authored fields.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Width | On the measure 720 · Content width 1,296 (**defaulting to Content width, the only design that does**) |
+  | Row padding | Compact 20 · Comfortable 28 · Spacious 40 |
+  | Labels | On · Off |
+  | Rules | Hairlines · None |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, plus the universal trio. **Cut:** width, alignment, per-row padding. **No longer cut: the
+  label text**, which is now four authored fields.
 - **7 · Data.** Tags 0 → the row is absent with its hairline ⚑. Authors 1 or 2 → **one row, two
   people** ⚑; 3+ → avatars and a names line. Prev/next 1 → one destination, **the right half empty
   rather than stretched** ⚑; on a page the row is absent ⚑. **A row is drawn only when it has
@@ -432,10 +457,24 @@ post has been updated at all** ⚑.
   card, blocks at 350, avatar 48.
 - **5 · Content fields.** As 1, plus `subscribeHeading`/`subscribeLine`/`subscribeButton` at Blocks
   Everything, and `post.updated_at` at Updated line On.
-- **6 · Controls.** **Blocks** · **Card width** On the measure · Content width · **Card inset**
-  Compact 32 · Comfortable 48 · Spacious 64 · **Avatar** · **Rules** Between blocks · None · **Share
-  links** · **Author socials** · **Updated line**. Eight, plus the universal trio with **Background
-  role locked to Surface**. **Cut:** card colour, radius, a shadow value, a hover lift.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Card width | On the measure · Content width |
+  | Card inset | Compact 32 · Comfortable 48 · Spacious 64 |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Rules | Between blocks · None |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Updated line | Off · On |
+  | Background role (universal) | **Locked to Surface** |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Eight, plus the universal trio with **Background role locked to Surface**. **Cut:** card colour,
+  radius, a shadow value, a hover lift.
 - **7 · Data.** As 1 in every case — the card changes the ground, not the content. Two authors give a
   hairline **inside** the card ⚑. Socials 0 → **the plane closes over the row and the inset is
   unchanged** ⚑. **At the paywall cut the card closes above the cut** with its lower inset intact ⚑
@@ -475,11 +514,24 @@ post has been updated at all** ⚑.
   destinations** ⚑.
 - **5 · Content fields.** As 1, plus the subscribe three at Blocks Everything and `post.updated_at` at
   Updated line On. **The author's photograph is drawn; a next-post picture is not read at all** ⚑.
-- **6 · Controls.** **Blocks** · **Band edges** Full bleed · Inset to the content width · **Band
-  padding** Compact 64 · Comfortable 96 · Spacious 132 · **Avatar** · **Alignment** Left · Centre ·
-  **Share links** · **Author socials** · **Updated line**. Eight, plus the universal trio with
-  **Background role locked to Contrast** and **Top divider's Fade refused**. **Cut:** band colour,
-  band height, dimmed images, a rules value.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Band edges | Full bleed · Inset to the content width |
+  | Band padding | Compact 64 · Comfortable 96 · Spacious 132 |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Alignment | Left · Centre |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Updated line | Off · On |
+  | Background role (universal) | **Locked to Contrast** |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · ~~Fade~~ refused |
+
+  Eight, plus the universal trio with **Background role locked to Contrast** and **Top divider's
+  Fade refused**. **Cut:** band colour, band height, dimmed images, a rules value.
 - **7 · Data.** As 1. **The photograph is untouched — no filter, no dim, no border** ⚑. **The socials
   glyphs take the band's muted foreground** ⚑ and their boxes the band's 18% hairline. **At Blocks
   Everything the subscribe field sits on a surface derived at 6% of the band's text** ⚑, because the
@@ -522,10 +574,24 @@ post has been updated at all** ⚑.
   above the share row** ⚑. **≤ 767** one column at 350, avatar 48.
 - **5 · Content fields.** As 1, plus the subscribe three at Blocks Everything and `post.updated_at` at
   Updated line On.
-- **6 · Controls.** **Blocks** · **Split** Half · Seven and five · Five and seven · **Column rule**
-  Hairline · None · **Avatar** · **Bio lines** One · Two · Full · **Share links** · **Author socials**
-  · **Updated line**. Eight, plus the universal trio, whose **Line spans both columns** ⚑. **Cut:** a
-  column side, a width value, per-column padding, vertical alignment.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Split | Half · Seven and five · Five and seven |
+  | Column rule | Hairline · None |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Bio lines | One · Two · Full |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Updated line | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Eight, plus the universal trio, whose **Line spans both columns** ⚑. **Cut:** a column side, a
+  width value, per-column padding, vertical alignment.
 - **7 · Data.** Tags 0 → the author moves up. Authors 2 → two rows in the left column. Socials 0 → no
   row, and the column does not reflow ⚑. Prev/next 1 → one destination and the rule below it goes ⚑;
   **0 with share off → the right column is empty and the design collapses to one column at the
@@ -564,10 +630,20 @@ post has been updated at all** ⚑.
 - **5 · Content fields.** Read: `tags[]`, `prev_post`, `next_post`, `post.url`, `post.title`.
   Authored: `shareLabel` — **read but not drawn** ⚑, it names the group for screen readers — and
   `copiedLabel`. **Unread: `authors[]` and their socials** ⚑ and the rest.
-- **6 · Controls.** **Blocks** Tags · Tags and share · Tags, share and next — **three values, not
-  five** ⚑ · **Width** · **Rules** Above · Above and below · None · **Alignment** Left · Centre ·
-  **Share links** a number picker, 2 to 4, default 4, **the + greyed at three on the 720 measure with its reason shown** ⚑. Five, plus the
-  universal trio, whose **Line resolves into this design's own Rules row** ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Blocks | Tags · Tags and share · Tags, share and next — **three values, not five** |
+  | Width | On the measure 720 · Content width 1,296 |
+  | Rules | Above · Above and below · None |
+  | Alignment | Left · Centre |
+  | Share links | **a number picker, 2 to 4, default 4**, the + greyed at three on the 720 measure with its reason shown |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, plus the universal trio, whose **Line resolves into this design's own Rules row** ⚑.
 - **7 · Data.** Tags 0 → **the share links take the left edge** ⚑; many → **the run wraps and the bar
   grows** ⚑. **Authors not read at any count** ⚑. Prev/next 1 → one side, **the other empty rather than
   stretched** ⚑; 0 → no second line; on a page there is no second line ⚑.
@@ -609,13 +685,23 @@ post has been updated at all** ⚑.
   `feature_image_alt`, `primary_author.name`, `published_at`, **scoped by Within**. Authored:
   **`prevKicker` and `nextKicker`**, defaults "Previous" and "Next" ⚑ — the design that had no
   authored field now has two.
-- **6 · Controls.** **Tile media** None · Thumbnail · Picture behind · **Tile height** Compact 200 ·
-  Comfortable 260 · Spacious 320, **disabled at the other two media values with its reason shown** ⚑ ·
-  **Edges** Full bleed · Content width · **Kickers** Words · Words and arrows · **Title lines** One ·
-  Two · **Within** All posts · Same tag · Same author. Six, plus the universal trio. **Cut:** a scrim
-  value, a crop ratio, a side swap, a heading, an Image focus — **the tile picture is Ghost's
-  `feature_image`, not an authored image field, so there is no Image Picker here and the tile crops
-  from the centre** ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Tile media | None · Thumbnail · Picture behind |
+  | Tile height | Compact 200 · Comfortable 260 · Spacious 320, **disabled at the other two media values with its reason shown** |
+  | Edges | Full bleed · Content width |
+  | Kickers | Words · Words and arrows |
+  | Title lines | One · Two |
+  | Within | All posts · Same tag · Same author |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, plus the universal trio. **Cut:** a scrim value, a crop ratio, a side swap, a heading, an
+  Image focus — **the tile picture is Ghost's `feature_image`, not an authored image field, so
+  there is no Image Picker here and the tile crops from the centre** ⚑.
 - **7 · Data.** 2 → the pair; **1 → one tile at the full width keeping its kicker and alignment** ⚑;
   **0 → nothing renders** ⚑ — **the footer is absent, never replaced by another design**. **Within scopes with Ghost's own
   `in="primary_tag"` / `in="primary_author"`** ⚑, and at either value a post with no scoped neighbour
@@ -660,10 +746,21 @@ post has been updated at all** ⚑.
   **size held**, gap 8.
 - **5 · Content fields.** Read: `tags[]` — `name` and `url`, **never `accent_color`** ⚑. Authored:
   `tagsLabel` ⚑, `archiveLabel` ⚑ and **`archiveUrl` — the only URL field in A26** ⚑.
-- **6 · Controls.** **Tag style** Pills · Words · **Tag size** Compact 15 · Comfortable 17 · Spacious
-  19 · **Tags shown** a number picker, 1 to 12, default 6 ⚑ · **Alignment** Left · Centre · **Archive link** Off · On.
-  Five, plus the universal trio, whose **Line resolves into the hairline already above the row** ⚑.
-  **Cut:** a tag colour, a post count, a hash prefix, which tags.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Tag style | Pills · Words |
+  | Tag size | Compact 15 · Comfortable 17 · Spacious 19 |
+  | Tags shown | **a number picker, 1 to 12, default 6** |
+  | Alignment | Left · Centre |
+  | Archive link | Off · On |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, plus the universal trio, whose **Line resolves into the hairline already above the row**
+  ⚑. **Cut:** a tag colour, a post count, a hash prefix, which tags.
 - **7 · Data.** **0 → nothing renders** ⚑ — no label, no row, no reserved height; 1 → one pill with the
   label and link kept; **7 at Tags shown 3 → three pills and a "+ more" link to the post** ⚑, **with no
   number in it**; 15 at Tags shown 12 → twelve pills over four lines and the link, stated rather than
@@ -706,11 +803,22 @@ post has been updated at all** ⚑.
   **label above the links and both left-aligned whatever Alignment says** ⚑.
 - **5 · Content fields.** Read: `post.url`, `post.title`. Authored: `shareLabel`, `copiedLabel`.
   **The shortest field list in A26** ⚑.
-- **6 · Controls.** **Links** a number picker, 2 to 4, default 4 ⚑ · **Link style** Words · Words and glyphs ·
-  **Alignment** Split · Left · Centre · **Bar padding** Compact 20 · Comfortable 28 · Spacious 36 ·
-  **Edges** Content width · On the measure. Five, plus the universal trio with **Background role
-  locked to Surface**. **Cut:** a glyph-only value, share counts, a native share trigger, a sticky
-  value, a bar colour, **a per-section choice of glyph** ⚑.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Links | **a number picker, 2 to 4, default 4** |
+  | Link style | Words · Words and glyphs |
+  | Alignment | Split · Left · Centre |
+  | Bar padding | Compact 20 · Comfortable 28 · Spacious 36 |
+  | Edges | Content width · On the measure |
+  | Background role (universal) | **Locked to Surface** |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Five, plus the universal trio with **Background role locked to Surface**. **Cut:** a glyph-only
+  value, share counts, a native share trigger, a sticky value, a bar colour, **a per-section
+  choice of glyph** ⚑.
 - **7 · Data.** **Links is a count over the site-wide ordered destination list** ⚑; there is no zero
   case and no Add. **Nothing else is read**, which makes it the safe fallback ⚑. **The route rule:**
   where this design is on a route, **A25's share affordance resolves to Off and other A26 share blocks
@@ -753,11 +861,24 @@ post has been updated at all** ⚑.
   than shrinking at every width** ⚑.
 - **5 · Content fields.** As 1, plus **the derived post count at Post count Show** ⚑ and the authored
   **`deskLine`**; `authorLinkLabel` is read as the prefix, defaulting to "More from" ⚑.
-- **6 · Controls.** **Name size** Small 44 · Medium 56 · Large 72 · **Blocks** (Author always drawn) ·
-  **Alignment** Left · Centre · **Bio lines** One · Two · Full · **Rule** None · Above · Below ·
-  **Share links** · **Author socials** · **Post count** Show · Hide. Eight, plus the universal trio,
-  whose **Line resolves into the design's own Rule row** ⚑. **Cut:** tracking, shrink-to-fit, an
-  uppercase value, a name-only value.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Name size | Small 44 · Medium 56 · Large 72 |
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything (Author always drawn) |
+  | Alignment | Left · Centre |
+  | Bio lines | One · Two · Full |
+  | Rule | None · Above · Below |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Post count | Show · Hide |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Eight, plus the universal trio, whose **Line resolves into the design's own Rule row** ⚑.
+  **Cut:** tracking, shrink-to-fit, an uppercase value, a name-only value.
 - **7 · Data.** Authors 1 → as drawn; **2 → both names in the line, bio suppressed** ⚑; **3+ → the
   authored `deskLine`, default "More from the {site} desk"** ⚑. **The post count is absent rather than
   zero** ⚑ on an author's first piece, **and Hide is its default** ⚑. Socials 0 → no row. On a page
@@ -798,13 +919,25 @@ post has been updated at all** ⚑.
   **portrait above the words at 350 with the ratio held** ⚑, side ignored.
 - **5 · Content fields.** As 1, with `profile_image` drawn at picture scale, `socials` under the
   words, and **`primary_author` at three or more authors** ⚑.
-- **6 · Controls.** **Portrait side** Left · Right · **Portrait ratio** Portrait 4:5 · Square 1:1 —
-  **A8's ladder minus its landscape values** ⚑ · **Portrait size** Compact 200 · Comfortable 280 ·
-  Spacious 360 · **Blocks** (Author always drawn) · **Bio lines** Two · Four · Full — **a different
-  ladder from the category's** ⚑ · **Share links** · **Author socials**. Seven, plus the universal
-  trio, whose **Line spans both columns** ⚑. **Cut:** a crop, a radius, a circular value, a caption,
-  **and an Image focus** — **the portrait is Ghost's `profile_image`, not an authored image field:
-  Ghost stores one image and no focal point, so the crop is from the centre** ⚑, which is finding 7.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Portrait side | Left · Right |
+  | Portrait ratio | Portrait 4:5 · Square 1:1 — **A8's ladder minus its landscape values** |
+  | Portrait size | Compact 200 · Comfortable 280 · Spacious 360 |
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything (Author always drawn) |
+  | Bio lines | Two · Four · Full — **a different ladder from the category's** |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, plus the universal trio, whose **Line spans both columns** ⚑. **Cut:** a crop, a radius,
+  a circular value, a caption, **and an Image focus** — **the portrait is Ghost's `profile_image`,
+  not an authored image field: Ghost stores one image and no focal point, so the crop is from the
+  centre** ⚑, which is finding 7.
 - **7 · Data.** Authors 1 → as drawn; **2 → two half-width portraits with three-line bios** ⚑; **3+ → the primary author alone, drawn exactly as at one author** ⚑ — **the owner's ruling of 30 August 2026**. `{{#primary_author}}` is Ghost's own helper for the singular first author and carries `name`, `bio`, `profile_image` and `url`, so the design needs **no loop and no arithmetic**; **the co-authors are named in one muted 13 px line under the name** — "with Daniel Reith and others", **no number**. **The split, the portrait size and the ratio are unchanged, so the design renders as itself at every author count.** **The cost, stated:** at three or more only one writer gets a photograph and a bio, and the designs that credit everyone equally are 1 Author Bio and 14 Ledger. **No photograph → the one-letter plate at the portrait crop** ⚑. **No
   bio → the portrait keeps its height** ⚑ and the row is a picture beside two lines. Socials 0 → no
   row, and the portrait's height is unchanged ⚑.
@@ -846,10 +979,21 @@ post has been updated at all** ⚑.
   `subscribeButton` (20 ch, default "Subscribe"), **`upgradeHeading` / `upgradeLine` /
   `upgradeButton`** for the free-member ask ⚑, and **`subscribedLine`** (90 ch, default "You are
   subscribed to {site}") ⚑. Read: `@site.title` for the heading fallback ⚑ and Ghost's member state.
-- **6 · Controls.** **Prompt** Heading and line · One line · **Field** Inline · Stacked · **Bar
-  padding** Compact 32 · Comfortable 48 · Spacious 64 · **Alignment** Left · Centre · **Edges**
-  Content width · On the measure · **Member Visibility** Everyone · Logged out · Free members · Paid
-  members. Six, plus the universal trio with **Background role locked to Surface**. **Cut:** a benefit
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Prompt | Heading and line · One line |
+  | Field | Inline · Stacked |
+  | Bar padding | Compact 32 · Comfortable 48 · Spacious 64 |
+  | Alignment | Left · Centre |
+  | Edges | Content width · On the measure |
+  | Member Visibility | Everyone · Logged out · Free members · Paid members |
+  | Background role (universal) | **Locked to Surface** |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, plus the universal trio with **Background role locked to Surface**. **Cut:** a benefit
   list, a tier, a picture, a second field, a full-bleed value, a member count.
 - **7 · Data.** **Ghost's members endpoint and nothing else** ⚑. **Members disabled → the design does not render and the editor says why** ⚑. **Self-signup switched off, or no payment provider connected for the paid ask → the button does not render either, and the editor says which** ⚑. **The Upgrade button opens Ghost's own pop-up: with JavaScript off, nothing happens** ⚑. **Logged out → the subscribe ask. A free member → the
   upgrade ask, with no field, because the address is known** ⚑. **A paid member → `subscribedLine`,
@@ -903,10 +1047,22 @@ post has been updated at all** ⚑.
   dotted left and share right on a hairline. **834** that row at 754. **≤ 767** two rows at 44 px.
 - **5 · Content fields.** As 1, plus `tagsLabel`; **`shareLabel` is drawn as the rail's own label** ⚑
   and is edited where it is read.
-- **6 · Controls.** **Rail side** Left · Right · **Rail contents** Tags · Share · Tags and share ·
-  **Rail width** Compact 180 · Comfortable 240 — **two values** ⚑ · **Blocks** · **Avatar** · **Share
-  links**. Six, plus the universal trio, whose **Line takes the body's width, not the rail's** ⚑.
-  **Cut:** a sticky value, a rail rule, a rail ground, a third width.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Rail side | Left · Right |
+  | Rail contents | Tags · Share · Tags and share |
+  | Rail width | Compact 180 · Comfortable 240 — **two values** |
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, plus the universal trio, whose **Line takes the body's width, not the rail's** ⚑. **Cut:**
+  a sticky value, a rail rule, a rail ground, a third width.
 - **7 · Data.** Tags 0 at Rail contents Tags → **no rail at all and the body takes the content
   width** ⚑; 0 at Tags and share → the tower alone; **many → the list runs past the body, which is
   allowed** ⚑. Destinations as 1, and absent on a page ⚑.
@@ -950,11 +1106,22 @@ post has been updated at all** ⚑.
   `post.reading_time`, **`post.updated_at`**, **`post.feature_image_caption` — new in this pass** ⚑,
   `prev_post`, `next_post`, `post.url`, `post.title`. Authored: **the seven `ledgerLabels`**,
   `shareLabel`, `copiedLabel`. **`revisionNote` is gone** ⚑.
-- **6 · Controls.** **Rows** **a number picker, 3 to 7, default 7** ⚑ — **the ledger has seven rows and
-  seven is the value that draws the Photography row**; the + is greyed at seven with the reason shown · **Label column** Compact 132 · Comfortable 180 · **Rules** Between
-  rows · None · **Width** · **Blocks** · **Share links**. Six, plus the universal trio, whose **Line
-  resolves into the first row's own rule** ⚑. **Cut:** a per-row toggle, label alignment, a date
-  format, a word count, a licence row.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Rows | **a number picker, 3 to 7, default 7** — the + is greyed at seven with the reason shown |
+  | Label column | Compact 132 · Comfortable 180 |
+  | Rules | Between rows · None |
+  | Width | On the measure 720 · Content width 1,296 |
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Six, plus the universal trio, whose **Line resolves into the first row's own rule** ⚑. **Cut:**
+  a per-row toggle, label alignment, a date format, a word count, a licence row.
 - **7 · Data.** Tags many → **the value wraps under itself, never under the label** ⚑. Authors 2 →
   joined by "and"; **3+ → "Rosa Menendez and others"** ⚑, with no number. **Updated: drawn on the gap alone —
   `post.updated_at` more than a day after `published_at`** ⚑, **now that the authored note is cut**;
@@ -1001,10 +1168,23 @@ post has been updated at all** ⚑.
   **≤ 767** one column, labels kept, **gutter rules become horizontal hairlines** ⚑.
 - **5 · Content fields.** As 1, plus `tagsLabel`; **the three column labels are authored fields with
   defaults** ⚑.
-- **6 · Controls.** **Columns** Two · Three · **Column rule** Hairline · None · **Blocks** ·
-  **Avatar** · **Bio lines** One · Three · Full — **a different ladder from the category's** ⚑ ·
-  **Share links** · **Author socials**. Seven, plus the universal trio, whose **Line spans all three
-  columns** ⚑. **Cut:** column weights, a fourth column, per-column alignment, a heading.
+- **6 · Controls.**
+
+  | Control | Values |
+  |---|---|
+  | Columns | Two · Three |
+  | Column rule | Hairline · None |
+  | Blocks | Author · Author and tags · Tags, author and share · Everything but subscribe · Everything |
+  | Avatar | Compact 48 · Comfortable 56 · Spacious 72 |
+  | Bio lines | One · Three · Full — **a different ladder from the category's** |
+  | Share links | **a number picker, 2 to 4, default 4** |
+  | Author socials | Off · Icons · Icons and names |
+  | Background role (universal) | Background · Surface · Contrast |
+  | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+  | Top divider (universal) | None · Line · Fade |
+
+  Seven, plus the universal trio, whose **Line spans all three columns** ⚑. **Cut:** column
+  weights, a fourth column, per-column alignment, a heading.
 - **7 · Data.** Tags 0 at Columns Three → **two columns, widened, no reserved third** ⚑; at Two →
   nothing under the bio. Authors 2 → two stacked in the first column at 48 px ⚑. Socials 0 → no row,
   and the column does not reflow ⚑. Destinations 0 → the column is absent and the grid is two ⚑, and
@@ -1318,3 +1498,15 @@ alternatives ("More tags", "All tags") both did. **Closed**, and already drawn t
   required shape, and names **1 Author Bio** and **6 Slim** — both of which exist in this category's
   roster. **It is the owner's own choice, ruled 30 August 2026**, and the same line is badged under the
   roster on `A26-0`.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

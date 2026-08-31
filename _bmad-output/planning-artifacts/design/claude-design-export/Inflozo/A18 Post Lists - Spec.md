@@ -277,17 +277,26 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    under the title, Meta position overridden and disclosed** · ≤ 767 title 19, reading time dropped.
 5. **Fields.** Section six; query the Data group's; post `title`, `url`, `published_at`,
    `primary_tag`, `excerpt`, `primary_author.name`, `reading_time`. **No image, no `profile_image`.**
-6. **Controls.** Rule Off · Between rows · Boxed — Row density Compact · Comfortable · Spacious —
-   Excerpt Off · One line · Two lines — Meta None · Date only · Name and date · Name, date and
-   reading time — Meta position Right column · Under title — Tag Show · Hide — "View all" link
-   Matches the query · Custom. **Seven**, plus the universal trio and the Data group, both outside.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Meta position | Right column · Under title |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
 7. **Data.** Designed for 5, 10, 15; **correct at 1–25**, and the stepper's bounds say so. 1 → one
    row; **at Rule Between rows no rule is drawn at all**, since a rule between one row and nothing
    is not a separator. **Receives more hand-offs than any other A18 design** (from 2 and 10).
 8. **Empty.** **No image case exists.** No tag, or Tag Hide → title moves up, row 21 px shorter.
    No excerpt → shorter row, mixed rows ordinary. No author → date alone on the second line.
-9. **Module.** None; `core` assumed. **No-JS: pixel-identical.** Edit-safe. `load-more` considered
-   and not declared — 15 Load More owns it.
+9. **Behaviour module.** **None**; `core` is assumed by the theme and never declared per design. **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical. `load-more` considered and not declared — 15 Load More owns it.
 10. **A11y.** Floor as written. **Meta position is a layout, not a re-order**, so both values sound
     identical. **At Row density Compact A6's ring overlaps the rule by 2 px — accepted.**
     Contrast 15.46:1 / 5.56:1 light, 15.64:1 / 6.89:1 dark.
@@ -310,17 +319,31 @@ stepper, `excerpt`, the main feed's empty state and Pagination style. *Universal
    hidden whatever the control says**. **The picture never leaves the leading edge and never stacks.**
 5. **Fields.** As 1 Rows plus `feature_image` + `feature_image_alt`. **⚑ Writes `thumbSize` with
    values 96 · 144 · 200** — same field name as A17·13, different enum — **and `thumbShape`** ⚑ new.
-6. **Controls.** Thumbnail Small · Medium · Large — **Thumbnail shape Landscape · Square** — Rule —
-   Row density — Excerpt — Meta — Tag — "View all" link. **Eight.** **No image ratio beyond the
-   shape, no thumbnail side** (a picture at the right of a full-width row is at the far side of the
-   page from its title).
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Thumbnail | Small · Medium · Large |
+   | Thumbnail shape | **Landscape · Square** |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No image ratio beyond the shape, no thumbnail side** (a picture at the right of a full-width
+   row is at the far side of the page from its title).
 7. **Data.** Designed for 5 and 10; correct at 1–15. 1 → composed, no hand-off.
 8. **Empty.** No image on a post → **A17's tag plate at the thumbnail's box, in the set shape**, tag
    centred at 12 px. **No image on any post → the thumbnail column is not drawn and the text takes the
    width back**, silently on the site, disclosed in the panel; **the design stays Thumb Rows** ⚑
    amended, and the panel may advise 1 Rows without switching to it. **⚑ The every-post threshold is flagged again** — five plates among six is worse
    than none, and the rule cannot see the difference.
-9. **Module.** None. **No-JS: pixel-identical** (`loading="lazy"` is HTML). `lightbox` refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical (`loading="lazy"` is HTML, not a script). `lightbox` refused — the row is a link to the post.
 10. **A11y.** A17's DOM order exact, and the visual order matches it. Plate `aria-hidden`. Row never
     below 96 px tall.
 
@@ -345,18 +368,28 @@ the plate following the shape), **Tag** and the **"View all" link** join the fiv
 5. **Fields.** Section six; query the Data group's; post `title`, `url`, and **exactly one** of
    `published_at` · `primary_tag` · `reading_time`. **No image, author or excerpt at any setting** —
    the shortest field list in the category with 14 Index.
-6. **Controls.** Columns One · Two — Row density Compact · Comfortable · Spacious (44 · 56 · 72) —
-   Title size Small · Medium (17 · 19) — Trailing Date · Tag · Reading time · Nothing — Rule —
-   "View all" link. **Six.** **No Excerpt, no Meta** — there is no second line for either. **No Tag
-   row** — Trailing already governs the tag, and two controls that both hide it is a control that
-   lies.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | One · Two |
+   | Row density | Compact · Comfortable · Spacious (44 · 56 · 72) |
+   | Title size | Small · Medium (17 · 19) |
+   | Trailing | Date · Tag · Reading time · Nothing |
+   | Rule | Off · Between rows · Boxed |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Excerpt, no Meta** — there is no second line for either. **No Tag row** — Trailing already
+   governs the tag, and two controls that both hide it is a control that lies.
 7. **Data.** Designed for 10, 15, 25; **correct at 1–30, the widest bounds in A18**. 1 → one 44 px
    line under a 34 px heading, **the weakest single-post case**; the panel suggests 9 Big Type.
 8. **Empty.** **Trailing Tag on an untagged post → the slot is empty and the title keeps the width**;
    no dash, no placeholder. Date and reading time are guaranteed by Ghost, so **a tag is the only
    gap this design can show.**
-9. **Module.** None. **No-JS: pixel-identical** — the truncation is CSS. `filter-strip` considered
-   and not declared.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — the truncation is CSS. `filter-strip` considered and not declared.
 10. **A11y. ⚑ The only design in the library that truncates a title.** The clip is
     `white-space: nowrap` + `text-overflow: ellipsis`; **the full string stays in the DOM**, is the
     link's accessible name and is what is indexed. **No `title` attribute is added.** A6's ring
@@ -382,8 +415,20 @@ A18. *Universal:* Row density keeps its name, 44 · 56 · 72 being the row and n
 5. **Fields.** As 1 Rows; `published_at` **required by construction**. **⚑ Writes `dateStyle` and
    `author` where others write `meta`**; `meta` is preserved and `author` derived from it on the
    first switch in (Name and date → Name; Name, date and reading time → Name and reading time).
-6. **Controls.** Date style Full · Short · Day and month — Rule — Row density — Excerpt —
-   Author Off · Name · Name and reading time — Tag — "View all" link. **Seven.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Date style | Full · Short · Day and month |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Author | Off · Name · Name and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
 7. **Data.** Designed for 5, 10, 15; correct at 1–25. **Both order values are date orders, so the
    column can never be out of sequence**; the panel names Oldest first as the intent and does not
    force it. 1 → a date and a title is a complete statement, **the strongest single-post case among
@@ -391,8 +436,7 @@ A18. *Universal:* Row density keeps its name, 44 · 56 · 72 being the row and n
 8. **Empty.** **The date is never missing.** No tag, or Tag Hide → title moves up, date stays level
    with the title's first line. **⚑ A future `published_at` never appears** — Ghost does not return
    scheduled posts to a public query.
-9. **Module.** None. **No-JS: pixel-identical.** **Nothing in the registry sorts client-side**, so a
-   reader cannot reverse the order — A17·10's gap, unchanged.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the date column is server-rendered from each post's `published_at`. **Nothing in the registry sorts client-side**, so a reader cannot reverse the order with or without script — A17·10's gap, unchanged.
 10. **A11y. ⚑ DOM order departs from the card: date, tag, title, excerpt, author** — the visual and
     reading orders agree, and the card's promise that a design switch never changes what a screen
     reader hears is broken here, deliberately, in one place. **The column's width is computed** (the
@@ -417,13 +461,26 @@ date-order note.
    32, heading holds 13 px.
 5. **Fields.** As 1 Rows minus the excerpt. `published_at` is the grouping key at Month and Year,
    `primary_tag` at Tag. **Writes `groupBy`, `headingPosition` and `otherGroupLabel`** ⚑ new.
-6. **Controls.** Group by Month · Year · Tag · Nothing — Heading position Above · Left —
-   **"Everything else" label** (`otherGroupLabel`, shown at Group by Tag) — Rule — Row density —
-   Meta — "View all" link. **Seven.** **No Excerpt** ⚑: an excerpt adds 26 px a row and pushes the
-   headings so far apart that the grouping stops being visible, which is the reason to choose this
-   design. **No Tag row** — Group by governs the row eyebrow at Tag. **The Group by row carries the
-   no-JavaScript line** ⚑: "Grouping needs JavaScript. Without it this list draws flat — each row with
-   its own date, no headings and no extra space."
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Group by | Month · Year · Tag · Nothing |
+   | Heading position | Above · Left |
+   | "Everything else" label | `otherGroupLabel`, shown at Group by Tag |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Excerpt** ⚑: an excerpt adds 26 px a row and pushes the headings so far apart that the
+   grouping stops being visible, which is the reason to choose this design. **No Tag row** — Group
+   by governs the row eyebrow at Tag. **The Group by row carries the no-JavaScript line** ⚑:
+   "Grouping needs JavaScript. Without it this list draws flat — each row with its own date, no
+   headings and no extra space."
 7. **Data.** **Show cuts posts, never groups**, so the last group is often partial. Designed for
    10–25 across 2–6 groups; correct at 1–25. **The count line reports three numbers** — "9 posts
    match. 9 drawn in 2 groups." — and warns "Grouping reads best with 3 or more posts a group." ⚑
@@ -432,13 +489,7 @@ date-order note.
 8. **Empty.** No tag at Group by Tag → **the authored `otherGroupLabel`, default "Everything
    else"** ⚑. **A row never repeats its heading:** Month → "12 Mar", Year → "12 March", Tag → full
    date and no row eyebrow.
-9. **Module.** **`group-headings`** ⚑ new in this pass — Ghost cannot tell that the month changed
-   between two posts, so the headings are cut in by the browser from each row's `<time datetime>`
-   or its tag. **No-JS: the list renders flat and ungrouped** — every post present, in the set's
-   order, **each row carrying its own date exactly as the design draws it**, **no group heading and
-   no group date**, no group gaps and no empty space where one would have been. One consequence,
-   stated rather than corrected: a set spanning more than one year shows no year anywhere. **No post is lost.** Edit-safe: the editor runs the module, so the canvas shows the
-   grouped list.
+9. **Behaviour module.** **`group-headings`** ⚑ — Ghost cannot tell that the month changed between two posts, so the headings are cut in by the browser from each row's `<time datetime>` or its tag. **Edit-safe: yes** — the module runs in the editor, so the canvas shows the grouped list; it derives headings from content already on the page and moves, adds and removes nothing the editor placed. **JS off: the list renders flat and ungrouped** — every post present, in the set's order, **each row carrying its own date exactly as the design draws it**, **no group heading and no group date**, no group gaps and no empty space where one would have been. One consequence, stated rather than corrected: a set spanning more than one year shows no year anywhere. **No post is lost.**
    **`accordion` considered and refused** on design grounds despite a perfect degradation; **sticky
    headings refused** (they need no module and a section is not a scrolling pane).
 10. **A11y.** **⚑ The outline is correct in both states:** server-side each title is an `<h3>`
@@ -466,15 +517,29 @@ group and a 1–25 stepper. **No Tag row:** recorded as a conflict, not closed.
    head title 40 · 1080 head 306, list 650 · 834 **head stacks above at 560, title 34, note and link
    move below the list** · ≤ 767 title 26. **Head side ignored below 834.**
 5. **Fields.** As 1 Rows; **the title is effectively required.** Writes `headSide`.
-6. **Controls.** Head side Left · Right — Rule — Row density — Excerpt — Meta — Tag — "View all"
-   link. **Seven.** **No head-width control** — its narrow value would turn this design into 1 Rows.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Head side | Left · Right |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No head-width control** — its narrow value would turn this design into 1 Rows.
 7. **Data.** Designed for 5 and 10; correct at 1–15. 0 → the section does not render, head included,
    unless it is the designated main feed. 1 → 856 px of list holding one row; the panel suggests A19
    and does not switch.
 8. **Empty.** **Head None → an empty 416 px column; the design does not hand off**, and the picker's
    note says "This design needs a title. Without one, try Rows." ⚑ A hand-off is for a design that
    cannot exist; this one can exist, badly.
-9. **Module.** None. **No-JS: pixel-identical.** Sticky head refused, as in A8·6 and A17·6.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical. Sticky head refused, as in A8·6 and A17·6.
 10. **A11y.** Head Right is a `grid-column` move, so the head is first in the DOM at both values.
     Focus order head link → rows.
 
@@ -495,19 +560,30 @@ retired. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    **Inset overridden to Full width**, margin 20.
 5. **Fields.** Identical to 1 Rows. **Writes `band` and nothing else of its own** — the smallest
    field difference between any two designs in A18, which is the point: this design is a ground.
-6. **Controls.** Band Full width · Inset — Rule — Row density — Excerpt — Meta — Tag — "View all"
-   link. **Seven.** No band colour, no meta position. **Vertical spacing resolves 80 · 96 · 132 on
-   the band**; **Background role ships locked at Contrast** and **Top divider locked None**, each
-   with its reason drawn.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band | Full width · Inset |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | **Contrast (locked)**, with its reason drawn |
+   | Vertical spacing (universal) | **80 · 96 · 132 on the band** |
+   | Top divider (universal) | **Locked None**, with its reason drawn |
+
+   No band colour, no meta position. **Vertical spacing resolves 80 · 96 · 132 on the band**;
+   **Background role ships locked at Contrast** and **Top divider locked None**, each with its
+   reason drawn.
 7. **Data.** Designed for 5 and 10; correct at 1–25. **0 → the band goes with the section.**
    1 → a lot of ground for one post; the panel suggests Vertical spacing Compact. **A34 attaches
    below the band, on the page ground** ⚑.
 8. **Empty.** As 1 Rows. At Rule Off a title-only row is a line of type in a lot of space —
    legitimate at Spacious, and not warned.
-9. **Module.** None. **No-JS: pixel-identical.** **Print: on white, without the band** ⚑ amended —
-   the same rows, the same measure, the same rules. A17·7's behaviour, kept; its old phrasing as a
-   design switch, withdrawn. **The design stays Contrast Band: it loses its ground, not its
-   identity.**
+9. **Behaviour module.** **None.** **Edit-safe: yes** — the inversion is a token substitution. **JS off:** pixel-identical. **Print: on white, without the band** ⚑ amended — the same rows, the same measure, the same rules. A17·7's behaviour, kept; its old phrasing as a design switch, withdrawn. **The design stays Contrast Band: it loses its ground, not its identity.**
 10. **A11y.** Measured on the band, light: title 15.87:1, muted `#A5A29D` 5.32:1. Dark (the band
     inverts to `#EDE7DA`): 15.42:1 and `#6C6961` 5.61:1. **⚑ The accent needs a pack-level answer:**
     the light band takes the dark accent at 5.73:1; the dark band takes the light accent at 4.42:1
@@ -534,17 +610,30 @@ ruling is withdrawn and replaced by that. *Data:* the Data group, a 1–25 stepp
    ≤ 767 padding 16, gap 12, thumb 88, excerpt hidden, meta reduced to the date.
 5. **Fields.** As 2 Thumb Rows. **Writes `card`, a third `thumbSize` value set (Off · 112 · 160) ⚑
    and `thumbShape`.**
-6. **Controls.** Card Surface · Ground — Thumbnail Off · Small · Medium — **Thumbnail shape
-   Landscape · Square** — Row density (card padding 16 · 24 · 32) — Excerpt — Meta — Tag — "View
-   all" link. **Eight.** **No Rule** — the only A18 design without it. **Row density keeps its name**
-   as the card's internal padding: a genuinely different ladder.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card | Surface · Ground |
+   | Thumbnail | Off · Small · Medium |
+   | Thumbnail shape | **Landscape · Square** |
+   | Row density | Compact · Comfortable · Spacious (card padding 16 · 24 · 32) |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Rule** — the only A18 design without it. **Row density keeps its name** as the card's
+   internal padding: a genuinely different ladder.
 7. **Data.** Designed for 5 and 10; correct at 1–15 (a card is 24% taller than a bare row).
    1 → **the best single-post case in A18.**
 8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at
    Thumbnail Off and does not hand off**, unlike 2 Thumb Rows, because the card is the design and the
    picture is a passenger. **Cards are not equalised** — a stack has no row to equalise.
-9. **Module.** None. **No-JS: pixel-identical** — the hover lift is a CSS transition and respects
-   `prefers-reduced-motion` by keeping the end state. Edit-safe: the lift does not run while editing.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — the lift does not run while editing. **JS off:** pixel-identical — the hover lift is a CSS transition and respects `prefers-reduced-motion` by keeping the end state.
 10. **A11y.** The card is the `<a>`. **⚑ DOM order is A17's and the visual order puts the image
     last**; `alt=""` in practice, the same trade A17·13 recorded. **A6's ring has the 16 px gap to
     live in — the most comfortable in A18.** Contrast on the card 16.25:1 / 5.85:1; dark
@@ -571,10 +660,22 @@ the cards and is not locked; where it meets Card Surface the panel says the two 
 5. **Fields.** Section six (**sub offered, not recommended**); query the Data group's; post `title`,
    `url`, `published_at`, `primary_tag` **drawn in the meta line**, `primary_author.name` at Meta's
    fourth. **Never reads `excerpt`, `feature_image` or `reading_time`.**
-6. **Controls.** Title size Display · Huge — Alignment Left · Centred — Rule — Row density
-   (20 · 28 · 40) — Meta None · Date only · Tag and date · Name, tag and date — "View all" link.
-   **Six.** **No Excerpt** — the title is the excerpt, at four times the size. **No Tag row** — the
-   tag lives inside the Meta enum here, A17·9's exception.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Title size | Display · Huge |
+   | Alignment | Left · Centred |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious (20 · 28 · 40) |
+   | Meta | None · Date only · Tag and date · Name, tag and date |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Excerpt** — the title is the excerpt, at four times the size. **No Tag row** — the tag
+   lives inside the Meta enum here, A17·9's exception.
 7. **Data.** Designed for 3–5; correct at 1–6, legible to 10. **The count line carries the
    category's only standing warning** — "Display titles read best at five or fewer", three at Huge —
    **and the stepper carries no maximum below the category's.** 1 → **the strongest single-post case
@@ -582,8 +683,7 @@ the cards and is not locked; where it meets Card Surface the panel says the two 
 8. **Empty.** No tag at Meta Tag and date → **the date stands alone with no separator dot.**
    **No image or excerpt case exists** — with 3 Slim, one of two designs that cannot be damaged by a
    thin post. Its exposure is the opposite: a very long title at 48 px is three lines, and it wraps.
-9. **Module.** None. **No-JS: pixel-identical.** `reveal` and `typewriter` both considered and
-   refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical. `reveal` and `typewriter` both considered and refused.
 10. **A11y.** The `<h2>` is visually the smallest heading on the page and structurally still the
     parent. **⚑ DOM order departs from the card — title then tag** — the second exception across the
     two categories, after A17·9's identical move.
@@ -610,9 +710,23 @@ rule.
 5. **Fields.** Lead: as 2 Thumb Rows plus the excerpt. Followers: minus image and excerpt.
    **`featured` read, stored, never drawn** ⚑ — the lead is a position, so the site controls it by
    controlling the order. Writes `leadLayout`, `leadRatio`, `followerStyle`.
-6. **Controls.** Lead layout Image above · Image beside — Lead image Wide · Landscape — Followers
-   Rows · Slim lines — Rule — Meta — Tag — "View all" link. **Seven.** **No Row density** (Followers
-   already sets the row's shape); **no followers-count control** (it is Count minus one).
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Lead layout | Image above · Image beside |
+   | Lead image | Wide · Landscape |
+   | Followers | Rows · Slim lines |
+   | Rule | Off · Between rows · Boxed |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Row density** (Followers already sets the row's shape); **no followers-count control** (it
+   is Count minus one).
 7. **Data.** Designed for 5 and 10; correct at 2–15, and to 25 at Followers Slim lines — **the
    stepper's minimum is 2 and its maximum follows Followers**. **The count line splits its number** —
    "5 drawn — 1 lead, 4 followers." 1 → the lead alone, no rules; the panel suggests a featured
@@ -621,7 +735,7 @@ rule.
    than an 864 × 486 plate — **the one place in A18 where the plate is refused outright.** No image
    on any post → **the lead simply has none and the followers are unchanged** ⚑ amended; the design
    stays Lead and List and the panel may advise 1 Rows.
-9. **Module.** None. **No-JS: pixel-identical.** `lightbox` not declared.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the lead and its picture are server-rendered. `lightbox` not declared.
 10. **A11y. ⚑ The lead sits outside the `<ul>`, as its own `<article>`.** Both the lead's and the
     followers' titles are `<h3>` — **the size difference is visual and the outline is flat**, the
     opposite choice to 5 Grouped's and right for the same reason.
@@ -644,9 +758,22 @@ group, a 2–15 stepper (25 at Slim lines), `excerpt` on the lead.
    numeral and title 19.
 5. **Fields.** As 1 Rows. **The numeral is not a field** — it is the row's index, computed at render
    and stored nowhere. Writes `numberStyle`.
-6. **Controls.** Number style Zero-padded · Plain — Rule — Row density — Excerpt — Meta — Tag —
-   "View all" link. **Seven.** **No number size** (it is tied to the title's), **no accent numeral**
-   ⚑, no thumbnail.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Number style | Zero-padded · Plain |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No number size** (it is tied to the title's), **no accent numeral** ⚑, no thumbnail.
 7. **Data.** Designed for 5, 7, 10; correct at 1–25, **and two digits cover the whole range.**
    **The numeral counts the drawn list from the top, always** — not the archive, not the query
    before Count cut it — and **⚑ it restarts at 01 on every page**: Ghost cannot continue a count
@@ -657,8 +784,7 @@ group, a 2–15 stepper (25 at Slim lines), `excerpt` on the lead.
 8. **Empty.** **The numeral is never missing** — one fewer failure mode than any other design here.
    **⚑ The numeral aligns to the title, not the row**, so an untagged post's numeral sits 21 px
    higher than its neighbours'. Correct: the numeral labels the title.
-9. **Module.** None. **No-JS: pixel-identical** — the numerals are rendered into the markup,
-   **not by a CSS counter** ⚑. `count-up` considered and refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — the numerals are rendered into the markup, **not by a CSS counter** ⚑, so every position is present. `count-up` considered and refused.
 10. **A11y. ⚑ The list is an `<ol>`, the only one in A17 or A18**, and **the drawn numeral is
     `aria-hidden`** because the list type already announces the position. **Tabular figures are a
     requirement, not a preference** — the second design after A17·10 to need them, and now recorded
@@ -683,12 +809,25 @@ Order row, where the value it warns about lives.
 5. **Fields.** As 1 Rows. **Writes `panelEdge` and `headPosition`, both shared with A17·17 by name
    and value set** — the cleanest cross-category field reuse in either category — **and `meta`**,
    which it did not before.
-6. **Controls.** Panel Fill · Outline — Head Inside · Outside — Rule Off · Between rows
-   *(no Boxed — **absent rather than disabled** ⚑)* — Row density — Excerpt — **Meta** None · Date
-   only · Name and date · Name, date and reading time — Tag — "View all" link. **Eight.** **The
-   fixed meta is withdrawn** ⚑: at the third value the meta wraps at a 760 measure, which the note
-   discloses rather than the control forbidding. **Vertical spacing sits around the panel; the 48 px
-   inset stays fixed and is not a control.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Panel | Fill · Outline |
+   | Head | Inside · Outside |
+   | Rule | Off · Between rows (no Boxed — **absent rather than disabled**) |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (around the panel; the 48 px inset stays fixed and is not a control) |
+   | Top divider (universal) | None · Line · Fade |
+
+   **The fixed meta is withdrawn** ⚑: at the third value the meta wraps at a 760 measure, which the
+   note discloses rather than the control forbidding. **Vertical spacing sits around the panel; the
+   48 px inset stays fixed and is not a control.**
 7. **Data.** Designed for 5 and 10; correct at 1–15. **0 → the panel goes with the section**; an
    empty panel is the one empty state that would look deliberate — unless this is the main feed, and
    then the empty state renders inside the panel. 1 → **about 70% empty plane**, matching A17·17's
@@ -696,7 +835,7 @@ Order row, where the value it warns about lives.
 8. **Empty.** As 1 Rows. **⚑ A hover fill would have to derive from the panel rather than the page**
    and Paper has no step above `#FFFFFF`, so **there is no hover fill in any pack** — a hover that
    existed in some packs and not others would not be a design.
-9. **Module.** None. **No-JS: pixel-identical.** `accordion` considered and refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — the panel is a container, not a behaviour. **JS off:** pixel-identical. `accordion` considered and refused.
 10. **A11y. ⚑ The panel is a `<div>` with no role** — A17·17's ruling, reused. At Head Outside the
     `<h2>` sits outside the panel in the DOM as well as visually. Contrast 16.25:1 / 5.85:1 light,
     14.56:1 / 6.41:1 dark. **⚑ In dark the panel's border and the row dividers converge on one
@@ -722,9 +861,22 @@ separate ladder. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    column goes, the date joins the meta whatever Date says, and the rail moves to the page margin.**
    **Rail and marker are the same size at all four widths.**
 5. **Fields.** As 4 Dated. Writes `marker` and `datePosition`; **shares `author` with 4 Dated.**
-6. **Controls.** Marker Dot · Ring · None — Date On the rail · In the meta — Row density
-   (20 · 28 · 40 between posts) — Excerpt — Author — Tag — "View all" link. **Seven.** **No Rule, no
-   Meta, no accent marker** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Marker | Dot · Ring · None |
+   | Date | On the rail · In the meta |
+   | Row density | Compact · Comfortable · Spacious (20 · 28 · 40 between posts) |
+   | Excerpt | Off · One line · Two lines |
+   | Author | Off · Name · Name and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No Rule, no Meta, no accent marker** ⚑.
 7. **Data.** Designed for 5, 10, 15; correct at 2–25, and the stepper allows 1 with the design's
    advice. 1 → **one marker and no line**, because the rail runs between the first and last markers
    and with one post they are the same point; the panel suggests 4 Dated. 2 → the lowest count the
@@ -734,7 +886,7 @@ separate ladder. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    proportional to the interval** — a set spanning years draws an evenly spaced rail over uneven
    time, and nothing says so; a proportional rail was refused because a six-month gap would draw a
    metre of empty line.
-9. **Module.** None. **No-JS: pixel-identical.** `scroll-spy` and `reveal` considered and refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the rail, the markers and the dates are markup and CSS. `scroll-spy` and `reveal` considered and refused.
 10. **A11y.** Rail and markers `aria-hidden`. **⚑ DOM order is date, tag, title, excerpt, author** —
     4 Dated's departure, for the same reason. **A6's ring wraps the text and the date and stops
     short of the rail**, which is shared between rows.
@@ -758,11 +910,22 @@ row carrying the date-order note.
 5. **Fields.** Section six; query the Data group's; post `title`, `url`, and one of `published_at`
    or `primary_tag`. **Reads no image, author, excerpt or reading time.** Writes `columns`, `detail`,
    `titleSize`; **shares `titleSize`'s Small · Medium (17 · 19) with 3 Slim.**
-6. **Controls.** Columns Two · Three · Four — Detail Title only · Title and date · Title and tag —
-   Title size Small · Medium *(**Medium unavailable at Columns Four, reason shown** — the only
-   disabled value in A18)* — Rule — Row density (12 · 16 · 24) — "View all" link. **Six.** **No
-   reading-order control** ⚑: across-then-down would make the DOM and visual orders disagree. **No
-   Tag row** — Detail governs the one fact an entry carries.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Detail | Title only · Title and date · Title and tag |
+   | Title size | Small · Medium (**Medium unavailable at Columns Four, reason shown** — the only disabled value in A18) |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious (12 · 16 · 24) |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   **No reading-order control** ⚑: across-then-down would make the DOM and visual orders disagree.
+   **No Tag row** — Detail governs the one fact an entry carries.
 7. **Data.** Designed for 15 and 25; **the stepper reaches 30**, and below four posts the panel
    suggests Columns Two. **Columns are balanced by count, not height** — 15 across three is 5·5·5,
    across four is 4·4·4·3, and the count line reports the division. 1 → **one title beside two empty
@@ -770,8 +933,7 @@ row carrying the date-order note.
    server-side `title asc` — never a client sort.
 8. **Empty.** At Detail Title and tag an untagged post draws its title alone and its entry is 21 px
    shorter; **entries are not equalised.** At Title and date nothing can be missing.
-9. **Module.** None. **No-JS: pixel-identical** — and **Title A–Z is server-side, so it needs none.**
-   `filter-strip` considered and refused (A17·15 owns it); `shuffle` refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — and **Title A–Z is server-side, so it needs none.** `filter-strip` considered and refused (A17·15 owns it); `shuffle` refused.
 10. **A11y. ⚑ One `<ul>` for the whole index, flowed into columns by CSS** — not one list per
     column — so the announced order and the read order are the same. **At Compact an entry is 62 px
     with a date and 44 px without**, meeting the touch floor. **Titles are never clipped here**,
@@ -800,12 +962,25 @@ without coining a module.
    not read at all** — the route's own pagination is the total. Writes
    `batchSize` and `buttonStyle` *(both shared with A17·16)*, `thumbSize`, `thumbShape` and
    **`buttonLabel`** ⚑ new.
-6. **Controls.** **Batch size a stepper, 3–25, default 10** ⚑ amended — an item count is a number
-   the site types, never two fixed buttons; it is the route's page size, and only the theme can set
-   that number because Ghost's admin has no posts-per-page setting (recorded for the architect) —
-   Button Outline · Solid · Text — **Button label**
-   (`buttonLabel`, ≤ 24 ch, with an optional icon) — Thumbnail Off · Small · Medium — **Thumbnail
-   shape Landscape · Square** — Rule — **Row density** — **Excerpt** — Meta — Tag — "View all" link.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Batch size | **a stepper, 3–25, default 10** — the route's page size |
+   | Button | Outline · Solid · Text |
+   | Button label | `buttonLabel`, ≤ 24 ch, with an optional icon |
+   | Thumbnail | Off · Small · Medium |
+   | Thumbnail shape | **Landscape · Square** |
+   | Rule | Off · Between rows · Boxed |
+   | Row density | Compact · Comfortable · Spacious |
+   | Excerpt | Off · One line · Two lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time |
+   | Tag | Show · Hide |
+   | "View all" link | Matches the query · Custom |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    **Eleven.** **Row density and Excerpt are restored** ⚑ — their removal was 4–7-norm arithmetic,
    and every sibling has them.
 7. **Data.** **⚑ Amended: the design is main-feed-only and `count` is not read at all.** Its
@@ -821,10 +996,7 @@ without coining a module.
    Thumbnail Off rather than handing off** — the button, not the picture, is the design.
    **Exhausted → the button is replaced by the count line "All 15 posts shown"**, now **a theme
    translation-catalogue string** ⚑, and the section ends there.
-9. **Module.** **`load-more`.** **No-JS degradation, quoted from the registry: "Ghost's numbered
-   `/page/2/` pagination links render instead (FR-G4, explicitly)."** The first batch is
-   server-rendered and complete; only the button is replaced. **Edit-safe: the module does not run
-   while editing**, so the editor shows the resting state. **`infinite-scroll` refused.**
+9. **Behaviour module.** **`load-more`.** **Edit-safe: no** — it appends rows the editor did not place; the module does not run while editing, so the editor shows the resting state and the first batch only. **JS off, quoted from the registry: "Ghost's numbered `/page/2/` pagination links render instead (FR-G4, explicitly)."** The first batch is server-rendered and complete; only the button is replaced, so the archive stays fully readable. **`infinite-scroll` refused.** ⚑ **This line corrects the earlier "Edit-safe" on this design**; see the module-declaration entry in Patch notes.
 10. **A11y.** **The button is a real `<button>` and is not rendered at all without JavaScript**, so
     there is never an inert control. **Focus moves to the first new row after a batch arrives**, and
     the count line is an `aria-live="polite"` region. Button 45 px tall, full width below 767.
@@ -1136,6 +1308,48 @@ as a locked value with the reason beside it.
    dark elevation for 8 Row Cards and 12 Panel, the main feed needing to be *designated*, and
    `postRefs` needing an ordering contract.
 
+### Module declarations added — 31 August 2026
+
+**Every design in this category now carries a Behaviour module line at field 9** naming its script or
+declaring none, stating whether it is edit-safe, and saying what a visitor sees with JavaScript
+switched off. The category named its two modules in §0 and in prose; **it did not declare them per
+design in a form the build can read**. **No frame changed and no design changed. Field 9 was
+relabelled from Module to Behaviour module and nothing was renumbered.**
+
+| # | Design | Declared |
+|---|---|---|
+| 1 | Rows | **None** · edit-safe: yes · JS off: pixel-identical |
+| 2 | Thumb Rows | **None** · edit-safe: yes · JS off: pixel-identical (`loading="lazy"` is HTML) |
+| 3 | Slim | **None** · edit-safe: yes · JS off: pixel-identical, the truncation being CSS |
+| 4 | Dated | **None** · edit-safe: yes · JS off: pixel-identical; the sort gap stays a gap |
+| 5 | Grouped | **`group-headings`** · **edit-safe: yes** — it runs in the editor so the canvas shows the grouped list, and it derives its headings from content already on the page · JS off: the list renders flat and ungrouped, every post present in the set's order with its own date, no group heading, no group date and no empty space where one would have been |
+| 6 | Split Head | **None** · edit-safe: yes · JS off: pixel-identical |
+| 7 | Contrast Band | **None** · edit-safe: yes · JS off: pixel-identical |
+| 8 | Row Cards | **None** · edit-safe: yes, the lift is a CSS transition that does not run while editing · JS off: pixel-identical |
+| 9 | Big Type | **None** · edit-safe: yes · JS off: pixel-identical |
+| 10 | Lead and List | **None** · edit-safe: yes · JS off: pixel-identical |
+| 11 | Numbered | **None** · edit-safe: yes · JS off: pixel-identical, the numerals being in the markup rather than in a CSS counter |
+| 12 | Panel | **None** · edit-safe: yes · JS off: pixel-identical |
+| 13 | Timeline | **None** · edit-safe: yes · JS off: pixel-identical |
+| 14 | Index | **None** · edit-safe: yes · JS off: pixel-identical; Title A–Z is server-side |
+| 15 | Load More | **`load-more`** · **edit-safe: no** — it appends rows the editor did not place · JS off: Ghost's own numbered `/page/2/` links render in place of the button, the first batch being server-rendered and complete |
+
+**Thirteen declare none and two declare a script**, matching §0's count. **No name outside the
+registry was used**, no deleted name appears anywhere in this document, and **`infinite-scroll` stays
+refused category-wide**. `accordion`, `lightbox`, `filter-strip`, `count-up`, `reveal`, `scroll-spy`,
+`shuffle` and `typewriter` are each named at the design that considered them and refused there, and
+none is declared.
+
+**One correction, recorded rather than buried.** 15 Load More's field 9 read **"Edit-safe: the module
+does not run while editing"**. Not running is why the editor is safe, not a claim that the behaviour
+is: it appends rows the editor did not place, so it is now **edit-safe: no**, with the same
+consequence for the canvas — the editor shows the resting state and the first batch only. **5
+Grouped's edit-safe: yes is unchanged and deliberate**: it runs in the editor, and the design's whole
+point is invisible if it does not.
+
+**Numbering.** Unchanged — **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15**: fifteen designs, no
+gap created or closed, no number reused, nothing added, removed or renumbered.
+
 ### Confirmations
 
 1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
@@ -1155,3 +1369,17 @@ as a locked value with the reason beside it.
    admin setting. Recorded on the frame, in design 15's entry and in the architect's list above.
 
 **No questions remain open in this category.**
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Behaviour declared, design by design.** Every design in this category already carried a **Behaviour module** line at field 9 naming its script in backticks or stating **None**, saying whether it is edit-safe, and saying concretely what a visitor with JavaScript off sees. The lines were re-read design by design in this pass and confirmed; **nothing was added, renamed or removed**, and no script outside the registry is named anywhere in the category.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

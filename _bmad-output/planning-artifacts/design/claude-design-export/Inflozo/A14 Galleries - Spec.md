@@ -432,18 +432,28 @@ media picker as its Add: the shared controls, named once.
    padding 64. **The crop is the same at all three widths** ⚑.
 5. **Content fields.** `eyebrow` ≤ 24 · `heading` ≤ 60 · `blurb` ≤ 200 · `credit` ≤ 60 · `images[]`
    1–48 with `image` (req), `alt` ≤ 120, `caption` ≤ 200, `link`. All four section strings optional.
-6. **Controls.** Columns *Two · Three · Four* — Crop
-   *Square · Landscape · Portrait · As uploaded* — Gap *Tight · Normal · Loose* — Captions *Under each
-   ·
-   In the lightbox only · Off* — Lightbox *On · Off*. Then the images block. **Then, outside the
-   list**: the universal trio — Background role · Vertical spacing *Compact · Comfortable ·
-   Spacious* · Top divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data
-   group**. **The Padding row is retired into Vertical spacing** ⚑, the same three values under the
-   universal name. **Five** own controls. **Quick Controls**: Columns · Crop · Gap. **Editing** ·
-   eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic ·
-   underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer · sponsored.
-   **Every caption edits inline under its own frame**, in the place it is drawn, and holds **200
-   characters** ⚑. **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Gap | Tight · Normal · Loose |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Then, outside the list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
+   Controls**: Columns · Crop · Gap. **Editing** · eyebrow, heading, blurb and credit edit inline
+   with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new
+   tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline under its own
+   frame**, in the place it is drawn, and holds **200 characters** ⚑. **Every URL field opens the
+   Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** Nothing from Ghost's content API ⚑; `img_url` derivatives for the `srcset`, the
    original
    in the overlay ⚑. **0** → the section does not render; drop zone in the editor ⚑. **1** → one
@@ -495,18 +505,29 @@ media picker as its Add: the shared controls, named once.
    **≤ 767** one column of 350, gap 16, padding 64. **No crop at any width.**
 5. **Content fields.** The same five as 1 Grid. **This design reads no field 1 Grid does not** ⚑ —
    what differs is the crop value it is fixed at.
-6. **Controls.** Columns *Two · Three · Four* — Gap *Tight · Normal · Loose* — Captions
-   *Under each · In the lightbox only · Off* — Lightbox *On · Off* — and **Crop, locked at As
-   uploaded** ⚑ with 1 Grid named. Then the images block. **Outside the design's list**: the universal
-   trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None
-   · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The Padding row is
-   retired into Vertical spacing** ⚑, the same three values under the universal name. **Four**, plus
-   the locked Crop row own controls. **Quick Controls**: Columns · Gap · Captions. **The locked Crop
-   row survives where 5 Split Head's locked Head behaviour did not** ⚑ — the test is whether the
-   control exists elsewhere: Crop is live in fourteen siblings and its locked value here *is* the
-   design, while a head behaviour nothing in A14 offers was a refusal wearing a control's clothes.
-   **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold ·
-   italic · underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer ·
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Gap | Tight · Normal · Loose |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Crop | As uploaded (locked — 1 Grid named) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Four**, plus the locked Crop row
+   own controls. **Quick Controls**: Columns · Gap · Captions. **The locked Crop row survives where
+   5 Split Head's locked Head behaviour did not** ⚑ — the test is whether the control exists
+   elsewhere: Crop is live in fourteen siblings and its locked value here *is* the design, while a
+   head behaviour nothing in A14 offers was a refusal wearing a control's clothes. **Editing** ·
+   eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic ·
+   underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer ·
    sponsored. **Every caption edits inline under its own frame.** **Every URL field opens the
    Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → one column, one frame at 416 ⚑, the other columns absent rather than
@@ -552,21 +573,32 @@ media picker as its Add: the shared controls, named once.
    350 × 263, **the lead the same size as every other frame** ⚑, order unchanged.
 5. **Content fields.** The category's five. Designed for 6; **3 is the floor at which the tile is
    still a tile** ⚑.
-6. **Controls.** Lead position *Left · Right* — Crop *Square · Landscape · Portrait* with
-   **As uploaded disabled** ⚑ — Gap *Tight · Normal · Loose* — Captions *In the lightbox only · Under
-   each · Off* — Lightbox *On · Off*. Then the images block. **Outside the design's list**: the
-   universal trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top
-   divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The
-   Padding row is retired into Vertical spacing** ⚑, the same three values under the universal name.
-   **Five** own controls. **Quick Controls**: Lead position · Crop · Gap. **At Lightbox: Off,
-   Captions resolves to Under each** ⚑ — 9 Full Bleed already resolves the same pair that way, and
-   the rule behind it is the category's: **a caption is never unreachable**. "In the lightbox only"
-   with no lightbox would make it so. **Editing** · eyebrow, heading, blurb and credit edit inline
-   with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new
-   tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline where the value draws
-   it** — under its frame at Under each, and **in the item row when captions live in the overlay**
-   ⚑, the overlay not being an editing surface. **Every URL field opens the Ghost-aware Link
-   Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Lead position | Left · Right |
+   | Crop | Square · Landscape · Portrait (As uploaded disabled) |
+   | Gap | Tight · Normal · Loose |
+   | Captions | In the lightbox only · Under each · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
+   Controls**: Lead position · Crop · Gap. **At Lightbox: Off, Captions resolves to Under each** ⚑
+   — 9 Full Bleed already resolves the same pair that way, and the rule behind it is the
+   category's: **a caption is never unreachable**. "In the lightbox only" with no lightbox would
+   make it so. **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1**
+   toolbar — bold · italic · underline · link, the popover carrying Open in new tab and rel
+   nofollow · noreferrer · sponsored. **Every caption edits inline where the value draws it** —
+   under its frame at Under each, and **in the item row when captions live in the overlay** ⚑, the
+   overlay not being an editing surface. **Every URL field opens the Ghost-aware Link Picker**,
+   per-image `link` included.
 7. **Data.** As 1 Grid. **1** → the lead alone at 856 × 648 ⚑. **2** → lead plus one cell, **the
    second cell empty, never stretched** ⚑. **3–5** → the tile fills in order, bottom row short.
    **7+** → rows of three continue beneath ⚑ and **the lead is never repeated**. **Data — Source:
@@ -604,21 +636,33 @@ media picker as its Add: the shared controls, named once.
        plane
    never goes edge to edge** ⚑.
 5. **Content fields.** The category's five, all drawn.
-6. **Controls.** Columns *Two · Three · Four* — Crop (all four) — Head *Inside the plane ·
-   Above it* — Captions *Under each · In the lightbox only · Off* — Lightbox *On · Off*. Then the
-   images block. **Outside the design's list**: the universal trio — Background role · Vertical spacing
-   *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list
-   (P0·3)** and **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same
-   three values under the universal name. **Six** own controls. **Quick Controls**: Columns · Crop ·
-   Head. **Gap *Tight · Normal · Loose* is added in this pass** ⚑ — 8 · 24 · 40 between the frames
-   inside the plane. Seven siblings had it and this one did not, and the same grid with and without
-   a gap control is an inconsistency users hit. **The plane's 40 px inset is not this and is on no
-   ladder** ⚑. **The plane derives from Background role** — surface on Background, background on
-   Surface, the band's own plane at Contrast. **Editing** · eyebrow, heading, blurb and credit edit
-   inline with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in
-   new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline under its own
-   frame inside the plane.** **Every URL field opens the Ghost-aware Link Picker**, per-image `link`
-   included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Head | Inside the plane · Above it |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Gap | Tight · Normal · Loose |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Six** own controls. **Quick
+   Controls**: Columns · Crop · Head. **Gap *Tight · Normal · Loose* is added in this pass** ⚑ — 8
+   · 24 · 40 between the frames inside the plane. Seven siblings had it and this one did not, and
+   the same grid with and without a gap control is an inconsistency users hit. **The plane's 40 px
+   inset is not this and is on no ladder** ⚑. **The plane derives from Background role** — surface
+   on Background, background on Surface, the band's own plane at Contrast. **Editing** · eyebrow,
+   heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic · underline ·
+   link, the popover carrying Open in new tab and rel nofollow · noreferrer · sponsored. **Every
+   caption edits inline under its own frame inside the plane.** **Every URL field opens the
+   Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → the plane holds its full width with one 389 px frame in it ⚑.
    **many** → wraps inside the padding. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner
    ruling. **Authored is the default and this section's every drawn state.** At From posts each
@@ -656,21 +700,33 @@ media picker as its Add: the shared controls, named once.
    350 × 263, gap 16, padding 64.
 5. **Content fields.** The category's five. **The blurb is drawn at its full 200 characters here**
    ⚑.
-6. **Controls.** Head column *Left · Right* — Columns *Two · Three* — Crop (all four) —
-   Captions (three values) — Lightbox *On · Off*. Then
-   the images block. **Outside the design's list**: the universal trio — Background role · Vertical
-   spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item
-   list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the
-   same three values under the universal name. **Six** own controls. **Quick Controls**: Head column
-   · Columns · Crop. **Gap *Tight · Normal · Loose* is added in this pass** ⚑ — 8 · 24 · 40 inside the
-   868 column; **the 48 px gutter between head and set is not this** ⚑ and holds at every value.
-   **The fake “Head behaviour, locked at Static” row is deleted** ⚑ — a control with one permanently
-   locked value is a refusal wearing a control's clothes — and **the no-sticky refusal is panel copy
-   now**, in the words item 9 already uses. **Editing** · eyebrow, heading, blurb and credit edit
-   inline with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in
-   new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline under its own
-   frame in the 868 column.** **Every URL field opens the Ghost-aware Link Picker**, per-image
-   `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Head column | Left · Right |
+   | Columns | Two · Three |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Gap | Tight · Normal · Loose |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Six** own controls. **Quick
+   Controls**: Head column · Columns · Crop. **Gap *Tight · Normal · Loose* is added in this pass**
+   ⚑ — 8 · 24 · 40 inside the 868 column; **the 48 px gutter between head and set is not this** ⚑
+   and holds at every value. **The fake “Head behaviour, locked at Static” row is deleted** ⚑ — a
+   control with one permanently locked value is a refusal wearing a control's clothes — and **the
+   no-sticky refusal is panel copy now**, in the words item 9 already uses. **Editing** · eyebrow,
+   heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic · underline ·
+   link, the popover carrying Open in new tab and rel nofollow · noreferrer · sponsored. **Every
+   caption edits inline under its own frame in the 868 column.** **Every URL field opens the
+   Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → one 410 frame and **458 px of empty right margin** ⚑; the panel
    names
    1 Grid. **many** → wraps inside the 868 column. **Data — Source: Authored · From posts** ⚑,
@@ -709,7 +765,19 @@ media picker as its Add: the shared controls, named once.
    1,296, three columns 416 × 312. **834** 80 · 40, content 754, two columns 367 × 275. **≤ 767**
    64 · 20, content 350, one column 350 × 263. **Section padding is 0 at every width** ⚑.
 5. **Content fields.** The category's five.
-6. **Controls.** Columns — Crop (all four) — Gap — Captions — Lightbox.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Gap | Tight · Normal · Loose |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Contrast (locked — the inverted band is this design's whole identity; the row names 1 Grid) |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding, the section's own being 0 at every value) |
+   | Top divider (universal) | None · Line · Fade |
+
    Then the images block. **Outside the design's list**: the universal trio — Background role ·
    Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
    images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
@@ -760,21 +828,32 @@ media picker as its Add: the shared controls, named once.
    track. **≤ 767** 12 · 12 · 302 · 12 · 12; dots only; credit last. **One-up at every width** ⚑.
 5. **Content fields.** The category's five. **Designed for 4–20** ⚑ — the only design that does not
    get taller as the list grows.
-6. **Controls.** Controls *Dots · Arrows · Dots and arrows* — Crop *Square · Landscape ·
-   Portrait* with **As uploaded disabled** ⚑ — Peek *On · Off* — Captions *Under the frame · In the
-   lightbox only · Off* — Lightbox *On · Off*. Then the images block. **Outside the design's list**:
-   the universal trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top
-   divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The
-   Padding row is retired into Vertical spacing** ⚑, the same three values under the universal name.
-   **Five** own controls. **Quick Controls**: Controls · Crop · Peek. **The no-autoplay settlement
-   is owner-ratified and stated on the frame** ⚑ so it stops being re-litigated: a gallery that
-   moves on its own takes the reading decision away from the reader, the registry's `carousel` entry
-   offers no autoplay, and reduced motion would switch it off anyway. **Editing** · eyebrow,
-   heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic · underline ·
-   link, the popover carrying Open in new tab and rel nofollow · noreferrer · sponsored. **Every
-   caption edits inline on the reserved line under the frame**, and **the track does not move while
-   a caption is being edited** ⚑. Dots and the counter are chrome and are not editable ⚑. **Every
-   URL field opens the Ghost-aware Link Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Controls | Dots · Arrows · Dots and arrows |
+   | Crop | Square · Landscape · Portrait (As uploaded disabled) |
+   | Peek | On · Off |
+   | Captions | Under the frame · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
+   Controls**: Controls · Crop · Peek. **The no-autoplay settlement is owner-ratified and stated on
+   the frame** ⚑ so it stops being re-litigated: a gallery that moves on its own takes the reading
+   decision away from the reader, the registry's `carousel` entry offers no autoplay, and reduced
+   motion would switch it off anyway. **Editing** · eyebrow, heading, blurb and credit edit inline
+   with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new
+   tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline on the reserved line
+   under the frame**, and **the track does not move while a caption is being edited** ⚑. Dots and
+   the counter are chrome and are not editable ⚑. **Every URL field opens the Ghost-aware Link
+   Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → **no track, no dots, no counter, no arrows** ⚑; one frame at the
    full
    1,296. **2** → one peek, two dots, still snapping. **many** → the track scrolls and **the
@@ -822,21 +901,32 @@ media picker as its Add: the shared controls, named once.
    strip. **Right margin 0 at every width** ⚑.
 5. **Content fields.** The category's five plus `moreLabel` ≤ 24 and `moreUrl`, both optional ⚑.
    **The count in "See all 48" is authored** ⚑.
-6. **Controls.** Frame height *Short 240 · Medium 320 · Tall 420* — Gap — Captions —
-   Arrows *On · Off* — Lightbox *On · Off*. Then the images block and the two See-all fields.
-   **Outside the design's list**: the universal trio — Background role · Vertical spacing *Compact ·
-   Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list (P0·3)** and
-   **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same three values
-   under the universal name. **Five** own controls. **Quick Controls**: Frame height · Gap · Arrows.
-   **Vertical spacing resolves onto the strip's inner padding** (the section's own is 0 ⚑) and
-   **Frame height keeps its own name** — a strip height is a genuinely different ladder. **No
-   autoplay at any value** ⚑, owner-ratified. **Editing** · eyebrow, heading, blurb and credit edit
-   inline with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in
-   new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline under its own
-   frame in the strip**, and **the strip does not scroll while a caption is being edited** ⚑.
-   **`moreLabel` edits inline, `moreUrl` opens the Link Picker, and the See-all link takes an
-   optional P0·2 icon** before or after its label, off by default ⚑. **Every URL field opens the
-   Ghost-aware Link Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Frame height | Short 240 · Medium 320 · Tall 420 |
+   | Gap | Tight · Normal · Loose |
+   | Captions | Under each · In the lightbox only · Off |
+   | Arrows | On · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the strip's inner padding, the section's own being 0) |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block and the two See-all fields. **Outside the design's list**: the universal
+   trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None
+   · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The Padding row is
+   retired into Vertical spacing** ⚑, the same three values under the universal name. **Five** own
+   controls. **Quick Controls**: Frame height · Gap · Arrows. **Vertical spacing resolves onto the
+   strip's inner padding** (the section's own is 0 ⚑) and **Frame height keeps its own name** — a
+   strip height is a genuinely different ladder. **No autoplay at any value** ⚑, owner-ratified.
+   **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold ·
+   italic · underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer ·
+   sponsored. **Every caption edits inline under its own frame in the strip**, and **the strip does
+   not scroll while a caption is being edited** ⚑. **`moreLabel` edits inline, `moreUrl` opens the
+   Link Picker, and the See-all link takes an optional P0·2 icon** before or after its label, off
+   by default ⚑. **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1–2** → frames sit at the left at their own widths, **not centred and not
    stretched** ⚑; arrows hidden. **many** → the row overflows and scrolls; **the section's height
    never changes with the count** ⚑. **No `moreUrl`** → the link is absent and the head keeps its
@@ -882,10 +972,19 @@ media picker as its Add: the shared controls, named once.
    the full screen width, head on 20, padding 64.
 5. **Content fields.** The category's five. **Designed for 6, 9 or 12** ⚑ — a multiple of the column
    count — and the panel says so rather than enforcing it.
-6. **Controls.** Columns *Three · Four · Six* — Crop *Square · Landscape ·
-   Portrait* with **As uploaded disabled** ⚑ — Gutter *None · Hairline · Even* — Captions *In the
-   lightbox only · Under each · Off*, **Under each disabled at Gutter: None** ⚑ — Lightbox *On ·
-   Off*.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Three · Four · Six |
+   | Crop | Square · Landscape · Portrait (As uploaded disabled) |
+   | Gutter | None · Hairline · Even |
+   | Captions | In the lightbox only · Under each · Off (Under each disabled at Gutter: None) |
+   | Lightbox | On · Off |
+   | Background role (universal) | Locked, with the reason shown in the row — the ground is `transparent` and the frames cover it wall to wall |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (vertical only; side padding is 0 at every value, which is the design) |
+   | Top divider (universal) | None · Line · Fade |
+
    Then the images block. **Outside the design's list**: the universal trio — Background role ·
    Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
    images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
@@ -897,8 +996,8 @@ media picker as its Add: the shared controls, named once.
    heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic · underline ·
    link, the popover carrying Open in new tab and rel nofollow · noreferrer · sponsored. **Every
    caption edits inline in the item row** ⚑ — this design draws captions in the overlay by default
-   and the overlay is not an editing surface. **Every URL field opens the Ghost-aware Link Picker**,
-   per-image `link` included.
+   and the overlay is not an editing surface. **Every URL field opens the Ghost-aware Link
+   Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → one frame at one third of the screen, at the left ⚑. **many** →
    wraps; **a short last row shows the ground and nothing stretches** ⚑. **Data — Source: Authored ·
    From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's every drawn
@@ -944,14 +1043,25 @@ media picker as its Add: the shared controls, named once.
    followers 416 × 312 three-up on 1,296; padding 96. **834** lead 834 × 460; followers 367 × 275
    two-up; padding 80. **≤ 767** lead 390 × 292; followers 350 × 263 one-up; padding 64.
 5. **Content fields.** The category's five. **Designed for 4 or 7** ⚑.
-6. **Controls.** Lead height *Short 480 · Medium 640 · Tall 760* — Lead width *Full bleed ·
-   Contained* — Followers *Three · Four* — Captions *Under each · Lead only · In the lightbox only*
-   —
-   Lightbox *On · Off*. Then the images block. **Outside the design's list**: the universal trio —
-   Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line
-   · Fade* — **the images item list (P0·3)** and **the Data group**. **The Padding row is retired
-   into Vertical spacing** ⚑, the same three values under the universal name. **Six** own controls.
-   **Quick Controls**: Lead height · Lead width · Followers. **Gap *Tight · Normal · Loose* is added in
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Lead height | Short 480 · Medium 640 · Tall 760 |
+   | Lead width | Full bleed · Contained |
+   | Followers | Three · Four |
+   | Captions | Under each · Lead only · In the lightbox only |
+   | Lightbox | On · Off |
+   | Gap | Tight · Normal · Loose (between the followers only) |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Six** own controls. **Quick
+   Controls**: Lead height · Lead width · Followers. **Gap *Tight · Normal · Loose* is added in
    this pass** ⚑, **between the followers only** — the lead bleeds and has no gutter to give, and
    the 44 px between lead and row is the design's own. **Editing** · eyebrow, heading, blurb and
    credit edit inline with the **P0·1** toolbar — bold · italic · underline · link, the popover
@@ -998,20 +1108,31 @@ media picker as its Add: the shared controls, named once.
    15 px** ⚑, padding 64. **At Columns: Four the clamp is 2 lines** ⚑.
 5. **Content fields.** The category's five. **The caption is load-bearing here** ⚑ and the editor
    asks for one when a frame is added.
-6. **Controls.** Columns — Crop (all four, **As uploaded live** ⚑) — Gap — Caption wash
-   *Soft · Standard* — Lightbox *On · Off*. **No Captions control** ⚑. Then the images block.
-   **Outside the design's list**: the universal trio — Background role · Vertical spacing *Compact ·
-   Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list (P0·3)** and
-   **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same three values
-   under the universal name. **Five** own controls. **Quick Controls**: Columns · Crop · Caption
-   wash. **The caption now holds 200 characters** ⚑ — this design was the stated reason for the
-   80-character limit, and it never needed to be: it clamps at three lines and the full text is in
-   the overlay, at 80 characters or at 200. **Editing** · eyebrow, heading, blurb and credit edit
-   inline with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in
-   new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline on the wash,
-   inside its own frame** ⚑, and **the three-line clamp is lifted while the caption has focus** so
-   the author can see what they are typing ⚑. **Every URL field opens the Ghost-aware Link Picker**,
-   per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Crop | Square · Landscape · Portrait · As uploaded (As uploaded live) |
+   | Gap | Tight · Normal · Loose |
+   | Caption wash | Soft · Standard |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
+   Controls**: Columns · Crop · Caption wash. **The caption now holds 200 characters** ⚑ — this
+   design was the stated reason for the 80-character limit, and it never needed to be: it clamps at
+   three lines and the full text is in the overlay, at 80 characters or at 200. **Editing** ·
+   eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold · italic ·
+   underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer ·
+   sponsored. **Every caption edits inline on the wash, inside its own frame** ⚑, and **the
+   three-line clamp is lifted while the caption has focus** so the author can see what they are
+   typing ⚑. **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **A frame with no caption keeps its wash** ⚑ so the set stays even — the
    opposite of 1 Grid's rule, for the same reason: whichever choice keeps the arrangement regular.
    **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and
@@ -1056,18 +1177,30 @@ media picker as its Add: the shared controls, named once.
 5. **Content fields.** The category's five. **The caption limit is 80 characters as everywhere** ⚑ —
    this design would carry 200 comfortably and is held to the category's limit so that switching
    design never truncates. A real cost of the shared list, stated rather than solved.
-6. **Controls.** Image side *Left · Right · Alternating* — Frame width *Half · Two thirds* —
-   Crop (all four) — Rules *Between rows · Off* — Lightbox *On · Off*. **No Captions control** ⚑.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Image side | Left · Right · Alternating |
+   | Frame width | Half · Two thirds |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Rules | Between rows · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
    Then the images block. **Outside the design's list**: the universal trio — Background role ·
    Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
    images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
    spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
-   Controls**: Image side · Frame width · Crop. **The caption holds 200 characters** ⚑ — raised from
-   80 in this pass. This design and 14 Index are the two the limit starved, and the row was always
-   drawn for prose. **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1**
-   toolbar — bold · italic · underline · link, the popover carrying Open in new tab and rel nofollow
-   · noreferrer · sponsored. **Every caption edits inline in its column beside the frame**, at 16 px
-   in `text`. **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
+   Controls**: Image side · Frame width · Crop. **The caption holds 200 characters** ⚑ — raised
+   from 80 in this pass. This design and 14 Index are the two the limit starved, and the row was
+   always drawn for prose. **Editing** · eyebrow, heading, blurb and credit edit inline with the
+   **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new tab and
+   rel nofollow · noreferrer · sponsored. **Every caption edits inline in its column beside the
+   frame**, at 16 px in `text`. **Every URL field opens the Ghost-aware Link Picker**, per-image
+   `link` included.
 7. **Data.** As 1 Grid. **1** → one row, **a legitimate section** ⚑. **2–4** → the design as drawn.
    **5+** → it keeps going and the panel names 1 Grid ⚑; nothing is disabled. **Data — Source:
    Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's
@@ -1113,26 +1246,37 @@ media picker as its Add: the shared controls, named once.
    where every other draws six** ⚑, the one stated departure from content parity across the
    category:
    a contact sheet at six frames is a grid at six frames.
-6. **Controls.** Columns *Four · Six · Eight* — Crop *Square · Landscape* (**two values
-   only** ⚑) — Numbering *On · Off* — Gap *Tight 4 · Normal 8 · Loose 16* (**a tighter ladder** ⚑) —
-   Lightbox *On*, with **Off disabled** ⚑. Then the images block and the two See-all fields. **Outside the design's list**: the universal trio — Background role · Vertical spacing *Compact ·
-   Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list (P0·3)** and
-   **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same three values
-   under the universal name. **Five** own controls. **Quick Controls**: Columns · Numbering · Gap.
-   **Lightbox: Off is disabled, shown struck through with the reason** ⚑ (A9·8's convention) —
-   **nothing is captioned on the page in this design, so with no overlay the captions would be
-   unreachable**, and A14's rule is that Off means “not under the frame”, never “thrown away”. The
-   frame is still a plain `<a>` to the file with JavaScript off: it is the caption, not the
-   photograph, that Off would lose. Of the two resolutions offered — force the lightbox on, or draw
-   captions under each square — **this design's identity is an uncaptioned sheet**, so the lightbox
-   is forced and the refusal is stated. **Vertical spacing resolves onto the band's inner padding**
-   and **Gap keeps its tighter 4 · 8 · 16 ladder**. **Editing** · eyebrow, heading, blurb and credit
-   edit inline with the **P0·1** toolbar — bold · italic · underline · link, the popover carrying
-   Open in new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline in the
-   item row** ⚑ — nothing is captioned on the page here. The number is never editable ⚑.
-   **`moreLabel` edits inline, `moreUrl` opens the Link Picker, and the See-all link takes an
-   optional P0·2 icon** ⚑. **Every URL field opens the Ghost-aware Link Picker**, per-image `link`
-   included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Four · Six · Eight |
+   | Crop | Square · Landscape (two values only) |
+   | Numbering | On · Off |
+   | Gap | Tight 4 · Normal 8 · Loose 16 (a tighter ladder) |
+   | Lightbox | On, with ~~Off~~ disabled and the reason shown |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding) |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block and the two See-all fields. **Outside the design's list**: the universal
+   trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None
+   · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The Padding row is
+   retired into Vertical spacing** ⚑, the same three values under the universal name. **Five** own
+   controls. **Quick Controls**: Columns · Numbering · Gap. **Lightbox: Off is disabled, shown
+   struck through with the reason** ⚑ (A9·8's convention) — **nothing is captioned on the page in
+   this design, so with no overlay the captions would be unreachable**, and A14's rule is that Off
+   means “not under the frame”, never “thrown away”. The frame is still a plain `<a>` to the file
+   with JavaScript off: it is the caption, not the photograph, that Off would lose. Of the two
+   resolutions offered — force the lightbox on, or draw captions under each square — **this
+   design's identity is an uncaptioned sheet**, so the lightbox is forced and the refusal is
+   stated. **Vertical spacing resolves onto the band's inner padding** and **Gap keeps its tighter
+   4 · 8 · 16 ladder**. **Editing** · eyebrow, heading, blurb and credit edit inline with the
+   **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new tab and
+   rel nofollow · noreferrer · sponsored. **Every caption edits inline in the item row** ⚑ —
+   nothing is captioned on the page here. The number is never editable ⚑. **`moreLabel` edits
+   inline, `moreUrl` opens the Link Picker, and the See-all link takes an optional P0·2 icon** ⚑.
+   **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1–4** → the band holds its width and the sheet is short ⚑; the editor
    names
    1 Grid. **many** → wraps to the 48 ceiling ⚑ — eight rows and 1,736 px at six columns. **Data —
@@ -1180,20 +1324,31 @@ media picker as its Add: the shared controls, named once.
    one is legible but empty — and the editor says so rather than enforcing it. **A date column was
    considered and refused** ⚑: nothing in the item carries a date, and inventing one would add a
    fourth field to every item in the category for one design.
-6. **Controls.** Thumb *Small 88 · Medium 128 · Off* — Row height *Compact · Comfortable* —
-   Rules *Between rows · Ends only* — Numbering *On · Off* — Lightbox *On · Off*. **No Captions
-   control** ⚑. Then the images block. **Outside the design's list**: the universal trio — Background
-   role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* —
-   **the images item list (P0·3)** and **the Data group**. **The Padding row is retired into
-   Vertical spacing** ⚑, the same three values under the universal name. **Five** own controls.
-   **Quick Controls**: Thumb · Row height · Numbering. **The caption holds 200 characters** ⚑ —
-   raised from 80, and this is the design the limit starved most: a ruled index of 80-character
-   captions is a list of fragments. **Row height keeps its own name** — a row ladder is not a
-   section ladder. **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1**
-   toolbar — bold · italic · underline · link, the popover carrying Open in new tab and rel nofollow
-   · noreferrer · sponsored. **Every caption edits inline in its row**, at 17 px in `text` — this is
-   the caption-led design and the row is the editing surface. The number is never editable ⚑.
-   **Every URL field opens the Ghost-aware Link Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Thumb | Small 88 · Medium 128 · Off |
+   | Row height | Compact · Comfortable |
+   | Rules | Between rows · Ends only |
+   | Numbering | On · Off |
+   | Lightbox | On · Off |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
+   Controls**: Thumb · Row height · Numbering. **The caption holds 200 characters** ⚑ — raised from
+   80, and this is the design the limit starved most: a ruled index of 80-character captions is a
+   list of fragments. **Row height keeps its own name** — a row ladder is not a section ladder.
+   **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1** toolbar — bold ·
+   italic · underline · link, the popover carrying Open in new tab and rel nofollow · noreferrer ·
+   sponsored. **Every caption edits inline in its row**, at 17 px in `text` — this is the
+   caption-led design and the row is the editing surface. The number is never editable ⚑. **Every
+   URL field opens the Ghost-aware Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → one row between two hairlines ⚑. **many** → the list runs to the 48
    ceiling; **there is no pagination and no `load-more`** ⚑ — the module exists and a 48-row list
    does
@@ -1244,20 +1399,33 @@ media picker as its Add: the shared controls, named once.
 5. **Content fields.** The category's five. **The eyebrow does double duty** ⚑ — the box label at
    two
    of the three Box label values, the head's eyebrow at the third.
-6. **Controls.** Columns — Crop (all four) — Box label *Off · The eyebrow · The eyebrow and
-   the count* — Captions — Lightbox. Then the images block. **Outside the design's list**: the
-   universal trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top
-   divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The
-   Padding row is retired into Vertical spacing** ⚑, the same three values under the universal name.
-   **Six** own controls. **Quick Controls**: Columns · Box label · Crop. **Gap *Tight · Normal · Loose*
-   is added in this pass** ⚑ — 8 · 24 · 40 inside the box's 40 px inset, which is itself on no
-   ladder ⚑. **The box's hairline takes Background role's hairline value and the box has no fill at
-   any role** ⚑ — which is what separates it from 4 Panel. **Editing** · eyebrow, heading, blurb and
-   credit edit inline with the **P0·1** toolbar — bold · italic · underline · link, the popover
-   carrying Open in new tab and rel nofollow · noreferrer · sponsored. **Every caption edits inline
-   under its own frame inside the box.** The box label is a rendering of the eyebrow and the
-   generated count: **the eyebrow is edited in the head and the count is never editable** ⚑. **Every
-   URL field opens the Ghost-aware Link Picker**, per-image `link` included.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Columns | Two · Three · Four |
+   | Crop | Square · Landscape · Portrait · As uploaded |
+   | Box label | Off · The eyebrow · The eyebrow and the count |
+   | Captions | Under each · In the lightbox only · Off |
+   | Lightbox | On · Off |
+   | Gap | Tight · Normal · Loose |
+   | Background role (universal) | Background · Surface · Contrast |
+   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
+   | Top divider (universal) | None · Line · Fade |
+
+   Then the images block. **Outside the design's list**: the universal trio — Background role ·
+   Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
+   images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
+   spacing** ⚑, the same three values under the universal name. **Six** own controls. **Quick
+   Controls**: Columns · Box label · Crop. **Gap *Tight · Normal · Loose* is added in this pass** ⚑
+   — 8 · 24 · 40 inside the box's 40 px inset, which is itself on no ladder ⚑. **The box's hairline
+   takes Background role's hairline value and the box has no fill at any role** ⚑ — which is what
+   separates it from 4 Panel. **Editing** · eyebrow, heading, blurb and credit edit inline with the
+   **P0·1** toolbar — bold · italic · underline · link, the popover carrying Open in new tab and
+   rel nofollow · noreferrer · sponsored. **Every caption edits inline under its own frame inside
+   the box.** The box label is a rendering of the eyebrow and the generated count: **the eyebrow is
+   edited in the head and the count is never editable** ⚑. **Every URL field opens the Ghost-aware
+   Link Picker**, per-image `link` included.
 7. **Data.** As 1 Grid. **1** → the box holds its full width with one 389 px frame, **and the label
    reads "1 photograph"** ⚑. **many** → wraps inside the inset. **Data — Source: Authored · From
    posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's every drawn
@@ -1615,3 +1783,15 @@ in **The owner's rulings** at the foot of this document.
    It measures gutter widths, not the spacing ladder, and "an even gutter" is the right word there.
 
 — End of specification —
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** fifteen designs, numbered **1–15**.

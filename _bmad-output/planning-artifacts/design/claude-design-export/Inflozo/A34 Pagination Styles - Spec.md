@@ -277,11 +277,18 @@ it.
    137-page route draws the identical row at every width.**
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel`. Read-only: the six `pagination` values. In the
    union, unread: `moreLabel`, `endLabel`.
-6. **Controls.** **Chevrons** Off · Glyph only · Glyph and label — **Alignment** Left · Centre —
-   **Separator** None · Hairline above — **Density** Compact 4 · Comfortable 8. Four. **Cut: Jump to
-   page** — a form inside a nav; Padding, which was the feed's Vertical spacing under a second name;
-   and **Numbers**, deleted in the patch pass — its All pages value cannot be built and its other
-   value is the design itself.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Chevrons | Off · Glyph only · Glyph and label |
+   | Alignment | Left · Centre |
+   | Separator | None · Hairline above |
+   | Density | Compact 4 · Comfortable 8 |
+
+   Four. **Cut: Jump to page** — a form inside a nav; Padding, which was the feed's Vertical
+   spacing under a second name; and **Numbers**, deleted in the patch pass — its All pages value
+   cannot be built and its other value is the design itself.
 7. **Data.** Ghost's `pagination` object on any paginated route. Destinations `/page/N/`, page 1 at the
    route root and **never `/page/1/`** ⚑. **0 → no route, no section. 1 page → does not render**
    whatever the item count. **Many → the window bounds the row at seven slots however deep the
@@ -322,13 +329,19 @@ it.
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel` — **spent harder here than anywhere**, the two
    words being the whole composition. Read-only: the six `pagination` values. Unread: `moreLabel`,
    `endLabel`.
-6. **Controls.** **Link size** Small 15 body · Medium 20 heading · Large 28 heading — **Sublabel** Off
-   · Page number — **Chevrons** Off · Beside the label · At the outer edge — **Rule** None · Above ·
-   Above and below. Four. **The panel states that Link size changes the typeface** — body at Small,
-   heading at Medium and Large — so a divergent-font pack does not read the jump as a defect.
-   **Position line Off is disabled and shown disabled, which after the patch
-   pass leaves Page count as the field's only value here.** **Cut: a page-numbers toggle**, which
-   would have made this design 1 Numbers.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Link size | Small 15 body · Medium 20 heading · Large 28 heading |
+   | Sublabel | Off · Page number |
+   | Chevrons | Off · Beside the label · At the outer edge |
+   | Rule | None · Above · Above and below |
+
+   Four. **The panel states that Link size changes the typeface** — body at Small, heading at
+   Medium and Large — so a divergent-font pack does not read the jump as a defect. **Position line
+   Off is disabled and shown disabled, which after the patch pass leaves Page count as the field's
+   only value here.** **Cut: a page-numbers toggle**, which would have made this design 1 Numbers.
 7. **Data.** `pagination.prev`/`.next` for destinations, `.page`/`.pages` for the sublabels and
    centre. **0 → nothing. 1 page → does not render. 2 pages → the design's best case.** **Many →
    unchanged, and the reader still moves one page at a time**, which the panel names with 1 Numbers
@@ -373,12 +386,19 @@ it.
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel`. Read-only: the six `pagination` values.
    Unread: `moreLabel`, `endLabel`. **Identical to 8 Contrast Band's, which is what makes switching
    between them lossless.**
-6. **Controls.** **Layout** Three zones · Numbers centred · Direction at the ends — **Height** Compact
-   56 · Comfortable 72 · Spacious 96 — **Edge** Full bleed · Inset — **Rules** Both · Top only. Four,
-   **Numbers** having been deleted in the patch pass. **Height is a strip height — a genuinely different ladder — and
-   keeps its own name.** **At the ends
-   defaults to Dimmed** ⚑. **Cut:** Alignment (the zones are the alignment) and a totals toggle
-   (the block's Position line).
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Layout | Three zones · Numbers centred · Direction at the ends |
+   | Height | Compact 56 · Comfortable 72 · Spacious 96 |
+   | Edge | Full bleed · Inset |
+   | Rules | Both · Top only |
+
+   Four, **Numbers** having been deleted in the patch pass. **Height is a strip height — a
+   genuinely different ladder — and keeps its own name.** **At the ends defaults to Dimmed** ⚑.
+   **Cut:** Alignment (the zones are the alignment) and a totals toggle (the block's Position
+   line).
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, band included.**
    **2 pages → the design's weakest case** (two numerals and a link in a 1,296 strip); the panel
    names 10 Slim. **Many → as drawn**; the band's height never changes with the archive and the outer
@@ -419,10 +439,17 @@ it.
 5. **Strings and data.** `navLabel`. **`newerLabel` and `olderLabel` are authored and never drawn** — Labels is
    locked to Glyphs only, so both become the chevrons' visually-hidden text ⚑. Read-only: the six
    `pagination` values. Unread: `moreLabel`, `endLabel`.
-6. **Controls.** **Contents** Numbers and chevrons · Numbers only · Position and chevrons —
-   **Elevation** Hairline · Shadow · Hairline and shadow — **Size** Compact 48 · Comfortable 56 —
-   **Alignment** Left · Centre. Four, **Numbers** having been deleted in the patch pass. **Labels locked; At the ends defaults to Dimmed.** **Cut: Sticky** — 7 Endless
-   owns pinned things.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Contents | Numbers and chevrons · Numbers only · Position and chevrons |
+   | Elevation | Hairline · Shadow · Hairline and shadow |
+   | Size | Compact 48 · Comfortable 56 |
+   | Alignment | Left · Centre |
+
+   Four, **Numbers** having been deleted in the patch pass. **Labels locked; At the ends defaults
+   to Dimmed.** **Cut: Sticky** — 7 Endless owns pinned things.
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, pill included.**
    **2 pages → the best case at 172 px wide**, the one place it beats 3 Bar. **Many → the pill grows
    with the window to a 340 px ceiling and stops**, and nothing can push it past that any more.
@@ -461,10 +488,18 @@ it.
    glyphs). Read-only: the six `pagination` values, `.page` and `.pages` being the composition.
    **Also reads the site title, in print only** ⚑ — the only A34 design that reads outside
    `pagination`. Unread: `moreLabel`, `endLabel`.
-6. **Controls.** **Counter size** Small 34 · Medium 52 · Large 72 — **Numerals** Plain 2 / 11 · Worded Page 2 of 11 — **Padded deleted in the patch pass**, a template being unable to pad a number to a fixed width — **Arrows** Outside the counter · Below the counter, **no
-   Off** ⚑ — **Arrow style** Bare · Outlined · Filled (A1·14's three; **Filled in `contrast`, never
-   accent**) — **Rule** None · Hairline above. Five.
-   **Labels locked; Position line fixed Off — the counter is the position line; At the ends defaults to Dimmed.**
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Counter size | Small 34 · Medium 52 · Large 72 |
+   | Numerals | Plain 2 / 11 · Worded Page 2 of 11 |
+   | Arrows | Outside the counter · Below the counter (**no Off**) |
+   | Arrow style | Bare · Outlined · Filled (A1·14's three; **Filled in `contrast`, never accent**) |
+   | Rule | None · Hairline above |
+
+   Five. **Labels locked; Position line fixed Off — the counter is the position line; At the ends
+   defaults to Dimmed.**
 7. **Data.** `.page` and `.pages` for the counter, `.prev`/`.next` for the arrows. Nothing else is read: the range this design used to carry beneath it needed `.limit` and `.total` multiplied, which a template cannot do. **0 → nothing. 1 page → does not render** — the rule bites hardest here, "1 / 1"
    at 52 px being a striking way to say nothing. **2 pages → "1 / 2", no adjustment needed.**
    **Many → the numerals grow by a glyph at 100 pages and the group re-centres**; the tabular figures hold the group's width, which is what the deleted padding was for.
@@ -503,10 +538,18 @@ it.
    default "That's all {total} posts."); `newerLabel`/`olderLabel` read **by the hidden numbered links
    only**. Read-only: the six `pagination` values, `.limit` being the batch and `.total` driving the
    count and meter.
-6. **Controls.** **Button style** Outline · Solid · Text — **Progress** Off · Count line · Count and
-   meter — **Page links** Hidden · Shown below — **Alignment** Left · Centre. Four. **Position line fixed Off, At the ends not applicable, Labels routed
-   to the hidden links.** **No Batch** ⚑. **Cut: auto-load on scroll** (that is 7 Endless) and a
-   position-memory toggle (needs storage the theme does not have).
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Button style | Outline · Solid · Text |
+   | Progress | Off · Count line · Count and meter |
+   | Page links | Hidden · Shown below |
+   | Alignment | Left · Centre |
+
+   Four. **Position line fixed Off, At the ends not applicable, Labels routed to the hidden
+   links.** **No Batch** ⚑. **Cut: auto-load on scroll** (that is 7 Endless) and a position-memory
+   toggle (needs storage the theme does not have).
 7. **Data.** First page server-rendered; each press fetches the next `/page/N/` against the same query
    and appends. **Designed for 24–144 posts across two to eleven presses.** **0 → nothing. 1 page →
    no button**; at Progress Count line the count alone renders, "12 of 12 posts"; at Off nothing.
@@ -560,11 +603,17 @@ it.
    posts" — **the same field with a different default** ⚑); `endLabel`; `newerLabel`/`olderLabel` read
    by the hidden links only. Read-only: the six `pagination` values. **The only design that spends
    all five authored fields**, four of them invisibly.
-6. **Controls.** **Trigger** One screen early · At the last row — **Status** Pinned pill · Inline line
-   · Off — **Stop after** a number picker, 2–8 pages, default 4, capped at 8 with the reason shown ⚑ — **Back to top** Off · In the pill, disabled with
-   its reason at Status Off. Four, and **all four block fields inert** ⚑; the space under the stop's
-   button is the feed's Vertical spacing. **Cut:** a threshold slider, a resume
-   toggle.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Trigger | One screen early · At the last row |
+   | Status | Pinned pill · Inline line · Off |
+   | Stop after | **a number picker, 2–8 pages, default 4**, capped at 8 with the reason shown |
+   | Back to top | Off · In the pill (disabled with its reason at Status Off) |
+
+   Four, and **all four block fields inert** ⚑; the space under the stop's button is the feed's
+   Vertical spacing. **Cut:** a threshold slider, a resume toggle.
 7. **Data.** First page server-rendered; the sentinel fetches `/page/N/` against the route's query and
    appends. **Designed for archives of 48 posts and up** — below four pages the stop never fires and
    the design is 6 Load More with extra machinery, which the panel says. **0 → nothing. 1 page →
@@ -611,13 +660,20 @@ it.
    between and the band sizes to its contents.
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel`. Read-only: the six `pagination` values.
    Unread: `moreLabel`, `endLabel`. **3 Bar's field list exactly.**
-6. **Controls.** **Band height** Compact 96 · Comfortable 120 · Spacious 160 — **Contents** Numbers ·
-   Numbers and position · Direction and position — **Current page** Accent underline · Weight only,
-   **Accent underline disabled in dark with its ratio shown** ⚑ — **Alignment** Centre · Split to the
-   edges. Four. **Band height is band-internal and keeps its own name; the space below the band is the
-   feed's Vertical spacing, whose Compact is raised to 80 under it (A17·7).** **The band is drawn in
-   the pack's `contrast` colour whatever the feed's Background role is, and the panel says so** ⚑.
-   **Attachment defaults to Separate and At the ends to Dimmed.** **Cut:** an Edge control, and a Numbers pair — which could not have been built in any case.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Band height | Compact 96 · Comfortable 120 · Spacious 160 |
+   | Contents | Numbers · Numbers and position · Direction and position |
+   | Current page | Accent underline · Weight only (**Accent underline disabled in dark with its ratio shown**) |
+   | Alignment | Centre · Split to the edges |
+
+   Four. **Band height is band-internal and keeps its own name; the space below the band is the
+   feed's Vertical spacing, whose Compact is raised to 80 under it (A17·7).** **The band is drawn
+   in the pack's `contrast` colour whatever the feed's Background role is, and the panel says so**
+   ⚑. **Attachment defaults to Separate and At the ends to Dimmed.** **Cut:** an Edge control, and
+   a Numbers pair — which could not have been built in any case.
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → nothing renders, band included** — an
    empty inverted band is a stripe across a page for no reason. **2 pages → weaker than 3 Bar's**;
    the panel names 2 Prev and Next. **Many → unchanged.** **The position line carries one value at every band height** — "Page 11 of 11" — the second half of the pair having been a range of posts, deleted in the patch pass ⚑.
@@ -662,10 +718,17 @@ it.
    A34 the labels are set in uppercase**, so a label past about 20 characters wraps and the panel says
    so. Read-only: the six `pagination` values; and nothing else: the optional count line is deleted, `.limit` and `.total` needing multiplying. Unread:
    `moreLabel`, `endLabel`.
-6. **Controls.** **Card style** Hairline · Filled · Filled with a hairline — **Content** Direction only · Direction and page — **the third value, Direction, page and count, is deleted in the patch pass** ⚑, its count being a multiplication — **Single card** Full width · Half width,
-   **greyed with its reason when At the ends is Dimmed** ⚑ — **Height** Compact 88 · Comfortable 112 ·
-   Spacious 144. Four. **Height is the card's, not the section's.** **Position line defaults to
-   Off.** **Cut:** a shadow option, an image slot.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Card style | Hairline · Filled · Filled with a hairline |
+   | Content | Direction only · Direction and page |
+   | Single card | Full width · Half width (**greyed with its reason when At the ends is Dimmed**) |
+   | Height | Compact 88 · Comfortable 112 · Spacious 144 |
+
+   Four. **Height is the card's, not the section's.** **Position line defaults to Off.** **Cut:** a
+   shadow option, an image slot.
 7. **Data.** `.prev`/`.next` for the destinations, `.page` for their numbers, `.limit`/`.total` for the
    optional count. **0 → nothing. 1 page → nothing renders. 2 pages → one card on every page**, the
    design at its simplest and, at Content Direction only, its best. **Many → two cards on every
@@ -712,11 +775,18 @@ it.
    full value kept as the link's accessible name** ⚑. A first word past about 12 characters widens the
    row and the panel says so. Read-only: the six `pagination` values. Unread: `moreLabel`,
    `endLabel`.
-6. **Controls.** **Contents** Position and direction · Direction only — **no position-only value** ⚑ —
-   **Alignment** Split · Right · Left — **Direction** Words · Words and chevrons · Chevrons only —
-   **Rule** Hairline above · None. Four. **The panel advises the feed's Vertical spacing at Compact** ⚑
-   — it is the only design that wants it, and it no longer owns a value to set. **Cut: a Numbers pair**, which
-   would have made this 1 Numbers at Separator None.
+6. **Controls.**
+
+   | Control | Values |
+   |---|---|
+   | Contents | Position and direction · Direction only (**no position-only value**) |
+   | Alignment | Split · Right · Left |
+   | Direction | Words · Words and chevrons · Chevrons only |
+   | Rule | Hairline above · None |
+
+   Four. **The panel advises the feed's Vertical spacing at Compact** ⚑ — it is the only design
+   that wants it, and it no longer owns a value to set. **Cut: a Numbers pair**, which would have
+   made this 1 Numbers at Separator None.
 7. **Data.** `.prev`/`.next` for the links, `.page` and `.pages` for the position line. **0 → nothing. 1 page → does not render.** **2 pages → the design's best case in the
    category**: at two pages every other A34 design is overbuilt. **Many → unchanged, and unchanged is
    the point** — a hundred-page archive draws the identical row.
@@ -1027,3 +1097,15 @@ design frames carries a dated **patch pass** panel at the top stating what chang
 - **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
   required shape, and names **2 Prev and Next** and **9 Cards** — both of which exist in this
   category's roster. It is the owner's own choice, confirmed on 29 August 2026.
+
+---
+
+## Patch notes — declarations standardised, 31 August 2026
+
+**Declarations standardised.** Every design's **Controls** field is now a table — `| Control | Values |`, one row per control — in the shape Headers, Announcement Bars and Footers already used. The Control column carries the **name only**: never a value, never a sentence, never a reason. The Values column carries the choices separated by " · "; a number picker states its range and default; an on/off reads "On · Off"; a control that is offered but **locked on this design says so in its Values cell, with the reason** ("Contrast (locked — …)"). The **universal controls sit in the same table, marked "(universal)"** — Background role, Vertical spacing and Top divider — each carrying this design's own resolution, lock or disablement where it has one, and any Data-group control this design's own list named is marked "(data)".
+
+**Prose kept, moved.** Every sentence already written *about* the controls — the reasons, the refusals, the "no such-and-such control" notes, the Quick Controls line, the counts and the cuts — is kept verbatim and now sits **after** the table rather than inside the list. The table is the declaration; the prose is the reasoning.
+
+**Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
+
+**Design numbering unchanged:** ten designs, numbered **1–10**.
