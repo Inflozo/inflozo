@@ -2769,13 +2769,19 @@ line. Do not answer one yourself. A list where everything looks open is a list n
 
 THE WORK LIST FOR A33:
 
-- NAME THE GHOST MARKUP THIS CATEGORY STYLES. The specification never once mentions
-  `kg-toggle-card`, and for a category whose entire job is styling Ghost&#x27;s own card markup that
-  is a hole: a builder cannot tell what they are styling. Ghost emits the toggle card as
-  `div.kg-toggle-card` containing an `h4` and a `button` — NOT a `&lt;details&gt;` / `&lt;summary&gt;` pair.
-  State that in the specification and make sure every toggle treatment is drawn against it.
-  Inside a post&#x27;s body we own the stylesheet and nothing else: not the markup, not the ARIA
-  attributes, not the text. Nothing here may assume markup we would have to emit.
+- GIVE THIS CATEGORY ITS SELECTORS. The coverage here is good — all twenty of Ghost&#x27;s
+  cards are drawn, each with its fields — and the toggle is already described correctly in words
+  (&quot;a plain container with an h4 and a button, not details/summary&quot;). What is missing is the one
+  thing this category&#x27;s deliverable actually is: **not a single Ghost class name appears anywhere
+  in the specification.** No `kg-toggle-card`, no `kg-card`, no `kg-width-wide` — nothing. A33
+  ships a stylesheet and nothing else, so a builder is told exactly what to style and never told
+  what to SELECT.
+  Add the class name beside each card in the shared field list, and name the width classes the
+  Card widths row depends on. Where you are not certain of a class, say so rather than guessing —
+  a wrong selector silently styles nothing, which is the worst failure available here.
+  Keep the standing constraint in view: inside a post&#x27;s body we own the stylesheet and nothing
+  else — not the markup, not the ARIA attributes, not the text. Nothing here may assume markup we
+  would have to emit.
 
 OUTPUT.
 1. Update this category&#x27;s frames.

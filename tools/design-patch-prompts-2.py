@@ -231,13 +231,19 @@ WORK2 = {
   them; a "%" or "{count}" in that string renders literally on the page. Note the widget itself
   DOES render without JavaScript, so its no-JS sentence is not the count's.""",
 
- 'A33': """- NAME THE GHOST MARKUP THIS CATEGORY STYLES. The specification never once mentions
-  `kg-toggle-card`, and for a category whose entire job is styling Ghost's own card markup that
-  is a hole: a builder cannot tell what they are styling. Ghost emits the toggle card as
-  `div.kg-toggle-card` containing an `h4` and a `button` — NOT a `<details>` / `<summary>` pair.
-  State that in the specification and make sure every toggle treatment is drawn against it.
-  Inside a post's body we own the stylesheet and nothing else: not the markup, not the ARIA
-  attributes, not the text. Nothing here may assume markup we would have to emit.""",
+ 'A33': """- GIVE THIS CATEGORY ITS SELECTORS. The coverage here is good — all twenty of Ghost's
+  cards are drawn, each with its fields — and the toggle is already described correctly in words
+  ("a plain container with an h4 and a button, not details/summary"). What is missing is the one
+  thing this category's deliverable actually is: **not a single Ghost class name appears anywhere
+  in the specification.** No `kg-toggle-card`, no `kg-card`, no `kg-width-wide` — nothing. A33
+  ships a stylesheet and nothing else, so a builder is told exactly what to style and never told
+  what to SELECT.
+  Add the class name beside each card in the shared field list, and name the width classes the
+  Card widths row depends on. Where you are not certain of a class, say so rather than guessing —
+  a wrong selector silently styles nothing, which is the worst failure available here.
+  Keep the standing constraint in view: inside a post's body we own the stylesheet and nothing
+  else — not the markup, not the ARIA attributes, not the text. Nothing here may assume markup we
+  would have to emit.""",
 
  'A34': """- THE EMPTY STATE IS THIN HERE AND NEEDS WRITING: a feed with nothing in it shows its
   designed "nothing here yet" state.

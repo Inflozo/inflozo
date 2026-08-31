@@ -206,10 +206,16 @@ false positive, and are correct as they stand:**
   wider than the content width — **naming another design**. A14 was made to stop doing exactly this
   ("1 Grid stops calling itself the arrangement six other designs resolve to at 390"). Describe the
   result, not a design: *"draws as a plain grid, with no arrows, no fades and no scroll container."*
-- **A33 · R-6.** The spec **never mentions `kg-toggle-card`** — not once. Nothing is *wrong* in it
-  (no `<details>` survives), it is **silent**: for the one category whose whole job is styling
-  Ghost's own card markup, a builder cannot tell what they are styling. Ghost emits
-  `div.kg-toggle-card` containing an `h4` and a `button`, and the spec must say so.
+- **A33 · R-6 — narrower than the scan suggested, and worth stating precisely.** The scan looks for
+  `kg-toggle-card` and finds nothing. On reading, the *coverage* is good: **all twenty of Ghost's
+  cards are drawn**, each with its fields and its Ghost-owns caveats, and the toggle is already
+  described correctly in prose — *"a plain container with an `h4` and a `button`, not
+  `details`/`summary`"*. So it is **not** true that a builder cannot tell what they are styling.
+  What is true is narrower and still a real gap: **not one Ghost class name appears anywhere in the
+  specification** — no `kg-toggle-card`, no `kg-card`, no `kg-width-*`. A33's entire deliverable is a
+  stylesheet, so the spec says what to style and never what to **select**. That is what pass two asks
+  for, with the instruction to flag any class it is unsure of rather than guess: a wrong selector
+  styles nothing, silently.
 
 A33 was not in pass two's list before this triage. It is now.
 
