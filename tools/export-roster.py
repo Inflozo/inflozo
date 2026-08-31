@@ -232,6 +232,51 @@ FIELD_LINE = re.compile(
 IDENT = re.compile(r'`([A-Za-z][A-Za-z0-9_]*(?:\[\])?(?:\.[A-Za-z][A-Za-z0-9_]*(?:\[\])?)*)`')
 
 
+IDENT_TOKEN = re.compile(r'`([A-Za-z][A-Za-z0-9_]*(?:\[\])?)`')
+
+
+def field_table_union(text):
+    """Fields from any table with a Field(s) column, plus any "shared field list" prose block.
+
+    field_union() below only knew the prose form (**Fields.** …), which 13 specs use, and returned
+    a silent EMPTY LIST for the other 20 — the failure that made this derivation hand-work. Those
+    20 declare fields in a markdown table whose headers vary (`Field | Type | Req | Limit | Used by
+    | Notes`, `Field | Type | Optional | Limit | Read by`, `Field | Type | Values`) and, in A33,
+    put the name in the SECOND column (`Card | Fields | Type | …`). So do not assume a position:
+    find whichever column is headed Field or Fields and read that one. A19 uses neither shape —
+    a prose block under "Shared field list" with the names inline in backticks — so that is read
+    too. Between them these cover every live category.
+    """
+    seen = []
+
+    def add(name):
+        if name not in seen:
+            seen.append(name)
+
+    for m in re.finditer(r'^\|(.+?)\|[ \t]*\n\|[ :|-]+\|[ \t]*$', text, re.M):
+        hdr = [c.strip().lower() for c in m.group(1).split('|')]
+        col = next((i for i, h in enumerate(hdr) if h in ('field', 'fields')), None)
+        if col is None:
+            continue
+        block = text[m.end():]
+        stop = re.search(r'\n\s*\n', block)
+        for row in (block[:stop.start()] if stop else block[:6000]).split('\n'):
+            if not row.strip().startswith('|'):
+                continue
+            cells = row.strip().strip('|').split('|')
+            if col < len(cells):
+                for f in IDENT_TOKEN.findall(cells[col]):
+                    add(f)
+
+    # A19's shape: a prose block under a "Shared field list" heading, names inline in backticks.
+    for m in re.finditer(r'^#{1,4}[^\n]*[Ss]hared field list[^\n]*$', text, re.M):
+        block = text[m.end():m.end() + 2500]
+        block = block[:block.index('\n## ')] if '\n## ' in block else block
+        for f in IDENT_TOKEN.findall(block):
+            add(f)
+    return seen
+
+
 def field_union(text):
     """Every field name any design in this category declares, in first-seen order."""
     seen = []
@@ -245,6 +290,9 @@ def field_union(text):
         for f in IDENT.findall(m.group(0)):
             if f not in seen:
                 seen.append(f)
+    for f in field_table_union(text):          # the table shape, for the 20 specs that use it
+        if f not in seen:
+            seen.append(f)
     return seen
 
 
