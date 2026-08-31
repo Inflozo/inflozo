@@ -2572,3 +2572,33 @@ routes and labels the app ships. It is not a click-through of a live admin, so t
 chain a customer sees is **not** established here; what is established is that the Ghost 5 chain does
 not exist on Ghost 6. Capturing the real Ghost 6 wording is E15's job against a live admin.
 Register item **41**.
+
+---
+
+## 34. Supabase Storage has NO recovery of its own — register 38's precondition · 2026-08-31
+
+The owner ruled on 2026-08-31 to keep a second copy of the two unrecoverable buckets. The ruling
+named two things to verify before the mechanism is built. Both are read here, from Supabase's own
+pages rather than from memory.
+
+**(i) Does Supabase Storage already offer versioning, soft delete or a retention window?**
+Read at `supabase.com/docs/guides/storage`: **no.** The page documents multi-protocol access, CDN
+delivery, image transformation and access control, and **says nothing about versioning, soft delete,
+retention or recovery of a deleted object.** There is no built-in undo to lean on, so the second copy
+is **necessary, not merely prudent** — the option the ruling offered as "rely on what Supabase
+already gives us" does not exist.
+
+**(ii) Current pricing, because "single-digit dollars" was an estimate carried from Round 4.**
+Read at `supabase.com/pricing`, Pro plan: **100 GB storage included, then $0.0213 per GB per month**;
+egress **250 GB included, then $0.03 per GB**.
+
+**What that makes the second copy cost.** It is a duplicate of two buckets, so its price is the
+duplicated bytes at $0.0213/GB/month **once the 100 GB included allowance is used** — and the copy is
+written once per object and read only in a recovery, so it adds storage but essentially no egress.
+Below the allowance it is **free**; at, say, 50 GB of duplicated artifacts beyond it, **about $1.07 a
+month**. The Round 4 estimate was the right order of magnitude and is now a read figure rather than a
+recollection.
+
+**This expires.** Both are facts about an external platform on a date, and Supabase changes both its
+feature set and its prices. **Re-read before E1 builds the mechanism** — if versioning has shipped by
+then it may replace the copy entirely. Register item **38**.
