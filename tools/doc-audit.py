@@ -218,6 +218,13 @@ DOCS = [
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
  ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
+ ('tools/probe/run-verify-e2.py', 'tool', 'Register probe · E-2 captions',
+  'feature_image_caption: its stored shape, {{ }} versus {{{ }}}, and gscan on the triple stash. '
+  'Carries TWO controls because the answer turns on a non-difference: a plain-text caption must '
+  'render identically both ways, and the same theme must produce an identical gscan rule set with '
+  'and without the triple stash. Found the field is a SafeString on both majors — so R-10 #7\'s '
+  'carve-out is withdrawn — and that Ghost 6 sanitises it at render while Ghost 5 emits a <script> '
+  'straight into the page. Restores the previous theme and deletes its own posts.'),
  ('tools/probe/run-f8-storage.py', 'tool', 'Storage sanitizer probe',
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',

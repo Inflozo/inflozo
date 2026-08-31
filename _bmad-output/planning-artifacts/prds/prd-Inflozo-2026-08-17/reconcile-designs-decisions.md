@@ -392,7 +392,7 @@ probe family 36 shrinks to its oEmbed-provider half · AD-23 fixtures.
 | 4 | A31: the gate `<form>` drops its `action` attribute so Ghost's own `?r=` survives (`@path` is not a Ghost global) | `private.hbs:80`, `lib/middleware.js:67` |
 | 5 | A26: `authorLinkLabel` default uses the **full** name — `{{split}}` is ≥ 6.5 and a gscan error below | A26 field list |
 | 6 | A20: *Tag's own* colour gated to Ghost ≥ 6.23 with `{{contrast_text_color}}`; `color-mix` cannot pick an on-colour | D31, FR-H7 |
-| 7 | A24/A26: `feature_image_caption` needs a second triple-stash carve-out — **after probe family 27** | AD-5(2), §7.3 mechanic 3 |
+| 7 | ~~A24/A26: `feature_image_caption` needs a second triple-stash carve-out~~ **WITHDRAWN 2026-08-31 — the probe refuted its premise.** E-2 ran on both majors (`MEASUREMENTS.md` §31a, two controls passed): Ghost hands the field to Handlebars **already marked safe**, so `{{ }}` and `{{{ }}}` render byte-identical and the double stash does **not** escape. A carve-out would add an XSS surface and buy nothing. **AD-5(2)'s zero-`{{{` assertion stands whole.** What the probe *did* find is a different, real obligation for these two categories: **Ghost 6 strips `<em>` and `<strong>` from this field at render and Ghost 5 keeps them**, so an italic caption renders on 5 and not on 6 — and on Ghost 5 a `<script>` in the field reaches the page and no theme can escape it (register **53**). | AD-5(2), §31a |
 | 8 | A28 ×10: the comment count is client-rendered; rewrite every no-JS line, give every design an `aria-label` fallback, drop "the comma is the helper's", strike `%` from `comments.count_*` | A28 settlement 1 |
 | 9 | A28-4: offered only when `@custom.color_scheme` is **pinned**; on an Auto site the forced band renders wrong for half the audience | AD-30 |
 | 10 | A6: feature-image default only on post/page/custom-entry templates | (also R-4) |
@@ -1004,14 +1004,19 @@ Run against **T1** and **T3** (`tools/probe/.env`, pattern `tools/probe/run-veri
 the inventory merge**. Results land in `MEASUREMENTS.md`, `VERIFY-AT-BUILD.md` and the companion each
 row names. The full per-category probe text stays in `reconcile-designs.md` §(a).
 
+> **ALL FOUR ARE RUN.** E-1 on 2026-08-27, E-2/E-3/E-4 on 2026-08-31. **Three of the four refuted or
+> materially changed the premise of the ruling that asked for them** — E-1 found no per-template
+> `{{#get}}` budget, E-2 found no carve-out was needed, E-3 found the "confirmatory" question was the
+> mechanism behind an invariant. That ratio is the argument for standing rule 1, not an anecdote.
+
 **Newly blocking on a ruling above:**
 
 | # | Claim | Fixes |
 |---|---|---|
 | E-1 | The per-template `{{#get}}` abort threshold (`appendix-b1 §5`); time 12–24 single-id gets on one template | **R-20's cap** — the only number in this file left unmeasured |
-| E-2 | `feature_image_caption`'s stored shape (HTML?), `{{…}}` vs `{{{…}}}`, gscan on the triple-stash | **R-10 #7** — a second AD-5(2) carve-out, or neither A24 nor A26 renders captions |
-| E-3 | `@member` prefill and `@member.email` under `cacheMembersContent` (family 18) | **R-28** — confirmatory only; the safe shape is already taken |
-| E-4 | `<details name>` under `stylelint-plugin-use-baseline` at the pin (family 38) | **R-15** — the Tier-2 entry's wording |
+| ~~E-2~~ | ✅ **RUN 2026-08-31 — §31a, `tools/probe/run-verify-e2.py`, two controls passed.** The field is a **SafeString**: `{{ }}` and `{{{ }}}` are byte-identical on both majors, so **R-10 #7 is WITHDRAWN** and AD-5(2) does not move. Found instead: Ghost 6 sanitises the field at render, Ghost 5 does not (register **53**) | **R-10 #7 — refuted** |
+| ~~E-3~~ | ✅ **RUN 2026-08-31 — §31b, read in source on both majors.** NOT confirmatory: with `cacheMembersContent` on, a member's page is cached **public, keyed on tier alone**, so any non-tier `@member` value would be served to every other member on that tier. This is the **mechanism** AD-38 was missing (register **54**) | **R-28 — confirmed, and given its failure mode** |
+| ~~E-4~~ | ✅ **RUN 2026-08-31 — §31c, `web-features` 3.36.0.** `details-name` is Baseline **Newly** until **2027-03-03**, so at the 2026-08-18 pin the **Tier-2 entry is REQUIRED** and R-15's wording stands. D19's degradation window is now named: **Firefox 122–129 only** (register **55**) | **R-15 — confirmed** |
 
 **Unchanged and still open:** families 3–7, 10–30, 32–37, 39–41 as written in `reconcile-designs.md`,
 with families **2, 8, 9 and 31 struck**, family **1** reduced to E-1, and **family 36's oEmbed half

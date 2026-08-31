@@ -2354,3 +2354,122 @@ rather than an abort threshold — item 47 anticipated only the downward correct
 is low, the cap drops"), and the threshold is not low. Twelve picks cost ≈ 0.12 s of extra server
 render on an idle Ghost. **Raising it above twelve would be a new owner decision, not a consequence
 of this measurement**, and is flagged as such rather than taken here.
+
+---
+
+## 31. E-2, E-3 and E-4 — the three probes `reconcile-designs-decisions.md` §E left open · 2026-08-31
+
+Run before step 5, on the owner's instruction. All three are closed here. **Two of the three refuted
+the premise of the ruling that asked for them**, which is now the fourth and fifth time that has
+happened in this project and the reason standing rule 1 exists.
+
+### 31a. `feature_image_caption` — E-2. The field is a SafeString; **R-10 #7 is withdrawn**
+
+    python3 tools/probe/run-verify-e2.py
+
+**The ask.** R-10 #7 said A24 and A26 need "a second triple-stash carve-out" to AD-5(2), and marked
+itself not applicable until this ran. AD-5(2) exists because a triple stash is an XSS surface, so the
+carve-out is only justified if the double stash actually escapes.
+
+**Method.** Two posts per host — a SUBJECT whose `feature_image_caption` carries mixed markup
+(`<a href>`, `<em>`, `<strong>`, `<b>`, `<script>`, an entity) and a CONTROL carrying plain text with
+no markup at all — then one theme printing **both** stashes around each, rendered live, plus gscan
+4.49.7 and 6.4.2 over that theme through `tools/stress/gate.js`.
+
+**Two controls, both passed** (standing rule 2). *Render control:* on the plain-text CONTROL post the
+two stashes rendered identically on both majors — so any difference on the SUBJECT is Ghost's, not the
+probe's markup. *gscan control:* the same theme was scanned with the triple stash and again with it
+removed, and produced an **identical rule set** — so "gscan does not object" is a measurement and not
+an absence of signal.
+
+| Question | T1 · Ghost 6.58.0 | T3 · Ghost 5.130.6 |
+|---|---|---|
+| Stored shape (Admin API and Content API) | **HTML, verbatim** — including `<script>alert(1)</script>` | **HTML, verbatim** — including `<script>alert(1)</script>` |
+| `{{feature_image_caption}}` vs `{{{…}}}` | **identical** | **identical** |
+| gscan on a theme carrying the triple stash | indifferent — same rules with and without | indifferent — same rules with and without |
+
+**Finding 1 — the double stash does not escape this field, so the carve-out is unnecessary.**
+Ghost hands `feature_image_caption` to Handlebars already marked safe; `{{ }}` and `{{{ }}}` produce
+byte-identical output on both majors. **R-10 #7 is WITHDRAWN, not applied** — AD-5(2) does not move,
+and A24/A26 render captions with the ordinary double stash. Using `{{{ }}}` here would add an XSS
+surface and buy nothing.
+
+**Finding 2 — Ghost 6 sanitises this field at render and Ghost 5 does not.** Same stored bytes, same
+template, different output:
+
+| Sent | Stored (both) | T1 renders | T3 renders |
+|---|---|---|---|
+| `<a href="…">A Person</a>` | verbatim | **kept** | kept |
+| `<em>em</em>` | verbatim | **stripped to `em`** | kept |
+| `<strong>strong</strong>` | verbatim | **stripped to `strong`** | kept |
+| `<b>b</b>` | verbatim | **kept** | kept |
+| `<script>alert(1)</script>` | verbatim | **removed entirely** | **emitted into the page** |
+
+Two consequences, and neither is a theme's to fix. **(a)** A caption designed with italics gets them on
+Ghost 5 and loses them on Ghost 6 — a cross-major rendering difference A24 and A26 must state rather
+than discover. **(b)** On Ghost 5 the field is an **unescapable script vector**: it stores a `<script>`
+verbatim, emits it into the page, and the theme cannot escape it because the double stash does not
+escape either. The author is trusted staff, so this is self-inflicted rather than visitor-supplied —
+but *"a theme can make this safe"* is false and is now written down. Register item **53**.
+
+### 31b. `cacheMembersContent` — E-3. Read in source on both majors; **it gives R-28 its mechanism**
+
+Read rather than toggled: the flag is absent from `defaults.json` and from both hosts'
+`config.production.json`, so it is **experimental and off by default**, and reading the branch it
+controls answers the question without changing a live server's configuration.
+
+    ssh root@ghost6.inflozo.com  # /var/www/ghost6/versions/6.58.0/core/…
+    ssh root@ghost5.inflozo.com  # /var/www/ghost5/versions/5.130.6/core/…
+
+`core/frontend/web/middleware/frontend-caching.js`, **identical on 6.58.0 and 5.130.6**:
+
+```js
+// CASE: Never cache if the request is made by a member and the site is not configured to cache members content
+if (res.isPrivateBlog || (req.member && !shouldCacheMembersContent)) {
+    return shared.middleware.cacheControl('private')(req, res, next);
+}
+// CASE: Cache member's content if this feature is enabled
+if (req.member && shouldCacheMembersContent) {
+    const memberTier = calculateMemberTier(req.member, freeTier);
+    if (!memberTier) {            // more than one active subscription -> not cached
+        return shared.middleware.cacheControl('private')(req, res, next);
+    }
+    res.set({'X-Member-Cache-Tier': memberTier.id});
+    return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+}
+```
+
+**Finding.** With the flag **off** — the default, and the state of both probe hosts — a member's page is
+`Cache-Control: private` and nothing is shared. With it **on**, a member's rendered page is cached
+**`public`, keyed only by tier**. So **any `@member` value that is not tier-derived — `@member.email`,
+`@member.name`, `@member.uuid` — server-rendered into a page would be cached publicly and served to
+every other member on that tier.** A theme cannot detect the flag and cannot opt out of it.
+
+This is **not** confirmatory as §E assumed. It is the mechanism behind **AD-38 / R-28** — "member PII is
+never server-rendered" — which until now was a prudent rule with no stated failure mode. It now has
+one, on both majors. Register item **54**.
+
+### 31c. `<details name>` at the FR-G8 pin — E-4. **Newly, not Widely: the Tier-2 entry is required**
+
+Read from `web-features` **3.36.0**, the dataset FR-G8 computes its floor from (§6 of
+`research-section-js-libraries.md`).
+
+| | |
+|---|---|
+| Feature | `details-name` — *Mutually exclusive `<details>` elements* |
+| Baseline status | **`low`** (Newly available) |
+| `baseline_low_date` | **2024-09-03** |
+| Becomes Baseline **Widely** | **2027-03-03** (low + 30 months) |
+| FR-G8's pin | `widelyAvailableOnDate: 2026-08-18` |
+| Verdict at the pin | **NEWLY — so the Tier-2 allowlist entry is REQUIRED**, and R-15's wording stands |
+
+**And D19's "acceptable degradation" now has a measured floor.** `details-name` support begins at
+Chrome/Edge 120, **Firefox 130**, Safari/iOS 17.2. FR-G8's pinned floor is Chrome/Edge 121,
+**Firefox 122**, Safari/iOS 17.2 — so the browsers that fall short are **Firefox 122–129 only**;
+every other browser inside the floor supports it. D19 said an older browser may show more than one
+panel open and nothing is built for it. That is now a named eight-version window rather than an
+open-ended risk. Register item **55**.
+
+**This entry expires when the pin moves.** `details-name` reaches Widely on 2027-03-03, and a
+`widelyAvailableOnDate` at or beyond that date makes the Tier-2 entry unnecessary — recompute rather
+than assume (`prd.md` §7.6 verify item 17).

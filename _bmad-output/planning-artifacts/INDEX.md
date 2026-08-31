@@ -6,7 +6,7 @@ updated: 2026-08-31
 
 # Document index
 
-**86 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**87 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -88,6 +88,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Per-category design patch prompts](tools/design-patch-prompts.py)**<br>`tools/design-patch-prompts.py` | Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here. |
 | **[Proof of AD-36](tools/stress/test-ad36.js)**<br>`tools/stress/test-ad36.js` | 13 checks: the four injection vectors, the brace escaping, and the media-guard rule. Each asserts the attack is inert AND that the legitimate case still works. |
 | **[Proof the two renderers agree](tools/stress/test-renderer-agreement.js)**<br>`tools/stress/test-renderer-agreement.js` | 8 checks comparing canvas and theme node by node. E0(a)'s exit criterion, made runnable. |
+| **[Register probe · E-2 captions](tools/probe/run-verify-e2.py)**<br>`tools/probe/run-verify-e2.py` | feature_image_caption: its stored shape, {{ }} versus {{{ }}}, and gscan on the triple stash. Carries TWO controls because the answer turns on a non-difference: a plain-text caption must render identically both ways, and the same theme must produce an identical gscan rule set with and without the triple stash. Found the field is a SafeString on both majors — so R-10 #7's carve-out is withdrawn — and that Ghost 6 sanitises it at render while Ghost 5 emits a <script> straight into the page. Restores the previous theme and deletes its own posts. |
 | **[Register probe · item 13](tools/probe/run-verify-13.py)**<br>`tools/probe/run-verify-13.py` | Docs-versus-code conflicts. |
 | **[Register probe · item 47](tools/probe/run-verify-47.py)**<br>`tools/probe/run-verify-47.py` | The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost. |
 | **[Register probes](tools/probe/run-verify-all.py)**<br>`tools/probe/run-verify-all.py` | Executes register items against real Ghosts. |
