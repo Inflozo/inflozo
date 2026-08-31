@@ -303,11 +303,16 @@ DOCS = [
 
 GROUPS = [
  ('design/claude-design-export/', 'live', 'Design library export — the library itself',
-  'Claude Design\'s export, and THE AUTHORITY on what the library contains: the zip plus the '
-  'owner\'s extraction in Inflozo/ — one spec file per category, the design frames, the S1-S14 app '
-  'screens, the M1-M9 pages and P0 Editor Primitives. Every count in the project derives from here '
-  '(tools/export-roster.py). Deleted designs are recorded in export-roster.py with their reason, '
-  'never by deleting a file. It carries hand edits made 2026-08-31 that a re-export would overwrite; '
+  'Claude Design\'s export, and THE STARTING MATERIAL FOR EVERY UI OR UX TASK — read the WHOLE '
+  'directory, never a subset (CLAUDE.md carries the map). Far more than the screen frames: the design '
+  'system itself (Calibration Set = tokens and type scale, Editor Sidebar Kit = every control and '
+  'state, R Responsive System = the archetypes), the S1-S14 app screens, M1-M9 pages, B Missing '
+  'Surfaces, C Post Body, P0-1..P0-6, every drawn design, a per-category -0 Category Proof carrying '
+  'that category\'s tokenisation proof and roster, one spec file per category, THE EXECUTABLE RENDER '
+  'KITS (*-kit.js, _build/, interactions.js, support.js), the per-category session prompts and the '
+  'original brief. Also THE AUTHORITY on what the library contains — every count derives from here '
+  '(tools/export-roster.py), and deleted designs are recorded there with their reason rather than by '
+  'deleting a file. Carries hand edits made 2026-08-31 that a re-export would overwrite; '
   'tools/verify-design-pass.py gates them.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '

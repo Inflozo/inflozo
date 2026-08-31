@@ -16,6 +16,42 @@ compiles the design into a Ghost theme and deploys it to the customer's own Ghos
 **Four document statuses in `INDEX.md`, and they bind:** **live** (edit these) · **tool** (runnable) ·
 **record** (dated — *never edit*) · **retired** (provenance only).
 
+## Any UI or UX task starts in the design export — the whole of it
+
+`_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/` — **the whole directory, every
+time.** It is everything Claude Design produced and it is far more than the screen frames:
+
+| In the directory | What it is |
+|---|---|
+| `Calibration Set.dc.html` | the tokens, type scale, spacing and colour roles — **the design system** |
+| `Editor Sidebar Kit.dc.html` | every sidebar control, panel, badge and state |
+| `R Responsive System.dc.html` | the responsive archetypes and their collapse rules |
+| `S1 Sign In` … `S14 Editor Cards` | the app |
+| `M1 Home` … `M9 404` | the marketing site |
+| `B Missing Surfaces.dc.html` | prompt 2's additional surfaces, B1–B25 |
+| `C Post Body.dc.html` · `P0-1` … `P0-6` | the post body and the editor primitives |
+| `<ID>-<n> <Name>.dc.html` | every design in the library, drawn |
+| `<ID>-0 Category Proof.dc.html` | per category: its tokenisation proof, stress frame and roster |
+| `<ID> <Name> - Spec.md` | per category: the ten spec fields per design, plus `P0 Editor Primitives - Spec.md` |
+| `*-kit.js` and `_build/*.js` | **the shared render kits — real code**, one per category that needed one |
+| `interactions.js` · `support.js` | the mock-interaction layer and the Claude Design runtime |
+| `New Session Prompts/` · `uploads/` | the prompt each category was designed from, and the original brief |
+| `screenshots/` | check images captured during the design work |
+
+**Two things in there that are easy to miss and expensive to miss.** The `-0 Category Proof` frames
+carry each category's own tokenisation proof and roster — they answer "what is this category allowed to
+look like" better than the spec prose does. And the kits are **executable**: they render each block from
+a token object, which is why light, dark and every pack are the same code with a different `t`.
+
+**Editing a frame by hand? Read this first.** The kits carry a load-bearing warning: a literal Ghost
+Handlebars expression in emitted markup must be written with zero-width entities (`{&#8203;{`), because
+a bare `{{ … }}` is a Claude Design value hole and renders **empty**.
+
+**"Design artifacts are non-normative" is scoped to BEHAVIOUR** (build-sequence standing rule 6). The
+PRD decides what a surface *does*; the export decides what it is *built from*. A surface with no frame
+is **extrapolated from the nearest one that has** — same components, same tokens — and drawn in the
+same Claude Design project. Never invent a second interface vocabulary beside this one.
+
 ## The seven standing rules
 
 Each was learned expensively. They are not style preferences.

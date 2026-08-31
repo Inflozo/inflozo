@@ -602,15 +602,27 @@ THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A l
 deliberate design investment already exists at
 design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
 
-  Three frames ARE the design system — read them before you write a word:
-    Calibration Set.dc.html      the tokens, type scale, spacing and colour roles
-    Editor Sidebar Kit.dc.html   every sidebar control, panel, badge and state
-    R Responsive System.dc.html  the responsive archetypes and their collapse rules
-  The drawn surfaces:
+  READ THE WHOLE DIRECTORY, NOT A SUBSET. Every file in it is part of the work:
+    Calibration Set.dc.html         the tokens, type scale, spacing and colour roles — THE SYSTEM
+    Editor Sidebar Kit.dc.html      every sidebar control, panel, badge and state
+    R Responsive System.dc.html     the responsive archetypes and their collapse rules
     S1 Sign In … S14 Editor Cards   the app
     M1 Home … M9 404                the marketing site
-    B Missing Surfaces.dc.html      prompt 2&#x27;s ~23 additional surfaces, B1-B25
+    B Missing Surfaces.dc.html      prompt 2&#x27;s additional surfaces, B1-B25
     C Post Body, P0-1 … P0-6        the post body and the editor primitives
+    &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html         every design in the library, drawn
+    &lt;ID&gt;-0 Category Proof.dc.html   per category: its tokenisation proof, stress frame and roster
+    &lt;ID&gt; &lt;Name&gt; - Spec.md           per category: ten spec fields per design (+ P0&#x27;s spec)
+    *-kit.js, _build/*.js           THE SHARED RENDER KITS — real, executable code
+    interactions.js, support.js     the mock-interaction layer and the Claude Design runtime
+    New Session Prompts/, uploads/  the prompt each category was designed from, and the brief
+    screenshots/                    check images captured during the design work
+  Two that are easy to miss and expensive to miss: the -0 Category Proof frames answer &quot;what is this
+  category allowed to look like&quot; better than the spec prose does; and the kits are EXECUTABLE — each
+  block renders from a token object, which is why light, dark and every pack are the same code with a
+  different t. If you hand-edit a frame, note the kits&#x27; own warning: a literal Ghost Handlebars
+  expression must be written with zero-width entities, because a bare {{ … }} is a Claude Design
+  value hole and renders EMPTY.
   design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
   system in words — personality, colour tokens, the component rules. Read it as the brief.
 
@@ -690,15 +702,27 @@ THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A l
 deliberate design investment already exists at
 design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
 
-  Three frames ARE the design system — read them before you write a word:
-    Calibration Set.dc.html      the tokens, type scale, spacing and colour roles
-    Editor Sidebar Kit.dc.html   every sidebar control, panel, badge and state
-    R Responsive System.dc.html  the responsive archetypes and their collapse rules
-  The drawn surfaces:
+  READ THE WHOLE DIRECTORY, NOT A SUBSET. Every file in it is part of the work:
+    Calibration Set.dc.html         the tokens, type scale, spacing and colour roles — THE SYSTEM
+    Editor Sidebar Kit.dc.html      every sidebar control, panel, badge and state
+    R Responsive System.dc.html     the responsive archetypes and their collapse rules
     S1 Sign In … S14 Editor Cards   the app
     M1 Home … M9 404                the marketing site
-    B Missing Surfaces.dc.html      prompt 2&#x27;s ~23 additional surfaces, B1-B25
+    B Missing Surfaces.dc.html      prompt 2&#x27;s additional surfaces, B1-B25
     C Post Body, P0-1 … P0-6        the post body and the editor primitives
+    &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html         every design in the library, drawn
+    &lt;ID&gt;-0 Category Proof.dc.html   per category: its tokenisation proof, stress frame and roster
+    &lt;ID&gt; &lt;Name&gt; - Spec.md           per category: ten spec fields per design (+ P0&#x27;s spec)
+    *-kit.js, _build/*.js           THE SHARED RENDER KITS — real, executable code
+    interactions.js, support.js     the mock-interaction layer and the Claude Design runtime
+    New Session Prompts/, uploads/  the prompt each category was designed from, and the brief
+    screenshots/                    check images captured during the design work
+  Two that are easy to miss and expensive to miss: the -0 Category Proof frames answer &quot;what is this
+  category allowed to look like&quot; better than the spec prose does; and the kits are EXECUTABLE — each
+  block renders from a token object, which is why light, dark and every pack are the same code with a
+  different t. If you hand-edit a frame, note the kits&#x27; own warning: a literal Ghost Handlebars
+  expression must be written with zero-width entities, because a bare {{ … }} is a Claude Design
+  value hole and renders EMPTY.
   design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
   system in words — personality, colour tokens, the component rules. Read it as the brief.
 
