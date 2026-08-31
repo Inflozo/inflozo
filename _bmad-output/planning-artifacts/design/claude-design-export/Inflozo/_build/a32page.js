@@ -28,7 +28,7 @@ function focusTile(t, d) {
 const NOCHANGE = t => tile({ w:652, bg:'#F7F5F2', border:'#E7E2DB', label:'WHAT DOES NOT CHANGE · THE THREE STATES EVERY A32 DESIGN OWES',
   body:`<div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px;line-height:1.65;color:#3A3835;min-height:150px">
     <span>${b('In the editor the gate draws at its resting state')} ⚑ — the paid gate, the fade at its control value, no hover and no ring. ${b('Nothing in A32 has a behaviour to preview')}, so the edit-time frame and the published frame are the same picture.</span>
-    <span>${b('With JavaScript off the section is identical')} ⚑ — pixel for pixel in ten of the twelve. The gate is server-rendered HTML, the fade is a gradient, the suppression rules are ${code(':last-child')} selectors. ${b('Only 11 Sticky Bar’s close button and 12 Meter’s label depend on a module')}, and both have a quoted degradation.</span>
+    <span>${b('With JavaScript off the section is drawn identically and every action in it is dead')} ⚑ — the gate is server-rendered HTML, the fade is a gradient and the suppression rules are ${code(':last-child')} selectors, but ${b('every action opens Ghost’s Portal, which is JavaScript')}. ${b('1 Fade and 6 Split Pitch replace their email field with the no-JavaScript notice')}; ${b('11 Sticky Bar hides its close button')}; ${b('12 Meter keeps its static reading-time line and loses the fill')}. ${b('And no member button renders at all where the connected site cannot take it')} ⚑.</span>
     <span>${b('A reader who has access never sees this section')} ⚑ — Ghost sends the whole post and A32 does not render. There is no “unlocked” state to design, and no design may draw one.</span></div>` });
 
 /* ── the three landings · §8·4 ────────────────────────────────────────── */
@@ -92,13 +92,13 @@ function buildPage(d) {
 /* registry degradations, quoted verbatim — never composed */
 const MOD = {
   'core': 'Never runs; the <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">.js-enabled</code> class is never set, so all JS-conditional CSS stays in its no-JS branch.',
-  'member-form': 'The <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;form&gt;</code> posts natively to Ghost’s members endpoint; Ghost’s own server response replaces the designed sent state.',
+  'member-form': 'Ghost’s signup endpoint refuses a plain form submission, so the form is replaced by P0·4’s no-JavaScript notice at the form row’s own height — <em>Signing up needs JavaScript — turn it on to subscribe.</em> — no field, no button, the legal line kept beneath. The sent, error and loading states are unchanged.',
   'price-toggle': 'Both monthly and yearly prices render side by side, each labelled — no toggle control shown.',
   'dismiss': 'The bar renders and stays; the close button is hidden rather than rendered inert.',
-  'reading-progress': 'The bar is hidden entirely (it is decorative). A32 #12’s meter renders at its server-known static value.'
+  'reading-progress': 'The bar is hidden entirely (it is decorative). The static reading-time line stays — it is built from post.reading_time and needs no script — and the proportional fill goes with the module.'
 };
 const plain = k => MOD[k].replace(/<[^>]+>/g, '');
-const NONE = `${b('None; ')}${code('core')}${b(' assumed.')} ${b('No-JS: pixel-identical')} ⚑ — the gate is server-rendered HTML, the fade is a gradient and the suppression rules are ${code(':last-child')} selectors. ${b('Edit-safe:')} there is no behaviour to suppress while editing.`;
+const NONE = `${b('None; ')}${code('core')}${b(' assumed.')} ${b('No-JS: the section is drawn identically and every action in it is dead')} ⚑ — Portal is JavaScript — the gate is server-rendered HTML, the fade is a gradient and the suppression rules are ${code(':last-child')} selectors, and ${b('the button does not render at all where the connected site cannot take it')} ⚑. ${b('Edit-safe:')} there is no behaviour to suppress while editing.`;
 const EDITSAFE = `${b('Edit-safe:')} the resting state is the only state, and nothing posts, ticks or pins while the section is edited.`;
 
 return { buildPage, focusTile, landings, twoWidths, NOCHANGE, MOD, plain, NONE, EDITSAFE };

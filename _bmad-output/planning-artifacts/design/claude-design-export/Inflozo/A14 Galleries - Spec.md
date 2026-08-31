@@ -11,7 +11,32 @@ The category's additional artefacts are **on the proof frame, not here**: the to
 findings and the four settlements in full. The shared field list is repeated below because the build
 reads it.
 
-**Controls-reconciliation patch (this document's current state), 24 August 2026.** The category was
+**Design patch pass — 30 August 2026 (this document's current state).** The ten library-wide rules
+were applied to all fifteen designs, and two of them changed something. **Gap names are "Tight ·
+Normal · Loose":** eleven Gap rows are renamed and **no value changed** — 8 · 24 · 40 px, and 13
+Contact Sheet's tighter 4 · 8 · 16 — which **reverses A14's own earlier amendment** that had the PRD
+adopting Tight / Even / Airy. **No design ever turns into another design:** 1 Grid stops calling
+itself "the arrangement six other designs resolve to at 390", and 6 Contrast Band no longer "prints
+as 1 Grid on white" — on paper its fill is dropped and the arrangement is unchanged. **Ghost's
+templates cannot count**, so every number in the category is stated as what it is: a stylesheet
+counter in 12, 13 and 14, an authored label in 8 and 13, and one generated count in 15 Boxed — which
+raises this pass's one open question, because a bound gallery cannot subtract the posts it skipped.
+The remaining rules had no subject here, and each one is recorded, checked design by design, in
+**Patch notes**. **Nothing was renumbered, no design was deleted, no section frame was redrawn, and
+no visual language, type scale, colour pack or spacing step changed.**
+
+**[Free] designs:** 1 Grid · 14 Index
+
+*(Shortlisted in this pass — 1 Grid, 14 Index, 12 Captioned Rows, 15 Boxed, 13 Contact Sheet: the
+plainest designs, weighted towards the ones that do not need the customer to own good photography —
+recommended as **a grid and a list**, and **ruled by the owner on 30 August 2026**. 1 Grid for a site
+with pictures worth showing large, 14 Index for a site without: there the photograph is a 128 × 96
+thumb and the captions carry the section, so a free site with weak photography still looks
+deliberate. The pairs he refused: 1 Grid with 15 Boxed, two versions of the same even grid, which
+leaves a free site with poor pictures nothing that flatters them; and 1 Grid with 12 Captioned Rows,
+which is handsome at four photographs and a very long page at twenty.)*
+
+**Controls-reconciliation patch (the pass before this one), 24 August 2026.** The category was
 audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface,
 thinking like an end user editing their own site. It reuses the shared editor primitives designed in
 **P0 · Editor primitives** — the P0·1 inline text toolbar and its link popover, the P0·2 icon slot
@@ -151,8 +176,9 @@ Every design obeys these unless its own entry says otherwise.
 - **Imagery.** **A14 never dims, tints or filters a photograph** ⚑ — not for dark mode, not on a
   contrast band, not behind a caption. The ground changes; the pictures do not. **The wash in 11
   Overlay is a scrim over the image, not a change to it**, and it is identical in both modes.
-- **Print.** Every design prints as drawn except three: **6 Contrast Band prints as 1 Grid on
-  white** (A17·7's rule), **7 Carousel prints its frames stacked**, all of them, in authored order,
+- **Print.** Every design prints as drawn except three: **6 Contrast Band prints with its fill dropped — dark type on
+  white, the arrangement and the captions unchanged, and it is still 6 Contrast Band** ⚑ (A17·7's
+  derivation; the same holds in forced colours), **7 Carousel prints its frames stacked**, all of them, in authored order,
   and **8 Filmstrip does the same** ⚑.
 
 ### The universal trio
@@ -274,7 +300,7 @@ group, both outside that list. **L** is a locked row.
 
 | # | Design | What it is | Tuple | Ctl | Module |
 |---|---|---|---|---|---|
-| 1 | **Grid** | Three even columns, one enforced crop, captions under. | `grid-of-N · none · page · many · top · one enforced crop across every cell` | 5+3u+D | `lightbox` |
+| 1 | **Grid** · **[Free]** | Three even columns, one enforced crop, captions under. | `grid-of-N · none · page · many · top · one enforced crop across every cell` | 5+3u+D | `lightbox` |
 | 2 | **Masonry** | Native ratios in balanced columns; nothing packs. | `grid-of-N · none · page · variable · top · native ratios in balanced columns` | 4+1L+3u+D | `lightbox` |
 | 3 | **Mosaic** | The first image at 2 × 2 cells in a fixed tile. | `grid-of-N · none · page · many · inline · one lead cell at twice the size` | 5+3u+D | `lightbox` |
 | 4 | **Panel** | The whole set on one raised surface plane. | `grid-of-N · none · surface · many · top · the whole set on one raised plane` | 6+3u+D | `lightbox` |
@@ -287,7 +313,7 @@ group, both outside that list. **L** is a locked row.
 | 11 | **Overlay** | The caption inside the frame on a warm wash. | `grid-of-N · none · page · many · background · caption inside the frame` | 5+3u+D | `lightbox` |
 | 12 | **Captioned Rows** | One frame a row, caption beside it, sides alternating. | `stack · none · page · few · left · caption beside every frame` | 5+3u+D | `lightbox` |
 | 13 | **Contact Sheet** | The whole set as numbered squares on a band. | `grid-of-N · none · surface · many · inline · a dense numbered sheet` | 5+3u+D | `lightbox` |
-| 14 | **Index** | A ruled row per photograph, thumb at the right. | `table · none · page · many · right · a ruled row per photograph` | 5+3u+D | `lightbox` |
+| 14 | **Index** · **[Free]** | A ruled row per photograph, thumb at the right. | `table · none · page · many · right · a ruled row per photograph` | 5+3u+D | `lightbox` |
 | 15 | **Boxed** | The set in a hairline box with a label on its edge. | `grid-of-N · box · page · many · top · the set in a hairline box` | 6+3u+D | `lightbox` |
 
 ### Tuple uniqueness — the honest statement
@@ -393,8 +419,8 @@ media picker as its Add: the shared controls, named once.
 ## 1 · Grid
 
 1. **Descriptor.** Six photographs in three even columns on the page ground, one enforced crop
-   across every cell, each caption under its own frame. The category default and the arrangement six
-   other designs resolve to at 390.
+   across every cell, each caption under its own frame. The category default. **Every A14 grid goes to one
+   column at 390 and stays the design it is** ⚑ — nothing in this category becomes anything else.
 2. **Structural descriptor.** `grid-of-N · none · page · many · top · one enforced crop across every
    cell`
    Containment `none` — the section sits in nothing; 15 Boxed is the same arrangement in a box.
@@ -407,7 +433,7 @@ media picker as its Add: the shared controls, named once.
 5. **Content fields.** `eyebrow` ≤ 24 · `heading` ≤ 60 · `blurb` ≤ 200 · `credit` ≤ 60 · `images[]`
    1–48 with `image` (req), `alt` ≤ 120, `caption` ≤ 200, `link`. All four section strings optional.
 6. **Controls.** Columns *Two · Three · Four* — Crop
-   *Square · Landscape · Portrait · As uploaded* — Gap *Tight · Even · Airy* — Captions *Under each
+   *Square · Landscape · Portrait · As uploaded* — Gap *Tight · Normal · Loose* — Captions *Under each
    ·
    In the lightbox only · Off* — Lightbox *On · Off*. Then the images block. **Then, outside the
    list**: the universal trio — Background role · Vertical spacing *Compact · Comfortable ·
@@ -469,7 +495,7 @@ media picker as its Add: the shared controls, named once.
    **≤ 767** one column of 350, gap 16, padding 64. **No crop at any width.**
 5. **Content fields.** The same five as 1 Grid. **This design reads no field 1 Grid does not** ⚑ —
    what differs is the crop value it is fixed at.
-6. **Controls.** Columns *Two · Three · Four* — Gap *Tight · Even · Airy* — Captions
+6. **Controls.** Columns *Two · Three · Four* — Gap *Tight · Normal · Loose* — Captions
    *Under each · In the lightbox only · Off* — Lightbox *On · Off* — and **Crop, locked at As
    uploaded** ⚑ with 1 Grid named. Then the images block. **Outside the design's list**: the universal
    trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None
@@ -527,7 +553,7 @@ media picker as its Add: the shared controls, named once.
 5. **Content fields.** The category's five. Designed for 6; **3 is the floor at which the tile is
    still a tile** ⚑.
 6. **Controls.** Lead position *Left · Right* — Crop *Square · Landscape · Portrait* with
-   **As uploaded disabled** ⚑ — Gap *Tight · Even · Airy* — Captions *In the lightbox only · Under
+   **As uploaded disabled** ⚑ — Gap *Tight · Normal · Loose* — Captions *In the lightbox only · Under
    each · Off* — Lightbox *On · Off*. Then the images block. **Outside the design's list**: the
    universal trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top
    divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The
@@ -584,7 +610,7 @@ media picker as its Add: the shared controls, named once.
    *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list
    (P0·3)** and **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same
    three values under the universal name. **Six** own controls. **Quick Controls**: Columns · Crop ·
-   Head. **Gap *Tight · Even · Airy* is added in this pass** ⚑ — 8 · 24 · 40 between the frames
+   Head. **Gap *Tight · Normal · Loose* is added in this pass** ⚑ — 8 · 24 · 40 between the frames
    inside the plane. Seven siblings had it and this one did not, and the same grid with and without
    a gap control is an inconsistency users hit. **The plane's 40 px inset is not this and is on no
    ladder** ⚑. **The plane derives from Background role** — surface on Background, background on
@@ -636,7 +662,7 @@ media picker as its Add: the shared controls, named once.
    spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item
    list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the
    same three values under the universal name. **Six** own controls. **Quick Controls**: Head column
-   · Columns · Crop. **Gap *Tight · Even · Airy* is added in this pass** ⚑ — 8 · 24 · 40 inside the
+   · Columns · Crop. **Gap *Tight · Normal · Loose* is added in this pass** ⚑ — 8 · 24 · 40 inside the
    868 column; **the 48 px gutter between head and set is not this** ⚑ and holds at every value.
    **The fake “Head behaviour, locked at Static” row is deleted** ⚑ — a control with one permanently
    locked value is a refusal wearing a control's clothes — and **the no-sticky refusal is panel copy
@@ -925,7 +951,7 @@ media picker as its Add: the shared controls, named once.
    Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line
    · Fade* — **the images item list (P0·3)** and **the Data group**. **The Padding row is retired
    into Vertical spacing** ⚑, the same three values under the universal name. **Six** own controls.
-   **Quick Controls**: Lead height · Lead width · Followers. **Gap *Tight · Even · Airy* is added in
+   **Quick Controls**: Lead height · Lead width · Followers. **Gap *Tight · Normal · Loose* is added in
    this pass** ⚑, **between the followers only** — the lead bleeds and has no gutter to give, and
    the 44 px between lead and row is the design's own. **Editing** · eyebrow, heading, blurb and
    credit edit inline with the **P0·1** toolbar — bold · italic · underline · link, the popover
@@ -1088,7 +1114,7 @@ media picker as its Add: the shared controls, named once.
    category:
    a contact sheet at six frames is a grid at six frames.
 6. **Controls.** Columns *Four · Six · Eight* — Crop *Square · Landscape* (**two values
-   only** ⚑) — Numbering *On · Off* — Gap *Tight 4 · Even 8 · Airy 16* (**a tighter ladder** ⚑) —
+   only** ⚑) — Numbering *On · Off* — Gap *Tight 4 · Normal 8 · Loose 16* (**a tighter ladder** ⚑) —
    Lightbox *On*, with **Off disabled** ⚑. Then the images block and the two See-all fields. **Outside the design's list**: the universal trio — Background role · Vertical spacing *Compact ·
    Comfortable · Spacious* · Top divider *None · Line · Fade* — **the images item list (P0·3)** and
    **the Data group**. **The Padding row is retired into Vertical spacing** ⚑, the same three values
@@ -1223,7 +1249,7 @@ media picker as its Add: the shared controls, named once.
    universal trio — Background role · Vertical spacing *Compact · Comfortable · Spacious* · Top
    divider *None · Line · Fade* — **the images item list (P0·3)** and **the Data group**. **The
    Padding row is retired into Vertical spacing** ⚑, the same three values under the universal name.
-   **Six** own controls. **Quick Controls**: Columns · Box label · Crop. **Gap *Tight · Even · Airy*
+   **Six** own controls. **Quick Controls**: Columns · Box label · Crop. **Gap *Tight · Normal · Loose*
    is added in this pass** ⚑ — 8 · 24 · 40 inside the box's 40 px inset, which is itself on no
    ladder ⚑. **The box's hairline takes Background role's hairline value and the box has no fill at
    any role** ⚑ — which is what separates it from 4 Panel. **Editing** · eyebrow, heading, blurb and
@@ -1239,8 +1265,11 @@ media picker as its Add: the shared controls, named once.
    **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links to its post,
    which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's
    read-only card); **a post with no feature image is skipped and the panel says how many were** ⚑.
-   Count's ceiling here is **12**, this design's drawn-for range. The generated count counts bound
-   frames the same way ⚑, singular included.
+   Count's ceiling here is **12**, this design's drawn-for range. **The generated count is drawn only
+   at Source: Authored** ⚑ — owner ruling, 30 August 2026. A bound gallery skips a post with no
+   feature image and **Ghost's templates cannot subtract the skipped ones from the length**, so at
+   Source: From posts **the box label draws the eyebrow alone and no count**, and the panel says why.
+   Authored is the default and every drawn state, where the count is exact, singular included.
 8. **Empty state.** No eyebrow with a Box label value that needs one → **the label draws the count
    alone** ⚑; with Box label: Off and no eyebrow the box is unlabelled, which is legitimate.
 9. **Behaviour module.** `lightbox`, edit-safe: no ⚑; same quotation as 1 Grid.
@@ -1419,9 +1448,12 @@ build wants a bound-mode canvas state, it is a frame this pass did not draw.
    than
    sitting beside it; 8's Frame height, 14's Row height and 13's tighter Gap keep their own names as
    genuinely different ladders.
-5. **Tight · Even · Airy versus the PRD's Tight · Normal · Loose.** The PRD is amended, owner-ruled.
-   A14
-   already used the adopted names, so no A14 value changed — only four designs gained the row.
+5. **Tight · Normal · Loose versus Tight · Normal · Loose — reversed by the design patch pass.** This
+   entry read that the PRD was amended in A14's favour. **The library-wide ruling of 30 August 2026
+   goes the other way and wins**, and the same rename has already been made in the Video and Embeds
+   category. **Eleven Gap rows now read Tight · Normal · Loose and no value changed** (8 · 24 · 40;
+   13 Contact Sheet keeps its tighter 4 · 8 · 16). The four designs that gained the row in the
+   previous pass keep it.
 6. **5 Split Head's "Head behaviour, locked at Static" versus the no-fake-controls rule.** The row
    is
    deleted; **the no-sticky refusal moves into panel copy**, in the words item 9 already used. The
@@ -1466,3 +1498,120 @@ build wants a bound-mode canvas state, it is a frame this pass did not draw.
    beside it in 7 and 8. No **ARCHITECT: registry addition** is written on any A14 frame. **A14
    never had
    a Preview control**, so P0·8's removal is a no-op here.
+
+---
+
+## Patch notes — galleries patch, 30 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered: the letter-and-number codes elsewhere in this project are filing labels and
+mean nothing outside it.
+
+**Frames changed — sixteen, and every one of them.** `A14-0 Category Proof` gains a **DESIGN PATCH
+PASS** section: the numbering line, the free-designs shortlist with one line on each candidate and
+the recommendation, the gap rename with the eleven designs it touched, the two deleted hand-off
+sentences, the removal floor, the counting mechanism behind every number in the category, the member
+position, the no-JavaScript position design by design, and the eight rules with no subject here. Its
+roster marks designs **1** and **14** *[Free] rec.*, and its controls-patch block no longer claims
+Tight / Even / Airy was adopted library-wide. **All fifteen design frames** gain a **DESIGN PATCH
+PASS** block naming, for that design: that it is still the number it was, what its Gap row now
+reads, what it draws instead of switching and what its panel advises, that Remove never greys out,
+where its count comes from, that it carries no member ask, what a visitor gets with JavaScript off,
+and — where it has one — how its number is produced. **No section frame was restyled, no arrangement
+moved, and no type scale, colour pack or spacing step changed.**
+
+### What changed, and the rule that required it
+
+1. **Eleven Gap rows renamed, and not one value changed** — *gap names are "Tight · Normal · Loose"*.
+   1, 2, 3, 4, 5, 6, 8, 10, 11 and 15 read **Tight · Normal · Loose** at 8 · 24 · 40 px; **13 Contact
+   Sheet** reads **Tight 4 · Normal 8 · Loose 16** and keeps its tighter numbers, which are a
+   different measure rather than a different vocabulary. 7 Carousel, 9 Full Bleed, 12 Captioned Rows
+   and 14 Index draw no gap row at all.
+2. **A14's own amendment is reversed** — *gap names are "Tight · Normal · Loose"*. Amendment 5 of the
+   previous pass recorded the PRD being amended **towards** Tight / Even / Airy, "owner-ruled". The
+   library-wide ruling of 30 August 2026 goes the other way and wins; the Video and Embeds category
+   made the same rename before this one, so A14 was the document out of step. **This is the one place
+   this pass overrides something the spec already said**, and it is recorded here rather than done
+   quietly.
+3. **Two hand-off sentences deleted, and there was no third** — *no design ever turns into another
+   design*. **1 Grid** no longer describes itself as "the arrangement six other designs resolve to at
+   390": every A14 grid goes to one column at 390 and stays the design it is. **6 Contrast Band** no
+   longer "prints as 1 Grid on white": on paper the band's fill is dropped, the type prints dark on
+   white, **the arrangement and the captions are unchanged and the design is still 6 Contrast Band**.
+   7 Carousel's and 8 Filmstrip's stacked print states were already their own and are untouched.
+4. **What the designs do instead was already right, and is now stated per frame** — *no design ever
+   turns into another design*. Nothing in A14 switched: a short last row stays short and
+   left-aligned, a single photograph keeps its column width, 8 Filmstrip never becomes a column, 12's
+   row never becomes a card, 5's head moves above its own set at 1,080 and the section stays 5 Split
+   Head. **7 Carousel and 8 Filmstrip hide their arrows, dots and fades when the track already fits**
+   — the rule's own example, a measurement made by the `carousel` module. Every mention of another
+   design in a panel is **advice** ("at this count, 1 Grid reads better"), which the rule permits.
+5. **Every number in the category is named as a mechanism** — *Ghost's templates cannot count, add,
+   or remember*. The row numbers in **12, 13 and 14** are a **stylesheet counter** rendering
+   position: no arithmetic, no authored number field, no look back at the previous item, and **no "3
+   of 6" anywhere in A14**. **8's and 13's "See all 48" is authored in full**, count and all. **15
+   Boxed's label is the one number A14 generates** — the list's length read straight out, a count and
+   never a sum, with its singular and plural forms from the theme's translation catalogue.
+6. **15 Boxed's count is drawn only when the photographs are added by hand** — *Ghost's templates
+   cannot count, add, or remember*, **ruled by the owner on 30 August 2026**. At Source: From posts a
+   post with no feature image is skipped and the template cannot subtract the skipped ones from the
+   length, so the label would read high by however many were skipped. **In bound mode the label draws
+   the eyebrow alone and no count**, with the reason in the panel; at Source: Authored — the default
+   and every drawn state — the count is exact, singular included. The alternatives he refused:
+   dropping the count everywhere, which loses it from the one design where it reads well, and
+   accepting a number that is occasionally wrong.
+7. **9 Full Bleed's Gutter row keeps its values** — *gap names are "Tight · Normal · Loose"*,
+   **ruled by the owner on 30 August 2026**. **None · Hairline · Even** measures gutter widths rather
+   than the three-step spacing ladder the ruling renames, and "an even gutter" means something
+   specific there. Left as drawn, and recorded so it is not re-litigated: the retired word survives
+   in A14 in exactly one place, on a row that is not a gap ladder.
+8. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15, no gap created or
+   closed, no number reused.
+
+### Rules and facts that were already satisfied, checked design by design
+
+| Rule or fact | Where it lands in A14 |
+|---|---|
+| **The Remove button never greys out** | **Already satisfied, and confirmed on all fifteen.** The images list has **no floor**: ✕ sits on every row, never dimmed and never hidden; **removing to one photograph is allowed in every design**, and so is removing the last, after which the section does not render on the published page while the editor keeps its drop zone. There is no wall, so there is no explanation to write. The only limit is **Add, disabled at 48** with the reason shown. In bound mode the list is P0·3's read-only card and there is no Remove to dim. |
+| **Item counts are a number picker** | **No row changed, and none should.** A14 has **no Show ladder** — the count is the length of the authored list, edited in the images repeater, and P0·5's stepper caps it at each design's drawn-for range in bound mode. **Columns, Followers and Gutter count columns and widths across the page rather than items** and stay rows of named values — the reading the owner ruled on in the Testimonials category. |
+| **Avatars with no photograph** | **No subject.** A14 draws no person and no initials block in any of the fifteen; `profile_image` is read nowhere. The item is a photograph, and a missing one draws the plate carrying its alt text. |
+| **Slider labels** | **No subject to fix.** Every scale row names what it affects and reuses the standard words: **Vertical spacing** and **Gap** read the shared ladders; **Frame height** Short 240 · Medium 320 · Tall 420; **Row height** Compact · Comfortable; **Thumb** Small 88 · Medium 128 · Off; **Frame width** Half · Two thirds; **Lead height**, **Lead width** and **Peek** the same way. No invented three-word vocabulary anywhere in the category. |
+| **A design may offer fewer choices on a shared control, and must say why** | **Re-checked on all fifteen.** **There is no "Inherit" value anywhere in A14** and none had to be removed; the swatch row is **Base**; **no design renames a shared control or adds a choice to one**. Every narrowing is drawn greyed with its reason visible: 2 Masonry's Crop locked at As uploaded, As uploaded disabled in 3, 7 and 9, Background role locked in 6 and 9, Under each disabled at Gutter: None in 9, Lightbox: Off disabled in 13, and 13's two Crop values. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject in any of the fifteen.** A gallery bears no sign-up, subscribe or paid-tier button and opens no Ghost pop-up; **8's and 13's See-all is navigation, not a CTA**. **Member Visibility is not added anywhere** — a judgement, recorded so it can be overruled in one place rather than fifteen. |
+| **The no-JavaScript notice** | **No subject, and no promise to withdraw.** A14 holds no subscribe field and no sign-in field, so there is nothing for a notice to replace, and nothing in this document ever said a reader could subscribe without JavaScript. **The per-design line stands and is restated on every frame:** eleven designs are pixel-identical; **7 Carousel** is a native snap track with every frame present, minus its arrows and dots; **8 Filmstrip** the same, minus two arrows and two fades; **13 Contact Sheet** is twelve links to full-size photographs and no caption text on the page — the weakest result in the category, flagged as such; **14 Index** is the strongest, a numbered list of captions each linking to a full-size photograph. **No A14 design loses a photograph, a caption, a credit or a link with JavaScript off.** |
+| **CSS cannot see content** | **Checked, and nothing had to be withdrawn.** 2 Masonry is `column-count` and **measures nothing**; 11 Overlay clamps its caption at three lines **without knowing how long any caption is**, and the full text stays in the item and in the overlay; 15 Boxed's label truncates at 390 and never wraps; **the hiding of 7's and 8's arrows is a browser measurement made by the module**, not a stylesheet reading the list. **No A14 rule depends on a character count, and no design reorders the DOM at a breakpoint** — 12's alternation is `flex-direction`, never `order`. |
+| **Some fields we drew do not exist** | **Already satisfied.** Bound mode reads a post's **feature image**, its **title** and the image's own **alt**, and nothing else: no member join date, no member newsletter list, no cadence, no site address and **no posts-per-page setting** — Count is the section's own stepper. `focus` is theme-side, because **Ghost stores no focal point on an image**, and that is recorded as a build decision rather than a drawn one. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A14.** These are placeable page sections whose markup, ARIA attributes and words this project owns end to end. **Ghost's own gallery card inside a post is A33's surface** and none of A14's controls reach it — the finding is unchanged and repeated on the proof frame. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, weighted towards the ones that do not need good photography — **1 Grid · 14 Index · 12 Captioned Rows · 15 Boxed · 13 Contact Sheet** — with one line each on the proof frame, and **recommended 1 Grid and 14 Index**. **Put to the owner in this pass; the line at the head of this document carries the recommendation until he rules.** |
+
+### Open questions
+
+**All three questions this pass raised were ruled by the owner on 30 August 2026 and are closed** —
+the free designs, 15 Boxed's count in bound mode, and 9 Full Bleed's Gutter values. They are recorded
+in **The owner's rulings** at the foot of this document.
+
+1. **Carried, unchanged by this pass:** the overlay needs the original file and Ghost guarantees no
+   middle size; `alt` is load-bearing in 9 and 13 and cannot be required; there is no sort module and
+   14 Index is where one would be wanted; a bound gallery is A17 Post Grids without the titles; and
+   the locked-control test in finding 13 is still waiting to be ratified or overruled library-wide.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in
+   the required shape, and names **1 Grid** and **14 Index** — both of which exist in this category's
+   roster. It is **the owner's own choice, ruled on 30 August 2026**.
+
+### The owner's rulings — 30 August 2026
+
+1. **The free designs are 1 Grid and 14 Index** — *the two free designs are the owner's choice*. A
+   grid and a list: one for a site with photographs worth showing large, one for a site without,
+   where the photograph is a small thumb and the captions carry the section.
+2. **15 Boxed draws its count only when the photographs are added by hand** — *Ghost's templates
+   cannot count, add, or remember*. In bound mode the box label is the eyebrow alone; the count is
+   never wrong rather than occasionally wrong.
+3. **9 Full Bleed's Gutter keeps None · Hairline · Even** — *gap names are "Tight · Normal · Loose"*.
+   It measures gutter widths, not the spacing ladder, and "an even gutter" is the right word there.
+
+— End of specification —

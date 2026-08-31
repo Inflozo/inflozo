@@ -19,10 +19,20 @@
 </helmet>
 
 <section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
-  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 6 OF 10 · PAPER PACK · FOUR CONTROLS · THE FIRST OF THE TWO MODULE DESIGNS · A17·16'S BUTTON, THIRD USE, UNCHANGED</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 6 OF 10 · PAPER PACK · FOUR CONTROLS · PATCHED 29 AUGUST 2026 · THE FIRST OF THE TWO MODULE DESIGNS · A17·16'S BUTTON, THIRD USE, UNCHANGED</span>
   <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Load More</h1>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">One button under the feed that appends the next page in place, a count line saying how far in you are, and an optional hairline meter. <strong style="font-weight:600">The button is A17·16's</strong> — Outline, Solid or Text at 45 px on a 24 px radius — and A18·15 used it second. This is its third appearance and nothing about it has changed.</p>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty"><strong style="font-weight:600">What A34 adds is the honest account of what it costs.</strong> The URL does not change, so a reader who presses twice, opens a post and comes back lands on the first twelve again; the footer moves further away with every press. <strong style="font-weight:600">Both are stated in the panel rather than in a release note</strong>, and neither is a reason not to use it — a feed people browse rather than search is exactly what this is for.</p>
+</section>
+
+<section style="padding:0 56px 24px">
+  <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:9px;max-width:1000px;font-size:13px;line-height:1.65;color:#3A3835">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">PATCH PASS · 29 AUGUST 2026 · WHAT CHANGED IN THIS DESIGN</span>
+    <span><strong style="font-weight:600">Nothing drawn here changed, and this is one of the two designs that explains why the rest of the category lost a line.</strong> A count of posts seen — “24 of 132 posts” — is arithmetic, and <strong style="font-weight:600">this design has a script to do it</strong>. The eight link-based designs do not, so their Post range value is gone and the Pager block's Position line now reads Off · Page count. This design's field was already fixed Off and stays so; the count line and the meter are the module's own.</span>
+    <span><strong style="font-weight:600">The hidden numbered links are the seven-slot window.</strong> They always were, and the patch pass makes it explicit: first, the page either side of this one, the last — every number handed over by the route. There is no version of them that lists all 137 pages of a deep archive, because a template cannot count through a range.</span>
+    <span><strong style="font-weight:600">The stale sub-44 claim is struck.</strong> The jump row was raised to the category's 38 px box on a 44 px target in the reconciliation pass; the annotation still said it was A34's one exception, and it is not.</span>
+    <span><strong style="font-weight:600">Posts per page is INFLOZO's setting, not Ghost's</strong> — including the line beside the missing Batch control, which named Ghost's settings as its source.</span>
+  </div>
 </section>
 
 <section data-screen-label="A34-6 desktop light" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:28px">
@@ -161,8 +171,8 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
           <span style="font-size:10.5px;color:#8A857C">Posts per page</span>
-          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. Ghost's setting, not this section's.</span>
-          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">Ghost Admin → Settings → Posts per page →</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. INFLOZO's theme setting; Ghost has no such control.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">INFLOZO → Theme settings → Posts per page →</span>
         </div>
         <span style="font-size:11px;color:#6E6A64;line-height:1.5"><strong style="font-weight:600;color:#3A3835">Three of the four are inert here</strong> ⚑ — after a press there is no current page to report, no end of an archive to dim, and the labels belong to links nobody sees. Progress replaces them.</span>
       </div>
@@ -175,7 +185,7 @@
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">WHAT THIS PANEL SETTLES</span>
       <span><strong style="font-weight:600">A panel may carry a standing warning about the design it is configuring, and this is the first one in the library.</strong> ⚑ It is not an error and it does not appear conditionally — <strong style="font-weight:600">it is a property of the mechanism</strong>, drawn in the pack's surface with a hairline rather than in a warning colour, because nothing is wrong. 7 Endless carries a stronger one for the same reason.</span>
       <span><strong style="font-weight:600">A block field may be inert for a design, and it is drawn inert rather than removed.</strong> The fourth and last thing a design may do to the Pager block, after narrowing, defaulting and locking. <strong style="font-weight:600">Position line reads “Off · fixed by this design”</strong>, At the ends reads “Not applicable”, Labels says where the value still goes. A user switching from 1 Numbers can see exactly which of their settings this design cannot honour.</span>
-      <span><strong style="font-weight:600">There is no Batch control and the panel states the site's value instead</strong> — “12 posts a page, from Ghost's settings”. <strong style="font-weight:600">A34 does not own the query in any of its ten designs</strong>, and the one design that could plausibly have taken a batch size is the one where it would have desynchronised the button from the numbered links in the same markup.</span>
+      <span><strong style="font-weight:600">There is no Batch control and the panel states the site's value instead</strong> — “12 posts a page, from INFLOZO's theme settings”. <strong style="font-weight:600">A34 does not own the query in any of its ten designs</strong>, and the one design that could plausibly have taken a batch size is the one where it would have desynchronised the button from the numbered links in the same markup.</span>
       <span><strong style="font-weight:600">Four controls. Cut: auto-load on scroll</strong> — that is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">infinite-scroll</code> and 7 Endless declares it — <strong style="font-weight:600">and a “remember my position” toggle</strong>, which would need storage the theme does not have and would be a lie in a private window.</span>
     </div>
   </div>
@@ -235,7 +245,7 @@
           </div>
           <div style="height:64px"></div>
         </div>
-        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">The jump row's boxes are 38 on a 44 px target above 767 and 44 outright below it, at 15 px.</strong> ⚑ It is the one place in A34 where an interactive target is under 44 px, and it is allowed because <strong style="font-weight:600">the row is a secondary route to something the button already reaches</strong> — the primary control above it is 48 px and full-width. Stated here, in the spec and in the panel, rather than quietly shipped.</p>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">The jump row's boxes are 38 on a 44 px target above 767 and 44 outright below it, at 15 px.</strong> ⚑ Raised to the category's own 38/44 box in the reconciliation pass, so A34 has no target under 44 px left anywhere. It stays visually quiet because <strong style="font-weight:600">the row is a secondary route to something the button already reaches</strong> — the primary control above it is 48 px and full-width. Stated here, in the spec and in the panel, rather than quietly shipped.</p>
       </div>
     </div>
   </div>

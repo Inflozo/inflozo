@@ -446,8 +446,10 @@ ruling.
     already does, on every site. The command-palette behaviour is gone with A23. The editor's own ⌘K
     (P0·1's Link action) is unaffected.
 11. **Any new behaviour must name a module from the fixed registry** (`marquee`, `rotator`, `dismiss`,
-   `mode-toggle`, `search-overlay`, `price-toggle`, `member-form`, `lightbox`, `countdown`, `count-up`,
-   `accordion`, `tabs`, `carousel`, `share`, `filter-strip`…). If an instruction needs behaviour no
+   `mode-toggle`, `price-toggle`, `member-form`, `lightbox`, `countdown`, `count-up`,
+   `accordion`, `tabs`, `carousel`, `share`, `filter-strip`, `nav-transform`, `contact-form`,
+   `group-headings`…). **Retired and not nameable:** `search-overlay`, `search-expand` and
+   `command-palette` all went with the Search category (rule 10) — no design may declare them. If an instruction needs behaviour no
    module covers, mark it **"ARCHITECT: registry addition"** on the frame and in the spec and design
    the no-JS state — never invent a module name. The primitives themselves are editor software, not
    theme behaviour, and declare no modules ⚑; what they *write* (e.g. P0·4's member checks) compiles
@@ -531,6 +533,14 @@ Toolbar` · `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` · `P0-4 Me
 | Icons are Tabler throughout | **Social versions settled:** the seven added platforms arrived for staff profiles in Ghost 5.118.0 (28 April 2025) and for the site in Ghost 6.38.0 (13 May 2026, announced 4 June 2026). The "6.36" figure elsewhere in the library is wrong. Recorded with the two-sets-of-fields distinction and the helper's legacy `twitter` key (P0·2). |
 
 | One toggle per thing (new, from the Headers pass) | **Compound "A + B" control values are split into one toggle per thing**, in a labelled group; single-axis choices (form, width, placement, ladder, ground, treatment, behaviour state) stay as they are; a group with a floor keeps its last toggle on with the reason shown. Recorded as rule 12 above. **The shared Actions control is the one compound value not yet split** ⚑ — with the owner. |
+
+### Correction pass — 28 August 2026
+
+| What | Change |
+|---|---|
+| Rule 11 still listed a deleted module | `search-overlay` is **removed from the registry list**. It went with the Search category, which rule 10 already records, and every category reads this list to learn what it may declare. `search-expand` and `command-palette` were already absent; all three are now **named as retired and not nameable**, so a later session cannot reintroduce them by reading past the omission. |
+| Three modules created in the same pass were missing from the list | `nav-transform`, `contact-form` and `group-headings` **added**. |
+| The two free designs | Still **not applicable to P0** — these are editor controls, not placeable designs, so there is no roster and no free pair. The two design categories patched alongside this one (Headers and Heroes) each had their pair put to the owner and decided. |
 
 ### Open questions
 

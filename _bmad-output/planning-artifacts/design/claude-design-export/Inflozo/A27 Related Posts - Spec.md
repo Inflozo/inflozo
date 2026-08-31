@@ -16,6 +16,24 @@ suffix bound to **A24's site-level string**. Six card designs gained **Tag: Off 
 each design gained is in a **Reconciled** paragraph at the foot of its entry, and the frame-by-frame
 list is in **Reconciliation notes** at the end.
 
+**Design patch pass — 30 August 2026 (this document's current state).** The ten library-wide rules were
+checked against all twelve designs and three of them changed what a site renders. **The count control
+became a number picker, 1–4**, with 4 as every design's greyed ceiling and its reason on the control;
+**two hand-offs were deleted** — 3 Thumb Rows and 8 Overlay now draw their own plates and their panels
+advise; 9 Big Type lost its destination sentence; six panels gained the reason for a choice they had
+quietly withheld; the author circle shows **one letter**; **11 Index's numbers are named as a CSS
+counter**; and **7 Rail's "Label and count" is marked as an open question rather than guessed**, because
+a Ghost template cannot count what it drew, and **the owner ruled that the rail draws the topic's
+total**. **Nothing was renumbered**, and no arrangement, type scale,
+colour pack or spacing step moved. Every change carries the name of the rule that required it in **Patch
+notes** at the end.
+
+**[Free] designs:** 1 Three Up · 2 Rows
+
+*(Shortlisted in this pass — 1 Three Up, 2 Rows, 9 Big Type, 11 Index, 7 Rail: the five plainest
+designs, none of which needs the customer to own good photography — and **ruled by the owner on
+30 August 2026: 1 Three Up and 2 Rows**.)*
+
 The frames are `A27-0 Category Proof.dc.html` and `A27-1` … `A27-12`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
 that was written down. Every invented decision is marked ⚑ here and on the frame.
@@ -77,14 +95,10 @@ is mixed and the tag is the one word that says what a card is. **The eyebrow ret
 default: Tag: Off (default) · Primary tag**, on the six card designs that can place it (1, 4, 5, 10, 12
 and 6's lead). The tag also survives, as before, in the plate and in 11 Index's tag column.
 
-**2 · Counts of 2, 3 and 4, and fewer posts than slots.** **Show is Two · Three · Four**, on A17's
-divisions: 636 · 416 · 306 across 1,296 on a 24 px gutter. **Fewer posts than the count is the common
+**2 · Counts of 2, 3 and 4, and fewer posts than slots.** **Show is a number picker, 1–4** ⚑ *(this pass — item counts are a number picker, never a row of fixed buttons)*, on A17's divisions: 636 · 416 · 306 across 1,296 on a 24 px gutter. **Fewer posts than the count is the common
 case and is not an error state** ⚑ — the cells keep their width and sit at the left, exactly as A17
 settled it. **Nothing stretches, centres, rebalances or promotes.** Exactly one post → one cell, one row,
-one tile. **Two designs ship at Four** (10 Carousel, which needs the overflow; 11 Index, which is a list
-before it is anything) and **one forces One** (12 Next Up, whose Show control is disabled with its reason
-shown ⚑ — reviewed in this pass and **kept**; A17·12 Bento's precedent, the only other override in the
-library). At Hand-picked, **Show and Order hide**: the picked list is the count and the order.
+one tile. **Two designs ship at 4** (10 Carousel, which needs the overflow; 11 Index, which is a list before it is anything) and **one is locked at 1** (12 Next Up, whose picker is drawn greyed with its reason visible and whose − and + stay clickable so they can say why ⚑ — reviewed in this pass and **kept**; A17·12 Bento's precedent, the only other override in the library). **4 is every design's ceiling, greyed with its reason on the control** ⚑ — the cell divisions on 1, 4, 5 and 8, and on the rest that a longer list of posts is A18's page. At Hand-picked, **Show and Order hide**: the picked list is the count and the order.
 
 **3 · Reusing A17's post card rather than inventing one.** Taken verbatim: DOM order image → tag →
 title → excerpt → meta; the title in the heading font at 26 / 22 / 19 / 17 by cell; **the whole card one
@@ -192,7 +206,7 @@ controls and **not counted toward the control budget** ⚑. It replaces the thre
 | `relatedTag` | ref opt | read at By tag · P0·5's live-searched tag select, single pick |
 | `relatedAuthor` | ref opt | read at By author · P0·5's author select, single pick |
 | `postRefs` | ref[] opt | read at Hand-picked · the Ghost post picker's references, **drag order = drawn order** |
-| `count` | enum req | Two · Three · Four — **Four in 10 and 11**, **forced One in 12**; hidden at Hand-picked |
+| `count` | int req | **A number picker, 1–4** ⚑ — default 3 · **4 in 10 and 11** · **locked at 1 in 12**, greyed with its reason · 4 is every design's ceiling, with its reason on the control · hidden at Hand-picked |
 | `order` | enum req | **Newest · Oldest** — new; disabled at Hand-picked |
 | `whenEmpty` | enum req | **Hide the section (default)** · Show latest posts |
 
@@ -216,16 +230,16 @@ rows, named on each control-panel frame's header line.
 |---|---|---|---|---|---|
 | 1 | Three Up | `grid-of-N · none · page · few · top · three equal cards under one hairline` | Cells keep their width at the left | 5 | — |
 | 2 | Rows | `feed · none · page · few · none · hairline rows on the measure` | Row ends at its meta; no image field read | 5 | — |
-| 3 | Thumb Rows | `feed · none · page · few · left · a small picture beside every row` | Plate at the thumb; no pictures at all → 2 Rows | 5 | — |
+| 3 | Thumb Rows | `feed · none · page · few · left · a small picture beside every row` | Plate at the thumb; no pictures at all → a column of plates ⚑ | 5 | — |
 | 4 | Panel | `grid-of-N · none · surface · few · top · the set on a raised panel` | Empty → the panel goes with the section | 6 | — |
 | 5 | Contrast Band | `grid-of-N · none · contrast · few · top · inverted closing band` | Empty → the band goes with the section | 6 | — |
 | 6 | Lead and List | `split · none · page · few · left · one lead against a short list` | One post → the list column is not drawn | 5 | — |
 | 7 | Rail | `edge rail · none · page · few · none · the head in the margin` | No rail below 1,200; empty → both columns go | 4 | — |
-| 8 | Overlay | `grid-of-N · none · page · few · background · titles over their pictures` | Plate tile with dark type; none at all → 9 Big Type | 4 | — |
+| 8 | Overlay | `grid-of-N · none · page · few · background · titles over their pictures` | Plate tile with dark type; none at all → every tile plated ⚑ | 4 | — |
 | 9 | Big Type | `stack · none · page · few · none · titles at display size` | The title is always there; nothing else is read | 4 | — |
 | 10 | Carousel | `carousel · none · page · few · top · a strip that runs past the edge` | Fewer cards, no overflow, no arrows | 6 | `carousel` |
 | 11 | Index | `table · none · page · few · none · dated rows in fixed columns` | Em dash in the tag cell — the one placeholder ⚑ | 4 | — |
-| 12 | Next Up | `media frame · none · page · one · left · one post at the size of a decision` | Plate at 560 × 373; never a hand-off | 6 | — |
+| 12 | Next Up | `media frame · none · page · one · left · one post at the size of a decision` | Plate at 560 × 373; the design stays itself | 6 | — |
 
 **The tuples did not move in this pass.** Tag: Primary tag does not change any design's five closed
 slots — an eyebrow is a card part, not an archetype, a containment, a ground, an item-count or a media
@@ -259,7 +273,7 @@ models, and still true after this pass: `postRefs` is an array of **references**
 list** rules apply to it and its authored-list rules do not. **One thing repeats — the related posts — and
 it is Ghost's answer to a query, or a picked list of Ghost's posts.**
 
-- **How many, and which counts each design is built for.** Show Two · Three · Four. Designed for three:
+- **How many, and which counts each design is built for.** Show is a number picker, 1–4 ⚑. Designed for three:
   1, 2, 3, 4, 5, 6, 7, 8, 9. Designed for four: 10, 11. Designed for one: 12.
 - **No Add button anywhere** — rule 8's Ghost-sourced rule. At Hand-picked the footer control is
   **"＋ Pick a post…"**, which opens the picker and lands a real post; **Remove is never disabled** and
@@ -291,7 +305,7 @@ it is Ghost's answer to a query, or a picked list of Ghost's posts.**
 | `relatedBy` | enum | no | seven values, above | All twelve · default Same tag |
 | `relatedTag` · `relatedAuthor` | ref | yes | — | **New** ⚑ · read at By tag / By author |
 | `postRefs` | ref[] | yes | 1–4 | **New** ⚑ · read at Hand-picked |
-| `count` | enum | no | Two · Three · Four | All twelve · default Three · **Four in 10 and 11** ⚑ · **forced One in 12** ⚑ |
+| `count` | int | no | 1–4 · a number picker ⚑ | All twelve · default 3 · **4 in 10 and 11** ⚑ · **locked at 1 in 12, drawn greyed with its reason** ⚑ |
 | `order` | enum | no | Newest · Oldest | **New** ⚑ · all twelve · default Newest |
 | `whenEmpty` | enum | no | Hide the section · Show latest posts | All twelve · **default Hide the section** ⚑, flipped |
 | `readingTimeSuffix` | text | no | "min read" | **A24's site-level string** ⚑, read not re-declared · every design that draws reading time; **not read by 8** |
@@ -305,7 +319,7 @@ Per post — read from Ghost, never authored, never inline-editable:
 | `primary_tag.name` | string | yes | The plate in 1, 3, 4, 5, 6, 8, 10, 12 · a column in 11 · **and the card eyebrow at Tag: Primary tag** in 1, 4, 5, 10, 12, 6's lead ⚑ |
 | `custom_excerpt` | text | yes | 1, 2, 3, 4, 5, 6 (lead), 7, 10, 12 · **Ghost's generated excerpt is refused** ⚑ (A17's rule) · kept and not drawn by 8, 9, 11 |
 | `published_at` | date | no | All twelve · written in full, **never abbreviated and never relative** ⚑ · `<time datetime>` |
-| `primary_author.name` · `profile_image` | ref | yes | Meta in 1–7, 9, 10, 12 · missing photograph → A1's initials circle · not read by 8, 11 |
+| `primary_author.name` · `profile_image` | ref | yes | Meta in 1–7, 9, 10, 12 · missing photograph → A1's one-letter initials circle · not read by 8, 11 |
 | `reading_time` | int | no | A Meta value in 1–7, 9, 10, 12 · a column in 11 · never drawn in 8 ⚑ · suffixed by A24's string |
 
 **Four authored strings, one link, six enums and three references is the entire authored surface of A27**
@@ -324,7 +338,7 @@ which is what makes switching designs safe with the content preserved. **9 Big T
 **Structural descriptor.** `grid-of-N · none · page · few · top · three equal cards under one hairline`
 — containment `none` because the cards are the item's geometry, not the section's.
 
-**Archetype.** grid-of-N. **One departure: Show Four collapses to two across at 834** ⚑ rather than
+**Archetype.** grid-of-N. **One departure: Show 4 collapses to two across at 834** ⚑ rather than
 three-plus-one.
 
 **Responsive rule.** **1440** three 416 cells, 24 gutter, 48 row gap, image 3:2 at 277, title 22, excerpt
@@ -350,7 +364,7 @@ anywhere.
 feature image → A17's tag plate (hover surface, same box and radius, primary tag centred at eyebrow size,
 `aria-hidden`); no tag either → a plain plate. **At Tag: Primary tag a post with no tag draws no eyebrow
 and its title sits where the others' eyebrows are** ⚑ — the row of titles stops aligning, which is the
-honest cost of the value and is drawn. No author photograph → A1's initials circle. No excerpt on any post
+honest cost of the value and is drawn. No author photograph → A1's one-letter initials circle. No excerpt on any post
 → titles and meta, 120 px shorter.
 
 **Behaviour module.** **none.** **No-JS: pixel-identical** — hover and focus are CSS over server-rendered
@@ -370,9 +384,11 @@ returns A17's eyebrow as a value. `relatedBy` widens to seven sources, **Order**
 flips to Hide the section**, and the archive link gets the Link Picker it never had. **Five controls of its
 own.**
 
+**Patched (design patch pass, 30 August 2026).** **Show became a number picker, 1–4, default 3** — *item counts are a number picker* — with 4 greyed and the divisions as its reason. The author circle shows **one letter** — *avatars with no photograph*. Nothing else changed: the eyebrow's reason, the refusal of Portrait 4:5 and the plate were already written down, and this design never named another design.
+
 **Flagged ⚑.** The 48 px row gap from A17 · the hairline above the head, now Top divider Line · "Keep
 reading" as the default head · **the eyebrow returning as a value and Off as its default** · **the eyebrow
-breaking title alignment on a post with no tag** · Show Four collapsing to two across at 834 · the mobile
+breaking title alignment on a post with no tag** · Show 4 collapsing to two across at 834 · the mobile
 meta dropping the author · refusing Portrait 4:5 at three across · the excerpt stepping to one line at 306
 and at 834.
 
@@ -403,10 +419,10 @@ One line · Two lines) · Meta. Then the universal trio and the Data group. **No
 draws no card eyebrow and no picture, which is its reason to exist. **Quick: Heading, Width, Excerpt, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one row and its rule; no reserved space below it.
-**Many** → the first N. **Show Four costs one row, 88 px** — the cheapest Four in the category.
+**Many** → the first N. **Show 4 costs one row, 88 px** — the cheapest Four in the category.
 
 **Empty state.** No excerpt on a post → that row ends at its meta; none on any post → three
-title-and-meta rows, which is the design at Excerpt Off. No author photograph → A1's initials circle.
+title-and-meta rows, which is the design at Excerpt Off. No author photograph → A1's one-letter initials circle.
 **A missing feature image is invisible here**, which is the design's reason to exist.
 
 **Behaviour module.** **none.** **No-JS: pixel-identical.**
@@ -419,6 +435,8 @@ an h3 inside the row's single link; the whole row is the target and **the hairli
 is not the seam above a section, and **Top divider is the seam** — both can be on at once. `relatedBy`
 widens to seven sources, **Order** arrives, **When empty flips**, and the archive link gets its Link Picker.
 **Five controls of its own.**
+
+**Patched.** **Show became a number picker, 1–4, default 3** — 4 costs one row, 88 px, and is the greyed ceiling because a longer list of posts is A18's page. **The absent Ratio and Tag rows now carry their reason** — *a design may offer fewer choices, and must say why*: this design reads no image field and draws no eyebrow, which is its reason to exist. The author circle shows **one letter**.
 
 **Flagged ⚑.** The 24 px rule inset · the label above the first rule · one line as the default excerpt ·
 the excerpt going off at ≤ 767 · Width Content existing for A25·2 Plain's sake · **Rule and Top divider
@@ -445,7 +463,7 @@ clamped line at 720, date at the right edge, hairline between rows at 22 px eith
 `title` · `url` · `feature_image` + `feature_image_alt` · `primary_tag.name` (plate only) ·
 `custom_excerpt` · `published_at` · `primary_author.name` · `reading_time`.
 
-**Controls.** Heading · Thumbnail (Small 96 · Medium 128) · Ratio (Landscape 3:2 · Square 1:1) · Meta (Date
+**Controls.** Heading · Thumbnail (Small 96 · Medium 128) · Ratio (Landscape 3:2 · Square 1:1 — **Wide 16:9 and Portrait 4:5 refused, with their reasons now on the panel** ⚑: a 72 px crop beside two lines of type reads as a strip, a 160 px crop sets the row's height instead of the words) · Meta (Date
 · Date and reading time · Author and date · Off) · Rule (Hairlines · None). Then the universal trio and the
 Data group. **No Excerpt control** ⚑: on at one line above 767, off below. **No Tag row** ⚑ — the tag is
 already drawn here, as the plate's one word when a picture is missing, and a second place for it would
@@ -455,8 +473,7 @@ print it twice in the same row. **Quick: Heading, Thumbnail, Ratio, Meta.**
 **Many** → the first N. Four rows is 532 px, the count this design is built for.
 
 **Empty state.** No feature image → A17's tag plate at the thumbnail's box, tag centred at 13,
-`aria-hidden`; no tag either → a plain plate. **No image on any post in the set → the thumbnail column is
-not drawn and the design is 2 Rows** ⚑, named in the editor (A17's hand-off rule). No excerpt → the row is
+`aria-hidden`; no tag either → a plain plate. **No image on any post in the set → every row draws its plate and this design stays itself** ⚑ — the thumbnail column holds its 128 (or 96) at the set ratio, each plate carrying that post's primary tag, or nothing where a post has none. **The panel advises and never switches**: "no post in this set has a picture — 2 Rows reads better here". No excerpt → the row is
 title and date.
 
 **Behaviour module.** **none.** **No-JS: pixel-identical.**
@@ -469,9 +486,11 @@ at every width — **never abbreviated** ⚑. Focus is A6's ring round the row b
 row**, and the reason is now written down rather than inherited. `relatedBy` widens to seven sources,
 **Order** arrives, **When empty flips**, the archive link gets its Link Picker. **Five controls of its own.**
 
+**Patched.** **The hand-off is deleted** — *no design ever turns into another design*: where no post in the set has a picture, **every row draws its plate** and the panel advises "2 Rows reads better here". **Three narrowings gained reasons** — Wide 16:9, Portrait 4:5 and the 96 px floor — and **the absent Excerpt row gained one**. **Show became a number picker, 1–4, default 3.** The author circle shows **one letter**.
+
 **Flagged ⚑.** The 22 px rule inset · the date at the right edge · the excerpt with no control · refusing a
 64 px thumbnail and Wide 16:9 · **refusing the Tag row the other picture designs gained** · the forced 96 at
-≤ 767 · the date moving under the title on a phone · the hand-off to 2 Rows.
+≤ 767 · the date moving under the title on a phone · the column of plates when no post in the set has a picture, advised rather than switched.
 
 ---
 
@@ -484,7 +503,7 @@ ground visible on all four sides. **A plane instead of a hairline.**
 containment `none` and ground `surface`, **A26·3 Card's precedent taken verbatim**: the plane is the
 section's ground rather than a box round the section.
 
-**Archetype.** grid-of-N. **One departure: Show Four collapses to two across at 834** ⚑, as 1.
+**Archetype.** grid-of-N. **One departure: Show 4 collapses to two across at 834** ⚑, as 1.
 
 **Responsive rule.** **1440** panel 1,296, inset 40, three 392 cells on a 24 gutter, 44 row gap, title 22,
 head inside at 28. **834** panel 754, inset 32, three 222 cells, title 17, spacing 80. **≤ 767** panel 350,
@@ -521,6 +540,8 @@ value, and at Contrast the panel lifts *off* the band rather than becoming 5 Con
 *on* it. **Tag** joins, `relatedBy` widens to seven sources, **Order** arrives, **When empty flips**. **Six
 controls of its own.**
 
+**Patched.** **Show became a number picker, 1–4, default 3.** **Portrait 4:5's absence now carries its reason** — three 392 portraits are 490 px tall each. The fixed 40 px inset is recorded again, unchanged. The author circle shows **one letter**. The Contrast sentence stays a denial: the panel lifts off the band rather than becoming 5 Contrast Band.
+
 **Flagged ⚑.** The 392 cell and the fixed 40 px inset · the head always inside the panel · the plate
 stepping to the page ground on a filled panel · `sm` and never `md` · the dark-mode hairline the light panel
 does not have · **Background role deliberately unlocked, with its reason drawn** · refusing a full-bleed
@@ -546,7 +567,7 @@ step less, inset 48 above 767 and 24 below.
 **Content fields.** `headingText` · `fallbackHeading` · `archiveLinkLabel` + `archiveLinkUrl`. Per post:
 as 1.
 
-**Controls.** Heading · Band (Full bleed · Inset) · Ratio · Excerpt (**disabled at Show Four, with its
+**Controls.** Heading · Band (Full bleed · Inset) · Ratio · Excerpt (**disabled at Show 4, with its
 reason shown** ⚑) · Meta · **Tag (Off · Primary tag)**. Then the universal trio — **Background role locked
 at Contrast and Top divider locked at None**, both with the reason shown — and the Data group. **Quick:
 Heading, Band, Ratio, Meta.**
@@ -556,7 +577,7 @@ the loudest possible nothing ⚑. **1** → one 416 cell at the left; the band k
 first N.
 
 **Empty state.** No image → the plate as **a 7% lift of the band** ⚑, its tag in the carried muted colour.
-No author photograph → A1's initials circle at a 16% lift ⚑. No excerpt → the card ends at its meta. At
+No author photograph → A1's one-letter initials circle at a 16% lift ⚑. No excerpt → the card ends at its meta. At
 Tag: Primary tag the eyebrow takes **the carried muted colour at 72%**, never the accent.
 
 **Behaviour module.** **none.** The inversion is a token substitution. **No-JS: pixel-identical.**
@@ -573,8 +594,10 @@ more padding, and a divider above an inverted band draws a boundary the band alr
 **Tag** joins in the carried muted colour. `relatedBy` widens to seven sources, **Order** arrives, **When
 empty flips**. **Six controls of its own.**
 
+**Patched.** **Show became a number picker, 1–4, default 3**, and **Excerpt is still disabled at 4** with its reason shown. **Portrait 4:5's absence now carries its reason** — three 416 portraits are 520 px tall each. The author circle shows **one letter**, at the 16% lift. Both locks and the declined padding exemption are unchanged.
+
 **Flagged ⚑.** The 72% muted line · the 7% plate lift and 16% avatar lift · Inset dropping one spacing step ·
-Excerpt disabled at Show Four · the carried-colour underline, ring and eyebrow · the band drawing its own
+Excerpt disabled at Show 4 · the carried-colour underline, ring and eyebrow · the band drawing its own
 page margin · **the two locks and the declined padding exemption** · refusing an accent band.
 
 ---
@@ -610,7 +633,7 @@ changes which post leads**, which is the sharpest thing this pass did to any des
 stretching ⚑. **2** → lead and one row, the column at its full 588. **Many** → the first N.
 
 **Empty state.** Lead with no picture → A17's plate at 636 × 424, tag centred ⚑. Lead with no excerpt → it
-ends at its meta and the rows are unaffected. No author photograph → A1's initials circle (lead only; rows
+ends at its meta and the rows are unaffected. No author photograph → A1's one-letter initials circle (lead only; rows
 draw no avatar). **No post in the set with a picture → the lead is a plate, not a hand-off** — the list
 carries the section ⚑. **The rows are unaffected at both Lead tag values.**
 
@@ -627,6 +650,8 @@ eyebrow **on the lead only**, because the rows carry no eyebrow at any value —
 excerpt either, which is what makes them rows rather than small cards. `relatedBy` widens to seven sources
 and **Order** arrives, which here **chooses the lead**; **When empty flips**; the archive link gets its Link
 Picker. **Five controls of its own.**
+
+**Patched.** **Show became a number picker, 1–4, default 3**, counting the whole set with the lead included. **The absent Ratio row and the absent row excerpt now carry their reasons.** The lead's plate stays **a plate and not a hand-off**. The lead's author circle shows **one letter**.
 
 **Flagged ⚑.** The 72 px gutter · the 20 px row title and the rows' missing avatars · the lead being the
 set's first post · **Order deciding the lead** · **the eyebrow on the lead only** · refusing Ratio and a row
@@ -655,14 +680,13 @@ its name and its controls, and Rail Left / Rail Right stop applying ⚑.
 "Browse the archive") + `archiveLinkUrl`. Per post: `title` · `url` · `custom_excerpt` · `published_at` ·
 `primary_author.name` · `reading_time`. **No image field** — as 2 Rows.
 
-**Controls.** Rail (Left · Right) · Rail contents (Label · Label and link · Label and count) · Excerpt ·
+**Controls.** Rail (Left · Right) · Rail contents (Label · Label and link · Label and count — **the count is the topic's total** ⚑, ruled 30 August 2026) · Excerpt ·
 Meta. Then the universal trio and the Data group. **No Heading control** ⚑ — the rail is the head, so the
 head string is edited on canvas and named in the Content group instead. **Quick: Rail, Rail contents,
 Excerpt, Meta.** **Four controls of its own — the joint minimum in A27.**
 
 **Data.** As the category. **0** → When empty; on Hide the rail goes with the body ⚑. **1** → one row beside
-the rail; the columns hold and nothing re-centres. **Many** → the first N. **The count value counts the
-posts drawn**, not the posts that matched ⚑.
+the rail; the columns hold and nothing re-centres. **Many** → the first N. **The count value is the topic's total, not the posts drawn** ⚑ — *corrected in the design patch pass, and* **ruled by the owner on 30 August 2026**: a Ghost template cannot count what it drew, so the number is the total Ghost's query matched — "Keep reading · 12 posts · Browse the archive" — and **the panel says what it counts**, because the total does not match the rows below it. It comes from the get helper's own `pagination.total` and nothing computes it here.
 
 **Empty state.** No excerpt on a post → that row ends at its meta. No archive link label → the rail is the
 label alone. **A missing feature image is invisible here.**
@@ -680,9 +704,13 @@ was previously a string with nowhere to go. `relatedBy` widens to seven sources,
 empty flips**. **No Heading control still**, and the reason is now in the Content group where the head string
 lives. **Four controls of its own.**
 
+**Patched.** **Rail contents: Label and count draws the topic's total** — *Ghost's templates cannot count, add, or
+remember*, **ruled by the owner on 30 August 2026**: a template cannot count what it drew, so the claim
+that the count counts the posts drawn is withdrawn and the number is the total the query matched, with
+the panel saying so. **Show became a number picker, 1–4, default 3.** **The absent Heading and Rule rows now carry their reasons.** The collapse below 1,200 stays **a collapse and not a hand-off**. The author circle shows **one letter**.
+
 **Flagged ⚑.** A25's 240 · 48 · 1,008 division · the rail holding 240 at every value · refusing sticky ·
-refusing a Rule control · no Heading control · the excerpt clamped at 700 inside a 1,008 row · the count
-counting what is drawn · **the Link Picker row appearing only at Label and link** · tab order putting the
+refusing a Rule control · no Heading control · the excerpt clamped at 700 inside a 1,008 row · **the count being the topic's total rather than the rows drawn, because a template cannot count what it drew** · **the Link Picker row appearing only at Label and link** · tab order putting the
 archive link first.
 
 ---
@@ -695,8 +723,7 @@ archive link first.
 **Structural descriptor.** `grid-of-N · none · page · few · background · titles over their pictures` — the
 only `background` in A27; separated from 1 by media placement alone.
 
-**Archetype.** grid-of-N. **Two departures:** the scrim steps at ≤ 767 ⚑, and **the design hands off to
-9 Big Type when no post in the set has a picture** ⚑.
+**Archetype.** grid-of-N. **One departure:** the scrim steps at ≤ 767 ⚑. **The hand-off to 9 Big Type is deleted in the design patch pass** — where no post has a picture every tile is a plate and the design stays itself.
 
 **Responsive rule.** **1440** three 416 × 520 tiles (4:5), 24 gutter, title 22 white, meta 13, scrim 68% →
 6% at 62% of the height, 24 px padding inside the tile. **834** three 235 × 294, title 17, padding 18
@@ -709,16 +736,14 @@ inside, spacing 80. **≤ 767** one 350 × 437 tile per row, 24 row gap, title 1
 the panel says so rather than offering a row that does nothing.
 
 **Controls.** Heading · Ratio (Portrait 4:5 · Landscape 3:2 · Square 1:1) · Scrim (Light · Medium) · Meta
-(Date · Author and date · Off). Then the universal trio and the Data group. **No Excerpt control** ⚑. **No
-Tag row** ⚑ — the tag is already the plate tile's one word, and a tag over a photograph is a third thing
+(Date · Author and date · Off). Then the universal trio and the Data group. **No Excerpt control** ⚑ — **the reason is now on the panel**: a second block of white type under the title competes with it for one scrim's worth of contrast. **No Tag row** ⚑ — the tag is already the plate tile's one word, and a tag over a photograph is a third thing
 competing with the title for a scrim's worth of contrast. **Quick: Heading, Ratio, Scrim, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one tile at the left at its full 416 × 520. **Many**
-→ the first N. **A set with no pictures at all is the precondition failing** and the design hands off ⚑.
+→ the first N. **A set with no pictures at all draws twelve — or three — plates and the design stays itself** ⚑; the panel advises 9 Big Type and the site decides.
 
 **Empty state.** One post without a picture → **a plate tile: hover surface, title in `text`, meta in
-`text-muted`, no scrim and no white type** ⚑; no tag either → a plain plate. **No picture on any post → hand
-off to 9 Big Type**, named in the editor ⚑ (A17·8's rule). No author photograph is never visible: this design
+`text-muted`, no scrim and no white type** ⚑; no tag either → a plain plate. **No picture on any post → every tile draws its plate and this design stays itself** ⚑ — the 4:5 box and the gutters hold, the type goes dark, no scrim is drawn, and the tag is the plate's one word. **The panel advises and never switches**: "no post in this set has a picture — 9 Big Type reads better here". No author photograph is never visible: this design
 draws no avatar.
 
 **Behaviour module.** **none.** The scrim is a CSS gradient over a server-rendered image. **No-JS:
@@ -737,9 +762,11 @@ gutters and behind a plate tile, so all three values do something visible. **No 
 written down. `relatedBy` widens to seven sources, **Order** arrives, **When empty flips**. **Four controls
 of its own.**
 
+**Patched.** **The hand-off is deleted** — *no design ever turns into another design*: where no post has a picture **every tile draws its plate**, the box and gutters holding, and the panel advises "9 Big Type reads better here". **The absent Excerpt row now carries its reason.** **Show became a number picker, 1–4, default 3.** No avatar is drawn here at any value, so the one-letter rule applies nowhere.
+
 **Flagged ⚑.** Portrait 4:5 as the default · the 68% → 6% gradient and Medium's 80% · refusing Wide 16:9 ·
 refusing an excerpt, reading time and a tag eyebrow · **Background role unlocked where A17 locked it** · the
-plate tile with dark type · the phone's forced 80% scrim · the dark re-tune · the hand-off to 9 Big Type.
+plate tile with dark type · the phone's forced 80% scrim · the dark re-tune · the all-plate state when no post has a picture, advised rather than switched.
 
 ---
 
@@ -762,16 +789,14 @@ spacing 64.
 never drawn** ⚑ — this design reads the fewest fields in A27.
 
 **Controls.** Heading · Title size (Large 44 · Display 56) · Alignment (Left · Centre) · Meta. Then the
-universal trio and the Data group. **No Rule control** ⚑. **No Tag row** ⚑ — this design reads no tag at any
-value, which is exactly what makes it 8 Overlay's hand-off destination. **Quick: Heading, Title size,
+universal trio and the Data group. **No Rule control** ⚑. **No Tag row** ⚑ — this design reads no tag at any value, which is exactly what makes it the design to place when an archive is not illustrated. **No Rule control** now carries its reason ⚑: the hairline between 44 px titles is what stops two of them reading as one paragraph, so it is structure here rather than decoration. **Quick: Heading, Title size,
 Alignment, Meta.**
 
 **Data.** As the category. **0** → When empty. **1** → one title and its byline, no hairline at all ⚑.
-**Many** → the first N. **It is also the destination of 8 Overlay's hand-off**, arriving with the same Data
-group and its own defaults ⚑.
+**Many** → the first N. **Nothing arrives here by substitution** ⚑ — 8 Overlay draws its own plate tiles and stays itself. This is the design a site *places* when its archive is not illustrated, which is a choice made in the panel.
 
 **Empty state.** No byline fields → the title stands alone, which is Meta Off. **A missing picture, excerpt
-or tag is invisible here** — the design reads none of them, which is why it is the hand-off destination.
+or tag is invisible here** — the design reads none of them, which is why it is the design to place when an archive is not illustrated.
 **There is no state in which it draws an empty row.**
 
 **Behaviour module.** **none.** **No-JS: pixel-identical.**
@@ -781,10 +806,11 @@ smaller than the h3s beneath it**, a hierarchy the DOM does not share and which 
 one `<a>` per post, bylines outside the link. Focus is A6's ring round the title-and-byline block. Dates
 `<time datetime>`.
 
-**Reconciled.** Padding retired into **Vertical spacing**. **No Tag row.** `relatedBy` widens to seven
-sources and **Order** arrives — and **it lands hardest here**: four titles at 44 px in publication order is a
+**Reconciled.** Padding retired into **Vertical spacing**. **No Tag row.** `relatedBy` widens to seven sources and **Order** arrives — and **it lands hardest here**: four titles at 44 px in publication order is a
 series index, which is a page this design could not previously draw. **When empty flips.** **Four controls of
 its own.**
+
+**Patched.** **The destination sentence is deleted** — *no design ever turns into another design*: nothing arrives here by substitution, and this is the design a site **places** when its archive is not illustrated. **The absent Rule row now carries its reason.** **Show became a number picker, 1–4, default 3.** The author circle shows **one letter**.
 
 **Flagged ⚑.** The 1,180 and 1,000 measures · the 28 px hairline inset · the 14 px byline · the 6 px
 underline offset · both title sizes converging on 30 at ≤ 767 · refusing a Rule control and a tag ·
@@ -814,7 +840,7 @@ tag. **`archiveLinkLabel` is kept and not drawn** — the head's right belongs t
 
 **Controls.** Heading · Card size (Small 306 · Medium 360 · Large 416) · Ratio (Landscape 3:2 · Square 1:1) ·
 Meta · Arrows (On · Off) · **Tag (Off · Primary tag)**. Then the universal trio and the Data group,
-**shipping at Show Four here** ⚑. **Quick: Card size, Ratio, Meta, Arrows.**
+**shipping at Show 4 here** ⚑. **Quick: Card size, Ratio, Meta, Arrows.**
 
 **Data.** As the category. **0** → When empty. **1** → one card at the left; no strip, no arrows, no snap ⚑.
 **2–3** → no overflow on a desktop, so no arrows; the strip still snaps at 834 and below. **4** → the design
@@ -840,8 +866,10 @@ Ratio, which is a different ladder and keeps its own names. **Tag** joins — an
 over on a strip, because a card half off the right edge is read by its first two lines. **No new state
 control**: the editor shows slide 1 at rest and the scrolled strip comes from **P0·6's simulate entry**; the
 hidden arrows at ≤ 767 stay uncontrolled, since snap and a cut card already signal the overflow. `relatedBy`
-widens to seven sources, **Order** arrives, **When empty flips**, and Show still ships at Four. **Six
+widens to seven sources, **Order** arrives, **When empty flips**, and Show still ships at 4. **Six
 controls of its own.**
+
+**Patched.** **Show became a number picker, 1–4, shipping at 4** — the count this design is built for. **The Ratio refusals now carry their reason** — 16:9 at 360 is a 203 px banner, 4:5 is 450 px tall and lifts the arrows off the head's line. The hidden arrows at ≤ 767 stay uncontrolled, and the registry's no-JavaScript line is unchanged. The author circle shows **one letter**.
 
 **Flagged ⚑.** Shipping the Data group at Four · the 1,512 strip against a 1,296 content width · card-start
 snapping · the disabled left arrow being drawn · 300 px cards and no arrows at ≤ 767 · **the scrolled state
@@ -863,15 +891,14 @@ column that aligns down the page.
 
 **Responsive rule.** **1440** grid 44 / 1fr / 180 / 160 (/ 96 at Columns All) on a 24 gap, rows 52 px, title
 20, meta 13, tabular numerals, hairline between rows. **834** the same grid at 754, tag 140, date 150,
-spacing 80. **≤ 767** **stacked**: number and tag above the title, date and reading time below it, hairline
-held, title 19, spacing 64. **No column is dropped at any width** ⚑.
+spacing 80. **≤ 767** **stacked**: number and tag above the title, date and reading time below it, hairline held, title 19, spacing 64 — **by grid placement, so the source order is unchanged and a screen reader hears the same row at every width** ⚑. **No column is dropped at any width** ⚑.
 
 **Content fields.** `headingText` · `fallbackHeading`. Per post: `title` · `url` · `primary_tag.name` ·
 `published_at` · `reading_time`. **`feature_image`, `custom_excerpt` and the author fields are kept and
 never drawn** ⚑.
 
 **Controls.** Heading · Columns (Date · Date and tag · Date, tag and reading time) · Numbering (Numbers ·
-None) · Rule (Hairlines · None). Then the universal trio and the Data group, **shipping at Show Four here**
+None) · Rule (Hairlines · None). Then the universal trio and the Data group, **shipping at Show 4 here**
 ⚑. **No Tag row** ⚑ — the tag is already a *column* here, governed by Columns, and an eyebrow above a title
 inside a ruled grid would print it twice in the same row. **Quick: Columns, Numbering, Rule, Heading.**
 
@@ -889,13 +916,15 @@ invisible here.**
 **Accessibility.** `<section aria-labelledby>`, head h2. **It is a `<ul>` of rows, not a `<table>`** ⚑ — the
 columns present one post each rather than a data relationship, and a four-row table with no header row
 announces a structure that is not there. Titles h3 inside the row's single link, which spans every column.
-Dates `<time datetime>`, written in full. The number is `aria-hidden` ⚑.
+Dates `<time datetime>`, written in full. The number is `aria-hidden` ⚑ **and is a CSS counter at `decimal-leading-zero`, never a computed index** ⚑ — nothing adds it, so the numeral cannot disagree with the row beside it.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Rule stays**, being the hairline between index
 rows, and **Top divider is the seam above the section**. **No Tag row.** `relatedBy` widens to seven sources
 and **Order** arrives — **oldest-first is what a numbered index of a series wants**, and 01 then means first
-published rather than most recent, which the panel says. **When empty flips**, and Show still ships at Four.
+published rather than most recent, which the panel says. **When empty flips**, and Show still ships at 4.
 **Four controls of its own.**
+
+**Patched.** **The numbers are named as a CSS counter at `decimal-leading-zero`** — *Ghost's templates cannot count, add, or remember*: nothing adds them, so a numeral cannot disagree with its row. **The ≤ 767 stack is named as grid placement**, source order unchanged — *CSS cannot see content, and cannot reorder the DOM*. **Show became a number picker, 1–4, shipping at 4.** **The absent Ratio and Tag rows now carry their reasons.** No avatar is drawn here.
 
 **Flagged ⚑.** The 44 / 1fr / 180 / 160 / 96 columns · tabular numerals · the em-dash tag cell · numbers as
 drawn order rather than ranking · **01 meaning first-published at Order Oldest** · shipping at Four ·
@@ -935,7 +964,7 @@ editorial choice this design could not previously make. **0** → When empty. **
 
 **Empty state.** No picture → **A17's plate at 560 × 373 carrying the post's tag** ⚑; **not a hand-off**,
 because one title alone in 1,296 px is a headline in a field. No excerpt → label, title and byline. No author
-photograph → A1's initials circle at 28 px. At Tag: Primary tag with no tag, the eyebrow is not drawn and the
+photograph → A1's one-letter initials circle at 28 px. At Tag: Primary tag with no tag, the eyebrow is not drawn and the
 title moves up 21 px.
 
 **Behaviour module.** **none.** **No-JS: pixel-identical.**
@@ -948,10 +977,12 @@ Focus is A6's ring round picture and text together.
 
 **Reconciled.** Padding retired into **Vertical spacing**. **Show stays forced to One with its reason drawn**
 — reviewed this pass and kept: this design is one post at the size of a decision, and two of them is 1 Three
-Up at Show Two. **Tag** joins above the 34 px title, which is the one place in A27 where an eyebrow sits
+Up at Show 2. **Tag** joins above the 34 px title, which is the one place in A27 where an eyebrow sits
 under another eyebrow — drawn rather than refused, and flagged. `relatedBy` widens to seven sources, and
 **Featured matters most here**; **Order** arrives and decides which post appears; **When empty flips**. **Six
 controls of its own.**
+
+**Patched.** **Show is a number picker locked at 1**, drawn greyed with its reason visible and **− and + still clickable so they can say why** — *item counts are a number picker*, and *the Remove button never greys out* read across to a locked value. **The Ratio refusals now carry their reason** — at 560 a 16:9 picture is 315 px and a 4:5 is 700 px. The plate stays **a plate and not a hand-off**. The 28 px author circle shows **one letter**.
 
 **Flagged ⚑.** The 560 / 72 / 664 division · the 600 px excerpt clamp · the 28 px avatar · "Next up" as its
 own default head · **forcing Show to One, kept** · **the label-above-eyebrow stack** · centring the text
@@ -1036,3 +1067,171 @@ redrawn**: nothing else in this pass changes what the site renders at the defaul
   moved to a 1–100 stepper; **A27 keeps the enum**, because the three values are three sets of cell
   divisions rather than a quantity, and a related set of nine posts is a grid rather than a related set.
   Flagged for the owner.
+
+
+---
+
+## Patch notes — related posts patch, 30 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered: the letter-and-number codes elsewhere in this project are filing labels and mean
+nothing outside it.
+
+**Frames changed — thirteen, and every one of them.** `A27-0 Category Proof` gains a **DESIGN PATCH
+PASS** section: the numbering line, the free-designs shortlist and recommendation, the deleted hand-off
+map with what each design draws instead, the one-letter avatar, the number-picker count, the two numbers
+a template does not compute, the rules that land nowhere, and the two open questions. **All twelve design
+frames** gain a **DESIGN PATCH** block naming, rule by rule, what changed in that design and what was
+already satisfied. **The drawn content changed on all twelve** where the count control lives — the Show
+row in the Data group is now a number picker — **and on four more places besides**: `A27-3 Thumb Rows`
+and `A27-8 Overlay` (the hand-off sentences replaced by the all-plate state and the panel's advice),
+`A27-9 Big Type` (the destination sentence gone), and `A27-7 Rail` (the count control marked as an
+open question). **Six panels gained the reason for a narrowing** — 3, 4, 5, 10, 12 on Ratio, 3 again on
+Thumbnail. **No arrangement moved, and no type scale, colour pack or spacing step changed.**
+
+### What changed, and the rule that required it
+
+1. **The count control is a number picker, 1–4, in all twelve designs** — *item counts are a number
+   picker, never a row of fixed buttons*. It was a segmented row of three fixed words — Two · Three ·
+   Four — in eleven panels, and a greyed row of four in 12 Next Up. Defaults are unchanged in substance:
+   **3 in designs 1–9, 4 in 10 Carousel and 11 Index, 1 in 12 Next Up**. **4 is every design's ceiling,
+   greyed with its reason on the control** ⚑ — the cell divisions on 1, 4, 5 and 8 (2 → 636, 3 → 416,
+   4 → 306 across 1,296, and there is no fifth), and on the rows, rail, stack, strip and index that a
+   longer list of posts is A18's page and A34 owns pagination. **The minimum is 1**, which every design
+   already drew as its one-post state.
+2. **12 Next Up's locked value is drawn greyed with its reason, and its − and + still speak** — *item
+   counts are a number picker*, read together with *the Remove button never greys out*. The number
+   cannot move and the control says why at the click ("this design is one post at the size of a
+   decision; two of them is 1 Three Up at 2") rather than doing nothing. **Reviewed this pass and
+   kept.**
+3. **The enum the previous pass kept — and flagged for the owner — is closed by the rule.** The old
+   argument was that Two · Three · Four are three sets of cell divisions rather than a quantity. That
+   argument is now what **the greyed ceiling and its reason** say, and the quantity is a number.
+4. **Two hand-offs are deleted, and each design draws its own state instead** — *no design ever turns
+   into another design*. **3 Thumb Rows**: "the thumbnail column is not drawn and the design is 2 Rows"
+   is gone; where no post in the set has a picture **every row draws its plate** at 128 (or 96) in the
+   set ratio, carrying that post's primary tag or nothing. **8 Overlay**: "hand off to 9 Big Type" is
+   gone; **every tile draws its plate**, the 4:5 box and the gutters holding, the type dark and no scrim
+   drawn. **Both panels advise and neither switches** — "no post in this set has a picture — 2 Rows
+   reads better here" / "…9 Big Type reads better here".
+5. **9 Big Type is no longer a destination** — *no design ever turns into another design*. "It is also
+   the destination of 8 Overlay's hand-off" is deleted, in the design entry and on the frame. It is the
+   design a site **places** when its archive is not illustrated, which is a choice made in the panel.
+   The roster's short-set column changed in the same three rows, and 8 Overlay's second departure — the
+   hand-off — is withdrawn, leaving it one.
+6. **Three denials were kept as denials.** 6 Lead and List's 636 × 424 plate, 7 Rail's collapse below
+   1,200 and 12 Next Up's 560 × 373 plate each say explicitly that they are **not** a hand-off. Those
+   sentences are the rule being obeyed, so they stay.
+7. **The author circle shows one letter** — *avatars with no photograph*. Every author in A27 comes from
+   Ghost, which cannot make two initials out of a name, so "Jane Doe" shows **J**. Ten designs draw the
+   circle at Meta: Author and date; **8 Overlay and 11 Index draw no avatar at all**. No list in this
+   category is typed by the site, so the two-initial form has no subject here — and the frames drew a
+   photograph placeholder rather than initials, so nothing drawn had to be redrawn.
+8. **7 Rail's count is the topic's total** — *Ghost's templates cannot count, add, or remember*,
+   **ruled by the owner on 30 August 2026**. The old sentence, "the count value counts the posts drawn,
+   not the posts that matched", is **withdrawn**: a template cannot count what it drew, and Ghost cannot
+   return "3 of 12". The rail reads "Keep reading · 12 posts · Browse the archive", the number comes
+   from the query's own total, and **the panel says what it counts** — the alternatives he refused were
+   dropping the value (editors lose the one place that says how big the topic is) and letting an editor
+   type the number (it goes stale silently the next time they publish).
+9. **11 Index's numerals are named as a CSS counter at `decimal-leading-zero`** — *Ghost's templates
+   cannot count, add, or remember*. Nothing adds 01, so the numeral cannot disagree with the row beside
+   it; they remain drawn order rather than a ranking, and `aria-hidden`. At Order Oldest 01 means
+   first published, which the panel already said.
+10. **11 Index's phone arrangement is named as grid placement** — *CSS cannot see content, and cannot
+    reorder the DOM at a breakpoint*. Number and tag above the title and the date below it are grid
+    areas; **the source order is unchanged**, so a screen reader hears the same row at every width.
+11. **Six silent narrowings gained their reasons** — *a design may offer fewer choices on a shared
+    control, and must say why*. **3 Thumb Rows**: Wide 16:9 refused (a 72 px crop beside two lines of
+    type reads as a strip), Portrait 4:5 refused (a 160 px crop sets the row's height instead of the
+    words), nothing below 96 px (a smaller picture stops carrying a subject), and the absent Excerpt row
+    (a thumbnail row that also carries prose is a row card). **4 Panel** and **5 Contrast Band**:
+    Portrait 4:5 refused (392 portraits are 490 px tall; 416 portraits are 520 px). **10 Carousel**:
+    Wide 16:9 and Portrait 4:5 refused on a strip (a 203 px banner; a 450 px card that lifts the arrows
+    off the head's line). **12 Next Up**: the same two refused (315 px is shorter than the text beside
+    it; 700 px is taller than a phone's screen). **8 Overlay's absent Excerpt row** and **9 Big Type's
+    absent Rule row** gained reasons too, and **2 Rows**, **6 Lead and List**, **7 Rail** and
+    **11 Index** had their absent rows written down rather than implied.
+12. **Nothing was renumbered and no design was deleted.** Twelve designs, 1 to 12, no gap created or
+    closed, no number reused.
+
+### Rules and facts that were already satisfied, checked design by design
+
+| Rule or fact | Where it lands in A27 |
+|---|---|
+| **The Remove button never greys out** | **One subject, and it was already right.** The category's only repeating list is the **Hand-picked post picker**, and Remove was never dimmed on it. One sentence was added rather than changed: **there is no minimum to defend** — unpicking the last post empties the list, *When empty* then decides, and the panel says that at the click. Nothing else in twelve designs is a list: no Add creates a post and no Remove deletes one. The rule also read across to 12 Next Up's locked count, which now explains itself at the click. |
+| **Slider labels** | **No subject.** A27 draws no slider. Every scale row names what it affects and reuses the standard words — **Vertical spacing** reads Compact · Comfortable · Spacious; 3 Thumb Rows' **Thumbnail** reads Small 96 · Medium 128; 10 Carousel's **Card size** reads Small 306 · Medium 360 · Large 416; 9 Big Type's **Title size** reads Large 44 · Display 56. No invented three-word vocabulary anywhere. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A27 exposes no gap control at any width: the 24 px gutters, the 48 px row gap, 6 Lead and List's 72 px division, 4 Panel's 40 px inset and A25's 240 · 48 · 1,008 rail are fixed values in the arrangement. No Tight/Even/Airy or Tight/Standard/Wide existed to rename. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all twelve; the six that were silent are in **What changed** above. **The colour swatch row is Base**, and **there is no "Inherit" value anywhere in A27** — none was removed because none existed. No design renames a shared control or adds a choice to one. The reasoned narrowings that were already right: 1 Three Up's refusal of Portrait 4:5, 8 Overlay's refusal of Wide 16:9 and its absent Tag row, 11 Index's absent Tag row, 3 Thumb Rows' absent Tag row, 5 Contrast Band's two locks and its Excerpt disabled at 4, 7 Rail's absent Heading control, 12 Next Up's Square note. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject, and it is worth stating why.** **Every action in twelve designs is a link to a post or an archive route.** No Sign up, no Subscribe, no paid tier, no Portal deep link — so nothing renders conditionally on self-signup or a payment provider, and nothing opens Ghost's pop-up. Member Visibility is offered nowhere: a related post is navigation, and the archive link is a route. |
+| **The no-JavaScript notice** | **No subject, and no promise to withdraw.** A27 holds **no subscribe field and no sign-in field** in twelve designs, so there is nothing for the notice to replace, and no sentence here ever said a reader could subscribe without JavaScript. The per-design line stands unchanged: **eleven designs are pixel-identical**, and 10 Carousel is a native `scroll-snap` strip minus its arrow buttons, quoted from the registry. Nothing in this pass needed a module, and **there is no "ARCHITECT: registry addition" anywhere in A27**. |
+| **Ghost's templates cannot count, add, or remember** | Two subjects, both in **What changed** — 7 Rail's count and 11 Index's numerals. Everything else was already clean: the set is one `{{#get}}` loop at the chosen number; **the editor's count line ("4 posts matched. 3 drawn.") is editor text that never reaches a reader**; 6 Lead and List's lead is the loop's first item, not a computed promotion; 10 Carousel draws **no dots and no "3 of 5"**; nothing anywhere shows a total, a saving, an "and 2 others", or a heading that appears only when a value changes. |
+| **CSS cannot see content** | **Already right, and now stated per design.** Every excerpt clamp is `line-clamp` **by line, never by character count**; a long title wraps and pushes nothing; 11 Index's em dash in an empty tag cell is a server-side conditional, not a measurement; **8 Overlay's scrim cannot read a photograph** and Medium and the phone's forced 80% are named as mitigations rather than promises. **Nothing in A27 reorders the DOM at a breakpoint** — 6's stack and 12's stack are one column of the same order, 11's phone arrangement is grid placement, and 6's Lead Right is `row-reverse`. |
+| **Some fields we drew do not exist** | **Nothing missing is read.** A27 reads eleven post fields, all of which Ghost gives a theme: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag.name`, `custom_excerpt`, `published_at`, `primary_author.name` + `profile_image`, `reading_time`, plus `featured` and the tag and author filters as the query. **No member join date, no member newsletter list, no newsletter cadence, no site address and no "posts per page" setting appears anywhere** — *When empty* is this section's own field, not a Ghost admin setting, and the reading-time suffix is A24's site-level string, read and not re-declared. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere.** All twelve are placeable sections that sit **after** the article, never inside its body: their markup, their ARIA and their words are ours end to end. A33 is the category for Ghost-rendered body content. Recorded, applied nowhere. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, none of which needs the customer to own good photography — **1 Three Up · 2 Rows · 9 Big Type · 11 Index · 7 Rail** — and **recommended 1 Three Up and 2 Rows**, which he **ruled on 30 August 2026**. The line the merge reads is at the head of this document, on its own line, in the required shape. |
+
+### The owner's rulings — 30 August 2026
+
+**Nothing in this category is left open to him.**
+
+1. **The free designs are 1 Three Up and 2 Rows** — *the two free designs are the owner's choice*.
+   Between them a free site gets the shape the rest of the category is built from, plus one design that
+   needs no photographs at all, so a free customer is never stuck. The pairs he refused: **1 with
+   11 Index** (a ruled, numbered list of dates is a strong editorial statement for a default) and
+   **2 with 9 Big Type** (no free design would ever show a picture).
+2. **7 Rail's "Label and count" draws the topic's total** — *Ghost's templates cannot count, add, or
+   remember*. Recorded in **What changed** above.
+
+### The questions as they were put to him
+
+**QUESTION 1 — Which two designs are free**
+
+Every category ships two designs a free customer can use. For this one — the block of "keep reading"
+posts at the end of an article — five are plain enough to ship without looking unfinished, and none of
+them needs the customer to have good photographs.
+
+1. **1 Three Up and 2 Rows (RECOMMENDED — and his ruling).** Three equal cards, and a list of titles with hairlines
+   between them. Recommended because between them a free site gets the shape the rest of the category
+   is built from, plus one design that needs no pictures at all — so a free customer is never stuck.
+   *What it gives up:* the free tier shows no dense list of dates.
+   *What a visitor sees:* three cards with pictures under "Keep reading", or four titles with dates.
+2. **1 Three Up and 11 Index.** Cards, plus a numbered list of dates in columns.
+   *Costs:* a ruled index is a strong editorial statement for a default, and a site that wants a plain
+   list of titles without numbers has neither option.
+   *What a visitor sees:* three cards, or "01 The night shift at the Port of Algeciras · Reporting ·
+   12 March 2026 · 8 min read".
+3. **2 Rows and 9 Big Type.** The two designs that read no pictures at all.
+   *Costs:* **no free design would ever show a picture**, so a free customer with good photography
+   cannot use it at the end of an article.
+   *What a visitor sees:* titles and dates, or titles at 44 px.
+
+**QUESTION 2 — The number in the rail's margin**
+
+7 Rail puts the heading in a narrow column at the side of the page, and one of its three settings is
+"Label and count" — the heading plus a number. We have since tested what a Ghost theme can actually do:
+**it cannot count the posts it just drew.** It can ask Ghost how many posts exist in that topic, and
+Ghost will answer; it cannot say "3 of 12". So the number can be the topic's total, or it can go.
+
+1. **Show the topic's total (RECOMMENDED — and his ruling).** The rail reads "Keep reading · 12 posts · Browse the
+   archive". Recommended because the number is then true, useful, and sits beside the archive link it
+   belongs with — it tells a reader how much more there is.
+   *Costs:* the number does not match the three rows below it, so a reader could read it as "12 shown".
+   The panel would say what it counts.
+2. **Drop "Label and count" entirely.** The setting becomes Label · Label and link, and 7 Rail keeps
+   four controls of its own.
+   *Costs:* editors lose the one place in the category that says how big the topic is.
+   *What a visitor sees:* "Keep reading · Browse the archive", and nothing else in the margin.
+3. **Keep the setting and let the editor type the number.** The rail draws whatever the editor writes.
+   *Costs:* it goes stale silently the day the next post is published, and nobody notices — which is
+   the failure this whole pass exists to catch.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12** — twelve designs,
+   no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+   required shape, and names **1 Three Up** and **2 Rows** — both of which exist in this category's
+   roster. It is **the owner's own choice, ruled on 30 August 2026**.
+
+— End of specification —

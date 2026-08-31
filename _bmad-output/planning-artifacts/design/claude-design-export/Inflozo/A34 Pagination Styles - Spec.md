@@ -1,6 +1,12 @@
 # A34 Pagination Styles — written specification
 
-10 designs · Paper pack · drawn 23 August 2026 · controls reconciled 25 August 2026
+10 designs · Paper pack · drawn 23 August 2026 · controls reconciled 25 August 2026 · **design patch pass 29 August 2026**
+
+**Design patch pass — 29 August 2026 (this document's current state).** Three rulings landed on this category and two of them deleted drawn content. **A theme's templates cannot count through a range of numbers**, so **Numbers All pages is deleted** from 1, 3 and 4 — and the seven-slot window survives precisely because every number in it is handed over by the route rather than worked out. **They cannot multiply either**, so **Post range leaves the Pager block** and Position line reads Off · Page count in all ten; 5 Counter, 8 Contrast Band, 10 Slim and 3 Bar each lost drawn content to that. **Ghost's admin has no posts-per-page field**, so the read-only door in every panel now points at INFLOZO's own theme settings. Three more values went the same way — 5 Counter's **Numerals Padded**, 9 Cards' **Content Direction, page and count**, and 7 Endless's **Stop after Never**, whose row of fixed buttons became a number picker. **Nothing was renumbered.**
+
+**[Free] designs:** 2 Prev and Next · 9 Cards
+
+*(Shortlisted in this pass and **confirmed by the owner on 29 August 2026**: the two designs that draw no page numbers at all — the quietest and the easiest to hit.)*
 
 The frames are `A34-0 Category Proof.dc.html` and `A34-1` … `A34-10`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -33,9 +39,9 @@ the seam.** This is that category, and it closes that seam.
 other has a Posts block — Source, Tag/Author, Show, Order. A pager has none of them, because it does
 not choose posts: **it reads the route's `pagination` object and draws what is already true.** That
 single fact shapes everything. There is no repeater, no item list, no Show ladder, **no
-posts-per-page control** (that is Ghost's `posts_per_page`, a site setting, stated in the panel as a
-read-only line that links to Ghost Admin → Settings → Posts per page, so the hunt ends at a door
-rather than a wall), and — after the reconciliation pass — **nothing a user authors at all**: the
+posts-per-page control** (that is `posts_per_page`, set once for the site in **INFLOZO's own theme
+settings** — Ghost's admin has no such field — stated in the panel as a read-only line that links
+there, so the hunt ends at a door rather than a wall), and — after the reconciliation pass — **nothing a user authors at all**: the
 five short strings are translation-catalog strings, edited once per language.
 
 **A17, A18 and A19 are inherited whole:** A1's nav item, icon button and eyebrow, A1·2's 38/44 box
@@ -115,15 +121,20 @@ Every design obeys these unless its own entry says otherwise.
   named this as a pack requirement it could not state; **A34 is the category that depends on it.**
 - **The ellipsis.** A `<span>` one step below muted — `#C4BEB3` light, `#4E4740` dark, both derived ⚑
   — `aria-hidden`, not focusable, **never a jump-to-page control.**
-- **The window.** first · current−1 · current · current+1 · last, ellipsis wherever that skips.
-  **Seven slots maximum**, so an 80-page archive draws the same row as an 11-page one. Appears only
-  above seven pages.
+- **The window.** first · previous · current · next · last, ellipsis wherever that skips. **Seven
+  slots maximum**, so an 80-page archive draws the same row as an 11-page one — and a 137-page one.
+  Appears only above seven pages. **It is the only page-link row in the category, because it is the
+  only one that can be built:** its five numbers are 1, `pagination.prev`, `.page`, `.next` and
+  `.pages`, all handed over by the route, and the ellipsis is a comparison between two of them. **A
+  row of one link per page would need the template to count through a range, which it cannot do** —
+  which is why All pages was deleted from 1, 3 and 4 in the patch pass.
 - **The directional link.** 15/600 with a 19 px glyph at a 10 px gap. **A glyph is never a link's
   only name** — at Labels Glyphs only each keeps visually-hidden text. `rel="prev"` / `rel="next"`
   always.
-- **The position line.** 13 px muted, tabular: "Page 2 of 11" or "Posts 13–24 of 132", the range
-  derived as `(page−1)·limit+1` to `min(page·limit, total)`. **Below 767 it moves into the row at
-  15/600 in the six designs that drop their numerals.**
+- **The position line.** 13 px muted, tabular: "Page 2 of 11". **Below 767 it moves into the row at
+  15/600 in the six designs that drop their numerals.** **A range of posts — "Posts 13–24 of 132" —
+  is not available:** it needs `(page−1)·limit+1`, and a template cannot multiply. The two module
+  designs state "24 of 132 posts" instead, which their script counts.
 - **Measure and margin.** A17's: content 1,296 on a 72 px page margin; 754 at 40; 350 at 20. **Every
   band is full bleed and every band's contents keep the page margin** (A17·7).
 - **Vertical spacing is the feed's, not the pager's** — Compact 64 · Comfortable 96 · Spacious 132;
@@ -147,32 +158,35 @@ Every design obeys these unless its own entry says otherwise.
   nothing, so 4 Pill and 7 Endless rely on hairlines and lift) **and the hover-surface step is
   derived at `#2C2721`** ⚑, which three designs depend on and no pack records.
 - **Below 767, six designs drop their page links** and the position line takes their job between two
-  44 px chevrons. **Every element that leaves has a stated destination.** Numbers All pages is
-  exempt and keeps its numerals, wrapping (on the page) or scrolling (in a band or pill).
+  44 px chevrons. **Every element that leaves has a stated destination.** Nothing is exempt: the one
+  setting that was, Numbers All pages, is deleted.
 - **Print: links absent, position line kept**, in all ten. **5 Counter prints as itself**, worded, at
-  22 pt with the site title; **8 Contrast Band prints as 1 Numbers on white** (A17·7); **7 Endless
+  22 pt with the site title; **8 Contrast Band prints its own numerals on white**, the band dropped (A17·7); **7 Endless
   prints nothing.**
 
 ### The Pager block
 
 **Four fields, identical in all ten, under the Pagination style select and counted toward no
 design's total.** It is A34's replacement for the Posts block. **Two read-only rows sit with them:
-Pager wording**, which opens the theme's translation catalog where all thirteen pager strings live,
-and **Posts per page**, which states Ghost's current value — 12 — and **links to Ghost Admin →
-Settings → Posts per page**, so the search for the one control that is not here ends at a door.
+Pager wording**, which opens the theme's translation catalog where all twelve pager strings live,
+and **Posts per page**, which states the current value — 12 — and **links to INFLOZO's theme
+settings**, so the search for the one control that is not here ends at a door. **Ghost's admin has
+no posts-per-page field**, which is what the patch pass corrected: the old link went nowhere.
 
 | Field | Values | Default |
 |---|---|---|
 | Attachment | Joined · Separate | Joined (Separate in 8) |
 | Labels | Newer and older · Previous and next · Glyphs only | Newer and older |
 | At the ends | Hidden · Dimmed | Hidden (Dimmed in 3, 4, 5, 8, 10) |
-| Position line | Off · Page count · Post range | Page count (Off in 6, 7, 9) |
+| Position line | Off · Page count | Page count (Off in 5, 6, 7, 9) |
 
-**A design may do five things to a block field and no more, and every case is drawn:** **narrow** its
-value set with the removed value shown disabled and the reason (2 Prev and Next: Position line Off);
-**set** its default with the reason in the panel (3 Bar: At the ends Dimmed); **lock** it to one
-value, drawn greyed (4 Pill: Labels Glyphs only); **mark it inert** for the design (6 Load More and
-7 Endless); **interpret** it (10 Slim draws only the first word of each label). **A design may never
+**A design may do five things to a block field and no more:** **narrow** its value set with the
+removed value shown disabled and the reason; **set** its default with the reason in the panel (3 Bar:
+At the ends Dimmed); **lock** it to one value, drawn greyed (4 Pill: Labels Glyphs only; 2 Prev and
+Next: Position line, Off disabled so Page count is all that is left); **mark it inert** for the
+design (5 Counter, 6 Load More and 7 Endless); **interpret** it (10 Slim draws only the first word of
+each label). **Four of the five are drawn: narrowing has no example left in A34**, Position line
+having two values after the patch pass. **A design may never
 add a value**, and a design control may depend on a block field but never write one (9 Cards' Single
 card reads At the ends).
 
@@ -208,15 +222,15 @@ documented shape rather than from a running site.
 
 | # | Design | What it is for | Tuple | Module | Ctl |
 |---|---|---|---|---|---|
-| 1 | **Numbers** | The default. Every page reachable in one click. | `nav · none · page · variable · none · windowed numbered links` | none | 5 |
-| 2 | **Prev and Next** | Two links at the content edges. No numbers. | `nav · none · page · few · none · facing links at the margins` | none | 4 |
-| 3 | **Bar** | A surface strip holding all three facts at once. | `bar · none · surface · variable · none · full-width strip` | none | 5 |
-| 4 | **Pill** | The pager as one raised object. Short archives. | `nav · pill · page · variable · none · one floating pill` | none | 5 |
+| 1 | **Numbers** | The default. First, last and the pages either side, in one click. | `nav · none · page · variable · none · windowed numbered links` | none | 4 |
+| 2 | **Prev and Next** **[Free]** | Two links at the content edges. No numbers. | `nav · none · page · few · none · facing links at the margins` | none | 4 |
+| 3 | **Bar** | A surface strip holding all three facts at once. | `bar · none · surface · variable · none · full-width strip` | none | 4 |
+| 4 | **Pill** | The pager as one raised object. Short archives. | `nav · pill · page · variable · none · one floating pill` | none | 4 |
 | 5 | **Counter** | Position at display size. The category's one moment. | `stack · none · page · few · none · position at display size` | none | 5 |
 | 6 | **Load More** | A button that grows the feed. A17·16's, third use. | `feed · none · page · one · none · one button appends a batch` | `load-more` | 4 |
 | 7 | **Endless** | Auto-load with a pinned status, and a hard stop. | `sticky · pill · transparent · none · none · auto-load with a pinned status` | `infinite-scroll` | 4 |
 | 8 | **Contrast Band** | The same strip inverted, to end a page. | `bar · none · contrast · variable · none · inverted band` | none | 4 |
-| 9 | **Cards** | Two large targets, one each way. | `split · none · page · few · none · two half-width cards` | none | 4 |
+| 9 | **Cards** **[Free]** | Two large targets, one each way. | `split · none · page · few · none · two half-width cards` | none | 4 |
 | 10 | **Slim** | One line. The quietest way to end a feed. | `bar · none · page · few · none · one right-aligned line` | none | 4 |
 
 ### Tuple uniqueness — the honest statement
@@ -249,28 +263,30 @@ it.
 
 1. **Descriptor.** A centred cluster of page links on the page ground, windowed to seven slots with
    an ellipsis where it skips, the current page marked by weight and a 2 px accent underline, a
-   directional link at each end and a position line beneath. **The only A34 design that names every
-   destination.**
+   directional link at each end and a position line beneath. **The plainest form of the window, and
+   the category's default.**
 2. **Tuple.** `nav · none · page · variable · none · windowed numbered links`
 3. **Archetype.** nav. **One departure, the category's largest:** below 767 the page links are
    dropped rather than wrapped or scrolled, and the position line moves into the row to replace them.
-   Numbers All pages is exempt.
+   Nothing is exempt from it: All pages is deleted.
 4. **Responsive.** **1440** cluster centred on 1,296, margin 72, boxes 38 on an 8 gap, chevrons with
    labels 24 from the numbers, position line 16 below, hairline at the content width, 96 beneath ·
    **1080** unchanged · **834** margin 40, **chevron labels drop to glyphs**, padding 80 · **≤ 767**
    page links dropped, chevrons become 44 px outlined icon buttons at the margins, **the position
-   line moves into the row at 15/600 and Position line Off is overridden** ⚑, padding 64 · **All
-   pages at ≤ 767** keeps its numerals, boxes 38 → 44, gap fixed at 4, wrapping.
+   line moves into the row at 15/600 and Position line Off is overridden** ⚑, padding 64. **The
+   137-page route draws the identical row at every width.**
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel`. Read-only: the six `pagination` values. In the
    union, unread: `moreLabel`, `endLabel`.
-6. **Controls.** **Numbers** Windowed · All pages — **Chevrons** Off · Glyph only · Glyph and label —
-   **Alignment** Left · Centre — **Separator** None · Hairline above — **Density** Compact 4 ·
-   Comfortable 8. Five. **Cut: Jump to page** — a form inside a nav — and Padding, which was the feed's
-   Vertical spacing under a second name.
+6. **Controls.** **Chevrons** Off · Glyph only · Glyph and label — **Alignment** Left · Centre —
+   **Separator** None · Hairline above — **Density** Compact 4 · Comfortable 8. Four. **Cut: Jump to
+   page** — a form inside a nav; Padding, which was the feed's Vertical spacing under a second name;
+   and **Numbers**, deleted in the patch pass — its All pages value cannot be built and its other
+   value is the design itself.
 7. **Data.** Ghost's `pagination` object on any paginated route. Destinations `/page/N/`, page 1 at the
    route root and **never `/page/1/`** ⚑. **0 → no route, no section. 1 page → does not render**
    whatever the item count. **Many → the window bounds the row at seven slots however deep the
-   archive.** Two pages → two numerals, no ellipsis.
+   archive**, and needs no arithmetic to do it: 1, `.prev`, `.page`, `.next`, `.pages`. Two pages →
+   two numerals, no ellipsis.
 8. **Empty.** **One page → nothing on the site**; in the editor the outline greyed plus "This archive
    has one page, so the pager will not appear on the site." **First page: the newer slot is Hidden by
    default and keeps its width**; at Dimmed it is a `<span>` at the muted-border step, **never an
@@ -286,7 +302,8 @@ it.
     **Flagged ⚑** tabular numerals as an unstated pack requirement · the ellipsis refused as a
     control · its derived dark `#4E4740` · numerals dropped below 767 with the position line as
     destination · Position line Off overridden there · no `/page/1/` · no heading level · the
-    category having no Posts block and no posts-per-page control.
+    category having no Posts block. **Deleted in the patch pass:** Numbers All pages, and Post range
+    from the block.
 
 ## 2 · Prev and Next
 
@@ -309,13 +326,15 @@ it.
    · Page number — **Chevrons** Off · Beside the label · At the outer edge — **Rule** None · Above ·
    Above and below. Four. **The panel states that Link size changes the typeface** — body at Small,
    heading at Medium and Large — so a divergent-font pack does not read the jump as a defect.
-   **Position line Off is
-   disabled and shown disabled.** **Cut: a page-numbers toggle**, which would have made this design
-   1 Numbers.
+   **Position line Off is disabled and shown disabled, which after the patch
+   pass leaves Page count as the field's only value here.** **Cut: a page-numbers toggle**, which
+   would have made this design 1 Numbers.
 7. **Data.** `pagination.prev`/`.next` for destinations, `.page`/`.pages` for the sublabels and
    centre. **0 → nothing. 1 page → does not render. 2 pages → the design's best case.** **Many →
    unchanged, and the reader still moves one page at a time**, which the panel names with 1 Numbers
-   as the alternative. **The sublabel is arithmetic, page ± 1, never a lookahead.**
+   as the alternative. **The sublabel is not arithmetic and never was:** `pagination.prev` and `.next` are page numbers the
+   route hands over, which is why this line survived a pass that deleted every value a template had
+   to work out.
 8. **Empty.** One page → nothing; greyed outline and cause in the editor. **First page, Hidden: the
    slot keeps its width above 767 and is removed below it. Dimmed: label and chevron to the
    muted-border step and the sublabel becomes "No older posts" / "No newer posts"** — the only dimmed
@@ -329,7 +348,7 @@ it.
     ring on the block including its chevron; **hover underlines the label only** ⚑. Label 13.4:1,
     sublabel 5.7:1. Print: links absent, position line kept.
     **Flagged ⚑** heading font at Medium and Large, body font at Small — the one control in A34 that
-    changes a typeface · the sublabel as arithmetic, with a date range named as a finding · the
+    changes a typeface · the sublabel read straight from the route rather than counted, with a date range still named as a finding · the
     reserved slot above 767 and removed below · both chevrons left when stacked · Position line Off
     disabled, and the rule that a design narrows but never extends a block field · hover on the label
     alone.
@@ -341,47 +360,46 @@ it.
    page margin. **The only A34 design that shows all three at once.**
 2. **Tuple.** `bar · none · surface · variable · none · full-width strip` — containment `none`: the
    band is the section's ground, not a box it sits in.
-3. **Archetype.** bar. **Two departures.** A bar's ladder sheds outer zones as it narrows; **this one
-   grows, 72 → 88 at 834**, to stack the position line under the numerals. And **All pages scrolls
-   the middle zone rather than wrapping**, at every width.
+3. **Archetype.** bar. **One departure.** A bar's ladder sheds outer zones as it narrows; **this one
+   grows, 72 → 88 at 834**, to stack the position line under the numerals. The scrolling middle zone
+   is gone with All pages, which was the only value that needed it.
 4. **Responsive.** **1440** band 72, contents on the 72 margin, **outer zones fixed 260** ⚑ (not
    `1fr`, so the cluster never drifts as the position line's width changes), numerals centred on the
    band, 96 beneath · **1080** zones 220 · **834** **band 88, two zones** — numerals with the position
    line beneath on the left, direction link right; margin 40; padding 80 · **≤ 767** band 64, page
-   links dropped, 44 px outlined chevrons at the margins with the page count between, **Post range
-   resolves to Page count** ⚑, band stays full bleed, padding 64. **Edge Inset at ≤ 767 becomes full
+   links dropped, 44 px outlined chevrons at the margins with the page count between, band stays full
+   bleed, padding 64. **Edge Inset at ≤ 767 becomes full
    bleed** — a 350 px band with margins either side is a card without a radius.
 5. **Strings and data.** `navLabel`, `newerLabel`, `olderLabel`. Read-only: the six `pagination` values.
    Unread: `moreLabel`, `endLabel`. **Identical to 8 Contrast Band's, which is what makes switching
    between them lossless.**
 6. **Controls.** **Layout** Three zones · Numbers centred · Direction at the ends — **Height** Compact
-   56 · Comfortable 72 · Spacious 96 — **Edge** Full bleed · Inset — **Numbers** Windowed · All pages
-   — **Rules** Both · Top only. Five. **Height is a strip height — a genuinely different ladder — and
+   56 · Comfortable 72 · Spacious 96 — **Edge** Full bleed · Inset — **Rules** Both · Top only. Four,
+   **Numbers** having been deleted in the patch pass. **Height is a strip height — a genuinely different ladder — and
    keeps its own name.** **At the ends
    defaults to Dimmed** ⚑. **Cut:** Alignment (the zones are the alignment) and a totals toggle
    (the block's Position line).
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, band included.**
    **2 pages → the design's weakest case** (two numerals and a link in a 1,296 strip); the panel
    names 10 Slim. **Many → as drawn**; the band's height never changes with the archive and the outer
-   zones are sized for the longest position line it can produce.
+   zones are sized for the longest label the catalog can hold rather than for the archive's depth.
 8. **Empty.** One page → nothing. **At the ends dims rather than hides** — an empty zone in a band is
    visible whether or not anything is in it. **At Layout Three zones on page 1 there is nothing to
    dim**, since the left zone holds the position line and the newer link exists only at Direction at
    the ends; that asymmetry is stated rather than smoothed ⚑. Position line Off leaves the left zone
    empty and the numerals stay centred on the band.
 9. **Module.** **None; `core` assumed. No-JS: pixel-identical**, the scrolling zone included (native
-   `overflow-x`). Edit-safe. **`marquee` considered and refused:** a pager that moves on its own is
+   `overflow-x`). Edit-safe. **`marquee` was considered for the old All pages value and refused:** a pager that moves on its own is
    unusable, and the module's own no-JS branch is the static scrollable strip this design already
    has.
 10. **A11y.** `<nav aria-label="Pagination">` with an `<ol>`; no heading. **DOM order is position line
     → page links → direction link**, matching left-to-right at 1440 and top-to-bottom at 834 ⚑.
-    `aria-current`, `rel`, ellipsis `aria-hidden`. **Focus rings on the first and last numerals in a
-    scrolling zone are inset to −4** (A17·18), since +4 is clipped by the overflow. Targets 44; the
+    `aria-current`, `rel`, ellipsis `aria-hidden`. **Focus rings are A6's at +4**: with All pages gone nothing in the band overflows,
+    so nothing clips a ring. Targets 44; the
     56 px Compact band still holds one with 6 px either side. Muted on surface 5.1:1, current page
     12.6:1. Print: the band prints as a hairline rule with the position line.
     **Flagged ⚑** fixed 260 outer zones · Edge Inset staying square against the radius token · the
-    band growing at 834 · All pages scrolling · Post range resolving below 767 · At the ends
-    defaulting to Dimmed · the missing newer link at Three zones on page 1 · Rules having no None.
+    band growing at 834 · At the ends defaulting to Dimmed · the missing newer link at Three zones on page 1 · Rules having no None.
 
 ## 4 · Pill
 
@@ -391,25 +409,23 @@ it.
    that marker.**
 2. **Tuple.** `nav · pill · page · variable · none · one floating pill` — the category's only `pill`
    containment; **containment is the whole difference from 1 Numbers.**
-3. **Archetype.** nav. **Two departures.** Below 767 the pill goes **full-width rather than
-   contents-width** and its numerals leave for the position line. At All pages it **scrolls inside
-   itself and drops the chevrons.**
+3. **Archetype.** nav. **One departure.** Below 767 the pill goes **full-width rather than
+   contents-width** and its numerals leave for the position line. The internal scroll is gone with
+   All pages, which was the only value that needed it.
 4. **Responsive.** **1440** pill 56 tall, radius 28, inner boxes 40 on a 4 gap, 8 inner padding,
    centred; position line 14 below; 96 beneath · **1080 and 834** identical, the object does not
    scale with the measure · **≤ 767** pill full-width at 350, chevrons at the inner edges at 44, page
-   count between at 15/600, the line below removed, padding 64 · **All pages above fourteen pages**
-   scrolls horizontally inside the pill, chevrons dropped, ends clipped by the radius.
+   count between at 15/600, the line below removed, padding 64.
 5. **Strings and data.** `navLabel`. **`newerLabel` and `olderLabel` are authored and never drawn** — Labels is
    locked to Glyphs only, so both become the chevrons' visually-hidden text ⚑. Read-only: the six
    `pagination` values. Unread: `moreLabel`, `endLabel`.
 6. **Controls.** **Contents** Numbers and chevrons · Numbers only · Position and chevrons —
    **Elevation** Hairline · Shadow · Hairline and shadow — **Size** Compact 48 · Comfortable 56 —
-   **Numbers** Windowed · All pages — **Alignment** Left · Centre. Five. **Labels locked; At the ends defaults to Dimmed.** **Cut: Sticky** — 7 Endless
+   **Alignment** Left · Centre. Four, **Numbers** having been deleted in the patch pass. **Labels locked; At the ends defaults to Dimmed.** **Cut: Sticky** — 7 Endless
    owns pinned things.
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, pill included.**
    **2 pages → the best case at 172 px wide**, the one place it beats 3 Bar. **Many → the pill grows
-   with the window to a 340 px ceiling and stops.** Above fourteen pages at All pages it reaches the
-   measure and scrolls.
+   with the window to a 340 px ceiling and stops**, and nothing can push it past that any more.
 8. **Empty.** One page → nothing. **At the ends Dimmed by default** — a pill missing a chevron at one
    end is a lopsided shape; the glyph stays as a `<span>` at the muted-border step. **At Hidden the
    pill contracts by 44 px and stays centred**, the one case where this design's own geometry changes
@@ -425,13 +441,12 @@ it.
     5.4:1; current page 13.1:1 light, 12.1:1 dark. Print: pill absent, position line kept.
     **Flagged ⚑** radius as height/2 from A1·5 rather than the pack token · the filled inner pill and
     the accent fill refused · the derived dark fill `#2C2721` · **the shadow dropped in dark, the one
-    control value in A34 that resolves by mode** · Labels locked · chevrons dropped at All pages ·
-    the pill contracting at Hidden.
+    control value in A34 that resolves by mode** · Labels locked · the pill contracting at Hidden.
 
 ## 5 · Counter
 
 1. **Descriptor.** The current page and the total as one 52 px group in the heading font, three tones
-   deep, with a 38 px icon button either side and the post range beneath. **A34's only display moment
+   deep, with a 38 px icon button either side and nothing beneath it. **A34's only display moment
    and its only design whose subject is position rather than navigation.**
 2. **Tuple.** `stack · none · page · few · none · position at display size` — the category's only
    `stack`; shares four slots with 2 Prev and Next and separates on archetype.
@@ -440,24 +455,20 @@ it.
 4. **Responsive.** **1440** counter 52, arrows 38 at a 32 gap either side, hairline above with **40
    beneath it rather than 24** ⚑, position line 14 under the group, 96 below · **1080** counter 48 ·
    **834** counter 44, arrow gap 24, margin 40, padding 80 · **≤ 767** **Arrows Outside resolves to
-   Below**, the pair becomes two half-measure 44 px buttons at a 12 gap, counter 34 — **or 26 at
-   Numerals Worded** ⚑ — position line directly under the counter, padding 64. **Counter size Large
+   Below**, the pair becomes two half-measure 44 px buttons at a 12 gap, counter 34 — **or 26 at Numerals Worded** ⚑ — padding 64. **Counter size Large
    at ≤ 767 resolves to 44.**
 5. **Strings and data.** `navLabel`; `newerLabel` and `olderLabel` authored, never drawn (Labels locked to
    glyphs). Read-only: the six `pagination` values, `.page` and `.pages` being the composition.
    **Also reads the site title, in print only** ⚑ — the only A34 design that reads outside
    `pagination`. Unread: `moreLabel`, `endLabel`.
-6. **Controls.** **Counter size** Small 34 · Medium 52 · Large 72 — **Numerals** Padded 02 / 11 ·
-   Plain 2 / 11 · Worded Page 2 of 11 — **Arrows** Outside the counter · Below the counter, **no
+6. **Controls.** **Counter size** Small 34 · Medium 52 · Large 72 — **Numerals** Plain 2 / 11 · Worded Page 2 of 11 — **Padded deleted in the patch pass**, a template being unable to pad a number to a fixed width — **Arrows** Outside the counter · Below the counter, **no
    Off** ⚑ — **Arrow style** Bare · Outlined · Filled (A1·14's three; **Filled in `contrast`, never
    accent**) — **Rule** None · Hairline above. Five.
-   **Labels locked; Position line narrowed to Post range alone; At the ends defaults to Dimmed.**
-7. **Data.** `.page` and `.pages` for the counter, `.prev`/`.next` for the arrows, `.limit`/`.total`
-   for the range. **0 → nothing. 1 page → does not render** — the rule bites hardest here, "01 / 01"
-   at 52 px being a striking way to say nothing. **2 pages → "01 / 02", no adjustment needed.**
-   **Many → the numerals grow by a glyph at 100 pages and the group re-centres**; Padded pads to the
-   total's width.
-8. **Empty.** One page → nothing on the site; **in the editor the counter greyed at "01 / 01" with the
+   **Labels locked; Position line fixed Off — the counter is the position line; At the ends defaults to Dimmed.**
+7. **Data.** `.page` and `.pages` for the counter, `.prev`/`.next` for the arrows. Nothing else is read: the range this design used to carry beneath it needed `.limit` and `.total` multiplied, which a template cannot do. **0 → nothing. 1 page → does not render** — the rule bites hardest here, "1 / 1"
+   at 52 px being a striking way to say nothing. **2 pages → "1 / 2", no adjustment needed.**
+   **Many → the numerals grow by a glyph at 100 pages and the group re-centres**; the tabular figures hold the group's width, which is what the deleted padding was for.
+8. **Empty.** One page → nothing on the site; **in the editor the counter greyed at "1 / 1" with the
    cause beneath** — the clearest editor state in the category, because the reason is legible in the
    design. **At the ends Dimmed: the spent arrow keeps its box and both its glyph and its border dim
    — the only place A34 dims two tokens at once** ⚑. At Hidden the counter shifts 70 px off centre
@@ -466,17 +477,13 @@ it.
    obvious module and is refused** ⚑: a page number that counts up from zero is a number pretending
    to be an achievement.
 10. **A11y.** `<nav aria-label="Pagination">`, no heading, two links. **The counter is a `<p>` that
-    reads "Page 2 of 11" whatever Numerals is set to** ⚑ — the drawn "02 / 11" is spans with the slash
+    reads "Page 2 of 11" whatever Numerals is set to** ⚑ — the drawn "2 / 11" is spans with the slash
     `aria-hidden` and a visually-hidden "of" between, so nobody hears "zero two slash eleven". Arrows
     are `<a rel="prev">`/`rel="next"` with visually-hidden names, 38 px boxes on 44 px targets. A6's
     ring at 4 px; **hover underlines the glyph, there being no label to underline.** Current page
     13.6:1 light, 14.2:1 dark; the three-tone read is 7.1× between steps in light and 2.3× in dark,
-    a pack finding at Counter size Small ⚑. **Print: the counter prints, worded, at 22 pt with the
-    range and site title** — the one A34 design whose printed form is itself.
-    **Flagged ⚑** three-tone numerals with the slash in `border` · 40 below the rule · Arrows with no
-    Off · Filled in `contrast` · Worded's pack-dependent width and its own step at 390 · Large
-    resolving at ≤ 767 · Position line narrowed to one value · two tokens dimmed at once · the spoken
-    counter differing from the drawn one · the site title in print · `count-up` refused.
+    a pack finding at Counter size Small ⚑. **Print: the counter prints, worded, at 22 pt with the site title beside it** — the one A34 design whose printed form is itself.
+    **Flagged ⚑** three-tone numerals with the slash in `border` · 40 below the rule · Arrows with no Off · Filled in `contrast` · Worded's pack-dependent width and its own step at 390 · Large resolving at ≤ 767 · two tokens dimmed at once · the spoken counter differing from the drawn one · the site title in print · `count-up` refused. **Deleted in the patch pass:** Numerals Padded, and the post-range line beneath the counter — Position line is now fixed Off here.
 
 ## 6 · Load More
 
@@ -538,15 +545,12 @@ it.
 
 1. **Descriptor.** An invisible sentinel that fetches the next page as the reader nears the end of the
    feed, a 44 px surface pill pinned to the bottom of the viewport carrying the count and a Back to
-   top link, a focus-revealed button in the flow, and a hard stop after four pages that hands the rest
-   to 6 Load More's button. **The only A34 design with nothing in the page's flow at rest.**
+   top link, a focus-revealed button in the flow, and a hard stop after four pages, past which the pill retires and a button takes the flow. **The only A34 design with nothing in the page's flow at rest.**
 2. **Tuple.** `sticky · pill · transparent · none · none · auto-load with a pinned status` — the
    category's only `sticky`, only `transparent` and only `none` count. **The count is `none` because
    the reader presses nothing in the intended path**; the focus-revealed button is a stated
    accessibility route, not the design's unit ⚑.
-3. **Archetype.** sticky. **One departure:** at the stop it leaves its archetype and becomes a feed —
-   the pill unpins, the sentinel retires, a button takes the flow. Stated as a hand-off (A1·11's
-   mechanism) rather than a state.
+3. **Archetype.** sticky. **One departure:** at the stop the pill unpins, the sentinel retires and this design's own button takes the flow. **It does not become another design** — the button is the library's load-more control, as every design uses shared components.
 4. **Responsive.** **1440** pill contents-width, 44 tall, radius 22, centred, 24 above the viewport's
    foot; nothing in the flow; at the stop a 45 px contents-width button with the count beneath ·
    **1080 and 834** identical · **≤ 767** pill takes the measure, **16 from the bottom plus
@@ -557,7 +561,7 @@ it.
    by the hidden links only. Read-only: the six `pagination` values. **The only design that spends
    all five authored fields**, four of them invisibly.
 6. **Controls.** **Trigger** One screen early · At the last row — **Status** Pinned pill · Inline line
-   · Off — **Stop after** 2 pages · 4 pages · Never — **Back to top** Off · In the pill, disabled with
+   · Off — **Stop after** a number picker, 2–8 pages, default 4, capped at 8 with the reason shown ⚑ — **Back to top** Off · In the pill, disabled with
    its reason at Status Off. Four, and **all four block fields inert** ⚑; the space under the stop's
    button is the feed's Vertical spacing. **Cut:** a threshold slider, a resume
    toggle.
@@ -565,8 +569,7 @@ it.
    appends. **Designed for archives of 48 posts and up** — below four pages the stop never fires and
    the design is 6 Load More with extra machinery, which the panel says. **0 → nothing. 1 page →
    nothing renders, not even the pill.** **2 pages → one automatic load and then the end**; the count
-   is clamped to the total. **Many → four automatic pages, then the button, then Ghost's own pages
-   behind it.**
+   is clamped to the total. **Many → four automatic pages by default, then the button, then Ghost's own pages behind it.**
 8. **Empty.** One page → nothing. **Archive exhausted → the pill unpins and is replaced in the flow by
    `endLabel`**, so the reader gets an ending rather than a pill that stops changing. **A failed fetch
    shows the stop's button with "Those posts didn't load. Try again."** **In the editor the module does
@@ -585,8 +588,7 @@ it.
     inside it is a real focusable `<a href="#top">` with a 32 px inner target on a 44 px pill.
     `aria-busy` on the feed while fetching. Count line 6.1:1 dark, Back to top 14.9:1. **Print:
     nothing — the only A34 design with no printed form**, having no position to state.
-    **Flagged ⚑** the module declared where A17 and A18 refused it · the four-page stop and its
-    hand-off · the focus-revealed button · no focus move on auto-load · the standing three-line
+    **Flagged ⚑** the module declared where A17 and A18 refused it · the four-page stop and the button that follows it · the focus-revealed button · no focus move on auto-load · the standing three-line
     warning · all four block fields inert · **the pill's two-step dark lift, `#2C2721` fill and
     `#3D372F` hairline, outside the seven roles** — a floating overlay needs a token the pack does not
     have · the safe-area inset · the 32 px gap at the stop · `moreLabel`'s different default.
@@ -615,13 +617,10 @@ it.
    edges. Four. **Band height is band-internal and keeps its own name; the space below the band is the
    feed's Vertical spacing, whose Compact is raised to 80 under it (A17·7).** **The band is drawn in
    the pack's `contrast` colour whatever the feed's Background role is, and the panel says so** ⚑.
-   **Attachment defaults to Separate and At the ends to Dimmed.** **Cut:** an Edge control, a Numbers
-   pair.
+   **Attachment defaults to Separate and At the ends to Dimmed.** **Cut:** an Edge control, and a Numbers pair — which could not have been built in any case.
 7. **Data.** The route's `pagination`. **0 → nothing. 1 page → nothing renders, band included** — an
    empty inverted band is a stripe across a page for no reason. **2 pages → weaker than 3 Bar's**;
-   the panel names 2 Prev and Next. **Many → unchanged.** **At Band height Comfortable or taller the
-   position line carries both its values** — "Page 11 of 11 · Posts 121–132 of 132" — and one at
-   Compact ⚑.
+   the panel names 2 Prev and Next. **Many → unchanged.** **The position line carries one value at every band height** — "Page 11 of 11" — the second half of the pair having been a range of posts, deleted in the patch pass ⚑.
 8. **Empty.** One page → nothing. In the editor: the band at 30% opacity with the cause **beneath it,
    not inside it — an editor notice on a contrast band would need a fourth derived colour** ⚑. **At
    the ends Dimmed** uses the derived 60% muted; at Contents Numbers and position **there is no
@@ -661,18 +660,16 @@ it.
    **Single card has no effect**, padding 64.
 5. **Strings and data.** `navLabel`; `newerLabel` and `olderLabel` — **drawn as the eyebrow, the one place in
    A34 the labels are set in uppercase**, so a label past about 20 characters wraps and the panel says
-   so. Read-only: the six `pagination` values; `.limit`/`.total` derive the optional count. Unread:
+   so. Read-only: the six `pagination` values; and nothing else: the optional count line is deleted, `.limit` and `.total` needing multiplying. Unread:
    `moreLabel`, `endLabel`.
-6. **Controls.** **Card style** Hairline · Filled · Filled with a hairline — **Content** Direction only
-   · Direction and page · Direction, page and count — **Single card** Full width · Half width,
+6. **Controls.** **Card style** Hairline · Filled · Filled with a hairline — **Content** Direction only · Direction and page — **the third value, Direction, page and count, is deleted in the patch pass** ⚑, its count being a multiplication — **Single card** Full width · Half width,
    **greyed with its reason when At the ends is Dimmed** ⚑ — **Height** Compact 88 · Comfortable 112 ·
    Spacious 144. Four. **Height is the card's, not the section's.** **Position line defaults to
    Off.** **Cut:** a shadow option, an image slot.
 7. **Data.** `.prev`/`.next` for the destinations, `.page` for their numbers, `.limit`/`.total` for the
    optional count. **0 → nothing. 1 page → nothing renders. 2 pages → one card on every page**, the
    design at its simplest and, at Content Direction only, its best. **Many → two cards on every
-   interior page.** **The count is arithmetic — `limit`, or `total − (pages−1)·limit` on the last page
-   — never a lookahead** ⚑.
+   interior page.** **The count line was arithmetic — `limit`, or `total − (pages−1)·limit` on the last page — and is deleted for exactly that reason** ⚑; it was never a lookahead either.
 8. **Empty.** One page → nothing. **First and last page at Hidden: the absent card is removed and the
    survivor takes the full measure (Full width) or holds its column (Half width)** — the one A34
    design that re-lays out at an archive end, stated as the deliberate exception it is. **At Dimmed
@@ -692,8 +689,7 @@ it.
     nothing at all**; the panel's line is "Set Position line to Page count if this archive is
     printed."
     **Flagged ⚑** A1's eyebrow spent on a direction · the survivor taking the full measure · Single
-    card depending on a block field · the mirror abandoned and the 12 px stacked gap · the count as
-    arithmetic · two hover signals · uppercase labels wrapping past 20 characters · Filled without a
+    card depending on a block field · the mirror abandoned and the 12 px stacked gap · the count line deleted as arithmetic, its lookahead still a finding · two hover signals · uppercase labels wrapping past 20 characters · Filled without a
     hairline named as the value to avoid in dark · the derived `#2C2721` hover step, now depended on
     by three A34 designs · **A26 Post Footers reuses this card** — its previous-post /
     next-post pair is this design with the post title where the page number sits. Adopted in this
@@ -707,14 +703,11 @@ it.
    pager in the library and the only A34 design whose arrangement is identical at every width.**
 2. **Tuple.** `bar · none · page · few · none · one right-aligned line` — a bar with no ground, which
    is what proves the archetype is a shape rather than a surface.
-3. **Archetype.** bar. **One departure, conditional rather than width-driven:** at Position line Post
-   range below 767 the row becomes two, links above and the range beneath. Every other combination is
-   identical from 1440 to 390.
+3. **Archetype.** bar. **No departure, at any width or on any combination of its controls** ⚑ — the one exception was Position line Post range below 767, which stacked into two rows, and that value left the category in the patch pass. Identical from 1440 to 390.
 4. **Responsive.** **1440** row 44 tall, hairline above with 14 beneath, position line 13 left, links
    15/600 right at a 20 gap and an 8 px word-to-glyph gap, 64 below · **1080 and 834** identical;
    margin 40 at 834 · **≤ 767** **identical but for the gaps, 20 → 14 and 8 → 6**; type, height,
-   targets and order unchanged; margin 20; padding 64, already the default. **The one exception is
-   Post range at ≤ 767** ⚑.
+   targets and order unchanged; margin 20; padding 64, already the default. **And after the patch pass there is no exception at all** ⚑.
 5. **Strings and data.** `navLabel`; `newerLabel` and `olderLabel` — **drawn as their first word only, with the
    full value kept as the link's accessible name** ⚑. A first word past about 12 characters widens the
    row and the panel says so. Read-only: the six `pagination` values. Unread: `moreLabel`,
@@ -724,8 +717,7 @@ it.
    **Rule** Hairline above · None. Four. **The panel advises the feed's Vertical spacing at Compact** ⚑
    — it is the only design that wants it, and it no longer owns a value to set. **Cut: a Numbers pair**, which
    would have made this 1 Numbers at Separator None.
-7. **Data.** `.prev`/`.next` for the links, `.page`, `.pages`, `.limit` and `.total` for the position
-   line. **0 → nothing. 1 page → does not render.** **2 pages → the design's best case in the
+7. **Data.** `.prev`/`.next` for the links, `.page` and `.pages` for the position line. **0 → nothing. 1 page → does not render.** **2 pages → the design's best case in the
    category**: at two pages every other A34 design is overbuilt. **Many → unchanged, and unchanged is
    the point** — a hundred-page archive draws the identical row.
 8. **Empty.** One page → nothing; greyed row and cause in the editor. **At the ends Dimmed by
@@ -747,9 +739,7 @@ it.
     to its screen form.**
     **Flagged ⚑** the panel advising Compact vertical spacing rather than setting it · the vertical
     hairline instead of a middle dot ·
-    labels drawn as their first word · no position-only value · the Post-range stacking exception
-    triggered by a block value rather than a width · the DOM order holding when the visual order
-    stacks · hover covering the glyph · the row never shorter than 44 px.
+    labels drawn as their first word · no position-only value · the Post-range stacking exception deleted with the value that triggered it · hover covering the glyph · the row never shorter than 44 px.
 
 ---
 
@@ -771,14 +761,13 @@ Cumulative. Every component this category established or reused, one line each.
 | **On-contrast derivation** | `color-mix` toward the band's own text: muted 60% · hairline 10% · plate 7% | A17 (7) |
 | **Cell divisions** | Two 636 · Three 416 · Four 306 · Five 240 · Six 196 on a 24 gutter across 1,296 | A10, via A17 |
 | **Striped image placeholder** | 45° two-tone stripe with a mono caption naming the crop; frames only | A1 |
-| **Hand-off** | A design that cannot exist under a condition renders another's arrangement and names it | A1 (A1·11, A1·15) |
 | **Standing panel warning** | A permanent three-line statement of a design's cost, above its controls, in surface with a hairline — **new in A34** (6, 7) | **A34** |
 | **Pager block** | Attachment · Labels · At the ends · Position line, plus the read-only Pager wording and Posts per page rows; replaces the Posts block — **new in A34** | **A34** |
 | **Named Select surface** | A category whose designs are the values of one select on another section's sidebar, the chosen value's controls beneath it — **new in A34** | **A34** |
 | **Catalog string** | A visitor-facing string edited once per language in the theme's translation catalog, never a section field — **new in A34** | **A34** |
-| **Setting door** | A read-only line stating a Ghost setting's current value and linking to where it is changed — **new in A34** | **A34** |
-| **Page-link row** | Windowed first · ±1 · last with an ellipsis, seven slots maximum, tabular numerals — **new in A34** | **A34** (1) |
-| **Position line** | 13 px muted tabular "Page 2 of 11" / "Posts 13–24 of 132", derived from `pagination` — **new in A34** | **A34** |
+| **Setting door** | A read-only line stating a setting's current value and linking to where it is changed — for `posts_per_page` that is INFLOZO's theme settings, Ghost's admin having no such field — **new in A34** | **A34** |
+| **Page-link row** | Windowed first · previous · current · next · last with an ellipsis, seven slots maximum, tabular numerals; **every number read from the route, none of them counted** — **new in A34** | **A34** (1) |
+| **Position line** | 13 px muted tabular "Page 2 of 11", read from `pagination` — **new in A34** | **A34** |
 | **Ellipsis span** | One step below muted, `aria-hidden`, never a control — **new in A34** | **A34** (1) |
 | **Hairline progress meter** | 320 × 2 px, `border` track with a `text-muted` fill, `aria-hidden` beside its own count — **new in A34** | **A34** (6) |
 | **Pinned status pill** | A1·5's pill fixed 24 above the viewport foot, carrying a count and Back to top — **new in A34** | **A34** (7) |
@@ -803,22 +792,23 @@ defaults fill them.
 | `endLabel` | catalog | yes | 48 chars | "That's all {total} posts." | 6, 7 |
 | `pagination.page` | integer | — | — | route | all ten |
 | `pagination.pages` | integer | — | — | route | all ten |
-| `pagination.total` | integer | — | — | route | 3, 5, 6, 7, 8, 9, 10 |
-| `pagination.limit` | integer | — | — | route | 3, 5, 6, 7, 8, 9, 10 |
+| `pagination.total` | integer | — | — | route | 6, 7 — the two designs whose script can count |
+| `pagination.limit` | integer | — | — | route | 6, 7 — the batch, and it is always `posts_per_page` |
 | `pagination.next` | integer or null | — | — | route | all ten |
 | `pagination.prev` | integer or null | — | — | route | all ten |
 
 **The rest of the visitor-facing strings are catalog strings too, and none of them is a section
-field:** the position lines "Page {page} of {pages}", "Posts {from}–{to} of {total}" and "{seen} of
-{total} posts"; the dimmed-end strings "No older posts" and "No newer posts"; the failure line "Those
+field:** the position lines "Page {page} of {pages}" and "{seen} of {total} posts"; the dimmed-end strings "No older posts" and "No newer posts"; the failure line "Those
 posts didn't load. Try again."; "Loading"; and 7 Endless's "Back to top" with its ≤ 767 form "Top".
-**Thirteen strings, one set per language, and no fixed English string ships.** The per-design
+**Twelve strings, one set per language, and no fixed English string ships** — the thirteenth was the post range, deleted in the patch pass. The per-design
 rendering rules apply to the catalog value rather than to an author's input: 9 Cards still sets its
 two in uppercase and still warns past about twenty characters, 10 Slim still draws the first word
 only and warns past about twelve.
 
-**Derived, never stored:** the post range, from `page`, `limit` and `total`; the destination page
-numbers, from `page` ± 1; the destination post count (9 Cards), from `limit` and `total`. **5 Counter
+**Derived, never stored — and after the patch pass almost nothing is:** the post range and 9 Cards'
+destination post count are both deleted, being multiplications; the destination page numbers were
+never derived at all, `pagination.prev` and `.next` being numbers the route hands over. **The only
+arithmetic left in A34 is the two module designs' seen-count, and JavaScript does it.** **5 Counter
 also reads the site title, in print only.**
 
 **No field in this list is an array, and none of it is authored in the panel.** ⚑ A34 has no
@@ -840,26 +830,39 @@ the section's own panel holds controls and read-only lines only.
 5. **A pill's radius is height/2 in every pack, from A1·5.** In Ink, whose radius token is 6, the
    pager's 28 is a visible inconsistency. This argues for a pack-level pill rule.
 6. **A date range on a directional link needs a lookahead query Ghost does not give a pager.** 2 Prev
-   and Next and 9 Cards both want it and both draw arithmetic instead.
+   and Next and 9 Cards both wanted it. 2 Prev and Next draws the route's own page number instead; 9
+   Cards drew a post count and no longer draws anything, the count having been a multiplication.
 7. **The load-more control could be an `<a href="/page/N/">` the module intercepts**, giving the
    registry's no-JS outcome with one element instead of two. Not adopted: A17·16 and A18·15 are drawn
    with a `<button>`.
-8. **A 137-page archive is not a pagination problem.** No A34 design reaches page 68 in one action and
-   the jump-to-page field was cut. **A23 Search is the answer**, and the picker should say so.
+8. **A 137-page archive is not a pagination problem, and the library no longer has an answer to it.**
+   No A34 design reaches page 68 in one action; the jump-to-page field was cut, and the window cannot
+   be widened — one link per page cannot be built. **The Search category was deleted and its number
+   retired**, so there is nothing to point a reader or a picker at. **Open finding, and the only one
+   in A34 with no owner.**
 9. **A26 Post Footers reuses 9 Cards' card** for its previous-post / next-post pair, with the post
    title where the page number sits. Adopted in this pass and carried to the A26 patch; the finding
    is now a requirement rather than a suggestion.
 10. **`posts_per_page` is the field users will look for in this panel and cannot change here.** The
-    Pager block states its value read-only **and links to Ghost Admin → Settings → Posts per page**,
-    so the loop is closed: the hunt ends at a door rather than a wall.
+    Pager block states its value read-only **and links to INFLOZO's own theme settings**, which is
+    where it lives: **Ghost's admin has no posts-per-page field at all**, so the link this document
+    used to specify went nowhere. Corrected in the patch pass on all ten panels.
 11. **The translation catalog needs placeholder support and a pager set.** `{page}`, `{pages}`,
-    `{from}`, `{to}`, `{seen}` and `{total}` are all spent by A34's thirteen strings. A catalog that
-    stores flat text cannot render this category.
+    `{seen}` and `{total}` are spent by A34's twelve strings — `{from}` and `{to}` went with the post
+    range. A catalog that stores flat text cannot render this category.
 12. **A design can now only advise a vertical spacing, not set one.** 10 Slim wants Compact and 8
     Contrast Band wants Compact raised to 80; both controls belong to the feed, and the editor has no
     mechanism for a value a section recommends.
 13. **A Named Select whose values carry their own control sets needs editor support.** Ten panels
     appear under one field on another section's sidebar. Nothing else in the library does this yet.
+14. **Three template limits deleted three control values in this category, and the same limits will
+    bite elsewhere: a template cannot count through a range of numbers, cannot multiply, and cannot
+    pad a number.** All pages, Post range and Numerals Padded each failed on one of them. **Anything
+    in the library that draws a count, a range, a percentage or a padded figure needs the same test.**
+15. **The window needs one comparison between two numbers** — is the previous page more than 2, is
+    the next page less than the last — to decide whether an ellipsis appears. **Comparison is not
+    arithmetic and the theme layer has it**; recorded here because the window's whole viability rests
+    on the distinction.
 
 ---
 
@@ -937,3 +940,90 @@ untouched.
 14. **Unchanged by this pass:** every arrangement, every responsive rule, every empty and dimmed-end
     state, the four settlements, the Pager block's four fields, both module declarations with their
     standing panel warnings, the eleven-field data union, and all ten tuples.
+
+---
+
+## Patch notes — pagination styles patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered. Where a ruling could not be applied without inventing a decision, it is
+written here as an **open question** and asked in plain words at the end.
+
+**Frames changed — all eleven:** `A34-0 Category Proof` and `A34-1` … `A34-10`. Every one of the ten
+design frames carries a dated **patch pass** panel at the top stating what changed in that design.
+
+### This category's own rulings
+
+| What changed | Why, and where |
+|---|---|
+| **Numbers All pages is deleted, and the seven-slot window is the only page-link row A34 draws.** A theme's templates cannot count through a range of numbers, so a row of one link per page cannot be built at any archive size. **The window can be built, and that is the whole reason it survives:** first is 1, last is `pagination.pages`, the two neighbours are `pagination.prev` and `pagination.next`, the middle one is `pagination.page` — five numbers the route hands over, no sum anywhere, and an ellipsis decided by comparing two of them. The **Numbers** control is gone from **1 Numbers, 3 Bar and 4 Pill**, each of which now has **four** controls of its own; with it go 3 Bar's scrolling middle zone, 4 Pill's internal scroll, and every "All pages is exempt" clause in the responsive rules. The 137-page stress route is redrawn as the same seven slots. | *(The templates cannot count, add or remember.)* |
+| **Post range leaves the Pager block: Position line is Off · Page count in all ten.** "Posts 13–24 of 132" needs `(page−1)·limit+1` — a multiplication. **Only the two designs that carry a script can count**, and their "24 of 132 posts" is the module's own progress line rather than this field. Four designs lost drawn content: **5 Counter's** line beneath the counter (Position line now fixed Off — the counter *is* the position line), **8 Contrast Band's** second half at 120 px and above, **10 Slim's** stacked phone exception, **3 Bar's** tablet resolution rule. Every frame that drew a range now draws "Page 2 of 11". | *(The templates cannot count, add or remember.)* |
+| **Posts per page is INFLOZO's theme setting, not Ghost's.** Ghost's admin has no posts-per-page field, so the read-only door in all ten panels pointed at a page that does not exist. It now links to INFLOZO's theme settings, and the door still closes the hunt. 6 Load More's "no Batch control" line, which named Ghost's settings as the source, is corrected with it. | *(Some fields we drew do not exist.)* |
+| **5 Counter's Numerals Padded is deleted — "2 / 11", not "02 / 11".** A theme cannot pad a number to a fixed width. What the padding bought is already free: the figures are tabular, so the group holds its width between page 9 and page 10. Numerals reads **Plain · Worded**. | *(The templates cannot count, add or remember.)* |
+| **9 Cards' Content value "Direction, page and count" is deleted.** The count was `limit`, or `total − (pages−1)·limit` on the last page. Content reads **Direction only · Direction and page**, and the card's third line is gone from the frames. | *(The templates cannot count, add or remember.)* |
+| **The Search category cannot be pointed at, because it no longer exists.** The stress frame and finding 8 both ended "Search is the answer to a 137-page archive". That category was deleted and its number retired, so the sentence named nothing. It is now an open finding with no owner: a 137-page archive needs a route a pager cannot provide, and the library does not currently have one. | *(No design ever turns into another design — and the deleted category.)* |
+
+### The library-wide rules
+
+| Rule | What it did here |
+|---|---|
+| **Item counts are a number picker** | **One subject: 7 Endless's Stop after**, drawn as three fixed buttons — 2 pages · 4 pages · Never. It is now **a number picker, 2 to 8 pages, default 4**, capped at 8 with the reason drawn: past eight automatic pages a reader is further from the footer than any button can bring them back. **Never is deleted** — a count is a number, and a stop that never fires is the failure this design exists to prevent. Nothing else in A34 is a count: the page links belong to the route and the two directional links are fixed at two. |
+| **No design ever turns into another design** | **Two phrases deleted.** **7 Endless's** stop was written as handing the rest of the archive "to 6 Load More's button"; at the stop it draws **its own button in its own flow** — the library's load-more control, as every design uses shared components — and the hand-off framing is gone from the descriptor, the archetype note and the flagged list. **8 Contrast Band** "prints as 1 Numbers on white" becomes "prints its own numerals on white, the band dropped". The **Hand-off** row leaves this category's component inventory: nothing in A34 spends it now. What remains is advice — 3 Bar naming 10 Slim at two pages, 2 Prev and Next naming 1 Numbers for a deep archive — and advice is not a switch. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all ten. **There is no "Inherit" value anywhere in A34**, and no colour swatch row — the ground is the feed's. Every constraint on a Pager block field is drawn with its reason: 3 Bar sets a default, 2 Prev and Next and 4 Pill lock, 5 Counter and both module designs mark inert, 10 Slim interprets. **Narrowing now has no example in A34**, Position line having two values; the rule is unchanged and the example moved. **No design added a value to a shared field, and none renamed one.** |
+| **The two free designs are the owner's choice — ask him** | Shortlisted the five plainest, photography-independent designs — **1 Numbers · 2 Prev and Next · 10 Slim · 3 Bar · 9 Cards** — and recommended 1 Numbers · 2 Prev and Next. **The owner chose 2 Prev and Next · 9 Cards** on 29 August 2026 — the two designs that draw no page numbers at all, the quietest and the largest targets — and neither needs a script. **The line is recorded at the head of this document and badged on the roster in `A34-0`. Closed.** |
+| **Avatars with no photograph** | **No subject.** A34 renders no person: no author, no member, no initials, no `profile_image` read anywhere in ten designs. |
+| **The remove button never greys out** | **No subject.** Nothing in A34 is an authored repeating list — no repeater, no Add, no Remove, no minimum — and after the reconciliation the category authors nothing at all. |
+| **Slider labels** | **No subject.** A34 draws no slider. Every control is a named-value row, a lock, or — since this pass — one number picker, and each title says what it affects: Height, Band height, Counter size, Card style, Stop after. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** No Tight/Even/Airy or Tight/Standard/Wide vocabulary exists anywhere in A34. 1 Numbers' **Density** is a two-step ladder in the standard padding words — Compact · Comfortable — and it moves the gap between boxes without changing the box, the type or the 44 px target. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject.** A pager has no member action: no subscribe button, no paid tier, no Portal link. Member Visibility is not added either — hiding a pager from a member state would hide the archive's own navigation. |
+| **The no-JavaScript notice** | **No subject, and no claim to withdraw.** A34 contains no subscribe or sign-in form, so there is nothing for a notice to replace, and no design ever claimed something could be subscribed to without JavaScript. Every design's no-JavaScript line is listed below. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10.** Ten designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted. |
+
+### The no-JavaScript line, per design
+
+| # | Design | Module | Without JavaScript |
+|---|---|---|---|
+| 1 | Numbers | none | **Pixel-identical.** Every element is an `<a>` or a `<span>` and the destinations are Ghost's own `/page/N/` routes. |
+| 2 | Prev and Next | none | **Pixel-identical.** Two links, a position line, a hairline. |
+| 3 | Bar | none | **Pixel-identical.** The band, its zones and its hairlines are CSS. |
+| 4 | Pill | none | **Pixel-identical.** The pill is a container, not a control. |
+| 5 | Counter | none | **Pixel-identical.** The counter is a paragraph and the arrows are links. |
+| 6 | Load More | `load-more` | Quoted from the registry: "Ghost's numbered `/page/2/` pagination links render instead (FR-G4, explicitly)." Those links — the seven-slot window — are in the markup on every render, `.visually-hidden` at Page links Hidden, **never `display:none`**. The button, the count and the meter are absent in that branch, not inert. |
+| 7 | Endless | `infinite-scroll` | Quoted from the registry: "Same — numbered pagination links render (FR-G4, explicitly)." The same window, in the markup on every render. Pill, sentinel and focus-revealed button are absent, not inert. |
+| 8 | Contrast Band | none | **Pixel-identical.** The band's colour and its derived steps are CSS; the accent underline's dark disablement is a `prefers-color-scheme` branch, so it resolves without script. |
+| 9 | Cards | none | **Pixel-identical.** The whole card is inside its `<a>`. |
+| 10 | Slim | none | **Pixel-identical.** Two anchors, one paragraph, two hairlines — the least machinery in the library. |
+
+### Open questions
+
+**Both questions this pass raised have been answered by the owner, and nothing is left open.**
+
+1. **Which two designs a free site gets** — **answered: 2 Prev and Next · 9 Cards.** Recorded at the
+   head of this document and badged on the roster in `A34-0`.
+2. **What sits under 5 Counter's numerals now that the post range cannot be drawn** — **answered:
+   nothing.** The counter is the whole design: it states the position at 52 px, and a second line
+   beneath it would either repeat that or describe the archive instead of the reader's place in it.
+   Position line stays fixed Off there, and no value was added to a shared field.
+   **Nothing else in this pass required a decision nobody had made.**
+3. **No registry addition was needed.** A34 still declares exactly `load-more` and `infinite-scroll`,
+   both existing entries, and **no module name was coined anywhere in this category.**
+
+### What this pass supersedes in the earlier notes
+
+- **Reconciliation note 9** — "`posts_per_page` ends at a door … links to Ghost Admin → Settings →
+  Posts per page" — is superseded: the door is INFLOZO's theme settings, Ghost having no such field.
+- **The Pager block's four values** are unchanged in number; **Position line has two of them**, not
+  three.
+- **The control counts fall again**, and no design gained a control: **1, 2, 3, 4, 6, 7, 8, 9 and 10
+  carry four of their own; 5 Counter carries five.**
+- **Unchanged by this pass:** every arrangement, every colour, every type size, every spacing step,
+  both module declarations with their standing panel warnings, the four settlements, the eleven-field
+  data union, all ten tuples, and all ten numbers.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10** — ten designs, no gap
+  created or closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+  required shape, and names **2 Prev and Next** and **9 Cards** — both of which exist in this
+  category's roster. It is the owner's own choice, confirmed on 29 August 2026.

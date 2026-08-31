@@ -19,10 +19,19 @@
 </helmet>
 
 <section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
-  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 10 OF 10 · PAPER PACK · FOUR CONTROLS · THE SMALLEST PAGER IN THE LIBRARY, AND THE ONLY DESIGN IN A34 WITH THE SAME ARRANGEMENT AT EVERY WIDTH</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 10 OF 10 · PAPER PACK · FOUR CONTROLS · PATCHED 29 AUGUST 2026 · THE SMALLEST PAGER IN THE LIBRARY, AND THE ONLY DESIGN IN A34 WITH THE SAME ARRANGEMENT AT EVERY WIDTH</span>
   <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Slim</h1>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">One line under a hairline: where you are on the left, the two directions on the right. <strong style="font-weight:600">44 px of section height at Padding Compact</strong>, which is less than a single row of A18's list, and the reason it exists is that some feeds should not end with a monument.</p>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty"><strong style="font-weight:600">Every category in this library has a Slim and they all do the same job:</strong> they are the value a designer reaches for when the section above is the point and the furniture below it should be almost invisible. <strong style="font-weight:600">A18·3 Slim's row, A11·10's logo line and A14's caption strip are the same instinct</strong>; this is its pagination form.</p>
+</section>
+
+<section style="padding:0 56px 24px">
+  <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:9px;max-width:1000px;font-size:13px;line-height:1.65;color:#3A3835">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">PATCH PASS · 29 AUGUST 2026 · WHAT CHANGED IN THIS DESIGN</span>
+    <span><strong style="font-weight:600">Post range leaves the Pager block, so Position line reads Off · Page count.</strong> A range of posts needs a page number multiplied by a page size, and a theme's templates cannot multiply — only the two designs that carry a script can count. Every frame that drew “Posts 13–24 of 132” now draws “Page 2 of 11”.</span>
+    <span><strong style="font-weight:600">This design gains the cleanest thing in the pass: it now has no responsive departure at all.</strong> Its single exception was the post range stacking into two rows below 767, and the value that triggered it is gone. One 44 px row, from 1440 to 390, on every combination of its four controls. The second phone frame is redrawn at Contents Direction only.</span>
+    <span><strong style="font-weight:600">Posts per page is INFLOZO's setting, not Ghost's.</strong> Ghost's admin has no posts-per-page control, so the read-only row points at the theme's own settings.</span>
+  </div>
 </section>
 
 <section data-screen-label="A34-10 desktop light" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:28px">
@@ -75,7 +84,7 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:7px">
           <div style="background:#FFFFFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;height:44px;box-sizing:content-box">
-            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Posts 13–24 of 132</span>
+            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Page 2 of 11</span>
             <div style="display:flex;align-items:center;gap:16px">
               <span style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#232019">←</span>
               <span style="width:1px;height:14px;background:#EBE5DB"></span>
@@ -87,7 +96,7 @@
       </div>
       <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
         <span><strong style="font-weight:600">Alignment Split is the default and Right is the interesting value.</strong> Split reads as a bar and needs the width to justify itself; <strong style="font-weight:600">Right reads as a caption</strong> and is the one setting in A34 that makes the pager subordinate to the feed rather than parallel to it. <strong style="font-weight:600">At Right the position line joins the cluster</strong> rather than staying at the far edge, because two right-aligned groups with 900 px between them are not a cluster.</span>
-        <span><strong style="font-weight:600">Direction Chevrons only is the only setting in A34 where a 15 px word is replaced by a glyph in a box at this scale</strong>, and it exists for a sidebar feed at 320 px where “Newer · Older” does not fit beside a post range. It is also the value that makes this design nearly invisible, which is either the point or a mistake depending on the page.</span>
+        <span><strong style="font-weight:600">Direction Chevrons only is the only setting in A34 where a 15 px word is replaced by a glyph in a box at this scale</strong>, and it exists for a sidebar feed at 320 px where “Newer · Older” does not fit beside a page count. It is also the value that makes this design nearly invisible, which is either the point or a mistake depending on the page.</span>
         <span><strong style="font-weight:600">There is no Contents Position only.</strong> A row that says where you are and gives no way to leave is a caption, and the control would let a user build one — the same hole 5 Counter's Arrows control deliberately has.</span>
       </div>
     </div>
@@ -173,8 +182,8 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
           <span style="font-size:10.5px;color:#8A857C">Posts per page</span>
-          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. Ghost's setting, not this section's.</span>
-          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">Ghost Admin → Settings → Posts per page →</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. INFLOZO's theme setting; Ghost has no such control.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">INFLOZO → Theme settings → Posts per page →</span>
         </div>
         <span style="font-size:11px;color:#6E6A64;line-height:1.5"><strong style="font-weight:600;color:#3A3835">The nouns are dropped whatever Labels says</strong> ⚑ — “Newer”, not “Newer posts” — and the value still supplies the hidden text. Glyphs only forces Direction Chevrons only.</span>
       </div>
@@ -192,7 +201,7 @@
 
 <sc-if value="{{ showResponsive }}" hint-placeholder-val="{{ true }}">
 <section data-screen-label="A34-10 responsive" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · MOBILE 390 IN BOTH ITS STATES · THE ONLY DESIGN IN A34 THAT DROPS NOTHING, MOVES NOTHING AND RESIZES NOTHING</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · MOBILE 390 IN BOTH ITS STATES · THE ONLY DESIGN IN A34 THAT DROPS NOTHING, MOVES NOTHING AND RESIZES NOTHING — AND NOW WITH NO EXCEPTION TO IT</div>
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
     <div style="display:flex;flex-direction:column;gap:8px">
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">TABLET 834 · IDENTICAL · PAGE MARGIN 40 · PADDING 64 HOLDS, BECAUSE COMPACT IS ALREADY THE MOBILE VALUE</span>
@@ -227,21 +236,18 @@
         <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">The only concession is the gap: 20 → 14 between the links and 8 → 6 inside them.</strong> ⚑ Nothing is dropped, nothing is resized and nothing reflows — the row that was designed for 350 px is the row that renders at 1,440. <strong style="font-weight:600">The targets are still 44 px tall and still the full row height</strong>, which at this width means the two words occupy a third of the screen's bottom edge.</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A2765A">MOBILE 390 · SECOND STATE · POSITION LINE POST RANGE · ⚑ THE ONE COMBINATION THAT DOES NOT FIT, AND WHAT HAPPENS</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">MOBILE 390 · SECOND STATE · CONTENTS DIRECTION ONLY · THE ROW WITHOUT ITS POSITION LINE</span>
         <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;padding:0 20px">
-          <div style="border-top:1px solid #EBE5DB;margin-top:24px;padding-top:14px;display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;align-items:center;justify-content:flex-end;height:44px">
-              <div style="display:flex;align-items:center;gap:14px">
-                <span style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:#232019"><span style="font-size:17px;line-height:1">←</span>Newer</span>
-                <span style="width:1px;height:14px;background:#EBE5DB"></span>
-                <span style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:#232019">Older<span style="font-size:17px;line-height:1">→</span></span>
-              </div>
+          <div style="border-top:1px solid #EBE5DB;margin-top:24px;padding-top:14px">
+            <div style="height:44px;display:flex;align-items:center;justify-content:flex-end;gap:14px">
+              <span style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:#232019"><span style="font-size:19px;line-height:1">←</span>Newer</span>
+              <span style="width:1px;height:14px;background:#EBE5DB"></span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:#232019">Older<span style="font-size:19px;line-height:1">→</span></span>
             </div>
-            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Posts 13–24 of 132</span>
           </div>
           <div style="height:64px"></div>
         </div>
-        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">“Posts 13–24 of 132” is 128 px and the links are 232, which is 10 px over the measure.</strong> So at this one combination the row becomes two: <strong style="font-weight:600">links first, position line beneath</strong> — the links keep the top because they are the reason the section exists. <strong style="font-weight:600">It is the design's only responsive departure and it is triggered by a block value rather than by a width alone</strong>, which is why it is drawn rather than described.</p>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">This was the frame that stacked, and there is nothing left to stack.</strong> The combination that did not fit at 350 px was the position line set to a post range — “Posts 13–24 of 132” at 128 px against 232 of links — and <strong style="font-weight:600">that value is gone from the category</strong>, a range needing a multiplication no template can perform. <strong style="font-weight:600">So this design now has no responsive departure at all:</strong> one row, at every width, whatever Contents says. Drawn here at Direction only, which is the smallest thing A34 renders.</p>
       </div>
     </div>
   </div>
@@ -279,8 +285,8 @@
     <div style="width:634px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;font-size:12.5px;line-height:1.65;color:#3A3835">
       <span><strong style="font-weight:600">1 · Descriptor.</strong> A single 44 px row under a hairline: the position line at 13 px on the left, “Newer” and “Older” at 15/600 with their chevrons on the right, divided by a 14 px vertical hairline. <strong style="font-weight:600">The smallest pager in the library and the only A34 design whose arrangement is identical at every width.</strong></span>
       <span><strong style="font-weight:600">2 · Structural descriptor.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">bar · none · page · few · none · one right-aligned line</code><br><span style="color:#6B6459">A bar with no ground, which is what proves the archetype is a shape rather than a surface: it collapses like a bar and rests on the page. Separates from 3 Bar and 8 Contrast Band on ground, and from 2 Prev and Next on archetype — <strong style="font-weight:600">a row with three things in it against two links at the margins.</strong></span></span>
-      <span><strong style="font-weight:600">3 · Archetype.</strong> bar. <strong style="font-weight:600">One departure, and it is conditional rather than width-driven:</strong> at Position line Post range below 767 the row becomes two, links above and the range beneath. Every other combination is identical from 1440 to 390.</span>
-      <span><strong style="font-weight:600">4 · Responsive rule.</strong> <strong style="font-weight:600">1440</strong> row 44 tall, hairline above with 14 beneath it, position line 13 left, links 15/600 right with a 20 gap and an 8 px word-to-glyph gap, 64 below. <strong style="font-weight:600">1080 and 834</strong> identical; page margin 40 at 834. <strong style="font-weight:600">≤ 767</strong> <strong style="font-weight:600">identical but for the gaps — 20 → 14 and 8 → 6</strong>; type, height, targets and order unchanged; page margin 20; padding 64, which is already the default. <strong style="font-weight:600">The one exception</strong> is Post range at ≤ 767, which stacks into two rows ⚑.</span>
+      <span><strong style="font-weight:600">3 · Archetype.</strong> bar. <strong style="font-weight:600">No departure, at any width or on any combination of its controls</strong> ⚑ — the one exception was Position line Post range below 767, which stacked into two rows, and that value left the category in the patch pass. The row is identical from 1440 to 390.</span>
+      <span><strong style="font-weight:600">4 · Responsive rule.</strong> <strong style="font-weight:600">1440</strong> row 44 tall, hairline above with 14 beneath it, position line 13 left, links 15/600 right with a 20 gap and an 8 px word-to-glyph gap, 64 below. <strong style="font-weight:600">1080 and 834</strong> identical; page margin 40 at 834. <strong style="font-weight:600">≤ 767</strong> <strong style="font-weight:600">identical but for the gaps — 20 → 14 and 8 → 6</strong>; type, height, targets and order unchanged; page margin 20; padding 64, which is already the default. <strong style="font-weight:600">There is no longer any exception</strong> ⚑ — the combination that stacked was Position line Post range, deleted in the patch pass.</span>
       <span><strong style="font-weight:600">5 · Content fields.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">navLabel</code> (text, optional, default “Pagination”); <code style="font-family:'JetBrains Mono',monospace;font-size:12px">newerLabel</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:12px">olderLabel</code> (text, optional, 24 chars) — <strong style="font-weight:600">drawn as their first word only</strong>, with the full value kept as the link's accessible name ⚑. A label whose first word is longer than about 12 characters widens the row and the panel says so. <strong style="font-weight:600">Read-only:</strong> the six <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pagination</code> values. <strong style="font-weight:600">In the union, unread:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">moreLabel</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">endLabel</code>.</span>
       <span><strong style="font-weight:600">6 · Controls.</strong> <strong style="font-weight:600">Contents</strong> Position and direction · Direction only — <strong style="font-weight:600">no position-only value</strong> ⚑. <strong style="font-weight:600">Alignment</strong> Split · Right · Left. <strong style="font-weight:600">Direction</strong> Words · Words and chevrons · Chevrons only. <strong style="font-weight:600">Rule</strong> Hairline above · None. Four, then the block's four fields and its two doors. <strong style="font-weight:600">Cut: a Numbers pair</strong>, which would have made this 1 Numbers at Separator None.</span>
     </div>

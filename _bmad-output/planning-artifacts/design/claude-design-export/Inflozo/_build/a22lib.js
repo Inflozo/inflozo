@@ -143,8 +143,8 @@ function formBlock(g, o) {
   }
   if (st === 'subscribed') {
     return wrap(`<div style="display:flex;flex-direction:column;gap:6px;${center ? 'align-items:center;text-align:center;' : ''}min-height:${o.doneH || 104}px;justify-content:center">
-      <span style="font-family:${p.head};font-size:${o.doneSize || 22}px;font-weight:700;color:${g.text};line-height:1.2">You are subscribed</span>
-      <span style="font-size:15px;line-height:1.6;color:${g.muted};font-family:${p.body};max-width:${o.max || 440}px">${o.subscribedText || 'The Friday edition lands in ida.brandt@orbitweekly.com every week.'}</span>
+      <span style="font-family:${p.head};font-size:${o.doneSize || 22}px;font-weight:700;color:${g.text};line-height:1.2">Signed in</span>
+      <span style="font-size:15px;line-height:1.6;color:${g.muted};font-family:${p.body};max-width:${o.max || 440}px">${o.subscribedText || 'You are signed in as ida.brandt@orbitweekly.com.'}</span>
       <span style="font-size:14px;font-weight:500;color:${g.text};font-family:${p.body};text-decoration:underline;text-underline-offset:3px;margin-top:2px">Manage your preferences →</span></div>`);
   }
   if (st === 'membersOff') {

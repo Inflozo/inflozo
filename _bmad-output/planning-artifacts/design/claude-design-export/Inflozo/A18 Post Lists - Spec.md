@@ -16,6 +16,18 @@ Ghost-owned post content, and **no fixed English visitor-facing string**. What e
 in a **Reconciled** paragraph at the foot of its entry, and the frame-by-frame list is in
 **Reconciliation notes** at the end.
 
+**Post lists patch — 28 August 2026.** The ten library-wide rules were applied to the category, and
+three category-specific rulings landed with them: **the grouped list needs a small script** (Ghost's
+templates cannot tell that the month changed between two posts), **the numbered list restarts at 01
+on every page** (Ghost cannot continue a count across pages) and **"load more" is main-feed-only**
+(removed from every other placement). The category's two hand-offs are deleted, 7 Contrast Band's
+print rule no longer names another design, and 15 Load More's Batch size is a number rather than two
+fixed buttons. **Nothing was renumbered.**
+
+**[Free] designs:** 1 Rows · 3 Slim
+
+*(Shortlisted, recommended and **confirmed by the owner on 28 August 2026**.)*
+
 The frames are `A18-0 Category Proof.dc.html` and `A18-1` … `A18-15`. **Where this file and a
 drawn panel disagree, the panel is the authority** — it is the thing that was designed; this is the
 thing that was written down. Every invented decision is marked ⚑ here and on the frame.
@@ -67,7 +79,12 @@ the web and the fixed-size argument holds for both shapes. **The tag plate follo
 **No A18 design stacks its picture above its title at any width.**
 
 **3 · Grouping.** **One design groups: 5 Grouped** — Month · Year · Tag · Nothing, **derived from
-the data, never authored**. The heading is **the eyebrow at one weight step up** (13 px, uppercase,
+the data, never authored**. **⚑ Amended in this pass: the grouping needs a small script.** Ghost's
+templates cannot tell that the month changed between two posts — no arithmetic, and no access to the
+previous item inside a loop — so the design **declares `group-headings`** and **renders flat and
+ungrouped without JavaScript**: every post present, in the set's order, **each row with its own date**, **no
+group heading and no group date at all** and no group gap or empty space where one would have been —
+the owner's ruling, 28 August 2026. That state is drawn on the frame and stated at the design's Group by row. The heading is **the eyebrow at one weight step up** (13 px, uppercase,
 `.08em`, muted, 600), sitting **above its group with 40 px over and 14 under**, or hung left in a
 200 px column. **Rules run inside a group and stop at its end.** **A row never repeats what its
 heading says** ⚑ — under a month heading the date renders "12 Mar", under a tag heading the row's
@@ -103,7 +120,11 @@ Locks are drawn disabled with their reason. **⚑ One design still changes what 
 15 Load More draws Batch and treats Count as the total the reader can reach.
 
 **Pagination.** No A18 design draws page numbers, a next link or a range — **A34 attaches below, on
-the page ground, and the section boundary is the seam** ⚑. One exception: 15 Load More. **⚑ Amended:
+the page ground, and the section boundary is the seam** ⚑. One exception: 15 Load More, and
+**⚑ amended in this pass: that design is main-feed-only.** Its button walks Ghost's route
+pagination, so it may only be placed as the route's own feed — `source` is locked at This route's
+posts with the reason drawn, the other five values greyed beside it — and a site that wants a
+thumbnail list elsewhere uses 2 Thumb Rows. **⚑ Amended:
 on the main feed pagination is a control on the feed** — at Source: This route's posts the Data group
 carries **A34's Pagination style** (Numbered · Newer and older · Load more · None) on that section's
 own sidebar, and **15 Load More locks it at Load more**, because that design *is* the continuation
@@ -161,16 +182,20 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
 - **Accent** is spent twice a section — hover underline and focus ring. **Two designs spend a third,
   both as controls:** 7 Contrast Band's lifted accent, 15 Load More's Solid button. **A tag, a
   numeral and a timeline marker are never accent.**
-- **Behaviour.** One module in the category (`load-more`, 15 Load More); `core` assumed, never
-  declared per design. On the main feed the **Pagination style** row may call `load-more` — the
-  registry's, never a new name. **No A18 design loses a post without JavaScript and fourteen are
-  pixel-identical with it off.** **No registry addition is needed by this pass.**
+- **Behaviour.** **Two modules in the category** ⚑ amended — `group-headings` (5 Grouped, new in
+  this pass) and `load-more` (15 Load More); `core` assumed, never declared per design. On the
+  main feed the **Pagination style** row may call `load-more` — the registry's, never a new name.
+  **No A18 design loses a post without JavaScript**, **thirteen are pixel-identical with it off**,
+  and the two that are not say so on their frames: 5 Grouped renders flat and ungrouped, 15 Load
+  More renders Ghost's numbered `/page/2/` links in place of its button. **No registry addition is
+  needed and no module name was invented**; `infinite-scroll` stays refused category-wide.
 - **Structure.** `<section aria-labelledby>` → `<h2>`; `<ul>` of `<li>`; **each title an `<h3>`**;
   dates `<time datetime>`; plate `aria-hidden`. **Two departures:** 11 Numbered is an `<ol>` — the
   only one in the library — and 5 Grouped makes each heading an `<h3>` and steps its titles to
   `<h4>`.
-- **Print.** Every design prints as drawn except two: 7 Contrast Band prints as 1 Rows on white
-  (A17·7's rule), 15 Load More prints the rows it had loaded.
+- **Print.** Every design prints as drawn except two, and neither becomes another design ⚑ amended:
+  **7 Contrast Band prints on white without its band** — same rows, same measure, same rules, so it
+  loses its ground rather than its identity — and **15 Load More prints the rows it had loaded**.
 - **Editing.** Every authored text edits inline with **P0·1**; **Ghost-owned content never does** —
   a post title, tag, author name or excerpt says **"Edit in Ghost"**. Every URL field opens the
   Ghost-aware **Link Picker**. **No Preview control exists in A18** and there never was one to
@@ -215,14 +240,19 @@ controls, **not counted toward the brief's control budget** ⚑:
 | `paginationStyle` | enum opt | main feed only: Numbered · Newer and older · Load more · None (A34's) |
 | `emptyHeading` `emptyBody` | text opt | main feed only; authored, with defaults |
 
+**⚑ Amended in this pass, one design only.** At **15 Load More** `source` is **locked at This
+route's posts** — the design is main-feed-only — and `count` is **not read at all** there, because
+the route's own pagination is the total. That ends the one place in either category where a shared
+field meant something different in one design.
+
 **Hand-picked, added in this pass.** Search-and-pick, drag to order, references stored — never
 copies. ⚑ **This overrules A18-0's flat "no picker anywhere in the category":** picking is not
 authoring. **The refusals stand:** no Add that creates a post, no Remove that deletes one, no
 per-post styling — design controls write one value onto the section and every row reads it.
 
 **Count is one stepper**, per settlement 4 above. **Two designs reach into this block:** 11 Numbered
-adds the advice "For a fixed set, use a tag and Oldest first"; 15 Load More reinterprets `count` as
-the reachable total and discloses it.
+adds the advice "For a fixed set, use a tag and Oldest first"; 15 Load More locks `source` at This
+route's posts and does not read `count` at all ⚑ amended, the route's pagination being the total.
 
 **Member visibility is not offered anywhere in A18** ⚑ — the only actions in the category are
 navigation (the rows, the head link, 15's button), and a list that hid itself from members would hide
@@ -286,8 +316,9 @@ stepper, `excerpt`, the main feed's empty state and Pagination style. *Universal
    page from its title).
 7. **Data.** Designed for 5 and 10; correct at 1–15. 1 → composed, no hand-off.
 8. **Empty.** No image on a post → **A17's tag plate at the thumbnail's box, in the set shape**, tag
-   centred at 12 px. **No image on any post → hands off to 1 Rows**, silently on the site, disclosed
-   in the panel. **⚑ The every-post threshold is flagged again** — five plates among six is worse
+   centred at 12 px. **No image on any post → the thumbnail column is not drawn and the text takes the
+   width back**, silently on the site, disclosed in the panel; **the design stays Thumb Rows** ⚑
+   amended, and the panel may advise 1 Rows without switching to it. **⚑ The every-post threshold is flagged again** — five plates among six is worse
    than none, and the rule cannot see the difference.
 9. **Module.** None. **No-JS: pixel-identical** (`loading="lazy"` is HTML). `lightbox` refused.
 10. **A11y.** A17's DOM order exact, and the visual order matches it. Plate `aria-hidden`. Row never
@@ -390,7 +421,9 @@ date-order note.
    **"Everything else" label** (`otherGroupLabel`, shown at Group by Tag) — Rule — Row density —
    Meta — "View all" link. **Seven.** **No Excerpt** ⚑: an excerpt adds 26 px a row and pushes the
    headings so far apart that the grouping stops being visible, which is the reason to choose this
-   design. **No Tag row** — Group by governs the row eyebrow at Tag.
+   design. **No Tag row** — Group by governs the row eyebrow at Tag. **The Group by row carries the
+   no-JavaScript line** ⚑: "Grouping needs JavaScript. Without it this list draws flat — each row with
+   its own date, no headings and no extra space."
 7. **Data.** **Show cuts posts, never groups**, so the last group is often partial. Designed for
    10–25 across 2–6 groups; correct at 1–25. **The count line reports three numbers** — "9 posts
    match. 9 drawn in 2 groups." — and warns "Grouping reads best with 3 or more posts a group." ⚑
@@ -399,10 +432,19 @@ date-order note.
 8. **Empty.** No tag at Group by Tag → **the authored `otherGroupLabel`, default "Everything
    else"** ⚑. **A row never repeats its heading:** Month → "12 Mar", Year → "12 March", Tag → full
    date and no row eyebrow.
-9. **Module.** None. **No-JS: pixel-identical** — grouping happens in Handlebars, not the browser.
+9. **Module.** **`group-headings`** ⚑ new in this pass — Ghost cannot tell that the month changed
+   between two posts, so the headings are cut in by the browser from each row's `<time datetime>`
+   or its tag. **No-JS: the list renders flat and ungrouped** — every post present, in the set's
+   order, **each row carrying its own date exactly as the design draws it**, **no group heading and
+   no group date**, no group gaps and no empty space where one would have been. One consequence,
+   stated rather than corrected: a set spanning more than one year shows no year anywhere. **No post is lost.** Edit-safe: the editor runs the module, so the canvas shows the
+   grouped list.
    **`accordion` considered and refused** on design grounds despite a perfect degradation; **sticky
    headings refused** (they need no module and a section is not a scrolling pane).
-10. **A11y. ⚑ Each heading is an `<h3>` and each post title steps to `<h4>`** — the only place in
+10. **A11y.** **⚑ The outline is correct in both states:** server-side each title is an `<h3>`
+    under the section's `<h2>`, which is what a flat list should announce, and **the module inserts
+    each heading as an `<h3>` and re-levels the titles it groups to `<h4>`** as it goes.
+    **⚑ Each heading is an `<h3>` and each post title steps to `<h4>`** — the only place in
     A17 or A18 where a post title is not an `<h3>`, and it means switching designs changes the
     document outline. One `<ul>` per group.
 
@@ -462,7 +504,10 @@ retired. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    below the band, on the page ground** ⚑.
 8. **Empty.** As 1 Rows. At Rule Off a title-only row is a line of type in a lot of space —
    legitimate at Spacious, and not warned.
-9. **Module.** None. **No-JS: pixel-identical.** **Print: as 1 Rows on white**, A17·7's rule.
+9. **Module.** None. **No-JS: pixel-identical.** **Print: on white, without the band** ⚑ amended —
+   the same rows, the same measure, the same rules. A17·7's behaviour, kept; its old phrasing as a
+   design switch, withdrawn. **The design stays Contrast Band: it loses its ground, not its
+   identity.**
 10. **A11y.** Measured on the band, light: title 15.87:1, muted `#A5A29D` 5.32:1. Dark (the band
     inverts to `#EDE7DA`): 15.42:1 and `#6C6961` 5.61:1. **⚑ The accent needs a pack-level answer:**
     the light band takes the dark accent at 5.73:1; the dark band takes the light accent at 4.42:1
@@ -574,7 +619,8 @@ rule.
    section.
 8. **Empty.** **No image on the lead → the lead draws without a picture at a 780 measure**, rather
    than an 864 × 486 plate — **the one place in A18 where the plate is refused outright.** No image
-   on any post → hands off to 1 Rows.
+   on any post → **the lead simply has none and the followers are unchanged** ⚑ amended; the design
+   stays Lead and List and the panel may advise 1 Rows.
 9. **Module.** None. **No-JS: pixel-identical.** `lightbox` not declared.
 10. **A11y. ⚑ The lead sits outside the `<ul>`, as its own `<article>`.** Both the lead's and the
     followers' titles are `<h3>` — **the size difference is visual and the outline is flat**, the
@@ -603,7 +649,9 @@ group, a 2–15 stepper (25 at Slim lines), `excerpt` on the lead.
    ⚑, no thumbnail.
 7. **Data.** Designed for 5, 7, 10; correct at 1–25, **and two digits cover the whole range.**
    **The numeral counts the drawn list from the top, always** — not the archive, not the query
-   before Count cut it. **At Newest first a post's number changes as the site publishes**, and the
+   before Count cut it — and **⚑ it restarts at 01 on every page**: Ghost cannot continue a count
+   across pages, so on `/page/2/` the first row is 01 again. Stated in the panel, on the Order
+   row's advice line and here. **At Newest first a post's number changes as the site publishes**, and the
    Order row carries the advice "For a fixed set, use a tag and Oldest first." 1 → a list numbered
    01, **which has lost its point**; the panel says so.
 8. **Empty.** **The numeral is never missing** — one fewer failure mode than any other design here.
@@ -740,7 +788,7 @@ without coining a module.
 ### 15 · Load More
 
 1. **Descriptor.** A thumbnail list drawn one batch at a time with a centred button below it that
-   appends the next batch in place; the category's only behaviour module.
+   appends the next batch in place; **the only design in the category that appends content**, and one of its two that declare a module.
 2. **Tuple.** `feed · none · page · variable · left · batch appended in place`
 3. **Archetype.** feed. **One departure:** the set grows, and the button carries its own rule —
    auto-width and centred above 767, full width below.
@@ -748,19 +796,26 @@ without coining a module.
    tall, centred, 44 px below the last rule; count line under it · 834 meta under the title · ≤ 767
    thumb 80, **button full width**. **⚑ At Thumbnail Medium the phone draws 96, so the two settings
    converge below 767.**
-5. **Fields.** As 2 Thumb Rows. **⚑ `count` is reinterpreted as the reachable total.** Writes
+5. **Fields.** As 2 Thumb Rows. **⚑ Amended: `source` is locked at This route's posts and `count` is
+   not read at all** — the route's own pagination is the total. Writes
    `batchSize` and `buttonStyle` *(both shared with A17·16)*, `thumbSize`, `thumbShape` and
    **`buttonLabel`** ⚑ new.
-6. **Controls.** Batch size Five · Ten — Button Outline · Solid · Text — **Button label**
+6. **Controls.** **Batch size a stepper, 3–25, default 10** ⚑ amended — an item count is a number
+   the site types, never two fixed buttons; it is the route's page size, and only the theme can set
+   that number because Ghost's admin has no posts-per-page setting (recorded for the architect) —
+   Button Outline · Solid · Text — **Button label**
    (`buttonLabel`, ≤ 24 ch, with an optional icon) — Thumbnail Off · Small · Medium — **Thumbnail
    shape Landscape · Square** — Rule — **Row density** — **Excerpt** — Meta — Tag — "View all" link.
    **Eleven.** **Row density and Excerpt are restored** ⚑ — their removal was 4–7-norm arithmetic,
    and every sibling has them.
-7. **Data.** Designed for Count 15 and 25; **the stepper runs 5–25 and Count is the reachable
-   total**. **Count at or below Batch → no button is drawn** and the count line reads "All 5 posts
-   shown". **On an archive route Ghost's pagination governs and Batch is ignored** ⚑, disclosed in
-   the panel. **The button stops at Count; it does not walk the whole archive.** **On the main feed
-   Pagination style is locked at Load more.** 0 in the editor → three outlined rows **and the button
+7. **Data.** **⚑ Amended: the design is main-feed-only and `count` is not read at all.** Its
+   Source is locked at This route's posts with the reason drawn, the other five values greyed, and
+   **Ghost's route pagination is the total** while Batch size is the page the button walks. The old
+   reinterpretation of `count` as a reachable total is withdrawn, which closes the category's
+   first open finding. **One page's worth or fewer → no button is drawn** and the count line reads "All 5 posts
+   shown". **There is no longer an archive-route exception** ⚑ amended: the design can only be
+   placed on the route whose posts it draws, so the route's pagination and the button are one
+   mechanism rather than two. **Pagination style is locked at Load more**, as before. 0 in the editor → three outlined rows **and the button
    in its resting state**, the only editor empty state in A18 that includes a control.
 8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at
    Thumbnail Off rather than handing off** — the button, not the picture, is the design.
@@ -781,8 +836,9 @@ without coining a module.
 authored with an optional icon, **Thumbnail shape**, **Tag** and the **"View all" link** added;
 Padding retired. *Strings:* `buttonLabel` authored with the default "Load more"; **the count and
 exhausted lines are catalogue strings**, not English literals — the old "no authored strings in this
-design's own furniture" ruling is overruled. *Data:* the Data group, a **5–25 stepper** on the
-reachable total, and **Pagination style locked at Load more** on the main feed.
+design's own furniture" ruling is overruled. *Data:* the Data group and **Pagination style locked at
+Load more**. **⚑ Superseded by the post lists patch:** the design is main-feed-only, so `source` is
+locked, `count` is not read, and Batch size is a 3–25 stepper rather than a reachable-total ladder.
 
 ---
 
@@ -884,9 +940,10 @@ query is what the user owns.
 
 ### Still open
 
-1. **15 Load More reinterprets `count`** as a reachable total rather than a drawn count — the only
-   design in either category to change a shared field's meaning. The stepper made the number
-   editable; it did not make the meaning uniform.
+1. **Closed by the post lists patch.** 15 Load More no longer reinterprets `count`: the design is
+   main-feed-only, the route's pagination is the total, and `count` is not read there. **The field
+   means the same thing in all fifteen designs.** What replaces it is a smaller question, below:
+   Batch size is the route's page size, and only the theme can write that number.
 2. **A control name is not a field.** `rowDensity` carries five different value sets across A18,
    `thumbSize` three, and now `order` carries three values in one design and two in fourteen. This
    generalises A17's "one image field or three?".
@@ -946,8 +1003,9 @@ Background role **locked at Contrast**, Top divider **locked None**, and its 80 
 Vertical spacing's resolution; **8** kept **Row density** as its card-padding ladder; **9** got a
 stepper whose maximum is advisory; **12** gained the standard **Meta** enum and lost its fixture;
 **14** gained **Title A–Z** on Order; **15** gained **Thumbnail shape**, an authored **Button label**
-with an optional icon, **Row density** and **Excerpt** restored, catalogue strings, a 5–25 stepper on
-the reachable total, and **Pagination style locked at Load more**.
+with an optional icon, **Row density** and **Excerpt** restored, catalogue strings, a stepper on the
+reachable total (**since superseded** — see the post lists patch), and **Pagination style locked at
+Load more**.
 
 **Primary section frames redrawn: none.** Every item in this pass changed a control, a rule, a
 binding or a string rather than a drawing: the new controls all ship at the value the frames already
@@ -1014,3 +1072,86 @@ More's** exhausted-state caption names the count line as a catalogue string.
   are the truth; 1–100 is only the widest of them.
 - **No module name was coined.** 14 Index's alphabetical order is server-side, and the client-sort gap
   stays named and unowned. `infinite-scroll` stays refused category-wide.
+
+---
+
+## Patch notes — post lists patch, 28 August 2026
+
+Every change below carries the **name** of the rule that required it. Rules are named and never
+numbered: the letter-and-number labels elsewhere in this project are filing codes and say nothing
+about what a rule requires.
+
+**Frames updated — all sixteen.** `A18-0 Category Proof` (the roster gains a **[Free]** badge on
+1 Rows and 3 Slim and a header note saying the pick is awaiting confirmation; settlement 3 amended
+for the grouping script; the Count settlement's "one design changes what Show means" replaced by its
+closure; the behaviour paragraph now names two modules and thirteen — not fourteen — pixel-identical
+designs) and every design frame `A18-1` … `A18-15`, each of which gained a **POST LISTS PATCH**
+card stating in one line each what changed on that frame and which rule required it.
+
+**Redrawn beyond captions: one frame.** `A18-5 Grouped` gains a new drawn state — **the grouped
+list beside the flat, ungrouped list it renders without JavaScript**, at a 620 px crop each, with
+the reason and the outline note under them. Nothing else moved: no layout, type scale, colour pack,
+spacing value or drawn state was changed anywhere in the category. Two controls were redrawn in
+place: **15 Load More's Batch size** as a stepper where it drew Five · Ten, and **its Source row**
+as a locked value with the reason beside it.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **No design ever turns into another design** | **Three deletions.** **2 Thumb Rows** no longer draws 1 Rows when no post in the set has a picture: the section **hides what does not apply** — the thumbnail column is not drawn and 168 px goes back to the sentence — and the panel may say that 1 Rows is the same arrangement without the column. **10 Lead and List** no longer draws 1 Rows either: the lead simply has no picture and the followers are unchanged. **7 Contrast Band** no longer "prints as 1 Rows on white": the band is not printed and the rows print on white at the same measure with the same rules, so the design loses its ground rather than its identity. Every remaining cross-reference in the category was checked and is advice — 3 Slim naming 9 Big Type at one post, 6 Split Head's "this design needs a title", 12 Panel suggesting Panel Outline, 13 Timeline naming 4 Dated, 14 Index advising Columns Two, 1 Rows naming 7 Contrast Band at Background role Contrast. Advice, never a switch. |
+| **The grouped list needs a small script** | **5 Grouped declares `group-headings`**, the registry's — Ghost's templates cannot tell that the month changed between two posts, because there is no arithmetic in a template and no access to the previous item inside a loop. The module reads each row's `<time datetime>`, or its tag at Group by Tag, and cuts a heading in wherever the value changes. **Without JavaScript the list renders flat and ungrouped:** every post present, in the set's order, **each row with its own date as drawn**, **no group heading and no group date at all**, and no group gap or empty space where a heading would have been — **the owner's ruling of 28 August 2026**, in preference to promoting the dates to their full format. That state is **drawn on the frame** and stated at the Group by row. The outline is correct in both: server-side each title is an `<h3>` under the section's `<h2>`, and the module re-levels the titles it groups to `<h4>` as it inserts each `<h3>` heading. **No module name was invented.** |
+| **The numbered list restarts on every page** | **11 Numbered** now says so: Ghost cannot continue a count across pages, so on `/page/2/` the first row is 01 again. Written on the behaviour line, on the Order row's advice line and in this document. The existing advice — "for a fixed set, use a tag and Oldest first" — is where a site avoids ever having a second page, and it did not need changing. |
+| **Load more is main-feed-only** | **15 Load More is removed from every other placement.** Its `source` is **locked at This route's posts** with the reason drawn and the other five values greyed beside it, because the button walks Ghost's route pagination; a site that wants a thumbnail list somewhere else uses 2 Thumb Rows. Two consequences: the old **archive-route exception is gone** (the section can no longer behave one way on one route and another elsewhere), and **`count` is not read there at all**, which ends the one place in either category where a shared field meant something different in one design. |
+| **Item counts are a number picker** | **15 Load More's Batch size becomes a stepper — 3–25, default 10** — where it drew Five · Ten. Count was already a stepper everywhere, with per-design bounds drawn disabled and their reasons visible. **Two rows were checked and left as named values:** 3 Slim's **Columns One · Two** and 14 Index's **Columns Two · Three · Four** are layout choices — each value is a drawn column width, checked against a long title — not a number of posts. Recorded rather than decided, as A12's identical row was. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen. The swatch row is **Base**; **there is no "Inherit" value anywhere in A18**; no shared control is renamed or given a value it lacks elsewhere; and every narrowing shows its reason — 7 Contrast Band's Background role locked at Contrast and Top divider locked None, 12 Panel's Rule without Boxed (absent, with the reason, rather than disabled), 14 Index's Title size Medium unavailable at Columns Four, 8 Row Cards without a Rule row, 3 Slim without Excerpt, Meta or Tag, 5 Grouped without Excerpt or Tag, 9 Big Type without Excerpt or Tag, 13 Timeline without Rule or Meta, and now **15 Load More's locked Source**. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest, picture-independent designs — **1 Rows · 3 Slim · 4 Dated · 11 Numbered · 14 Index** — and recommended **1 Rows and 3 Slim**, and **the owner confirmed both on 28 August 2026**. Badged **[Free] — confirmed** on the proof frame's roster and written in §0 as the line the merge reads: **`**[Free] designs:** 1 Rows · 3 Slim`**. |
+| **Avatars with no photograph** | **No subject.** A18 draws no person: `profile_image` is read by no design in the category, no initials block exists anywhere in the fifteen, and A17's fifth Meta value — With photograph — deliberately does not cross into A18. Recorded so the absence is a decision rather than an oversight. |
+| **The Remove button never greys out** | **No subject, and nothing to fix.** Nothing in A18 is authored as a repeating list: there is no repeater, no Add that creates a post and no Remove that deletes one. The post picker at Source: Hand-picked has no minimum — remove is visible and clickable at every count, and removing the last reference empties the set. |
+| **Slider labels** | **No subject.** A18 draws no slider. Every control is a named-value row whose title says what it affects — Rule, Row density, Excerpt, Meta, Thumbnail, Date style, Marker — and whose values reuse the standard words. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A18 has no gap control. **Row density is padding**, not a gap — it sets the space inside a row, and Compact · Comfortable · Spacious are the standard padding words; 8 Row Cards' 16 px gap between cards is fixed and is not a control. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject.** Every action in A18 is navigation: the row, the head link, and 15 Load More's button. There is no subscribe button, no paid tier and no Portal link in the category, so there is nothing to make conditional. Member visibility is offered nowhere, and that refusal is recorded in §0. |
+| **The no-JavaScript notice** | **No subject, and no claim to withdraw.** A18 contains no subscribe or sign-in form, so there is nothing for the notice to replace, and the category never promised a form worked without JavaScript. The per-design no-JavaScript line is restated on every frame instead: **thirteen designs are pixel-identical with script off**, **5 Grouped** renders flat and ungrouped, and **15 Load More** renders Ghost's numbered `/page/2/` links in place of its button. No post is lost in either. The sent, error and loading states elsewhere in the library are untouched. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Fifteen designs, no gaps, nothing renumbered, nothing reused, nothing deleted. |
+
+### Open questions for the architect — where a ruling could not be applied without inventing a decision
+
+1. **Settled by the owner, 28 August 2026: Batch size is the theme's `posts_per_page`.** It lives
+   in the theme's `package.json`, Ghost's admin has no such setting, and **it is site-wide rather
+   than per section** — one number for every paginated list. The control stays a number picker and
+   **the row discloses that changing it changes every paginated list on the site**. What remains for
+   the architect is mechanical: a section control writing a theme-package value needs a path.
+2. **`group-headings` has no written contract.** The registry names the module; it does not say
+   whether the module may re-level a heading. This pass assumed it inserts each group heading as an
+   `<h3>` and steps the titles it groups to `<h4>`, because that is the only arrangement whose
+   outline is correct both with the script and without it. If the module may not touch heading
+   levels, the flat state is still correct and the grouped state announces two `<h3>` peers.
+3. **Column counts: layout or item count?** 3 Slim's Columns and 14 Index's Columns are drawn
+   widths, so the number-picker rule was read as not applying. The same reading was recorded in the
+   About and Team category and is still unresolved across the library; it should be settled once,
+   not per category.
+4. **Carried forward, unchanged by this pass:** the pack-level `on-contrast` / `on-accent`
+   derivation (five independent derivations now), tabular figures as a pack requirement, the post
+   card's four DOM-order exceptions, the single truncation exception, the missing client-side sort,
+   dark elevation for 8 Row Cards and 12 Panel, the main feed needing to be *designated*, and
+   `postRefs` needing an ordering contract.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap and no renumbering in this category.
+2. **The `**[Free] designs:**` line is present** in §0, on its own line, and names **1 Rows** and
+   **3 Slim** — both of which exist in this category's roster, and both **confirmed by the owner on
+   28 August 2026**.
+
+### The owner's answers — 28 August 2026
+
+1. **The two free designs are 1 Rows and 3 Slim.** Confirmed; §0's line names them and the roster
+   badges read **[Free] — confirmed**.
+2. **The grouped list without JavaScript shows no group dates at all** — no headings, no heading
+   dates and no extra space. Each row simply carries its own date, as the design already draws it.
+   The alternative of promoting those dates to their full format was declined.
+3. **Batch size is the theme's `posts_per_page`**, in `package.json`, site-wide, and not a Ghost
+   admin setting. Recorded on the frame, in design 15's entry and in the architect's list above.
+
+**No questions remain open in this category.**

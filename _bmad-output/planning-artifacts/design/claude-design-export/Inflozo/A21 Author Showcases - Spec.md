@@ -7,6 +7,29 @@ The frames are `A21-0 Category Proof.dc.html` and `A21-1` … `A21-15`. **Where 
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
 that was written down. Every invented decision is marked ⚑ here and on the frame.
 
+**Design patch pass — 29 August 2026 (this document's current state).** Three platform facts landed on
+this category and two of them changed what is drawn. **A theme's templates cannot count**, so the
+assembled credit sentence in 8 Faces and 15 Slim loses its number — a theme cannot subtract the names it
+drew from the total it holds — and the remainder now reads *"and others"*. **A template cannot look at
+the previous item inside a loop**, so 10 Directory's *Group by letter* declares the registry's
+`group-headings` module and its no-JavaScript state is the flat alphabetical table. **Ghost stores a
+social handle in several shapes**, so every handle goes through Ghost's own link helper and the theme
+assembles no address itself. Alongside those, the ten library-wide rules were applied to the category:
+**14 Image Band's hand-off to 5 Contrast Band is deleted** — no design turns into another design —
+**every initials plate draws one letter**, because Ghost cannot produce two initials from a name, **How
+many is a number picker** with a per-design maximum and no "All" value, and the hand-picked list's
+Remove never greys out at the minimum. **Nothing was renumbered.** Every change is listed with the name
+of the rule that required it in **Patch notes** at the end, along with the five rulings of 29 August 2026 —
+three the owner's, two the platform's; **nothing is left open in this category**, for him or for the
+architect.
+
+**[Free] designs:** 3 Rows · 11 Rail
+
+*(Shortlisted in this pass — 3 Rows, 7 Panel, 10 Directory, 11 Rail, 15 Slim: the plainest designs, and
+the five a site can ship without owning good photography — and **ruled by the owner on 29 August 2026**:
+one ordinary roster that works on day one, and one that draws no portraits at all. A free site gets a
+writers page it can build with no pictures on file.)*
+
 **What the reconciliation pass did.** The category was audited, design by design, against the PRD's
 control vocabulary and Ghost's verified data surface, thinking like an end user editing their own
 site. It **corrected the category's founding social fact** — Ghost ≥ 6.36 stores nine handles and a
@@ -74,7 +97,7 @@ the panel without switching to it** ⚑ — **the user's chosen design is never 
 is A29·5's rule.
 
 **3 · Writers with no bio and no picture.** **Absence is the normal case, not an empty state** ⚑.
-No picture → A1·6's initials on `hover`; **14% white on the contrast band and 18% white over an
+No picture → A1·6's initials plate on `hover`, **one letter and never two** ⚑ 29 August 2026 — Ghost cannot produce two initials from a name; **14% white on the contrast band and 18% white over an
 image** ⚑, because `hover` is a page-ground token and vanishes on either. No bio → the lines go and
 the block closes up; **nothing is reserved anywhere in A21**, and the social row obeys the same rule
 handle by handle. **11 Rail draws no portraits at all** and is the design for a publication with no
@@ -137,8 +160,8 @@ Every design obeys these unless its own entry says otherwise.
   rule). **White over an image stays white** ⚑ and the scrim deepens one step.
 - **Print.** **The names, counts, roles and bios print; portraits, social rows, strips, carousels and
   the image band do not** ⚑. 5, 14 and 15 print as 3 Rows on white; 12 prints its cards as a list.
-- **Behaviour.** **One design declares a module** — 12 Carousel's `carousel`. **The other fourteen
-  declare none and are pixel-identical with JavaScript off.** **This pass coined no module name**, so
+- **Behaviour.** **Two designs declare a module** ⚑ 29 August 2026 — 12 Carousel's `carousel`, and `group-headings` on 10 Directory at *Group by letter: On*. **The other thirteen
+  declare none and are pixel-identical with JavaScript off.** **Neither pass coined a module name**, so
   no frame carries *ARCHITECT: registry addition*: Hand-picked, the role override, Member Visibility
   and the social row are all server-side, in the template.
 - **Refused category-wide, each with a reason:** a latest-post column ⚑ (one query per writer —
@@ -158,13 +181,15 @@ design's control count** and they sit below its own list, above the Data group.
 
 | Control | Values | Notes |
 |---|---|---|
-| **Background role** | Background · Surface · Contrast | Resolved from the pack. **Locked at Contrast in 5** ⚑ and **locked to the photograph in 14** ⚑, each with the reason shown in place of the values. **15 Slim's retired *Ground* row is this control** ⚑ — Surface is the strip, Background is 8 Faces without portraits, and Contrast is newly reachable |
+| **Background role** | Background · Surface · Contrast | Resolved from the pack. **Locked at Contrast in 5** ⚑ and **locked to the photograph in 14** ⚑, each with the reason shown in place of the values. **15 Slim's retired *Ground* row is this control** ⚑ — Surface is the strip, at Background the strip's fill goes and the credits sit on the page ground, **which is still 15 Slim** ⚑ 29 August 2026, and Contrast is newly reachable |
 | **Vertical spacing** | Compact · Comfortable · Spacious | 64 · 96 · 132; 80 at 834, 64 at 390. **This is the retired Padding row under its real name.** **Locked at 0 in 5, 14 and 15** ⚑ |
 | **Top divider** | None · Line · Fade | Drawn above the section on the page ground; **above the band in 5 and 14, never inside it** ⚑. **Disabled in 8 and 15** ⚑, where *Rules* already draws that hairline |
 
 **Two designs lock their ground, and only two.** 5 Contrast Band is an inverted band — at Background
-it is 1 Grid, which the Design picker already offers. 14 Image Band's ground is the photograph, and
-with no image the section hands off to 5, taking the role with it. **7 Panel and 2 Cards do not
+the band is what the section is, and 1 Grid is named only as the design to place if a roster on the page
+ground is what you want ⚑ 29 August 2026. 14 Image Band's ground is the photograph, and **with no picture
+the lock stays and the band draws itself on the contrast ground** ⚑ 29 August 2026 — **the old hand-off
+to 5 is deleted**. **7 Panel and 2 Cards do not
 lock**: there the plane and the cards are the items' or the design's own geometry, and Background role
 is the ground behind them. **9 Big Type's Background role is newly meaningful** ⚑ — the design draws
 no ground of its own, so the ground it sits on is now stated rather than assumed.
@@ -184,7 +209,7 @@ and the universal trio, and **not counted** toward any design's control count �
 |---|---|---|
 | `authorSource` (Writers) | enum req | All writers · **Hand-picked** ⚑ → `{{#get "authors" include="count.posts"}}` |
 | `authorPicks[]` | list opt | **Shown at Hand-picked only.** 1–12 author references ⚑ |
-| `authorLimit` (How many) | enum req | Three · Six · Twelve · All — the query limit. **Defaults differ per design** ⚑ (Three in 2 and 9, One in 6, Four in 15, Eight in 7 and 13, Twelve in 10, 11 and 12). **Disabled at Hand-picked** ⚑ |
+| `authorLimit` (How many) | int req | **A number picker, 1 to the design's own maximum** ⚑ 29 August 2026 — the query limit; **"All" is retired**, because **Ghost's `{{#get}}` helper stops at 100** ⚑ 29 August 2026 — beyond 100 it returns nothing at all, for authors, posts or topics alike — so 100 is the ceiling every design's maximum sits under; reaching past it would mean the content API and a script, which nothing in A21 asks for. Maxima, with the reason drawn beside the greyed numbers: 50 in 10 · 24 in 1, 3, 7, 11, 13 · 20 in 12 · 12 in 2, 4, 5, 8, 14, 15 · 6 in 9 · **fixed at 1 in 6**. **Defaults differ per design** ⚑ (3 in 2 and 9, 1 in 6, 4 in 15, 6 in 1, 3, 4, 5, 8 and 14, 8 in 7 and 13, 12 in 10, 11 and 12). **Disabled at Hand-picked** ⚑ |
 | `authorOrder` (Order) | enum req | Most posts (`order="count.posts desc"`) · Name A–Z (`"name asc"`) · Newest account (`"created_at desc"` ⚑). **Defaults to Name A–Z in 10** ⚑. **Disabled at Hand-picked** ⚑ |
 | `bioSource` (Bio) | enum req | From Ghost · Off — **locked to Off in 5, 7, 8, 9, 10, 11, 14 and 15** ⚑, with the reason shown; the field is still stored |
 | `roleSource` (Role) | enum req | **Off (default ⚑) · Authored per writer** — an override keyed by author slug ⚑ |
@@ -192,7 +217,7 @@ and the universal trio, and **not counted** toward any design's control count �
 | `emptyBehaviour` (When there are no writers) | enum req | Head and notice (default ⚑) · Hide the section |
 
 **Hand-picked, in full.** ⚑ A list of **references** to Ghost's authors, with the shared **P0·3 item
-controls**: drag to reorder, **✕ to remove and never disabled**, and **Add arrives pre-filled with the
+controls**: drag to reorder, **✕ to remove, never disabled, and at one reference still clickable and explaining why it cannot go lower** ⚑ 29 August 2026 — "a hand-picked list needs at least one writer", and **Add arrives pre-filled with the
 next most-published writer, never blank**. **1–12 references**; the section stores references and
 never copies, so **a renamed author renames itself here and a deleted author drops out silently**, and
 nothing about the author — name, bio, count, picture — can be typed or overridden. **Picked order is
@@ -216,8 +241,17 @@ be**: the panel says so, and the value is the section's.
 **The social surface, corrected.** ⚑ Ghost ≥ 6.36 stores **nine handles and a website**;
 **version-gated** below 6.36 to Facebook, X and the website. **The author's own fields are read, never
 `social_url`** ⚑ — that helper falls back to the site's Facebook and X, which would print the
-publication's accounts under a writer who filled in neither. **There is no loop over the handles** ⚑:
-the theme checks nine fields and draws what is filled, and an absent handle reserves nothing.
+publication's accounts under a writer who filled in neither. **Ghost's own helper is the loop** ⚑ 29 August 2026 — the
+earlier "there is no loop over the handles" was wrong. **The row is drawn with `{{#social_accounts}}`,
+passed the author**, and the theme assembles no address: Ghost stores a handle in several shapes (a bare
+handle, an @handle, a whole URL, a server for Mastodon and Bluesky), and the helper hands the theme
+**the finished address, the platform's own label and a platform key** for each connected account, and
+**skips any platform with nothing set** — which is the "an absent handle reserves nothing" rule, kept by
+Ghost rather than by the theme. **The nine platforms are X, Facebook, LinkedIn, Bluesky, Threads,
+Mastodon, TikTok, YouTube and Instagram** ⚑, and **the website is not one of them**: it is the author's
+own `website` field, drawn beside the row. **The label is the accessible name.** The icon is chosen from
+the platform key **through a fallback**, so a platform Ghost adds before this theme has an icon still
+renders instead of erroring the page.
 
 **Internal accounts have no control** ⚑ — `{{#get "authors"}}` returns only authors with a published
 post (finding 1), and nothing in the panel can reveal a staff account without one.
@@ -231,22 +265,22 @@ post (finding 1), and nothing in the panel can reveal a staff account without on
 - **Ghost-owned content is never inline-editable** ⚑: **author names, bios, post counts, locations,
   websites and social handles**. Clicking one says **"Edit in Ghost"**.
 - **Every URL field opens the Ghost-aware Link Picker** — `actionUrl` in 4, 6 and 11, `linkUrl` in 8
-  and 15, the latter **defaulting to the product's authors-index route once that route decision
-  lands** ⚑ and authored until then (finding 3, amended). **Every button and link takes an optional
+  and 15, the latter **authored, with its label editable and the whole link hideable** ⚑ 29 August 2026
+  — Ghost has no page that lists every writer (finding 3, ruled). **Every button and link takes an optional
   icon before or after its label** from **P0·2**, with its size and colour-role popover ⚑, and **the
   social row is nine icon slots and a website** from the same picker's brand set.
 - **`backgroundImage` (14) carries Image focus — Centre · Top · Bottom** ⚑, in the control list **and**
   in the Image Picker popover; never a hidden field.
 - **No fixed English visitor-facing string ships.** Authored strings have editable defaults. The
   strings that are announced or assembled rather than typed become **theme translation-catalog
-  strings** ⚑: **the assembled credit sentence** in 8 and 15 (*"Written by A, B, C and N others"* —
-  the remainder is a plural rule, not a typed string), **the generated count lines** in 7 and 11
+  strings** ⚑: **the assembled credit sentence** in 8 and 15 (*"Written by A, B, C and others"* ⚑ 29 August 2026 —
+  **the remainder carries no number**, because a template cannot subtract), **the generated count lines** in 7 and 11
   (*"12 writers" · "1 writer" · "No writers yet"*), **6's generated action label** (*"Read all N
   posts"*, with its number placeholder), **12's arrow labels** (*"Previous writers"*, *"Next
   writers"*) and the strip's region label, **the social links' accessible names**, and the
   `aria-label="Writers"` a design takes when its heading is empty.
 - **The editor's own sentences are not theme strings** ⚑: the zero-writer placeholder, the "suggests
-  6 Founder" note and 14's hand-off notice are product UI and stay with the product.
+  6 Founder" note and 14's no-picture notice are product UI and stay with the product.
 - **Member Visibility on the five CTA-bearing designs** ⚑ — **4 Split Head's, 6 Founder's and 11
   Rail's action, and 8 Faces' and 15 Slim's masthead link** — *Everyone · Logged out · Free members ·
   Paid members*, with **P0·4's member-aware action editor** editing the destination. **The value
@@ -269,11 +303,11 @@ post (finding 1), and nothing in the panel can reveal a staff account without on
 | 7 | Panel | `grid-of-N · none · surface · many · left · the roster on a raised plane` | The plane renders and holds the notice | 5 | — |
 | 8 | Faces | `bar · none · page · many · left · overlapping portraits in one line` | One face, one name, reads as a byline | 7 | — |
 | 9 | Big Type | `stack · none · transparent · few · inline · names at display scale, portraits inline` | One name at 72, which is the design | 5 | — |
-| 10 | Directory | `table · none · page · many · left · a ruled table of writers and counts` | Header and one row; no table at zero | 5 | — |
+| 10 | Directory | `table · none · page · many · left · a ruled table of writers and counts` | Header and one row; no table at zero | 5 | `group-headings` at On ⚑ |
 | 11 | Rail | `edge rail · none · page · many · none · the label in the margin, names in the body` | The rail reads "No writers yet" | 6 | — |
 | 12 | Carousel | `carousel · none · page · many · top · a snap strip of writer cards` | Controls absent when nothing scrolls | 6 | `carousel` |
 | 13 | Lead and Rest | `feed · none · page · many · left · one writer at size, the rest listed` | The lead alone, no rule, no list | 6 | — |
-| 14 | Image Band | `grid-of-N · none · image · many · background · the roster over a cover image` | No image → hands off to 5 | 7 | — |
+| 14 | Image Band | `grid-of-N · none · image · many · background · the roster over a cover image` | No picture → the band on the contrast ground ⚑ | 7 | — |
 | 15 | Slim | `bar · none · surface · many · none · one line of credits` | A one-name sentence | 5 | — |
 
 **Eighty-eight controls of their own across fifteen designs**, four to seven each, every one inside the
@@ -310,7 +344,7 @@ real and visible; they are not machine-checkable.
   not an author: the shared P0·3 controls, Add pre-filled with the next most-published writer, ✕ never
   disabled, drag to reorder. **No Ghost-sourced list in A21 shows an Add button** — a writer appears
   because they published; they disappear because their posts did.
-- **How many, and what each design is built for.** The limit is *Three · Six · Twelve · All* with a
+- **How many, and what each design is built for.** The limit is **a number picker, 1 to the design's own maximum** ⚑ 29 August 2026, with a
   per-design default, disabled at Hand-picked. Built for one: 6. For two to four: 2, 9. For five to
   eight: 1, 4, 13. For eight to twelve: 3, 5, 7, 8, 10, 11, 12, 14, 15.
 - **Fewer than expected.** Stated per design below; the four states drawn on every frame are **twelve,
@@ -338,9 +372,9 @@ real and visible; they are not machine-checkable.
 | `actionLabel` | text | opt | 20 ch | 4, 6, 11 | Default "Write for us"; **generated from the count in 6, or authored at *Action label: Custom*** ⚑. Takes an optional icon slot |
 | `actionUrl` | url | opt | — | 4, 6, 11 | The Link Picker; defaults to the author archive in 6 ⚑ |
 | `linkLabel` | text | opt | 24 ch | 8, 15 | Default "The full masthead" ⚑ |
-| `linkUrl` | url | opt | — | 8, 15 | The Link Picker, **defaulting to the authors-index route once that route decision lands** ⚑; Ghost itself has no authors index (finding 3) |
+| `linkUrl` | url | opt | — | 8, 15 | The Link Picker, **authored** ⚑ 29 August 2026, with `linkLabel` editable and *Link: Show · Hide* on both designs; Ghost has no page that lists every writer, and an `/authors/` page is a custom page the site builds (finding 3, ruled) |
 | `colWriter` · `colWhere` · `colPosts` | text | opt | 16 ch | 10 | **The table's column labels, newly authored fields** ⚑ — defaults "Writer", "Where", "Posts" |
-| `backgroundImage` | image | opt | — | 14 | **An upload, not a Ghost field** ⚑; with none, 14 hands off to 5 |
+| `backgroundImage` | image | opt | — | 14 | **An upload, not a Ghost field** ⚑; with none the band draws itself on the contrast ground ⚑ 29 August 2026 |
 | `imageFocus` | enum | opt | — | 14 | **Centre · Top · Bottom** ⚑, also in the Image Picker popover |
 | `authorPicks[]` | list | opt | 1–12 | all 15 | **Author references** ⚑, P0·3 controls; the first leads in 6 and 13 |
 | `roleOverride` | text | opt | 40 ch | 1–4, 6, 10, 12, 13 | **Authored, keyed by author slug** ⚑; A12's mechanism |
@@ -352,7 +386,7 @@ real and visible; they are not machine-checkable.
 | *url* | Ghost | req | — | all 15 | The A29 archive route; **not repointable** ⚑ |
 | *location, website* | Ghost | opt | — | 6, 10, 13 | Usually empty; dropped with their separators ⚑ |
 | *the nine handles, website* | Ghost | opt | — | 6; 1, 2, 12, 13 at On | **Nine handles and a website on ≥ 6.36** ⚑ — read from the author, never the sitewide fallback (finding 7, corrected) |
-| *pagination.total* | Ghost | req | — | 7, 8, 15 | The writer count and the "and N others" remainder ⚑ |
+| *pagination.total* | Ghost | req | — | 7, 8, 15 | The writer count, read whole; **the remainder is unnumbered** ⚑ 29 August 2026 |
 | *@site.title* | Ghost | req | — | 15 | The sentence names the publication and reads it ⚑ |
 
 **Fourteen authored fields and nine read from Ghost**, after the pass. A design may use fewer — 15
@@ -577,7 +611,7 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    ladder minus its landscape values ⚑) — Card *Raised · Flat* (**dark forces Flat** ⚑) — Action
    *Button · Link · Off* — **Action label *Generated · Custom*** ⚑ — **Member visibility** ⚑.
    **Six.** Quick: Portrait side, Portrait ratio, Action, Action label. Data group with **How many
-   defaulting to One** ⚑.
+   fixed at 1** ⚑ 29 August 2026, the reason shown in place of the number.
 7. **Data.** `{{#get "authors" include="count.posts" limit=1}}` ⚑. **0** → no card, notice on the
    page ground ⚑. **1** → the design. **many** → **the first in the chosen order is drawn and the
    panel suggests 1 Grid** ⚑; at Hand-picked **the first reference is the writer drawn** ⚑, which is
@@ -655,12 +689,12 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    in the `background` token ⚑, sentence 17, link right, Bar padding 48. **834** gap 20, bar padding
    22. **≤ 767** three stacked rows, **five faces at 40** ⚑, sentence 16.
 5. **Fields.** `linkLabel` (default "The full masthead" ⚑) · `linkUrl` (**the Link Picker,
-   defaulting to the authors-index route once that route decision lands** ⚑) · `emptyText` ·
+   authored, label editable, link hideable** ⚑ 29 August 2026) · `emptyText` ·
    `authorPicks[]`. **No heading and no blurb** ⚑ — both stored. From Ghost: name, `profile_image`,
    `url`, `pagination.total`. **`bio` and `roleOverride` stored, not drawn** ⚑.
 6. **Controls.** **Bar padding** *Compact · Comfortable · Spacious* (**32 · 48 · 72, the bar's own
-   ladder** ⚑) — Faces shown *Four · Six · Eight · Off* — Portrait size *Compact · Comfortable ·
-   Spacious* (overlap scales −11 · −14 · −18 ⚑) — Names in the line *Three · All · None* — Link *Show ·
+   ladder** ⚑) — **Faces shown *a number picker, 0–8*** ⚑ 29 August 2026 (0 draws no portraits and keeps the sentence) — Portrait size *Compact · Comfortable ·
+   Spacious* (overlap scales −11 · −14 · −18 ⚑) — **Names in the line *a number picker, 0–8*** ⚑ 29 August 2026 — Link *Show ·
    Hide* — Rules *Above and below · None* (**None raises the padding** ⚑) — **Member visibility** ⚑.
    **Seven.** Quick: Faces shown, Names in the line, Link, Rules. **Top divider is disabled** where
    Rules draws that hairline ⚑. Data group with **Bio locked to Off** ⚑.
@@ -668,8 +702,9 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    takes the line ⚑. **1** → one face, one name, **no remainder clause — it reads as a byline** ⚑.
    **many** → faces to the limit, the rest counted. **At Hand-picked the references are the names
    written out** ⚑.
-8. **Empty.** No picture → initials in the stack. **The sentence never renders "and 0 others" and
-   never truncates with an ellipsis** ⚑.
+8. **Empty.** No picture → initials in the stack. **The remainder is unnumbered — *"and others"*** ⚑ 29 August 2026, because a
+   template cannot subtract; it **never renders when every writer is named and never truncates with an
+   ellipsis** ⚑.
 9. **Module.** None. **No-JS: pixel-identical.**
 10. **A11y.** **No heading at all** ⚑ — the names are inline links inside a sentence, not headings,
     which is the correct structure for a credit line and is stated so the build does not add one.
@@ -683,8 +718,8 @@ Each entry ends with **Reconciled**, naming what this pass changed.
     **Reconciled.** Padding is renamed **Bar padding** ⚑ — 32 · 48 · 72 is genuinely the bar's ladder,
     not the section's — and **Top divider is disabled** against Rules. **Member visibility** ⚑ governs
     the masthead link alone. **Hand-picked now decides which names are written out** ⚑, which the sort
-    used to; `linkUrl` opens the Link Picker and **defaults to the authors-index route once that
-    decision lands** ⚑, and the link takes an optional icon.
+    used to; `linkUrl` opens the Link Picker and **stays authored** ⚑ 29 August 2026 — label
+    editable, link hideable — and takes an optional icon.
 
 ---
 
@@ -739,14 +774,17 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 6. **Controls.** Columns *Writer and posts · Writer, where and posts* — Portrait *Show · Hide* — Row
    height *Compact · Comfortable · Spacious* (**Compact disabled while Portrait is Show** ⚑) — Header
    row *Show · Hide* — Group by letter *Off · On* (**disabled unless Order is Name A–Z, and at
-   Hand-picked** ⚑). **Five.** Quick: Columns, Portrait, Row height, Group by letter. Data group with
+   Hand-picked** ⚑; **declares `group-headings` at On** ⚑ 29 August 2026). **Five.** Quick: Columns, Portrait, Row height, Group by letter. Data group with
    **Order defaulting to Name A–Z** ⚑ and **Bio locked to Off** ⚑.
 7. **Data.** As 1, plus `location`. **0** → head and notice, **no header row** ⚑. **1** → header and
    one row ⚑. **many** → the design's best state.
 8. **Empty.** No location → **an em dash in the cell** ⚑, **the category's only placeholder**, drawn
    because a table column keeps its shape. A zero count is drawn as `0`, not hidden ⚑. No role → the
    name keeps its cell height ⚑.
-9. **Module.** None. **No-JS: pixel-identical** — the header is not sortable, so nothing is lost ⚑.
+9. **Module.** **`group-headings` at *Group by letter: On*** ⚑ 29 August 2026 — the registry's module,
+   coined by nobody here; **none at Off**, which is the default. **No-JS**: at Off pixel-identical, and
+   the header is not sortable so nothing is lost ⚑; **at On the table is flat and alphabetical** — every
+   name, both columns, the same rules, no letter heads and no gap where one would have been.
 10. **A11y.** Heading **h2**. **A real `<table>` with `<th scope="col">`** ⚑ — *Header row: Hide*
     hides it visually and keeps it for assistive technology, which is why the value is not "Off".
     Names are links inside cells, not headings ⚑. Light: name 13.4:1, labels 5.1:1.
@@ -910,10 +948,12 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    ⚑.
 7. **Data.** As 1. **0** → the band, the head and the notice ⚑. **1** → one portrait at the foot's
    left. **many** → wraps and **the band grows past its minimum; nothing is ever cropped** ⚑. **No
-   image at any width → hands off to 5 Contrast Band** ⚑, drawn in place, flagged in the editor,
-   invisible on the site. **The only hand-off in A21.**
-8. **Empty.** No photograph on a writer → initials on an **18% white plate** ⚑, no ring. **No
-   background image → the hand-off is the empty state** ⚑.
+   picture at any width → the band draws itself on the contrast ground** ⚑ 29 August 2026 — picture,
+   scrim and Image focus hidden, nothing else moved, ink from A17·7's two contrast tokens, and **the
+   panel advises 5 Contrast Band without switching to it**. **The hand-off is deleted; A21 now has none.**
+8. **Empty.** No photograph on a writer → initials on an **18% white plate** ⚑, no ring, **one letter**
+   ⚑ 29 August 2026. **No picture → the band on the contrast ground is the empty state** ⚑, and it is
+   this design, not another one.
 9. **Module.** None. **No-JS: pixel-identical** — the image is a CSS background on a real
    `{{img_url}}` ⚑, the scrim is a gradient, and **Image focus resolves to `background-position`** ⚑.
 10. **A11y.** Heading **h2**, names **h3**. **The background image is decorative and takes an empty
@@ -922,14 +962,14 @@ Each entry ends with **Reconciled**, naming what this pass changed.
     **Repeating items** — designed for 6 and 12, correct at 1–12; bio never drawn.
     **Flagged ⚑** the authored background image · the locked ground and spacing · the taller band at
     390 · literals rather than tokens over the image · the 18% initials plate · Light disabled by a
-    bottom-third check · the hand-off to 5 · height as a minimum · **Image focus as three named values
+    bottom-third check measured on upload rather than by CSS ⚑ · **the no-picture band on the contrast ground** ⚑ 29 August 2026 · height as a minimum · **Image focus as three named values
     rather than a point** ⚑.
     **Reconciled.** **Image focus** ⚑ closes the "no focal point" flag: A22 Cover and A23 Cover both
     carry it, and the band is taller at 390 than at 834, which is exactly where a centred crop cut
     heads off. It is reachable from the Image Picker popover as well as from the control list.
     **Background role is locked** — the photograph is the ground — and **Vertical spacing at 0** ⚑;
-    Height keeps its name as a floor. Hand-picked joins the Writers source; the hand-off to 5 with no
-    image is unchanged.
+    Height keeps its name as a floor. Hand-picked joins the Writers source. **The hand-off to 5 is deleted by the design patch pass** ⚑ 29
+    August 2026.
 
 ---
 
@@ -944,15 +984,15 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 4. **Responsive.** **1440** strip 1,440 wide, content 1,296 on a 72 margin, 24 inside, sentence 16,
    link right. **834** 40 margin, sentence 15. **≤ 767** 20 margin, 20 inside, **link under the
    sentence on a 32 px row** ⚑.
-5. **Fields.** `linkLabel` ⚑ · `linkUrl` (**the Link Picker, defaulting to the authors-index route
-   once that route decision lands** ⚑) · `emptyText` · `authorPicks[]`. **No eyebrow, heading or
+5. **Fields.** `linkLabel` ⚑ · `linkUrl` (**the Link Picker, authored** ⚑ 29 August 2026 — label
+   editable, link hideable) · `emptyText` · `authorPicks[]`. **No eyebrow, heading or
    blurb** ⚑ — all stored, none drawn. From Ghost: name, `url`, `pagination.total`, **`@site.title`**
    ⚑. **`bio` and `roleOverride` stored, not drawn** ⚑.
 6. **Controls.** Strip padding *Compact · Comfortable · Spacious* (16 · 24 · 36 **inside the strip**
-   ⚑) — Names in the line *Two · Four · All* — Link *Show · Hide* — Rules *Above and below · Below
+   ⚑) — **Names in the line *a number picker, 1–8*** ⚑ 29 August 2026 — Link *Show · Hide* — Rules *Above and below · Below
    only · None* — **Member visibility** ⚑. **Five.** Quick: Names in the line, Link, Rules, Strip
    padding. **The old *Ground* row is retired into Background role** ⚑ — Surface is the strip, **at
-   Background it is 8 Faces without the portraits, and the panel says so** ⚑, and Contrast is newly
+   Background the strip's fill goes and the credits sit on the page ground — **still 15 Slim** ⚑ 29 August 2026, with 8 Faces named as the design to place if you want portraits in the line** ⚑, and Contrast is newly
    reachable, deriving its ink from A17·7's two contrast tokens. **Vertical spacing locked at 0** and
    **Top divider disabled** against Rules ⚑. Data group with **How many defaulting to Four** ⚑ and
    **Bio locked to Off** ⚑.
@@ -970,7 +1010,7 @@ Each entry ends with **Reconciled**, naming what this pass changed.
     picked list, decides which four are written out** ⚑.
     **Flagged ⚑** the locked spacing and the strip's own ladder · the assembled sentence and the site
     title read from Ghost · the remainder from `pagination.total` · no heading · the masthead URL's
-    pending default · the named overlap with 8 Faces · the link relocating at 767 · **Contrast newly
+    authored masthead address, ruled ⚑ 29 August 2026 · the named overlap with 8 Faces · the link relocating at 767 · **Contrast newly
     reachable** ⚑.
     **Reconciled.** **Ground is retired into Background role** ⚑ — it was the universal control under
     another name — and Contrast becomes reachable as a consequence. **Vertical spacing locked at 0**,
@@ -989,11 +1029,13 @@ Each entry ends with **Reconciled**, naming what this pass changed.
 2. **There is no per-author latest post.** Drawing "their most recent piece" beside each name needs a
    `{{#get "posts"}}` inside the author loop — **one query per writer** ⚑. No design draws it; 10
    Directory's cut column is the visible consequence.
-3. **There is no authors index route — and this is now a product decision, not a gap.** Ghost has
+3. **There is no authors index route — ruled on 29 August 2026: the link stays authored.** Ghost has
    `/author/:slug/` and nothing above it, so **8 Faces' and 15 Slim's "The full masthead" link is
    authored** ⚑ — but after this pass it **opens the Link Picker and will default to the product's
-   authors-index route once that route decision lands** ⚑. A20 found the same gap for tags. **The
-   default is pending, not invented**, and the frames say so.
+   address the editor supplies** ⚑, with **`linkLabel` editable and *Link: Show · Hide*** on both designs.
+   An **`/authors/` page is a custom page the site builds**, as premium themes do; A20 found the same gap
+   for tags. **The onus is the site's to point the link somewhere real**, and the frames say so rather than
+   shipping an address that does not exist.
 4. **Nothing in the registry sorts a table.** 10 Directory's header row is labels, not controls ⚑ —
    the closest module is `filter-strip`, which navigates rather than sorts. A sortable masthead is a
    registry change, **and this pass did not make one**.
@@ -1010,7 +1052,7 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    on **Ghost ≥ 6.36** ⚑. The two-network fact this category was drawn on was 5.x. Three consequences
    for the build: **the row is version-gated** ⚑ — below 6.36 only Facebook, X and the website exist;
    **there is no loop over the handles** ⚑, so a theme checks nine fields and draws what is filled; and
-   **the author's own fields must be read rather than `social_url`** ⚑, which falls back to the site's
+   **the row is drawn with `{{#social_accounts}}`, passed the author, and the theme assembles no address** ⚑ 29 August 2026 — the helper gives the finished address, the platform's label and a platform key per connected account and skips the rest; **the nine are X, Facebook, LinkedIn, Bluesky, Threads, Mastodon, TikTok, YouTube and Instagram, and the website is a separate author field**; and **the author's own fields must be read rather than `social_url`** ⚑, which falls back to the site's
    Facebook and X and would print the publication's accounts under a writer who filled in neither.
    **6 Founder draws the row always; 1, 2, 12 and 13 draw it at *Social links: On*.**
 8. **There is no editorial order for authors — and Hand-picked is the answer, not a picker.** The
@@ -1033,7 +1075,7 @@ Cumulative. Reused components are listed with the category that set them.
 |---|---|---|
 | Eyebrow | 13 px uppercase tracked .08em in `text-muted` | A1·1 |
 | Primary button · ghost action | Accent fill 14/600 at 44 px; muted 14 px text link | A1·1 |
-| Avatar + initials fallback | Circle at 120 · 96 · 72 · 64 · 48 · 40 · 32, heading-font initials on `hover` | A1·6 |
+| Avatar + initials fallback | Circle at 120 · 96 · 72 · 64 · 48 · 40 · 32, heading-font initials on `hover`, **one letter for a Ghost author** ⚑ | A1·6 |
 | Striped image plate | The placeholder and its mono crop caption | A1 |
 | Icon button | 32–44 px box at the pack radius, bare or outlined | A1·14 |
 | Focus ring | 4 px accent ring on every interactive element | A6 |
@@ -1054,7 +1096,7 @@ Cumulative. Reused components are listed with the category that set them.
 | **Writer block** | **Portrait, name, count, two clamped bio lines, an optional role, an optional social row, archive link** | **A21·1 — new** |
 | **Writer row** | **Portrait 64, name and bio, count and link on the right edge, 112 px** | **A21·3 — new** |
 | **Overlapping portrait stack** | **Circles at −14 with a 3 px ring in the `background` token** | **A21·8 — new** |
-| **Assembled credit sentence** | **"Written by A, B, C and N others" — names linked, remainder counted, never truncated; a catalog string** | **A21·8 — new** |
+| **Assembled credit sentence** | **"Written by A, B, C and others" — names linked, **the remainder unnumbered** ⚑ 29 August 2026 because a template cannot subtract, never truncated; a catalog string** | **A21·8 — new** |
 | **Generated count line** | **"12 writers" · "1 writer" · "No writers yet", pluralised, never a bare number; a catalog string** | **A21·11 — new** |
 | **Directory row** | **Portrait and name, a meta column, a right-aligned tabular count under authored `th` labels** | **A21·10 — new** |
 | **Author social row** | **Every filled-in handle of the nine, plus the website, as 32-in-44 icon slots from P0·2's brand set; absent handles drop** | **A21·6 — new** |
@@ -1118,14 +1160,96 @@ Cumulative. Reused components are listed with the category that set them.
   patch named 1, 2, 12 and 13. **Recorded rather than resolved**: 3's right edge and 4's narrow column
   are the stated reasons, 7's 76 px row is the other, and if the row is wanted there it is one value on
   an existing control, not a new design.
-- **8 Faces' and 15 Slim's masthead link now has a pending default** ⚑ — the authors-index route. Until
-  the product's route decision lands the field is authored, and the frames say so rather than shipping a
-  URL that does not exist.
+- **8 Faces' and 15 Slim's masthead link stays authored** ⚑ — **ruled on 29 August 2026, and no default is
+  invented**. The label is editable, the address is the editor's, and *Link: Show · Hide* is on both
+  designs; an `/authors/` page is a custom page the site builds, so the onus is the site's to point it
+  somewhere real. The frames say so rather than shipping a URL that does not exist.
 - **10 Directory's *Where* column stays the location**, and the role is drawn under the name. A role
   column would need a third data column and 834 already relocates the second one. **Open, and named.**
 - **No Preview control existed in A21** — the check was run against all fifteen panels, and the removal
   rule found nothing to remove.
-- **No module name was coined.** `carousel` on 12 is still the category's only module; Hand-picked, the
+- **No module name was coined by the reconciliation pass.** `carousel` on 12 was its only module; **the design patch pass added `group-headings` on 10 Directory** ⚑ 29 August 2026, which was already in the registry, so nothing was coined there either; Hand-picked, the
   role override, Member Visibility and the social row are template work. **No frame carries
   *ARCHITECT: registry addition*.** The two registry questions A21 raised — a sticky rail (11) and a
   sortable directory (10) — are unchanged and still open.
+
+---
+
+## Patch notes — author showcases patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named and never numbered: the codes are filing labels and mean nothing outside this project.
+
+| Rule or fact | What changed in A21 |
+|---|---|
+| **A theme's templates cannot count** | **Two designs changed, four were cleared.** The assembled credit sentence in **8 Faces** and **15 Slim** read *"and 6 others"*. A theme cannot subtract the names it drew from the total it holds — there is no arithmetic in a template — so **the remainder is unnumbered: *"and others"***, redrawn in every state on both frames, light and dark, at every width. Everything else about the sentence stands: linked names, no remainder when every writer is named, never an ellipsis, and one name reads as a byline. **Cleared, and stated as cleared:** 7 Panel's and 11 Rail's generated count lines ("12 writers · 1 writer · No writers yet") are a whole number the platform holds, pluralised by its own plural helper, not a sum; 6 Founder's *"Read all 68 posts"* is a field in a catalog string. **Ruled by the owner on 29 August 2026**: the remainder carries no number, which is what the frames draw. |
+| **A template cannot look at the previous item inside a loop** | **10 Directory's *Group by letter* declares `group-headings`** ⚑ at On — the registry's module, the same one the topic category's index uses, and **coined by nobody here**. A template cannot tell that the first letter changed between two rows, so the letter heads are cut in by the browser from each name's first character. **Its no-JavaScript state is the flat alphabetical table**: every name present, both columns, the same rules, no letter heads and no gap where one would have been — a complete directory rather than a degraded one, and drawn on the frame. At *Off*, the default, nothing is declared and the design is pixel-identical without JavaScript. **The category declares two modules and coined none.** |
+| **Author social links go through Ghost's own helper** | **Six frames changed and the drawing did not.** In 6 Founder's row, and at *Social links: On* in 1 Grid, 2 Cards, 12 Carousel and 13 Lead and Rest, **the row is drawn with `{{#social_accounts}}`, passed the author**, and the theme assembles no address. Ghost stores a handle in several shapes — a bare handle, an @handle, a whole URL, a server for Mastodon and Bluesky — so a glued-on prefix produces links that break. The helper hands over **the finished address, the platform's own label and a platform key** per connected account and **skips any platform with nothing set**, so the absent-handle rule is Ghost's behaviour rather than the theme's. **The nine platforms are X, Facebook, LinkedIn, Bluesky, Threads, Mastodon, TikTok, YouTube and Instagram**, and **the website is not among them** — it is the author's own `website` field, drawn beside the row. The label is the accessible name, and the icon comes from the platform key **through a fallback**, so a platform Ghost adds before this theme has an icon renders rather than erroring. **The earlier claim that a theme "checks nine fields" with no loop is withdrawn**, and the architect question about which networks have helpers is **closed by Ghost's documentation**. |
+| **Avatars with no photograph** | **Thirteen frames redrawn, one letter each.** Every initials plate in A21 drew two letters; these writers come from Ghost and **Ghost cannot produce two initials from a name**, so a two-letter plate promised something the platform cannot do. "Inês Duarte" now shows **I**. Sizes, shapes, colour roles, rings and crops are untouched, in light and dark and over the band and the image. **11 Rail and 15 Slim have no subject** — they draw no portrait at all. The kit's fixtures were reduced with the frames. Lists a user types themselves keep two initials; A21 has none of those. |
+| **Item counts are a number picker** | **How many is a number picker in all fifteen panels**, 1 to the design's own maximum, where it drew *Three · Six · Twelve · All*. **"All" is retired** — it promised every writer, and **Ghost's `{{#get}}` helper stops at 100** ⚑ 29 August 2026: beyond 100 it returns nothing at all, so "all of them" was a promise the platform does not keep. Every design's maximum sits under that ceiling, and going past it would mean the content API and a script, which nothing in A21 asks for. Maxima, each with the reason drawn beside the greyed numbers: **50** in 10 Directory (the design that means all of them) · **24** in 1, 3, 7, 11, 13 · **20** in 12 · **12** in 2, 4, 5, 8, 14, 15 · **6** in 9 · **fixed at 1 in 6 Founder**, which draws one writer. Defaults are unchanged in effect: 3 in 2 and 9, 1 in 6, 4 in 15, 6 in 1, 3, 4, 5, 8 and 14, 8 in 7 and 13, 12 in 10, 11 and 12. **Three more count rows became pickers:** 8 Faces' *Faces shown* (0–8, where 0 draws no portraits and keeps the sentence and the link) and *Names in the line* (0–8), and 15 Slim's *Names in the line* (1–8). **Column and per-row values are layout, not item counts**, and are unchanged — 1's Columns, 5's and 14's Portraits across, and the Columns rows in 7, 10, 11 and 13. |
+| **No design ever turns into another design** | **One deletion and two rewrites.** **14 Image Band's hand-off to 5 Contrast Band is deleted** — the only hand-off in A21. With no picture the band now **draws itself on the contrast ground**: the head keeps its position, the portrait row keeps the foot, the height floor and every ladder value are unchanged, and what is hidden is only what does not apply — the picture, the scrim and Image focus. The ink derives from A17·7's two contrast tokens. **The panel advises rather than switches**: "no picture yet — 5 Contrast Band is the design built for a band without one". **Ruled by the owner on 29 August 2026**: a picture is never required before the design can be placed, and the section is never hidden for want of one. Its states frame is redrawn on that and the new state is drawn in its patch section. Two locked rows that named another design as what the section becomes now give their own reason: **5 Contrast Band's** ground (the inverted band is what the section is; 1 Grid is named only as the design to place) and **15 Slim's** (at Background the strip's fill goes and the credits sit on the page ground, and it is still 15 Slim; 8 Faces is named as the design to place). The "suggests 6 Founder" notes are advice and stay. **A21 now has no hand-off anywhere.** |
+| **The Remove button never greys out** | The hand-picked list's **✕ stays visible and clickable at one reference** in all fifteen panels, and clicking it explains why it cannot go lower — "a hand-picked list needs at least one writer". Never dimmed, never hidden. This is the category's only repeating list: the writers themselves are Ghost's and have no Add or Remove anywhere in A21. |
+| **CSS cannot see content** | **One claim stated, none withdrawn.** 14 Image Band's *Scrim: Light disables itself against a pale photograph* — that measurement is made **in the editor when the picture is uploaded**, by the product, not by CSS at render, and the panel now says which. CSS cannot measure a photograph and nothing in A21 asks it to. Everything else was already honest: equal card heights come from a stretched grid row rather than from measuring a bio, an absent bio is a field the platform can test for, and 9 Big Type says outright that **nothing auto-fits** — a long name wraps and the section grows, with Name size named as the fix. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, none of which depends on the customer having good photography — **3 Rows · 7 Panel · 10 Directory · 11 Rail · 15 Slim** — one line each: 3 Rows is a hairline row per writer and survives on initials alone; 7 Panel is the same list on a raised plane with portraits switchable off; 10 Directory is a ruled table, also switchable; 11 Rail draws no portraits at all, by design; 15 Slim is one line of credits and no image of any kind. **Recommended: 3 Rows · 11 Rail** — one ordinary roster a site can ship on day one, and one that needs no photographs whatever. **Ruled by the owner on 29 August 2026: 3 Rows · 11 Rail**, which is what the **[Free] designs:** line at the head of this document names. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen panels. The swatch row is **Base**; **there is no "Inherit" value anywhere in A21**; no design renames a shared control or adds a value to one. The three that offer fewer each draw the reason in place of the values: **Background role locked at Contrast in 5** and **to the photograph in 14**, **Vertical spacing locked at 0 in 5, 14 and 15**, and **Top divider disabled in 8 and 15** where *Rules* already draws that hairline. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject, and nothing to withdraw.** A21 bears no subscribe button, no paid tier, no Portal link and no member form. The five actions in the category — 4 Split Head's, 6 Founder's and 11 Rail's action, and 8 Faces' and 15 Slim's masthead link — are **navigation to an authored address**; none opens Ghost's pop-up, so no JavaScript promise is made about any of them. **Member visibility stays** on those five: it is Ghost's server-side member state deciding whether the action renders, which works with JavaScript off. **No frame in A21 claims a reader can subscribe.** |
+| **The no-JavaScript notice** | **No subject, and no claim to withdraw** — no design in A21 contains a subscribe or sign-in form, so there is nothing for the notice to replace. The per-design no-JavaScript line is honest in all fifteen: fourteen are pixel-identical, 12 Carousel keeps the registry's own wording for its `carousel`, and **10 Directory's at *Group by letter: On* is the flat alphabetical table**. |
+| **Slider labels · gap names** | **No subject.** A21 draws no slider and no gap control. Every control is a named-value row or a number picker whose title says what it affects — Columns, Portrait size, Row height, Band padding, Bar padding, Strip padding, Card width, Name size, Faces shown, How many — and every three-value row is Compact · Comfortable · Spacious. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Fifteen designs, nothing renumbered, no gap created or closed, no number reused, nothing deleted. There is no A23 — the Search category was deleted and that number is retired. |
+
+**Frames updated — all sixteen.** Every design frame carries a **patch section** at its foot naming the
+rules that reached it. **Four frames changed what is drawn:** **14 Image Band** (the hand-off state
+replaced by the band on the contrast ground, drawn in the patch section), **10 Directory** (the grouped
+table beside its flat no-JavaScript state, drawn in the patch section), and **8 Faces** and **15 Slim**
+(the unnumbered remainder, in every state). **Thirteen frames** redrew their initials plates at one
+letter. **All fifteen panels** show the number-picker *How many*, the ✕ that explains itself at one
+reference, and the social row's `social_accounts` note where a row exists. **A21-0 Category Proof** gained the
+**[Free]** line, the category patch table, the open questions, the roster's module column for 10 and its
+no-picture thin-content cell for 14, and the corrected finding 7. **The category's authoring kit** carries
+the one-letter fixtures, the `social_accounts` rule on its social row, and a Data group whose *How many* is a
+number picker. **The visual language, type scale, colour packs and spacing system are untouched**, and no
+design outside this category was changed.
+
+### The owner's rulings — 29 August 2026
+
+All three questions this pass raised were answered the same day and are applied throughout this document
+and the frames.
+
+1. **The two free designs are 3 Rows and 11 Rail.** A hairline row per writer, which survives on initials
+   alone, and the rail, which draws no portraits at all. A free site can build a real writers page with no
+   photographs on file. Recorded in the **[Free] designs:** line at the head of this document and badged on
+   the roster.
+2. **The credit line carries no number.** *"Written by A, B, C and others"* in 8 Faces and 15 Slim — the
+   reading the frames already drew, now the ruling. No count beside the names, no naming of every writer.
+
+3. **14 Image Band does not require a picture.** With no picture uploaded the band **draws itself on the
+   plain dark ground** — same height, same head, same row of writers along the foot — and the panel advises
+   that 5 Contrast Band is the design built for a dark band on purpose. A picture is never required before
+   the design can be placed, and the section is never hidden for want of one. It is what the frame draws.
+
+### Open questions
+
+**None for the owner.** All three were ruled on 29 August 2026 and are recorded above.
+
+**Nothing is left for the architect either.** All three of its items were answered on 29 August 2026.
+**Ghost's `{{#get}}` helper stops at 100** — beyond 100 it returns nothing at all, for authors, posts or
+topics alike — so 100 is the ceiling every design's maximum sits under, and reaching past it would mean the
+content API and a script, which nothing in A21 asks for. **The masthead link in 8 Faces and 15 Slim stays
+authored**, with its label editable and the link hideable, because an `/authors/` page is a custom page the
+site builds. And **Ghost's `{{#social_accounts}}` helper** supplies the finished address, the platform's
+label and a platform key for all nine platforms and skips the rest, so nothing about the social row is left
+to invent.
+
+**Two carried forward, unchanged and still open:** there is no sticky module for anything but the site
+header (11 Rail), and a section cannot know what precedes it on the route. **This pass coined no module
+name**, so neither is closed here.
+
+---
+
+## Confirmation
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+  fifteen designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+  required shape, and names **3 Rows** and **11 Rail** — both of which exist in this category's roster.
+  It is **the owner's own choice, ruled on 29 August 2026**.

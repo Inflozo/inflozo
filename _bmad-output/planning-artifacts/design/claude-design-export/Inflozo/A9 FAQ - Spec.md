@@ -10,6 +10,12 @@ Every rule below is stated once here and once on the design's own frames and spe
 
 **Fourth pass — the controls-reconciliation patch (this document's current state), 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary, Ghost's verified data surface and the shared **P0 editor primitives** — the inline text toolbar and its link popover, the icon slot and Icon Picker, the item-list controls, the member-aware action editor, the “Populate from…” data panel and the editor state switcher — thinking like a person editing their own site. **Six things changed everywhere:** the universal trio (Background role · Vertical spacing · Top divider) now sits outside every design's control list and every per-design Padding and Ground row retires into it; **every visible text edits inline on canvas**, the answer raising a marks toolbar of bold · italic · link · inline code with **no underline**; **ten designs gain Open rows: Many · One at a time**, which native `<details name>` grouping gives for nothing; **fourteen gain Member visibility**, 13 Slim excepted for having no ask to gate; every panel carries a **Data group** stating the category's one data fact; and **the ten accordions' structure is corrected from `<button aria-expanded aria-controls>` to `<details>` / `<summary>`**, taking the find-in-page disclosure with it. **Three per-design additions:** 8 Contrast Band gains **Open on load**, 12 Filter's placeholder and no-match line become **fields with defaults**, and 14 Ask's button gains the **Link Picker** and an optional icon. **The control ceiling is lifted** from six per design to the PRD's ~15 plus the trio and the Data group; A9 now uses five to eight of its own. **No “Preview” control existed anywhere in A9**, so none was removed. §18 lists every frame this pass changed and every earlier ruling it overturns.
 
+**Fifth pass — the design patch pass (this document's current state), 29 August 2026.** Two of the ten library-wide rules landed hard on this category and one of them reaches nine designs. **No design ever turns into another design:** every hand-off in A9 is deleted — the seven that went to 1 Accordion, the two to 6 Grouped, the one to 15 Ledger, and 11 Tabs' hand-off of its own behaviour at 767 — and in their place **the section hides the part that does not apply and the panel advises**: 5 Split Head with no title draws no head column, 10 Image Split with no photograph draws no image half, 7 Index with no groups draws no index, 11 Tabs at one group and at ≤ 767 draws no tab row, 6 Grouped and 11 Tabs with no groups draw one unlabelled set, and 12 Filter under twelve questions still draws its field. **13 Slim's 300-character ceiling stops being a switch and becomes the counter's advice**, because a length can be counted while somebody types and cannot be seen by a stylesheet. **Item counts are a number picker:** the twelve designs that drew Four · Six or Six · Eight · Twelve now step from 1 to the design's own maximum, greyed at the top with the reason visible. **Member visibility carries the conditional-Portal note** in the fourteen designs that have it. **Nothing was renumbered.** Every change is listed with the name of the rule that required it in **Patch notes** at the end, and **the three questions this pass raised were all ruled by the owner on 29 August 2026** — the free pair, 13 Slim’s long answers and 6 Grouped’s group count — with his answers applied here and recorded at the end. **Nothing is left open in this category.**
+
+**[Free] designs:** 1 Accordion · 3 Open List
+
+*(Shortlisted in this pass — 1 Accordion, 3 Open List, 15 Ledger, 13 Slim, 6 Grouped: the plainest five, none of which needs a photograph — recommended as 1 Accordion · 3 Open List and **ruled by the owner on 29 August 2026**: the two shapes a FAQ can take, one closed and one open.)*
+
 **A9 uses five modules.** `accordion` on the ten accordions — **1, 2, 5, 6, 7, 8, 10, 12, 13, 14** — `tabs` on **11**, `scroll-spy` and `share` on **7**, and `filter-strip` named on **12** as the closest module to a field it does not describe. **Four designs declare nothing: 3 Open List, 4 Cards, 9 Numbered, 15 Ledger** — the always-open five minus 11 Tabs, because always open means nothing to toggle. The head, the rows, the answers, the group labels, the numerals, the photograph and the ask panel are server-rendered in all fifteen: **no A9 design loses authored content without JavaScript.**
 
 **`core` is assumed, not declared per design.** Every no-JS branch in A9 — the open row, the stacked panels, the absent filter field — is CSS keyed off `.js-enabled`, which is `core`'s job: “Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch.” Stated once here rather than fifteen times. *Flagged: not listing it per design is mine.*
@@ -36,7 +42,7 @@ Everything here applies to all fifteen unless a design says otherwise.
 
 **No fixed English visitor-facing string ships.** A9 shipped three, in two designs, and this pass splits them by who owns them. **Fields, with defaults:** 12 Filter's `filterPlaceholder`, default “Filter questions”, and its `noMatch`, default “No question here mentions “{term}”.” with `{term}` filled at render — a site that filters in Dutch can say so, and the default still says what the field does rather than what a search would do. **Theme catalog strings:** 12 Filter's visually hidden input label and its Clear button's name, and 7 Index's “Copy link to this question”, “Link copied” and the index's “On this page” — the theme's to translate, not the section's to type. **Flagged**: which of the two routes each string takes.
 
-**Member visibility, and the one design that cannot have it.** Every design that bears an ask carries **Member visibility — Everyone / Logged out / Free members / Paid members**, applied server-side to the whole section: a FAQ about cancelling, gifting and what happens to an address is written for members, and the section link can be a Portal target. **Fourteen designs carry it.** **13 Slim does not**: it draws no head, no note, no link and no button at any value, so there is no ask to gate — which also makes it **the one design in A9 a site cannot hide from a member state**, named here rather than buried. **14 Ask is where the control earns its place**, its filled button being the category's one action, and that button uses the **P0·4 member-aware action editor**. **Flagged**: the fourteen-and-one split.
+**Member visibility, and the one design that cannot have it.** Every design that bears an ask carries **Member visibility — Everyone / Logged out / Free members / Paid members**, applied server-side to the whole section: a FAQ about cancelling, gifting and what happens to an address is written for members, and the section link can be a Portal target. **A Portal link is conditional, and the panel says so:** where the section’s link opens Ghost’s own sign-up it does not render when the connected site has self-signup switched off or no payment provider connected, and **Ghost’s sign-up pop-up needs JavaScript — with JavaScript off, nothing happens.** **Fourteen designs carry it.** **13 Slim does not**: it draws no head, no note, no link and no button at any value, so there is no ask to gate — which also makes it **the one design in A9 a site cannot hide from a member state**, named here rather than buried. **14 Ask is where the control earns its place**, its filled button being the category's one action, and that button uses the **P0·4 member-aware action editor**. **Flagged**: the fourteen-and-one split.
 
 **The Data group, on all fifteen panels.** Outside the design's control list, a **Data** group states the category's one data fact — nothing here comes from Ghost — with the refusal of tagged posts and the seven refusals of ornament on record where a site would look for them rather than only in this document. **No “Populate from…” panel is offered on any A9 design**: there is nothing to populate from.
 
@@ -78,19 +84,19 @@ Everything here applies to all fifteen unless a design says otherwise.
 
 **Section padding Compact 64 · Comfortable 96 · Spacious 132**, 80 at 834, 64 at 390; page margin 72 / 40 / 20; content width 1,296. Two designs carry their own scale: **8 Contrast Band's band at 44 · 64 · 88** (A4·9's) and **13 Slim's at 32 · 44 · 56** (A7·8's).
 
-**Responsive floor.** A one-column list of rows needs no collapse, which is why eleven designs change nothing but their type and their padding. **What collapses is a second axis:** 2 Two Column's two lists stack at ≤ 767 · 4 Cards takes two columns at 1080 and one at 767 · 5 Split Head puts its head above the rows at 1080 · 7 Index moves its index above the rows at 1080 · 10 Image Split stacks image over rows at 1080 · 11 Tabs hands its behaviour to 6 Grouped at 767 · 15 Ledger puts its answer under its question at 1080. **The authored order is the drawn order at every width in all fifteen.**
+**Responsive floor.** A one-column list of rows needs no collapse, which is why eleven designs change nothing but their type and their padding. **What collapses is a second axis:** 2 Two Column's two lists stack at ≤ 767 · 4 Cards takes two columns at 1080 and one at 767 · 5 Split Head puts its head above the rows at 1080 · 7 Index moves its index above the rows at 1080 · 10 Image Split stacks image over rows at 1080 · 11 Tabs draws no tab row at 767 and stacks every labelled group instead · 15 Ledger puts its answer under its question at 1080. **The authored order is the drawn order at every width in all fifteen.**
 
-**Empty.** No eyebrow, sub, note or link → absent. No groups → the designs that read them hand off. **No items → the section does not render**; the editor shows the empty repeater and its Add question control. An item cannot be saved without both a question and an answer, so there is no half-row to draw. One item where a design wants more → the design named in its panel.
+**Empty.** No eyebrow, sub, note or link → absent. No groups → the designs that read them draw one unlabelled set, or hide the container that had nothing to group. **No items → the section does not render**; the editor shows the empty repeater and its Add question control. An item cannot be saved without both a question and an answer, so there is no half-row to draw. One item where a design wants more → the design named in its panel.
 
 **The item list — where it lives, and the rules that hold in all fifteen.** The repeater sits in the sidebar below the design's own controls: one row per item showing its question, a drag handle, a remove action, and **Add question** at the end. **It is P0·3's shared item-list control, unchanged:** add arrives with content, remove is never disabled, drag reorders, per-item content only — and because nothing in A9 comes from Ghost, **every list in the category is authored, so Add is offered on all of them**. Selecting a row on the canvas selects it in the repeater and opens that item's fields; ⌥↑ / ⌥↓ moves the focused row. The three designs that read `groups[]` — **6 Grouped, 7 Index, 11 Tabs** — show a second repeater above it, each group holding its own questions.
 
 **Add never produces a blank row.** A new item arrives as **“What does a membership include?”** / **“Answer this in two or three sentences. Keep it to one idea.”**, lands last, and opens its question for typing. Both fields clear their minimums, so the item is savable the moment it exists — which matters in A9, because an item cannot be saved without both a question and an answer, and a half-item would be a row the section refuses to draw. The `anchor` is seeded from the question on first save. *Flagged: the seeded wording is mine.*
 
-**Remove is never disabled in A9.** Every design draws one row, and a design with a floor **hands off to the design named in its panel rather than blocking the edit** — the list is the user's, and what to draw at five rows is the theme's problem. Removing the last item empties the list, at which point the section does not render. *Flagged: mine — A3 disables remove at a design's minimum; A9 hands off instead, because it already has hand-offs for every other count.*
+**Remove is never disabled in A9.** Every design draws one row, and a design with a floor **advises the design named in its panel rather than blocking the edit, and keeps drawing itself** — the list is the user's, and what to draw at five rows is the theme's problem. Removing the last item empties the list, at which point the section does not render. *Flagged: mine — A3 disables remove at a design's minimum; A9 advises instead and draws what it is given, because after this pass no A9 design turns into another design at any count.*
 
 **Reorder is meaningful in all fifteen**, because authored order is drawn order at every width and **order is the site's only statement of priority** — which is why A9 refuses “popular”, “new” and “important” flags. Three designs make it consequential rather than merely visible: **9 Numbered**, where order *is* the numbering; **2 Two Column**, where order decides which column a row lands in; **11 Tabs**, where the first group is the panel a reader is given on load.
 
-**Counts.** One is the field's floor and **twenty-four its ceiling**; Add question is disabled at twenty-four with “Twenty-four is the most a FAQ section holds. A longer list is a documentation page.” A design's Rows shown control caps what is *drawn*: fewer authored than shown draws what exists, and **more authored than shown draws the first N, keeps the rest, and the panel reads “6 of 9”**. Where a count falls below what a design is built for it hands off, per design. *Flagged: the twenty-four message, the overflow behaviour and the “N of M” wording are mine — the drawn panels state the fewer-than-shown case only.*
+**Counts.** One is the field's floor and **twenty-four its ceiling**; Add question is disabled at twenty-four with “Twenty-four is the most a FAQ section holds. A longer list is a documentation page.” A design's count control — **a number picker in twelve of the fifteen, with the design's own maximum greyed and its reason visible** — caps what is *drawn*: fewer authored than shown draws what exists, and **more authored than shown draws the first N, keeps the rest, and the panel reads “6 of 9”**. Where a count falls below what a design is built for **the panel advises another design and the placed design still renders**, per design and never as a switch. **Every count control in A9 is a number picker** — Rows shown in nine designs, Questions shown in two, Groups shown in one — stepping from 1 to the design’s own maximum, with the + greyed at the top and the reason shown beside it; 1 Accordion, 6 Grouped and 7 Index draw no count control at all. *Flagged: the twenty-four message, the overflow behaviour and the “N of M” wording are mine — the drawn panels state the fewer-than-shown case only.*
 
 **Zero items** is the category's one real failure and the shared floor already answers it: **the section does not render**, and nothing partial stands in for it — no head on its own, no band, no field, no ask panel, no empty card. The editor shows the empty repeater and its Add question control.
 
@@ -104,9 +110,9 @@ Everything here applies to all fifteen unless a design says otherwise.
 
 ## 1 · Accordion
 
-One column of hairline rows on a 780 px measure, centred in the 1,296 width. The design a site reaches for when it types “FAQ” into the picker, the one A9-0's row component was drawn for, and **the design seven others hand off to**.
+One column of hairline rows on a 780 px measure, centred in the 1,296 width. The design a site reaches for when it types “FAQ” into the picker, the one A9-0's row component was drawn for, and **the arrangement seven other panels advise**.
 
-**Descriptor.** The category's floor accordion — one column of hairline rows with nothing added to it, the only design with no count control and the only one offering Open on load, and the arrangement seven others hand off to rather than inventing one of their own.
+**Descriptor.** The category's floor accordion — one column of hairline rows with nothing added to it, the only design with no count control and the only one offering Open on load, and the arrangement seven others advise rather than inventing one of their own.
 
 **Structural descriptor.** `stack · none · page · variable · none · full-width row as button`
 
@@ -117,7 +123,7 @@ One column of hairline rows on a 780 px measure, centred in the 1,296 width. The
 **Items** · `items[]` at full range; every other design's item rules are stated against this one.
 
 - **Add.** *Add question* at the foot of the repeater; lands last, seeded as the shared floor says, question open for typing.
-- **Remove.** On the row, undoable, never disabled. **This design has no floor** — one row is a legitimate section and it hands off to nothing — so removing down to one is an ordinary edit and removing the last empties the list.
+- **Remove.** On the row, undoable, never disabled. **This design has no floor** — one row is a legitimate section and it never becomes another design — so removing down to one is an ordinary edit and removing the last empties the list.
 - **Reorder.** Meaningful: authored order is drawn order at every width, and with no count control the order is the whole of what the section says about priority.
 - **Counts.** 1–24, drawn for four to twelve. **No Rows shown control — every authored question is drawn**, which is why the panel reads “24 of 24” and why this design never keeps an item it does not draw.
 - **Zero.** The section does not render; the repeater shows Add question and a line saying so.
@@ -131,7 +137,7 @@ One column of hairline rows on a 780 px measure, centred in the 1,296 width. The
 
 **Responsive** · nothing collapses. List 780 → 690 at 834 → the full column at 390; **the answer's 620 measure is a cap and does not scale**. At 834: padding 80, title 34, question one step down, sub on 560. At ≤ 767: padding 64 / 20, row padding 14 with a 44 px target, list indent 20 unchanged.
 
-**Empty** · head parts, note and link → absent; at head None there is no `<h2>` and no accessible name. **One question → one row.** This design has no floor and hands off to nothing.
+**Empty** · head parts, note and link → absent; at head None there is no `<h2>` and no accessible name. **One question → one row.** This design has no floor and never becomes another design.
 
 **a11y** · the row a `<details>` whose full-width `<summary>` holds the question's `<h3>`; the answer the `<details>`'s own content, with no `aria-expanded`, no `aria-controls` and no `role="region"` to keep in step with it; a closed row is a closed `<details>` and not a `hidden` panel. One tab stop per row, Enter and Space, **no arrow-key navigation** — an accordion is not a composite widget and stealing the arrow keys stops a reader scrolling. Marker `aria-hidden`, never the only signal. Contrast: question 15.8:1 / 15.1:1, marker 5.6:1 / 6.2:1 resting, underline 3.3:1 / 6.3:1.
 
@@ -154,7 +160,7 @@ Two independent lists of 632 on a 32 px gutter, split by count. Settlement 4, bu
 **Items** · `items[]`, and the one design where the count is a layout instruction.
 
 - **Add.** Lands last, which at Eight shown is the foot of the right column — and at Six shown the addition of a seventh redraws the split as 4 + 3 the moment Rows shown reaches it.
-- **Remove.** Never disabled. At five drawn the split is 3 + 2; **at four or fewer authored the design hands off to 1 Accordion** and the sidebar says so, because two columns of two rows is a table of contents.
+- **Remove.** Never disabled. At five drawn the split is 3 + 2; **at four or fewer authored the two columns are drawn with what there is** and the sidebar advises 1 Accordion, because two columns of two rows reads as a table of contents.
 - **Reorder.** Meaningful twice over: order sets the reading sequence, and **order decides which column a row lands in**. At eight, moving row five to position four moves it from the head of the right column to the foot of the left.
 - **Counts.** Five to twenty-four authored, six, eight or twelve drawn; extra authored items are kept and not drawn. Designed for eight and twelve, where two columns earn the width.
 - **Zero.** The section does not render — neither column, no divider.
@@ -162,7 +168,7 @@ Two independent lists of 632 on a 32 px gutter, split by count. Settlement 4, bu
 
 **Fields** · 1 Accordion's exactly, **six, eight or twelve items**. Switching to or from 1 Accordion changes the arrangement and nothing else.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Question size: Row 17 · Large 20** — Feature 24 not offered, Row forced at 834 and below. **Divider: Gutter · Rule**, the rule's inset 32 at 1440 and 20 at 834. Rows shown: Six · Eight · Twelve. **Open rows: Many · One at a time**, one name group across both columns, so opening a row on the right closes the row open on the left. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Question size: Row 17 · Large 20** — Feature 24 not offered, Row forced at 834 and below. **Divider: Gutter · Rule**, the rule's inset 32 at 1440 and 20 at 834. **Rows shown: a number picker, 1–12, default 8**, twelve greyed with its reason. **Open rows: Many · One at a time**, one name group across both columns, so opening a row on the right closes the row open on the left. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Not offered, and stated in the panel** · Open on load, because First open would open the left column alone and read as a mistake in the right; Marker, because two columns of plus signs read as arithmetic.
 
@@ -170,11 +176,11 @@ Two independent lists of 632 on a 32 px gutter, split by count. Settlement 4, bu
 
 **Responsive** · two columns above 767. At 834, 365 + 24 + 365 = 754 inside the margins, halves 377 and 376 at a 20 px inset, **the question forced to Row 17 and the control saying “Row at this width”**. **At ≤ 767 the two lists stack and read as one sequence in authored order**; the divider is not drawn.
 
-**Empty** · fewer authored than shown → that many drawn, still split by count. **Four or fewer → hands off to 1 Accordion**, because two columns of two rows is a table of contents.
+**Empty** · fewer authored than shown → that many drawn, still split by count. **Four or fewer → four or fewer rows, still split across the two columns**, with 1 Accordion advised because two columns of two rows reads as a table of contents.
 
 **a11y** · **two `<ul>`s, not one** — two independent columns, and pretending otherwise would misreport where a row's neighbours are; it costs a screen-reader user one extra “list of four” announcement, and the panel says so. The lists take no roles, labels or headings. Tab order 1 to 8, authored order at every width. The divider is decorative. Every row prints open in one column.
 
-**Flagged** · the 632/32 division and the 648/647 Rule halves; the count split and the extra row going left; **both refusals and their reasons**; two lists rather than one and its stated cost; the default at Row 17; the forced Row and 20 px inset at 834; not offering Open on load or Marker; the hand-off at four.
+**Flagged** · the 632/32 division and the 648/647 Rule halves; the count split and the extra row going left; **both refusals and their reasons**; two lists rather than one and its stated cost; the default at Row 17; the forced Row and 20 px inset at 834; not offering Open on load or Marker; the advice at four, which changes nothing that is drawn.
 
 ---
 
@@ -193,21 +199,21 @@ Every answer drawn: question above answer, rows between hairlines, one column on
 **Items** · `items[]`, every one drawn open.
 
 - **Add.** Lands last, seeded as the shared floor says. Because every answer is visible at all times, **a seeded answer left as it arrived publishes as it arrived** — there is no closed row to hide it.
-- **Remove.** Never disabled; no hand-off at any count. **One question is one row with no hairline under it.**
+- **Remove.** Never disabled; nothing switches at any count. **One question is one row with no hairline under it.**
 - **Reorder.** Meaningful; authored order, no columns and no groups to fall into.
-- **Counts.** 1–24 authored, four, six or eight drawn; extra kept and not drawn, and the panel names 1 Accordion for a longer list — eight open answers is already a page of prose.
+- **Counts.** 1–24 authored, four, six or eight drawn; extra kept and not drawn, and the panel advises 1 Accordion for a longer list — eight open answers is already a page of prose.
 - **Zero.** The section does not render.
 - **Inside an item.** `question`, `answer`, `anchor` — the anchor drawn even though nothing opens, so a link into this design lands where it would in every other one. `group` inert.
 
 **Fields** · 1 Accordion's, **four, six or eight items**. The `anchor` is drawn as an `id` on the `<h3>` even though nothing opens, so a link into this design lands where it would in every other one.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rules: Between · Above and below · None.** Rows shown: Four · Six · Eight. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below, where the design draws its own top rule. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rules: Between · Above and below · None.** **Rows shown: a number picker, 1–8, default 6**, eight greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below, where the design draws its own top rule. Plus the **Data group**.
 
 **Arrangement** · 1 Accordion's row with the button taken out: same 780 list, same 620 answer, same row padding and same step-linked gap. **At Rules None the rows sit 40 px apart whatever the padding control says** — the row padding is what a hairline needs on each side of it, and with no hairline 20 px does not end an answer. **The answer stays 16 px at every question size**, so the ratio narrows from 20:16 to 17:16 and the hierarchy is carried by weight.
 
 **Responsive** · nothing collapses; the 620 cap and the 20 px list indent do not scale. At ≤ 767: padding 64 / 20, answer 16 / 1.6, row padding 16.
 
-**Empty** · **one question → one row with no hairline under it**; no hand-off at any count. **Nothing here can be missing at a width or hidden by a state.**
+**Empty** · **one question → one row with no hairline under it**; nothing switches at any count. **Nothing here can be missing at a width or hidden by a state.**
 
 **a11y** · `<h2>`, `<ul>`, `<h3>` and prose. **No `<details>`, no `<summary>`, no button, no `role="region"`, no marker, no hover, no motion.** The `<h3>` carries `tabindex="-1"` so a deep link can move focus without adding a tab stop — **the only `tabindex` in A9's accordions' sibling designs**. **Print and screen are the same drawing.** In forced colours the design is unchanged apart from the system's colours.
 
@@ -229,8 +235,8 @@ One question and its answer per card, three of 416 on a 24 px gutter — A8·2's
 
 **Items** · `items[]`, one item per card.
 
-- **Add.** Lands last, filling the grid left to right and top to bottom. At Questions shown Three a fourth item is kept and not drawn until the control is moved to Six — the one design where Add can appear to do nothing, and the panel's “3 of 4” is what says otherwise.
-- **Remove.** Never disabled. **At two, two 416 cards centre rather than widen; at one the design hands off to 1 Accordion**, because a single card is a card with a question in it and not a FAQ.
+- **Add.** Lands last, filling the grid left to right and top to bottom. At Questions shown 3 a fourth item is kept and not drawn until the picker is stepped to 4 — the one design where Add can appear to do nothing, and the panel's “3 of 4” is what says otherwise.
+- **Remove.** Never disabled. **At two, two 416 cards centre rather than widen; at one it draws one centred card**, with 1 Accordion advised, because a single card is a card with a question in it rather than a FAQ.
 - **Reorder.** Meaningful: order fills the grid, so moving an item changes both its place and **which row it shares a height with**.
 - **Counts.** Designed for three and six — a full row and two full rows. 1–24 authored, extra kept and not drawn; five at Six draws five and the last cell is **absent, not empty**.
 - **Zero.** The section does not render — no empty cards, no ghost cells.
@@ -238,19 +244,19 @@ One question and its answer per card, three of 416 on a 24 px gutter — A8·2's
 
 **Fields** · head fields, note, link pair, **three or six items**.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Columns: Two · Three.** Questions shown: Three · Six. Cards: Surface · Ground. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** a card that has to be pressed to show its contents is a card with nothing in it. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**. The Cards row above sets the **card's** fill; Background role sets the **section's** ground, and the panel keeps the two apart.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Columns: Two · Three.** **Questions shown: a number picker, 1–6, default 6**, six greyed with its reason. Cards: Surface · Ground. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** a card that has to be pressed to show its contents is a card with nothing in it. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**. The Cards row above sets the **card's** fill; Background role sets the **section's** ground, and the panel keeps the two apart.
 
 **Not offered** · Question size, fixed at Row 17 because 20 px in a 416 card runs most questions to three lines; Marker and Open on load; Hairline columns, refused as in A8·4 — a vertical rule that stops between two rows is a table's rule without a table's header.
 
-**Arrangement** · 416 · 24 at three columns, 632 · 32 at two; **card padding follows the count, 28 and 32**; pack radius, 1 px hairline, **no shadow at any value**; question to answer 12; the answer takes the card inside its padding. **Rows are equal within a row and never across the grid**, the slack falling at the foot of the short cards; nothing is truncated, clamped or moved to another row. **The editor's counter turns muted past 450 characters and names 1 Accordion**; the field's ceiling is still 900.
+**Arrangement** · 416 · 24 at three columns, 632 · 32 at two; **card padding follows the count, 28 and 32**; pack radius, 1 px hairline, **no shadow at any value**; question to answer 12; the answer takes the card inside its padding. **Rows are equal within a row and never across the grid**, the slack falling at the foot of the short cards; nothing is truncated, clamped or moved to another row. **The editor's counter turns muted past 450 characters and advises 1 Accordion**; the field's ceiling is still 900.
 
 **Responsive** · three columns above 1081; **two at 1080 and below at both Columns values**, disclosed as “Two at this width” — 365 cells on 24 at 834, card padding 24. **At ≤ 767 one column 16 px apart, and every card is its own height because there is no row.**
 
-**Empty** · **fewer authored than shown draws what exists** — five at Six is five cards and the last cell is absent, not empty. **Two → two 416 cards centred, not widened; one → hands off to 1 Accordion.**
+**Empty** · **fewer authored than shown draws what exists** — five at Six is five cards and the last cell is absent, not empty. **Two → two 416 cards centred, not widened; one → one card, centred, with 1 Accordion advised.**
 
 **a11y** · **one `<ul>` of six, never two lists of three**; `<h3>` per question with `tabindex="-1"`; no button, region, marker, hover or motion; cards are not links. The equal-height stretch is invisible to assistive technology. **In forced colours the card keeps its hairline and loses its fill, which makes Surface and Ground the same drawing** — stated, not corrected. Print: one column, hairlines kept.
 
-**Flagged** · fixing the question at Row 17; the 12 px gap in a card; **the 450-character advice**; six as the ceiling; two cards centred and not widened; the hand-off at one; the forced-colours note.
+**Flagged** · fixing the question at Row 17; the 12 px gap in a card; **the 450-character advice**; six as the ceiling; two cards centred and not widened; the advice at one; the forced-colours note.
 
 ---
 
@@ -269,7 +275,7 @@ The head in a 416 px column at the left margin, the accordion in an 824 px colum
 **Items** · `items[]`, in the right-hand column.
 
 - **Add.** Lands last in the rows column. The head is not in the list and cannot be reordered into it.
-- **Remove.** Never disabled. **At two or fewer authored the design hands off to 1 Accordion** — a 416 px head column beside two rows is a head with a footnote.
+- **Remove.** Never disabled. **At two or fewer authored the rows are drawn beside the head as they are** — 1 Accordion is advised, because a 416 px head column beside two rows is a head with a footnote.
 - **Reorder.** Meaningful among the rows; the head, the note and the link are section fields and hold their places at both Foot values.
 - **Counts.** Three to twenty-four authored, five or eight drawn, extra kept and not drawn. Designed for eight, which is the count that makes the 824 column worth its width.
 - **Zero.** The section does not render — **the head column included**. A head beside nothing is not a section, which is the case worth stating here: this design has the most to lose to an empty list and loses all of it.
@@ -277,7 +283,7 @@ The head in a 416 px column at the left margin, the accordion in an 824 px colum
 
 **Fields** · every field except `image`, `imageAlt` and `groupLabel`; **five or eight items**.
 
-**Controls** · **Title size: Medium 34 · Large 40** — Display 48 not offered in a 416 column. Rows shown: Five · Eight. Head column: Left · Right. **Foot: Under the head · Under the rows.** Marker: Chevron · Plus. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · **Title size: Medium 34 · Large 40** — Display 48 not offered in a 416 column. **Rows shown: a number picker, 1–8, default 5**, eight greyed with its reason. Head column: Left · Right. **Foot: Under the head · Under the rows.** Marker: Chevron · Plus. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Not offered** · Question size, fixed at Large 20 — Row 17 in an 824 row reads as small print beside a 40 px title; Head alignment, because the head column is always left-aligned inside itself; Open on load.
 
@@ -285,11 +291,11 @@ The head in a 416 px column at the left margin, the accordion in an 824 px colum
 
 **Responsive** · **the split is what leaves.** At 1080 and below the head goes above the rows, full width on a 620 measure; **Head column Right draws left**; **the foot at Under the head lands above the rows**, disclosed in the sidebar. At ≤ 767 this design and 1 Accordion are the same drawing, and the panel says so.
 
-**Empty** · no eyebrow or sub → the head column closes up. **No title → hands off to 15 Ledger.** No note and no link → the foot is absent and the control unavailable. **Two or fewer questions → 1 Accordion.**
+**Empty** · no eyebrow or sub → the head column closes up. **No title → the head column is not drawn and the rows take the full measure; 15 Ledger advised.** No note and no link → the foot is absent and the control unavailable. **Two or fewer questions → drawn beside the head; 1 Accordion advised.**
 
 **a11y** · **the two columns are a flex row, not two landmarks** — no `<aside>`, no roles, no second heading. The head is read first at both Head column values; **the Foot control changes reading order as well as position**. Hairlines are borders, never `<hr>`.
 
-**Flagged** · fixing the question at Large 20; the 620 cap inside an 824 row; **keeping the head's internal left alignment at Head column Right**; not offering Open on load; both hand-offs; stating that the phone frame is 1 Accordion's drawing.
+**Flagged** · fixing the question at Large 20; the 620 cap inside an 824 row; **keeping the head's internal left alignment at Head column Right**; not offering Open on load; hiding the head column when no title is authored and advising rather than switching at two questions; stating that the phone frame is 1 Accordion's drawing.
 
 ---
 
@@ -308,13 +314,13 @@ Group labels with their own rows beneath, stacked down one column. The first of 
 **Items** · two lists: `groups[]` and `items[]`, joined by the item's `group` reference.
 
 - **Add.** *Add question* lands last **inside the group selected in the repeater**, or in the ungrouped set if none is. *Add group* lands last and arrives labelled **“More”** holding one question; a group with no questions is not drawn at all, so an empty new group is invisible until its first question. *Flagged: the seeded label is mine.*
-- **Remove.** A question, or a group. **Removing a group does not remove its questions** — they lose their reference and fall to the final unlabelled set, and the confirm says so rather than deleting somebody's writing on their behalf. **No groups authored → 1 Accordion.**
+- **Remove.** A question, or a group. **Removing a group does not remove its questions** — they lose their reference and fall to the final unlabelled set, and the confirm says so rather than deleting somebody's writing on their behalf. **No groups authored → one unlabelled set, drawn; 1 Accordion advised.**
 - **Reorder.** Meaningful twice: group order down the page, question order inside a group. **Dragging a question onto another group's rows re-parents it**, which is the second way to set `group` besides the field itself.
-- **Counts.** One to six groups, two to four drawn; one to twenty-four questions. **A group of one is drawn as a group of one.** Past four groups the extras are kept and not drawn, and the panel says how many.
+- **Counts.** One to six groups, **every one of them drawn** — ruled by the owner on 29 August 2026, where four were drawn and two were kept and hidden; one to twenty-four questions. **A group of one is drawn as a group of one.** There is no count control and nothing authored is left off the page: the point of this design is that nothing is hidden.
 - **Zero.** The section does not render — labels included, since a label is not content.
 - **Inside an item.** `question`, `answer`, `anchor`, **`group`** — the first of the three designs where the optional reference changes the drawing: empty means the item falls to the last unlabelled set, and **no label is invented for it**, not “Other”, not “More”, not “General”.
 
-**Fields** · `title`, `sub`, `note`, link pair, **two to four groups drawn (six the field's ceiling)** and every item with its `group`. **`eyebrow` is kept and never drawn** — the group labels take the eyebrow's type, and two ranks of 13 px uppercase in one section is one of them competing.
+**Fields** · `title`, `sub`, `note`, link pair, **every authored group drawn, one to six** ⛑ 29 August 2026, and every item with its `group`. **`eyebrow` is kept and never drawn** — the group labels take the eyebrow's type, and two ranks of 13 px uppercase in one section is one of them competing.
 
 **Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. **Question size: Row 17 · Large 20** — Feature not offered, because three labels and twelve questions is already three ranks. **Group label: Above the rows · Beside the rows.** Marker: Chevron · Plus. **Open rows: Many · One at a time**, one name group per group, so a reader can hold one row open in each. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
@@ -322,11 +328,11 @@ Group labels with their own rows beneath, stacked down one column. The first of 
 
 **Responsive** · at Group label Above nothing collapses. **At Beside, 834 and below draws Above** and the control says “Above at this width”, because 200 + 56 + 690 does not fit inside 754.
 
-**Empty** · **a group with no questions is not drawn, label included.** **Questions with no group are drawn as a last unlabelled set** after every labelled group — no label is invented for them, not “Other”, not “More”, not “General”. **A group of one is drawn as a group of one.** **No groups authored → 1 Accordion.**
+**Empty** · **a group with no questions is not drawn, label included.** **Questions with no group are drawn as a last unlabelled set** after every labelled group — no label is invented for them, not “Other”, not “More”, not “General”. **A group of one is drawn as a group of one.** **No groups authored → one unlabelled set, drawn; 1 Accordion advised.**
 
 **a11y** · **each group label an `<h3>` and each question an `<h4>`**, which amends A9-0 and is logged in its consistency pass. **One `<ul>` per group**, the ungrouped set a final list with no heading. Labels are not focusable and **a group cannot be collapsed as a whole** — that is an accordion inside an accordion. Every group is drawn at all times, so a deep link reveals no container. Print: rows open, labels and gaps kept.
 
-**Flagged** · the label's type and full-strength colour; suppressing the section eyebrow; both group gaps and their steps; the 200/56/780 geometry and its 834 fallback; the unlabelled last set; not drawing an empty group; the hand-off; **the `<h4>` heading level**.
+**Flagged** · the label's type and full-strength colour; suppressing the section eyebrow; both group gaps and their steps; the 200/56/780 geometry and its 834 fallback; the unlabelled last set; not drawing an empty group; drawing one unlabelled set with no groups; **the `<h4>` heading level**.
 
 ---
 
@@ -345,9 +351,9 @@ A jump list of group labels at the left margin, every group of rows at the right
 **Items** · `groups[]` and `items[]`, **both drawn in full — no count control anywhere in this design**.
 
 - **Add.** As 6 Grouped: a question into the selected group, a group last labelled “More”. **A new group appears in the index the moment it has a question**, because the index is generated from `groups[]` and is not a second list to keep in step with the first.
-- **Remove.** As 6 Grouped, plus: removing a group drops its index item with it, and its questions fall to the final unlabelled set — **which is not listed in the index, because it has no label to list**. **No groups → 6 Grouped; fewer than six questions → 1 Accordion.**
+- **Remove.** As 6 Grouped, plus: removing a group drops its index item with it, and its questions fall to the final unlabelled set — **which is not listed in the index, because it has no label to list**. **No groups → the index is not drawn and the rows take the full measure; fewer than six questions → the index still draws.** 6 Grouped and 1 Accordion are advised, never substituted.
 - **Reorder.** Meaningful: **group order is index order**, question order is row order. The index cannot be reordered on its own — it has no list of its own to reorder.
-- **Counts.** Up to six groups and twenty-four questions, all drawn. Below six questions the index has nothing to do and the design hands off; at twenty-four Add question is disabled at the field's ceiling.
+- **Counts.** Up to six groups and twenty-four questions, all drawn. Below six questions the index has little to do and the panel advises 1 Accordion while still drawing it; at twenty-four Add question is disabled at the field's ceiling.
 - **Zero.** The section does not render, index included.
 - **Inside an item.** `question`, `answer`, **`anchor`** — the one design where the anchor does visible work: it is the row's `id` **and the copy button's clipboard value**, so editing it changes what a reader is handed. `group` as 6 Grouped.
 
@@ -365,11 +371,11 @@ A jump list of group labels at the left margin, every group of rows at the right
 
 **Responsive** · two columns above 1080. **At 1080 and below the index moves above the rows as a wrapping row of links over a hairline and stops sticking**; Index column and Index behaviour are disclosed as having no effect. At ≤ 767: group to group 32, no copy buttons.
 
-**Empty** · a group with no questions is not drawn; **ungrouped questions are drawn last, unlabelled, and are not listed in the index** — there is no label to list. **No groups → 6 Grouped; fewer than six questions → 1 Accordion.**
+**Empty** · a group with no questions is not drawn; **ungrouped questions are drawn last, unlabelled, and are not listed in the index** — there is no label to list. **No groups → the index is not drawn and the rows take the full measure; fewer than six questions → the index still draws.** 6 Grouped and 1 Accordion are advised, never substituted.
 
 **a11y** · the index a `<nav>` labelled with the catalog's “On this page” and carrying **`aria-current="location"`** on the current group — not `page`, because the page has not changed. Group labels `<h3>` with `tabindex="-1"`, questions `<h4>`. **The copy button costs one extra tab stop per row**, which is why it has a control. **In forced colours the index also stops sticking**, because a floating column with a transparent background over moving text is unreadable when the system picks both colours. Print: index dropped, rows open.
 
-**Flagged** · the 240/56/780 division and the 220 px left empty; **the sticky exception and its four conditions**; **the accent's fourth place**; the `#` and its two resting colours; “Link copied” for two seconds; dropping the button below 767; the head inside the rows' column; both hand-offs; the forced-colours rule.
+**Flagged** · the 240/56/780 division and the 220 px left empty; **the sticky exception and its four conditions**; **the accent's fourth place**; the `#` and its two resting colours; “Link copied” for two seconds; dropping the button below 767; the head inside the rows' column; hiding the index when no group is authored; the forced-colours rule.
 
 ---
 
@@ -388,15 +394,15 @@ A jump list of group labels at the left margin, every group of rows at the right
 **Items** · `items[]`, on the band.
 
 - **Add.** Lands last. Nothing about a new item is band-specific: it takes the section's derived muted, hairline and 6% plane on arrival.
-- **Remove.** Never disabled. **One question is one row on the band and this design hands off to nothing** — the band is what the site picked, and handing a band's single row to 1 Accordion would take the ground away as well as the row.
+- **Remove.** Never disabled. **One question is one row on the band and this design never becomes another design** — the band is what the site picked, and handing a band's single row to 1 Accordion would take the ground away as well as the row.
 - **Reorder.** Meaningful; authored order.
-- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; **six is the ceiling** and past it the panel names 1 Accordion, because a tall band is a section that has become a page.
+- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; **six is the ceiling** and past it the panel advises 1 Accordion, because a tall band is a section that has become a page.
 - **Zero.** The section does not render — **and no empty band is drawn**, which is this design's whole exposure: a band with no rows is a coloured stripe.
 - **Inside an item.** As 1 Accordion. The derived colours are the section's mixes read by every row, so **an item cannot opt out of the band** — which is what makes switching to and from 1 Accordion a colour change and nothing else.
 
 **Fields** · 1 Accordion's exactly, **four or six items**.
 
-**Controls** · Band width: Full bleed · Inset. Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. Rows shown: Four · Six. **Open on load: All closed · First open** — added in this pass: the value 1 Accordion had and this design silently dropped. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role **locked at Contrast**, the reason shown at the lock — the band is the design, not a value of it · Vertical spacing resolving the band's own **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where Band padding retired · Top divider **locked None** at Band width Full bleed. Plus the **Data group**.
+**Controls** · Band width: Full bleed · Inset. Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Open on load: All closed · First open** — added in this pass: the value 1 Accordion had and this design silently dropped. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role **locked at Contrast**, the reason shown at the lock — the band is the design, not a value of it · Vertical spacing resolving the band's own **44 · 64 · 88** (40 · 56 · 72 at 834, 32 · 44 · 56 at 390), which is where Band padding retired · Top divider **locked None** at Band width Full bleed. Plus the **Data group**.
 
 **Derived colours, all from the token pair** · muted = carried at **72% in light and 70% in dark** (A8·9's pair), hairline = carried at 18%, **hover plane and inline-code chip = carried at 6%**. Light `#232019` / `#FBF9F5` → `#BEBCB7`, `#4A4741`, `#302D26`. Dark `#EDE7DA` / `#171511` → `#57544D`, `#C6C1B6`, `#E0DACE`. Using `surface` or `border` here would put a light hairline on a dark band. No shadow at any value. **A hovered row's code chip disappears into the plane** — two 6% fields on one row is a boundary nobody needs to see.
 
@@ -404,7 +410,7 @@ A jump list of group labels at the left margin, every group of rows at the right
 
 **Responsive** · 1 Accordion's, plus the band's own padding step. **The band always keeps a horizontal margin** — 72 / 40 / 20. **Inset draws full bleed at ≤ 767**: an inset band inside a 20 px margin is a card, and A9 has no card design on a band.
 
-**Empty** · **one question → one row on the band; this design keeps its own frame and hands off to nothing**, because the band is what the site picked.
+**Empty** · **one question → one row on the band; this design keeps its own frame and never becomes another design**, because the band is what the site picked.
 
 **a11y** · 1 Accordion's structure unchanged; **the band is a background, not an element**. Text on band 15.8:1 light / 14.7:1 dark, muted 8.7:1 / 6.0:1, hairline 2.4:1, **focus ring 15.8:1 / 14.7:1 — the strongest ring in A9**. **Forced colours drop the band and keep every hairline; print drops the band and prints every row open in `text` on white.**
 
@@ -429,13 +435,13 @@ Questions numbered in the pack's heading font at Display 40, the question at Fea
 - **Add.** Lands last **and is numbered by where it lands** — there is nothing to type. Seeded as the shared floor says.
 - **Remove.** Never disabled. **Removing item two renumbers everything below it**, which is the design's whole argument rather than a side effect. One question is one row numbered 01.
 - **Reorder.** **The most consequential reorder in A9:** order is the numbering, so dragging a row changes what a reader is told comes first. Padded and Plain both renumber from 01 or 1 — the control changes the glyphs, never the sequence.
-- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; past six the panel names 1 Accordion **without refusing the content**.
+- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; past six the panel advises 1 Accordion **without refusing the content**.
 - **Zero.** The section does not render.
 - **Inside an item.** `question`, `answer`, `anchor`. **There is no numeral field** — a list whose sixth row says “09” is a list with a mistake in it, and a typed numeral is per-item styling wearing a content field's clothes. The clearest refusal of rule 1 in the category, and it was written before the rule was.
 
 **Fields** · head fields, note, link pair, **four or six items**. **There is no numeral field:** numbers come from the item's position in the repeater, so reordering renumbers and a site cannot type its own — a list whose sixth row says “09” is a list with a mistake in it.
 
-**Controls** · Head: Centred · Flush left · None. Questions shown: Four · Six. **Numerals: Padded 01 · Plain 1.** **Numeral position: In a column · Above the question.** Rules: Between · None. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. **Questions shown: a number picker, 1–12, default 6**, twelve greyed with its reason. **Numerals: Padded 01 · Plain 1.** **Numeral position: In a column · Above the question.** Rules: Between · None. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Not offered** · **Title size — fixed at Medium 34**, because §2 allows one display moment per section and the numerals have taken it; Question size, fixed at Feature 24; Marker and Open on load.
 
@@ -443,7 +449,7 @@ Questions numbered in the pack's heading font at Display 40, the question at Fea
 
 **Responsive** · the numeral column narrows 72 → 64 at 834 with the gutter at 28 and the text column at 598. **At ≤ 767 the numeral goes above the question at both position values**, disclosed as “Above at this width”, because a 64 px column leaves 258 px of question.
 
-**Empty** · fewer authored than shown → that many rows, numbered from 01. **One question → one row numbered 01.** Past six the panel names 1 Accordion without refusing the content.
+**Empty** · fewer authored than shown → that many rows, numbered from 01. **One question → one row numbered 01.** Past six the panel advises 1 Accordion without refusing the content.
 
 **a11y** · **an `<ol>` — the only ordered list in A9** — with the drawn numeral `aria-hidden` and **outside the `<h3>`**, so it is in neither the heading's name nor the announcement, and a screen reader hears “1 of 6” once. `tabindex="-1"` on each heading. No button, region, marker, hover or motion. **In forced colours the numeral takes the system's text colour and stops being quieter than the question**, which flattens the hierarchy to size alone — stated, not corrected. Print and screen are the same drawing.
 
@@ -466,7 +472,7 @@ A photograph on one half, the accordion on the other, both top-aligned, on a 32 
 **Items** · `items[]`, in the rows column. The photograph is a **section** field and never an item's.
 
 - **Add.** Lands last in the rows column, and can make the rows the taller column — which is allowed: neither column stretches, and the photograph simply stops at its own foot.
-- **Remove.** Never disabled. **Two or fewer authored → 1 Accordion**, and **no image → 1 Accordion** as well, which are the two ways out of this design.
+- **Remove.** Never disabled. **Two or fewer authored → drawn as they are beside the photograph**, and **no image → the photograph’s half is not drawn and the rows take the full measure**. 1 Accordion is advised in both, and there is no way out of this design.
 - **Reorder.** Meaningful in the rows column. The image never moves in the list because it is not in it.
 - **Counts.** Three to twenty-four authored, four or six drawn, extra kept and not drawn. **Six closed rows is the count Square comes closest to matching**, and the panel says so.
 - **Zero.** The section does not render — **not the photograph on its own**, which would be A4's hero with a caption's worth of head above it.
@@ -474,7 +480,7 @@ A photograph on one half, the accordion on the other, both top-aligned, on a 32 
 
 **Fields** · head fields, note, link pair, **`image` and `imageAlt`**, and **four or six items**. The photograph is an uploaded file on the section, not a post's feature image. No `imageAlt` → `alt=""`.
 
-**Controls** · Title size: Medium 34 · Large 40. **Division: Even 632/632 · Rows-led 760/504** — an image-led division is refused, because a 504 px accordion is a column of two-line questions and a section whose photograph is wider than its content is A4's hero. Image side: Left · Right. **Crop: Portrait 4:5 · Square 1:1 · Landscape 3:2**, named and not computed, `object-fit: cover`. **No free focal point — Image focus (Centre · Top · Bottom) ships in the Image Picker popover and is the whole of it**: three named values are not a draggable point, and the old refusal was of the point. Rows shown: Four · Six. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Title size: Medium 34 · Large 40. **Division: Even 632/632 · Rows-led 760/504** — an image-led division is refused, because a 504 px accordion is a column of two-line questions and a section whose photograph is wider than its content is A4's hero. Image side: Left · Right. **Crop: Portrait 4:5 · Square 1:1 · Landscape 3:2**, named and not computed, `object-fit: cover`. **No free focal point — Image focus (Centre · Top · Bottom) ships in the Image Picker popover and is the whole of it**: three named values are not a draggable point, and the old refusal was of the point. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Not offered** · Question size, fixed at Large 20; Marker; Open on load; **any visible caption** — a caption under a photograph beside a FAQ is a third voice.
 
@@ -482,11 +488,11 @@ A photograph on one half, the accordion on the other, both top-aligned, on a 32 
 
 **Responsive** · two halves above 1080. **At 1080 and below they stack, image above the rows at both Image side values, and the crop is forced to 3:2** — a 4:5 portrait at 754 px is a screen of photograph before a reader reaches a question, and a photograph *under* a FAQ reads as an illustration of the last answer. Division and Image side are disclosed as having no effect. At 834: image 754 × 503. At ≤ 767: image 350 × 233.
 
-**Empty** · **no image → hands off to 1 Accordion**; there is no placeholder and no coloured block at any width. Two or fewer questions → 1 Accordion.
+**Empty** · **no image → the photograph’s half is not drawn and the rows take the full measure**; there is no placeholder and no coloured block at any width. Two or fewer questions → drawn as they are, with 1 Accordion advised.
 
 **a11y** · the photograph an `<img>` with real alt text — **the only image in A9** — never a CSS background, not a link, no hover, no motion; A14 Galleries owns anything a reader can open a photograph into. The two halves are a flex row, not two landmarks. **Image side changes DOM order and the control says so**: at Left the photograph is read before the questions, at Right after them. In forced colours the image is kept and the halves stack.
 
-**Flagged** · the 632/32 division and the 760/504 alternative; **refusing an image-led division**; **refusing to stretch either column**; the head above the pair; fixing the question at Large 20; the three crop heights and the Square advice; refusing a caption; the hand-off.
+**Flagged** · the 632/32 division and the 760/504 alternative; **refusing an image-led division**; **refusing to stretch either column**; the head above the pair; fixing the question at Large 20; the three crop heights and the Square advice; refusing a caption; hiding the image column when no photograph is authored.
 
 ---
 
@@ -500,12 +506,12 @@ Group labels as a tab row, one group's questions shown at a time. **A5·12's tab
 
 **Archetype.** nav
 
-**Behaviour module.** `tabs`. Edit-safe — the first tab is active on load, nothing is remembered, and no state is written while the section is edited. **JS off:** “All panels render stacked and visible, each preceded by its tab label as a heading.” **That is 6 Grouped's drawing** — the same drawing this design already hands to at ≤ 767 and prints — so **the cost the panel states is a JavaScript cost only**: with the module inert, nothing is missing from the heading rotor or from find-in-page. No `accordion` here: the rows inside a panel are 3 Open List's, always open.
+**Behaviour module.** `tabs`. Edit-safe — the first tab is active on load, nothing is remembered, and no state is written while the section is edited. **JS off:** “All panels render stacked and visible, each preceded by its tab label as a heading.” **That is 6 Grouped's drawing** — the same drawing this design already draws at ≤ 767 and prints — so **the cost the panel states is a JavaScript cost only**: with the module inert, nothing is missing from the heading rotor or from find-in-page. No `accordion` here: the rows inside a panel are 3 Open List's, always open.
 
 **Items** · `groups[]` and `items[]`; **a group is a tab**.
 
 - **Add.** *Add group* adds a tab, last in the row, labelled “More”, holding one question. *Add question* lands last inside the selected group's panel. **A group with no questions gets no tab**, so a new group is invisible until its first question arrives.
-- **Remove.** A question, or a group with its tab. **Removing the group whose tab is active selects the first tab** rather than leaving an empty panel. **One group → 6 Grouped** (a tablist of one is a heading); **no groups → 1 Accordion**.
+- **Remove.** A question, or a group with its tab. **Removing the group whose tab is active selects the first tab** rather than leaving an empty panel. **One group → no tab row, the label sitting above its questions as a heading** (a tablist of one is a heading); **no groups → one unlabelled list of every question**. 6 Grouped and 1 Accordion are advised.
 - **Reorder.** Meaningful twice: **group order is tab order** left to right, and **the first tab is the panel a reader is given on load**, so reordering groups changes what the section opens with. Question order inside a panel is drawn order.
 - **Counts.** Three or four groups drawn, six the field's ceiling; a fifth or sixth authored group is kept, gets no tab, and the panel says how many are left out — the same sentence it already uses for ungrouped questions. One to twenty-four questions across the drawn groups.
 - **Zero.** The section does not render. **Ungrouped questions are not drawn at all**, so an item with an empty `group` is authored, saved, kept and invisible here — **the one place in A9 where leaving an optional field empty costs a reader content**, and the panel states the count rather than inventing an “Other” tab for them.
@@ -513,7 +519,7 @@ Group labels as a tab row, one group's questions shown at a time. **A5·12's tab
 
 **Fields** · head fields, note, link pair, **three or four groups** and every item belonging to a drawn group. **Ungrouped questions are not drawn at all and no “Other” tab is invented; the panel names the ones being left out** — “Do you take corporate subscriptions?” and “Where does the printed quarterly ship?” on the drawn frame — **rather than only counting them**: a count says something is missing, a name says which sentence a reader is not being shown. **This is the one place in A9 where an empty optional field silently costs a reader content**, which is why the warning is specific.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. Rules: Between · None. **Groups shown: Three · Four.** Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** the rows inside a panel are always open. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. Rules: Between · None. **Groups shown: a number picker, 1–4, default 4**, four greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** the rows inside a panel are always open. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Not offered** · a tab row below the panel; six groups — two rows of tabs above three questions is a section whose navigation is taller than its content; **an All tab**, because a tablist whose first tab contains every other tab is not a choice; **a disclosure inside the panel** — A9-0's refusal, since a disclosure inside a disclosure is two doors to one sentence.
 
@@ -521,13 +527,13 @@ Group labels as a tab row, one group's questions shown at a time. **A5·12's tab
 
 **The cost, stated** · **seven of ten questions are not on the page on load, and neither are their answers.** They carry `hidden` — correct for a tablist — so **they are absent from the heading rotor as well as from find-in-page**, which is worse than an accordion's cost: an accordion hides answers but shows every question. **The panel states it and names 6 Grouped.**
 
-**Responsive** · tabs above 767. At 834 four labels fit on one row; a fifth or a longer one **wraps to a centred second row with the hairline under the last row**; **a horizontally scrolling tab row is refused at every width**. **At ≤ 767 the behaviour is handed off: no tabs, every group drawn as 6 Grouped's stack with its label**, and the sidebar says “Tabs above 767, every group below”.
+**Responsive** · tabs above 767. At 834 four labels fit on one row; a fifth or a longer one **wraps to a centred second row with the hairline under the last row**; **a horizontally scrolling tab row is refused at every width**. **At ≤ 767 there are no tabs and every group is drawn with its label — this design's own drawing at that width, not another design's**, and the sidebar says “Tabs above 767, every group below”.
 
-**Empty** · a group with no questions gets no tab. **One group → 6 Grouped**, since a tablist of one is a heading. **No groups → 1 Accordion.**
+**Empty** · a group with no questions gets no tab. **One group → no tab row and the label as a heading**, since a tablist of one is a heading. **No groups → one unlabelled list.** Both are advice; neither switches.
 
 **a11y** · `role="tablist"` / `role="tab"` with `aria-selected` and `aria-controls`, roving `tabindex`, arrow keys, `role="tabpanel"` labelled by its tab, inactive panels `hidden`. The tab's accessible name is the group label and nothing else. **Questions are `<h3>`** — the tab is the label, so no `<h4>` here. No buttons or regions inside the panel. **Print: every group printed in full with its label** — a printed page with three tabs and one panel is a page missing three quarters of its content.
 
-**Flagged** · **the panel taking its own height**; the `<h3>` level and its reason; four as the ceiling; **refusing an All tab**; not drawing ungrouped questions and stating the count; printing every group; both hand-offs. **Cited:** the tablist (A5·12), the tab's weights and plane (A8·11), wrap-not-scroll (A8·11).
+**Flagged** · **the panel taking its own height**; the `<h3>` level and its reason; four as the ceiling; **refusing an All tab**; not drawing ungrouped questions and stating the count; printing every group; hiding the tab row at one group and at ≤ 767. **Cited:** the tablist (A5·12), the tab's weights and plane (A8·11), wrap-not-scroll (A8·11).
 
 ---
 
@@ -548,7 +554,7 @@ The archetype names the arrangement — a field governing a list — and **not t
 **Items** · `items[]`, and the longest list in the category alongside 7 Index.
 
 - **Add.** Lands last in the authored list; drawn immediately while the field is empty, and matched or not the moment there is text in it.
-- **Remove.** Never disabled. **Below twelve authored the design hands off to 1 Accordion** — a filter over eight rows is a control with nothing to do.
+- **Remove.** Never disabled. **Below twelve authored the field is still drawn over the rows there are** — 1 Accordion is advised, because a filter over eight rows has little to do.
 - **Reorder.** Meaningful in the unfiltered list. **Filtering never reorders:** matches are drawn in authored order and nothing is ranked, because a relevance order over a list somebody wrote by hand is a second opinion nobody asked for. *Flagged: mine.*
 - **Counts.** Twelve to twenty-four, drawn at twelve, eighteen or twenty-four; extra kept and not drawn; at twenty-four Add question is disabled at the field's ceiling. **Twelve is the floor of the design, not of the field.**
 - **Zero.** The section does not render — **the field included**, because a filter with nothing to filter is not an empty state, it is furniture.
@@ -556,7 +562,7 @@ The archetype names the arrangement — a field governing a list — and **not t
 
 **Fields** · head fields, note, **link pair used twice — in the foot and in the no-match state** — and **twelve, eighteen or twenty-four items**. **The placeholder and the no-match line are fields with defaults** — `filterPlaceholder` “Filter questions” and `noMatch` “No question here mentions “{term}”.”, with `{term}` filled at render — because a non-English site cannot ship an English literal. The defaults keep the ruling this design was protecting: a filter that says something other than what it does is the failure it is avoiding. **What stays the theme's is the visually hidden input label and the Clear button's name**, both catalog strings. The filter is client-side over the authored rows and queries nothing.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. **Field width: Full · Narrow 420.** Rows shown: Twelve · Eighteen · Twenty-four. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20. **Field width: Full · Narrow 420.** **Rows shown: a number picker, 1–24, default 12**, twenty-four greyed at the field's ceiling. **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **The field** · A4·15's — 48 px tall, `surface`, 1 px `border`, pack radius, 16 px text, a 19 px glyph inset 16, **32 px above the first row**, on the list's measure at Full. **No submit button and no `<form>`**; Enter is a no-op. A 44 px Clear button with a 15 px cross when there is text, labelled “Clear”; Escape clears and keeps focus in the field. **The placeholder's default says “Filter questions” rather than “Search”**, because it filters the rows on this page and does not search the site; a site may rewrite it, and the field it edits is `filterPlaceholder`.
 
@@ -566,7 +572,7 @@ The archetype names the arrangement — a field governing a list — and **not t
 
 **Responsive** · **nothing collapses.** The field takes the list's width at Full — 780 / 690 / the column — and 420 at Narrow, **full width at ≤ 767 at both values**. Field height 48 at every width, because 48 is a touch target rather than a proportion.
 
-**Empty** · fewer authored than shown → that many rows. **Fewer than twelve → hands off to 1 Accordion**, since a filter over eight rows is a control with nothing to do.
+**Empty** · fewer authored than shown → that many rows. **Fewer than twelve → the field still draws over the rows there are**, with 1 Accordion advised.
 
 **a11y** · `<input type="search">` with a **visually hidden real `<label>` from the theme's catalog** — a placeholder that disappears when a reader types is not a name, and an editable placeholder is not one either. **The count is one `aria-live="polite"` element serving both sighted and screen-reader readers, debounced 500 ms.** **Filtered-out rows are removed from the DOM, the only place in A9 where content leaves the tree**; clearing restores every row in authored order. **Focus is never moved for a reader.** The `<mark>` survives forced colours as the system's own mark styling. Print: no field, every row open and unfiltered.
 
@@ -589,31 +595,31 @@ Three or four rows in a tight band, no head, **its own 32 · 44 · 56 padding sc
 **Items** · `items[]`, three or four of them, and **the only design whose item content has a ceiling of its own**.
 
 - **Add.** Lands last. **The seeded answer is written to this design's ceiling** — “A short answer, two sentences at most.” — because a placeholder that handed the section off to 1 Accordion the moment it arrived would be a placeholder that breaks the design. *Flagged: mine.*
-- **Remove.** Never disabled; **one or two questions are drawn as one or two rows**, and there is no hand-off downwards.
+- **Remove.** Never disabled; **one or two questions are drawn as one or two rows**, and nothing switches downwards.
 - **Reorder.** Meaningful; three or four rows in authored order.
-- **Counts.** Three or four drawn. **Five or more authored → four drawn and the panel names 1 Accordion**; one or two are drawn as they are.
+- **Counts.** Three or four drawn. **Five or more authored → four drawn, the rest kept, and the panel advises 1 Accordion**; one or two are drawn as they are.
 - **Zero.** The section does not render, and **nothing survives it**: with no head, no note and no link at any value, the item list is the entire section — the only design in A9 where that is literally true.
-- **Inside an item.** `question` and `answer`, plus `anchor`; ten fields are kept and never drawn, so an item's `group` is inert. **The answer's ceiling is a content constraint, not a style:** past 300 characters, or with a list or inline code in it, **the section draws 1 Accordion instead** — a hand-off rather than a truncation, and the editor says “Lists and code need a full section” rather than stripping markup out of what somebody wrote. Links and bold are kept.
+- **Inside an item.** `question` and `answer`, plus `anchor`; ten fields are kept and never drawn, so an item's `group` is inert. **The answer's ceiling is editor advice rather than a render decision:** past 300 characters, or with a list or inline code in it, **the counter advises 1 Accordion and the band draws the answer as it was written** — no truncation, no strip and no switch, because a stylesheet cannot see how long a sentence is. Links and bold are kept.
 
 **Fields** · **three drawn** — `question`, `answer`, `anchor` — from three or four items. **Ten kept and never drawn**: `eyebrow`, `title`, `sub`, `note`, `linkLabel`, `linkUrl`, `image`, `imageAlt`, `groupLabel`, `group`. **The most any design in A9 keeps, and the reason switching away loses nothing.**
 
-**Controls** · **Rules: Above and below · Above only · None** — **Above and below is the default**, the only design in A9 whose Rules default is not Between: with no head above them, the rows need a top edge to start against. Question size: Row 17 · Large 20. Rows shown: Three · Four. Marker: Chevron · Plus. **Open rows: Many · One at a time**. **Universal, outside this list:** Background role — the old Ground row, Surface being the `surface` panel and Background the page's own ground — Contrast disabled · Vertical spacing resolving this design's **32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390); the fixed 14 px row inside it is not a control · Top divider **locked None** at Rules Above and below and at Above only. Plus the **Data group**. **No Member visibility:** this design bears no ask at any value, and is the one section in A9 a site cannot hide from a member state.
+**Controls** · **Rules: Above and below · Above only · None** — **Above and below is the default**, the only design in A9 whose Rules default is not Between: with no head above them, the rows need a top edge to start against. Question size: Row 17 · Large 20. **Rows shown: a number picker, 1–4, default 4**, four greyed with its reason. Marker: Chevron · Plus. **Open rows: Many · One at a time**. **Universal, outside this list:** Background role — the old Ground row, Surface being the `surface` panel and Background the page's own ground — Contrast disabled · Vertical spacing resolving this design's **32 · 44 · 56** (28 · 40 · 48 at 834, 20 · 28 · 36 at 390); the fixed 14 px row inside it is not a control · Top divider **locked None** at Rules Above and below and at Above only. Plus the **Data group**. **No Member visibility:** this design bears no ask at any value, and is the one section in A9 a site cannot hide from a member state.
 
 **Not offered** · Head, at any value; Title size; Open on load.
 
 **Arrangement** · list 780 centred, answer capped 620, **row padding fixed at 14 at both question sizes — the only place A9 tightens the row** — question to answer 12, **Rules None 28 px apart**. At Ground Surface the rows sit in a `surface` panel with a 1 px hairline, the pack radius, **32 px of padding and 20 on a phone, no shadow**, and the Rules values apply inside it. **The difference between this design and 1 Accordion at head None is the padding, the answer ceiling and the refusal of lists**, and the panel states all three.
 
-**The ceiling** · **300 characters, hard, and a hand-off rather than a truncation.** Past 300 the section draws 1 Accordion and the counter reads “312 characters — drawing 1 Accordion. Under 300 for a slim band.” The field still stores 900. **A list, an ordered list or inline code in an answer hands off too, at any length** — three bullet points inside a 44 px band is a section pretending to be a strip — and the editor says “Lists and code need a full section” rather than stripping the markup out of what somebody wrote. **Links and bold are kept.**
+**The ceiling** · **300 characters, and after this pass it is advice rather than a switch** — the owner’s ruling of 29 August 2026, chosen over blocking the save and over dropping the line. Past 300 the counter turns muted and reads “312 characters — a slim band reads best under 300. For longer answers, 1 Accordion.” The field still stores 900, and **the band draws the answer it was given at any length**: the row grows, nothing is truncated and this design does not become another one. **A list, an ordered list or inline code is drawn as it was written**, with the editor advising rather than switching or stripping — “Lists and code read better in a full section — 1 Accordion” — because three bullet points inside a 44 px band is a band doing a section’s work, which is a thing to advise against and not a thing to override. **Links and bold are kept.**
 
 **Responsive** · nothing collapses and nothing is cropped; all three or four rows are drawn at every width. Row padding 14 above 767 and 13 below.
 
-**Empty** · nothing to be absent. **One or two questions → drawn as one or two rows.** **Five or more authored → four drawn and the panel names 1 Accordion.**
+**Empty** · nothing to be absent. **One or two questions → drawn as one or two rows.** **Five or more authored → four drawn, the rest kept, and the panel advises 1 Accordion.**
 
 **The boundary** · **A6·10 Slim** is a banner: it asks for something and ends in a link. **A2's bars** sit above the header, are dismissible and can rotate. **1 Accordion at head None** is these rows with the section's own padding, no ceiling and lists allowed. This is a band in the flow of a page that answers three or four short questions and asks for nothing: **no head, no note, no link, no button, nothing sticky, nothing dismissible.**
 
 **a11y** · **no `<h2>` and no accessible name** — with 15 Ledger the only two in A9 — the questions still `<h3>`, a skipped level that is the honest structure for a band inside somebody else's section. Otherwise 1 Accordion exactly. The panel is a plain `<div>` with no role. **44 px targets at the tightest padding in the category:** 13 + 24 + 13 on a phone.
 
-**Flagged** · the 14 px row padding; **the 300-character ceiling and the refusal of lists and code, with the hand-off rather than a strip**; Above and below as the default; the 28 px Rules None value; the panel's 32 / 20 padding; four as the ceiling; drawing no head, note or link at any value; the three boundaries.
+**Flagged** · the 14 px row padding; **the 300-character line and the note on lists and code, now advice rather than a switch**; Above and below as the default; the 28 px Rules None value; the panel's 32 / 20 padding; four as the ceiling; drawing no head, note or link at any value; the three boundaries.
 
 ---
 
@@ -632,9 +638,9 @@ The accordion with a contact panel at its foot: the section's `note` as one sent
 **Items** · `items[]`, above the panel.
 
 - **Add.** Lands last **among the rows** — above the panel, which is not in the list and cannot be reordered into it.
-- **Remove.** Never disabled; **one question and the panel is a legitimate section** and there is no hand-off out of this design.
+- **Remove.** Never disabled; **one question and the panel is a legitimate section** and nothing switches out of this design.
 - **Reorder.** Meaningful among the rows. Tab order is the rows and then the button, at every panel value, whatever the order.
-- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; six is the ceiling and the panel names 1 Accordion past it.
+- **Counts.** 1–24 authored, four or six drawn, extra kept and not drawn; six is the ceiling and the panel advises 1 Accordion past it.
 - **Zero.** The section does not render — **including the panel**, which is the case worth stating: a note and a filled button with no questions above them is A6 CTA Banners' section, not this one.
 - **Inside an item.** As 1 Accordion. **The panel's note and link are the section's fields, not an item's**, so no question can carry a button of its own — a design where every answer ended in one would be six buttons and a different category.
 
@@ -642,7 +648,7 @@ The accordion with a contact panel at its foot: the section's `note` as one sent
 
 **The button needs a reason** · A6 CTA Banners owns the ask, and a FAQ that ends in “Subscribe” is a banner with questions as its copy. This button asks for nothing except the reader's own question. **It is a `mailto:`, a contact page or a help address and never a subscribe, a trial or a purchase** — **the editor warns on a link to a checkout, signup or trial and names A6·11 Reasons**, and the warning does not block the save, because a theme cannot know every URL. **The URL is picked, not typed:** the field opens the **Link Picker**, so a mailto:, a contact page or a help address is chosen from what the site has, and the warning fires on what comes back.
 
-**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. Rows shown: Four · Six. **Ask panel: Card · Rule above · None.** **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members, through the **P0·4** member-aware action editor, because the panel's button is the ask it gates. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
+**Controls** · Head: Centred · Flush left · None. Title size: 34 · 40 · 48. Question size: Row 17 · Large 20 · Feature 24. **Rows shown: a number picker, 1–6, default 6**, six greyed with its reason. **Ask panel: Card · Rule above · None.** **Open rows: Many · One at a time**. Member visibility: Everyone · Logged out · Free members · Paid members, through the **P0·4** member-aware action editor, because the panel's button is the ask it gates. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider None · Line · Fade. Plus the **Data group**.
 
 **Arrangement** · at **Card**, the shared card at the list's width — `surface`, 1 px hairline, pack radius, **32 px padding, 24 at 834, 20 at 390, no shadow** — holding the note at 17 px in `text` on a 480 measure and the button at the right, **40 px below the last row**. **The note is `text` here and muted everywhere else in A9**: in the other fourteen designs it is a footnote under a list, and in this one it is the panel's whole sentence. At **Rule above**: no plane, the row's own hairline, 24 px either side, so the panel reads as the last item in the list. At **None**: the category's ordinary muted foot and an underlined text link — **not an empty state**, but a value, so a site can take the button off after a campaign without switching designs. **The panel is not drawn unless both the note and the link pair are authored.**
 
@@ -650,7 +656,7 @@ The accordion with a contact panel at its foot: the section's `note` as one sent
 
 **Responsive** · the note and the button hold one row down to 767, the note's measure narrowing to 420 at 834. Nothing else collapses.
 
-**Empty** · **no link pair → the panel is not drawn and the note falls back to the muted foot**; no note and no link → no foot at all and the control unavailable. **One question → one row and the panel.** No hand-off out.
+**Empty** · **no link pair → the panel is not drawn and the note falls back to the muted foot**; no note and no link → no foot at all and the control unavailable. **One question → one row and the panel.** Nothing switches out.
 
 **a11y** · 1 Accordion's structure plus a plain `<div>` holding a `<p>` and an `<a>` — **no role, no label, no heading**. **The button is an `<a href>` styled as a button**, never a `<button>`: it navigates, and a `mailto:` announced as a button would promise something that happens on the page. Tab order: the rows, then the button last, at every Ask panel value. **Carried text on the accent fill is 4.6:1 light and 4.9:1 dark — the only place in A9 where accent carries text.** Forced colours: the fill is dropped and the button takes system button colours with a 1 px border. **Print: the panel is kept, the fill is not printed, and the label prints with its URL beside it.**
 
@@ -673,7 +679,7 @@ The question in a 300 px column at the left, the answer on 620 at the right, row
 **Items** · `items[]`, each drawn as a question column and an answer column.
 
 - **Add.** Lands last. **The seeded question is short on purpose** — 300 px at Row 17 is about 34 characters a line, so a long placeholder arrives as three lines of label. *Flagged: mine.*
-- **Remove.** Never disabled; one question is one row. **No hand-off out, and two arrive here** — 5 Split Head with no title, and any design a site leaves to put every answer beside its question.
+- **Remove.** Never disabled; one question is one row. **Nothing switches out, and two ways in arrive here** — 5 Split Head with no title, and any design a site leaves to put every answer beside its question.
 - **Reorder.** Meaningful; authored order at every width. **The flex row never reverses**, so a row's question is read before its answer wherever it sits and whatever Alignment says.
 - **Counts.** 1–24 authored, four, six or eight drawn, extra kept and not drawn. Designed for six and eight, which is where a label column earns its 300 px.
 - **Zero.** The section does not render. Seven fields are kept and never drawn, so **there is no head to survive an empty list** — as in 13 Slim, the item list is the section.
@@ -681,7 +687,7 @@ The question in a 300 px column at the left, the answer on 620 at the right, row
 
 **Fields** · `note`, link pair, and **four, six or eight items**. **`eyebrow`, `title`, `sub`, `image`, `imageAlt`, `groupLabel` and `group` are kept and never drawn** — seven fields, second only to 13 Slim's ten.
 
-**Controls** · Alignment: Centred · Flush left. Question size: Row 17 · Large 20. **Rules: Between · Above and below · None.** **Row padding: Compact 24 · Comfortable 32 · Spacious 44.** Rows shown: Four · Six · Eight. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below. Plus the **Data group**. **Row padding keeps its own row**: it measures the space between two answers, not the space around the section.
+**Controls** · Alignment: Centred · Flush left. Question size: Row 17 · Large 20. **Rules: Between · Above and below · None.** **Row padding: Compact 24 · Comfortable 32 · Spacious 44.** **Rows shown: a number picker, 1–8, default 6**, eight greyed with its reason. Member visibility: Everyone · Logged out · Free members · Paid members. **Open rows is not offered:** nothing here closes. **Universal, outside this list:** Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, the old Padding row under the name every section uses · Top divider **locked None** at Rules Above and below. Plus the **Data group**. **Row padding keeps its own row**: it measures the space between two answers, not the space around the section.
 
 **Not offered** · Head, at any value; Title size; Marker and Open on load.
 
@@ -691,11 +697,11 @@ The question in a 300 px column at the left, the answer on 620 at the right, row
 
 **Responsive** · two columns above 1080; at 834 **240 · 40 · 474 = 754, the full width inside the margins** — the one width with no unused space — with the question forced to Row 17 and row padding 28. **At ≤ 767 the answer goes under the question at both Alignment values**, disclosed as “Under the question at this width”, **at which point this design and 3 Open List are the same drawing, and the panel says so.**
 
-**Empty** · no note and no link → no foot. **One question → one row.** No hand-off out. **Two hand-offs arrive here:** 5 Split Head with no title, and any design a site leaves to put every answer beside its question.
+**Empty** · no note and no link → no foot. **One question → one row.** Nothing switches out. **Two ways a site arrives here:** 5 Split Head with no title, and any design a site leaves to put every answer beside its question.
 
 **a11y** · a `<ul>` of `<li>`, each an `<h3>` and its prose in a flex row. **Not a `<table>`** — two columns of unrelated pairs are not tabular data, there is no header row, and a table would promise that the columns can be compared down their length — **and not a `<dl>`**, A9-0's refusal, in the layout that most tempts one. **No `<h2>` and no accessible name.** `tabindex="-1"` on each heading; reading order question then answer at every width, because the flex row never reverses. **No tab stop at all with no links authored.** Forced colours unchanged; **print and screen are the same drawing**.
 
-**Flagged** · the 300/56/620 division and the 320 px left unused; **row padding as its own control**; the 44 px Rules None value; the 70-character advice; the 240/40/474 tablet division; stating that the phone frame is 3 Open List's drawing; taking 5 Split Head's hand-off.
+**Flagged** · the 300/56/620 division and the 320 px left unused; **row padding as its own control**; the 44 px Rules None value; the 70-character advice; the 240/40/474 tablet division; stating that the phone frame is 3 Open List's drawing; stating where a site arrives at this design from.
 
 ---
 
@@ -708,7 +714,7 @@ The question in a 300 px column at the left, the answer on 620 at the right, row
 
 **And what the drawing changed** · seven statements in `A9-0` were written before the designs and overruled by them: the `<h3>` rule (two designs use `<h4>`, and 11 Tabs keeps `<h3>` for a stated reason), the accent's three places (four), sticky elements (one exists, with four conditions), the refusal of question counts (12 Filter's count while typing), the `<h2>` count (two designs have none), row padding following the question's step (13 Slim and 15 Ledger override it), and the marker's alignment (the question's first line, not the row's centre — the one change the stress frame forced on the whole category). All seven are amended in `A9-0` and logged in its consistency pass.
 
-**Fifteen designs, five to eight controls each, plus the universal trio, the Data group and the Design picker.** 13 Slim is the five; 8 Contrast Band is the eight; the ceiling is the PRD's ~15 and no design comes near it. **One image** (10 Image Split), **one input** (12 Filter), **one filled button** (14 Ask), **one `<ol>`** (9 Numbered), **one sticky element** (7 Index), **one band** (8 Contrast Band). **Nine designs hand off and three receive** — 1 Accordion from seven, 6 Grouped from two, 15 Ledger from one — and **ten panels name 3 Open List** for the cost every accordion carries.
+**Fifteen designs, five to eight controls each, plus the universal trio, the Data group and the Design picker.** 13 Slim is the five; 8 Contrast Band is the eight; the ceiling is the PRD's ~15 and no design comes near it. **One image** (10 Image Split), **one input** (12 Filter), **one filled button** (14 Ask), **one `<ol>`** (9 Numbered), **one sticky element** (7 Index), **one band** (8 Contrast Band). **No design hands off, and nine hide something instead** — 1 Accordion is advised by seven panels, 6 Grouped by two and 15 Ledger by one — and **ten panels advise 3 Open List** for the cost every accordion carries.
 
 ---
 
@@ -743,7 +749,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 - **4 Cards is `none · page`.** The cards are the *item's* geometry; the section has no container and no ground of its own. The Cards control (Surface · Ground) sets the card's fill, not the section's ground — the slot the brief warns is most often got wrong, and this is the design it warns about.
 - **13 Slim's tuple is written at Ground Surface** — `box · surface`, the value that gives the section a container and a ground of its own. At Ground Background it is `none · page` and the emphasis slot still separates it from every stack in the table, which is the same argument the design's boundary paragraph makes in words.
 - **12 Filter's archetype is `form`** for the arrangement — a field governing a list — and **not for the element**: the design has no `<form>`, no submit button and a dead Enter key.
-- **1 Accordion is the category's only `variable`**, because it is the only design with no count control: every authored question is drawn, which is what the panel's “24 of 24” says. Where a Rows shown control spans the few/many boundary (four or six, three or six) the class is taken at the design's lower drawn value — stated so the reading is reproducible rather than a judgement each time.
+- **1 Accordion is the category's only `variable`**, because it is the only design with no count control: every authored question is drawn, which is what the panel's “24 of 24” says. Where a count picker's range spans the few/many boundary the class is taken at the design's default value — stated so the reading is reproducible rather than a judgement each time.
 
 **8 Contrast Band and 1 Accordion are the pair the brief describes** — the same rows, the same module, the same items, separated by ground alone — and A9 ships them as two designs deliberately, which is what makes the ground slot load-bearing rather than descriptive.
 
@@ -782,3 +788,110 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 23. **§17's structural-descriptor table** — **unmoved.** Nothing here changes a drawn tuple: 8's lock confirms the `contrast` ground its tuple already names, 13's Ground row becoming Background role leaves `box · surface` at Surface exactly as written, and Open rows is a behaviour value rather than an arrangement.
 
 **Quick Controls, per design.** 1 Head · Question size · Marker · Open on load · Open rows — 2 Question size · Divider · Rows shown · Open rows — 3 Head · Question size · Rules · Rows shown — 4 Head · Columns · Questions shown · Cards — 5 Rows shown · Head column · Foot · Open rows — 6 Question size · Group label · Marker · Open rows — 7 Index column · Index behaviour · Copy links · Open rows — 8 Band width · Question size · Rows shown · Open on load · Open rows — 9 Head · Questions shown · Numerals · Numeral position — 10 Division · Image side · Crop · Rows shown · Open rows — 11 Head · Question size · Rules · Groups shown — 12 Question size · Field width · Rows shown · Open rows — 13 Ground · Rules · Rows shown · Open rows — 14 Question size · Rows shown · Ask panel · Open rows · Member visibility — 15 Alignment · Question size · Rules · Row padding · Rows shown.
+
+
+---
+
+## 19 · Patch notes — FAQ patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are named, never
+numbered: the codes are filing labels and mean nothing outside this project.
+
+**Frames changed in this pass — sixteen, and every one of them.** `A9-0 Category Proof` (the hand-off map is now the
+**advice map**, the roster's drawn-count column reads as pickers, and designs 1 and 3 carry a **[FREE] PROPOSED** mark)
+and all fifteen design frames, each of which gains a **Patched · design patch pass** card in its spec block, a
+**number-picker** count row where it had a row of fixed buttons, and the rewritten empty-state and advice wording.
+**No section drawing moved:** the count pickers are drawn at the value each frame already drew, hiding a column is what
+the empty frames already showed, and 13 Slim's ceiling was never visible in a resting state.
+
+| Rule name | What changed in A9 |
+|---|---|
+| **No design ever turns into another design** | **The category's largest change: eleven hand-offs deleted, nothing renamed and nothing renumbered.** Deleted: 2 Two Column at four or fewer · 4 Cards at one · 5 Split Head at two or fewer and with no title · 6 Grouped with no groups · 7 Index with no groups and under six questions · 10 Image Split with no photograph and at two or fewer · 11 Tabs at one group, with no groups, and its behaviour hand-off at ≤ 767 · 12 Filter under twelve · 13 Slim past 300 characters and with a list or code in an answer. **In their place the section hides what does not apply** — no head column, no image half, no index, no tab row, no group labels — **and the panel advises**, which moves nothing on the page. `A9-0`'s hand-off map is redrawn as the advice map; §16's "nine designs hand off and three receive" now reads "no design hands off, and nine hide something instead". |
+| **Item counts are a number picker** | **Twelve rows of fixed buttons became pickers**, each stepping from 1 to the design's own maximum with the **+ greyed at the ceiling and the reason visible beside it**: 2 Two Column 1–12 default 8 · 3 Open List 1–8 default 6 · 4 Cards 1–6 default 6 · 5 Split Head 1–8 default 5 · 8 Contrast Band 1–6 default 6 · 9 Numbered 1–12 default 6 · 10 Image Split 1–6 default 6 · 11 Tabs (groups) 1–4 default 4 · 12 Filter 1–24 default 12 · 13 Slim 1–4 default 4 · 14 Ask 1–6 default 6 · 15 Ledger 1–8 default 6. **Three designs draw no count control and keep none:** 1 Accordion and 7 Index draw everything, and **6 Grouped now draws every group a site writes, up to six** — the owner’s ruling of 29 August 2026, which closes the one place in A9 where authored content was kept and never shown. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **A9 has no subscribe, sign-up or paid-tier button**, so there is nothing to gate — but Member visibility's own note said the section link "can be a Portal target", and that sentence now carries the condition in all fourteen panels that draw the control: a Portal link does not render when the connected site has self-signup switched off or no payment provider connected, and Ghost's pop-up needs JavaScript — with JavaScript off, nothing happens. **14 Ask's filled button is the one action in the category and it never opens Portal** — a mailto:, a contact page or a help address, with the editor warning on a checkout, signup or trial URL — which its panel now states, so the conditions are not implied where they do not apply. |
+| **The no-JavaScript notice** | **No subject, and no promise to withdraw.** A9 contains no subscribe or sign-in form: 12 Filter's field is a client-side filter over authored rows and posts nothing, so there is no form for a notice to replace. **The per-design no-JavaScript line stands in all fifteen** and is quoted from the registry rather than composed here — the ten accordions' native `<details>` line, 11 Tabs' stacked panels, 7 Index's static index and hidden copy button, and 12 Filter's plain statement that every authored question renders unfiltered with the field not drawn. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, none of which depends on the customer having good photography — **1 Accordion · 3 Open List · 15 Ledger · 13 Slim · 6 Grouped** — and recommended **1 Accordion** and **3 Open List**: the two shapes a FAQ can take, one closed and one open, both of which a free site can ship with nothing but typed questions. The **[Free] designs:** line is at the head of this document and the roster marks both designs, badged **[FREE] CONFIRMED**; **ruled by the owner on 29 August 2026.** |
+| **The Remove button never greys out** | **Already true, and now true for a better reason.** Remove was never disabled anywhere in A9; what it used to rely on was a hand-off — remove down past a design's floor and the design became another design. **With the hand-offs gone, removing simply leaves the design drawing fewer rows**, and the panel advises. Removing the last item empties the list, at which point the section does not render. Add question is still disabled at twenty-four with its reason, which is a ceiling on Add and not a floor on Remove. |
+| **Avatars with no photograph** | **No subject.** A9 draws no person: no author, no avatar and no initials block in any of the fifteen. |
+| **Slider labels** | **No subject.** A9 draws no slider. Every control is a named-value row, a number picker, or the universal trio's Vertical spacing at Compact · Comfortable · Spacious. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** No design in A9 has a gap control: the gutters are fixed numbers, and 2 Two Column's **Divider (Gutter · Rule)** names what sits between the columns rather than how much space is between them. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen panels. **There is no "Inherit" value anywhere in A9**, and the colour swatch row is not drawn in this category's panels — the shared row A9 draws is **Background role**, unrenamed. Every narrowing states its reason at the control: Contrast disabled with 8 Contrast Band named (fourteen designs), Background role **locked at Contrast** on 8, Top divider **locked None** on 3, 8, 13 and 15 where the design draws its own rule, Title size capped in 5, 9 and 10, and **13 Slim carrying no Member visibility** because it bears no ask at any value. No design renames a shared control or adds a value to one. |
+| **— (platform fact: a theme's templates cannot count or remember)** | **13 Slim's 300-character ceiling and its refusal of lists and code are now the editor's advice**, measured while somebody writes, and the band draws the answer it was given. 4 Cards' 450-character line and 15 Ledger's 70-character line were already editor advice and are unchanged. The panels' "6 of 9" and "24 of 24" counts are the editor's own arithmetic over the authored list, not a template's. |
+| **— (platform fact: CSS cannot see content)** | Those three lines are the only content-length rules in A9 and all three are now authoring-time advice. Nothing in the category asks a stylesheet to react to how long a question or an answer is. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Fifteen designs, no gap created or closed, no number reused, nothing renumbered and nothing deleted. |
+
+**Not touched, as instructed:** the visual language, the type scale, the colour packs and the spacing system; the
+one-at-a-time accordion, which is approved exactly as drawn and needs no JavaScript; the sent, error and loading
+states on member forms, of which A9 has none; and every design's number.
+
+**For the architect, two items.**
+
+1. **Deep-linking still carries ARCHITECT: registry addition** on every frame, unchanged by this pass: no module covers
+   opening the row at a fragment, and no module name was coined. **12 Filter keeps ARCHITECT: registry ruling** on its
+   field — `filter-strip` is anchor links to Ghost routes, not a client-side text filter.
+2. **New in this pass: 2 Two Column's split needs to know how many rows are drawn.** Splitting one list into two halves
+   is arithmetic, and a template cannot do arithmetic; the split is free if a section's authored questions are known
+   when the theme is generated, and needs a helper if they are read at request time. **The design is unchanged either
+   way** — this is a note about where the division is computed, not about what is drawn.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** — fifteen designs, no
+  gap created or closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape,
+  and names **1 Accordion** and **3 Open List** — both of which exist in this category's roster. It is this pass's
+  recommendation and is **the owner's own choice, ruled on 29 August 2026**.
+
+### Questions for the owner — all three ruled on 29 August 2026
+
+**All three recommendations were accepted.** (1) The free pair is **1 Accordion · 3 Open List**. (2) 13 Slim **draws a long
+answer and the counter advises**, rather than blocking the save. (3) 6 Grouped **draws every group a site writes, up
+to six**. The three questions are kept below as written, with the ruling marked on each.
+
+**QUESTION 1 — Which two of these fifteen FAQ designs are free?**
+
+Every category gives free customers exactly two designs, and which two is yours to pick. The five plainest, none of
+which needs the customer to have good photographs: **1 Accordion** (one column of rows that open when pressed),
+**3 Open List** (every answer visible, nothing to press), **15 Ledger** (question on the left, answer on the right,
+no heading of its own), **13 Slim** (three or four short questions as a band), **6 Grouped** (questions under labelled
+headings).
+
+1. **1 Accordion and 3 Open List.** (RECOMMENDED — **RULED, 29 August 2026**) The two shapes a FAQ can take — one that folds and one that does
+   not — so a free site can pick by how long its answers are, and both look finished with nothing but typed text.
+   Free customers give up the grid, the band, the photograph, and the grouped and filterable long lists.
+2. **1 Accordion and 15 Ledger.** The folding list plus the plainest possible one. Ledger draws no heading at all, so
+   a free site has to write its own heading in the section above it, which some will not think to do.
+3. **1 Accordion and 13 Slim.** Covers the two commonest placements: a page of questions, and four short questions
+   under a pricing table. Slim is the one design in A9 that cannot be hidden from logged-out readers, and it is built
+   for answers of about two sentences, so a free site with a wordy answer has nowhere to put it.
+
+**QUESTION 2 — The short-answer band, when somebody writes a long answer**
+
+**13 Slim** is the tight band of three or four short questions. It was specified to hand the whole section over to
+design 1 the moment an answer ran past about 300 characters, or contained a bulleted list. The rule that no design
+ever turns into another design deletes that switch, so the band now has to do something else with a long answer.
+
+1. **Draw it, and tell the writer.** (RECOMMENDED — **RULED, 29 August 2026**) The row grows to fit, nothing is cut, and the character counter
+   reads "312 characters — a slim band reads best under 300. For longer answers, 1 Accordion." A visitor sees a
+   slightly taller band; an editor sees the advice while they are typing.
+2. **Stop the writer at 300 characters in this design.** The answer field refuses the 301st character while 13 Slim is
+   placed. Nothing on the page can ever look wrong, but somebody who switches to this design with a long answer
+   already written cannot save the section until they cut their own words down, which is the kind of block people
+   write in to complain about.
+3. **Drop the 300 line altogether.** One less rule to explain, and the band is then a tight version of design 1
+   — which loses the reason it exists as a design of its own.
+
+**QUESTION 3 — Grouped questions: how many groups get drawn?**
+
+**6 Grouped** puts questions under labelled headings. The specification lets a site write up to six groups but draws
+only four, and unlike the tabbed design it has no control for choosing how many — so a fifth and sixth group are
+saved, kept, and never appear, with nothing an editor can press about it.
+
+1. **Draw every group the site writes, up to six.** (RECOMMENDED — **RULED, 29 August 2026**) The point of this design is that nothing is hidden,
+   so hiding two groups contradicts it. A site with six groups gets a longer section, which is a choice it made by
+   writing six groups.
+2. **Give it a number picker for groups, 1 to 4, like the tabbed design has.** The editor chooses how many are drawn
+   and the panel says how many are left out. Adds a control to a design that reads as simple, and still leaves
+   written content off the page.
+3. **Leave it exactly as it is.** No new control and no change to the drawing, but a fifth group a site writes stays
+   invisible with no explanation, which is the fault this question exists to close.

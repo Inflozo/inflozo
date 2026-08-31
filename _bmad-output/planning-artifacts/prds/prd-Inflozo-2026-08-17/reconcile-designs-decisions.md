@@ -344,7 +344,7 @@ probe family 36 shrinks to its oEmbed-provider half · AD-23 fixtures.
 
 | # | Correction | Citation |
 |---|---|---|
-| 1 | A25 ×6: `#/share` → `#/portal/share` (or `data-portal="share"`); name it Portal, not "native share" | `research-ghost-membership-pages.md §4` |
+| 1 | ~~A25 ×6: `#/share` → `#/portal/share`~~ **WITHDRAWN 2026-08-31 — this correction was wrong.** It was read off Portal's `getPageFromLinkPath`, which handles `/portal/*` paths. Portal **also** carries a dedicated top-level regex, tested *first*: `d = /^\/share\/?$/` → `if (r && d.test(r)) return {showPopup:!0, page:'share'}`. So **`#/share` works on Ghost 6 and is the form Ghost documents.** On Ghost 5 (portal 2.51) neither the regex nor the share page exists, so no Portal share link works there at all — which is why **R-29** kept our own share list. Caught by the A25 design session, which read Ghost's docs and said so rather than complying. **No spec was changed on the bad advice.** | Portal 2.69 source, verified 2026-08-31 |
 | 2 | A21: author handles route through `{{social_url type=…}}`, never printed raw as hrefs | A21 finding 7 |
 | 3 | A27: related filter becomes `primary_tag:{{primary_tag.slug}}+id:-{{id}}` inside `{{#post}}` — helpers do not execute inside filter strings | `appendix-b1 §5` |
 | 4 | A31: the gate `<form>` drops its `action` attribute so Ghost's own `?r=` survives (`@path` is not a Ghost global) | `private.hbs:80`, `lib/middleware.js:67` |

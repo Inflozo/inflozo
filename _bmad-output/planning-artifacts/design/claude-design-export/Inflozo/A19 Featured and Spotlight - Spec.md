@@ -11,11 +11,36 @@ Picker, the **P0·3** item controls, the **P0·4** member-aware action editor, t
 Seven things now hold across the category: the **universal trio outside every control list**, with
 every per-design **Padding** row retired into Vertical spacing; the **Data group** in place of the
 Posts block, carrying **Source: Hand-picked** and **Count as a 1–100 stepper**; **Tag: Show · Hide**
-on the eleven designs that drew a tag with no way off; **`linkUrl` deleted from all fifteen
+on the eleven designs that drew a tag with no way off (**twelve since 30 August 2026** ⚑); **`linkUrl` deleted from all fifteen
 sidebars**; the excerpt bound to **`excerpt`** everywhere except 13 Quote; every authored string
 inline-editable against Ghost-owned content that is not; and **no invented reader-visible string
 left in the category**. What each design gained is in a **Reconciled** paragraph at the foot of its
 entry, and the frame-by-frame list is in **Reconciliation notes** at the end.
+
+**Sixth pass — the design patch pass (this document's current state), 30 August 2026.** The ten
+library-wide rules were applied to all fifteen designs and then read back, one rule against every
+design. **Two of them changed something.** *No design ever turns into another design* ended the
+category's hand-off vocabulary: **Hand off is deleted from settlement 3 and Ground replaces it** —
+2 Full Bleed and 7 Overlap draw their own composition on a flat field of the pack's contrast colour
+where the picture would be, **4 Poster moves to Reflow**, and **13 Quote draws its own thin state**
+instead of rendering 6 Big Type's arrangement. Every panel that named a replacement now advises one
+and switches nothing, and the four Switch buttons are gone. *Avatars with no photograph* took the
+two initials off three frames: an author comes from Ghost, so the circle shows **one letter**. Two
+more rules bit smaller — *a design may offer fewer choices on a shared control, and must say why*
+put the missing reasons on 9 Alternating's two absences and **gave 11 Lead and Rail the twelfth Tag
+row** — the owner's ruling of 30 August 2026, closing the one place in A19 that drew a tag with no way
+off — and *Ghost's templates cannot count, add, or remember* named where 12 Picks' ordinals and
+15 Carousel's dot label get their numbers. The rest
+had no subject here, and each is recorded, design by design, in **Patch notes**. **Nothing was
+renumbered, no design was deleted, and no visual language, type scale, colour pack or spacing step
+changed.**
+
+**[Free] designs:** 1 Split · 6 Big Type
+
+*(Shortlisted in this pass, plainest first — 1 Split, 6 Big Type, 12 Picks, 14 Slim, 3 Card — and
+**ruled by the owner on 30 August 2026**: the category default, which needs no photograph because it
+reflows, and the one design in A19 whose fallback can never fail. The line above is the merge's only
+input and it is his answer, written once in the shape the merge reads literally.)*
 
 The frames are `A19-0 Category Proof.dc.html` and `A19-1` … `A19-15`. **Where this file and a
 drawn panel disagree, the panel is the authority** — it is the thing that was designed; this is the
@@ -50,9 +75,9 @@ fewer posts than it was composed for.
 
 **2 · One spotlight versus three, and the hierarchy between them.** **⚑ Amended: Count is the shared 1–100 stepper with per-design bounds**, closing the category's own first finding — A17 needed 3 · 6 · 9 · 12, A18 5 · 10 · 15 · 25 and A19 1 · 2 · 3 · 5, and a third enum was the wrong answer to a number. **A19's locked-row convention survives intact and is the right UI for it**: a locked Count is drawn disabled, with the reason and the design to switch to beneath. **Nine designs lock it at 1** and 10 Pair locks it at 2; **min 1 · max 3** on 8 Lead and Two and 9 Alternating, **max 8** on 11 Lead and Rail and 15 Carousel, **max 10** on 12 Picks. **4 and 6 are reachable at last** — the old 3 · 5 skipped them. **Where a design draws more than one, exactly one is the spotlight and the rest are followers** — the lead keeps the picture, the 34 px title, the excerpt and the call to action; a follower gets a 20 px title and a date. **Hierarchy is size, never decoration:** no design marks its lead with a chip, a fill, a border or a colour it does not give the others. **Two designs are deliberately flat and say so** — 10 Pair and 15 Carousel — and **no design has two display moments**.
 
-**3 · A featured post with no image, which is the common case.** A17's tag plate exists for exactly this and **it does not scale to A19**: a plate at a spotlight's image box is a 636 × 424 striped rectangle, and at 2 Full Bleed's box it is a 1,440 × 620 one. **⚑ So the category answers per design, from a vocabulary of three, and every design names which one it uses in spec field 8.** **Reflow** — the image column is dropped and the text takes the full content width, becoming 6 Big Type's composition at its own title size; four designs — 1 Split, 5 Contrast Band, 8 Lead and Two and 9 Alternating. **Plate** — A17's tag plate at the image's box, **capped at 320 px tall in A19 whatever the ratio says**, carrying the primary tag at eyebrow size and `aria-hidden`; four designs — 3 Card, 10 Pair, 11 Lead and Rail and 15 Carousel — all of them ones where the picture holds a position rather than a proportion. **⚑ Amended once the fifteen were drawn: the 320 cap holds only where nothing has to align with the plate, which is 3 Card alone; in 10, 11 and 15 the plate takes the picture's box exactly**, because there the plate exists to keep two columns starting level and five slides at one height, and a capped plate would break the alignment it was drawn for. **Hand off** — the design cannot exist without a picture and says so in the panel, naming its replacement and switching nothing; three designs, 2 Full Bleed, 4 Poster and 7 Overlap. **Four designs draw no picture at any setting** — 6 Big Type, 12 Picks, 13 Quote and 14 Slim — so the question does not arise for them, and the vocabulary covers eleven. **Reflow is the default answer and the one a site hits most**, because the split designs are the ones most sites choose.
+**3 · A featured post with no image, which is the common case.** A17's tag plate exists for exactly this and **it does not scale to A19**: a plate at a spotlight's image box is a 636 × 424 striped rectangle, and at 2 Full Bleed's box it is a 1,440 × 620 one. **⚑ So the category answers per design, from a vocabulary of three, and every design names which one it uses in spec field 8.** **Reflow** — the image column is dropped and the text takes the full content width, in the design's own type and on its own measure; **four designs — 1 Split, 4 Poster, 8 Lead and Two and 9 Alternating** ⚑ *amended in the design patch pass*: 4 Poster arrives here from the deleted Hand off, and 5 Contrast Band leaves for Plate, which is what its own field 8 and its drawn panel have always said. **Plate** — A17's tag plate at the image's box, **capped at 320 px tall in A19 whatever the ratio says**, carrying the primary tag at eyebrow size and `aria-hidden`; **five designs — 3 Card, 5 Contrast Band, 10 Pair, 11 Lead and Rail and 15 Carousel** ⚑ — all of them ones where the picture holds a position rather than a proportion. **⚑ Amended once the fifteen were drawn: the 320 cap holds only where nothing has to align with the plate, which is 3 Card alone; in 10, 11 and 15 the plate takes the picture's box exactly**, because there the plate exists to keep two columns starting level and five slides at one height, and a capped plate would break the alignment it was drawn for. **⚑ Ground** — *new in the design patch pass, replacing Hand off*: where the picture is the composition's structure, **the picture's box is drawn as a flat field of the pack's contrast colour at its exact size** — no stripe, no glyph, no borrowed layout — and the design's own text sits exactly where it always sits; **two designs, 2 Full Bleed and 7 Overlap**. **No design names a replacement any more**: the panel advises a design that reads better with this post and switches nothing, which is *no design ever turns into another design*, and the four Switch buttons the frames drew are deleted. **Four designs draw no picture at any setting** — 6 Big Type, 12 Picks, 13 Quote and 14 Slim — so the question does not arise for them, and the vocabulary covers eleven. **Reflow is the default answer and the one a site hits most**, because the split designs are the ones most sites choose.
 
-**4 · Zero, one and many, and whether the section hides itself.** **Zero → the section does not render**, unless the Data group's *When nothing matches* says otherwise: no head, no empty state, no sample post, and for 5 Contrast Band, 13 Quote and 14 Slim the band, the panel and the strip go with it. **Zero in the editor → the design's outline at one lead plus one line naming the cause**: “No posts are marked featured. Star a post in Ghost, or change Source.” ⚑ **One → every design draws one and none apologises.** The six multi-post designs each state what one looks like, and **a design short of posts drops its follower column entirely rather than leaving a hole**: 8 Lead and Two at one post is 1 Split's arrangement in this design's own type, 11 Lead and Rail is a lead with no rail, 12 Picks is a list numbered 01 and is weak, 15 Carousel is one slide with no dots and no arrows. **Many → the section takes exactly Count and never paginates.** There is no More link, no next arrow and no A34 attachment: **a spotlight that offers to show you the rest is a list**, and A18 is one click away in the Design picker with the query preserved.
+**4 · Zero, one and many, and whether the section hides itself.** **Zero → the section does not render**, unless the Data group's *When nothing matches* says otherwise: no head, no empty state, no sample post, and for 5 Contrast Band, 13 Quote and 14 Slim the band, the panel and the strip go with it. **Zero in the editor → the design's outline at one lead plus one line naming the cause**: “No posts are marked featured. Star a post in Ghost, or change Source.” ⚑ **One → every design draws one and none apologises.** The six multi-post designs each state what one looks like, and **a design short of posts drops its follower column entirely rather than leaving a hole**: 8 Lead and Two at one post is its own 848 lead with the follower column absent ⚑, 11 Lead and Rail is a lead with no rail, 12 Picks is a list numbered 01 and is weak, 15 Carousel is one slide with no dots and no arrows — **and every one of those panels advises rather than switches**. **Many → the section takes exactly Count and never paginates.** There is no More link, no next arrow and no A34 attachment: **a spotlight that offers to show you the rest is a list**, and A18 is one click away in the Design picker with the query preserved.
 
 **The count is the query's, not the design's — with one amendment.** No A19 design has a control that adds or removes a post; where a design's arrangement changes with the count — 8, 9, 11, 12, 15 — **Count drives it and the panel's count line reports what happened**: “5 posts are featured. 3 drawn.” **At Source: Hand-picked the picked list is the count** ⚑, the stepper is disabled and the line reads “3 picked. 3 drawn.” — the one place in A19 where a user sets the number by choosing the posts rather than by naming a figure.
 
@@ -83,7 +108,8 @@ Every design obeys these unless its own entry says otherwise.
   plaintext otherwise, clamped by line as each design draws it. **13 Quote is the single exception
   and keeps `custom_excerpt` required**, because it *frames* the excerpt: a generated fallback is
   the first fifty words of a piece with no ending, and set at 34 px as a pull quote it reads as a
-  mistake. Its hand-off to 6 Big Type is unchanged.
+  mistake. **Without one it draws its own thin state** ⚑ — the old hand-off to 6 Big Type is
+  deleted, and the notice advises that design instead.
 
 - **Type.** Spotlight title **Small 28 · Medium 34 · Large 40** in the heading font, 30 at 834, 26 at 390; **6 Big Type has its own ladder at 52 · 64 · 72** and is the category's one display moment. Follower title 20, 19 at 390. **Excerpt 17/1.6 on a spotlight and 16 on a follower** — one step above A18's row, because one post can afford it — clamped by line at Off · One line · Two lines · Three lines. Eyebrow 13 uppercase tracked. Meta 13.
 
@@ -127,7 +153,7 @@ Every design obeys these unless its own entry says otherwise.
 - **Behaviour.** **One module in the category** — `carousel`, declared by 15 Carousel alone. **No
   registry addition is needed by this pass and no module name was coined.** `core` is assumed and never declared per design. **Fourteen designs are pixel-identical with JavaScript off** and the fifteenth loses only its dots and arrows. `reveal`, `shuffle`, `slide-in-card` and `count-up` were considered and refused.
 
-- **Print.** Every design prints as drawn except two: **5 Contrast Band prints as 1 Split on white** (A17·7's rule) and **15 Carousel prints its slides stacked**, all of them, in query order.
+- **Print.** Every design prints as drawn except two: **5 Contrast Band prints its own arrangement on white with the band's ground dropped** ⚑ (A17·7's rule, reworded in the design patch pass — it prints as itself, not as another design) and **15 Carousel prints its slides stacked**, all of them, in query order.
 
 ### The content
 
@@ -157,12 +183,12 @@ are invented.
 | # | Design | What it is for | Tuple | Count | No image |
 |---|---|---|---|---|---|
 | 1 | **Split** | The default. One post, text beside a picture. | `split · none · page · one · right · half-page image` | 1 | Reflow |
-| 2 | **Full Bleed** | The picture is the section; text sits on it. | `media frame · none · image · one · full-bleed · text on the picture` | 1 | Hand off |
+| 2 | **Full Bleed** | The picture is the section; text sits on it. | `media frame · none · image · one · full-bleed · text on the picture` | 1 | Ground |
 | 3 | **Card** | One post lifted onto a plane inside the page. | `split · card · surface · one · left · one post on a plane` | 1 | Plate |
-| 4 | **Poster** | A tall crop in a narrow column; a magazine cover. | `media frame · none · page · one · top · portrait crop, centred column` | 1 | Hand off |
-| 5 | **Contrast Band** | 1 Split inverted, to break a long page. | `split · none · contrast · one · right · inverted band` | 1 | Reflow |
+| 4 | **Poster** | A tall crop in a narrow column; a magazine cover. | `media frame · none · page · one · top · portrait crop, centred column` | 1 | Reflow |
+| 5 | **Contrast Band** | 1 Split inverted, to break a long page. | `split · none · contrast · one · right · inverted band` | 1 | Plate |
 | 6 | **Big Type** | The title is the whole design. No picture at any setting. | `stack · none · page · one · none · title at display size` | 1 | n/a |
-| 7 | **Overlap** | A card sitting over the corner of a wide picture. | `media frame · card · page · one · background · card overlapping the image` | 1 | Hand off |
+| 7 | **Overlap** | A card sitting over the corner of a wide picture. | `media frame · card · page · one · background · card overlapping the image` | 1 | Ground |
 | 8 | **Lead and Two** | One spotlight with two text-only followers beside it. | `grid-of-N · none · page · few · left · lead outsized against two` | 2 · 3 | Reflow |
 | 9 | **Alternating** | Two or three spotlights, each a full-width band, sides alternating. | `stack · none · page · few · left · alternating full-width bands` | 2 · 3 | Reflow |
 | 10 | **Pair** | Two featured at equal weight, half a page each. | `split · none · page · few · top · two halves at equal weight` | 2 | Plate |
@@ -209,7 +235,7 @@ sidebar order.**
 
 ### 1 · Split
 
-1. **Descriptor.** One featured post as a two-column split: text on a 560 px measure at the left, its feature image on 636 at the right, the two centred against each other. The category's default and the design the rest of it hands off to.
+1. **Descriptor.** One featured post as a two-column split: text on a 560 px measure at the left, its feature image on 636 at the right, the two centred against each other. The category's default and the design the rest of it advises.
 
 2. **Structural descriptor.** `split · none · page · one · right · half-page image`
    Unique on the five closed slots. 5 Contrast Band shares all but ground, which is the pair A19-0 uses to show what the ground slot is for.
@@ -224,13 +250,15 @@ sidebar order.**
 
 7. **Data.** Ghost's `#get "posts"` at `filter: featured:true` by default, `limit: 1`. **Designed for exactly one post; Count is the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**, unless *When nothing matches* is Show the latest post, in which case the query re-runs without the filter and the eyebrow still reads whatever is authored. **0 in the editor →** the outline plus “No posts are marked featured. Star a post in Ghost, or change Source.” **Many → the first by Order is drawn and the rest are not**; the count line reports both numbers. **Order** Newest first · Oldest first; `shuffle` is not declared here or anywhere in A19.
 
-8. **Empty state.** **No feature image → Reflow**: the image column is removed, the text measure goes 560 → 720, the section is 268 px tall rather than 424, and **no plate is drawn**. No tag → the eyebrow line is the section's “Featured” alone; if that is also absent the title starts the block. No excerpt → nothing drawn, the block is shorter, the columns stay centred. No author photograph at Meta With photograph → A1·6's initials, as drawn in the primary frame. No section fields → the split starts at the top padding.
+8. **Empty state.** **No feature image → Reflow**: the image column is removed, the text measure goes 560 → 720, the section is 268 px tall rather than 424, and **no plate is drawn**. No tag → the eyebrow line is the section's “Featured” alone; if that is also absent the title starts the block. No excerpt → nothing drawn, the block is shorter, the columns stay centred. No author photograph at Meta With photograph → A1·6's fallback at **one letter** ⚑ — the author comes from Ghost, and Ghost cannot make two initials out of a name; drawn that way in the primary frame. No section fields → the split starts at the top padding.
 
 9. **Behaviour module.** **None**; `core` assumed and never declared per design. **No-JS: pixel-identical.** The split is a flex row, the hover underline is CSS, the whole box is an `<a>`. Edit-safe: nothing animates and the resting state is the only state. `reveal` was considered for the picture and refused — a spotlight that fades in is invisible in the editor and in a screenshot, and the section's whole purpose is to be seen immediately.
 
 10. **Accessibility.** `<section aria-labelledby>`. **With no section title authored the post's title is the `<h2>`; with one it is the `<h2>` and the post steps to `<h3>`** — A19's rule, drawn both ways in this file. One `<a>` wraps image and text; **the call to action is a `<span>` inside it, never a nested link**. DOM order image → tag → title → excerpt → meta → call to action at both Media side values, so the order heard does not change with the layout. `alt` from `feature_image_alt`, empty when absent — never the title. Date a `<time datetime>`; avatar `aria-hidden`. A6's ring on the whole box at 4 px. Contrast 15.46:1 title, 5.56:1 muted light; 15.64:1 and 6.89:1 dark.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added; **`linkUrl`** removed from the sidebar and the union; the Posts block became the **Data group** with **Hand-picked** in Source (ceiling one post here) and **Count as a 1–100 stepper** locked at 1, drawn disabled with its reason; the excerpt binds **`excerpt`** with Ghost's generated fallback. Nothing in the trio is locked. **This design's panel is still the category's reference**, and the three settlements it drew — the disabled Count row, the count line, the fifth query field — all survive the pass under new names.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **nothing hands off to this design any more.** Eleven panels used to name it as a replacement and now name it as advice — "with no picture on this post, 1 Split reads better" — and none of them switches. *Avatars with no photograph*: **the meta circle draws one letter**, where the frames drew two; the author comes from Ghost. Reflow, the locked Count and the six controls are unchanged, and the frame is redrawn only in the avatar.
 
 ---
 
@@ -247,17 +275,19 @@ sidebar order.**
 
 5. **Content fields.** Section: five authored, `linkUrl` deleted; `title` and `sub` **are not drawn by this design** and are the only fields in A19 a design refuses — a section head above a full-bleed picture would sit on the page above the section's own edge. Data group: all six, Hand-picked included. Post: `title`, `url`, `feature_image` **required** + `feature_image_alt`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **No `primary_tag`** — the eyebrow is the section's. Writes `height`, `textPosition`, `scrim`, `titleSize`, `excerpt`, `meta`.
 
-6. **Controls.** **Height** Short · Tall · Full screen. **Text position** Lower left · Lower centre · Centre. **Scrim** Soft · Medium · Strong, **a value disabled with its measured ratio when it fails on the set image**. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines. **Meta** None · Date only · Name and date · Name, date and reading time. Six of its own, plus the universal trio and the Data group. **No Ratio control** — the picture is cropped to the section, not fitted to a ratio — and **no Tag row**, since no `primary_tag` is read. **Universal: Background role locked at the image ground, Vertical spacing locked as no-effect, Top divider locked None**, each with its reason drawn. **Quick: Height, Text position, Scrim, Title size.**
+6. **Controls.** **Height** Short · Tall · Full screen. **Text position** Lower left · Lower centre · Centre. **Scrim** Soft · Medium · Strong, **a value disabled with its measured ratio when it fails on the set image — and the measurement exists at Source: Hand-picked alone** ⚑ *amended in the design patch pass*: a stylesheet cannot see a photograph, so the editor measures the picked picture and writes the result; at a query Source the post can change long after the editor closed, so **nothing is disabled there and the panel advises Strong**. **Title size** Small · Medium · Large. **Excerpt** Off · One line · Two lines. **Meta** None · Date only · Name and date · Name, date and reading time. Six of its own, plus the universal trio and the Data group. **No Ratio control** — the picture is cropped to the section, not fitted to a ratio — and **no Tag row**, since no `primary_tag` is read. **Universal: Background role locked at the image ground, Vertical spacing locked as no-effect, Top divider locked None**, each with its reason drawn. **Quick: Height, Text position, Scrim, Title size.**
 
-7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; with *When nothing matches* at Show the latest post, **the latest post is used only if it has a feature image**, and if it does not the section still does not render ⚑ — the one place in A19 where the fallback can itself fail, and the panel says so. **0 in the editor →** the outline at Tall plus the standard line. Many → the first by Order.
+7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; with *When nothing matches* at Show the latest post **the latest post is drawn whether or not it has a feature image** ⚑ *amended in the design patch pass* — with Ground there is no longer a case where the fallback fails, and the sentence that said there was is deleted. **0 in the editor →** the outline at Tall plus the standard line. Many → the first by Order.
 
-8. **Empty state.** **No feature image → hand off.** On the site: nothing renders. In the editor: the post's title, the reason, and two buttons — Switch to 1 Split, Keep this design — **and nothing switches itself**. No excerpt → not drawn, the block is 27 px shorter, the inset is unchanged. No author name → the date alone. **No `feature_image_alt` → the `alt` is empty and the picture is decorative**, because the title beside it already carries the meaning.
+8. **Empty state.** **No feature image → Ground** ⚑ *changed in the design patch pass*: the picture's box is a flat field of the pack's contrast colour at the set Height, **the scrim is not drawn** (there is nothing to lift text off), and the eyebrow, title, excerpt, meta and call to action sit exactly where Text position puts them. **The section renders — on the site as well as in the editor.** An editor-only line names the missing picture and advises 1 Split; **nothing switches, and there is no Switch button.** No excerpt → not drawn, the block is 27 px shorter, the inset is unchanged. No author name → the date alone. **No `feature_image_alt` → the `alt` is empty and the picture is decorative**, because the title beside it already carries the meaning.
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** The scrim is a gradient, the height is CSS, the crop is `object-fit: cover`. **Considered and refused: `reveal`** (a hero that fades in is a hero nobody photographs) and **`video-facade`** — a featured post's video is A15's business and a poster frame here would need a play affordance the section has no field for. **Parallax was considered and refused outright**: no module covers it, and inventing one is not this pass's licence.
 
-10. **Accessibility.** The picture is a `<img>` inside the anchor, not a CSS background, so it prints and is announced; **the scrim is a sibling `<div aria-hidden>`**. Post title is the `<h2>` — this design never draws a section title, so the level never steps. **Every scrim value is measured against the image's mean luminance at the text box and a failing value is disabled with its ratio**, which is the project's rule 4 applied to a photograph rather than to a colour. A6's ring on the whole picture at a 4 px inset, drawn inside the section because there is no page margin to draw it in ⚑. Reduced motion is not a factor: nothing moves.
+10. **Accessibility.** The picture is a `<img>` inside the anchor, not a CSS background, so it prints and is announced; **the scrim is a sibling `<div aria-hidden>`**. Post title is the `<h2>` — this design never draws a section title, so the level never steps. **Every scrim value is measured against the image's mean luminance at the text box and a failing value is disabled with its ratio**, which is the project's rule 4 applied to a photograph rather than to a colour. **⚑ At a query Source there is no measurement to make** — the picture is not known while the editor is open — so the panel advises the strongest value instead of disabling a weaker one, and at Ground the question does not arise: the field is a token and its ratio is fixed. A6's ring on the whole picture at a 4 px inset, drawn inside the section because there is no page margin to draw it in ⚑. Reduced motion is not a factor: nothing moves.
 
 **Reconciled.** The trio ships outside the list with **Background role locked at the image ground** (the picture *is* the ground) and **Vertical spacing locked as no-effect** — **Height stays this design's own ladder and is not renamed**, since a section height is not a padding. **Top divider locked None.** **`linkUrl`** removed; the Data group carries **Hand-picked** with a warning on a pictureless pick — the one design whose fallback can itself fail — and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **No Tag row**: this design reads no `primary_tag`.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **Hand off is deleted and Ground replaces it.** With no picture the section renders — on the site as well as in the editor — as a flat field of the pack's contrast colour at the set Height with the design's own text where Text position puts it, the scrim not drawn. **The two Switch buttons are gone**, the panel advises 1 Split, and **the fallback can no longer fail**, which retires the one ⚑ in the category that said it could. *CSS cannot see content*: the Scrim measurement is named as the editor's, and it exists at Source: Hand-picked alone.
 
 ---
 
@@ -286,6 +316,8 @@ sidebar order.**
 
 **Reconciled.** Padding retired into **Vertical spacing** — it was already labelled “the space around the card”, which is the same ladder. **Tag: Show · Hide** added, and **at Tag Hide with no picture the plate is drawn empty rather than dropped** ⚑, because the card's geometry needs the box. **`linkUrl`** removed; the Data group carries **Hand-picked** (one post) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. At Background role Surface the card takes its outline value, disclosed rather than disabled.
 
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **nothing here handed off and nothing does now.** With no picture the plate holds the card's geometry, at Tag Hide it is drawn empty, and the Outline-in-dark note stays advice at a control. Every other rule was already satisfied and the design is unchanged; the frame gains only the patch block.
+
 ---
 
 ### 4 · Poster
@@ -303,15 +335,17 @@ sidebar order.**
 
 6. **Controls.** **Width** Narrow · Medium · Wide. **Ratio** Portrait 4:5 · Square 1:1 · Landscape 3:2. **Alignment** Centred · Flush left. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time · With photograph. **Tag** Show · Hide — at Hide the eyebrow is the section's word alone. Six of its own, plus the universal trio and the Data group. **No Title size** — the column is the variable and 34 is the only size that holds at all three widths. **Quick: Width, Ratio, Alignment, Meta.**
 
-7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; at Show the latest post **the fallback applies only if that post has a picture**, as in 2 Full Bleed. **0 in the editor →** the column's outline at the set ratio plus the standard line. Many → the first by Order.
+7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render**; at Show the latest post **the latest post is drawn whether or not it has a picture** ⚑, since the column reflows. **0 in the editor →** the column's outline at the set ratio plus the standard line. Many → the first by Order.
 
-8. **Empty state.** **No feature image → hand off to 1 Split**, offered in the editor with both buttons, absent on the site. No tag → the eyebrow is “Featured” alone. No excerpt → the block is 54 px shorter and the gap under the picture is unchanged. No author photograph → initials. **No author at all → the meta line is the date, and the avatar is not reserved**.
+8. **Empty state.** **No feature image → Reflow** ⚑ *changed in the design patch pass*: the crop is dropped and the narrow centred column draws eyebrow, title, excerpt, meta and call to action at its set Width — the column is the design and it holds without a picture. An editor-only line advises 1 Split; **nothing switches, and there is no Switch button.** A 560 × 700 plate is still refused, for the reason it always was. No tag → the eyebrow is “Featured” alone. No excerpt → the block is 54 px shorter and the gap under the picture is unchanged. No author photograph → A1·6's fallback at **one letter** ⚑. **No author at all → the meta line is the date, and the avatar is not reserved**.
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** Edit-safe. `lightbox` was considered — a poster-sized picture invites enlargement — **and refused: the picture is a link to the post, and a lightbox would make the largest target on the page go somewhere other than the piece it is advertising.**
 
 10. **Accessibility.** One `<a>` around picture and text; DOM order image → eyebrow → title → excerpt → meta → call to action. Head authored → head `<h2>` above the column and the post steps to `<h3>`; otherwise the post's title is the `<h2>`. **The eyebrow's two halves are one string with the dot as text**, so it is read as one label rather than as two. Avatar `aria-hidden`, the name beside it carries the meaning. **Centred text is kept to the title, excerpt and meta and never applied to a run longer than three lines** — at Excerpt Three lines the panel warns rather than disabling. Contrast as 1 Split.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, governing the tag half of the middle-dot eyebrow, the section's own word surviving alone at Hide; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when it has no picture) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus is named as the post's** — a 4:5 crop is the most destructive in the category and the focal point is set in Ghost.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the hand-off to 1 Split is deleted and this design reflows** — the crop is dropped and the narrow centred column draws the type at its set Width. The plate is still refused at 560 × 700, for the reason it always was. *Avatars with no photograph*: **one letter, not two**. The Switch buttons are gone and the panel advises.
 
 ---
 
@@ -340,6 +374,8 @@ sidebar order.**
 
 **Reconciled.** **Ratio added** with 1 Split's four values, its Landscape default and its Portrait-at-Title-Large warning. The old argument survives as advice rather than as a refusal: a band is a horizontal object, and 795 px of picture inside a stripe turns an interruption into a chapter — but **this design and 1 Split differ on ground alone, and a one-click switch must not silently discard a value the union already holds**. The plate follows the ratio at its 320 px cap. Padding retired into **Vertical spacing**, resolving 80 · 96 · 132 on this ground; **Background role locked at Contrast** and **Top divider locked None**, both with the reason drawn; **Tag: Show · Hide** added; **`linkUrl`** removed; the Data group carries **Hand-picked** and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **A new states strip on the frame draws the band at Wide, Square and Portrait.**
 
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the print line is reworded.** The band prints its own arrangement on white with the ground dropped, rather than "printing as 1 Split" — the same sheet of paper, described honestly. **Settlement 3's vocabulary list said this design reflows; its own field 8 and its drawn panel have always plated**, and the panel is this file's authority, so the list is corrected to Plate. *A design may offer fewer choices on a shared control, and must say why*: the Contrast lock, the missing With photograph value and the four Ratio values all carry their reasons already.
+
 ---
 
 ### 6 · Big Type
@@ -367,6 +403,8 @@ sidebar order.**
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Rule is kept as a distinct control** — it draws inside the section where Top divider draws above it — and **the panel warns when Rule Above meets Top divider Line** ⚑ rather than disabling either. **Tag: Show · Hide** added; **`linkUrl`** removed; the Data group carries **Hand-picked** and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **This is the design a site should hand-pick into when its featured posts have no pictures** — it is the one whose fallback can never fail.
 
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **seven panels used to point here and now advise here**, and nothing this design draws changed. Its fallback still cannot fail — the one design in A19 of which that is true — which is why it is on the free shortlist and the recommended pair. Rule by rule, nothing else had a subject: no picture, no list, no member ask, no form, no slider, no gap ladder.
+
 ---
 
 ### 7 · Overlap
@@ -384,15 +422,17 @@ sidebar order.**
 
 6. **Controls.** **Card position** Lower left · Lower right · Centred. **Image width** Content · Full bleed. **Title size** Small · Medium · Large (disabled — 40 px overflows the card). **Excerpt** Off · One line · Two lines · Three lines, **drawn one line shorter**. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide. Six of its own, plus the universal trio and the Data group. **No Ratio control** (16:9 only) and **no overlap control** (64 only). **Quick: Card position, Image width, Excerpt, Meta.**
 
-7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render.** At Show the latest post the fallback applies only if that post has a picture, as in 2 Full Bleed and 4 Poster. **0 in the editor →** the picture's outline with the card's outline over it, plus the standard line. Many → the first by Order.
+7. **Data.** As 1 Split: `featured:true`, `limit: 1`, **Count the stepper, locked at 1 and drawn disabled.** **0 → the section does not render.** At Show the latest post **the latest post is drawn whether or not it has a picture** ⚑ — Ground gives the card something to overlap. **0 in the editor →** the picture's outline with the card's outline over it, plus the standard line. Many → the first by Order.
 
-8. **Empty state.** **No feature image → hand off to 3 Card**, offered with both buttons, absent on the site. No excerpt → the card is 27 px shorter and the overlap is unchanged. No tag → the card's eyebrow is “Featured” alone. **No `feature_image_alt` → empty `alt`**; the card carries the meaning.
+8. **Empty state.** **No feature image → Ground** ⚑ *changed in the design patch pass*: the picture's box is a flat field of the pack's contrast colour at 1,296 × 486, or full bleed at that value, and **the card overlaps it by 64 px exactly as it always does** — the overlap is the design and it survives a post with no picture. An editor-only line advises 3 Card; **nothing switches, and there is no Switch button.** No excerpt → the card is 27 px shorter and the overlap is unchanged. No tag → the card's eyebrow is “Featured” alone. **No `feature_image_alt` → empty `alt`**; the card carries the meaning.
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** The overlap is a negative margin, not a transform, so it survives with JavaScript off and inside a print stylesheet. Edit-safe. **Considered and refused: `reveal` on the card** — a card that slides up over a picture is the most tempting animation in the category and the one that would most obviously not run while editing.
 
 10. **Accessibility.** One `<a>` wrapping picture and card; **the card is inside the anchor, not a sibling**, so the whole composition is one target and there is no dead zone between them. DOM order image → eyebrow → title → excerpt → meta → call to action. **A6's ring is drawn around the union of picture and card** ⚑ — an L-shaped bounding box, rendered as the anchor's own outline at a 4 px offset, which the browser computes correctly because the card is a child rather than an overlay. Post title `<h2>`, or `<h3>` under an authored head. Contrast as 3 Card on surface.
 
 **Reconciled.** Padding retired into **Vertical spacing**, the 64 px overlap still not a control; **Tag: Show · Hide** added on the card's eyebrow; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when pictureless) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus is the post's, and Top is the value most of these crops want** — the card covers the picture's lower corner. At Image width Full bleed the panel notes that a Top divider Line draws on the section above.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **Ground replaces the hand-off to 3 Card.** The picture's box becomes a flat field of the contrast colour and the card overlaps it by 64 px exactly as always, so **the overlap — which is the design — survives a post with no picture**. The Switch buttons are gone, the panel advises 3 Card, and the fallback can no longer fail.
 
 ---
 
@@ -405,7 +445,7 @@ sidebar order.**
 
 3. **Archetype.** grid-of-N. **One departure:** the ladder steps a grid down one column per breakpoint; this goes from two unequal columns straight to one at 834, because a 424 column and an 848 column have no intermediate state.
 
-4. **Responsive rule.** **1440** 848 · 24 · 424; lead 320 · 24 · 504, picture 320 × 213; lead title 34, follower 20. **1080** 636 · 24 · 300; lead picture drops to 240 wide. **834** one column: **lead as 1 Split stacked, picture above at 754 × 424; followers as full-width A18 rows, ruled above each, titles 21**; Divider Column rule falls back to Between followers. **≤ 767** lead title 26, follower titles 19, **follower eyebrows dropped**, reading time dropped everywhere.
+4. **Responsive rule.** **1440** 848 · 24 · 424; lead 320 · 24 · 504, picture 320 × 213; lead title 34, follower 20. **1080** 636 · 24 · 300; lead picture drops to 240 wide. **834** one column: **the lead's own picture above its own text at 754 × 424; the followers on A18·4's dated-row measurement at full width, ruled above each, titles 21** ⚑ *reworded in the design patch pass — a component reused, not a design becoming another design*; Divider Column rule falls back to Between followers. **≤ 767** lead title 26, follower titles 19, **follower eyebrows dropped**, reading time dropped everywhere.
 
 5. **Content fields.** Section: the six. Data group: all six, **Count the stepper at min 1 · max 3**. Lead: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Followers: `title`, `url`, `primary_tag`, `published_at`, `primary_author.name` — **no image and no excerpt, ever**. Writes `leadRatio`, `divider`, `titleSize`, `excerpt`, `meta`, `tag`.
 
@@ -413,13 +453,15 @@ sidebar order.**
 
 7. **Data.** `featured:true` at `limit: 2` or `3`. **Designed for 3; correct at 1, 2 and 3.** **0 → the section does not render.** **1 → the lead alone, keeping its 848**, the right-hand 448 left as page, and the panel advising 1 Split without switching. **2 → lead and one follower, no rule drawn.** **More featured than Show → the extras are not drawn** and the count line reports it. Order decides which post leads; there is no lead picker.
 
-8. **Empty state.** **Lead without a picture → Reflow**: text to 720 inside the 848 column, followers unchanged, no plate. **Follower without a tag → the eyebrow line is not drawn and the entry is 21 px shorter**; entries are never equalised. Follower without an author at Meta Name and date → the date alone. No excerpt on the lead → the lead is shorter and the columns stay top-aligned. **Both followers untagged → the column is titles and dates, which is 11 Lead and Rail's rail at a larger size** and is noted rather than corrected.
+8. **Empty state.** **Lead without a picture → Reflow**: text to 720 inside the 848 column, followers unchanged, no plate. **Follower without a tag → the eyebrow line is not drawn and the entry is 21 px shorter**; entries are never equalised. Follower without an author at Meta Name and date → the date alone. No excerpt on the lead → the lead is shorter and the columns stay top-aligned. **Both followers untagged → the column is titles and dates**, which reads like a rail at a larger size and is noted rather than corrected.
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** Edit-safe. `shuffle` is refused with the rest of the category — a rotating lead is the single most requested behaviour a featured section will get asked for, and A19-0 records the refusal and its reason.
 
 10. **Accessibility.** **Three anchors, three focus stops, in DOM order lead → follower 1 → follower 2**, which matches the visual order at every width. The section is a `<div>` holding the lead and a `<ul>` of two `<li>` followers ⚑ — **the lead is not in the list**, because a list of three whose first item is four times the size of the others misdescribes the section. Head `<h2>`; all three post titles `<h3>`. Follower entries are 68 px and 89 px tall, above the 44 px touch floor. Contrast as 1 Split.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, governing the lead's eyebrow and both followers' together; **`linkUrl`** removed; **Count is the stepper at min 1 · max 3** in place of the 2 · 3 enum — beyond three the section is a list, and A18 is one click away with the query preserved. **Hand-picked takes up to three posts and makes the lead choosable** ⚑, which is the one thing this design could not do: “Order decides which post leads; there is no lead picker” is now “Order decides, unless you pick”. The Oldest-first advisory is deleted. The excerpt binds **`excerpt`** on the lead.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: at one post it draws **its own 848 lead with the follower column absent**, and the sentence that made that "1 Split's arrangement" is deleted. The 834 step is rewritten in its own terms — the lead's picture above the lead's text, the followers on **A18·4's dated-row measurement** — a component reused rather than a design borrowed. The untagged-followers note reads "like a rail" instead of naming one.
 
 ---
 
@@ -436,7 +478,7 @@ sidebar order.**
 
 5. **Content fields.** Section: `eyebrow`, `title`, `sub`, `note`, `linkLabel` — all optional; **`linkUrl` deleted from the union** ⚑. Data group: `source` (Hand-picked included), `filterValue`, `pickedPosts`, `count` **the stepper at min 1 · max 3**, `order`, `fallback`. Per band: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. **No `profile_image`** — a face beside a 672 px photograph is a second picture. Writes `ratio`, `mediaSide`, `divider`, `excerpt`, `meta`, `tag`.
 
-6. **Controls.** **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1. **Starts** Picture left · Picture right. **Divider** Off · Between bands. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide, every band together. Six of its own, plus the universal trio and the Data group; **the 96 between bands is still not exposed** ⚑. **⚑ No Title size**, fixed at 34; **⚑ no Portrait 4:5**, the one rung of A8's ladder A19 drops. **Quick: Ratio, Starts, Excerpt, Meta.**
+6. **Controls.** **Ratio** Landscape 3:2 · Wide 16:9 · Square 1:1. **Starts** Picture left · Picture right. **Divider** Off · Between bands. **Excerpt** Off · One line · Two lines · Three lines. **Meta** None · Date only · Name and date · Name, date and reading time. **Tag** Show · Hide, every band together. Six of its own, plus the universal trio and the Data group; **the 96 between bands is still not exposed** ⚑. **⚑ No Title size**, fixed at 34, **with its reason drawn** ⚑ *added in the design patch pass*: two or three bands of 40 px titles down one page is three headlines competing for the same page, and 28 makes a band read as a follower. **⚑ No Portrait 4:5, also with its reason drawn**: at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it, and the band stops being a band. Both are narrowings of a shared control; neither renames it and neither adds to it. **Quick: Ratio, Starts, Excerpt, Meta.**
 
 7. **Data.** `featured:true` at `limit: 2` or `3`, ordered by `published_at`. **Designed for 3; correct at 2.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws one band. **1 → one band, drawn at full size**, and the panel says “1 post is featured. This design is composed for 2 or 3 — 1 Split draws one post better” and switches nothing. **More featured than Show → the extras are not drawn** and the count line reports it. **Order is selectable from Newest first · Oldest first only**; no hand-ordering exists on `featured`, and there is no Add or Remove anywhere in the panel.
 
@@ -450,6 +492,8 @@ sidebar order.**
 
 
 **Reconciled.** Padding retired into **Vertical spacing**, the 96 between bands still unexposed; **Tag: Show · Hide** added, every band together; **`linkUrl`** removed; **Count is the stepper at min 1 · max 3** in place of the 2 · 3 enum; **Hand-picked takes up to three and gives the stack a running order** ⚑ — “no hand-ordering exists on `featured`” was true of the query and is no longer true of the section. The Oldest-first advisory is deleted; the excerpt binds **`excerpt`**.
+
+**Patched · design patch pass, 30 August 2026.** *A design may offer fewer choices on a shared control, and must say why*: **the two silent absences now carry their reasons.** No Title size, because two or three bands of 40 px titles down one page is three headlines competing for it, and 28 makes a band read as a follower; no Portrait 4:5, because at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it, and the band stops being a band. *No design ever turns into another design*: at one post it draws one full-size band and the panel advises.
 
 ---
 
@@ -481,6 +525,8 @@ sidebar order.**
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, both cells together; **`linkUrl`** removed; **the locked Show row became the locked Count stepper** — same convention, one control, and the component named in Block 1 is unchanged in everything but its name. **Hand-picked takes exactly two and is the only way to say which post is on the left** ⚑: “Order decides left and right; there is no swap control” now has an alternative that is not a swap control either. The excerpt binds **`excerpt`**.
 
+**Patched · design patch pass, 30 August 2026.** *Item counts are a number picker*: **the locked Count row is drawn greyed at 2 with its reason visible**, which is what the rule's second half asks for and what this design already did — the advisory line beneath is reworded to name the design that reads better rather than "the design to switch to". *No design ever turns into another design*: at one post the left cell is drawn and the right half is page.
+
 ---
 
 ### 11 · Lead and Rail
@@ -490,13 +536,13 @@ sidebar order.**
 2. **Structural descriptor.** `split · none · page · variable · top · lead beside a titles rail`
    The only `variable` in A19. Separates from 8 Lead and Two on archetype, count class and media placement, and from 10 Pair on count class and emphasis.
 
-3. **Archetype.** split. **One departure:** the ladder collapses a split to one column at 834 and this design does that, but the rail does not become a stack of the same thing — **it becomes A18's dated rows with the date to the right of the title**, which is a different row from the column entry it was.
+3. **Archetype.** split. **One departure:** the ladder collapses a split to one column at 834 and this design does that, but the rail does not become a stack of the same thing — **its entries take A18·4's dated-row measurement, the date to the right of the title** ⚑ *reworded in the design patch pass — a component reused, not a design borrowed* — which is a different row from the column entry it was.
 
 4. **Responsive rule.** **1440** 848 · 24 · 424 (Narrow: 928 · 24 · 344); lead picture 848 × 477 at 16:9, lead text held to 720, lead title 34; rail titles 18, entries 48/68/89 px by Rail detail. **1080** 636 · 24 · 300, rail titles 17. **834** one column: lead full width at 754 with the picture above, **rail as full-width ruled rows, titles 19, date to the right of the title**, Rail width greyed with “No effect below 1080”. **≤ 767** lead title 26, rail titles 18, **date returns beneath the title**, reading time dropped, all rail entries kept.
 
-5. **Content fields.** Section: the six, **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper at min 1 · max 8**. Lead: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Rail: `title`, `url`, `published_at`, `primary_tag` — **never `feature_image`, never `custom_excerpt`, never an author**. Writes `ratio`, `columnWidth`, `railDetail`, `railHeading`, `excerpt`, `meta`; reads the authored `railLabel`.
+5. **Content fields.** Section: the six, **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper at min 1 · max 8**. Lead: `title`, `url`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `published_at`, `primary_author.name`, `reading_time`. Rail: `title`, `url`, `published_at`, `primary_tag` — **never `feature_image`, never `custom_excerpt`, never an author**. Writes `ratio`, `columnWidth`, `railDetail`, `railHeading`, `excerpt`, `meta`, **`tag`** ⚑; reads the authored `railLabel`.
 
-6. **Controls.** **Ratio** Wide 16:9 · Landscape 3:2 · Square 1:1. **Rail width** Narrow · Standard. **Rail detail** Title only · Title and date · Title, date and tag. **Rail heading** Hidden · Shown — **new in this pass** ⚑, drawing the authored `railLabel` above the rail at eyebrow size. **Excerpt** Off · One line · Two lines · Three lines, lead only. **Meta** None · Date only · Name and date · Name, date and reading time, lead only. Six of its own, plus the universal trio and the Data group. **No rail-side control** — the rail is always right. **Quick: Ratio, Rail detail, Rail heading, Excerpt.**
+6. **Controls.** **Ratio** Wide 16:9 · Landscape 3:2 · Square 1:1. **Rail width** Narrow · Standard. **Rail detail** Title only · Title and date · Title, date and tag. **Rail heading** Hidden · Shown — **new in this pass** ⚑, drawing the authored `railLabel` above the rail at eyebrow size. **Excerpt** Off · One line · Two lines · Three lines, lead only. **Meta** None · Date only · Name and date · Name, date and reading time, lead only. **Tag** Show · Hide, **the lead's eyebrow alone** — new in the design patch pass ⚑, **ruled by the owner on 30 August 2026**; Rail detail still governs the rail's tags, so a site can carry topics in the rail and none on the lead. **Seven of its own**, plus the universal trio and the Data group. **No rail-side control** — the rail is always right. **Quick: Ratio, Rail detail, Rail heading, Excerpt.**
 
 7. **Data.** `featured:true` at `limit: 3` or `5`. **Designed for 5; correct at 3, 2 and 1.** **0 → the section does not render** unless `fallback` is Show the latest post, which draws the lead with no rail. **1 → the lead alone at 848, no rail, the right 424 left as page**; the panel advises 1 Split and switches nothing. **2 → a rail of one entry with no rules**, which is the design at its thinnest and still composed. **More featured than Show → the extras are not drawn**, the count line reports it, and there is no “more” link. Order selectable from Newest first · Oldest first; **the first post in that order leads and the rest fill the rail in the same order**. No Add, no Remove, no lead picker.
 
@@ -509,7 +555,9 @@ sidebar order.**
 - **Flagged ⚑** — plate rather than reflow on the lead; the rail top-aligned and never stretched; Rail width as two values only; Show at 3 · 5 with no 4 — **closed in this pass**: Count is a stepper, min 1 · max 8; the date moving to the right of the title at 834 and back beneath it at 390; the invented `aria-label`; no “more” link.
 
 
-**Reconciled.** Padding retired into **Vertical spacing**; **the invented rail `aria-label` became the authored `railLabel`** with **Rail heading: Hidden · Shown**, Hidden by default so nothing drawn changes; **`linkUrl`** removed; **Count is the stepper at min 1 · max 8**, which finally reaches 4 — the old 3 · 5 with no 4 was the flagged gap — and caps where the rail passes the height of the lead at Rail detail's tallest value. **Hand-picked takes up to five, the first pick leading and the rest filling the rail in picked order.** The excerpt binds **`excerpt`** on the lead. **No Tag row was added here**: the eleven named in the pass exclude this design, Rail detail governs the rail, and **the lead's own tag eyebrow still has no control** — recorded in the Reconciliation notes rather than resolved by inventing a twelfth row.
+**Reconciled.** Padding retired into **Vertical spacing**; **the invented rail `aria-label` became the authored `railLabel`** with **Rail heading: Hidden · Shown**, Hidden by default so nothing drawn changes; **`linkUrl`** removed; **Count is the stepper at min 1 · max 8**, which finally reaches 4 — the old 3 · 5 with no 4 was the flagged gap — and caps where the rail passes the height of the lead at Rail detail's tallest value. **Hand-picked takes up to five, the first pick leading and the rest filling the rail in picked order.** The excerpt binds **`excerpt`** on the lead. **A Tag row was added on 30 August 2026** ⚑, the owner's ruling: it governs **the lead's eyebrow alone**, Rail detail still governs the rail, and **the one tag in A19 with no way off is closed** — the twelfth row, and this design's seventh control.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: the 834 rail is written as **A18·4's dated-row measurement**, a component, not another design. *A design may offer fewer choices on a shared control, and must say why*: the missing Tag row is **the one narrowing in A19 with no reason attached** — Rail detail governs the rail's tags and **the lead's own tag eyebrow still has no way off**. **Closed by the owner on 30 August 2026: this design takes the twelfth Tag row, governing the lead alone**, with Rail detail still governing the rail — so a site can carry topics in the rail and none on the lead. Seven controls of its own, and **the category's last unreasoned narrowing is gone.**
 
 ---
 
@@ -534,12 +582,14 @@ sidebar order.**
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** Edit-safe. `count-up` was considered for the numerals and refused — a counting ordinal implies a score, and the ordinals are positions.
 
-10. **Accessibility.** `<section aria-labelledby>` holding an `<ol>` — **the only ordered list in A19**, and it is correct here because the order is the content. `list-style: none` with **the drawn numeral `aria-hidden`**, so the position is announced once rather than twice. Head `<h2>`, pick titles `<h3>`. One anchor a row wrapping the whole row, five focus stops, DOM order matching visual order at every width. Rows are 96–124 px tall, above the 44 px floor. Dates `<time datetime>`. Focus A6's ring at 4 px offset; hover the title's 2 px accent underline at 160 ms. **Muted 40 px numeral on the page ground is 6.4:1 in light and 8.1:1 in dark**, above AA at any size.
+10. **Accessibility.** `<section aria-labelledby>` holding an `<ol>` — **the only ordered list in A19**, and it is correct here because the order is the content. `list-style: none` with **the drawn numeral `aria-hidden`**, so the position is announced once rather than twice. **⚑ The numeral is a CSS counter at `decimal-leading-zero`**, named in the design patch pass: *Ghost's templates cannot count, add, or remember*, so nothing computes 01 — the list numbers itself in the stylesheet, and the ordinal cannot disagree with the row it sits on. Head `<h2>`, pick titles `<h3>`. One anchor a row wrapping the whole row, five focus stops, DOM order matching visual order at every width. Rows are 96–124 px tall, above the 44 px floor. Dates `<time datetime>`. Focus A6's ring at 4 px offset; hover the title's 2 px accent underline at 160 ms. **Muted 40 px numeral on the page ground is 6.4:1 in light and 8.1:1 in dark**, above AA at any size.
 
 - **Flagged ⚑** — zero-padded two-digit ordinals; the ordinal as query position with the fixed advisory line under Order; no call to action, leaving `linkLabel` unread; Excerpt capped at Two lines; Numeral Large capped to 34 below 1080; the left column dissolving at 767; the eyebrow dropped at 390.
 
 
 **Reconciled.** Padding retired into **Vertical spacing**, **Row density kept** as the row's own ladder; **Tag: Show · Hide** added; **`linkUrl`** removed, and `linkLabel` stays unread here; **Count is the stepper at min 1 · max 10** — ten is where a shortlist becomes a list. **Hand-picked makes the ordinals an honest editorial ranking** ⚑, which is the largest single change this pass makes to any A19 design: 01, 02, 03 stop being positions in a date sort. **The tag-and-Oldest-first advisory is deleted** and the panel now names which of the two orders is on screen. The excerpt binds **`excerpt`**.
+
+**Patched · design patch pass, 30 August 2026.** *Ghost's templates cannot count, add, or remember*: **the zero-padded ordinal is named as a CSS counter at `decimal-leading-zero`** — nothing adds 01, the list numbers itself in the stylesheet, and the numeral cannot disagree with the row it sits on. *No design ever turns into another design*: at one pick it is one row numbered 01 and the panel advises 6 Big Type or 14 Slim. The ordinals-are-a-ranking line at Hand-picked is unchanged.
 
 ---
 
@@ -554,22 +604,24 @@ sidebar order.**
 
 4. **Responsive rule.** **1440** band edge to edge, 96 px padding, quote 34/1.34 on 920 (780 when Centred), glyph 64, attribution 20, avatar 24. **1080** measure 820, quote 32. **834** measure 620, quote 28, glyph 48, attribution 19, band padding 80/40. **≤ 767** quote 24, attribution 18, band padding 64/20, **Quote mark Glyph resolves to Off while Rule stays**, reading time not drawn at any width. Avatar stays 24 everywhere.
 
-5. **Content fields.** Section: `eyebrow` (drawn only in the hand-off state), `linkLabel`; `title`, `sub` and `note` are in the union and **this design draws none of them** ⚑ — a section headline above a pull quote is two voices; **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper, locked at 1**. From the post: **`custom_excerpt` — required, not optional, here alone**, `title`, `url`, `published_at`, `primary_author.name` + `profile_image`. **No `feature_image` and no `primary_tag`**. Writes `quoteSize`, `quoteMark`, `alignment`, `attribution`, `authorPhoto`.
+5. **Content fields.** Section: `eyebrow` (drawn only in the thin state), `linkLabel`; `title`, `sub` and `note` are in the union and **this design draws none of them** ⚑ — a section headline above a pull quote is two voices; **`linkUrl` deleted from the union** ⚑. Data group: all six, **`count` the stepper, locked at 1**. From the post: **`custom_excerpt` — required, not optional, here alone**, `title`, `url`, `published_at`, `primary_author.name` + `profile_image`. **No `feature_image` and no `primary_tag`**. Writes `quoteSize`, `quoteMark`, `alignment`, `attribution`, `authorPhoto`.
 
 6. **Controls.** **Quote size** Small 28 · Medium 34 · Large 40. **Quote mark** Off · Glyph · Rule. **Alignment** Left · Centred. **Attribution** Title only · Title and author · Title, author and date. **Author photo** Hidden · Shown. Five of its own, plus the universal trio and the Data group. **No Excerpt control** — the excerpt renders whole, never clamped — and **no Tag row**, since no `primary_tag` is read. **Count greyed and locked at 1.** **Universal: Background role locked at Surface, Top divider locked None**, each with its reason; Vertical spacing is the band's own padding. **Quick: Quote size, Quote mark, Alignment, Attribution.**
 
-7. **Data.** `featured:true` at `limit: 1`. **0 → the section does not render** unless `fallback` is Show the latest post. **1 → the design as drawn.** **Many → the first in query order is drawn and the count line reports “5 posts are featured. 1 drawn.”** Order selectable from Newest first · Oldest first and it is the only thing that decides which post appears; no picker, no Add, no Remove. **⚑ The post that Order lands on may be the one without an excerpt**, which is how a site meets the hand-off without changing anything — the spec's most likely real-world path and the reason the hand-off exists rather than an error.
+7. **Data.** `featured:true` at `limit: 1`. **0 → the section does not render** unless `fallback` is Show the latest post. **1 → the design as drawn.** **Many → the first in query order is drawn and the count line reports “5 posts are featured. 1 drawn.”** Order selectable from Newest first · Oldest first and it is the only thing that decides which post appears; no picker, no Add, no Remove. **⚑ The post that Order lands on may be the one without an excerpt**, which is how a site meets the thin state without changing anything — the spec's most likely real-world path, and the reason the design draws a thin state rather than an error.
 
-8. **Empty state.** **No `custom_excerpt` → hand-off**: the band and its padding stay, and the title is drawn at the quote's display size in the arrangement of 6 Big Type, with the eyebrow above it. **An editor-only notice** names the missing field, offers the fix and names 6 Big Type; **nothing is switched and the notice never reaches the site.** No author photograph → initials, A1·6's fallback. No author at all at Attribution Title, author and date → the date alone on that line. **A very long excerpt renders whole and the band grows**; the panel suggests Quote size Small rather than truncating.
+8. **Empty state.** **No `custom_excerpt` → this design's own thin state** ⚑ *changed in the design patch pass*: the band, its ground and its padding stay, **the quote mark and the quote are not drawn**, and the title takes the quote's display size on the band with the eyebrow above it — the design with the part that is missing hidden, not another design's arrangement. **An editor-only notice** names the missing field, offers the fix and **advises 6 Big Type**; **nothing is switched and the notice never reaches the site.** No author photograph → A1·6's fallback at **one letter** ⚑. No author at all at Attribution Title, author and date → the date alone on that line. **A very long excerpt renders whole and the band grows**; the panel suggests Quote size Small rather than truncating.
 
 9. **Behaviour module.** **None**; `core` assumed. **No-JS: pixel-identical.** Edit-safe. `typewriter` was considered for the quote and refused: a sentence that types itself out is a decoration on someone else's writing, and the resting state is the design.
 
 10. **Accessibility.** `<section aria-labelledby>` holding one `<a>` that wraps a `<blockquote>` and its attribution — **one anchor, one focus stop.** The title is the `<h2>` and `aria-labelledby` points at it, so the section is named by the post it features even though the heading sits below the quote. The quote mark is `aria-hidden`; the avatar is a decorative image with an empty `alt`, since the name is beside it. Date is `<time datetime>`. Focus is A6's ring on the whole block at a 4 px offset; hover underlines the attribution title, not the quote ⚑ — 34 px of underlined serif is unreadable. Quote at 34 regular measures 13.2:1 in light and 14.9:1 in dark.
 
-- **Flagged ⚑** — the heading font at regular weight, the only place in A19; the 920 measure against the category's 720; the glyph in the border token rather than muted; the hand-off to 6 Big Type and its editor-only notice; head fields present in the union and drawn by nothing here; Author photo as a control; Glyph resolving to Off below 767; hover on the attribution rather than the quote.
+- **Flagged ⚑** — the heading font at regular weight, the only place in A19; the 920 measure against the category's 720; the glyph in the border token rather than muted; the thin state and its editor-only notice; head fields present in the union and drawn by nothing here; Author photo as a control; Glyph resolving to Off below 767; hover on the attribution rather than the quote.
 
 
 **Reconciled.** Padding retired into **Vertical spacing** as the band's own padding; **Background role locked at Surface** (the band is the design, and 6 Big Type is the page-ground version of the same idea) and **Top divider locked None** (the band's edge is the divider); **`linkUrl`** removed; the locked Show row became **the locked Count stepper**; **Hand-picked** takes one post and **warns when it carries no custom excerpt**. **`custom_excerpt` stays required here** — the category's new excerpt rule explicitly excepts the design that *frames* an excerpt, because Ghost's generated plaintext is the first fifty words of a piece with no ending and reads as a mistake at 34 px — and **the hand-off to 6 Big Type is untouched**. Five controls, the shortest list in A19.
+
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the hand-off to 6 Big Type is deleted and the design draws its own thin state** — the band, its ground and its padding stay, the quote mark and the quote are not drawn, the title takes the display size, and the editor-only notice **advises** 6 Big Type instead of naming it as a replacement. `custom_excerpt` is now the design's designed state rather than a requirement a query cannot guarantee. *Avatars with no photograph*: **one letter**.
 
 ---
 
@@ -601,6 +653,8 @@ sidebar order.**
 
 **Reconciled.** **Vertical spacing is new here** and resolves 32 · 48 · 64 around the strip, so **Density is the strip's height alone** rather than the height and the section's space at once — a genuinely different ladder keeping its own name, which is what rule 3 asks for. **Background role locked at Surface**, **Top divider locked None** because Rule already draws a hairline immediately above the strip and two hairlines 1 px apart is the failure the lock prevents. **`linkUrl`** removed from a union this design never read; the locked Show row became **the locked Count stepper**; **Hand-picked answers the two-bars-one-post finding** ⚑ — two Slim bars on a page drew the same post and nothing warned; now each can be told which piece it carries. **No Tag row**: Label has governed the tag since the design was drawn. **The trailing arrow stays a glyph, not an icon slot** ⚑.
 
+**Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: below 767 it becomes **its own two-line block**, which is this design and not another one, so the sentence saying so is unchanged and no hand-off existed to delete. *Slider labels* and *gap names*: Density titles the strip's height and reuses the standard words, Vertical spacing keeps the shared ladder's names, and there is no gap control here to rename. Nothing else had a subject.
+
 ---
 
 ### 15 · Carousel
@@ -624,12 +678,14 @@ sidebar order.**
 
 9. **Behaviour module.** **`carousel`**, the only module declared in A19. **Edit-safe: no** ⚑ — the module does not run in the editor, and the resting state is what the editor draws and what every frame here shows. **No-JS, quoted from the registry: “The slide track is a native horizontally-scrollable `scroll-snap` strip — fully usable, only dots and arrow buttons are hidden.”** Nothing is added to that claim. Under reduced-motion, paging jumps rather than scrolls; the snap positions are unchanged.
 
-10. **Accessibility.** `<section aria-labelledby>`; the track is a `<ul>` of slides, **none of them hidden from the accessibility tree at any position** — every slide is reachable by scrolling and by tab, so nothing is `aria-hidden` and no focus is trapped. Head `<h2>`, slide titles `<h3>`. Arrows and dots are real `<button>`s outside the track, 44 px targets, the active dot carrying `aria-current`; **⚑ Closed in this pass: their three labels — “Previous featured post”, “Next featured post”, “Show post 3 of 5” — are theme translation-catalog strings**, the last with its two numbers as placeholders. **They are not authored fields**: a site that translates its theme translates them, and three sections that renamed them independently would say three different things about the same control. This is the other half of 11 Lead and Rail's finding, answered differently because the string names a control rather than a list. Focus order: head → arrows → slides in DOM order → dots. Focus A6's ring at 4 px offset; **focusing a slide scrolls it into position rather than leaving focus off-screen.** Dates `<time datetime>`. **Print: the slides print stacked, all of them, in query order** (the floor's rule).
+10. **Accessibility.** `<section aria-labelledby>`; the track is a `<ul>` of slides, **none of them hidden from the accessibility tree at any position** — every slide is reachable by scrolling and by tab, so nothing is `aria-hidden` and no focus is trapped. Head `<h2>`, slide titles `<h3>`. Arrows and dots are real `<button>`s outside the track, 44 px targets, the active dot carrying `aria-current`; **⚑ Closed in this pass: their three labels — “Previous featured post”, “Next featured post”, “Show post 3 of 5” — are theme translation-catalog strings**, the last with its two numbers as placeholders. **⚑ Where those two numbers come from, named in the design patch pass:** a template cannot count, and inside a loop it cannot see the total, so **the position is the loop's own counter and the total is written onto the track by the editor**; the label reads both out of the markup and adds nothing up. **They are not authored fields**: a site that translates its theme translates them, and three sections that renamed them independently would say three different things about the same control. This is the other half of 11 Lead and Rail's finding, answered differently because the string names a control rather than a list. Focus order: head → arrows → slides in DOM order → dots. Focus A6's ring at 4 px offset; **focusing a slide scrolls it into position rather than leaving focus off-screen.** Dates `<time datetime>`. **Print: the slides print stacked, all of them, in query order** (the floor's rule).
 
 - **Flagged ⚑** — the 768 · 48 · 480 division; the widening dot as the position marker and A19's third accent; no autoplay, no loop, no interval; arrows dropped and Arrows resolving to Dots below 1080; the module not declared at one post; the invented button labels; plate rather than reflow, with the height argument; edit-safe declared as no.
 
 
 **Reconciled.** Padding retired into **Vertical spacing**, the dot row's 24 px still inside it and not a control; **Tag: Show · Hide** added, every slide together; **`linkUrl`** removed; **Count is the stepper at min 1 · max 8** — eight is where the dot row stops being a position and starts being a scrollbar — with 1 still drawing a still spotlight and not declaring the module. **Hand-picked takes up to five in picked order and is the slide order**, the first pick at rest, which is the running order a carousel obviously needs. **The three invented button labels become translation-catalog strings.** **Autoplay, Interval and Loop stay refused, owner-ratified**, reasons unchanged on the frame. The excerpt binds **`excerpt`**; the arrows stay A1·14 icon buttons whose glyph is the design's, so rule 11's Icon Picker does not reach them.
+
+**Patched · design patch pass, 30 August 2026.** *Ghost's templates cannot count, add, or remember*: **the dot label's two numbers are named** — the position is the loop's own counter, the total is written onto the track by the editor, and the template adds nothing up. *No design ever turns into another design*: **at one post the dots and the arrows are hidden and the design draws itself**, which is the rule's own example, and Navigation Arrows resolving to Dots below 1080 is a control value rather than a design. Autoplay, Interval and Loop stay refused, owner-ratified.
 
 ---
 
@@ -649,7 +705,8 @@ design it was set in.
 | **Alternating band** | A 672 · 64 · 560 picture-and-text band, vertically centred, the side swapping by `row-reverse` and never by DOM order | **A19** (9) |
 | **Zero-padded ordinal** | A two-digit numeral in a 64/96/128 column at the muted token, `aria-hidden` inside an `<ol>` | **A19** (12) |
 | **Pull quote** | The heading font at **regular** weight on a 920 measure, with Quote mark Off · Glyph · Rule, the glyph in the border token | **A19** (13) |
-| **Design hand-off + editor notice** | A design that cannot render a post draws a named sibling's arrangement on its own ground, and says so in an editor-only notice that never reaches the site | **A19** (13) |
+| **Ground** ⚑ | The missing-picture answer where the picture is the composition's structure: its box drawn as a flat field of the pack's contrast colour at exactly its size, the design's own text unmoved | **A19** (2), design patch pass |
+| **Thin-state notice** ⚑ | A design missing the field it is composed around draws itself with that part hidden, and an editor-only notice names the field and **advises** a design that suits the post — it replaces the hand-off notice and offers nothing to switch | **A19** (13), design patch pass |
 | **Slim bar** | A 48/64/80 strip of surface: label and title left, detail and arrow right, the whole strip one link | **A19** (14) |
 | **Widening dot** | 4 px position bars, active 24 px in accent, position carried by width as well as colour | **A19** (15) |
 | **Locked count row** | A Count stepper drawn, greyed, labelled "fixed by this design", with the design to switch to named beneath | **A19** (10) |
@@ -699,13 +756,13 @@ Hand-picked) · **`fallback` enum req (Hide the section · Show the latest post)
 
 **Read from each post — ten, three optional.** `title` req · `url` req · `published_at` req ·
 `reading_time` req · `feature_image` + `feature_image_alt` opt · `primary_tag` opt ·
-`custom_excerpt` opt (**required by 13 Quote alone, which hands off without it**) ·
+`custom_excerpt` opt (**required by 13 Quote's designed state; without it that design draws its own thin state**) ·
 `primary_author` req (name req, `profile_image` opt) · `featured` read as the query in fourteen
 designs and **drawn by none** · `visibility` read, never drawn. **⚑ `profile_image` is finally
 spent**: 1 Split, 4 Poster and 13 Quote draw A1's 24 px avatar, and post 5's author has none, so
 initials are drawn.
 
-**Per-design fields — twenty-seven written; `padding` is gone from all of them.** `titleSize` · `excerpt` · `meta` · **`tag`** (eleven designs) are shared by most;
+**Per-design fields — twenty-seven written; `padding` is gone from all of them.** `titleSize` · `excerpt` · `meta` · **`tag`** (twelve designs ⚑) are shared by most;
 `ratio` · `mediaSide` · `alignment` · `divider` by several; and `height` · `textPosition` ·
 `scrim` · `card` · `cardPosition` · `imageWidth` · `columnWidth` · `railDetail` · `numeralSize` ·
 `rowDensity` · `quoteMark` · `attribution` · `authorPhoto` · `label` · `detail` · `rule` ·
@@ -750,11 +807,12 @@ finding that vanishes looks like a finding nobody read.
 6. **Open — a pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.** Restated from A17
    and A18; 5 Contrast Band derives them independently for the third time, and now derives them at
    four ratios rather than one.
-7. **Open, narrowed — “this design cannot render this post” still needs a general mechanism.**
-   13 Quote makes an optional field required and hands off to 6 Big Type with an editor-only notice;
-   2 Full Bleed, 4 Poster and 7 Overlap do the same for a missing picture. **This pass narrows it at
-   one end only**: at Source: Hand-picked the picker warns *before* the post is chosen. The hand-off
-   itself is still per design.
+7. **Closed by the design patch pass — there is no “this design cannot render this post”.** All
+   fifteen render. 2 Full Bleed and 7 Overlap draw **Ground**, 4 Poster reflows, 13 Quote draws its own
+   thin state, and every panel advises where it used to hand off. **What the build still owes: an
+   editor-only advisory slot on a section** — one line that can name a missing field and a
+   better-suited design without offering to change anything — plus the Hand-picked picker's warning,
+   which is the same message arriving earlier.
 8. **Open — 14 Slim's Rule exists because of a pack risk, not a design choice.** A pack-level
    “surface needs a hairline against background” flag would remove a control from the section. **The
    universal Top divider makes this worse, not better**: the two are locked apart on that design to
@@ -783,6 +841,11 @@ finding that vanishes looks like a finding nobody read.
 
 ## Reconciliation notes
 
+**Superseded in part on 30 August 2026.** This section records the controls-reconciliation pass.
+Where it and the **Patch notes** below disagree — every hand-off, 13 Quote's notice, the
+missing-picture vocabulary, the two initials, the print line — **the Patch notes are the later
+ruling**. Everything else here stands.
+
 **Frames changed in this pass — sixteen, and every one of them.** `A19-0 Category Proof` (settlement
 1 amended for Hand-picked, settlement 2 amended for the Count stepper, the field list updated, a new
 eight-item **⚑ RECONCILED** grid at the foot) and **all fifteen design frames**: `A19-1 Split`,
@@ -792,6 +855,13 @@ eight-item **⚑ RECONCILED** grid at the foot) and **all fifteen design frames*
 (thirteen had one), gained the **universal trio** and the **Data group** outside its own list, gained
 **Editing**, **Behaviour** and **Data** blocks under the sidebar, gained a **⚑ RECONCILED** footer
 strip, and had its spec card's Controls field rewritten and a **Reconciled** paragraph added.
+
+**Three more section crops were drawn in the design patch pass** ⚑, because Ground and Reflow are states a
+panel now has to show rather than describe: `A19-2 Full Bleed` draws the contrast field at the set Height
+with the text where Text position puts it, `A19-7 Overlap` draws the same field at 1,296 × 486 with the card
+still overlapping by 64 px, and `A19-4 Poster` draws the reflowed column beside the editor's line. **The
+spec's own precedence rule is the reason**: where this file and a drawn panel disagree the panel is the
+authority, so a state that exists only in prose does not exist.
 
 **Two section frames were redrawn, and only two, because only two items change visible content.**
 `A19-5 Contrast Band` gains a **RATIO ON THE BAND** strip drawing the band at Wide 16:9, Square 1:1
@@ -839,10 +909,10 @@ binding changes where a string comes from and not how it looks.
   disabling** when both are on; **14 Slim locks Top divider at None**, because its Rule is 1 px away
   from where the divider would land. The asymmetry is deliberate and is recorded rather than
   resolved.
-- **The eleven Tag rows exclude 11 Lead and Rail, and that leaves one honest gap.** Rail detail
-  governs the rail's tag; **the lead's own tag eyebrow still has no control**. The pass named eleven
-  designs and this is not one of them, so no twelfth row was invented — the gap is recorded here for
-  the next pass to close, and it is the only design in A19 that draws `primary_tag` with no way off.
+- **The eleven Tag rows excluded 11 Lead and Rail, and that left one honest gap — closed on
+  30 August 2026.** Rail detail governs the rail's tags; the lead's own tag eyebrow had no control, and
+  it was the only design in A19 that drew `primary_tag` with no way off. **The owner ruled the twelfth
+  Tag row in**, governing the lead alone. The gap recorded here is the gap that was.
 - **The excerpt rule has one exception and it is the design that frames one.** Everything binds
   `excerpt` with Ghost's generated fallback; **13 Quote keeps `custom_excerpt` required** and its
   hand-off to 6 Big Type. A17 and A18 reached the same conclusion by the same test, and A19 is the
@@ -857,3 +927,140 @@ binding changes where a string comes from and not how it looks.
 - **Rule 7 (remove Preview controls) had nothing to remove.** No A19 panel ever carried one.
 - **Rule 6 (the module registry) is untouched.** One module, `carousel`; `shuffle` stays refused
   category-wide; **no registry addition and no coined module name**.
+
+---
+
+## Patch notes — featured and spotlight patch, 30 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered: the letter-and-number codes elsewhere in this project are filing labels and
+mean nothing outside it.
+
+**Frames changed — sixteen, and every one of them.** `A19-0 Category Proof` gains a **DESIGN PATCH
+PASS** section: the numbering line, the free-designs line with its shortlist, the deleted hand-off
+map with what each design draws instead, the corrected missing-picture vocabulary, the one-letter
+avatar, the two places a number is not computed, and the category's open question. **`A19-11 Lead and Rail` gains the twelfth Tag row** in its sidebar, its control count moving to
+seven. **All fifteen design frames** gain a **DESIGN PATCH** block naming, for that design, what it draws instead of
+switching, what it hides, whether it draws an avatar, and what a visitor gets with JavaScript off.
+**Five frames changed in their drawn content**: `A19-1 Split` and `A19-4 Poster` (the
+avatar's two initials became one letter, four places each), `A19-2 Full Bleed` and `A19-7 Overlap`
+(the hand-off strip is now the Ground state, **with that state drawn** — a flat contrast field at the set
+Height, and the card still overlapping it by 64 px — and the Switch buttons are gone), **`A19-4 Poster`
+again** (the reflowed column drawn beside the editor's line), and `A19-13 Quote`'s hand-off strip
+relabelled as its own thin state, which its frame already drew. **No arrangement moved, and no type scale, colour
+pack or spacing step changed.**
+
+### What changed, and the rule that required it
+
+1. **The hand-off vocabulary is deleted — four designs, eleven sentences** — *no design ever turns
+   into another design*. Gone: 2 Full Bleed's and 4 Poster's "hand off to 1 Split", 7 Overlap's
+   "hand off to 3 Card", 13 Quote's "renders 6 Big Type's arrangement", the settlement-3 value
+   called **Hand off**, 1 Split's "the design the rest of the category hands off to", and the four
+   **Switch to…** buttons the editor notices drew. The strips stay; what they say changed.
+2. **What each design draws instead** — *no design ever turns into another design*. **Ground** ⚑ is
+   the new value in settlement 3: where the picture is the composition's structure, its box is drawn
+   as a flat field of the pack's contrast colour at exactly its size and the design's own text does
+   not move — **2 Full Bleed** (the scrim not drawn, Text position unchanged) and **7 Overlap** (the
+   card still overlapping by 64 px, which is the whole design). **4 Poster moves to Reflow**: the
+   crop is dropped and the narrow centred column holds. **13 Quote draws its own thin state**: the
+   band and its ground stay, the quote mark and the quote are not drawn, the title takes the display
+   size. **Every panel advises and none switches**: "with no picture on this post, 1 Split reads
+   better", "3 Card keeps the card", "6 Big Type is built for a title at this size".
+3. **Two consequences worth naming.** **2 Full Bleed's fallback can no longer fail** — the category's
+   only ⚑ that admitted a fallback might not render is retired, because Ground draws whatever post
+   arrives. And **4 Poster's and 7 Overlap's "only if that post has a picture" clauses go with it**.
+4. **The avatar shows one letter** — *avatars with no photograph*. **1 Split, 4 Poster and 13 Quote**
+   are the three designs in A19 that draw A1·6's circle, and every author in A19 comes from Ghost,
+   which cannot make two initials out of a name. The frames drew **MO** for Marguerite Okonjo in
+   eight places; they now draw **M**. No list in this category is typed by the site, so the
+   two-initial form has no subject here at all.
+5. **Two silent narrowings gained their reasons** — *a design may offer fewer choices on a shared
+   control, and must say why*. **9 Alternating's No Title size** ("two or three bands of 40 px titles
+   down one page is three headlines competing for it; 28 makes a band read as a follower") and its
+   **no Portrait 4:5** ("at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it").
+   Both were flagged absences with no sentence attached.
+6. **Two numbers are named as things a template does not compute** — *Ghost's templates cannot
+   count, add, or remember*. **12 Picks' zero-padded ordinal is a CSS counter at
+   `decimal-leading-zero`** — nothing adds 01, and the numeral cannot disagree with its row.
+   **15 Carousel's "Show post 3 of 5"** takes its position from the loop's own counter and **its
+   total from a value the editor writes onto the track**, because inside a loop a template cannot see
+   how many items there are.
+7. **The scrim measurement is named as the editor's, and scoped** — *CSS cannot see content*.
+   A stylesheet cannot read a photograph's luminance, so **2 Full Bleed's disabled Scrim value exists
+   at Source: Hand-picked alone**, where the picture is known while the editor is open; at a query
+   Source the post can change afterwards, so nothing is disabled and the panel advises Strong.
+8. **Two cross-category descriptions are rewritten as components** — *no design ever turns into
+   another design*. **8 Lead and Two's 834 step** ("lead as 1 Split stacked … followers as A18 rows")
+   and **11 Lead and Rail's rail at 834** ("it becomes A18's dated rows") now name **A18·4's
+   dated-row measurement** and the lead's own picture-above-text. A component is reused; no design
+   becomes another one at a breakpoint.
+9. **The print line stopped naming another design** — *no design ever turns into another design*.
+   **5 Contrast Band prints its own arrangement on white with the band's ground dropped**, where it
+   said "prints as 1 Split on white". Same sheet of paper, described honestly. 15 Carousel's stacked
+   slides are unchanged.
+10. **A conflict inside this document is resolved by this document's own rule.** Settlement 3's
+    vocabulary list put **5 Contrast Band** under Reflow; **its own field 8, its Reconciled paragraph
+    and its drawn panel all say Plate** — at the derived `#322F28`, capped at 320 px. The spec's
+    stated precedence is that **the panel is the authority**, so the list is corrected: **Reflow —
+    1, 4, 8, 9; Plate — 3, 5, 10, 11, 15; Ground — 2, 7; no picture drawn — 6, 12, 13, 14.**
+    Recorded rather than quietly fixed, because two documents disagreeing is exactly what this pass
+    exists to catch.
+11. **11 Lead and Rail gained the twelfth Tag row** — *a design may offer fewer choices on a shared
+    control, and must say why*, **ruled by the owner on 30 August 2026**. It was the only design in A19
+    that drew a tag with no way off: eleven designs took **Tag: Show · Hide** in the previous pass and
+    this one did not, because Rail detail governs the rail. The new row governs **the lead's eyebrow
+    alone** — a site can carry topics in the rail and none on the lead — which takes this design to
+    **seven controls of its own** and leaves **no unreasoned narrowing anywhere in the category**. The
+    alternative he refused: extending Rail detail to cover the lead, which would have tied the two
+    together so an editor could not have one without the other.
+12. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15, no gap created
+    or closed, no number reused.
+
+### Rules and facts that were already satisfied, checked design by design
+
+| Rule or fact | Where it lands in A19 |
+|---|---|
+| **The Remove button never greys out** | **One subject, and it was already right.** A19's only repeating list is the **Hand-picked post picker**, and remove is never disabled on it — the previous pass wrote that in. One sentence was added rather than changed: **there is no minimum to defend**, so removing the last pick empties the list, *When nothing matches* applies, and the panel says so at the click. Nothing else in A19 is a list: no Add creates a post and no Remove deletes one, in fifteen designs. |
+| **Slider labels** | **No subject to fix.** A19 draws no slider. Every scale row already names what it affects and reuses the standard words — **Vertical spacing**, **12 Picks' Row density** and **14 Slim's Density** all read Compact · Comfortable · Spacious; **4 Poster's Width** and **11 Lead and Rail's Rail width** read Narrow · Medium · Wide and Narrow · Standard. No invented three-word vocabulary anywhere in the category. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A19 exposes no gap control at any width: the 100 px between 1 Split's columns, the 24 px gutters, the 96 px between 9 Alternating's bands and the 64 px overlap on 7 Overlap are all fixed values in the arrangement. Nothing to rename, and no Tight/Even/Airy or Tight/Standard/Wide survives anywhere. |
+| **Item counts are a number picker** | **Already done, and re-checked on all fifteen.** Count is the shared **1–100 stepper with per-design bounds**, not an enum: locked at 1 on nine designs and at 2 on 10 Pair, min 1 · max 3 on 8 and 9, max 8 on 11 and 15, max 10 on 12. **Every locked row is drawn greyed with its reason visible** and the design that reads better named beneath — advice, not a switch. No row of fixed count buttons is left in the category. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen. **The swatch row is Base; there is no "Inherit" value anywhere in A19** and none was removed, because none existed. No design renames a shared control or adds a choice to one. Every narrowing already carried its reason except the two on 9 Alternating, which are in **What changed** above: 3 Card's missing Wide 16:9, 2 Full Bleed's absent Ratio and Tag rows, 4 Poster's absent Title size, 5 Contrast Band's Contrast lock and missing With photograph value, 7 Overlap's disabled Large, 12 Picks' absent Ratio and Title size, 13 Quote's absent Excerpt and Tag rows, 14 Slim's absent Tag row, and the five universal-trio locks. **The one narrowing still without a reason is 11 Lead and Rail's absent Tag row — the open question below.** |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject, and it is worth stating why.** **Every action in A19 is a link to a post.** There is no Sign up, no Subscribe, no paid-tier button and no Portal deep link in fifteen designs, so nothing renders conditionally on self-signup or a payment provider, and nothing opens Ghost's pop-up. Member visibility is offered nowhere either: a spotlight that hides itself from a logged-out reader is A32's paywall wearing a section's clothes. |
+| **The no-JavaScript notice** | **No subject, and no promise to withdraw.** A19 holds **no subscribe field and no sign-in field** in fifteen designs, so there is nothing for the notice to replace, and no sentence in this document ever said a reader could subscribe without JavaScript. The per-design JavaScript-off line stands and is unchanged: **fourteen designs are pixel-identical**, and 15 Carousel is a native `scroll-snap` strip minus its dots and arrows, quoted from the registry. |
+| **Ghost's templates cannot count, add, or remember** | Two subjects, both in **What changed**. Everything else was already clean: **the count line ("5 posts are featured. 3 drawn.") is editor-only text and never reaches a reader**; 9 Alternating's alternation is `:nth-child(even)` with `row-reverse`, not a computed index; 8's missing rule at two followers is `:last-child`; 11's lead-then-rail split is the loop's own first item. **No design shows a total, a saving, a "and 2 others", or a heading that appears only when a value changes.** |
+| **CSS cannot see content** | One subject, the scrim, in **What changed**. The rest was already editor-side or CSS-legitimate: every excerpt clamp is `line-clamp` by line and never by character count; **4 Poster's centred-run warning at Excerpt Three lines is a panel warning, not a stylesheet rule**; 13 Quote's long excerpt renders whole and the band grows; 14 Slim's long title wraps and the bar grows; **11 Lead and Rail never clamps or truncates a rail title at any width**. Nothing in A19 reorders the DOM at a breakpoint — 9's swap is `row-reverse` and 1 Split's picture-above-text is one column of the same order. |
+| **Some fields we drew do not exist** | **Nothing missing is read.** A19 reads ten post fields, all of which Ghost gives a theme: `title`, `url`, `published_at`, `reading_time`, `feature_image` + `feature_image_alt`, `primary_tag`, `custom_excerpt`, `primary_author` with `profile_image`, plus `featured` and `visibility` as the query. **No member join date, no member newsletter list, no newsletter cadence, no site address and no posts-per-page setting appears anywhere in the category** — and *When nothing matches* is the section's own field, not a Ghost admin setting. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere.** All fifteen are placeable page sections whose markup, ARIA and words this project owns end to end; A33 is the category for Ghost-rendered body content. Recorded, applied nowhere. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, none of which needs the customer to own good photography — **1 Split · 6 Big Type · 12 Picks · 14 Slim · 3 Card** — and **put to the owner on 30 August 2026 with 1 Split and 6 Big Type recommended**. The line the merge reads is at the head of this document, on its own line, in the required shape. |
+
+### The owner's rulings — 30 August 2026
+
+**Nothing in this category is left open to him.**
+
+1. **The free designs are 1 Split and 6 Big Type** — *the two free designs are the owner's choice*.
+   The category default and the one design whose fallback can never fail, so a free site needs no
+   photography to ship either. The line at the head of this document is his answer. The pairs he
+   refused: **1 with 14 Slim** (with no photography the free site's only option would be the one-line
+   strip) and **6 with 12 Picks** (no free design would show a picture at all).
+2. **11 Lead and Rail takes the twelfth Tag row, governing the lead alone** — *a design may offer
+   fewer choices on a shared control, and must say why*. Recorded in **What changed** above.
+
+### Open question — the architect's
+
+1. **Unchanged and now narrower.** The Data group's *When nothing matches* still
+   belongs to the group rather than to A19; the pack still owes `on-contrast`,
+   `on-contrast-accent` and `on-accent`, which 5 Contrast Band derives for the third time — and
+   **Ground now spends the contrast colour a fourth way**, as a field behind nothing. Print rules
+   still live per design. **The twelfth Tag row adds nothing new to the build**: it is the row eleven
+   designs already carry. **What Ground adds to the build's list: one token used as a picture's
+   substitute, at the picture's exact box, in two designs.**
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in
+   the required shape, and names **1 Split** and **6 Big Type** — both of which exist in this
+   category's roster. It is **the owner's own choice, ruled on 30 August 2026**.
+
+— End of specification —

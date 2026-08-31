@@ -14,6 +14,12 @@ Show · Hide**, the **Meta** enum with **With photograph**, and inline-editable 
 Ghost-owned post content. What each design gained is in a **Reconciled** paragraph at the foot of
 its entry, and the frame-by-frame list is in **Reconciliation notes** at the end.
 
+**Design patch pass — 29 August 2026 (this document's current state).** Four rulings landed on this category and one of them reaches every design in it. **Ghost's templates cannot look across a loop**, so the span belongs to **the first post** rather than the first featured post, the filter strip cannot be built from the tags of the posts drawn, and 12 Bento's tall cell loses the flag as its input. **Load more is the main feed's only.** **Every hand-off in the category is deleted** — a placed design is the design that renders; where a precondition fails the section hides what does not apply and the panel may advise. **An author drawn from Ghost shows one letter, never two.** Every change is listed with the name of the rule that required it in **Patch notes** at the end. **Nothing was renumbered.**
+
+**[Free] designs:** 1 Three Up · 4 Cards
+
+*(Shortlisted in this pass — 1 Three Up, 10 Ledger, 9 Big Type, 13 Thumb Side, 4 Cards — and **ruled by the owner on 29 August 2026**: the category default and the per-post plane. A free customer gets the plain grid and the card grid; the picture-free table, 10 Ledger, stays paid.)*
+
 The frames are `A17-0 Category Proof.dc.html` and `A17-1` … `A17-18`. **Where this file and a
 drawn panel disagree, the panel is the authority** — it is the thing that was designed; this is the
 thing that was written down. Every invented decision is marked ⚑ here and on the frame.
@@ -51,7 +57,10 @@ and nothing more. **Missing feature image → the tag plate**: the image box kee
 radius, fills with the pack's hover surface (`#F4F0E8` Paper light, `#2A251E` dark), and carries the
 post's primary tag centred at eyebrow size in `text-muted` ⚑. No tag either → plain plate. **No
 image on any post in the set → the image row is not drawn at all**; 8 Overlay, 11 Masonry and
-18 Edge to Edge hand off to 9 Big Type ⚑. **The excerpt binds `excerpt`** — the custom excerpt where one
+18 Edge to Edge draw their cells without their image boxes — 8 Overlay's scrim goes with it — and
+their panels carry one quiet line — **"None of these posts has a picture. 9 Big Type is built for
+text."**, advice and never a warning *(the owner's ruling, 29 August 2026)* ⚑ **amended 29 August 2026: no design ever turns into another
+design**. **The excerpt binds `excerpt`** — the custom excerpt where one
 is authored, Ghost's generated plaintext otherwise, clamped by line as designed. ⚑ **Overruled in
 this pass**: the old rule was `custom_excerpt` only, and the argument for it survives (a machine-cut
 first sentence is what makes a template grid look generated) while the rule does not — **a site that
@@ -59,11 +68,16 @@ never authors excerpts would get bare grids in all eighteen designs**, which is 
 `custom_excerpt`-only is kept for designs that **frame** the excerpt, which is A19's Quote and
 nothing here.
 
-**3 · The featured post.** Drawn as **the first cell spanning two columns** — same card, bigger box,
-plus the excerpt where uniform cells draw none. Refused: badge, label, border, fill, accent hairline,
-shadow, star, different ground. **Nothing featured → the grid is uniform and no cell is promoted**;
-no space is reserved. More than one flagged → only the first in the set's order spans ⚑. Offered as
-a control in 1, 3, 4, 11, 15 and 16; always on in 5 Lead + Grid; ignored by the other eleven.
+**3 · The first cell's span.** Drawn as **the first post in the set spanning two columns** — same card,
+bigger box, plus the excerpt where uniform cells draw none. **Position, not the featured flag**
+⚑ **29 August 2026, the owner's ruling**: a template cannot tell which flagged post is the first inside
+one loop, and the two-query alternative was declined, so the span goes to the post the query returns first, and **a grid of featured posts is still available
+by setting Source to Featured only**. Refused: badge, label, border, fill, accent hairline, shadow,
+star, different ground. **At Off the grid is uniform and no cell is promoted**; no space is reserved,
+and “more than one post is flagged” is no longer a case. The row is drawn **First cell: Off · Spans
+two columns**; always on in 5 Lead + Grid, where **the lead is the first post in the set's order**.
+**`featured` is stored by all eighteen designs and read by none.** *Which designs carry the row is a
+conflict this pass records rather than resolves — see Patch notes.*
 
 **4 · Pagination.** No A17 design draws page numbers, a next link, a counter or a range of its own.
 ⚑ **Amended:** "A34 attaches below and the section boundary is the seam" describes a section a user
@@ -73,6 +87,10 @@ None) on that section's own sidebar. **16 Load More locks it at Load more**, bec
 the continuation and two mechanisms on one feed is a bug. One exception: **16 Load More**, whose
 `load-more` module grows the grid in place and whose no-JS branch is Ghost's own numbered links.
 On an archive route Ghost's pagination governs and Show is ignored, disclosed in the panel ⚑.
+**Load more is the main feed's only** ⚑ **29 August 2026**: a section placed in a page has no page 2 to
+load, so **16 Load More's `source` is locked at This route's posts** with the other five values drawn
+greyed and the reason beside them, and A34's **Load more** pagination value appears only on the
+designated main feed.
 **`infinite-scroll` is refused category-wide.**
 
 ### The post card
@@ -126,7 +144,9 @@ rule 10's Image focus has nothing to attach to; the focal point belongs to the p
   single column.** Two stay two across: 10 Ledger (no image) and 14 Dense (title under a very small
   one). 13 Thumb Side keeps its row unchanged.
 - **Print.** Every design prints as drawn except three: 15 Filtered without its strip, 16 Load More
-  with the posts it had loaded, 7 Contrast Band as 1 Three Up. Print is the light mode.
+  with the posts it had loaded, 7 Contrast Band **without its band** — the grid prints on white at the
+  same cells, the same measure and the same rules ⚑ 29 August 2026, no design ever turns into another
+  design. Print is the light mode.
 - **Behaviour.** Two designs declare a module, sixteen declare none. `core` is assumed, not declared
   per design. **No A17 design loses a post without JavaScript**, and sixteen are pixel-identical with
   it off. **`reveal` is refused on a grid.**
@@ -177,7 +197,7 @@ hide the site's writing rather than a call to action. `visibility` is read and n
 
 Nine invented posts (Orbit Weekly), used in the same positions in every frame. Four carry the hard
 cases: **post 2** a 69-character title, **post 3** no feature image, **post 4** no tag and no
-excerpt, **post 5** an author with no photograph. **Post 1 is the featured post.** Excerpts are
+excerpt, **post 5** an author with no photograph. **Post 1 is both the first post in the set and the post Ghost has flagged**, and after this pass the span follows its position rather than its flag. Excerpts are
 authored on five of the nine. ⚑ All content is invented; no frame contains a real photograph.
 
 ### Tuple uniqueness — the honest statement
@@ -216,14 +236,14 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    design that draws every one.
 6. **Controls.** Per row Three · Four — Image ratio Landscape · Wide · Square · Portrait — Excerpt
    Off · Two lines · Three lines *(three unavailable at Four)* — Meta None · Date only · Name and
-   date · Name, date and reading time — Feature Off · First cell spans two — **Vertical spacing** *(universal, outside the list)*.
-7. **Data.** Designed for 3, 6, 9; correct at 1–12. **Receives the hand-off from nine other designs**,
-   which makes it the most-received design in A17.
+   date · Name, date and reading time — **First cell** Off · Spans two columns — **Vertical spacing** *(universal, outside the list)*.
+7. **Data.** Designed for 3, 6, 9; correct at 1–12. **Named as advice by nine other designs' panels** ⚑ 29 August 2026 —
+   advice, never a switch; nothing hands off here.
 8. **Empty.** Tag plate; no tag → title moves up; no excerpt → shorter cell, mixed cells ordinary.
 9. **Module.** None; `core` assumed. **No-JS: pixel-identical.** Edit-safe.
 10. **A11y.** Floor as written. Contrast 15.46:1 / 5.56:1 light, 15.64:1 / 6.89:1 dark.
 
-**Reconciled — 24 August 2026.** *Controls, seven:* Per row · Image ratio · Excerpt · **Meta** (five values, **With photograph** added) · Feature · **Tag Show · Hide** · **"View all" link** Matches the query · Custom. Padding retired into the universal Vertical spacing. *Data:* Source gains **Hand-picked**; Count is a stepper **1–24** (designed 3, 6, 9); the excerpt binds `excerpt`. *Main feed:* at This route's posts the section renders the authored empty state and carries A34's Pagination style. *Editing:* head strings take the P0·1 toolbar; post content says "Edit in Ghost".
+**Reconciled — 24 August 2026.** *Controls, seven:* Per row · Image ratio · Excerpt · **Meta** (five values, **With photograph** added) · **First cell** · **Tag Show · Hide** · **"View all" link** Matches the query · Custom. Padding retired into the universal Vertical spacing. *Data:* Source gains **Hand-picked**; Count is a stepper **1–24** (designed 3, 6, 9); the excerpt binds `excerpt`. *Main feed:* at This route's posts the section renders the authored empty state and carries A34's Pagination style. *Editing:* head strings take the P0·1 toolbar; post content says "Edit in Ghost".
 
 ---
 
@@ -239,7 +259,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 5. **Fields.** Section six; query four; card fields all except reading time by default.
 6. **Controls.** Image ratio · Excerpt Off · Two lines · Three lines · Meta · Alignment Left ·
    Centred · **Vertical spacing** *(universal, outside the list)*.
-7. **Data.** Designed for 2 and 4; correct at 1–6. **Receives 12 Bento's under-five hand-off.**
+7. **Data.** Designed for 2 and 4; correct at 1–6. **12 Bento's panel advises it when its own five cells cannot be filled** ⚑ 29 August 2026.
 8. **Empty.** Plate at 636 × 424 — large, and the frame draws it.
 9. **Module.** None. **No-JS: pixel-identical.**
 10. **A11y.** Floor. Same four contrast values.
@@ -255,7 +275,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 3. **Archetype.** grid-of-N. No departures.
 4. **Responsive.** 1440 four 306 · 834 three 235 · ≤ 767 one column.
 5. **Fields.** As 1 Three Up, excerpt capped at two lines.
-6. **Controls.** Per row Four · Five — Image ratio — Excerpt Off · Two lines — Meta — Feature —
+6. **Controls.** Per row Four · Five — Image ratio — Excerpt Off · Two lines — Meta — **First cell** —
    Padding.
 7. **Data.** Designed for 4, 8, 12; correct at 1–12. **The category's stress frame is drawn on this
    design** (seven posts at Count Four).
@@ -264,7 +284,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 10. **A11y.** Floor. Row rule `#E7E2DB` light / `#332E27` dark — 9.1 and 9.8 lightness points from
     their grounds, measured, one symmetric step ⚑.
 
-**Reconciled.** *Controls, seven:* Image ratio · Excerpt · Meta · Row rule · Feature · **Tag** · **"View all" link**. **With photograph is refused here** ⚑ — a 24 px circle beside 13 px text in a 306 cell leaves the name nowhere to wrap, and the reason sits at the control. *Data:* Hand-picked; Count stepper **1–24**; `excerpt` binding; main-feed empty state and Pagination style.
+**Reconciled.** *Controls, seven:* Image ratio · Excerpt · Meta · Row rule · **First cell** · **Tag** · **"View all" link**. **With photograph is refused here** ⚑ — a 24 px circle beside 13 px text in a 306 cell leaves the name nowhere to wrap, and the reason sits at the control. *Data:* Hand-picked; Count stepper **1–24**; `excerpt` binding; main-feed empty state and Pagination style.
 
 ---
 
@@ -277,8 +297,8 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 4. **Responsive.** 1440 three 416 (`box-sizing: border-box` — the border is inside the cell) ·
    834 two 365 · ≤ 767 one column.
 5. **Fields.** As 1 Three Up.
-6. **Controls.** Per row · Image ratio · Excerpt · Meta · Feature · **Vertical spacing** *(universal, outside the list)*.
-7. **Data.** Designed for 3, 6, 9; correct at 1–12. **No count threshold and no hand-off.**
+6. **Controls.** Per row · Image ratio · Excerpt · Meta · ~~Feature~~ *(the panel draws no span control; the panel is the authority — see Patch notes)* · **Vertical spacing** *(universal, outside the list)*.
+7. **Data.** Designed for 3, 6, 9; correct at 1–12. **No count threshold, and no design switch — there are none left in A17.**
 8. **Empty.** Plate inside the card's own radius. Cards in a row are equalised, so a short card's
    space falls at its foot.
 9. **Module.** None. **No-JS: pixel-identical.**
@@ -296,8 +316,9 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 3. **Archetype.** grid-of-N. Lead placement is a `grid-column` move, never `order`.
 4. **Responsive.** 1440 lead 856 + one 416; 834 lead full width above three · ≤ 767 one column, lead
    keeps its type step.
-5. **Fields.** As 1 Three Up. **Reads `featured`; with nothing featured it promotes the newest post**
-   — the one place in A17 a design promotes without a flag.
+5. **Fields.** As 1 Three Up. **The lead is the first post in the set's order** ⚑ 29 August 2026 —
+   position, not the flag, because a Ghost template cannot look across a loop to find the flagged post.
+   `featured` is not read.
 6. **Controls.** Lead side Left · Right — Image ratio — Excerpt — Meta — **Vertical spacing** *(universal, outside the list)*.
 7. **Data.** Designed for 4, 5, 7; correct at 2–9. **1 post → draws the lead alone.**
 8. **Empty.** Plate; a lead with no image is the frame's worst case and is drawn.
@@ -334,7 +355,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 1. **Descriptor.** 1 Three Up inverted onto the `contrast` token at the band's own vertical scale.
 2. **Tuple.** `grid-of-N · none · contrast · many · top · inverted band`
 3. **Archetype.** grid-of-N. Band scale 64 · 88 · 120.
-4. **Responsive.** As 1 Three Up. **Prints as 1 Three Up** — the band is dropped.
+4. **Responsive.** As 1 Three Up. **Prints without its band** — the grid prints on white at the same cells, the same measure and the same rules ⚑ 29 August 2026.
 5. **Fields.** As 1 Three Up.
 6. **Controls.** Per row · Image ratio · Excerpt · Meta · **Vertical spacing** *(universal, outside
    the list, resolving the band's own 64 · 88 · 120)*.
@@ -366,8 +387,9 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 6. **Controls.** Per row · Image ratio Portrait · Square — Scrim Light · Standard · Heavy — Meta —
    Padding.
 7. **Data.** Designed for 3 and 6; correct at 1–9.
-8. **Empty.** **No image → the design cannot exist; hands off to 9 Big Type** when no post in the
-   set has one. A single imageless post draws the plate with its title in `text`.
+8. **Empty.** **No image anywhere in the set → the image box and its scrim are not drawn** and each
+   cell keeps its tag, title and meta; the panel may advise 9 Big Type ⚑ 29 August 2026. A single
+   imageless post draws the plate with its title in `text`.
 9. **Module.** None. **No-JS: pixel-identical.**
 10. **A11y.** Scrim 45% light / **55% dark** — a deepened ground makes a light image read brighter.
     White title on the scrim; the plate case falls back to `text`.
@@ -386,8 +408,8 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    44 · **≤ 767 Display resolves to 30 — the steepest type drop in A17**, and at that width the
    design is honestly a text list rather than big type ⚑.
 5. **Fields.** Section six, **title at Small 28** so the head does not compete ⚑. **Never reads
-   `feature_image`** — the only design in A17 that never touches the field, which is what lets it be
-   three designs' fallback.
+   `feature_image`** — the only design in A17 that never touches the field, which is what makes it the design
+   a site with no photographs picks ⚑ 29 August 2026.
 6. **Controls.** Per row Two · Three — Title Large · Display *(unavailable at Three)* — Rule None ·
    Hairline — Excerpt Off · Two lines — Meta None · Date only · **Tag and date** · Tag, author and
    date — **Vertical spacing** *(universal, outside the list)*.
@@ -396,7 +418,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    416 is 65% of the 636 the size was set for. Measured first lines at 636 hold 25–31 characters.*
 7. **Data.** Designed for 4 and 6; correct at 1–8, degrading **by taste rather than by layout**
    above that. **From about eight the panel suggests 10 Ledger — a suggestion, never a switch.**
-   **Receives the hand-off from 8, 11 and 18**; the query, count and order travel, the ratio does not.
+   **Nothing hands off to it** ⚑ 29 August 2026 — 8, 11 and 18 hide their image boxes and their panels may advise this design; the user picks it.
 8. **Empty.** Almost none — everything but tag and excerpt is Ghost-guaranteed. **A missing feature
    image is not an empty state here; it is why the design exists.**
 9. **Module.** None. **No-JS: pixel-identical.** `typewriter` considered and not declared.
@@ -456,7 +478,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    the post's index alone would be stable and would stagger nothing.
 4. **Responsive.** 1440 three 416, cell gap 40 · 834 two 365, diagonal recomputed (left P·L, right
    L·S) · **≤ 767 one column, P·L·S down the page — the design's idea is gone**, leaving varied crop
-   heights without stagger. **It does not hand off**; the picker discloses it.
+   heights without stagger. **It does not switch design**; the picker discloses it.
 5. **Fields.** As 1 Three Up. **⚑ Uses `cycle`, not `ratio`.**
 6. **Controls.** Columns Two · Three · Four *(changes every crop)* — Cycle Portrait–Landscape–Square ·
    Square–Landscape–Portrait · Landscape–Portrait — Excerpt — Meta — **Vertical spacing** *(universal, outside the list)*.
@@ -465,10 +487,11 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    ratios support three columns; **at four, columns one and four are identical.** Columns Four is
    therefore a real gap: either remove the value or add a fourth ratio. Left in place with a warning
    note; the architect should pick.*
-7. **Data.** Designed for 9 and 12; correct at 5–15. **Below five hands off to 1 Three Up**, disclosed.
+7. **Data.** Designed for 9 and 12; correct at 5–15. **Below five the columns draw with what they have and the panel may advise 1 Three Up** ⚑ 29 August 2026.
    Columns end unevenly even at 9 in 3 — measured 74 px apart — **a property, not an empty state.**
-8. **Empty.** Plate at the cell's dictated ratio. **No image on any post → hands off to 9 Big Type**;
-   plates at mixed ratios read as holes in the page.
+8. **Empty.** Plate at the cell's dictated ratio. **No image anywhere in the set → the image boxes are not
+   drawn**, and the panel may advise 9 Big Type because plates at mixed ratios read as holes in the
+   page ⚑ 29 August 2026.
 9. **Module.** **None — and this is where that claim is worth most**, because the layout it imitates
    normally cannot make it. Three server-rendered lists and one `aspect-ratio` per cell via
    `:nth-child`. **No-JS: pixel-identical.**
@@ -477,7 +500,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
     order agree.** CSS `columns` fragments cells; one `<ul>` with grid placement would put the DOM in
     row-major order while the eye reads column-major. A finding for the architect.
 
-**Reconciled.** *Controls, six:* Columns **Two · Three** · Cycle · Excerpt · **Meta** (now a select, four values including **With photograph** — a 416 cell carries the avatar and the cycle never narrows a column below it) · **Tag** · **"View all" link**. **Columns Four is removed** ⚑ — under the three-ratio cycle columns one and four run identical crop sequences, so the value drew a stagger that was not there; 3 Four Up exists and is cheaper than a fourth ratio. **Finding 4 is closed by removal**: column count ≤ cycle length is now enforced by the control rather than by a warning note. *Data:* Hand-picked; Count stepper **1–15**, disclosing the hand-off below five rather than clamping it.
+**Reconciled.** *Controls, six:* Columns **Two · Three** · Cycle · Excerpt · **Meta** (now a select, four values including **With photograph** — a 416 cell carries the avatar and the cycle never narrows a column below it) · **Tag** · **"View all" link**. **Columns Four is removed** ⚑ — under the three-ratio cycle columns one and four run identical crop sequences, so the value drew a stagger that was not there; 3 Four Up exists and is cheaper than a fourth ratio. **Finding 4 is closed by removal**: column count ≤ cycle length is now enforced by the control rather than by a warning note. *Data:* Hand-picked; Count stepper **1–15**, disclosing the advice below five rather than clamping it.
 
 ---
 
@@ -504,12 +527,12 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    358 + 24 + 358 = **740 px against the tall image's 795**, a 55 px difference the right column
    absorbs because it carries two text blocks to the left's one. (The cell *boxes* are equal
    automatically; a row-spanning grid item is as tall as the rows it spans.)
-7. **Data.** `limit` fixed at 5. **Under five → hands off to 2 Two Up. Over five → draws the first
-   five and suggests 1 Three Up; it does not hand off**, because a site with twelve matching posts
-   still wants its five-cell front page. **One hand-off, one truncation.** 0 → does not render; the
+7. **Data.** `limit` fixed at 5. **Under five → the cells with no post are not drawn and the panel
+   may advise 2 Two Up. Over five → it draws the first five and may advise 1 Three Up**, because a site with twelve matching posts
+   still wants its five-cell front page. **One piece of advice, one truncation** ⚑ 29 August 2026. 0 → does not render; the
    editor's outline is the most informative zero state in A17.
 8. **Empty.** Plate at the cell's ratio; **the wide 636 × 358 plate is the least flattering in the
-   category** and is drawn on both the light and dark frames. **No image on any post → no hand-off**;
+   category** and is drawn on both the light and dark frames. **No image on any post → no design switch**;
    five plates at three shapes still read as a bento. Not good, not broken.
 9. **Module.** None. **No-JS: pixel-identical** — `grid-template-columns`, explicit `grid-row` spans,
    `aspect-ratio` boxes, and a `grid-column` swap for the mirror.
@@ -517,11 +540,11 @@ Each entry gives the ten required fields. Fields shared with the floor above are
     **unlike 11 Masonry this design keeps a single list.** The tall cell's `<h3>` is not promoted.
     At Tall right, DOM and visual order diverge — the accepted cost of refusing `order`.
     **⚑ Two findings:** exactly five is unexpressible in the shared Show (3 · 6 · 9 · 12) — it needs
-    a fifth value, a per-design Show, or the forced five specified here; and **`featured` would be
-    the natural input for "this post takes the tall cell"**, unused because five designs already read
-    that flag to mean a two-column span.
+    a fifth value, a per-design Show, or the forced five specified here; and **`featured` cannot be the input**
+    for "this post takes the tall cell" ⚑ 29 August 2026 — a Ghost template cannot look across a loop to
+    find the flagged item — so the tall cell is the first post in the set's order and Order decides which.
 
-**Reconciled.** *Controls, six:* Arrangement · Excerpt · **Meta** (now a select, four values including **With photograph** — every cell in the composition is 636 wide) · **Tall cell First in order · Featured post** · **Tag** · **"View all" link**. **Tall cell closes the second finding** ⚑: `featured` was read and deliberately not drawn, which left the natural input unused; nothing flagged falls back to First in order, and more than one flagged takes the first in the set. *Data:* **Count locked at 5, drawn disabled with its reason** — the first finding, closed: this is exactly what the 3 · 6 · 9 · 12 enum could not express. Hand-picked is the one Source where the five cells are chosen by hand, in drag order.
+**Reconciled.** *Controls, six:* Arrangement · Excerpt · **Meta** (now a select, four values including **With photograph** — every cell in the composition is 636 wide) · ~~**Tall cell**~~ **withdrawn 29 August 2026** · **Tag** · **"View all" link**. **Tall cell is withdrawn and the finding is closed by the platform rather than by a decision** ⚑ 29 August 2026: `featured` cannot be reached across a loop, so the tall cell is the first post in the set's order, one value is not a control, and the Featured post value is drawn struck through with its reason on the frame. *Data:* **Count locked at 5, drawn disabled with its reason** — the first finding, closed: this is exactly what the 3 · 6 · 9 · 12 enum could not express. Hand-picked is the one Source where the five cells are chosen by hand, in drag order.
 
 ---
 
@@ -545,10 +568,10 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    *160 is the ceiling: past about a quarter of the row an image stops being a thumbnail. 160 of 636
    is 25.2%.*
 7. **Data.** Designed for 8 and 12; correct at 1–24 — **second only to 10 Ledger's 2–30, and the
-   wider of the two that keeps its photographs.** **No hand-off and no count threshold** — one of
+   wider of the two that keeps its photographs.** **No design switch and no count threshold** — one of
    three image-bearing designs with none, alongside 1 Three Up and 4 Cards.
 8. **Empty.** **The smallest and least conspicuous plate in the category.** No image on any post →
-   no hand-off; a column of small plates beside titles is still a legible list.
+   no design switch; a column of small plates beside titles is still a legible list.
 9. **Module.** None. **No-JS: pixel-identical.** `lightbox` considered and not declared.
 10. **A11y.** **A17-0's DOM order honoured exactly** — notable because the image is visually beside
     rather than above the text. Thumbnail side Right is `row-reverse`. The 120 px thumb is well past
@@ -580,7 +603,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    distance** — the panel suggests a wider design rather than handing off. The orphan row is more
    conspicuous here than anywhere else; the counter names the divisors. **Above 18 the panel points
    at 16 Load More, not at A34.**
-8. **Empty.** Plate at 196 × 131 with the tag at 11 px. **No image on any post → no hand-off**; at
+8. **Empty.** Plate at 196 × 131 with the tag at 11 px. **No image on any post → no design switch**; at
    this size a wall of plates is a texture rather than a series of holes.
 9. **Module.** None. **No-JS: pixel-identical.** **⚑ The thing a 196 px cell most wants is an excerpt
    on hover, and no module in the registry covers it — a finding, and I am not naming one.**
@@ -605,13 +628,15 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    section's tag count · ≤ 767 one column, **strip becomes a horizontally scrollable row.**
    **Prints without the strip.**
 5. **Fields.** As 1 Three Up, plus the strip's source.
-6. **Controls.** Tags **From these posts** · All site tags · Chosen tags — Strip Pills · Text —
-   Per row — Image ratio — Excerpt — Feature — **Vertical spacing** *(universal, outside the list)*.
-7. **Data.** Designed for 6 and 9; correct at 1–12. **The strip lists the distinct primary tags of
-   the posts actually drawn** — the six on the primary frame carry four between them — **so every
-   pill has at least one post behind it. Tags belonging to posts outside the count are absent from
-   the strip rather than dead in it.**
-8. **Empty.** No tags on any drawn post → the strip is not rendered and the grid draws alone.
+6. **Controls.** Tags **All site tags** · Chosen tags ⚑ 29 August 2026, From these posts deleted — Strip Pills · Text —
+   Per row — Image ratio — Excerpt — ~~Feature~~ *(the panel draws no span control; the panel is the
+   authority — see Patch notes)* — **Vertical spacing** *(universal, outside the list)*.
+7. **Data.** Designed for 6 and 9; correct at 1–12. **The strip is Ghost's own tag list at All site
+   tags and the authored list at Chosen tags** ⚑ 29 August 2026 — a template cannot compute a distinct
+   set of tags across a loop, so a strip built from the posts actually drawn is not renderable at all.
+   **A pill with no post behind it is therefore possible at both values, and the drawn "no posts for
+   this tag" state is what answers it.**
+8. **Empty.** No tags on the site, or none chosen → the strip is not rendered and the grid draws alone.
 9. **Module.** **`filter-strip`.** **No-JS, quoted: "Filters are `<a href>` links to Ghost routes and
    work perfectly — this module needs JS least of all."** Edit-safe.
 10. **A11y.** The active pill uses the accent — **the third design to derive an on-accent label
@@ -619,7 +644,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
     **⚑ Pills are 33 px tall — 11 px under the 44 px touch minimum, deliberately, as a dense
     secondary control.** Measured, not estimated. A finding rather than a defence.
 
-**Reconciled.** *Controls, eight:* Tags · Strip style · "All" link · Per row · Excerpt · **Meta** (new; five values) · **Tag** *(the chip inside the cards, not the strip above them — two tags, two controls, and the panel says so)* · **"View all" link**. *Behaviour:* **`filter-strip` is navigation to Ghost's tag routes at every value** ⚑ — real `<a href>` links; the module marks the current pill and manages the scrollable row below 767, and **any in-place filtering is dropped** because it promised a client-side subset the query never had. The "All" pill stays and points at the section's unfiltered route; **its label is a theme translation-catalog string** ⚑. *A11y:* **the pills keep their 33 px look and gain a 44 px hit area** — 5.5 px of transparent padding top and bottom, so the target passes without the strip growing. *Data:* Hand-picked, where the strip then lists the picked posts' tags; Count stepper **1–12**.
+**Reconciled.** *Controls, eight:* Tags *(two values after this pass)* · Strip style · "All" link · Per row · Excerpt · **Meta** (new; five values) · **Tag** *(the chip inside the cards, not the strip above them — two tags, two controls, and the panel says so)* · **"View all" link**. *Behaviour:* **`filter-strip` is navigation to Ghost's tag routes at every value** ⚑ — real `<a href>` links; the module marks the current pill and manages the scrollable row below 767, and **any in-place filtering is dropped** because it promised a client-side subset the query never had. The "All" pill stays and points at the section's unfiltered route; **its label is a theme translation-catalog string** ⚑. *A11y:* **the pills keep their 33 px look and gain a 44 px hit area** — 5.5 px of transparent padding top and bottom, so the target passes without the strip growing. *Data:* Hand-picked, where the strip is still the site's tag list or the chosen list; Count stepper **1–12**.
 
 ---
 
@@ -636,10 +661,10 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 5. **Fields.** Section six; query four, **`count` read as batch size as well**; plus `buttonStyle`,
    `showCount`, `batch`. **The button's label, the count and the exhausted line are composed from
    data — no authored strings in this design's own furniture.**
-6. **Controls.** Batch 3 · 6 · 9 · 12 *(mirrors Show)* — Button Outline · Solid · Text — Count On ·
+6. **Controls.** Batch **a number picker, 3–24, default 6** ⚑ 29 August 2026 *(mirrors Count; the number is the theme's `posts_per_page`, site-wide)* — Button Outline · Solid · Text — Count On ·
    Off — Per row Two · Three · Four · Six — Excerpt — **Vertical spacing** *(universal, outside the list)*. **Cut: auto-load-on-scroll** — that is
    `infinite-scroll`, refused category-wide.
-7. **Data.** First batch server-rendered; subsequent batches fetched against the same query.
+7. **Data.** **`source` is locked at This route's posts** ⚑ 29 August 2026 — load more is available only on the site's main feed. First batch server-rendered; subsequent batches fetched against the same query.
    Designed for 12–48 across two to four presses. **0 → no section and no button. 1 → one cell and
    no button. Fewer posts than the batch → no button**, the same rule as exhausted applied before the
    first press. **A34 is not used with this design.**
@@ -738,10 +763,10 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    is still recognisably this design.
 8. **Empty.** **A full-cell 480 × 320 plate, the most damaging in A17** — no radius and no gutter, so
    it shares an edge with the photograph beside it and reads as a gap in the band.
-   **No image on any post → hands off to 9 Big Type.**
-   **⚑ Flagged: this design has the strongest case in the category for handing off when *any* post
-   lacks an image rather than when all do.** Kept at "every post" for consistency with 8 Overlay and
-   11 Masonry; the inconsistency is flagged rather than resolved alone.
+   **No image on any post → the image boxes are not drawn and the captions keep their cells**; the panel may advise 9 Big Type ⚑ 29 August 2026.
+   **⚑ Recorded: the case for hiding the image boxes when *any* single post lacks an image is stronger
+   here than anywhere else.** Kept at "every post" for consistency with 8 Overlay and 11 Masonry; the
+   inconsistency is recorded rather than resolved alone.
 9. **Module.** None. **No-JS: pixel-identical.** `lightbox` considered and not declared.
 10. **A11y. ⚑ The focus ring is this design's real problem:** A6's ring sits 4 px outside the element
     and **a cell at the screen's edge has no 4 px outside it** — the ring is clipped on the first and
@@ -775,7 +800,7 @@ components is as cited on the A17 frames.
 | **Section head** | Eyebrow 13 tracked · title · sub 17 on 620 · note · link; all optional, link as a pair | A1 |
 | **Meta row** | 24 px avatar + name · date · reading time at 13 px muted | A1 (A1·6) |
 | **Focus ring** | 2 px accent ring at 4 px offset on the whole interactive box | A6 |
-| **Author initials block** | Two-letter fallback in a circle at the pack's hover surface, for a missing `profile_image` | A12 |
+| **Author initial** | **One letter** in a circle at the pack's hover surface, for a missing `profile_image` ⚑ 29 August 2026 — Ghost gives a theme one initial from an author's name and never two. A list the user types themselves keeps two initials, and A17 has no such list | A12 |
 | **Striped image placeholder** | 45° two-tone stripe with a mono caption naming the crop; frames only, never shipped | A1 |
 | **Cell divisions** | Two 636 · Three 416 · Four 306 · Five 240 · Six 196 on a 24 gutter across 1,296 | A10 |
 | **Named ratio ladder** | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5, never computed | A8 (A8·8) |
@@ -786,7 +811,7 @@ components is as cited on the A17 frames.
 | **Post picker** | Ghost-aware search-and-pick list storing post references; drag order is drawn order; no blank Add, remove never disabled | **A17** |
 | **Feed empty state** | Authored heading and body drawn by the designated main feed when its route has no posts | **A17** |
 | **Count stepper** | One numeric stepper, 1–100, with per-design bounds and locks drawn disabled with their reason | **A17** |
-| **Avatar in the meta row** | The 24 px `profile_image` as the Meta enum's fifth value, initials block as fallback | A19 |
+| **Avatar in the meta row** | The 24 px `profile_image` as the Meta enum's fifth value, **the one-letter initial** as fallback | A19 |
 
 ## Block 2 · Shared field list
 
@@ -814,7 +839,7 @@ and the stepper is what makes that expressible.*
 `feature_image` + `feature_image_alt` opt · `primary_tag` opt · **`excerpt` opt** — custom where
 authored, Ghost's generated plaintext otherwise ·
 `primary_author` req, whose `name` is req and whose `profile_image` is opt · `featured` boolean,
-read by seven designs and stored by all eighteen · `visibility` **read and never drawn** (A32's).
+**stored by all eighteen and read by none** ⚑ 29 August 2026 · `visibility` **read and never drawn** (A32's).
 
 **Ghost-owned, never inline-editable.** Every field in this paragraph is read from the post and
 clicking it in the editor says **"Edit in Ghost"** ⚑ — titles, tags, author names, excerpts and
@@ -961,3 +986,157 @@ the panel and the spec rather than adding it to the frame.
   per-design bounds are the truth and the 1–100 range is only the widest of them.
 - **No module name was coined.** The two gaps stay named and unowned: an excerpt on hover (14 Dense)
   and a client-side sort (10 Ledger). `infinite-scroll` stays refused category-wide.
+
+
+---
+
+## Patch notes — post grids patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named and never numbered: the letter-and-number labels elsewhere in this project are filing codes and
+say nothing about what a rule requires.
+
+**Frames updated — all nineteen.** `A17-0 Category Proof` and every design frame `A17-1` … `A17-18`.
+Each design frame gained a **POST GRIDS PATCH** card stating in one line each what changed on that
+frame and which rule required it; where a rule had no subject on a frame, the card says so rather
+than staying silent.
+
+**What was redrawn, and what was not.** Three drawn things changed: **16 Load More's Batch row** is a
+number picker where it drew four fixed buttons, **16 Load More's Source row** is a locked value with
+its reason and the five greyed values beside it, and **12 Bento's Tall cell** is drawn with its
+Featured post value struck through and the row withdrawn. **15 Filtered's strip caption and default**
+were relabelled to All site tags. **The avatar circle on `A17-0` and `A17-1` reads `N` where it read
+`NA`.** Nothing else moved: no layout, type scale, colour pack, spacing value or drawn state anywhere
+in the category, and **no design number changed**.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **The first post spans, not the first featured post** *(the owner's ruling, 29 August 2026)* | **Settlement 3 is rewritten.** A template can test the flag on each post and can fetch flagged posts with a second query; what it cannot do is tell which flagged post is the first inside one loop. Given the choice between a two-query "featured leads" and a one-query positional span, **the owner ruled position only**: one query, the same behaviour on a placed section and on the main feed. The span goes to **the first post the query returns**; the row is drawn **First cell: Off · Spans two columns** with the note "position, not the featured flag"; **a grid of featured posts is still available at Source: Featured only**. Consequences, design by design: **5 Lead + Grid's lead is the first post in the set's order** and its "unprompted promotion" is gone with the flag; **12 Bento's Tall cell loses its Featured post value and with it the control** — one value is not a control — and the finding that the flag was "the natural input" is closed by the platform rather than by a decision; **4 Cards' line saying it reads the flag and draws it as an ordinary card is withdrawn**; **`featured` is now stored by all eighteen designs and read by none**, in the shared field list and on every frame. |
+| **No design ever turns into another design** | **Every hand-off in A17 is deleted — there were nine.** 8 Overlay, 11 Masonry, 18 Edge to Edge and 5 Lead + Grid no longer become 9 Big Type when a set has no photographs: **the image box is not drawn** (8 Overlay's scrim with it), each cell keeps its tag, title and meta, and **the panel may advise 9 Big Type**. 11 Masonry under five posts **draws the columns it can fill** and may advise 1 Three Up; 12 Bento under five **draws the cells it has** and may advise 2 Two Up. **7 Contrast Band no longer "prints as 1 Three Up"**: the band is not printed and the grid prints on white at the same cells, measure and rules, so the design loses its ground rather than its identity. **9 Big Type stops being "A17's receiving design"** — it is the design a site with no photographs chooses. The roster's **HANDS OFF** column is now **WHAT IT ADVISES**, and the "two receiving designs" paragraph is replaced by the rule. Every remaining cross-reference in the category was checked and is advice: 9 Big Type suggesting 10 Ledger past eight, 14 Dense pointing at 16 Load More past eighteen, 2 Two Up pointing at 1 Three Up past eight, 17 Panel suggesting the container be dropped at one post. Advice, never a switch. |
+| **The filtered strip cannot list the drawn posts' tags** | **15 Filtered's Tags value "From these posts" is deleted.** A Ghost template cannot compute a distinct set across a loop. The values are **All site tags**, now the default, and **Chosen tags**. Three consequences are written rather than hidden: the primary frame's strip is Ghost's own tag list, **a dead pill is possible at both values** (the drawn "no posts for this tag" state already answered it), and the cut count-per-pill argument is restated — on a site-wide list a count is a second query per pill. |
+| **Load more is main-feed-only** | **16 Load More's `source` is locked at This route's posts**, the other five values drawn greyed with the reason beside them: elsewhere in a page there is no page 2 to load. **The two rows those values fed — Tag or author, and the Hand-picked post picker — are drawn greyed and marked not applicable on this design**, rather than removed, so the Data group stays the same group in all eighteen. Settlement 4 carries the line, and **A34's Load more pagination value appears only on the designated main feed**. Pagination style stays locked at Load more on this design. A site that wants this arrangement elsewhere uses 1 Three Up. |
+| **Avatars with no photograph** | **One letter, never two, for an author drawn from Ghost.** Ghost cannot produce two initials from a name. The avatar circle on `A17-0` and `A17-1` reads **N** for Naomi Alder where it read NA; **every "initials block" in the category now reads "one-letter initial"**, in all nineteen frames and in the component inventory. The two-initial fallback stays where the user types the list themselves, and **A17 has no such list** — every name here comes from Ghost. |
+| **Item counts are a number picker** | **16 Load More's Batch becomes a number picker — 3–24, default 6** — where it drew Three · Six · Nine · Twelve. Count was already a stepper everywhere with per-design bounds drawn disabled and their reasons visible. The row also now discloses what the owner ruled in the post lists category on 28 August 2026: **the batch is the theme's `posts_per_page`**, which lives in the theme package rather than in Ghost's admin and is **site-wide**, so changing it changes every paginated list on the site. **Two rows were checked and left as named values:** every design's **Per row** and 11 Masonry's **Columns** are drawn column widths — each value a measured cell checked against a long title — not a number of posts. Recorded rather than decided, as the same question was in the post lists and about-and-team categories. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all eighteen. The swatch row is **Base**; **there is no "Inherit" value anywhere in A17**; no design renames a shared control or adds a value to one; and every narrowing shows its reason — 7 Contrast Band's Background role locked at Contrast and Top divider locked None, 8 Overlay's Background role locked at Background and its two-value Image ratio, 18 Edge to Edge's Top divider locked None, 3 Four Up's Excerpt without Three lines, 12 Bento's locked Count of 5, and now **15 Filtered's two-value Tags** and **16 Load More's locked Source**. **One rename is made and it is category-wide, not per design:** the span row is **First cell** everywhere it appears, because a row called Feature that no longer reads the featured flag is a control that lies. ⚑ The label is put to the owner as question 2. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs that do not depend on the customer having good photography — **1 Three Up · 10 Ledger · 9 Big Type · 13 Thumb Side · 4 Cards** — recommended 1 Three Up and 10 Ledger, and **the owner ruled 1 Three Up and 4 Cards on 29 August 2026**. Badged **[Free] — confirmed** on the proof frame's roster and written in §0 as the line the merge reads: **`**[Free] designs:** 1 Three Up · 4 Cards`**. |
+| **The Remove button never greys out** | **No subject, and nothing to fix.** Nothing in A17 is authored as a repeating list: there is no repeater, no Add that creates a post and no Remove that deletes one. The post picker at Source: Hand-picked has no minimum — remove is visible and clickable at every count, and removing the last reference empties the set. |
+| **Slider labels** | **No subject.** A17 draws no slider. Every control is a named-value row or a number picker whose title says what it affects — Per row, Image ratio, Excerpt, Meta, Inset, Thumbnail, Batch. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A17 has no gap control: the 24 px gutter and the 48 px row gap are the grid rather than a preference, and 18 Edge to Edge's gutterless band is the design. The ladders that do exist are padding — Vertical spacing and 17 Panel's Inset — and both use the standard padding words. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject.** Every action in A17 is navigation: a card, the head link, 15 Filtered's tag pills, 16 Load More's button. There is no subscribe button, no paid tier and no Portal link, so there is nothing to make conditional. Member visibility is offered nowhere, and that refusal keeps its reason in §0. |
+| **The no-JavaScript notice** | **No subject, and no claim to withdraw.** A17 contains no subscribe or sign-in form, so there is nothing for the notice to replace, and the category never promised one worked without JavaScript. The per-design no-JavaScript line is restated instead: **sixteen designs are pixel-identical with script off**, **15 Filtered's strip is real `<a href>` links and needs JavaScript least of all**, and **16 Load More renders Ghost's numbered `/page/2/` links in place of its button**. No post is lost in any of the eighteen. The sent, error and loading states elsewhere in the library are untouched. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 18.** Eighteen designs, no gaps, nothing renumbered, nothing reused, nothing deleted. |
+
+### Conflicts recorded rather than resolved
+
+- **Which designs carry the span row.** Settlement 3 names **1, 3, 4, 11, 15 and 16**; the drawn
+  panels of **4 Cards, 11 Masonry, 15 Filtered and 16 Load More** carry no span control at all, and
+  three of them say in prose that they deliberately do not. **The document's own rule is that the
+  panel is the authority**, which would make the row **1 Three Up and 3 Four Up only**. Recorded here
+  and on the four frames rather than deleted from the settlement, because the count "five designs
+  offer it" is quoted in the roster and in the proof frame's own prose.
+- **The span row's label.** "Feature" was the name of a control that read the featured flag. It is drawn
+  as **First cell** in both panels that carry it, **confirmed with the positional ruling on 29 August
+  2026**: the row enlarges the first post in the grid and says so.
+- **12 Bento's Tall cell.** The patch's ruling removes the row's only second value. Withdrawing the
+  row is the honest consequence, but it undoes a control the previous pass added on purpose. Recorded
+  as a change of ruling rather than a drawing error.
+- **The batch and the theme package.** Making the batch a number picker is straightforward; the number
+  it writes is a value in the theme's `package.json` rather than a section setting, and the path from
+  a section control to a theme-package value is still the architect's to specify.
+
+### Open questions for the architect
+
+1. **Carried forward, unchanged by this pass:** the pack-level `on-accent` / `on-contrast` derivation
+   (three independent derivations in this category), one image field or three (`ratio` / `cycle` /
+   `thumbSize`), tabular figures as a pack requirement, 9 Big Type's tag after the title in the DOM,
+   18 Edge to Edge's inset focus ring and its squared image, `postRefs` needing an ordering contract,
+   the two new catalogue strings, and **the main feed needing to be *designated*** — which this pass
+   leans on harder than the last one, because 16 Load More's locked Source is only meaningful if the
+   builder knows which section is the feed.
+2. **Closed by this pass, and worth recording as closed:** 11 Masonry's Columns Four (removed in the
+   reconciliation pass), 12 Bento's count of five (a locked stepper), and **12 Bento's unused
+   `featured` input — closed by the platform: it is unreachable inside a loop.**
+3. **New, and small:** with the strip no longer built from the posts drawn, **15 Filtered's "All" pill
+   and its dead-filter state are the only two places a pill's meaning depends on the route**. Both are
+   drawn; neither needs a module.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+   17, 18** — eighteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present** at the head of this document, on its own line, in the
+   required shape, and names **1 Three Up** and **4 Cards** — both of which exist in this category's
+   roster. It is **the owner's own choice, ruled on 29 August 2026**.
+
+### Questions for the owner
+
+**QUESTION 1 — Which two of the eighteen post grids are free? — ANSWERED 29 AUGUST 2026: 1 Three Up and 4 Cards (option 2).**
+
+Exactly two designs in this category are free for customers on the free plan. My shortlist is the
+five that look finished on a site with no professional photographs:
+
+1. **1 Three Up and 10 Ledger. (RECOMMENDED)**
+   Three Up is what a site gets when it types "posts" — the plainest grid in the category, and it
+   fills a missing picture with the post's tag rather than a hole. Ledger draws no pictures at all: a
+   ruled two-column list of titles and dates, which is what an archive page wants. A free customer
+   gets one design for a front page and one for an archive. Cost: the free tier shows no photography
+   at all in Ledger, so a picture-led site will feel the paywall sooner.
+2. **1 Three Up and 4 Cards.**
+   Both are picture grids, and Cards puts each post on its own panel with a hairline, which flatters a
+   thin set of posts. Cost: a free customer has no picture-free option, so a site with no photographs
+   has nothing here that looks finished.
+3. **1 Three Up and 13 Thumb Side.**
+   Thumb Side keeps a small square picture beside each title, so it survives poor photography and
+   stays a list. Cost: it is the least distinctive of the three pairs — two designs that both look
+   like a list of posts.
+
+**QUESTION 2 — ANSWERED 29 AUGUST 2026: position only — the first post in the grid spans (option 3). The row keeps the label `First cell`.**
+
+*What Ghost can and cannot do, precisely.* A template **can** test the flag on each post inside a loop
+— `{{#if featured}}` is documented and works — and it **can** reach the flagged posts directly with a
+second query, `{{#get "posts" filter="featured:true" limit="1"}}`, excluding that post from the main
+query with `filter="id:-{{id}}"`. What it **cannot** do is, inside one loop, know *which* flagged post
+is the first one: there is no counter and no access to the previous item. So "the first featured post
+spans, and everything else keeps the query's order" is the only form that is genuinely
+unimplementable. **The blanket statement written earlier in this pass was too strong**: the choice
+between "the flagged post leads, fetched by a second query" and "the first post leads, by position" is
+a design decision rather than a platform limit. **It was put back to the owner and he ruled position
+only on 29 August 2026** — the first post in the grid spans, one query, the same behaviour on a placed
+section and on the main feed, and the editor chooses which post leads with Order or by hand-picking.
+The frames as drawn are correct and were not redrawn. The row keeps the label **First cell**, which is
+now the honest name for what it does.
+
+**QUESTION 2 — What should the row that spans the first post be called, and what should it read?**
+
+The row used to be called **Feature** because it used the "featured" tick on a post. It cannot do
+that any more: Ghost's page templates cannot look through a list of posts and find which one is
+ticked. The row now simply makes **the first post in the grid twice as wide**.
+
+1. **"First cell" — Off · Spans two columns. (RECOMMENDED)**
+   It says exactly what it does and cannot be mistaken for the featured tick. An editor who wants a
+   grid of ticked posts sets the source to Featured, which is a different row.
+2. **Keep "Feature" — Off · First cell spans two.**
+   Nothing to relearn for anyone who has seen the old panel, and the word matches what publishers
+   call a featured story. Cost: it names the tick it no longer reads, so an editor who ticks a post
+   and sees nothing change has been told a lie by the control.
+3. **"Lead post" — Off · Twice as wide.**
+   Warmest of the three and closest to how an editor talks. Cost: "lead" is 5 Lead + Grid's name, so
+   two different things in the picker would be called the lead.
+
+**QUESTION 3 — When a set of posts has no pictures at all, should the grid say so? — ANSWERED 29 AUGUST 2026: a quiet line of advice (option 1).**
+
+Four of these designs are built around photography. If not one post in the set has a picture, they now
+draw the words only — the picture box is not drawn at all — and the editor's panel suggests the design
+built for text. Nothing changes on the live site either way; the question is what the editor is told.
+
+1. **The panel suggests the text design, and the live site just shows the words. (RECOMMENDED)**
+   The visitor sees a clean grid of titles; the editor sees one line of advice and decides. Cost: an
+   editor who never opens the panel never learns why the design looks plainer than the picker showed.
+2. **The panel says nothing.**
+   Quietest, and the drawing is still correct. Cost: the editor is left to work out on their own that
+   the pictures are missing rather than broken.
+3. **The editor sees a warning, not a suggestion.**
+   Hardest to miss. Cost: a warning implies something is wrong, and a site that simply does not use
+   photographs would be scolded on every page.

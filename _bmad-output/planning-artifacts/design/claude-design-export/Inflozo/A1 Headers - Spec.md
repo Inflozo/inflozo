@@ -78,7 +78,9 @@ The **Actions** control's values name the slots, not fixed strings: **None · Si
 - **No design becomes another (Part A·A8).** §17.8, rewritten. Per design: §4, §8, §11, §15, §16.
 - **Member asks (Part A·A9).** Sign in and Subscribe **do not render when the connected site has self-signup off**, and a paid ask needs a payment provider; both open Portal, so **with JavaScript off nothing happens**. Stated in every A1 panel that carries an action, via the P0·4 card.
 - **Ctrl-K is unbound (Part B·B5).** Ghost binds it on every site.
-- **[Free], two per category (Part A·A7):** **1 Rail** and **13 Centre Nav** — the two plainest bars; the distinctive ones (7 Mega Bar, 11 Side Rail, 15 Big Type, 4 Overlay, 16 Reveal) stay paid. **Marked as a suggestion pending the owner's list — confirmed in this pass.**
+- **[Free], two per category (Part A·A7):** put to the owner in the correction pass as a five-design shortlist — 1 Rail, 13 Centre Nav, 3 Stacked Masthead, 12 Boxed, 10 Contrast Band — and **decided by the owner on 28 August 2026**: the two plainest bars, one left-aligned and one centred, so a free customer gets a real choice of alignment rather than two of the same thing. None of the five depends on the customer having photography. The distinctive ones (7 Mega Bar, 11 Side Rail, 15 Big Type, 4 Overlay, 16 Reveal) stay paid.
+
+**[Free] designs:** 1 Rail · 13 Centre Nav
 
 ### 0·5 · Two navigation sources
 
@@ -942,7 +944,7 @@ Frames updated: all fifteen design files and `A1-0 Category Proof`. Frames delet
 | A8 | **Hand-off retired** (§17.8 rewritten). **A1·4** keeps its own arrangement over the page ground, scrim off, normal lockup tokens. **A1·8** hides the utility strip with no secondary nav. **A1·15** narrows within its own stacked arrangement. **A1·16** renders its own resting bar without script. **A1·11 is redrawn:** below the threshold it collapses to a labelled **Menu** button in a 60 px bar and the **same 240 px column slides in from the left over a scrim** — rows, active treatment, 7-item cap and pinned foot actions unchanged; full width at 390; the threshold control is renamed **"Collapses to Menu"**. Ruled by the owner in this pass. |
 | A9 | Sign in / Subscribe carry the conditional note (self-signup off, no payment provider) and the Portal-needs-JavaScript line, via the P0·4 card. |
 | A10 | **Not applicable to A1** — the category contains no email field, so there is no form for the no-JavaScript notice to replace. Recorded so the omission is not read as a miss. |
-| A7 | **[Free]: 1 Rail and 13 Centre Nav**, confirmed by the owner this pass, marked in the roster. |
+| A7 | **[Free]: 1 Rail and 13 Centre Nav** — shortlisted and put to the owner in the correction pass, and decided by him there; marked in the roster. |
 | C·A1 | Overlay's transparency is decided **at build time from what is placed below it**; the "or if its image fails to load" clause is deleted from §4, from the frame and from the behaviour-module line. |
 | C·A1 | The scroll-direction header (A1·16) uses the shared scroll behaviour and renders its resting state without script — already true, restated without the "which is A1·1" phrasing. |
 
@@ -959,6 +961,14 @@ No new decision was taken here except the one raised as open question 4. Frames 
 | A8 | Design 8's empty strip no longer "degrades to Rail" — **the strip hides and the bar stands alone, still this design** (spec and frame). Design 15's stuck state is **its own 56 px bar**, not Rail (frame text corrected). |
 | One toggle per thing (new rule, §0·9) | **Every compound "A + B" control in the category is split into one toggle per thing**, drawn as a labelled group: **8's Strip content** → Social icons · Editorial note · **14's Icons** → RSS icon · Dark mode toggle · **16's Returned contents** → Wordmark · Subscribe · Sign in · **6's Menu button** → Icon · Label · **11's Icons** → a Row icons toggle. Single-axis choices (a form, a width, a placement, a ladder, a ground, a treatment, a behaviour state) stay as they are. Panels grew by one to two rows each; footer counts updated. **A1·2's local "Right cluster" becomes the shared Actions control.** The rule is written into the shared editor-controls document as well, since it governs every category. |
 | The active-row re-cut (design 11) | The **2 px leading accent bar** was still drawn in the collapsed panel at 834 and at 390 and still described in two places. Both frames now show **the fill with the label at 500 weight**, and the captions and spec text match. |
+
+### Correction pass — 28 August 2026
+
+| What | Change |
+|---|---|
+| The two free designs were never put to the owner | Corrected. The category had chosen 1 Rail and 13 Centre Nav on its own reasoning. A five-design shortlist of the plainest, photography-free bars — 1 Rail, 13 Centre Nav, 3 Stacked Masthead, 12 Boxed, 10 Contrast Band — was put to the owner with a recommendation, and **he decided 1 Rail and 13 Centre Nav**. The decision is now recorded as the single line **`**[Free] designs:** 1 Rail · 13 Centre Nav`** in §0·4, which is the line the merge reads. |
+| The roster badges | `A1-0 Category Proof`: design 1's badge reads **[Free] — confirmed** and design 13 gains the same badge, so the frame and the line agree. |
+| Numbering | Confirmed unchanged: **1–8 then 10–16, no 9**, fifteen designs. Nothing was renumbered. |
 
 ### Open questions
 

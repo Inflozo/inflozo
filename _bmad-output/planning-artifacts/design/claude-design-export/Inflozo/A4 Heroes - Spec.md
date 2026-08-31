@@ -40,7 +40,9 @@ Every rule below is stated once here and once on the design's own frames and spe
 - **Member counts.** 2's Member count pairs and 11's count render Ghost's `{{total_members}}` **verbatim, already rounded** ("1,200+"); no copy may imply an exact figure.
 - **Two rules had nothing to change here, and that is recorded rather than assumed.** **Slider labels:** A4 draws no slider — every control is a named-value row, and each row's title says what it affects while its values reuse the standard words (Card padding: Compact · Comfortable · Spacious). **Gap names:** A4 has no gap control; the one spacing ladder is the universal Vertical spacing, whose values are Compact · Comfortable · Spacious, so there is no Tight/Even/Airy anywhere to replace.
 - **Ctrl-K is unbound.** `command-palette` was never A4's; recorded.
-- **Mark the two free designs: 1 Centred and 2 Flush Left** — the two plainest arrangements, both picture-free, so a free theme is not gated on imagery. Marked as a suggestion for the owner's confirmation.
+- **The two free designs were put to the owner in the correction pass** as a five-design shortlist — 1 Centred, 17 Slim, 2 Flush Left, 7 Masthead, 9 Contrast Band, all picture-free — and **decided by him on 28 August 2026: 1 Centred and 17 Slim**. They cover two different jobs, a front-page hero and an interior page title, where 1 and 2 cover the same job twice. **The earlier suggestion of 1 Centred and 2 Flush Left is withdrawn.**
+
+**[Free] designs:** 1 Centred · 17 Slim
 
 Everything in this section applies to all seventeen unless a design says otherwise.
 
@@ -806,7 +808,7 @@ Frames updated in the confirmation pass: `A4-0 Category Proof` (the no-image tab
 | The Remove button never greys out | **Confirmation pass, correction.** A4's one repeater — 2 Flush Left's proof pairs — has no minimum, so Remove is always active and there is no floor. The earlier claim that Remove is "held active at the floor" with the clause "a proof row needs at least one pair" is withdrawn: it contradicted 2's own zero state. The claim that 13's hand-picked list keeps an active Remove is withdrawn too — 13 has no repeater. |
 | Item counts are a number picker | Nothing in A4 was a row of fixed counts, so nothing was replaced. 2's pairs are an authored list, Add pair with a per-row Remove, capped at three with the reason shown. **Confirmation pass, correction:** 13's hand-picked post was described as a stepper; it is one post, picked. |
 | Avatars with no photograph | **16's portrait shows one letter.** The pass first kept two initials, since the name is typed; the owner ruled for one letter everywhere on 28 August 2026, and the frame, the a11y note and the spec are drawn and written that way. No A4 design renders a Ghost author, so this is the category's only avatar. |
-| Mark the two free designs | **1 Centred and 2 Flush Left**, marked in the roster, offered as a suggestion for confirmation. |
+| Mark the two free designs | **1 Centred and 17 Slim**, decided by the owner in the correction pass and marked in the roster. The earlier suggestion of 1 and 2 is withdrawn. |
 | Slider labels | **Already satisfied.** A4 draws no slider; every control is a named-value row whose title says what it affects and whose values reuse the standard words. |
 | Gap names are "Tight · Normal · Loose" | **Already satisfied.** A4 has no gap control, and no Tight/Even/Airy or Tight/Standard/Wide exists in the category to replace. |
 | Ctrl-K is unbound | Recorded: `command-palette` was never A4's. |
@@ -823,7 +825,7 @@ Each of the ten rules was read against each of the seventeen. Only the designs w
 | Gap names | none | No gap control in the category. |
 | Item counts are a number picker | 2 | An authored list with a stated cap, not a row of counts. |
 | Fewer choices on a shared control, with the reason said | 4, 8, 9, 10, 11, 14, 16, 18 | Every narrowing shows its reason; no shared control renamed or extended; the swatch row is Base; no Inherit value anywhere. |
-| Mark the two free designs | 1, 2 | Marked in the roster. |
+| Mark the two free designs | 1, 17 | Marked in the roster; decided by the owner in the correction pass. |
 | No design ever turns into another design | 2, 3, 4, 5, 6, 10, 12, 13, 14, 18 | All ten now name their own state. Nothing in the category resolves to another design. |
 | Member buttons are conditional | 11 by construction; all seventeen by destination | Both notes on any Portal-pointed action; 11's form conditional on the connected site. |
 | The no-JavaScript notice | 11 | The only design with a field; the notice replaces the form at the row's own height. |
@@ -833,6 +835,14 @@ Each of the ten rules was read against each of the seventeen. Only the designs w
 1. **Big Type's lifted cap — do not cut the headline.** At the 64 px floor the cap lifts and a long headline takes the lines it needs; no word is ever removed. The same answer given for the Footers category's big-type design now holds here, where the limit had been an explicit design rule. The flag is cleared on 6's frame and in §6.
 2. **The proof row keeps no minimum.** Zero pairs stays legal: the row disappears and the hero still reads. Remove is always active and never has to refuse, so the rule that the Remove button never greys out is satisfied by there being no floor at all.
 3. **The two member-button notes sit on the action's own editor,** and appear only when that action's destination is a Portal action — signup, signin or a paid tier. Fifteen designs whose actions point at ordinary URLs carry neither note.
+
+### Correction pass — 28 August 2026
+
+| What | Change |
+|---|---|
+| The two free designs were never put to the owner | Corrected. The category had chosen 1 Centred and 2 Flush Left on its own reasoning. A five-design shortlist of the plainest, photography-free heroes — 1 Centred, 17 Slim, 2 Flush Left, 7 Masthead, 9 Contrast Band — was put to the owner with a recommendation, and **he decided 1 Centred and 17 Slim**: 1 and 2 are the same job twice, while 17 is the interior-page hero and never looks empty. The decision is recorded as the single line **`**[Free] designs:** 1 Centred · 17 Slim`** in §0·0, which is the line the merge reads. |
+| The roster badges | `A4-0 Category Proof`: design 1's badge reads **[Free] — confirmed**, **2 loses its badge**, **17 gains it**, and the settlement row now reads **1 · 17** with the owner's reason. |
+| Numbering | Confirmed unchanged: **1–14 then 16–18, no 15**, seventeen designs. Nothing was renumbered. |
 
 ### Open questions
 

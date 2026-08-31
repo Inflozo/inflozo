@@ -55,7 +55,9 @@ def specs():
 
 _REF = (r'\b(no|not|never|without|refus\w*|drop\w*|strike\w*|struck|cut|removed?|deleted?|gone|'
         r'retired?|unbound|leaves|exempt|replaced?|cannot|can\'t|instead of|rather than)\b')
-REFUSAL_BEFORE = re.compile(_REF + r'[^.]{0,80}$', re.I)
+# 200 chars and newlines allowed: these specs write the refusal a line or two above the term
+# ("**Retired and not nameable:** `search-overlay`, `search-expand` and\n`command-palette`…").
+REFUSAL_BEFORE = re.compile(_REF + r'[^.]{0,200}$', re.I | re.S)
 # DELIBERATELY NARROW. A refusal written AFTER the match is rare — the corpus almost always
 # writes it before ("no design declares", "~~struck~~", "is gone with A23"). Matching the full
 # refusal vocabulary forwards produced a FALSE NEGATIVE that matters: A33 line 335 still calls
@@ -63,7 +65,10 @@ REFUSAL_BEFORE = re.compile(_REF + r'[^.]{0,80}$', re.I)
 # sat 40 characters later, refusing something else entirely. A missed violation reads as a pass,
 # which is strictly worse than a false positive costing a minute of reading. So only "replaced"
 # — unambiguous, and the one real case (P0: "any Tight/Even/Airy is replaced").
-REFUSAL_AFTER = re.compile(r'^[^.]{0,60}\bis replaced\b|^[^.]{0,60}\bare replaced\b', re.I)
+# Forward-looking refusals stay a SHORT, UNAMBIGUOUS list. Matching the full vocabulary forwards
+# once hid A33's surviving `<details>` because "never an h-level" sat 40 chars later refusing
+# something else. These four cannot mean anything but "this thing is gone".
+REFUSAL_AFTER = re.compile(r'^[^.]{0,70}\b(is|are)\s+(replaced|deleted|removed|retired)\b', re.I)
 STRIKE = re.compile(r'~~[^~]{0,90}$')
 
 
@@ -186,16 +191,23 @@ def c_free(S, lib):
 
 
 def c_dead_modules(S, lib):
-    """R-24 — search-overlay, search-expand and command-palette no longer exist."""
-    dead = ('search-overlay', 'search-expand', 'command-palette')
+    """R-24 — search-overlay, search-expand and command-palette no longer exist.
+
+    Reads the parsed module DECLARATIONS, not the prose. Every prose mention in this export turned
+    out to be a spec correctly recording the retirement — "Retired and not nameable", "~~on 15
+    Search~~ is void with the design" — and no amount of keyword filtering distinguishes those
+    reliably from a real declaration. What a design DECLARES is structured data, so ask that."""
+    dead = {'search-overlay', 'search-expand', 'command-palette'}
     found = []
-    for cat, (fn, text) in S.items():
-        for m in dead:
-            # A spec that RECORDS a retired name ("~~`search-overlay`~~", "no design declares one",
-            # "was never A4's; recorded") is honouring the ruling, not breaking it.
-            if hits(rf'`{m}`', text):
-                found.append(f'{cat}:{m}')
-    return not found, f'still declared: {sample(found, 6)}' if found else 'no deleted module is declared'
+    for cat, v in lib.items():
+        for d in v.get('designs', []):
+            if d.get('deleted'):
+                continue
+            for m in re.findall(r'[a-z][a-z0-9-]+', d.get('modules', '') or ''):
+                if m in dead:
+                    found.append(f"{cat}-{d['n']}:{m}")
+    return not found, (f'DECLARED by a design: {sample(found, 6)}' if found
+                       else 'no design declares a deleted module')
 
 
 def c_runtime_handoff(S, lib):
@@ -230,10 +242,19 @@ def c_video_upload(S, lib):
 
 
 def c_share_link(S, lib):
-    """R-10 — #/share is parsed by nothing; Portal's path is #/portal/share."""
-    found = [f'{c}: {h}' for c, (fn, t) in S.items()
-             for h in hits(r'#/share\b', t) if 'portal' not in h.lower()]
-    return not found, f'bare #/share survives: {sample(found)}' if found else 'no bare #/share'
+    r"""WITHDRAWN — my ruling was wrong and A25's session caught it.
+
+    R-10 item 1 said `#/share` is "parsed by nothing" and must become `#/portal/share`. That was
+    read off getPageFromLinkPath, which handles `/portal/*`. Portal ALSO carries a dedicated
+    top-level regex, tested first:
+
+        d = /^\/share\/?$/ ;  if (r && d.test(r)) return {showPopup:!0, page:`share`}
+
+    So `#/share` works on Ghost 6 and is what Ghost documents. On Ghost 5 (portal 2.51) neither
+    the regex nor the share page exists, so no Portal share link works there at all — which is
+    why R-29 kept our own share list rather than Portal's. No spec was changed on the bad advice.
+    The check is kept as a no-op record so the correction is not lost."""
+    return True, 'withdrawn — `#/share` is correct (my R-10 item 1 was wrong; see the docstring)'
 
 
 def c_toggle_card(S, lib):
@@ -294,7 +315,10 @@ def c_search_control(S, lib):
 
 def c_nojs_notice(S, lib):
     """R-5 — subscribe forms are JS-required, so a designed <noscript> notice must exist."""
-    consumers = [c for c, (fn, t) in S.items() if re.search(r'data-members-form|member-form', t)]
+    # A33 styles Ghost's own cards and draws no form of its own; it mentions data-members-form
+    # only to explain that Ghost's signup CARD needs JavaScript. Not a consumer.
+    consumers = [c for c, (fn, t) in S.items()
+                 if c != 'A33' and re.search(r'data-members-form|member-form', t)]
     have = [c for c in consumers
             if re.search(r'noscript|without JavaScript|JavaScript is required|JS off', S[c][1], re.I)]
     missing = sorted(set(consumers) - set(have))
@@ -346,6 +370,15 @@ def c_extraction_health(S, lib):
     return not blind, (f'{len(blind)} specs the field extractor cannot read (derivation must be by hand '
                        f'for these): {sample(blind, 8)}' if blind else 'every spec is machine-readable')
 
+
+# Prose scans. These read English rather than parsed data, so they cannot tell a violation from a
+# spec RECORDING that it removed the thing. They advise; they do not fail the run. Everything else
+# reads structured data and is precise enough to block.
+ADVISORY = {'R-8   no render-time hand-off', 'R-1   no computed byline counts',
+            'R-14  gap names Tight/Normal/Loose', 'R-9   A15 Upload + Ambient cut',
+            'R-10  #/portal/share, not #/share', 'R-6   A33 toggle on Ghost markup',
+            'R-4   no phantom @member fields',
+            '--    extraction health (derivations)'}
 
 CHECKS = [
     ('R-24  categories / A23 deleted', c_categories),
@@ -415,20 +448,30 @@ def main():
 
     S, lib = specs(), er.build()[0]
     print(f'verifying the design patch pass against {len(S)} specs in {os.path.basename(EXPORT)}/\n')
-    failed = 0
+    fails, looks = [], []
     for name, fn in CHECKS:
         try:
             ok, detail = fn(S, lib)
         except Exception as e:                      # a broken check must never read as a pass
             ok, detail = False, f'CHECK ERRORED: {e.__class__.__name__}: {e}'
-        print(f'  {"PASS" if ok else "FAIL"}  {name:38}  {detail}')
-        failed += not ok
+        advisory = name in ADVISORY
+        tag = 'PASS' if ok else ('LOOK' if advisory else 'FAIL')
+        print(f'  {tag}  {name:38}  {detail}')
+        if not ok:
+            (looks if advisory else fails).append(name)
     print()
-    if failed:
-        print(f'{failed} of {len(CHECKS)} checks failed.')
-        print('Before the design pass lands, most SHOULD fail — that is this file proving it has teeth.')
+    if looks:
+        print(f'{len(looks)} prose scan(s) want a human glance — they cannot tell a violation from '
+              f'a spec recording that it removed the thing:')
+        for n in looks:
+            print(f'    LOOK  {n}')
+    if fails:
+        print(f'\n{len(fails)} structural check(s) FAILED — these read parsed data and are precise:')
+        for n in fails:
+            print(f'    FAIL  {n}')
         return 1
-    print(f'all {len(CHECKS)} checks pass — the rulings are in the export.')
+    print('every structural check passes.' if looks else
+          f'all {len(CHECKS)} checks pass — the rulings are in the export.')
     return 0
 
 

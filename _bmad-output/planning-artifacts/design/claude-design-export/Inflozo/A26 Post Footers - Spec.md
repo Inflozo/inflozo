@@ -1,6 +1,19 @@
 # A26 Post Footers — written specification
 
-15 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026**
+15 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
+**design patch pass, 30 August 2026**
+
+**[Free] designs:** 1 Author Bio · 6 Slim
+
+*(**The owner's choice, ruled 30 August 2026**, from a shortlist of five — 1 Author Bio, 6 Slim, 2 Rows, 9 Share Row, 8 Tag Row. One complete footer and one minimal one, neither dependent on the customer having photographs. **Closed.** Nothing was renumbered.)*
+
+**Design patch pass, 30 August 2026.** The category was re-read against four platform facts —
+Ghost's templates cannot count, add or remember; CSS cannot see content; some fields we drew do not
+exist; and inside a post's body we own the stylesheet and nothing else — and against the ten
+library-wide rules. **Every change is listed with the name of the rule that required it in
+Patch notes at the end of this document**, and the two decisions nobody had made are asked there in
+plain words rather than guessed. **The visual language, the type scale, the colour packs, the spacing
+system, the member form's sent / error / loading states and the design numbering are untouched.**
 
 The frames are `A26-0 Category Proof.dc.html` and `A26-1` … `A26-15`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -44,10 +57,8 @@ that list included `revisionNote`, the one field in A26 about the post rather th
 **it is cut** ⚑, and with it the last thing in the category a user could write that would have been
 false on the next post the template served.
 
-A26 inherits A17's page margins and content width, A19·3's card, A19's missing-image vocabulary
-(Reflow · Plate · Hand off), A24's padding ladder, A24·14's Links control and copied confirmation
-**and its one site-wide Share-destinations setting**, A25·9's share tower and share row, A1's avatar
-and initials fallback, A1·2's 38-in-44 target and A6's focus ring. **A26 adds the footer block
+A26 inherits A17's page margins and content width, A19·3's card, A19's missing-image vocabulary (Reflow · Plate · Hand off — **of which A26 now uses only Reflow and Plate** ⚑), A24's padding ladder, A24·14's Links control and copied confirmation
+**and its one site-wide Share-destinations setting**, A25·9's share tower and share row, A1's avatar and its one-letter fallback, A1·2's 38-in-44 target and A6's focus ring. **A26 adds the footer block
 vocabulary** — the author block, the author-socials row, the tag pill, the destination pair, the
 ledger row and the subscribe prompt — and nothing else.
 
@@ -56,8 +67,9 @@ ledger row and the subscribe prompt — and nothing else.
 **1 · The author bio block, and a post with two authors.** The block is **a 56 px avatar, the name in
 the heading font at 19, two clamped lines of bio and a link to the author's archive** ⚑. A26·1 draws
 it and eleven designs reuse it unchanged. **Two authors are two rows with a hairline between them**
-⚑, each with its own avatar, bio and link. **Three or more collapse to one row of overlapped 40 px
-avatars and a names line with no bios** ⚑; four or more read "Rosa Menendez and three others".
+⚑, each with its own avatar, bio and link. **Three or more collapse to one row of overlapped 40 px avatars and a names line with no bios**
+⚑ — **except 11 Portrait, which draws the primary author alone** ⚑, the owner's ruling of 30 August —
+and from three upward the line reads "Rosa Menendez and others": **no number anywhere in a byline** ⚑.
 **Ghost's own author order is kept and is not selectable anywhere in the category** ⚑. Three designs
 answer it differently and each says so: **10 Big Type** puts both names in one display line and drops
 the bio, **11 Portrait** draws two half-width portraits, **14 Ledger** writes one line and never reads
@@ -94,10 +106,8 @@ the logged-out ask, **a free-member upgrade ask**, and the signed-in line as the
 
 **4 · A post with no tags, no next post and no author bio.** **Every absent block is absent — no
 placeholder, no "Untagged", no em dash, no reserved height** ⚑ — and every hairline goes with the
-block it belonged to. **No bio** → the avatar, name and link stay and the row loses one line. **No
-photograph** → A1's initials avatar, or A19's plate at 11 Portrait's crop. **No next post** → the
-remaining destination takes the full width and keeps its own label ⚑. **No tags at all** → 8 Tag Row
-hands off to 6 Slim ⚑, **the only design in A26 that swaps rather than drops**. **No social handles**
+block it belonged to. **No bio** → the avatar, name and link stay and the row loses one line. **No photograph** → A1's avatar drawing **one letter** ⚑, or A19's plate at 11 Portrait's crop. **No next post** → the
+remaining destination takes the full width and keeps its own label ⚑. **No tags at all** → 8 Tag Row **renders nothing at all** ⚑ — no label, no ruled row, no reserved height. **No design in A26 turns into another design**: a footer hides what does not apply, and where a panel would rather the user placed something else it says so as advice. **No social handles**
 → the socials row is absent, never a rail of placeholders ⚑. With every block empty a footer
 **renders nothing at all**, and the editor draws the absent blocks dashed and labelled.
 
@@ -165,13 +175,11 @@ Every design obeys these unless its own entry says otherwise.
   field with a default** or **a theme translation-catalog string**, and the spec says which per
   string. Authored with defaults: 2 Rows' four row labels, 14 Ledger's seven, 15 Grid's three column
   labels, 7's two kickers, 10's desk line, 12's five member strings, and the five labels the category
-  already had. Catalog strings: the destination names, "and three others", "+4 more", the long form of
-  a date, the socials links' accessible names, the hidden field label in 12.
+  already had. Catalog strings: the destination names, **"and others"** ⚑, **"+ more"** ⚑, the long form of a date, the socials links' accessible names, the hidden field label in 12, and **the no-JavaScript notice that replaces a subscribe form** ⚑ — **new in this pass**. **No catalog string in A26 carries a number**, because no template can compute one.
 - **The share destinations are one site-wide ordered setting** ⚑ — X · Facebook · LinkedIn · Bluesky ·
   Mastodon · Threads · WhatsApp · Reddit · Email · Copy link, **ordered and enabled once by the
   owner** with P0·3's drag-reorder and per-destination enable **in the setting, never in a panel**.
-  Every share row draws **the first N enabled**, in the owner's order, which is what **Share links ·
-  Two · Three · Four** now means. **The glyphs are fixed per-platform brand icons** from P0·2's
+  Every share row draws **the first N enabled**, in the owner's order, which is what **Share links**, now **a stepper from 2 to 4 with a default of 4** ⚑, means. **The glyphs are fixed per-platform brand icons** from P0·2's
   Social / Brands group and are not choosable per section ⚑. **Ships with all ten present and four
   enabled**, in A24's order, so nothing moves on a site that never opens the setting. **A24·14's
   admitted cost — "a site that shares to LinkedIn cannot" — is paid off.**
@@ -218,8 +226,8 @@ lines; on 14 Ledger, Rows, Label column and Width.
 | 4 | Contrast Band | `stack · none · contrast · one · left · inverted closing band` | As 1; no band when empty | 8 | `share` |
 | 5 | Split | `split · none · page · few · left · author against the next post` | Empty column collapses the split | 8 | `share` `member-form` |
 | 6 | Slim | `bar · none · page · few · none · one line closing the article` | Share takes the left; nothing if both go | 5 | `share` |
-| 7 | Next and Prev | `nav · none · page · few · background · paired destinations with their pictures` | One tile full width; none → hand off to 1 | 6 | — |
-| 8 | Tag Row | `bar · none · page · many · none · tags as the closing gesture` | Hand off → 6 Slim | 5 | — |
+| 7 | Next and Prev | `nav · none · page · few · background · paired destinations with their pictures` | One tile full width; none → nothing renders | 6 | — |
+| 8 | Tag Row | `bar · none · page · many · none · tags as the closing gesture` | Nothing renders | 5 | — |
 | 9 | Share Row | `bar · none · surface · few · none · share bar on its own ground` | Cannot be empty | 5 | `share` |
 | 10 | Big Type | `stack · none · page · one · none · the author's name at display size` | Name always drawn | 8 | `share` |
 | 11 | Portrait | `split · none · page · one · right · portrait at the column height` | Plate at the portrait crop | 7 | `share` |
@@ -227,6 +235,10 @@ lines; on 14 Ledger, Rows, Label column and Width.
 | 13 | Rail | `edge rail · none · page · few · none · footer meta in the margin` | No rail; body takes the width | 6 | `share` |
 | 14 | Ledger | `table · none · page · few · none · labelled rows of facts` | Absent rows, never "never" | 6 | `share` |
 | 15 | Grid | `grid-of-N · none · page · few · top · three closing columns` | Three columns become two | 7 | `share` `member-form` |
+
+**[Free] designs:** 1 Author Bio · 6 Slim
+
+*(**The owner's choice, ruled 30 August 2026**, from the five plainest — 1 Author Bio, 6 Slim, 2 Rows, 9 Share Row, 8 Tag Row. **Closed.**)*
 
 **Every count excludes the universal trio.** **All fifteen are distinct on the five closed slots.**
 Archetype carries the category — stack five, bar three, split two, one each of nav, form, edge rail,
@@ -252,11 +264,7 @@ Ghost's — plus the share destinations, which are **a site setting whose orderi
 P0·3's item controls inside that setting**.
 
 So there is **no Add, no Remove, no reorder, no per-item editing and no choice of which item** in any
-panel. **Five controls come closest and all five are single values written onto the section:** 8 Tag
-Row's **Tags shown** (Three · Six · All — a count taken from Ghost's own tag order), 14 Ledger's
-**Rows** (Three · Four · Five · All — a named set of the design's own rows, A24·11's Cells
-precedent), 15 Grid's **Columns**, 7 Next and Prev's **Within** (a scope, not a selection), and the
-**Share links / Links** control the twelve share designs carry.
+panel. **Five controls come closest and all five are single values written onto the section:** 8 Tag Row's **Tags shown** (**a stepper, 1 to 12, default 6** ⚑ — a count over Ghost's own tag order), 14 Ledger's **Rows** (**a stepper, 3 to 7, default 7** ⚑ — a count of the design's own rows, A24·11's Cells precedent), 15 Grid's **Columns** (Two · Three — **a column count and not an item count, which is why it stays a named-value row** ⚑), 7 Next and Prev's **Within** (a scope, not a selection), and the **Share links / Links** control the twelve share designs carry (**a stepper, 2 to 4, default 4** ⚑). **Three of the five became number pickers in this pass** and not one of them gained an Add, a Remove or a reorder.
 
 **Every design states its behaviour at 0, 1 and many** for each array it reads. Selecting a footer on
 the canvas gives the user **text fields only** — labels, kickers, one URL and 12's five member
@@ -269,7 +277,7 @@ strings — **and every one of them edits inline on the canvas as well**.
 | `tagsLabel` | text | yes | 24 ch | 8, 13, 14, 15 · default "Filed under" |
 | `archiveLabel` | text | yes | 24 ch | 8 only · default "Browse the archive" ⚑ |
 | `archiveUrl` | URL | yes | — | 8 only ⚑ · the Link Picker · default the site's tag index — finding 5 |
-| `authorLinkLabel` | text | yes | 24 ch | 1, 3, 4, 5, 11, 13, 15 · default "More from {first name}" · the prefix in 10 ⚑ |
+| `authorLinkLabel` | text | yes | 24 ch | 1, 3, 4, 5, 11, 13, 15 · default **"More from {author name}" — the author's full name** ⚑ · the prefix in 10 |
 | `shareLabel` | text | yes | 24 ch | the twelve with share · default "Share this piece" · A24·14's |
 | `copiedLabel` | text | yes | 24 ch | the same twelve · default "Link copied" · A24·14's |
 | `rowLabels` ×4 | text | yes | 24 ch each | 2 only ⚑ · "Filed under" · "Written by" · "Share" · "Read next" |
@@ -294,7 +302,7 @@ strings — **and every one of them edits inline on the canvas as well**.
 | `post.published_at` | date | no | — | 14 only · `<time datetime>` |
 | `post.updated_at` | date | no | — | 14, and 1, 3, 4, 5 at Updated line On ⚑ |
 | `post.reading_time` | integer | no | — | 14 only |
-| `post.feature_image_caption` | text | n/a | — | 14 only ⚑ · the Photography row · absent caption → absent row |
+| `post.feature_image_caption` | **html** | n/a | — | 14 only ⚑ · the Photography row · **rendered as HTML so a credit link survives** ⚑ · absent caption → absent row |
 | author post count | derived | — | — | 10 only ⚑ · at Post count Show · absent rather than zero |
 
 **Nineteen authored, ten read, one derived — thirty in all**, and **every authored field is a label, a
@@ -302,8 +310,8 @@ kicker, a URL or one of the subscribe strings**: `revisionNote` is cut ⚑, so *
 authored about the post rather than about the section**, which is what made that one field wrong.
 **Switching between any two of the fifteen is lossless** — `tagsLabel` survives dormant in the
 designs that do not draw it, the label sets in the designs that are not 2, 14 or 15, and 12's five
-member strings in the fourteen without a prompt. **Derived, never stored:** the initials in an avatar
-fallback, "and three others", the author's post count, the long form of a date, and **the fact that a
+member strings in the fourteen without a prompt. **Derived, never stored:** the one letter in an avatar
+fallback, "and others", the author's post count, the long form of a date, and **the fact that a
 post has been updated at all** ⚑.
 
 ---
@@ -330,8 +338,7 @@ post has been updated at all** ⚑.
   `archiveUrl`.
 - **6 · Controls.** **Blocks** (five values) · **Width** On the measure 720 · Content width 1,296 ·
   **Avatar** Compact 48 · Comfortable 56 · Spacious 72 · **Bio lines** One · Two · Full · **Rules**
-  None · Above each block · Full · **Share links** Two · Three · Four · **Author socials** Off · Icons
-  · Icons and names · **Updated line** Off · On. Eight, plus the universal trio. **Cut:** block order,
+  None · Above each block · Full · **Share links** a number picker, 2 to 4, default 4 ⚑ · **Author socials** Off · Icons · Icons and names · **Updated line** Off · On. Eight, plus the universal trio. **Cut:** block order,
   block gap, a tag limit, a next/prev picture, a per-handle socials choice ⚑.
 - **7 · Data.** Tags 0 → no row, no hairline; many → all of them, wrapping ⚑. Authors 1 → as drawn;
   2 → two rows and a hairline ⚑; 3+ → avatars and a names line ⚑. Socials 0 → no row ⚑; on Ghost
@@ -382,7 +389,7 @@ post has been updated at all** ⚑.
   next" — plus `shareLabel`, `copiedLabel`, `authorLinkLabel`.
 - **6 · Controls.** **Blocks** · **Width** — **defaulting to Content width, the only design that
   does** ⚑ · **Row padding** Compact 20 · Comfortable 28 · Spacious 40 · **Labels** On · Off ·
-  **Rules** Hairlines · None · **Share links** Two · Three · Four. Six, plus the universal trio.
+  **Rules** Hairlines · None · **Share links** a number picker, 2 to 4, default 4 ⚑. Six, plus the universal trio.
   **Cut:** width, alignment, per-row padding. **No longer cut: the label text**, which is now four
   authored fields.
 - **7 · Data.** Tags 0 → the row is absent with its hairline ⚑. Authors 1 or 2 → **one row, two
@@ -436,15 +443,13 @@ post has been updated at all** ⚑.
 - **8 · Empty state.** **An empty footer draws no card** ⚑. **A footer with one block still draws
   it.** Editor: dashed rows inside a dashed card.
 - **9 · Behaviour module.** `share`; `member-form` at Blocks Everything. **No-JS, quoted:** `share` as
-  above; `member-form` — "The `<form>` posts natively to Ghost's members endpoint; Ghost's own server
-  response replaces the designed sent state." Both edit-safe.
+  above; `member-form` — **"Ghost's signup endpoint cannot accept a plain form submission, so the form needs JavaScript; where it is unavailable a designed notice replaces the form, and the sent, error and loading states are Ghost's own script and still apply."** ⚑ Both edit-safe.
 - **10 · Accessibility.** **The card is a `div` with no role and no label** ⚑. Light: name 13.4:1 on
   `surface`, the card against the page 1.05:1 — decorative, carried by the shadow in light and the
   hairline in dark. Print: **no card; prints as 1 Author Bio on white** ⚑.
 - **Repeating items.** Four, all Ghost's. Three text fields, six at Everything.
 - **Reconciled.** **Author socials** and **Updated line** join the list on 1 Author Bio's terms, both
-  drawn inside the plane. **Background role is locked to Surface with its reason shown** ⚑ — the raised
-  plane is the design, and at Background it is 1 Author Bio. **Card inset keeps its own name** against
+  drawn inside the plane. **Background role is locked to Surface with its reason shown** ⚑ — the raised plane is the design, and at Background the footer would read like 1 Author Bio. **Card inset keeps its own name** against
   the universal Vertical spacing, and **Line draws above the card, never inside it** ⚑. The
   destinations become **one site-wide ordered setting** with fixed brand glyphs; the six authored
   strings edit inline, **the subscribe button takes an optional Icon-Picker icon**, and **P0·4's
@@ -561,7 +566,7 @@ post has been updated at all** ⚑.
   `copiedLabel`. **Unread: `authors[]` and their socials** ⚑ and the rest.
 - **6 · Controls.** **Blocks** Tags · Tags and share · Tags, share and next — **three values, not
   five** ⚑ · **Width** · **Rules** Above · Above and below · None · **Alignment** Left · Centre ·
-  **Share links**, **Four disabled at the 720 measure with its reason shown** ⚑. Five, plus the
+  **Share links** a number picker, 2 to 4, default 4, **the + greyed at three on the 720 measure with its reason shown** ⚑. Five, plus the
   universal trio, whose **Line resolves into this design's own Rules row** ⚑.
 - **7 · Data.** Tags 0 → **the share links take the left edge** ⚑; many → **the run wraps and the bar
   grows** ⚑. **Authors not read at any count** ⚑. Prev/next 1 → one side, **the other empty rather than
@@ -612,13 +617,13 @@ post has been updated at all** ⚑.
   `feature_image`, not an authored image field, so there is no Image Picker here and the tile crops
   from the centre** ⚑.
 - **7 · Data.** 2 → the pair; **1 → one tile at the full width keeping its kicker and alignment** ⚑;
-  **0 → nothing renders and the route falls back to 1 Author Bio** ⚑. **Within scopes with Ghost's own
+  **0 → nothing renders** ⚑ — **the footer is absent, never replaced by another design**. **Within scopes with Ghost's own
   `in="primary_tag"` / `in="primary_author"`** ⚑, and at either value a post with no scoped neighbour
   draws one tile or none. **Order is Ghost's and is not selectable** ⚑, and there is no Add. **A
   missing feature image takes A19's plate per tile** ⚑. **On a page the pair is absent** ⚑ — the
   helpers are post-context only.
 - **8 · Empty state.** **Nothing renders on the first and last posts of a one-post site** ⚑. **No
-  authored fallback and no placeholder picture.**
+  authored fallback, no placeholder picture and no other design in its place** ⚑.
 - **9 · Behaviour module.** **None; `core` assumed. No-JS: pixel-identical** ⚑. Edit-safe.
 - **10 · Accessibility.** `<nav aria-label="Post navigation">`, two anchors with `rel`. **The whole
   tile is the link** ⚑. **The feature image is a CSS background and carries no alt** ⚑ — the accessible
@@ -656,17 +661,19 @@ post has been updated at all** ⚑.
 - **5 · Content fields.** Read: `tags[]` — `name` and `url`, **never `accent_color`** ⚑. Authored:
   `tagsLabel` ⚑, `archiveLabel` ⚑ and **`archiveUrl` — the only URL field in A26** ⚑.
 - **6 · Controls.** **Tag style** Pills · Words · **Tag size** Compact 15 · Comfortable 17 · Spacious
-  19 · **Tags shown** Three · Six · All · **Alignment** Left · Centre · **Archive link** Off · On.
+  19 · **Tags shown** a number picker, 1 to 12, default 6 ⚑ · **Alignment** Left · Centre · **Archive link** Off · On.
   Five, plus the universal trio, whose **Line resolves into the hairline already above the row** ⚑.
   **Cut:** a tag colour, a post count, a hash prefix, which tags.
-- **7 · Data.** **0 → hand off to 6 Slim's destination line** ⚑; 1 → one pill with the label and link
-  kept; **7 at Tags shown Three → three pills and a "+4 more" link to the post** ⚑; 15 at All → four
-  lines, stated rather than clamped. **Ghost's order, primary first, not selectable, and no Add** ⚑.
+- **7 · Data.** **0 → nothing renders** ⚑ — no label, no row, no reserved height; 1 → one pill with the
+  label and link kept; **7 at Tags shown 3 → three pills and a "+ more" link to the post** ⚑, **with no
+  number in it**; 15 at Tags shown 12 → twelve pills over four lines and the link, stated rather than
+  clamped. **Ghost's order, primary first, not selectable, and no Add** ⚑.
   **Internal `#hash` tags are never drawn** ⚑. **On a page the row draws normally** — a page can carry
   tags, so this design is not post-only ⚑.
-- **8 · Empty state.** **An untagged post never draws this design** ⚑ — no "Untagged" pill. Editor:
-  "This post has no tags. Add one in Ghost, or this footer shows the next post instead."
-- **9 · Behaviour module.** **None; `core` assumed. No-JS: pixel-identical** ⚑ — **the "+4 more" is a
+- **8 · Empty state.** **An untagged post never draws this design** ⚑ — no "Untagged" pill, no ruled
+  row and no hand-off. Editor: "This post has no tags, so this footer renders nothing. Add a tag in
+  Ghost."
+- **9 · Behaviour module.** **None; `core` assumed. No-JS: pixel-identical** ⚑ — **the "+ more" is a
   link and not a disclosure** ⚑.
 - **10 · Accessibility.** A `<ul>` of links with the label as its `aria-label` ⚑, **never a heading**.
   Every target 44 px at every size and width. **The archive link is the last item in the list** ⚑.
@@ -680,8 +687,7 @@ post has been updated at all** ⚑.
   **Five controls, unchanged** — a content field is not a sixth control — plus the trio, with **Line
   resolving into the row's existing hairline**.
 - **Flagged ⚑** — the tag at reading size; the 44 px box as the target itself; the tag accent colour
-  refused; internal tags never drawn; "+4 more" as a link; the size held at every width; the hand-off
-  to 6 Slim; the archive route invented (**finding 5**); the archive link inside the list; tags
+  refused; internal tags never drawn; "+ more" as a link with no number in it; the size held at every width; nothing rendering on an untagged post; the archive route invented (**finding 5**); the archive link inside the list; tags
   printing as a line.
 
 ---
@@ -700,7 +706,7 @@ post has been updated at all** ⚑.
   **label above the links and both left-aligned whatever Alignment says** ⚑.
 - **5 · Content fields.** Read: `post.url`, `post.title`. Authored: `shareLabel`, `copiedLabel`.
   **The shortest field list in A26** ⚑.
-- **6 · Controls.** **Links** Two · Three · Four · **Link style** Words · Words and glyphs ·
+- **6 · Controls.** **Links** a number picker, 2 to 4, default 4 ⚑ · **Link style** Words · Words and glyphs ·
   **Alignment** Split · Left · Centre · **Bar padding** Compact 20 · Comfortable 28 · Spacious 36 ·
   **Edges** Content width · On the measure. Five, plus the universal trio with **Background role
   locked to Surface**. **Cut:** a glyph-only value, share counts, a native share trigger, a sticky
@@ -790,8 +796,8 @@ post has been updated at all** ⚑.
 - **4 · Responsive rule. 1440** portrait 200/280/360 at 4:5 or 1:1 on either side, 48 gutter, name 28,
   bio 17 clamped at four, socials under the bio. **834** **portrait 240** ⚑, words 466. **≤ 767**
   **portrait above the words at 350 with the ratio held** ⚑, side ignored.
-- **5 · Content fields.** As 1, with `profile_image` drawn at picture scale and `socials` under the
-  words.
+- **5 · Content fields.** As 1, with `profile_image` drawn at picture scale, `socials` under the
+  words, and **`primary_author` at three or more authors** ⚑.
 - **6 · Controls.** **Portrait side** Left · Right · **Portrait ratio** Portrait 4:5 · Square 1:1 —
   **A8's ladder minus its landscape values** ⚑ · **Portrait size** Compact 200 · Comfortable 280 ·
   Spacious 360 · **Blocks** (Author always drawn) · **Bio lines** Two · Four · Full — **a different
@@ -799,11 +805,10 @@ post has been updated at all** ⚑.
   trio, whose **Line spans both columns** ⚑. **Cut:** a crop, a radius, a circular value, a caption,
   **and an Image focus** — **the portrait is Ghost's `profile_image`, not an authored image field:
   Ghost stores one image and no focal point, so the crop is from the centre** ⚑, which is finding 7.
-- **7 · Data.** Authors 1 → as drawn; **2 → two half-width portraits with three-line bios** ⚑; **3+ →
-  hand off to 1 Author Bio** ⚑. **No photograph → the initials plate at the portrait crop** ⚑. **No
+- **7 · Data.** Authors 1 → as drawn; **2 → two half-width portraits with three-line bios** ⚑; **3+ → the primary author alone, drawn exactly as at one author** ⚑ — **the owner's ruling of 30 August 2026**. `{{#primary_author}}` is Ghost's own helper for the singular first author and carries `name`, `bio`, `profile_image` and `url`, so the design needs **no loop and no arithmetic**; **the co-authors are named in one muted 13 px line under the name** — "with Daniel Reith and others", **no number**. **The split, the portrait size and the ratio are unchanged, so the design renders as itself at every author count.** **The cost, stated:** at three or more only one writer gets a photograph and a bio, and the designs that credit everyone equally are 1 Author Bio and 14 Ledger. **No photograph → the one-letter plate at the portrait crop** ⚑. **No
   bio → the portrait keeps its height** ⚑ and the row is a picture beside two lines. Socials 0 → no
   row, and the portrait's height is unchanged ⚑.
-- **8 · Empty state.** **Neither photograph nor bio → the plate and the name** ⚑, never an empty
+- **8 · Empty state.** **Neither photograph nor bio → the one-letter plate and the name** ⚑, never an empty
   rectangle beside an empty column.
 - **9 · Behaviour module.** `share`, quoted as above. **The portrait is an `<img>` with `width`,
   `height` and `object-fit: cover`** ⚑ — no layout shift.
@@ -814,15 +819,12 @@ post has been updated at all** ⚑.
   120 px**; the socials row does not ⚑.
 - **Repeating items.** Four, all Ghost's; **no per-author portrait or bio length** ⚑.
 - **Reconciled.** **Author socials joins the list**, drawn under the bio in the words column, brand
-  icons from P0·2, version-gated and absent at zero handles. **Image focus is not offered and the
-  panel says why** ⚑ — Ghost stores one profile image and no focal point, so **finding 7 stands and a
-  crop-from-top default remains the platform's call**. The destinations become **one site-wide ordered
+  icons from P0·2, version-gated and absent at zero handles. **Image focus is not offered and the panel says why** ⚑ — Ghost stores one profile image and no focal point, so **finding 7 stands and a crop-from-top default remains the platform's call**. **Patched 30 August:** the hand-off at three or more authors is deleted and **the design draws `primary_author` alone**, the owner's ruling, with the co-authors as one muted line. The destinations become **one site-wide ordered
   setting** with fixed brand glyphs. **Six controls became seven**, the trio outside the list with
   **Line spanning both columns**, and the three labels edit inline while the name, bio and alt stay
   Ghost's.
 - **Flagged ⚑** — the portrait at picture scale; the centre crop and absent Image focus (**finding
-  7**); the plate at the portrait crop; two authors as a two-up; three handing off; the portrait
-  holding its height; 240 forced at 834; the ratio held at 390; the different Bio lines ladder; alt
+  7**); the one-letter plate at the portrait crop; two authors as a two-up; **three or more drawing the primary author alone** ⚑; the portrait holding its height; 240 forced at 834; the ratio held at 390; the different Bio lines ladder; alt
   text where the avatar has none; the socials row under the bio; the portrait printing.
 
 ---
@@ -849,15 +851,18 @@ post has been updated at all** ⚑.
   Content width · On the measure · **Member Visibility** Everyone · Logged out · Free members · Paid
   members. Six, plus the universal trio with **Background role locked to Surface**. **Cut:** a benefit
   list, a tier, a picture, a second field, a full-bleed value, a member count.
-- **7 · Data.** **Ghost's members endpoint and nothing else** ⚑. **Members disabled → the design does
-  not render and the editor says why** ⚑. **Logged out → the subscribe ask. A free member → the
+- **7 · Data.** **Ghost's members endpoint and nothing else** ⚑. **Members disabled → the design does not render and the editor says why** ⚑. **Self-signup switched off, or no payment provider connected for the paid ask → the button does not render either, and the editor says which** ⚑. **The Upgrade button opens Ghost's own pop-up: with JavaScript off, nothing happens** ⚑. **Logged out → the subscribe ask. A free member → the
   upgrade ask, with no field, because the address is known** ⚑. **A paid member → `subscribedLine`,
   with no field** ⚑. **An A22 section on the route → it does not render** ⚑. **It draws on posts and
   pages alike** — it reads no `prev_post`, so the page-target rule does not touch it.
 - **8 · Empty state.** Every authored string falls back or renders nothing ⚑; **with members off,
   nothing renders at all** — not a disabled form.
-- **9 · Behaviour module.** `member-form`. **No-JS, quoted:** "The `<form>` posts natively to Ghost's
-  members endpoint; Ghost's own server response replaces the designed sent state." Edit-safe ⚑ — the
+- **9 · Behaviour module.** `member-form`. **No-JS, quoted:** **"Ghost's signup endpoint cannot accept a
+  plain form submission, so the form needs JavaScript; where it is unavailable a designed notice
+  replaces the form — one catalog sentence in `text-muted` at 15, in the space the field and the button
+  occupied, the bar keeping its ground, its padding and its words — and the sent, error and loading
+  states are Ghost's own script and still apply."** ⚑ **Tested against both live Ghost servers, and the
+  earlier claim that this form "posts natively" is withdrawn.** Edit-safe ⚑ — the
   form does not submit while editing and **the three member states are switched with P0·6**.
 - **10 · Accessibility.** A `<form>` with the heading as its `aria-labelledby` ⚑ — **not a heading
   element**. A visually hidden `<label>`, **which is a catalog string**; **the placeholder is never the
@@ -945,24 +950,22 @@ post has been updated at all** ⚑.
   `post.reading_time`, **`post.updated_at`**, **`post.feature_image_caption` — new in this pass** ⚑,
   `prev_post`, `next_post`, `post.url`, `post.title`. Authored: **the seven `ledgerLabels`**,
   `shareLabel`, `copiedLabel`. **`revisionNote` is gone** ⚑.
-- **6 · Controls.** **Rows** Three · Four · Five · **All** — **a fourth value, and the only one that
-  draws the Photography row** ⚑ · **Label column** Compact 132 · Comfortable 180 · **Rules** Between
+- **6 · Controls.** **Rows** **a number picker, 3 to 7, default 7** ⚑ — **the ledger has seven rows and
+  seven is the value that draws the Photography row**; the + is greyed at seven with the reason shown · **Label column** Compact 132 · Comfortable 180 · **Rules** Between
   rows · None · **Width** · **Blocks** · **Share links**. Six, plus the universal trio, whose **Line
   resolves into the first row's own rule** ⚑. **Cut:** a per-row toggle, label alignment, a date
   format, a word count, a licence row.
 - **7 · Data.** Tags many → **the value wraps under itself, never under the label** ⚑. Authors 2 →
-  joined by "and"; **3+ → "Rosa Menendez and two others"** ⚑. **Updated: drawn on the gap alone —
+  joined by "and"; **3+ → "Rosa Menendez and others"** ⚑, with no number. **Updated: drawn on the gap alone —
   `post.updated_at` more than a day after `published_at`** ⚑, **now that the authored note is cut**;
-  one invented threshold instead of two. **Photography: drawn only when `feature_image_caption`
-  exists** ⚑ — a photograph with no caption draws no row. Read next 2 → **next above previous** ⚑, and
+  one invented threshold instead of two. **Photography: drawn only when `feature_image_caption` exists** ⚑ — a photograph with no caption draws no row — **and the caption is rendered as HTML, so a photographer's credit link survives** ⚑. Read next 2 → **next above previous** ⚑, and
   absent on a page ⚑.
 - **8 · Empty state.** **A row with no value is not drawn** ⚑ — no em dash, no "None", never "Updated:
   never".
 - **9 · Behaviour module.** `share`, quoted as above. **Everything else is a `<dl>` and two `<time>`
   elements** ⚑.
 - **10 · Accessibility.** **A `<dl>` of `<dt>`/`<dd>` pairs** ⚑. **Both dates are `<time datetime>`**
-  ⚑. Every link fills its row for a 44 px target ⚑. **The Photography row is a `<dd>` of plain text,
-  never a link** ⚑ — a credit is not a destination. Light: values 13.1:1, labels 5.4:1. Print: **the
+  ⚑. Every link fills its row for a 44 px target ⚑. **The Photography row is a `<dd>` of Ghost's own HTML** ⚑ — **the row itself is never a link, and a link inside the caption is kept**, taking the design's own link colour and filling a 44 px target inside its row. The old plain-text rule is withdrawn: it threw away the one thing the field usually carries. Light: values 13.1:1, labels 5.4:1. Print: **the
   whole ledger prints, share included as plain words** ⚑ — **the only A26 share row that survives
   print**, because in a ledger it is a fact rather than an action.
 - **Repeating items.** Three, all Ghost's; Rows picks a count of the design's own rows from a named
@@ -978,8 +981,7 @@ post has been updated at all** ⚑.
   **Six controls, unchanged.**
 - **Flagged ⚑** — labels right-aligned and values held to a line; the bio never read; the Photography
   row and its caption condition; Rows' fourth value; the Updated row on the day gap alone and absent
-  rather than "never"; next above previous; the value wrapping under itself; three authors as "and two
-  others"; the label column held at 834; the convergence with 2 Rows at 390; the share words printing.
+  rather than "never"; next above previous; the value wrapping under itself; three authors as "and others" with no number; the label column held at 834; the convergence with 2 Rows at 390; the share words printing.
 
 ---
 
@@ -1006,7 +1008,7 @@ post has been updated at all** ⚑.
 - **7 · Data.** Tags 0 at Columns Three → **two columns, widened, no reserved third** ⚑; at Two →
   nothing under the bio. Authors 2 → two stacked in the first column at 48 px ⚑. Socials 0 → no row,
   and the column does not reflow ⚑. Destinations 0 → the column is absent and the grid is two ⚑, and
-  on a page it is absent ⚑. **A grid of one column is 1 Author Bio and the panel says so** ⚑.
+  on a page it is absent ⚑. **At one column the panel advises 1 Author Bio** ⚑ — **advice, never a switch**: the design goes on rendering as one column of its own.
 - **8 · Empty state.** **An empty column is never drawn and never reserved** ⚑; the rest widen.
 - **9 · Behaviour module.** `share`; `member-form` at Blocks Everything; both quoted as above.
   Edit-safe.
@@ -1039,7 +1041,7 @@ Every reusable component this category established or reused, cumulative.
 | Logo lockup · nav item · dropdown panel | 26 px accent mark + wordmark; 15 px nav; 248 px panel | A1·1 |
 | Primary button · ghost action · drawer | accent fill 14/600; muted bar text; 64 px close row | A1·1, A1·2 |
 | Icon button | 38 px box, bare / outlined / filled, 44 px target | A1·14 |
-| Avatar + meta row | 24 px circle, initials fallback, "Name · date" at 13 px | A1·6 |
+| Avatar + meta row | 24 px circle, **one-letter fallback**, "Name · date" at 13 px | A1·6 |
 | Focus ring | 4 px accent ring on every interactive element | A6 |
 | Named ratio ladder | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 | A8 |
 | Measure and page margin | content 1,296 on 72; 754 on 40; 350 on 20 | A17 |
@@ -1047,7 +1049,7 @@ Every reusable component this category established or reused, cumulative.
 | Surface card | radius token, md shadow in light, hairline in dark | A19·3 |
 | Missing-image vocabulary | Reflow · Plate · Hand off | A19 |
 | Padding ladder | Compact 64 · Comfortable 96 · Spacious 132, named never numeric | A24 |
-| Links control | Two · Three · Four, **the first N of one site-wide ordered list** | A24·14 |
+| Links control | **a number picker, 2 to 4, default 4** — **the first N of one site-wide ordered list** | A24·14 |
 | Share-destinations setting | ten platforms, ordered and enabled once, P0·3's controls inside it | A24·14 |
 | Copied confirmation | accent fill + label for 1.6 s, `aria-live="polite"` | A24·14 |
 | Share row | label left, buttons right, above a hairline | A25·1 |
@@ -1071,7 +1073,7 @@ Every reusable component this category established or reused, cumulative.
 | **Member-aware ask** | subscribe · upgrade · subscribed, one authored string set each | **A26·12** |
 | **Footer label** | 11 px uppercase authored string, never a heading, `aria-label` on its group | **A26·2** |
 | **Ledger row** | right-aligned label column, one line of value, `<dl>` pairs | **A26·14** |
-| **Photography credit row** | `feature_image_caption` as plain text, never a link | **A26·14** |
+| **Photography credit row** | `feature_image_caption` **as Ghost's HTML, a credit link kept**; the row itself never a link | **A26·14** |
 | **Blocks control** | one control, five named values, replacing per-block switches | **A26·1** |
 | **Route rule** | one of a kind per route: one share block, one subscribe prompt | **A26·9, A26·12** |
 
@@ -1227,3 +1229,92 @@ nothing in this pass changes what the footer looks like at rest in three packs.
 - **No ARCHITECT: registry addition anywhere.** A26 still spends `share` and `member-form`, and every
   behaviour this pass added — scoped neighbours, member-aware asks, a credit row — is server-rendered
   or already covered.
+
+---
+
+## Patch notes — post footers patch, 30 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered. Where a ruling could not be applied without inventing a decision, it is written
+here as an **open question** and asked in plain words at the end.
+
+**Frames changed — all sixteen:** `A26-0 Category Proof` and `A26-1` … `A26-15`. Every design frame
+carries a dated **post footers patch** panel at the foot saying what changed in that design and which
+rule required it, and `A26-0` carries the category's version of the same panel plus **a badged
+`[Free] designs` card under the roster**.
+
+### This category's own rulings — Part B of the brief
+
+| What changed | Why, and where |
+|---|---|
+| **No number appears in a byline anywhere in the category.** "Rosa Menendez and three others" is now **"Rosa Menendez and others"** — in settlement 1, in the shared field list's derived line, on 1 Author Bio, 2 Rows, 3 Card, 4 Contrast Band, 14 Ledger and on the proof. 10 Big Type was already clean: at three or more authors it draws the authored desk line. **The string is a catalog string and it no longer interpolates anything**, which is why a template can render it: Ghost can be told inside a loop that a third author exists, and cannot be told how many are left. | *(Ghost's templates cannot count, add or remember.)* |
+| **The tag row's overflow carries no number either.** 8 Tag Row's **"+4 more" is now "+ more"** — in the drawn row, in the control note, in the data field, in the accessibility line and in the flagged list. Same reason, same mechanism: the link is drawn when a tag past the number exists, and **nothing can subtract the drawn tags from the total**. **It is still a link and still not a disclosure**, so the design's unscripted page is unchanged. | *(Ghost's templates cannot count, add or remember.)* |
+| **"More from" uses the author's full name.** The archive link reads **"More from Rosa Menendez"**, and `authorLinkLabel`'s default changes with it in all seven designs that read it and in 10 Big Type, which reads it as a prefix. **Ghost gives a theme one display name and no separate first name** on the versions we support, so the first-name form could only have been produced by splitting a string the platform does not promise is splittable — "Ada Lovelace-Byron", "Kim Min-jun", a single-word name, an organisation. 10 Big Type's display line already used the full name and is untouched. | *(Some fields we drew do not exist.)* |
+| **A caption that carries a link keeps it.** 14 Ledger's Photography row takes **Post Headers' treatment**: `post.feature_image_caption` is **rendered as HTML**, so the credit link a photographer needs survives, and the field's type in the shared list changes from text to **html**. The old rule — "a `<dd>` of plain text, **never a link** — a credit is not a destination" — **is withdrawn**: a photograph credit is very often exactly a link, and stripping it threw away the one thing the field usually holds. **What survives from the old rule is the part that was right:** the row itself is not a link. A link inside the caption takes the design's own link colour, fills a 44 px target inside its row, and **the caption stays Ghost's — clicking it says "Edit in Ghost"**. A post with no caption still draws no row. Drawn on `A26-14` on the credit "Elena Ruiz". | *(Post Headers' caption ruling, applied here.)* |
+
+### The library-wide rules
+
+| Rule | What it did here |
+|---|---|
+| **The two free designs are the owner's choice — ask him** | Shortlisted the five plainest, none of which needs the customer to have good photography: **1 Author Bio** (the category default — four blocks on the measure, ships without looking unfinished, and its only picture is an avatar Ghost already draws as a letter), **6 Slim** (one 44 px line, no author block, no picture of any kind — the smallest thing a site can close a post with), **2 Rows** (labelled rows, plain, but the label column is a decision a free site has to get right), **9 Share Row** (one bar, indifferent to content, but it closes a post with an action rather than a fact) and **8 Tag Row** (plainest of all to look at, and useless on a site that does not tag). Recommended, and **ruled by the owner on 30 August 2026: 1 Author Bio · 6 Slim** — one complete footer and one minimal one. The line is at the head of this document in the required shape and badged under the roster on `A26-0`. **Closed.** |
+| **No design ever turns into another design** | **Three hand-offs deleted and six phrases reworded.** **8 Tag Row** no longer hands off to 6 Slim: an untagged post **renders nothing at all** — no label, no ruled row, no reserved height — and the editor reads "This post has no tags, so this footer renders nothing. Add a tag in Ghost." It was the category's only design that swapped rather than dropped, and **the category now has none**. **7 Next and Prev** no longer falls back to 1 Author Bio: with no neighbours **nothing renders**, in the descriptor, the data field and the empty state. **11 Portrait** no longer hands off at three authors: **it draws `primary_author` alone** — the owner's ruling of 30 August — with the co-authors as one muted line and no number. On **3 Card**, **4 Contrast Band**, **5 Split**, **6 Slim**, **13 Rail** and **15 Grid**, every "the design **is** 1 Author Bio / 9 Share Row / 6 Slim" now reads **"reads like"** or **"the panel advises"**: a comparison a panel may draw and a piece of advice it may give, **never a switch it performs**. **A19's Hand off value is therefore no longer used anywhere in A26**, which now uses Reflow and Plate only. |
+| **Item counts are a number picker** | **Three rows became steppers and one was ruled not to be a count.** **Share links / Links** on all twelve share designs: **a stepper, 2 to 4, default 4**, drawing the first N of the site's ordered destinations, the + greyed at four with the reason visible — and on **6 Slim** the + is greyed at **three** on the 720 measure, where the old row disabled the value Four. **8 Tag Row's Tags shown: a stepper, 1 to 12, default 6**, the + greyed at twelve because past twelve the row is four lines and stops being a gesture. **14 Ledger's Rows: a stepper, 3 to 7, default 7** — the ledger has seven rows and seven is the value that draws the Photography row, so **the "All" special case disappears without costing anything**. **15 Grid's Columns · Two · Three stays a named-value row**: it is a column count, not an item count — the items are the footer's blocks and the control decides how many lanes they fill. **One deliberate loss is recorded:** Tags shown's old **All** value is gone, so a post with more than twelve tags now draws twelve and the "+ more" link. |
+| **The no-JavaScript notice** | **A false promise withdrawn and a notice designed.** The category's member-form quote read "the `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent state." **Tested against both live Ghost servers, Ghost's signup endpoint cannot accept a plain form submission**, so the claim is wrong and is deleted from **12 Subscribe** and from the inherited subscribe bar on **3 Card**, **5 Split** and **15 Grid**. In its place: **where JavaScript is unavailable, a designed notice replaces the form** — one catalog sentence in `text-muted` at 15, in the space the field and the button occupied, **so the bar keeps its ground, its padding and its words and nobody types an address that goes nowhere**. Drawn in full on `A26-12` at 1440 and at 390, with a 44 px minimum held. **The sent, error and loading states are unchanged and still apply** — they are Ghost's own script, and only the promise about them was wrong. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **12 Subscribe is the only design in A26 that makes an offer**, and its Member Visibility row now carries both lines: the button **does not render when the connected site cannot support it** — self-signup switched off, or, for the paid upgrade ask, no payment provider connected — **and the editor says which**; and **the Upgrade button opens Ghost's own pop-up, so with JavaScript off nothing happens**. The same notes travel with the inherited bar on 3, 5 and 15. **The old claim that the form worked without JavaScript is deleted with it** (above). Elsewhere in the category the absence is a judgement, not an omission: a tag is navigation, a byline is attribution, a share link is not an offer. |
+| **Avatars with no photograph** | **One letter, never two.** "Rosa Menendez" shows R. **Every person in A26 comes from Ghost**, which gives a theme a display name and no separate first and last name, so **two initials were never available**. Changed on the proof and on 1, 2, 3, 4, 5, 10, 11, 13, 14 and 15, including **11 Portrait's plate, which is now the one-letter plate** at the portrait crop, and in the derived line of the shared field list. **The circle, its sizes, its colours and every crop are unchanged.** |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen. **Background role stays locked on four** — 3 Card, 9 Share Row and 12 Subscribe to Surface, 4 Contrast Band to Contrast — **with the reason shown, and the reasons are now phrased as comparisons rather than as identities**. **Fade stays refused on 4's band.** **6 Slim keeps Blocks at three values** because it has no author block. **Two steppers are capped with the reason visible** (6 Slim at three on the measure, 8 Tag Row at twelve). **The colour swatch row is called Base** — A26 has no swatch row — and **there is no "Inherit" choice anywhere in the category**. No design renamed a shared control or added a value to one. |
+| **The remove button never greys out** | **No subject.** **Nothing in A26 is an authored repeating list** — no repeater, no Add, no Remove, no minimum. Four things repeat and all four are Ghost's (tags, authors, the author's handles, the two neighbours); the only list a user orders is the **share-destinations site setting**, where the shared item controls live, and a site setting is not a section panel. |
+| **Slider labels** | **No subject.** A26 draws no slider. Every control is a named-value row whose title says what it affects — Avatar, Bio lines, Card inset, Band padding, Row padding, Bar padding, Tile height — or, after this pass, **a stepper whose title says what it counts**: Share links, Links, Tags shown, Rows. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A26 has no Gap row. The five internal ladders are padding inside an object of the design's own and each keeps its own name in the standard padding words: 2 Rows' Row padding, 3 Card's Card inset, 4's Band padding, 9's and 12's Bar padding. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Fifteen designs, **no gap created or closed, no number reused, nothing renumbered, nothing deleted.** |
+
+### The no-JavaScript line, per design
+
+| # | Design | Behaviour declared | Without JavaScript |
+|---|---|---|---|
+| 1 | Author Bio | `share` | Share links are real `<a href>` URLs and work normally; **only the copy-link button is hidden**. Tags, the author block, the socials row, the Updated line and the destination pair are exactly as drawn. |
+| 2 | Rows | `share` | As 1. The rows, their labels and their hairlines are static markup. |
+| 3 | Card | `share` `member-form` | As 1 for share. **At Blocks Everything the subscribe form is replaced by the designed notice**, inside the plane, at the inset the card already had. |
+| 4 | Contrast Band | `share` | As 1. **The band, its bleed and every derived colour are CSS and are unaffected** — the design's whole argument survives. |
+| 5 | Split | `share` `member-form` | As 1 for share; **the notice replaces the form** at Blocks Everything. The two columns are a grid and the collapse is a media query. |
+| 6 | Slim | `share` | As 1; at Blocks Tags it declares nothing and `core` is assumed. **The line, the dotted run and both rules are unchanged.** |
+| 7 | Next and Prev | none | **Pixel-identical.** Two links with a background image and a gradient; nothing is measured, faded in or lazily swapped. |
+| 8 | Tag Row | none | **Pixel-identical**, and **the "+ more" is a link rather than a disclosure**, which is what keeps that true. |
+| 9 | Share Row | `share` | **It loses one link and keeps its bar, its label and its ground** — the smallest no-JavaScript loss in the category. |
+| 10 | Big Type | `share` | As 1. **The display name, the post count and the size ladder are server-rendered.** |
+| 11 | Portrait | `share` | As 1. The portrait is an `<img>` with `width`, `height` and `object-fit: cover` — no layout shift. |
+| 12 | Subscribe | `member-form` | **The form is replaced by a designed notice** — one catalog sentence, no field and no button, in the space they occupied, the bar keeping its ground, padding and words. **Ghost's signup endpoint cannot accept a plain form post**, so there is nothing honest to submit. The sent, error and loading states are Ghost's script and still apply when it runs. |
+| 13 | Rail | `share` | As 1. **The rail is a grid column and the collapse is a media query** — never scripted, which is the difference from A25·7. |
+| 14 | Ledger | `share` | As 1. Everything else is a `<dl>` and two `<time>` elements. **A link inside the Photography caption is Ghost's own markup and works normally.** |
+| 15 | Grid | `share` `member-form` | As 1 for share; **the notice replaces the form** in the spanning row at Blocks Everything. The columns are a grid. |
+
+### The three open questions — asked, and closed by the owner on 30 August 2026
+
+**1 · Which two designs a free customer gets. Ruled: 1 Author Bio · 6 Slim.** One complete footer —
+tags, author, share and the next post on the article's measure — and one 44 px line with no author
+block and no picture of any kind. **Neither depends on the customer having photographs.** Recorded as
+**`**[Free] designs:** 1 Author Bio · 6 Slim`** at the head of this document and badged under the
+roster on `A26-0`; that is the line the merge reads. **Closed.**
+
+**2 · What 11 Portrait draws at three or more authors. Ruled: the primary author alone.** Ghost's own
+`{{#primary_author}}` helper outputs the singular, first author and gives the block the same
+attributes as a full author — `name`, `bio`, `profile_image`, `url` — so **the design draws its one
+portrait, name, bio and archive link with no loop and no arithmetic**, and the split, the portrait size
+and the ratio are unchanged. **The co-authors are named in one muted 13 px line under the name** —
+"with Daniel Reith and others", no number, on this pass's byline rule. **Closed, with the cost
+recorded** ⚑: at three or more authors only one writer gets a photograph and a bio, so a site that
+co-writes everything should place 1 Author Bio or 14 Ledger, which credit every author equally. Drawn
+as a state on `A26-11`.
+
+**3 · The tag overflow's wording. Ruled: "+ more".** The smallest change from "+4 more", same shape and
+same position, and it makes no promise about a route Ghost does not reliably have — which the two
+alternatives ("More tags", "All tags") both did. **Closed**, and already drawn throughout `A26-8`.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+  fifteen designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+  required shape, and names **1 Author Bio** and **6 Slim** — both of which exist in this category's
+  roster. **It is the owner's own choice, ruled 30 August 2026**, and the same line is badged under the
+  roster on `A26-0`.

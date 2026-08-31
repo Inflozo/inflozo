@@ -54,6 +54,19 @@ def tables(text):
             i += 1
 
 
+FREE_IN_NAME = re.compile(r'\s*[·—-]?\s*\[Free\]\s*$', re.I)
+
+
+def strip_free(name):
+    """A stray `[Free]` on a design heading must never become part of the design's NAME.
+
+    Seven categories marked the free pair on the heading — "## 2 · Prev and Next [Free]" — so the
+    name parsed as 'Prev and Next [Free]' and stopped matching the drawn frame. The marker's real
+    home is the one-line `**[Free] designs:**` record that inventory-gen reads. Stripped here so a
+    stray marker cannot corrupt a name; verify-design-pass still reports which specs did it."""
+    return FREE_IN_NAME.sub('', name).strip()
+
+
 def clean(s):
     return re.sub(r'\s+', ' ', re.sub(r'[`*⚑]', '', s)).strip()
 
@@ -89,7 +102,7 @@ def from_tables(text):
                 tup = clean(r[tup_i])
             else:
                 tup = ' · '.join(clean(r[k]) for k in slot_is if len(r) > k)
-            got[int(m.group(1))] = dict(name=clean(r[name_i]), tuple=tup,
+            got[int(m.group(1))] = dict(name=strip_free(clean(r[name_i])), tuple=tup,
                                         modules=clean(r[mod_i]) if mod_i is not None and len(r) > mod_i else '')
         if len(got) > len(best):
             best = got
@@ -103,7 +116,7 @@ def from_sections(text):
         tup = re.search(r'\*\*(?:\d+\s*[·.]\s*)?(?:Structural descriptor|Tuple)\.?\*\*\s*[:·]?\s*`([^`]+)`', body)
         mod = re.search(r'\*\*(?:\d+\s*[·.]\s*)?Behaviour module[s]?\.?\*\*\s*(.+)', body)
         if num not in got:
-            got[num] = dict(name=name, tuple=clean(tup.group(1)) if tup else '',
+            got[num] = dict(name=strip_free(name), tuple=clean(tup.group(1)) if tup else '',
                             modules=clean(mod.group(1))[:120] if mod else '')
     return got
 

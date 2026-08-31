@@ -1,10 +1,22 @@
 # A30 Members Pages — written specification
 
-13 designs · Paper pack · drawn 23 August 2026 · **controls reconciled 25 August 2026**
+13 designs · Paper pack · drawn 23 August 2026 · controls reconciled 25 August 2026 · **design patch pass 28 August 2026**
 
 The frames are `A30-0 Category Proof.dc.html` and `A30-1` … `A30-13`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
 that was written down. Every invented decision is marked ⚑ here and on the frame.
+
+**The design patch pass, 28 August 2026.** The category was ruled against Ghost's real data surface and
+two live servers, and four rulings landed here. **Nothing identifying is printed on any account page** —
+no member name, no member email, no avatar. **Member since and the newsletter list are deleted**: Ghost's
+member object gives a theme neither, and both rendered empty on every live site; the newsletter row is now
+a link out to Ghost's own account screen. **P0·4's no-JavaScript notice replaces the form in all thirteen
+designs**, because Ghost's signup endpoint will not accept a plain form post. **A fourth account state is
+drawn: the signed-out visitor**, whom Ghost does not redirect. Two library-wide rules also bite: **no design
+turns into another** — the category's one hand-off, 6 Cover's, is retired, and three empty states that named
+1 Centred now hide what does not apply and let the panel advise — and **member buttons are conditional**:
+paid cards and every Portal deep link render only where a payment provider is connected. Every change is
+listed with the name of the rule that required it in **Patch notes** at the end.
 
 **The controls-reconciliation pass.** The category was audited design by design against the PRD's
 control vocabulary and Ghost's verified data surface, thinking like a user editing their own site.
@@ -41,8 +53,8 @@ changes, newsletter preferences — **is Ghost's Portal, is not themeable, and i
 theme draws the trigger; Portal draws the rest, over the page.
 
 A30 inherits **A17's content box and padding ladder** (1,296 on 72 · 754 on 40 · 350 on 20; 64 · 96
-· 132, 80 at 834, 64 at 390); **A16's 46 px field**; **A1's primary button, ghost action, avatar
-with its initials fallback, and eyebrow**; **A5·5's split head and A5·11's list treatments**;
+· 132, 80 at 834, 64 at 390); **A16's 46 px field**; **A1's primary button, ghost action and eyebrow**
+(**the avatar is dropped in the patch pass** ⚑ — it was derived from a name no design prints now); **A5·5's split head and A5·11's list treatments**;
 **A7·1's tier card and A7·3's tier row, verbatim**; **A9·15's ledger row**; **A12·10's directory
 column**; **A19·3's surface plane**; **A20·13's warm scrim**; **A17·7's on-contrast derivation**;
 **A26·3 and A27·4's call that a full-width plane is a ground rather than a containment**; **A29·5's
@@ -56,19 +68,21 @@ checkout, plan changes, billing, email changes, newsletter preferences, and Ghos
 account button. **Every action on the account page that would write something is an outline button
 with `PORTAL ↗` beside it**, in all thirteen designs ⚑.
 
-**2 · The form states.** Seven at first draw, **eight after the reconciliation pass**: sign-in · sent
+**2 · The form states.** Seven at first draw, **eight after the reconciliation pass, and the eighth redrawn in the patch pass**: sign-in · sent
 · **sent with one-time code entry** · expired · invalid · focus · already-signed-in ·
-no-JavaScript. Sending is a ninth and is the button's label change alone ⚑. **Sent replaces the
-field in place** with a panel carrying the address back and "Send another link" — never a disabled
+no-JavaScript — **which is now P0·4's notice replacing the form, not the form standing scriptless** ⚑. Sending is a ninth and is the button's label change alone ⚑. **Sent replaces the
+field in place** with a panel **carrying the address back** — so a mistyped one is visible ⚑ — and "Send another link" — never a disabled
 field with a message under it. **Expired is read from the query string**
-(`?action=signin&success=false`) and is therefore **JS-only** ⚑; without JavaScript the reader gets
-the plain form, which is the same recovery in one step fewer. **Invalid is the browser first**
+(`?action=signin&success=false`) and is therefore **JS-only** ⚑; **without JavaScript P0·4's notice stands
+in the form's place** (patch pass), so the reader is told rather than typing an address that goes nowhere. **Invalid is the browser first**
 (`type="email"`), then Ghost's reply; **no theme-side domain checking** ⚑. **A signed-in member
 never sees a signup form** ⚑. **Every one of the eight is reached in place through P0·6's state
 switcher**, so its copy is edited where it shows ⚑.
 
-**3 · The account page for free, paid and comped.** Paid: signed in as · plan and price · renews ·
-payment · newsletters · member since. Free: the same list **without price, renewal or payment** —
+**3 · The account page for free, paid and comped.** Paid: email address (handed off) · plan and price ·
+renews · payment · newsletters (a link out). **Member since and the newsletter list are deleted in the
+patch pass** ⚑ — Ghost gives a theme neither — and **no design prints the member's own name or email** ⚑:
+the head is the authored account heading and the email row hands off like every other action. Free: the same list **without price, renewal or payment** —
 four rows, and **the absent rows are absent, not empty** ⚑. Comped: plan reads "Member ·
 complimentary" with **no billing hand-off at all** ⚑. **Cancelled-but-still-running is the fourth
 member every account page meets** ⚑: "Renews" becomes "Ends", the action becomes Resume, access is
@@ -79,7 +93,8 @@ whole row, and **that sentence is a field too**.
 **4 · The A1·14 assumption.** **Confirmed, with one qualification.** The tier name and the current
 period's end date are readable ⚑. **The qualification: "renews" and "ends" are the same field** ⚑ —
 `cancel_at_period_end` decides which word is true, and a theme that prints "Renews" unconditionally
-lies to every cancelling member. Also readable: status, price, interval, newsletters, join date.
+lies to every cancelling member. Also readable: status, price and interval. **Not readable, against the earlier claim: the join date and the
+member's newsletter list** ⚑ — the patch pass deletes both rows.
 **Not readable:** card detail, invoices, Stripe state, and **the number of days left** ⚑.
 
 ### The shared floor
@@ -155,11 +170,25 @@ design's own controls and **not counted** ⚑; three of them read-only.
 | `image` · `imageFocus` | image · enum | **6 and 7 only.** Focus is Centre · Top · Bottom, **reachable from the Image Picker's popover** ⚑ |
 | *Everything that changes a subscription* | read-only | Ghost Portal — **the category's boundary; no control moves it** ⚑ |
 
+**Three notes sit under this group in all thirteen panels, new in the patch pass** ⚑. **Member buttons are
+conditional:** every Sign up, Subscribe and paid-tier button is absent where the connected site cannot
+support it — self-signup off, members disabled, or no payment provider connected — and **Ghost seeds a $5
+tier at install**, so an unconnected site would otherwise ship a card whose checkout cannot complete; the
+rows stay in the panel, disabled, with the reason readable. **Ghost's own pop-up needs JavaScript:** every
+button that opens Portal, every tier deep link and every hand-off on the account page — **with JavaScript
+off, nothing happens**, and the theme cannot substitute anything for it. **Nothing identifying is printed:**
+no member name, no member email, no join date, no newsletter list.
+
 ### The roster
+
+**[Free] designs:** 1 Centred · 10 Boxed
+
+That line is the merge's only input and it names the two designs a free customer gets. **The owner picked
+these two on 28 August 2026** — it is his decision, recorded, not a guess and not a fallback.
 
 | # | Design | Tuple | Ctl | Modules |
 |---|---|---|---|---|
-| 1 | Centred | `form · none · page · none · none · one centred column` | 9 | `member-form` |
+| 1 | Centred **[Free]** | `form · none · page · none · none · one centred column` | 9 | `member-form` |
 | 2 | Split Pitch | `split · none · page · none · none · the case beside the form` | 10 | `member-form` |
 | 3 | Card | `form · card · page · none · none · a raised card holding the form` | 9 | `member-form` |
 | 4 | Panel | `form · none · surface · none · none · the page on one raised plane` | 10 | `member-form` |
@@ -168,7 +197,7 @@ design's own controls and **not counted** ⚑; three of them read-only.
 | 7 | Image Split | `split · none · page · none · edge · a picture column to the page edge` | 10 | `member-form` |
 | 8 | Tiers | `grid-of-N · none · page · few · none · tier cards above the form` | 10 | `member-form` · `price-toggle` |
 | 9 | Big Type | `stack · none · page · none · none · the promise at display size` | 8 | `member-form` |
-| 10 | Boxed | `form · box · page · none · none · one hairline box on the ground` | 9 | `member-form` |
+| 10 | Boxed **[Free]** | `form · box · page · none · none · one hairline box on the ground` | 9 | `member-form` |
 | 11 | Rail | `edge rail · none · page · few · none · a pinned rail beside the page` | 9 | `member-form` · `scroll-spy` |
 | 12 | Ledger | `stack · none · page · many · none · what is included as ruled rows` | 6 | `member-form` |
 | 13 | Steps | `stack · none · surface · few · none · the signup as numbered steps` | 10 | `member-form` |
@@ -197,7 +226,7 @@ does not have**, so switching between any two designs preserves everything the u
 | `signinPrompt` · `signinLinkLabel` | text | opt | 30 · 24 ch | all 13 | "Already a member?" · "Sign in" |
 | `signupPrompt` · `signupLinkLabel` | text | opt | 30 · 24 ch | all 13 | "New here?" · "Start a membership" — **the /signin/ mirror the Sign-in link row also governs** |
 | `signinHeading` · `signinBlurb` · `signinCta` | text | opt | 60 · 240 · 24 ch | all 13 | The sign-in route's head; CTA default "Send the link" |
-| `sentHeading` · `sentText` · `sentAgainLabel` | text | opt | 40 · 200 · 24 ch | all 13 | **`{email}` and `{hours}` are the only tokens** ⚑ |
+| `sentHeading` · `sentText` · `sentAgainLabel` | text | opt | 40 · 200 · 24 ch | all 13 | **`{email}` and `{hours}` are the only tokens** ⚑ — `{email}` is **the address the visitor typed**, never a field Ghost hands the theme |
 | `codeLabel` · `codeCta` | text | opt | 60 · 24 ch | all 13 | **New in this pass** ⚑ — the one-time code panel; defaults "Or paste the code from the email" · "Sign in" |
 | `expiredHeading` · `expiredText` | text | opt | 40 · 200 ch | all 13 | JS-only state ⚑ |
 | `invalidText` | text | opt | 90 ch | all 13 | Default "That address doesn't look right." |
@@ -208,7 +237,7 @@ does not have**, so switching between any two designs preserves everything the u
 | `benefitsLabel` | text | opt | 24 ch | as `benefits[]` | Default "What a membership includes"; "Included" in 10 ⚑ |
 | `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 6** | ≥ 2,400 px · 120 ch · — | 6, 7 | Required in 6, optional in 7 ⚑; **focus is a field, reachable from the Image Picker's popover** ⚑ |
 | `accountHeading` · `accountBlurb` | text | opt | 60 · 240 ch | all 13 | 2 is the design they exist for |
-| `rowLabels` (seven) | text | opt | 24 ch each | all 13 | Signed in as · Plan · Renews · Payment · Newsletters · Member since · **Access** ⚑ |
+| `rowLabels` (six) | text | opt | 24 ch each | all 13 | Email address · Plan · Renews · Payment · Newsletters · **Access** ⚑ — **six, not seven: Member since is deleted in the patch pass** ⚑ |
 | `endsLabel` | text | opt | 24 ch | all 13 | Default "Ends" — **used when `cancel_at_period_end` is true** ⚑ |
 | `signOutLabel` · `portalNote` | text | opt | 24 · 200 ch | all 13 | The note explaining that plan and billing open Portal |
 | `tierNote` · `freeRowHeading` · `freeRowText` · `freeCtaLabel` | text | opt | 90 · 40 · 120 · 24 ch | 8 | The free row beneath the cards |
@@ -277,14 +306,19 @@ are edited in Ghost.
    **CTA icon (None · Before · After)**. **Nine**, plus the P0·3 `benefits[]` list. Then the
    universal trio and the Data group, neither counted.
 7. **Data.** `@member` on /account/. `#get "tiers"` read and not drawn ⚑. 0, 1 and many tiers are the
-   same page here. Signed out on /account/ → Ghost redirects before the theme renders ⚑.
+   same page here. **Signed out on /account/ → Ghost does not redirect** ⚑ (patch pass): the page is served
+   to an anonymous visitor exactly as it stands, so the design draws its own signed-out panel — a heading, one
+   sentence, a link to /signin/ — and **no member row renders, so nothing leaks**.
 8. **Empty state.** No blurb → the stack closes up. No benefits → hairline and list both go. Free →
    no price or renewal row; comped → no billing row. **No "Untitled member" fallback**: a member with
-   no name shows the email in the name slot and no avatar initial ⚑.
+   no name is no longer a state this design can meet ⚑ — **the head is the authored account heading and no
+   member name or email is printed anywhere** (patch pass).
 9. **Behaviour module.** `member-form`. **Edit-safe:** nothing posts while the section is edited, and
-   **every state is reached in place through P0·6** rather than only drawn. **No-JS, quoted:** "The
-   `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the
-   designed sent state."
+   **every state is reached in place through P0·6** rather than only drawn. **No-JS — corrected in the patch pass (the no-JavaScript notice):** ~~the form posts natively to
+   Ghost's members endpoint~~. **It cannot.** Tested against both live Ghost servers, **Ghost's signup
+   endpoint refuses a plain form submission**, so a scriptless field would take an address and lose it.
+   **P0·4's notice replaces the form** — no field, no button, everything around it unchanged. **Sending,
+   sent, expired and invalid are untouched**: they are Ghost's own script and they work.
 10. **Accessibility.** The heading is the page's `h1` ⚑. `<form data-members-form="signup">` with a
     real `<label for>`, `type="email"`, `autocomplete="email"`, `inputmode="email"`. Focus order:
     field, button, sign-in link, list. **The sent panel is an `aria-live="polite"` region** ⚑; the
@@ -323,7 +357,7 @@ catalog string rather than a template literal. "Continue" rather than "Subscribe
 8. **Empty state.** No benefits → the list goes and **the 700 grid column is kept** ⚑. No blurb →
    heading then list. Both columns empty is not reachable; the heading's default is the site title
    in a sentence ⚑.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** `h1` in the case column, `<form>` in the other; **DOM order is case then form
     at both Form side values** ⚑. The numbered list is a real `<ol>` and **the mono numerals are
     `aria-hidden`** ⚑.
@@ -359,7 +393,7 @@ from prose than a heading does.
    member, six for a paid one, no minimum height.
 8. **Empty state.** No benefits at Inside the card → hairline and list go. **An empty card is not
    reachable**: the form is always in it ⚑.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** The card is a plain `<div>` — **not a region, not a dialog** ⚑ — containing the
     `h1` and the form. **The card's hairline is not a focus indicator**: the field's 1.5 px accent
     border and the button's 2 px offset ring are ⚑, both drawn against the surface.
@@ -395,7 +429,7 @@ carried from A19·3 rather than re-derived.
 7. **Data.** As 1; on /account/ **the label column widens to 200** ⚑.
 8. **Empty state.** No benefits → hairline and row go. **The plane is never hidden** ⚑ — it is the
    ground, and a section with no ground is 1 Centred.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** The plane is a `<div>`, not a landmark ⚑. `h1`, form, then the included row as
     a `<ul>` with mono ordinals `aria-hidden`. **Focus rings are drawn against the surface**, where
     the accent measures 4.4:1 — the reason the ring is 2 px rather than 1.5 ⚑.
@@ -430,7 +464,7 @@ design's own and is not shared with 1's 168.
    the P0·3 list — the category's highest count. **All three universal rows are locked** ⚑.
 7. **Data.** As 1. **The band renders identically for every member type** and only its height changes.
 8. **Empty state.** No benefits → hairline and list go. **The band is never hidden** ⚑.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** **Every contrast pair on the band was measured** ⚑: carried on band 13.4:1,
     muted 72 % 7.1:1, the 8 % field plate's placeholder 4.9:1, the carried-fill button 13.4:1, **and
     the accent 4.0:1, which is why it is disabled** — **in the Button row and in the icon slot's
@@ -464,16 +498,20 @@ is invented.
    is a decorative cover and is allowed** ⚑) · `imageFocus` enum opt, **a field, reachable from the
    Image Picker's popover** ⚑. **The one required field in A30.** `benefits[]` is stored and not
    drawn, so **P0·3 never opens here** ⚑.
-6. **Controls.** Cover height (Compact 480 · Comfortable 620 · Tall 760) · Scrim (Light 30 · Medium
+6. **Controls.** Cover height (Compact 480 · Comfortable 620 · **Spacious** 760 — **renamed in the patch
+   pass to the standard three words** ⚑) · Scrim (Light 30 · Medium
    45 · Heavy 60 — **the verify-against-a-real-photograph flag is in the row** ⚑) · Alignment
    (Centred · Left) · Fields · Legal line · Account band (Picture band 200 · No picture) ·
    **Sign-in link** · **Eyebrow** · **Note line** · **CTA icon**. **Ten.** **All three universal
    rows are locked** ⚑, and Image and Image focus sit in the Data group.
 7. **Data.** As 1. **The image is authored, never queried** ⚑ — there is no post feature image to
    fall back to on a members page, which is why the field is required.
-8. **Empty state.** **No image → the design hands off to 1 Centred** ⚑, drawn in place, flagged in the
-   editor, invisible on the site. **The user's chosen design is never silently changed** ⚑.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+8. **Empty state.** **No image → the picture is hidden and the cover keeps its plane, its height and its
+   derived colours** ⚑ (patch pass): with nothing to darken the scrim is absent and the ground resolves to the
+   pack's contrast tone, which every colour on this design was already derived from. The editor flags that a
+   photograph is needed and **the panel advises 1 Centred**. **A placed design is the design that renders** ⚑ —
+   the category's only hand-off is retired.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** `h1` over the scrim at 45 % measures 8.9:1 against the placeholder's lightest
     band ⚑; the 80 % muted line 6.4:1. **The scrim is a real element, not a filter** ⚑. Focus ring is
     the carried white.
@@ -512,7 +550,7 @@ account band is invented.
    its case column ⚑; no hand-off, because the design still reads.
 8. **Empty state.** No image → as above, flagged without changing the design ⚑. On /account/ the
    picture is absent **by rule**, which is not an empty state ⚑.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** `h1` in the text column; the picture is a sibling `<img>` with authored alt or
     `alt=""`. **DOM order is text then picture at both Picture side values** ⚑; at ≤ 767 the
     picture's visual position above the form is CSS order, not document order ⚑.
@@ -541,11 +579,11 @@ beside the Image row ⚑ rather than living as a hidden field.
    `periodLabels`. **No `note` field** — this design draws none. **Tier names, prices, descriptions
    and benefits are Ghost's and are not fields** ⚑.
 6. **Controls.** Period toggle (Monthly and yearly · Monthly only · Yearly only) · Card treatment
-   (Raised · Flat · Hairline rows) · Marked tier (Middle · Highest · None) · Benefits per card (Two ·
-   Three · All) · Free row (Show · Hide) · **Order (Ghost's own · Price low–high · Price high–low)**
+   (Raised · Flat · Hairline rows) · Marked tier (Middle · Highest · None) · Benefits per card (**a number
+   picker, 0–3, the + disabled at three with the reason shown** ⚑ — patch pass) · Free row (Show · Hide) · **Order (Ghost's own · Price low–high · Price high–low)**
    · **Sign-in link** · **Eyebrow** · **List marker** · **CTA icon**. **Ten**, and **no Note line
    row**.
-7. **Data.** `#get "tiers"`. **0** → cards and toggle go; the page is 1 Centred's column ⚑. **1** →
+7. **Data.** `#get "tiers"`. **0** → **cards and toggle are hidden and the head, the form and the free row stay** ⚑ (patch pass); the panel advises 1 Centred and never draws it. **1** →
    two cards centred, not stretched ⚑. **2–3** → as drawn. **4 or more** → rows at every width ⚑.
    **Order is Ghost's by default and is selectable** ⚑. **The card buttons are Portal tier deep
    links** — `signup/{tierId}/monthly` and `/yearly` — **and `price-toggle` swaps the hrefs as well
@@ -558,9 +596,9 @@ beside the Image row ⚑ rather than living as a hidden field.
    buttons ⚑.
 9. **Behaviour module.** `member-form` **and** `price-toggle` — **the only design in A30 with two** ⚑.
    Both edit-safe; the toggle's resting state is Monthly. **price-toggle, quoted:** "Both monthly and
-   yearly prices render side by side, each labelled — no toggle control shown." **member-form,
-   quoted:** "The `<form>` posts natively to Ghost's members endpoint; Ghost's own server response
-   replaces the designed sent state."
+   yearly prices render side by side, each labelled — no toggle control shown." **member-form, corrected in the patch pass:** ~~posts natively~~ —
+   **Ghost's signup endpoint refuses a plain form post**, so P0·4's notice replaces the form; the tier cards,
+   their prices and the toggle's no-JS rendering are unaffected.
 10. **Accessibility.** `h1` above the toggle; **each card's name is an `h2` and the card is not a
     link** ⚑ — the button is. The toggle is a `role="radiogroup"` of two radios, **not a switch** ⚑.
     Prices are inside the card's accessible name. At ≤ 833 **the whole row is not the target, the
@@ -580,7 +618,8 @@ tier's benefit list to a theme in the shape drawn here needs verifying before bu
 ## 9 · Big Type
 
 1. **Descriptor.** One authored sentence at 96 px with an inline field row beneath it and the blurb
-   under a hairline. On /account/ the same treatment applied to the member's own name at 72 px.
+   under a hairline. On /account/ the same treatment applied to **the authored account heading** at 72 px ⚑ — **the member's own
+   name is no longer printed** (patch pass).
 2. **Structural descriptor.** `stack · none · page · none · none · the promise at display size` —
    archetype `stack`, because the sentence is the design and the field is under it.
 3. **Archetype.** stack. One departure: **the inline field row becomes stacked at ≤ 767** ⚑.
@@ -592,11 +631,12 @@ tier's benefit list to a theme in the shape drawn here needs verifying before bu
 6. **Controls.** Heading size (Large 76 · Display 96 · Huge 132) · Alignment (Left · Centred) · Form
    (Inline row · Stacked) · Blurb (Below the field · Hide) · Sign-in link · **Eyebrow** · **Note
    line** · **CTA icon**. **Eight.**
-7. **Data.** As 1. **The account name is `@member.name`** and **a member with no name gets their
-   email at 72 px** ⚑ — drawn in the stress frame, because it is the state that breaks this design.
+7. **Data.** As 1. **The 72 px line is the authored `accountHeading`, not `@member.name`** ⚑ (patch pass), which
+   retires the state that used to break this design: a 63-character address at display size. Status is Ghost's and
+   is a badge, not a headline.
 8. **Empty state.** No heading → the site title with "membership" appended at the same size ⚑. No
    blurb → the hairline goes with it.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** The sentence is the `h1` ⚑. **At 96 px the field label is still 13 px** — the
     type ladder is not scaled by the heading control ⚑. **At 40 px and below the heading is not a
     focus target** and never receives one. **P0·1's marks work inside the heading** and bold renders
@@ -606,7 +646,7 @@ tier's benefit list to a theme in the shape drawn here needs verifying before bu
 arrive, and the sign-in row names its /signin/ mirror. No list controls — `benefits[]` is stored and
 not drawn — and **at 96 px the state panels still hold the 13 px ladder** ⚑.
 
-**Flagged ⚑** The 60-character cap. The 72 px account name. The dark-mode weight judgement is a call,
+**Flagged ⚑** The 60-character cap. The 72 px account heading. The dark-mode weight judgement is a call,
 not a measurement.
 
 ---
@@ -631,7 +671,7 @@ not a measurement.
 7. **Data.** As 1. **At every member type the box keeps its width and loses compartments** ⚑.
 8. **Empty state.** No benefits → the third compartment and its rule go. **The box with only a form
    in it is still a composition** ⚑ — with 4, one of the two designs whose zero states look finished.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** The box is a `<div>`, not a region or a fieldset ⚑ — the compartments are
     visual and the form is one form. **The internal rules carry no role** ⚑. Focus ring is inset by
     4 px where it meets the box edge (A6) ⚑.
@@ -669,8 +709,8 @@ is offered in full** — the box has no fill, which is what distinguishes this d
    `account/plans`, `account/newsletters`, `account/profile` ⚑ — **which exist.** **0 benefits** on
    /signup/ → no rail. **1** → a rail with one row, drawn rather than suppressed. **6** → the cap; a
    seventh is stored and not drawn ⚑.
-8. **Empty state.** No benefits → the rail is absent on /signup/ and the design is 1 Centred
-   left-aligned ⚑. **The /account/ rail is never empty.**
+8. **Empty state.** No benefits → **the rail is hidden and the content column takes the content box** ⚑
+   (patch pass); the design keeps its own arrangement and the panel advises 1 Centred. **The /account/ rail is never empty.**
 9. **Behaviour module.** `member-form` and `scroll-spy` ⚑. Both edit-safe; **Rail sticks declares
    nothing** — `position:sticky` is CSS. **scroll-spy, quoted:** "The sticky list renders with the
    first item marked current; no active-item tracking." **member-form, quoted:** "The `<form>` posts
@@ -712,10 +752,10 @@ form of A1·1's underline.
    design draws neither.
 7. **Data.** As 1; tiers read and not drawn. **The rows are authored, not queried** ⚑. On /account/
    the rows are `@member`'s and the label column widens to 240.
-8. **Empty state.** **0 lines** → rows and foot hairline go; the page is a heading, a blurb and a
-   field ⚑, and the panel names 1 Centred. **1–2** → drawn, with an editor note that the arrangement
+8. **Empty state.** **0 lines** → **rows and foot hairline are hidden and the heading, blurb and form stay** ⚑;
+   the design keeps its own arrangement and **the panel advises 1 Centred rather than drawing it** (patch pass). **1–2** → drawn, with an editor note that the arrangement
    wants four or more ⚑. **A line with no detail** → the name alone at 44 px.
-9. **Behaviour module.** `member-form`, as 1, same quoted degradation.
+9. **Behaviour module.** `member-form`, as 1 — **and the same corrected no-JS reading: P0·4's notice replaces the form** ⚑.
 10. **Accessibility.** `h1`, then the rows as an `<ol>` where Ordinals is Numerals and a `<ul>` where
     it is Rules only ⚑ — the list type follows the meaning. **Mono ordinals are `aria-hidden`** ⚑.
     Row hairlines are decorative and carry no `role="separator"`.
@@ -758,9 +798,11 @@ blurb field reused. The "wants four or more" editor note.
    **1** → free and that one. **4 or more** → rows at every width ⚑. `@member` on /account/ as 1.
 8. **Empty state.** No tiers → two steps, as above. **A comped or free member's /account/ has two
    facts, not three** ⚑ and the numbering closes up.
-9. **Behaviour module.** `member-form`, **and no second module** ⚑. Edit-safe. **No-JS, quoted:** "The
-   `<form>` posts natively to Ghost's members endpoint; Ghost's own server response replaces the
-   designed sent state." **A stepped flow would need behaviour the registry does not cover** ⚑ — the
+9. **Behaviour module.** `member-form`, **and no second module** ⚑. Edit-safe. **No-JS — corrected in the patch pass (the no-JavaScript notice):** ~~the form posts natively to
+   Ghost's members endpoint~~. **It cannot.** Tested against both live Ghost servers, **Ghost's signup
+   endpoint refuses a plain form submission**, so a scriptless field would take an address and lose it.
+   **P0·4's notice replaces the form** — no field, no button, everything around it unchanged. **Sending,
+   sent, expired and invalid are untouched**: they are Ghost's own script and they work. **A stepped flow would need behaviour the registry does not cover** ⚑ — the
    closest module is `tabs`, whose no-JS rendering ("All panels render stacked and visible, each
    preceded by its tab label as a heading") is what this design already is at rest, which is why the
    steps are typography and declare nothing.
@@ -782,18 +824,24 @@ architect.**
 
 ## Component inventory
 
-Eleven new, eighteen carried forward. Full descriptions are on the proof frame.
+Twelve new, seventeen carried forward. Full descriptions are on the proof frame. (The frame said ten and
+this file said eleven; both now say **twelve** — the reconciliation pass's one-time code panel and the patch
+pass's signed-out account panel.)
 
 **New in A30:** email field 46 px (1) · magic-link sent panel (1) · **one-time code panel (1, this
 pass)** · link-expired panel (1) · signed-in summary (1) · account row with its Portal hand-off (1) ·
 Portal hand-off tag (1) · status badge (1) · boundary strip (0) · period toggle (8) · step ordinal
-chip (13).
+chip (13) · **signed-out account panel (0, patch pass)** ⚑.
 
 **Carried:** tier card and tier row (A7) · tick list (A5·11) · numbered rows (A9·15) · directory
 column (A12·10) · split head (A5·5) · surface plane (A19·3) · warm scrim (A20·13) · on-contrast
-derivation (A17·7) · primary button, ghost action, avatar with initials, eyebrow (A1) · focus ring
+derivation (A17·7) · primary button, ghost action, eyebrow (A1) · focus ring
 (A6) · content box and padding ladder (A17) · clipped-string rule (A18·3) · image placeholder plate
-(A1) · hand-off rule (A1·11, A29·5).
+(A1) · **P0·4's no-JavaScript notice, carried by name** (patch pass).
+
+**Dropped in the patch pass:** the **avatar with initials** (A1) — it was derived from a name no design
+prints now — and the **hand-off rule** (A1·11, A29·5), which the rule that no design turns into another
+retires outright.
 
 **Reused by name from P0, never redesigned:** the inline text toolbar and its link popover (P0·1) ·
 the icon slot, Icon Picker and button-icon rules (P0·2) · the authored item list, the Ghost-sourced
@@ -801,7 +849,7 @@ list card and the partial-display line (P0·3) · the state switcher (P0·6).
 
 ## Findings for the architect
 
-Ten, two of them new in this pass. In full on the proof frame.
+Fourteen, four of them new in the patch pass. In full on the proof frame.
 
 1. **A themed members page is a Ghost page on a custom template, not a route** ⚑ — the generator has
    to create the pages and set Portal's links, or Portal intercepts them.
@@ -816,14 +864,25 @@ Ten, two of them new in this pass. In full on the proof frame.
 6. **There is no stepped-flow module in the registry** ⚑ — 13 Steps draws its steps as typography and
    names `tabs` as the closest. Not a request for a new module.
 7. **Comped and cancelled can be true at once** ⚑ — drawn in the account stress frame.
-8. **Most members have no name** ⚑ — every design puts the email in the name slot and draws no
-   initial; 9 Big Type sets it at 72 px.
+8. **Most members have no name** ⚑ — **and after the patch pass it does not matter**: no design prints the
+   name or the email, so the state that broke 9 Big Type at 72 px is retired.
 9. **One-time code sign-in needs a `member-form` registry extension and an endpoint** ⚑ — **new.**
    The panel is drawn in all thirteen designs at One-time code entry: On, marked **ARCHITECT**, and
    no module name was invented. No-JS is the field's absence, with the emailed link still working.
 10. **Tier prices are in the smallest currency unit** ⚑ — **new.** `monthly_price` returns 600 for
     $6, so 8 and 13 render through `{{price}}`. Any theme in this library that prints a raw price is
     wrong by a factor of a hundred.
+
+11. **Ghost gives a theme no member join date and no theme-readable list of a member's newsletters** ⚑ —
+    **new.** Both were drawn and both rendered empty on every live site. Member since is deleted; the
+    newsletter row is a link out to Ghost's own account screen. Nothing was invented to replace them.
+12. **Ghost does not redirect an anonymous visitor away from /account/** ⚑ — **new.** The page is served as
+    it stands, so all thirteen designs now draw a signed-out state. The earlier claim that Ghost redirects
+    before the theme renders is withdrawn.
+13. **Ghost's signup endpoint will not accept a plain form submission** ⚑ — **new**, tested against both
+    live servers. "The form posts natively" is withdrawn in all thirteen; P0·4's notice replaces the form.
+14. **A paid tier card is only renderable where a payment provider is connected** ⚑ — **new.** Ghost seeds a
+    $5 tier at install, so an unconnected site would otherwise ship a card whose checkout cannot complete.
 
 A30 uses **three of the registry's thirty-one modules** — `member-form`, `price-toggle`, `scroll-spy`
 — with eleven of the thirteen designs declaring one, **and one pending extension to `member-form`**.
@@ -891,5 +950,107 @@ Then, one line each, where this pass and the category's earlier rulings met:
   it matches the empty-state rule the other twelve designs already used.
 - **The sign-out "verify the attribute" flag is resolved, not carried.** `data-members-signout` is
   Ghost's only sign-out mechanism; `signOutLabel` exists as a field and is wired to that button.
+
+
+---
+
+## Patch notes — the design patch pass, 28 August 2026
+
+Every change, with the name of the rule that required it. Where a ruling could not be applied without
+inventing a decision it is written here as an **open question** and asked in plain words at the end.
+
+**Frames changed — fourteen, and every one of them:** `A30-0 Category Proof` and `A30-1` … `A30-13`.
+
+### The rulings for this category
+
+- **No design prints a member's own email or name.** The account head loses the avatar, the member name
+  and the "email · member since" line; the head is now the authored `accountHeading` with Ghost's status
+  badge beside it. The **Signed in as** row becomes **Email address**, and its value hands off — "Managed in
+  Ghost's account panel" — with Change email still opening Portal. Applies to all thirteen, on every width
+  and in dark. *(This category's own ruling; and the avatars-with-no-photograph rule is what takes the
+  initial away with the name.)*
+- **The Member since row is deleted** in all thirteen, and in the stress frame. Ghost's member object gives
+  a theme no join date, so the row rendered empty on every live site. `rowLabels` is **six, not seven**.
+  *(This category's own ruling.)*
+- **The newsletter list is deleted and the row becomes a link out** to Ghost's own account screen: the value
+  reads "Newsletter choices open in Ghost's account panel ↗" and the action stays a Portal hand-off.
+  *(This category's own ruling.)*
+- **Paid tier cards, their buttons and every Portal deep link are conditional** on a connected payment
+  provider — a panel note in the Data group of all thirteen, and a strip annotation on 8 Tiers and 13 Steps.
+  *(Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript.)*
+- **Every Portal button carries the JavaScript line.** The portal note at the foot of every account page now
+  ends "with JavaScript off these buttons do nothing — Portal is JavaScript", and the same line is a panel
+  note. *(Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript.)*
+- **A signed-out account state is drawn** as a fourth account tile in all thirteen: the authored heading, one
+  sentence, a link to /signin/ and a link to /signup/, and **no member row at all**. Ghost does not redirect
+  an anonymous visitor away from /account/. The design-1 entry that said it does is corrected.
+  *(This category's own ruling.)*
+
+### The library-wide rules
+
+- **The no-JavaScript notice.** The eighth state tile in all thirteen designs is redrawn: **P0·4's notice
+  replaces the form** — its glyph, its two lines and its wording verbatim, at A30's 13 px type floor, with no
+  field and no button. The quoted "the form posts natively to Ghost's members endpoint" is struck through in
+  every behaviour entry and in the frames' spec cards. The expired tile's no-JS fall-through and the one-time
+  code panel's no-JS line follow. **Sending, sent, expired and invalid are untouched** — they are Ghost's own
+  script and they work. *(The no-JavaScript notice.)*
+- **No design ever turns into another design.** The category's one hand-off is retired: **6 Cover** with no
+  photograph hides the picture, keeps its plane, its height and its measures, and resolves its ground to the
+  pack's contrast tone — which every colour on that design was already derived from — so the scrim is simply
+  absent rather than drawn over nothing. The editor flags that a photograph is needed and the panel advises.
+  **8 Tiers** at nought paid tiers hides the cards and the toggle and keeps the head, the form and the free
+  row. **11 Rail** with no benefits hides the rail and gives the column the content box. **12 Ledger** at
+  nought lines hides the rows and the foot hairline and keeps the head and the form. In all four the panel
+  **advises 1 Centred** and never draws it. The **hand-off rule** leaves the component inventory.
+  *(No design ever turns into another design.)*
+- **Item counts are a number picker.** 8 Tiers' **Benefits per card** was Two · Three · All and is now a
+  picker, 0–3, with the **+ drawn disabled at three and the reason readable**. *(Item counts are a number
+  picker.)*
+- **Slider labels / gap names.** 6 Cover's **Cover height** read Compact · Comfortable · **Tall** and now
+  reads Compact · Comfortable · **Spacious**; the title already said what it affects. No Tight/Even/Airy or
+  Tight/Standard/Wide existed anywhere in A30, and there is no gap control in the category.
+  *(Slider labels; gap names are "Tight · Normal · Loose".)*
+- **Fewer choices, and the reason said.** Checked and unchanged: the colour swatch row is already **Base**,
+  and **there is no "Inherit" value anywhere in A30**. The locks that exist — Background role on 4, 5, 6 and
+  13, Surface disabled on 3, the accent disabled on 5 at 4.0:1 — all already draw their reason.
+  *(A design may offer fewer choices on a shared control, and must say why.)*
+- **The Remove button never greys out.** Checked and unchanged: `benefits[]` already states that Remove is
+  never disabled and that Add — not Remove — disables at six with its reason in a sentence.
+  *(The remove button never greys out.)*
+- **The two free designs.** **1 Centred** and **10 Boxed**, **the owner's pick, recorded 28 August 2026** —
+  marked `[Free]` on the roster and named in the line at the head of the roster section.
+  *(The two free designs are the owner's choice — ask him.)*
+- **Behaviour modules.** Unchanged and re-checked against the current registry: eleven designs declare
+  `member-form`, 8 Tiers adds `price-toggle`, 11 Rail adds `scroll-spy`. No module name was invented, and
+  one-time code entry stays marked **ARCHITECT: `member-form` registry extension**.
+- **Numbering.** Untouched: 1–13, no gaps closed, no numbers reused.
+
+### Open questions recorded here
+
+1. **The sent panel's echo of the typed address — answered, reversed, and settled 29 August 2026.** It was
+   removed on the owner's first answer and **restored on his second**: a reader has to be able to see where the
+   link went, and a typo is invisible otherwise. The panel reads **"We sent a link to
+   marta.kovacs@fastmail.com. It expires in 24 hours ⚑ and works once."** and **`{email}` stays in the field
+   list**. **The distinction on the record:** `{email}` is the address the visitor typed into this form a
+   second earlier; it is not `@member.email`, and no design prints a field Ghost hands the theme.
+   *(No design prints a member's own email or name — read as governing member data, not the form's own input.)*
+2. **The avatar — answered.** Dropped entirely, as drawn: the head is the authored heading plus Ghost's
+   status word, and nothing on the page names the reader. *(Avatars with no photograph.)*
+3. **13 Steps' Step one** offers Two tiers · Every tier · Hide. Two tiers is arguably an item count, which
+   would make it a number picker; "every tier" is not a number. Left as it is; the library's existing reading
+   is that counts of items are pickers while arrangements stay named values. **Not asked** — it is the same
+   open point P0·3 already carries for the whole library, and answering it once there is better than
+   answering it thirteen times here.
+4. **4 Panel's Included row** (Four up · Two up · Hide) is a count of columns, not of items, and stays a
+   named segmented row for the same reason.
+5. **The Email address row — answered.** The row stays and its value reads "Managed in Ghost's account
+   panel", keeping the Change email hand-off. As drawn.
+
+### Confirmations
+
+- **Design numbering is unchanged.** This category's numbers are **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+  13** — thirteen designs, no gaps, nothing renumbered and no number reused.
+- **The `**[Free] designs:**` line is present**, at the head of the roster section, and names **1 Centred**
+  and **10 Boxed** — both of which exist in this category.
 
 — End of specification —

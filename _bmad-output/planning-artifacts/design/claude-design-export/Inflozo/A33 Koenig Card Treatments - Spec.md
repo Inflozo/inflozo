@@ -1,6 +1,7 @@
 # A33 Koenig Card Treatments — written specification
 
-6 treatments · Paper pack · drawn 24 August 2026 · **controls-reconciliation pass 25 August 2026**
+6 treatments · Paper pack · drawn 24 August 2026 · controls-reconciliation pass 25 August 2026 ·
+**Koenig card treatments patch pass 28 August 2026**
 
 This file is the reconciled specification. The pass reused the P0 editor primitives by name and
 redesigned none of them; every conflict it opened with an earlier A33 ruling is recorded, one line
@@ -63,9 +64,11 @@ call to action, public preview, button, callout, GIF, toggle, audio, video, file
 embeds, signup. **Seven of the twenty are not the theme's to arrange, and the roll says so on each
 one** ⚑: markdown carries no wrapper class and is A25's type verbatim; HTML is whatever the author
 pasted; embeds are the provider's markup; gallery, toggle and audio ship Ghost's own CSS and script,
-so A33 re-styles the shell only; **email content never renders on the web at all** ⚑ and is drawn
-dashed so a user can see that. **The public-preview marker is A32's** — A33 owns the space above the
-cut and nothing below it. **Blockquote and the code block are text formats rather than cards** and
+so A33 re-styles the shell only; **the toggle is a plain container with a heading and a button rather
+than native disclosure markup** ⚑, so it needs Ghost's script to open; **email content never renders on the web at all** ⚑ and is drawn
+dashed so a user can see that. **The public-preview cut leaves no element at all** ⚑ — Ghost emits only an invisible HTML comment
+there, so there is nothing for a stylesheet to reach and **the marker component is deleted from this
+category**; A32 renders the gate below the cut. **Blockquote and the code block are text formats rather than cards** and
 belong to A25's measure ⚑.
 
 **The call-to-action card renders on the web** ⚑ — Ghost lets the author show it on the site, in the
@@ -190,10 +193,10 @@ What the pass's ground rules resolve to in a category that is a stylesheet, not 
   ≈15 ceiling. **Quick Controls: Treatment · Space around cards · Captions.**
 - **Inline editing: none, by construction** (above). **Every URL in a card is Ghost's field**, so the
   Ghost-aware Link Picker belongs to Ghost's editor here, not to a theme panel ⚑.
-- **Visitor-facing strings the theme renders are translation-catalog strings**, not editable fields —
-  there are five: the product card's rating text equivalent ("Rated 4 out of 5"), the file card's size
-  unit and download label, the audio and video players' transport labels, the toggle's expand label,
-  and the public-preview marker's label. **Every other string in a card is the author's content** ⚑.
+- **This category controls no translatable strings at all** ⚑. Every visitor-facing word a card renders
+  is either the author's content or a string inside Ghost's own renderer — the file card's size unit
+  and download label, the players' transport labels, the toggle's expand label. **No theme can reach
+  them**, so the earlier claim that A33 owned five catalog strings is deleted.
 - **Icon slots: one.** The divider's centred glyph (item 2). **Button-card icons are declined with a
   reason** ⚑ — Ghost's button card has a label and a URL and no icon field, and A33 may not add markup
   to `{{content}}`. Every other glyph in the twenty cards is Ghost's own chrome and correctly out of
@@ -204,7 +207,23 @@ What the pass's ground rules resolve to in a category that is a stylesheet, not 
   sidebar Add, ever**, because the images belong to the post rather than to the theme.
 - **Member awareness:** the call-to-action, HTML and signup cards carry **Ghost's own audience field**
   (public · free members · paid members) on the card. A33 adds no Member Visibility control and no
-  member-aware action editor — **it would be a second switch that loses to Ghost's** ⚑.
+  member-aware action editor — **it would be a second switch that loses to Ghost's** ⚑. The Cards
+  panel now carries the conditional note the rule that member buttons are conditional asks for:
+  **Ghost's signup and call-to-action cards do not render when the connected site cannot accept
+  sign-ups**, and **with JavaScript off the signup form does nothing** — Ghost's form carries no
+  `action`; `data-members-form` tells Ghost's own script to handle the submit, and the loading,
+  success and error classes are written by that script. The CSS in Ghost's theme documentation styles
+  those states; it does not create them.
+- **The no-JavaScript notice cannot be built here, and that is a stated conflict** ⚑. The rule asks
+  every design containing a subscribe form to replace that form with a designed notice when JavaScript
+  is unavailable. Inside a post body **A33 owns the stylesheet and not the markup**: the signup card is
+  Ghost's element and a stylesheet cannot swap it for a notice. The panel says so in words; the notice
+  itself belongs to Ghost's card, not to this category. **Reviewed with the owner on 28 August 2026**
+  against Ghost's own theme documentation, and the reason is now stated precisely rather than as "the
+  endpoint refuses a plain post": Ghost's members form has no `action` at all, `data-members-form`
+  hands the submit event to Ghost's script, and that script is what writes the loading, success and
+  error classes and fills `data-members-error`. CSS can only show or hide those messages. Recorded,
+  not worked around.
 - **Behaviour:** `accordion` and `core`, unchanged. The pass adds no behaviour, so it coins no module
   name and raises no registry addition.
 
@@ -212,12 +231,17 @@ What the pass's ground rules resolve to in a category that is a stylesheet, not 
 
 | # | Treatment | Tuple | Ctl | Modules |
 |---|---|---|---|---|
-| 1 | Plain | `article body · none · page · variable · inline · hairline rules only` | 6 | `accordion`, `core` |
+| 1 | Plain **[Free]** | `article body · none · page · variable · inline · hairline rules only` | 6 | `accordion`, `core` |
 | 2 | Card | `article body · card · surface · variable · inline · the raised panel` | 6 | `accordion`, `core` |
 | 3 | Panel | `article body · box · surface · variable · inline · plane past the measure` | 6 | `accordion`, `core` |
-| 4 | Wide | `media frame · none · page · variable · edge · media one rung wider` | 6 | `accordion`, `core` |
+| 4 | Wide **[Free]** | `media frame · none · page · variable · edge · media one rung wider` | 6 | `accordion`, `core` |
 | 5 | Full Bleed | `media frame · none · page · variable · full-bleed · the viewport-edge bleed` | 6 | `accordion`, `core` |
 | 6 | Contrast Band | `article body · box · contrast · variable · inline · the inverted card plane` | 6 | `accordion`, `core` |
+
+**[Free] designs:** 1 Plain · 4 Wide
+
+*The owner's choice, ruled 28 August 2026. A free site gets the category default and the treatment that
+gives photographs a wider rung.*
 
 **In A33 the tuple's containment and ground slots describe the card, not a section** ⚑ — A33 has no
 section of its own. Read any other way, all six read `none · page` and the uniqueness check fails on
@@ -237,21 +261,21 @@ is always safe.
 | Card | Fields | Type | Optional | Limit and note |
 |---|---|---|---|---|
 | Image | `src` · `alt` · `caption` · `width` | file · text · rich text · enum | alt, caption | alt ≤ 125 chars · width is regular · wide · full, authored per card |
-| Gallery | `images[]` · `caption` | file array · rich text | caption | 1–9 images, ordered · Ghost's script computes the row ratios |
+| Gallery | `images[]` · `caption` | file array · rich text | caption | 1–9 images, ordered · Ghost's script computes the row ratios · **Ghost fixes the card's width and a theme may not override it** ⚑ |
 | Bookmark | `url` → `title`, `description`, `icon`, `author`, `publisher`, `thumbnail` · `caption` | url → scraped · rich text | caption, and every scraped field | **the author owns the URL only** ⚑ |
 | Callout | `text` · `emoji` · `colour` | rich text · emoji · enum | emoji | nine colour values, Ghost's own palette ⚑ · text required |
-| Toggle | `heading` · `content` | text · rich text | — | both required · Ghost supplies the chevron and its script |
+| Toggle | `heading` · `content` | text · rich text | — | both required · Ghost supplies the chevron and its script · **the markup is a plain container with an `h4` and a `button`, not `details`/`summary`** ⚑ |
 | Button | `label` · `url` · `align` | text · url · enum | — | label ≤ 40 · left or centre · the fill is the site accent |
-| Embed | `url` → `html` · `caption` | url → provider markup · rich text | caption | the markup is the third party's; A33 styles only the frame ⚑ |
-| Product | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither |
+| Embed | `url` → `html` · `caption` | url → provider markup · rich text | caption | the markup is the third party's; A33 styles only the frame ⚑ · **Ghost fixes the width and a theme may not override it** ⚑ |
+| Product | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither · **Ghost renders the stars with no text equivalent and a theme cannot add one** ⚑ (a Ghost limitation) |
 | File | `file` · `title` · `description` → `name`, `size` | file · text · rich text → derived | description | name and size come from the upload, read-only |
 | Header | `heading` · `subheading` · `buttonLabel` + `buttonUrl` · `size` · `style` · `backgroundImage` | text · text · text + url · enum · enum · file | subheading, button pair, image | **three sizes × four styles = twelve variants the theme owes** ⚑ (C.1) |
 | Markdown | `md` | rich text | — | **no wrapper class** ⚑ · renders as ordinary headings, lists, links and images |
-| HTML | `html` · `visibility` | author markup · enum | — | public · free members · paid members · **whatever the author pastes wins** ⚑ |
+| HTML | `html` · `visibility` | author markup · enum | — | public · free members · paid members · **whatever the author pastes wins** ⚑ · **no wrapper element** ⚑ — the Rules control and the Contrast Band have no target here |
 | Divider | position only | — | — | a bare `hr` · weight, width and space are the treatment's; **the optional centred glyph is an icon slot** (P0·2) on the divider card's own panel ⚑ |
 | Email content | `greeting` · `fallback` · `text` | text · text · rich text | greeting, fallback | **never renders on the web** ⚑ · `first_name` placeholder with the author's fallback |
 | Call to action | `text` · `image` · `sponsorLabel` · `buttonLabel` + `buttonUrl` · `background` · `visibility` · `showOn` | rich text · file · text · text + url · enum · enum · enum | image, sponsorLabel, button pair | **renders on the web, in the newsletter, or both** ⚑ · audience is public, free or paid |
-| Public preview | position only | marker | — | **not a card on the web** ⚑ · Ghost cuts the response here and A32 renders the gate |
+| Public preview | position only | — | — | **no element at all** ⚑ · Ghost leaves only an invisible comment where it cuts the response · A32 renders the gate |
 | GIF | the search and the pick | file | — | renders as an image card and follows those settings |
 | Audio | `file` · `title` · `thumbnail` | file · text · file | thumbnail | **Ghost ships the player and its script** ⚑ · A33 styles the shell and the progress accent |
 | Video | `file` · `poster` · `loop` · `width` | file · file · bool · enum | poster, loop | three widths · Ghost ships the player · A33 styles the play button, scrim and bar |
@@ -288,8 +312,8 @@ is always safe.
 ## 1 · Plain
 
 1. **Descriptor.** Every card on the page ground at the article's measure, with no plane and no
-   frame; a single hairline above and below the six cards that must read as one object — HTML, bookmark,
-   toggle, audio, file, product — and a tinted plane on the callout and the call to action. The category default.
+   frame; a single hairline above and below the five cards that must read as one object — bookmark, toggle,
+   audio, file, product — and a tinted plane on the callout and the call to action. The category default.
 2. **Structural descriptor.** `article body · none · page · variable · inline · hairline rules only`
    Containment `none` and ground `page` are what 2 Card, 3 Panel and 6 Contrast Band each change
    exactly one of. **In A33 both slots describe the card** ⚑.
@@ -304,8 +328,8 @@ is always safe.
    treatment that draws every field in its default state.
 6. **Controls, in sidebar order.** **Space around cards** Compact 32 · Comfortable 48 · Spacious 64.
    **Captions** Under, left · Under, centred · Hidden. **Credit line** With the caption · Its own
-   line · Hidden. **Rules** Above and below · Below only · None —
-   on HTML, bookmark, toggle, audio, file and product only ⚑. **Tinted cards** Tinted · Hairline
+   line · Hidden. **Rules** Above and below · Below only · None — on bookmark, toggle, audio, file and product only ⚑;
+   **the HTML card leaves this list**, because Ghost emits no wrapper element for it ⚑. **Tinted cards** Tinted · Hairline
    box · None — governs the callout and the call to action ⚑. **Emoji** Shown · Hidden. Then the
    module's **Callout colours** mapping and the five read-only rows, not counted. **The Credit line's
    help text documents the convention** — "a caption's trailing italic segment renders as the credit" —
@@ -323,22 +347,27 @@ is always safe.
    takes the full plane. **No cards → nothing**; in the editor the Cards panel previews the treatment
    against C.4's style-guide fixture rather than an empty canvas ⚑.
 9. **Behaviour module.** `accordion` (toggle) and `core`. **Edit-safe:** yes — the resting state is the
-   only state. **No-JS, quoted:** `accordion` — "Native `<details>` — fully functional,
-   keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the
-   server-rendered `open` attribute." `core` — "Never runs; the `.js-enabled` class is never set, so
-   all JS-conditional CSS stays in its no-JS branch." **Fifteen of the twenty cards are identical with JS off.** **Five depend on scripts that are
-   Ghost's, not A33's** ⚑ — the gallery's row ratios, the audio and video players, the signup card's
-   post and the embed's provider markup — and **the registry has no module for any of them**, so A33
-   declares `core` rather than inventing one. A finding, not a degradation A33 may quote.
+   only state. **No-JS:** **the registry's quoted degradation for `accordion` does not hold here** ⚑ —
+   Ghost's toggle card is a plain container with a heading and a button, not native disclosure markup,
+   so **with JavaScript off it cannot open**. A33 still declares `accordion` as the nearest module and
+   drops the quote; the mismatch is Finding 5. `core` — "Never runs; the `.js-enabled` class is never
+   set, so all JS-conditional CSS stays in its no-JS branch." **Fourteen of the twenty cards are
+   identical with JavaScript off.** **Six depend on a script, and every one of those scripts is
+   Ghost's or the provider's, not A33's** ⚑ — the toggle's open and close, the gallery's row ratios,
+   the audio and video players, the signup card's post and the embed's provider markup — and **the
+   registry has no module for any of them**, so A33 declares `core` rather than inventing one. A
+   finding, not a degradation A33 may quote.
 10. **Accessibility.** `<figure>`/`<figcaption>` paired on image, gallery, embed. Bookmark: one `<a>`,
-    one focus stop, thumbnail `aria-hidden`, title as the accessible name. Toggle:
-    `<details>`/`<summary>`, **the heading inside is a `div`, never an h-level** ⚑. Button card: `<a>`
-    at 48 px, 44 px minimum target. Product: **the rating is text as well as stars**. File: the link
+    one focus stop, thumbnail `aria-hidden`, title as the accessible name. Toggle: a plain `div` holding an `h4` and a `button` — **not disclosure markup** ⚑; the heading
+    level is Ghost's, the button is the only focus stop, and no stylesheet can add the `aria-expanded`
+    it lacks — **a Ghost limitation, recorded rather than fixed**. Button card: `<a>`
+    at 48 px, 44 px minimum target. Product: **Ghost renders the rating as stars with no text equivalent and a theme cannot add
+    one** — a Ghost limitation ⚑. File: the link
     names the file and its size. Header: `h2`, never promoted to `h1`. **The hairline carries no
     role**; the callout's emoji carries `aria-hidden`. Body 12.6:1, captions 5.4:1, tinted callout
     11.8:1. Focus order is document order.
 - **Repeating items.** As the category layer: `gallery.images[]` only, managed on the canvas.
-- **Flagged ⚑** — the tuple describing the card; the hairline pair as containment, on six named cards; **the callout and the call to action keeping a
+- **Flagged ⚑** — the tuple describing the card; the hairline pair as containment, on five named cards, the HTML card no longer among them; **the callout and the call to action keeping a
   plane in a treatment called Plain**; the radius token answering C.1's per-card corners;
   space 32 at ≤ 767 overriding the control; the bookmark thumbnail moving above its text; **Ghost's
   gallery script having no module**; the credit being the caption's trailing `<em>` run.
@@ -360,7 +389,9 @@ is always safe.
    1,296 / media 1,248; padding 24; space 48; **the caption sits inside the panel** ⚑. **834** panel
    754 / media 706; wide and full both 754. **≤ 767** panel 350 / media 318, **padding 16**, space 32,
    radius unchanged, **shadow kept** ⚑.
-5. **Content fields.** The whole union. **The header card's fields are drawn without a panel** ⚑.
+5. **Content fields.** The whole union. **The header card's fields are drawn without a panel** ⚑, and
+   **the HTML card gets no panel either** ⚑ — Ghost emits no wrapper element for it, so there is
+   nothing to put a panel on (the owner's ruling of 28 August 2026, closing Finding 8).
 6. **Controls, in sidebar order.** **Space around cards** 32 · 48 · 64. **Captions** Under, left ·
    Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Panel**
    Hairline · Hairline and shadow · Fill only. **Panel padding** Compact 16 · Comfortable 24 ·
@@ -369,7 +400,8 @@ is always safe.
 8. **Empty state.** **The panel keeps its shape and padding whatever is absent** ⚑ — a missing field
    shortens the panel and never leaves a hole. No caption → the bottom padding closes the gap. No
    thumbnail → a panel of text. No product image → panel of text plus rating. **No cards → nothing,
-   and in particular no empty panel** ⚑. **The header card gets no panel at any value.**
+   and in particular no empty panel** ⚑. **The header card gets no panel at any value, and neither does the HTML
+   card** ⚑ — the first because it already has a surface, the second because it has no element.
 9. **Behaviour module.** As 1 Plain, verbatim.
 10. **Accessibility.** As 1 Plain, with two changes: **the panel is a `div` with no role and no
     label** ⚑, and **the panel sits inside the `<figure>`** so the figure/caption pair and the
@@ -398,7 +430,9 @@ is always safe.
    media 720 · 1,040 · 1,296 on the page ground. **834** plane 754 (= the content box), content 690,
    padding 32. **≤ 767** **plane 350 (= the measure)**, content 302, padding 24, space 32 ⚑.
 5. **Content fields.** The whole union. **The header card takes the plane's width rather than the
-   content box** ⚑.
+   content box** ⚑, and **the HTML card takes no plane at all** ⚑ — Ghost emits no wrapper element for
+   it, so it renders in the content column on the page ground (the owner's ruling of 28 August 2026,
+   closing Finding 8).
 6. **Controls, in sidebar order.** **Space around cards** Compact 32 · Comfortable 56 · Spacious 72 —
    **this treatment's ladder, one step above 1 Plain's** ⚑. **Captions** Under, left · Under, centred ·
    Hidden. **Credit line** With the caption · Its own line · Hidden. **Plane width** Measure 720 ·
@@ -413,8 +447,9 @@ is always safe.
 10. **Accessibility.** As 1 Plain, plus: **the plane is a `div` with no role** ⚑; **the content column
     keeps the 720 measure at 400 % zoom** — the reason it exists; the plane-to-ground step is 1.05:1
     in Paper light and **is never the only signal** (padding carries it); focus rings draw around the
-    link, never the plane. **At ≤ 1023 the plane and the measure are the same width** and the
-    treatment reads as 2 Card without a shadow — stated so nobody reports it as a bug ⚑.
+    link, never the plane. **At ≤ 1023 the plane and the measure are the same width**, so the plane's
+    extra width simply is not there — the treatment is unchanged and still 3 Panel ⚑, stated so nobody
+    reports it as a bug.
 - **Repeating items.** As the category layer.
 - **Flagged ⚑** — the plane width and the wide media rung sharing 1,040 on purpose; **space 56 as this
   treatment's default**; media staying in the measure by default; the header card taking the plane;
@@ -425,9 +460,10 @@ is always safe.
 
 ## 4 · Wide
 
-1. **Descriptor.** Every media card renders one rung wider than the width its author gave it —
-   regular at the wide column's 1,040, wide and full at the content box's 1,296 — with the text at
-   the measure and the caption aligned to the media.
+1. **Descriptor.** An image, a GIF and a video render one rung wider than the width their author gave
+   them — regular at the wide column's 1,040, wide and full at the content box's 1,296 — with the text
+   at the measure and the caption aligned to the media. **A gallery and an embed keep the width Ghost
+   fixes for them** ⚑ and do not step up (the owner's ruling of 28 August 2026).
 2. **Structural descriptor.** `media frame · none · page · variable · edge · media one rung wider`
    Archetype `media frame` because **the media, not the column, sets this design's geometry** ⚑. Media
    placement `edge`: the card reaches the content box's edge but never the viewport's — **that is
@@ -435,22 +471,27 @@ is always safe.
 3. **Archetype.** media frame. Ladder: the frame narrows to its container and the caption follows it.
    **One departure** — **below 1024 the step-up has nowhere to go** and every media card is the
    content box ⚑.
-4. **Responsive rule.** **1440** text 720; media regular → 1,040, wide → 1,296, full → 1,296; caption
-   at the media's width; space 56. **834** text 754; **every media card 754** ⚑; caption 754.
+4. **Responsive rule.** **1440** text 720; image, GIF and video regular → 1,040, wide → 1,296, full → 1,296;
+   **gallery and embed at Ghost's own widths, 1,040 and 720** ⚑; caption at the media's width; space 56. **834** text 754; **every media card 754** ⚑ — the content box, where the step-up has nowhere to go;
+   caption 754.
    **≤ 767** everything 350, space 32, **caption alignment has no meaning**.
 5. **Content fields.** The whole union. **`image.width` is read and then overruled** ⚑ — the one
    treatment that does not honour the authored value as given.
 6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
    Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Media steps
-   up** One rung · Two rungs · Not at all. **What steps up** Images · Images and galleries · Every
-   media card. **Caption alignment** To the measure · To the media. Then What Ghost owns. **The panel
+   up** One rung · Two rungs · Not at all. **What steps up** Images · **Images and video** — **two values, and the reason is Ghost's** ⚑: a
+   gallery and an embed keep the width Ghost fixes for them and a theme may not override it, so
+   neither can step up. Images and video is the default, being everything that can move. Never the
+   bookmark's thumbnail, which is furniture rather than media, and **never the product card's
+   photograph** ⚑, which belongs to a copy card and moves only with it. **Caption alignment** To the measure · To the media. Then What Ghost owns. **The panel
    says in one line: "Regular images render at the wide column."** ⚑ This is the one treatment that
    overrules the author's width class, and without the line it reads as a bug.
-7. **Data.** As 1 Plain. **A post with no media cards renders as 1 Plain** ⚑ — nothing in this
-   treatment applies and nothing looks broken.
+7. **Data.** As 1 Plain. **A post with no media cards has nothing for this treatment to
+   step up** ⚑ — every card renders at the measure and nothing looks broken; 4 Wide is still the
+   treatment in force and never becomes another design.
 8. **Empty state.** **A media card with no caption sits wide with nothing tying it to the column** ⚑ —
    the known cost, and the reason Caption alignment: To the measure exists. No caption → no
-   `<figcaption>`, space closes. One gallery image → one image at the stepped-up width. No cards →
+   `<figcaption>`, space closes. One gallery image → one image at the width Ghost fixes for the gallery. No cards →
    nothing.
 9. **Behaviour module.** As 1 Plain, verbatim.
 10. **Accessibility.** As 1 Plain, plus: **at To the media the caption line runs 1,040 — about 130
@@ -459,7 +500,8 @@ is always safe.
     **At 400 % zoom the step-up disappears** with the wide column.
 - **Repeating items.** As the category layer.
 - **Flagged ⚑** — the treatment re-resolving the author's width class; **wide and full collapsing to
-  one width**; the bookmark's thumbnail excluded from "every media card"; the 1,040 caption line as a
+  one width**; only image, GIF and video stepping up — galleries and embeds keep Ghost's width, the bookmark's
+  thumbnail is furniture and the product's photograph moves only with its copy card; the 1,040 caption line as a
   named accessibility trade; **no step-up below 1024**; the cut per-card width override.
 
 ---
@@ -468,7 +510,9 @@ is always safe.
 
 1. **Descriptor.** A media card marked full takes the viewport's whole width and drops its corner
    radius; wide takes the content box; regular stays in the measure; the caption returns to the 720
-   column beneath. Copy cards are 1 Plain's, unchanged, and **only the five media cards — image, gallery, embed, video, GIF — may bleed** ⚑.
+   column beneath. Copy cards are 1 Plain's, unchanged, and **only image, GIF and video may
+   bleed** ⚑ — Ghost fixes the width of a gallery and of an embed and a theme may not override it, so
+   neither can reach the viewport edge.
 2. **Structural descriptor.** `media frame · none · page · variable · full-bleed · the viewport-edge bleed`
    Media placement `full-bleed` is the only slot separating this from 4 Wide, and it is the right one:
    **4 Wide reaches the container's edge, this reaches the window's** ⚑.
@@ -482,14 +526,15 @@ is always safe.
    viewport** ⚑.
 6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
    Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Full resolves
-   to** Content 1296 · Viewport edge. **Bleed applies to** Images · Images and galleries · Every media
-   card. **Caption on a bleed** In the measure · Under, full width · Over the image, at the foot —
+   to** Content 1296 · Viewport edge. **Bleed applies to** **Images** (default) · Images and video — **two values, and the reason is
+   Ghost's** ⚑: a gallery and an embed keep the width Ghost fixes for them. The old default included
+   galleries, so the default carries down to Images. **Caption on a bleed** In the measure · Under, full width · Over the image, at the foot —
    **the last value disabled with its ratio shown where the carried colour fails AA on the scrim** ⚑.
    Then What Ghost owns.
-7. **Data.** As 1 Plain. **An author who marks no card full sees 1 Plain with a 1,296 wide rung** ⚑.
+7. **Data.** As 1 Plain. **An author who marks no card full sees no bleed at all** ⚑ — regular at
+   the measure, wide at 1,296, and 5 Full Bleed still the treatment in force.
 8. **Empty state.** **A bleed with no caption closes its space and the next paragraph follows at the
-   spacing value** ⚑ — no empty band, no placeholder line. A gallery with one image bleeds as one
-   image. No cards → nothing.
+   spacing value** ⚑ — no empty band, no placeholder line. A gallery keeps the width Ghost fixes for it, at one image or at nine ⚑. No cards → nothing.
 9. **Behaviour module.** As 1 Plain, verbatim. **This treatment deliberately declares no
    `lightbox`** ⚑ — the registry's degradation is "Each thumbnail is an `<a href>` to the full-size
    image", and Ghost's image card is not a link unless the author made one, so declaring it would
@@ -501,7 +546,8 @@ is always safe.
     AA**.
 - **Repeating items.** As the category layer.
 - **Flagged ⚑** — **the radius token not applied at the viewport edge**; wide skipping the 1,040 rung;
-  only media cards bleeding, and the header card never; **no `lightbox` declared, with the reason**;
+  only image, GIF and video bleeding — galleries and embeds keep Ghost's width — and the header card
+  never; **no `lightbox` declared, with the reason**;
   the `100vw` scrollbar note; the sticky-header stacking note; the scrim value disabled on contrast;
   the cut scrim-strength and bleed-height controls.
 
@@ -509,15 +555,17 @@ is always safe.
 
 ## 6 · Contrast Band
 
-1. **Descriptor.** The copy-bearing cards on the pack's inverted contrast colour at the wide column,
-   carrying the carried text; the photograph cards — image, gallery, embed — left on the page ground
-   untouched.
+1. **Descriptor.** Seven copy-bearing cards on the pack's inverted contrast colour at the wide column,
+   carrying the carried text; the photograph cards — image, gallery, embed, video, GIF — left on the
+   page ground untouched, and the three cards that carry the post author's own inline colours —
+   signup, call to action, header — left exactly as the author set them, with the band running behind
+   them.
 2. **Structural descriptor.** `article body · box · contrast · variable · inline · the inverted card plane`
    Ground `contrast` is the only slot separating this from 3 Panel, and **ground is what earns a
    design its place** — the same plane on `surface` and on `contrast` are two treatments.
 3. **Archetype.** article body. **Three departures**: the band becomes the content box at 834 and the
-   measure at ≤ 767; the content column is 302 at 390; **five of the twenty cards never take the
-   band** ⚑.
+   measure at ≤ 767; the content column is 302 at 390; **eight of the twenty never take the band, and five have
+   nothing the band could reach** ⚑.
 4. **Responsive rule.** **1440** band 1,040 centred, content 720, padding 32, space 56; media 720 ·
    1,040 · 1,296 on the page ground. **834** band 754, content 690. **≤ 767** band 350, content 302,
    padding 24, space 32 ⚑.
@@ -525,10 +573,11 @@ is always safe.
    treatment, because media never takes the band ⚑.
 6. **Controls, in sidebar order.** **Space around cards** 32 · 56 · 72. **Captions** Under, left ·
    Under, centred · Hidden. **Credit line** With the caption · Its own line · Hidden. **Band width**
-   Measure 720 · Wide 1040 · Content 1296. **Which cards invert** Callout only · **Every copy card** ·
-   Copy cards and the header — **the ten card types move to the help line** ("callout, toggle,
-   bookmark, button, product, file, call to action, audio, HTML and signup"), so the value label stays
-   a value ⚑. **Action on the band** The carried colour · The accent, re-checked —
+   Measure 720 · Wide 1040 · Content 1296. **Which cards invert** Callout only · **Every copy card** — **two values** ⚑. The third, Copy cards
+   and the header, is gone: the header card carries the author's own inline colours. The help line
+   names the seven — "callout, toggle, bookmark, button, product, file and audio" — so the value label
+   stays a value ⚑, and it says why signup, the call to action, the header and the HTML card are not
+   on the list. **Action on the band** The carried colour · The accent, re-checked —
    **the second value disabled in Paper with 3.4:1 shown** ⚑. Then What Ghost owns.
 7. **Data.** As 1 Plain. **A post whose only cards are images renders with no band at all** ⚑ — the
    treatment is invisible, which is correct rather than broken.
@@ -541,7 +590,8 @@ is always safe.
     accent** ⚑. The band is a `div` with no role. **No photograph ever sits on the band**, so there is
     no scrim and no contrast question for the five media cards.
 - **Repeating items.** As the category layer.
-- **Flagged ⚑** — **five cards never inverting, at any control value**; the product card inverting
+- **Flagged ⚑** — **eight cards never inverting, at any control value — five photographs and three that carry the
+  author's own inline colours**; **the HTML card leaving the band for want of a wrapper element**; the product card inverting
   while its photograph keeps its own plane; the band defaulting to 1,040 to share the wide media rung;
   **the accent disabled with its ratio rather than removed**; the focus ring re-derived on the band;
   the 302 content column at 390; the cut band-colour and per-card invert controls.
@@ -550,7 +600,7 @@ is always safe.
 
 ## Findings for the architect
 
-Seven; five new. In full on the proof frame.
+Eleven; four added by this pass. In full on the proof frame.
 
 1. **Ghost's callout palette is nine literal colours and the pack ships seven roles.** ⚑ No mapping
    keeps both. **Closed by the pass**: the mapping is a Cards-module control, site-wide, next to the
@@ -569,8 +619,11 @@ Seven; five new. In full on the proof frame.
    section wins inside its own ground, the treatment wins everywhere else. **Closed by the pass**: it
    is now a read-only help line on the Cards panel — "Sections may resolve card widths differently
    inside their own ground."
-5. **The toggle card's open/close script is Ghost's, not the theme's.** ⚑ `accordion`'s degradation is
-   true of Ghost's markup, but the module the build compiles has nothing to do here.
+5. **The toggle card is not native disclosure markup, and `accordion`'s degradation is false here.** ⚑
+   Tested against Ghost: the card is a plain container with a heading and a button, so **with
+   JavaScript off it cannot open**. A33 still declares `accordion` as the nearest module and drops the
+   quoted degradation. The registry needs either a degradation that matches Ghost's markup or an entry
+   saying the behaviour is Ghost's own.
 6. **A33 has no section, so its tuples describe the card.** ⚑ The reconciliation pass should expect
    that; read otherwise, all six collapse to `none · page`.
 7. **Six treatment controls plus a per-card panel's six means a user meets up to twelve controls to
@@ -578,12 +631,27 @@ Seven; five new. In full on the proof frame.
    panel carries only what is that card's own, with everything the treatment claimed shown read-only
    in it. Both live on the Editor Cards screen (S14) — treatment above, card panel below — and the
    section sidebar's Cards module reduces to the Treatment picker and a link.
+8. **The HTML card emits no wrapper element.** ⚑ Ghost renders the author's markup raw, so **the Rules
+   control and the Contrast Band have nothing to target** and both drop it. The same fact raises a
+   question this pass will not answer on its own: **can 2 Card's panel and 3 Panel's plane reach the
+   HTML card either?** **Closed by the owner, 28 August 2026: they cannot.** The HTML card leaves
+   2 Card's panel and 3 Panel's plane as well, and renders on the page ground in all six treatments.
+9. **The public-preview cut is a comment, not an element.** ⚑ Ghost leaves only an invisible HTML
+   comment where it cuts the response, so **the marker component is deleted from the inventory** and
+   the card roll draws the absence rather than a label.
+10. **Ghost gives the product card's rating no text equivalent.** ⚑ The stars are Ghost's markup and a
+    theme cannot add the words. Recorded as a **Ghost limitation** rather than something A33 fixes: a
+    screen-reader user hears no rating at all.
+11. **Ghost fixes the width of a gallery and of an embed.** ⚑ A theme may not override it, so **neither
+    can bleed** and 5 Full Bleed's value list drops to two. Whether the same fact removes them from
+    4 Wide's step-up list is **closed by the owner, 28 August 2026: it does.** 4 Wide's *What steps up*
+    drops to Images · Images and video.
 
 ---
 
 ## Component inventory — cumulative
 
-**Established in A33 (twelve).**
+**Established in A33 (eleven).** The public-preview marker is deleted: Ghost leaves no element there.
 
 | Component | What it is | First from |
 |---|---|---|
@@ -591,9 +659,9 @@ Seven; five new. In full on the proof frame.
 | Caption and credit pair | 13.5 px caption in `text-muted` with the credit as the caption's trailing `<em>` run, inline or on its own 13 px line | A33·1 |
 | Width resolution table | What Ghost's regular, wide and full resolve to, per treatment and per width | A33·1 |
 | Bookmark card | One link: text column, publisher line with a 16 px icon, 168 px thumbnail right, thumbnail above at ≤ 767 | A33·1 |
-| Toggle card | Native `details`/`summary` with a 24 px chevron and a hairline divider | A33·1 |
+| Toggle card | Ghost's container, `h4` heading and `button`, with a 44 px chevron target and a hairline divider between heading and body — **not disclosure markup** | A33·1 |
 | File card | Title, description, mono `filename · size`, 44 px download glyph right | A33·1 |
-| Product card | Image, title, description, five-star rating with its text equivalent, one action | A33·1 |
+| Product card | Image, title, description, five-star rating — **Ghost gives it no text equivalent** — one action | A33·1 |
 | Koenig header card | Three sizes (232 · 312 · 400 min-height), centred heading, subheading, action on a plane | A33·1 |
 | Embed frame | A provider iframe in an aspect box: the theme owns frame, radius and caption, nothing inside | A33·1 |
 | Gallery row | Up to three plates per row at Ghost's computed ratios with one gutter token | A33·1 |
@@ -604,8 +672,7 @@ Seven; five new. In full on the proof frame.
 | Card-panel treatment block | The read-only "From the {treatment} treatment" rows inside a per-card panel | P0·7 → A33 |
 | Email-content stub | A dashed outline at 42 % opacity saying, on the frame, that nothing renders on the web | A33·1 |
 | Call-to-action card | Sponsor eyebrow, copy, image and one action, with its audience named on the frame | A33·1 |
-| Public-preview marker | A ruled label where Ghost cuts the response; A32 renders what comes after | A33·1 |
-| GIF badge | The image card with a 9.5 px mono GIF badge inset 10 px from its top-left corner | A33·1 |
+inv preview deleted| GIF badge | The image card with a 9.5 px mono GIF badge inset 10 px from its top-left corner | A33·1 |
 | Audio player shell | 64 px thumbnail, title and sub, 44 px round play, 4 px progress with the accent, mono times, 1× | A33·1 |
 | Video player shell | Poster with a 64 px round play and a 34 px control bar inset 12 px, over the pack's radius | A33·1 |
 | Signup card | Copy column beside a 360 px field-and-button stack, on a plane the author colours inline | A33·1 |
@@ -672,3 +739,133 @@ this pass alters what a card looks like on the page.
    adds no behaviour.
 9. **Control count.** The roster still reads 6 per treatment (the treatment's own). The module's
    seventh row, Callout colours, is site-wide and counted once, not six times.
+
+
+---
+
+## Patch notes — Koenig card treatments patch pass, 28 August 2026
+
+Every change made in this pass, with the rule or the Ghost fact that required it. **No design was
+renumbered.** The category's numbers are 1, 2, 3, 4, 5, 6 — unchanged, with no gaps and none closed.
+
+### The toggle card, redrawn against Ghost's actual markup
+
+- **Ghost's toggle is not native disclosure markup.** It is a plain container holding a heading and a
+  button. All six frames redraw the card that way: the heading is an `h4` and the chevron is a
+  44 px button, which is the only target and the only focus stop. The claim that the card *avoids
+  heading levels* is **deleted** everywhere it appeared — the heading level is Ghost's and a
+  stylesheet cannot change it.
+- **The no-JavaScript line changed with it.** `accordion`'s quoted degradation ("native details —
+  fully functional") is false here, so the quote is dropped and the honest line is written in its
+  place: **with JavaScript off the toggle cannot open**. The counts move with it — **fourteen of the
+  twenty cards are identical with JavaScript off, six depend on a script**, and every one of those
+  scripts is Ghost's or the provider's. Finding 5 is rewritten around this.
+- Required by: the Ghost fact that **inside a blog post's body we own the stylesheet and nothing else**.
+
+### The public-preview marker, deleted
+
+- Ghost leaves **only an invisible HTML comment** at the paywall cut. There is no element to style, so
+  the drawn marker is gone from every frame and the **Public-preview marker component is deleted from
+  the inventory** (established components: eleven, not twelve). The card roll keeps position 09 and
+  draws the absence, so a user can see that nothing renders. The field-list row now reads *no element
+  at all*.
+- Required by: the same Ghost fact.
+
+### The HTML card
+
+- It **emits no wrapper element**, so it leaves the target list of **1 Plain's Rules control** (five
+  cards now: bookmark, toggle, audio, file, product) and of **6 Contrast Band's inversion** (it is
+  drawn on the page ground, with no band). Both control help texts say why. The card's own note on
+  every frame now opens with *no wrapper element*.
+- **Closed by the owner, 28 August 2026:** they cannot reach it either. **The HTML card now renders on
+  the page ground in all six treatments** — no panel in 2 Card, no plane in 3 Panel, no rule in
+  1 Plain, no band in 6 Contrast Band. In 3 Panel it sits in the content column (720 · 690 · 302)
+  rather than on the 1,040 plane. All five placements in each of those two frames were redrawn.
+
+### Galleries and embeds lose the bleed
+
+- **5 Full Bleed** now offers **Images (default) · Images and video** — two values, with the reason on
+  the control: Ghost fixes the width of a gallery and of an embed and a theme may not override it. The
+  descriptor changes from *the five media cards* to **image, GIF and video**.
+- Fewer choices on a control, with the reason stated, is what the rule that **a design may offer fewer
+  choices on a shared control, and must say why** requires. The control is not renamed and no value is
+  added.
+- **The default carries down rather than sideways.** The old default was *Images and galleries*;
+  galleries can no longer bleed, so the surviving part of that default is **Images**.
+- **Closed by the owner, 28 August 2026:** the same fact removes them from **4 Wide** as well. *What
+  steps up* drops to **Images · Images and video** (default Images and video, being everything that
+  can move), the frame's tally paragraph is recounted to *three cards move and seventeen do not*, and
+  the help text names the two exclusions: the bookmark's thumbnail, which is furniture, and the
+  product card's photograph, which moves only with its copy card.
+
+### The Contrast Band's inversion list
+
+- **Signup, call to action and header leave it.** They carry the post author's own inline colours,
+  which a theme may not override. All six placements of each are redrawn: **the band runs behind them
+  and their surface stays as the author set it**, with a note saying so. The third value, *Copy cards
+  and the header*, is therefore gone — **Callout only · Every copy card**, two values, reason stated.
+- The help line names **seven** card types instead of ten (callout, toggle, bookmark, button, product,
+  file, audio) and says why signup, the call to action, the header and the HTML card are not on it.
+- The tally paragraph is recounted: **seven take the band, eight never do, five have nothing the band
+  could reach.**
+- Required by: the Ghost fact about the author's inline colours, and the rule that **a design may offer
+  fewer choices on a shared control, and must say why**.
+
+### Translatable strings
+
+- **The claim that this category controls any translatable strings is deleted.** The five strings it
+  named live inside Ghost's own renderer, and no theme can reach them.
+
+### The product card's rating
+
+- Recorded as a **Ghost limitation**: Ghost renders the stars with **no text equivalent** and a theme
+  cannot add one. The invented "4 out of 5" text is gone from all six frames and from the accessibility
+  notes; the inventory row and the field list say the same. Finding 10.
+
+### Applying the library-wide rules to this category
+
+- **The two free designs are the owner's choice — ask him.** Asked, and answered on 28 August 2026:
+  the line **[Free] designs:** 1 Plain · 4 Wide is present in the roster, on its own line, in the
+  required shape. The shortlist put to him was 1 Plain, 2 Card, 3 Panel and 4 Wide.
+- **No design ever turns into another design.** Five phrases were deleted: *Not at all makes this
+  treatment 1 Plain*, *a post with no media cards renders as 1 Plain*, *at 834 this treatment is
+  1 Plain*, *at Content 1296 this treatment is 1 Plain*, *an author who marks no card full sees
+  1 Plain*, and *at ≤ 1023 the treatment reads as 2 Card without a shadow*. Each now says what the
+  treatment renders when the thing it is for is absent — the treatment stays in force and the effect
+  is simply not there.
+- **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript.** All six control
+  panels carry the note: Ghost's signup and call-to-action cards do not render when the connected site
+  cannot accept sign-ups, and with JavaScript off the signup form cannot submit.
+- **The no-JavaScript notice.** **CONFLICT, recorded not resolved** ⚑, and the reason restated after
+  the owner's challenge of 28 August 2026. Ghost's members form carries **no `action`**: the
+  `data-members-form` attribute hands the submit event to Ghost's own script, and that script writes
+  the `loading`, `success` and `error` classes and fills `data-members-error`. **The CSS in Ghost's
+  theme documentation styles those states; it does not create them** — so with JavaScript off,
+  pressing Subscribe does nothing at all. The rule asks for a designed notice in place of the form;
+  inside a post body A33 owns the stylesheet and not the markup and cannot replace Ghost's card with
+  anything. The panel states the fact in words; the notice itself has to belong to Ghost's card or to
+  a category that places its own markup.
+- **Avatars, the Remove button, slider labels, gap names, item counts, the "Base" swatch row and
+  "Inherit"** — none appear in this category. A33 has no repeating list with a minimum, no slider, no
+  gap control, no item count, no colour swatch row and no Inherit value. Checked, nothing to change.
+- **No behaviour module was coined.** The category still declares `accordion` and `core`, so there is
+  no *ARCHITECT: registry addition* here — only the corrected note that `accordion`'s degradation does
+  not describe Ghost's markup.
+
+### What did not change
+
+The visual language, type scale, colour packs and spacing system; the article measure and the width
+ladders; the sent, error and loading states on member forms; the six control counts (seven rows
+including the callout mapping); every design not named above; and **the numbering**.
+
+### Confirmations
+
+The four questions this pass raised were put to the owner and all four are answered: the free designs
+are **1 Plain · 4 Wide**; galleries and embeds leave **4 Wide's** step-up list as well as the bleed;
+the HTML card leaves **2 Card's panel** and **3 Panel's plane**; and the no-JavaScript notice stays a
+recorded conflict, with its reason corrected against Ghost's own documentation.
+
+- **Design numbering is unchanged:** 1 Plain · 2 Card · 3 Panel · 4 Wide · 5 Full Bleed · 6 Contrast
+  Band. Six designs, numbers 1–6, nothing renumbered, no gap closed or created.
+- **The `**[Free] designs:**` line is present**, on its own line in the roster, in the required shape,
+  and names two designs that exist: **1 Plain** and **4 Wide** — the owner's choice.

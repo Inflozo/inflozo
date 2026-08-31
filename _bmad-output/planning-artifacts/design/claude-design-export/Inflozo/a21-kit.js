@@ -31,29 +31,29 @@ const TD = tok('paper', 'd');
 
 /* ---- fixtures ---- Orbit Weekly's masthead. Twelve, because §8 asks for twelve. */
 const AUTHORS = [
-  { name:'Rosa Menendez', ini:'RM', img:true, n:68, bio:'Writes about the parts of the internet that stopped changing. Ten years at a daily paper before this.', loc:'Lisbon', site:'rosamenendez.com', x:'rosamz' },
-  { name:'Tomás Alvarez', ini:'TA', img:true, n:41, bio:'Transport and procurement, and the long argument about the ring road.', loc:'Seville', site:null, x:'tomasalv' },
-  { name:'Ada Fenwick', ini:'AF', img:true, n:37, bio:'Energy desk. Formerly a grid operator, which explains the spreadsheets.', loc:'Leeds', site:'adafenwick.co.uk', x:null },
-  { name:'Inês Duarte', ini:'ID', img:false, n:29, bio:'Runs the picture desk. Shoots most of the portraits on this site.', loc:'Porto', site:null, x:null },
-  { name:'Jonah Weiss', ini:'JW', img:true, n:24, bio:null, loc:null, site:null, x:null },
-  { name:'Priya Raghunathan', ini:'PR', img:true, n:19, bio:'Housing, rents, and the paperwork underneath both.', loc:'Bristol', site:null, x:'priyarag' },
-  { name:'Callum Boyd', ini:'CB', img:true, n:14, bio:'Weekend editor. Interviews, mostly.', loc:'Glasgow', site:null, x:null },
-  { name:'Mei Lin Chow', ini:'MC', img:true, n:11, bio:'Climate reporting and the money that moves with it.', loc:'Singapore', site:'meilinchow.com', x:null },
-  { name:'Dara Okonjo', ini:'DO', img:true, n:9, bio:'Data and maps.', loc:'Lagos', site:null, x:'daraok' },
-  { name:'Henrik Sørensen', ini:'HS', img:true, n:7, bio:'Corrections, letters and the style guide.', loc:'Copenhagen', site:null, x:null },
-  { name:'Sofia Marchetti', ini:'SM', img:true, n:6, bio:'Culture desk, and the Friday film column.', loc:'Milan', site:null, x:null },
-  { name:'Owen Pritchard', ini:'OP', img:true, n:4, bio:'Fact-checking and the archive.', loc:'Cardiff', site:null, x:null }
+  { name:'Rosa Menendez', ini:'R', img:true, n:68, bio:'Writes about the parts of the internet that stopped changing. Ten years at a daily paper before this.', loc:'Lisbon', site:'rosamenendez.com', x:'rosamz' },
+  { name:'Tomás Alvarez', ini:'T', img:true, n:41, bio:'Transport and procurement, and the long argument about the ring road.', loc:'Seville', site:null, x:'tomasalv' },
+  { name:'Ada Fenwick', ini:'A', img:true, n:37, bio:'Energy desk. Formerly a grid operator, which explains the spreadsheets.', loc:'Leeds', site:'adafenwick.co.uk', x:null },
+  { name:'Inês Duarte', ini:'I', img:false, n:29, bio:'Runs the picture desk. Shoots most of the portraits on this site.', loc:'Porto', site:null, x:null },
+  { name:'Jonah Weiss', ini:'J', img:true, n:24, bio:null, loc:null, site:null, x:null },
+  { name:'Priya Raghunathan', ini:'P', img:true, n:19, bio:'Housing, rents, and the paperwork underneath both.', loc:'Bristol', site:null, x:'priyarag' },
+  { name:'Callum Boyd', ini:'C', img:true, n:14, bio:'Weekend editor. Interviews, mostly.', loc:'Glasgow', site:null, x:null },
+  { name:'Mei Lin Chow', ini:'M', img:true, n:11, bio:'Climate reporting and the money that moves with it.', loc:'Singapore', site:'meilinchow.com', x:null },
+  { name:'Dara Okonjo', ini:'D', img:true, n:9, bio:'Data and maps.', loc:'Lagos', site:null, x:'daraok' },
+  { name:'Henrik Sørensen', ini:'H', img:true, n:7, bio:'Corrections, letters and the style guide.', loc:'Copenhagen', site:null, x:null },
+  { name:'Sofia Marchetti', ini:'S', img:true, n:6, bio:'Culture desk, and the Friday film column.', loc:'Milan', site:null, x:null },
+  { name:'Owen Pritchard', ini:'O', img:true, n:4, bio:'Fact-checking and the archive.', loc:'Cardiff', site:null, x:null }
 ];
 const ONE = [AUTHORS[0]];
 const BARE = [
-  { name:'Jonah Weiss', ini:'JW', img:false, n:24, bio:null, loc:null, site:null, x:null },
-  { name:'Inês Duarte', ini:'ID', img:false, n:29, bio:null, loc:null, site:null, x:null },
-  { name:'Owen Pritchard', ini:'OP', img:false, n:1, bio:null, loc:null, site:null, x:null }
+  { name:'Jonah Weiss', ini:'J', img:false, n:24, bio:null, loc:null, site:null, x:null },
+  { name:'Inês Duarte', ini:'I', img:false, n:29, bio:null, loc:null, site:null, x:null },
+  { name:'Owen Pritchard', ini:'O', img:false, n:1, bio:null, loc:null, site:null, x:null }
 ];
 const STRESS = [
-  { name:'Maria-Christina Vasconcelos de Almeida', ini:'MV', img:true, n:1, bio:'Reports on municipal procurement, the maintenance backlog and the budget lines that decide which bridge gets fixed this year and which one waits until the next one, which is longer than any bio anybody should write.', loc:'Vila Nova de Gaia', site:'vasconcelosdealmeida.pt', x:'mcvasconcelos' },
-  { name:'Jo Ng', ini:'JN', img:false, n:0, bio:null, loc:null, site:null, x:null },
-  { name:'Tomás Alvarez', ini:'TA', img:true, n:41, bio:'Transport and procurement, and the long argument about the ring road.', loc:'Seville', site:null, x:'tomasalv' }
+  { name:'Maria-Christina Vasconcelos de Almeida', ini:'M', img:true, n:1, bio:'Reports on municipal procurement, the maintenance backlog and the budget lines that decide which bridge gets fixed this year and which one waits until the next one, which is longer than any bio anybody should write.', loc:'Vila Nova de Gaia', site:'vasconcelosdealmeida.pt', x:'mcvasconcelos' },
+  { name:'Jo Ng', ini:'J', img:false, n:0, bio:null, loc:null, site:null, x:null },
+  { name:'Tomás Alvarez', ini:'T', img:true, n:41, bio:'Transport and procurement, and the long argument about the ring road.', loc:'Seville', site:null, x:'tomasalv' }
 ];
 const SITE = { name: 'Orbit Weekly', total: 214, writers: 12 };
 const HEAD = { eyebrow: 'The masthead', heading: 'The people who write Orbit Weekly', blurb: 'Twelve reporters, one picture desk, and a corrections column nobody volunteers for. Every name here links to everything they have written.' };
@@ -89,7 +89,11 @@ function plate(t, w, h, label, radius) {
   return `<div style="${w ? `width:${w}px;` : 'width:100%;'}height:${h}px;border-radius:${radius === undefined ? t.r : radius}px;background:${t.stripe};display:flex;align-items:flex-end;padding:10px;box-sizing:border-box;overflow:hidden">${label === false ? '' : mono(9.5, t.muted, label || 'AUTHOR PORTRAIT')}</div>`;
 }
 /* A1·6's avatar, with A1·6's initials fallback. Circle by default; Rounded square
-   is one control value in three designs and uses the pack radius. */
+   is one control value in three designs and uses the pack radius.
+   AVATARS WITH NO PHOTOGRAPH ⚑ 29 August 2026: a writer pulled from Ghost shows
+   ONE letter, never two — Ghost cannot produce two initials from a name, and every
+   `ini` in the fixtures is one character for that reason. Lists the user types
+   themselves (A12's authored people) keep two; A21 has none of those. */
 function portrait(t, a, size, o = {}) {
   const rad = o.shape === 'square' ? `${Math.round(t.r * (size > 90 ? 1.6 : 1))}px` : '50%';
   const ring = o.ring ? `box-shadow:0 0 0 3px ${o.ring};` : '';
@@ -133,19 +137,25 @@ function actionEl(t, o = {}) {
   if (o.kind === 'Link') return `<span style="display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:600;color:${o.accent || t.accent};font-family:${t.body}">${o.text || CTA} →</span>`;
   return `<span style="height:44px;display:inline-flex;align-items:center;background:${o.outline ? 'transparent' : (o.fill || t.accent)};color:${o.outline ? (o.fill || t.accent) : (o.onAccent || t.onAccent)};font-size:14px;font-weight:600;padding:0 18px;border-radius:${t.r}px;font-family:${t.body};${o.outline ? `border:1px solid ${o.fill || t.accent};` : ''}box-sizing:border-box">${o.text || CTA}</span>`;
 }
-/* The author social row. Ghost ≥ 6.36 stores NINE handles and a website ⚑ —
-   facebook · twitter (X) · linkedin · threads · bluesky · mastodon · tiktok ·
-   youtube · instagram · website — and the "two networks" fact this kit shipped
-   with was 5.x. Version-gated: below 6.36 only facebook, twitter and website
-   exist, so pass `legacy: true` and the rest are not drawn. Read the AUTHOR's
-   own fields, never `social_url` ⚑, which falls back to the site's facebook and
-   twitter and would print the publication's accounts under a writer who filled
-   in neither. There is no loop over the handles in Handlebars: nine checks, and
-   an absent handle draws nothing and reserves nothing.
-   Each handle is a P0·2 icon slot from the brand set — a 32 px box in a 44 px
-   target ⚑ — and the link carries the network's name as its accessible name. */
+/* The author social row. Drawn with Ghost's own block helper ⚑ 29 August 2026:
+   {{#social_accounts author}} … {{/social_accounts}}. Nine platforms — x,
+   facebook, linkedin, bluesky, threads, mastodon, tiktok, youtube, instagram —
+   and the helper SKIPS any platform with nothing set, which is the category's
+   "an absent handle reserves nothing" rule kept by Ghost rather than by us.
+   THE THEME ASSEMBLES NO ADDRESS: Ghost stores a handle in several shapes (bare
+   handle, @handle, whole URL, a server for Mastodon and Bluesky), so gluing on a
+   prefix produces broken links. Per account the helper gives `href` (finished
+   address), `name` (the platform's own label — use it as the accessible name)
+   and `type` (the platform key). The icon is chosen from `type` through a
+   FALLBACK, so a platform Ghost adds before this theme has an icon renders
+   instead of erroring the page.
+   THE WEBSITE IS NOT ONE OF THE NINE ⚑ — it is the author's own `website` field,
+   drawn beside the row.
+   Each account is a P0·2 icon slot from the brand set — a 32 px box in a 44 px
+   target ⚑. The earlier "the theme checks nine fields, there is no loop" note
+   was wrong and is withdrawn. */
 const SOCIAL_ORDER = ['facebook', 'twitter', 'linkedin', 'threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'website'];
-const SOCIAL_LEGACY = ['facebook', 'twitter', 'website'];
+const SOCIAL_LEGACY = ['facebook', 'twitter', 'website']; /* pre-helper sites */
 const SOCIAL_GLYPH = {
   facebook: '<path d="M14 21v-8h3l1-4h-4V7a2 2 0 0 1 2-2h2V1.5A22 22 0 0 0 15.5 1C13 1 11 3 11 6v3H7v4h4v8z"></path>',
   twitter: '<path d="M4 4l11.7 16H20L8.3 4z"></path><path d="M4 20l6.8-7.4M13.2 11.3L20 4"></path>',
@@ -242,15 +252,30 @@ function ctl(name, kind, values, active, hint, disabled) {
   const body = kind === 'seg' ? seg(values, active) : selectRow(active, disabled);
   return `<div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">${name}</span>${body}${hint ? `<span style="font-size:11px;color:#6E6A64;line-height:1.5">${hint}</span>` : ''}</div>`;
 }
-/* The Writers source group — five rows, identical in all fifteen, below the
-   design's own controls and not counted toward the brief's 4–7. No Add and no
-   Remove: the items are Ghost's authors and the user does not author them ⚑. */
+/* The Data group — the Writers block. Eight rows plus one conditional list,
+   identical in all fifteen, below the design's own controls and the universal
+   trio, and not counted toward any design's control count ⚑. P0·5's
+   "Populate from…" panel configured for authors.
+   ITEM COUNTS ARE A NUMBER PICKER ⚑ 29 August 2026: How many is a stepper, 1 to
+   the design's own maximum, and the old Three · Six · Twelve · All row is gone.
+   "All" is retired — it promised a number this document cannot name.
+   THE REMOVE BUTTON NEVER GREYS OUT ⚑: the hand-picked list's ✕ stays visible
+   and clickable at one reference and explains why it cannot go lower. */
+function stepRow(n, disabled) {
+  return `<div style="height:36px;background:${disabled ? '#F2EFEA' : '#FFFFFF'};border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px;color:#8A857C">−</span><span style="font-size:12.5px;font-weight:600;color:${disabled ? '#8A857C' : '#1C1B1A'}">${n}</span><span style="font-size:12px;color:#8A857C">+</span></div>`;
+}
+function stepCtl(name, n, hint, disabled) {
+  return `<div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">${name}</span>${stepRow(n, disabled)}${hint ? `<span style="font-size:11px;color:#6E6A64;line-height:1.5">${hint}</span>` : ''}</div>`;
+}
 function sourceBlock(o = {}) {
+  const cap = o.cap || 24, many = o.many === undefined ? 6 : o.many;
   return `<div style="border-top:1px solid #E7E2DB;padding-top:13px;display:flex;flex-direction:column;gap:11px">
-    <span style="font-family:${MONO};font-size:10px;letter-spacing:.06em;color:#6E6A64">THE WRITERS SOURCE · IDENTICAL IN ALL FIFTEEN · NOT COUNTED</span>
-    ${ctl('How many', 'select', null, o.many || 'Six', o.manyHint === false ? '' : `Three · Six · Twelve · All. The query limit on ${hbc('{{#get "authors"}}')}. <strong style="font-weight:600">Ghost returns only authors with a published post</strong> ⚑ — a new hire is invisible until their first piece ships.`)}
-    ${ctl('Order', 'select', null, o.order || 'Most posts', o.orderHint === false ? '' : `Most posts · Name A–Z · Newest account ⚑ — ${hbc('order="count.posts desc"')}, ${hbc('"name asc"')}, ${hbc('"created_at desc"')}. <strong style="font-weight:600">Ghost has no editorial ordering of authors</strong> ⚑.`)}
+    <span style="font-family:${MONO};font-size:10px;letter-spacing:.06em;color:#6E6A64">THE DATA GROUP · THE WRITERS BLOCK · IDENTICAL IN ALL FIFTEEN · NOT COUNTED</span>
+    ${ctl('Writers', 'select', null, o.src || 'All writers', 'All writers · Hand-picked ⚑. ' + hbc('{{#get "authors" include="count.posts"}}') + '. <strong style="font-weight:600">Ghost returns only authors with a published post</strong> ⚑.')}
+    ${ctl('How many', 'select', null, '', '', true) && stepCtl('How many', many, o.manyHint === false ? '' : `<strong style="font-weight:600">A number picker, 1–${cap}</strong> ⚑ 29 August 2026 — item counts are a number picker, never a row of fixed buttons; it drew Three · Six · Twelve · All, and <strong style="font-weight:600">"All" is retired</strong>. Numbers above this design's own maximum are drawn greyed with the reason in place. <strong style="font-weight:600">Disabled at Hand-picked</strong>, where the list is the count ⚑.`, o.manyDisabled)}
+    ${ctl('Order', 'select', null, o.order || 'Most posts', o.orderHint === false ? '' : `Most posts · Name A–Z · Newest account ⚑ — ${hbc('order="count.posts desc"')}, ${hbc('"name asc"')}, ${hbc('"created_at desc"')}. <strong style="font-weight:600">Ghost has no editorial ordering of authors</strong> ⚑. Disabled at Hand-picked.`)}
     ${ctl('Bio', 'select', null, o.bio || 'From Ghost', o.bioHint === false ? '' : `From Ghost · Off. Reads ${hbc('{{bio}}')}; <strong style="font-weight:600">most Ghost authors have none</strong> ⚑, so absence is the normal case.`, o.bioDisabled)}
+    ${ctl('Role', 'select', null, o.role || 'Off', 'Off · Authored per writer ⚑ — one short string per author, keyed by slug. <strong style="font-weight:600">Never a Ghost field and it never claims to be</strong> ⚑.')}
     ${ctl('Each writer links to', 'select', null, o.link || 'Their author archive', 'Read-only. Ghost\'s ' + hbc('{{url}}') + ' — <strong style="font-weight:600">the A29 archive route</strong>; the section cannot repoint it ⚑.', true)}
     ${ctl('When there are no writers', 'select', null, o.empty || 'Head and notice', o.emptyHint === false ? '' : 'Head and notice · Hide the section ⚑. <strong style="font-weight:600">Hiding is offered here and was not in A29</strong> — A21 is never the only section on its route ⚑.')}
   </div>`;

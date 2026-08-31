@@ -55,7 +55,7 @@ function buildPage(d) {
 }
 
 // the module line every A22 spec card carries, quoted from the registry
-const MODULE_QUOTE = 'The <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;form&gt;</code> posts natively to Ghost\u2019s members endpoint; Ghost\u2019s own server response replaces the designed sent state.';
+const MODULE_QUOTE = 'the registry line \u201Cthe <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;form&gt;</code> posts natively to Ghost\u2019s members endpoint\u201D <strong style="font-weight:600">is withdrawn</strong> \u2691 \u2014 Ghost\u2019s signup endpoint refuses a plain form submission, so the form is replaced by the no-JavaScript notice (P0\u00B74) at the form row\u2019s own height: \u201CSigning up needs JavaScript \u2014 turn it on to subscribe.\u201D The sent, error and loading states are untouched.';
 
 return { stdWrap, bleedWrap, statesFrame, twoWidths, buildPage, STATE_LABEL, MODULE_QUOTE };
 })();

@@ -4,6 +4,14 @@ Pack drawn: **Paper**. **All 16 designs complete.** Category artefacts — the f
 
 Frames: `A3-1 Minimal Line` · `A3-2 Columns` · `A3-3 Two-Tier` · `A3-4 Newsletter Band` · `A3-5 Contrast Band` · `A3-6 Centred Stack` · `A3-7 Big Type` · `A3-8 Sitemap` · `A3-9 Latest Posts` · `A3-10 Contact Block` · `A3-11 Colophon` · `A3-12 Card` · `A3-13 Tags` · `A3-14 Image Band` · `A3-15 Wrap` · `A3-16 Mini Bar` (all `.dc.html`).
 
+**Footer links pass — 29 August 2026 (this document's current state).** Three items landed on this category and two of them were already done. **The member rulings were applied by an earlier session and stand:** A3·4's subscribe ask is conditional on the connected site, its Portal manage link is marked as doing nothing without script, and the no-JavaScript notice already replaces its form with the four working states left alone. This pass re-checked both against the frames and changed neither. **What is new: a social link takes its web address from Ghost's own link helper, never from the stored handle.** Ghost saves Facebook and X as usernames rather than as addresses, so a theme that prints the stored value into an `href` publishes a broken link and shows a handle where an address belongs. **The member ruling is also extended from buttons to links:** a footer link whose destination is Ghost's sign-up, sign-in or account pop-up carries the two notes that rule requires. One leftover was cleared: the Category Proof frame's caps card still listed the hand-offs the previous pass withdrew. **Nothing was renumbered.**
+
+**Three rulings came back from the owner on 29 August 2026 and are applied in this revision.** (1) **The free pair is confirmed:** 1 Minimal Line and 16 Mini Bar. (2) **A footer link that reaches a member destination is an ordinary authored link** — the editor sets its label and its address, and INFLOZO offers no member-destination picker; the notes the member rule requires are written against what the author types. (3) **INFLOZO does not let anyone add a social account.** Accounts are configured in Ghost Admin under Settings → General → Social accounts and the footer renders only those, through **Ghost's `{{#social_accounts @site}}` block helper**. This removes the invented theme-level extension list from the category: `social[]` stops being an authored repeater, and the handle question closes with it — the helper hands the theme a finished address.
+
+**[Free] designs:** 1 Minimal Line · 16 Mini Bar
+
+*(Shortlisted this pass — 1 Minimal Line, 16 Mini Bar, 6 Centred Stack, 2 Columns, 15 Wrap: the five plainest footers, none of which needs a photograph — **and confirmed by the owner on 29 August 2026**.)*
+
 **Controls-reconciliation patch applied — 24 August 2026.** This revision reconciles the category against the PRD's control vocabulary, Ghost's verified data surface and the shared **P0 editor primitives** — the inline text toolbar and Link popover (P0·1), the icon slot + Icon Picker (P0·2), the item-list controls (P0·3), the member-aware action editor (P0·4), the Populate-from panel (P0·5) and the editor state switcher (P0·6) — reused by name, never redesigned. The headline changes: the credit becomes **“Built with Inflozo”** with a plan-gated control; social icons move to the Icon Picker's Social / Brands group with an **Icon style** control and a **Short labels** display form; `legalLinks[]` gains the P0·3 repeater and a six-link cap; one category-wide **Legal layout** control; link columns may bind to **Ghost secondary navigation** (ARCHITECT: `nav-transform`); the per-design Padding, Ground and Top edge rows retire into the three **universal controls**; plus the ten per-design items. Everything not named by an item stands as written. The pass closes with a **Reconciliation notes** section listing every changed frame and every conflict ruling.
 
 **Frame set per design:** desktop 1440 light (primary, drawn under the end of a post) · a states frame showing hover, focus-visible and pressed · the design's own behaviour or data states · tablet 834 · mobile 390 twice — once as authored, once in a named second state · dark desktop 1440 · an annotated accessibility frame · the control panel · the spec card.
@@ -31,6 +39,8 @@ Frames: `A3-1 Minimal Line` · `A3-2 Columns` · `A3-3 Two-Tier` · `A3-4 Newsle
 - **Scale and gap names (Part A·A3, A·A4).** Vertical spacing keeps Compact · Comfortable · Spacious; A3·8's Density keeps its own title. Any gap control reads **Tight · Normal · Loose**.
 - **Member asks are conditional (Part A·A9).** A3·4 is the category's only design with a subscribe affordance. It does not render when the connected site has **self-signup off** or **members disabled**, and a paid ask needs a **payment provider**; the **Portal manage link does nothing with JavaScript off**.
 - **The no-JavaScript form notice (Part A·A10).** **A3·4 is the only design in A3 with a field**, so it is the only one that draws the notice: **Ghost's signup endpoint refuses a plain form submission**, so the earlier "posts natively, works without JavaScript" claim is withdrawn and the form is replaced by P0·4's notice at the band's own height. **The four form states stay exactly as drawn.**
+- **The social row comes from Ghost Admin, through Ghost's own helper — owner's ruling, 29 August 2026.** **INFLOZO does not let anyone add a social account.** Accounts are set in Ghost under Settings → General → Social accounts, and the footer iterates them with **`{{#social_accounts @site}}`**: each row's address is the helper's `href` — **a finished address, so no A3 design ever prints a stored handle** — its accessible name is the helper's `name` (X, Facebook, LinkedIn…), and its icon is chosen by the helper's `type`. Ghost's own order is the drawn order. The helper's nine platforms are **x, facebook, linkedin, bluesky, threads, mastodon, tiktok, youtube, instagram**, and a platform with nothing set is skipped by Ghost before the theme sees it. The helper's `{{else}}` branch is the row's empty state: **no accounts connected → the row and its gap are removed.** **What this deletes from A3:** the authored extension list (previously **invented** — Ghost had no field for it, and now it needs none), Add platform, per-row Remove, drag reorder, the six-entry cap, and the platform picker. Nothing drawn changes: same 34 px box, same glyphs, same names, same disappearance. The sidebar's rows are read-only, headed **“Set in Ghost → Settings → Social accounts”**, with no Add. **Icon style** and **Social display** stay, because they are display controls over whatever Ghost supplies.
+- **Member destinations are links as well as buttons (Part A·A9) — and they are ordinary links.** Owner's ruling: a footer link that reaches sign-in, sign-up or a reader's account is **an authored link whose label and address the editor sets and may change**, exactly like every other footer link. There is no member-destination picker, no special row type and no substitution. Two consequences, both stated in the panel rather than hidden: **an address that is Ghost's own pop-up needs script — with JavaScript off, nothing happens**, so the sidebar says so beside the field and names Ghost's ordinary account page as the address that does not; and because it is an authored link the theme cannot know a site has members switched off, so **it cannot hide the link on the author's behalf** — the sidebar states that where it can, and the author owns the decision. A3 still makes no claim that anything can be subscribed to, signed into or managed without script. **A3·4's own subscribe ask is unchanged** — it is a member button, and every rule already written for it stands.
 - **Avatars (Part A·A1).** A3 renders no person, so neither initial rule applies. A3·9's post rows carry no author avatar.
 - **Search (Part B·B1) and Ctrl-K (Part B·B5).** A3 draws no search affordance; any footer link may point at **Ghost search** through the link picker's new destination. Nothing in A3 bound Ctrl-K.
 - **[Free], two per category (Part A·A7): 1 Minimal Line and 16 Mini Bar** — confirmed by the owner this pass.
@@ -47,7 +57,7 @@ These apply to all 16 designs and are not repeated per design.
 
 1. **Link columns — auto-fit by the authored count.** Two keep the 1fr width they would have had at four and sit against the brand block on a half measure, leaving the right quarter empty; the editor does not warn about it. Three or four fill the measure. Five or more move the brand block above the grid and wrap four across — 4 + 3 at seven, last cell empty, never justified. **Seven columns is the cap**: Add column is disabled with “Seven is the most a footer can hold. Consider a second column heading instead.” **Eight links per column** is the second cap: “Eight links is the most a column can hold.” Columns are top-aligned, never stretched, and links are never moved between them. At 1080 columns go two-across (three-across in A3·8). At ≤ 767, **two to four columns stack open** as a two-across grid with links padded to 44 px; **five to seven collapse to accordions**, one per row, 48 px rows on hairlines, count at the right end, first group open.
 2. **The newsletter form — one row only.** Visually-hidden label, email field, button, one 13 px reassurance line ≤ 90 characters. No heading, no body copy, no image: A22 Newsletter owns the persuasive version. Four states at one height — **focus, invalid, submitting, done** — with the resting band serving as the empty state rather than being drawn twice. (Corrected this pass: the list had named "empty" where the frame draws focus.) Detail in §4.
-3. **The social row renders only what exists — and its glyphs are the Icon Picker's.** Icons come from the Icon Picker's Social / Brands group (Tabler, per P0·2's library ruling), **never typed two-letter boxes**; the drawn frames use neutral stroke placeholders for them. The split stands: **read-only rows from Ghost's social accounts plus an authored extension list** — and the Ghost rows are **version-gated**: Facebook and X only on Ghost 5.x, all nine platform fields as read-only rows on ≥ 6.36, each linking to the setting that owns it. With nothing set anywhere, the row and its gap are removed — never empty circles, never a heading over nothing. Two controls, category-wide: **Icon style** (Bare · Outlined box · Filled box) and the display control, extended — **Glyphs · Labels · Short labels (Fb, X, Li, In, Yt) · Off**. Per-icon size and colour role come from the P0·2 slot popover: roles, never hexes, and a role failing AA on its ground disables with the ratio shown. Geometry unchanged: 34 px box (bare, outlined or filled per Icon style), 30 px inside a legal line (A3·8, A3·15), a real 44 px box at ≤ 767. Names are platforms, not glyphs — the glyph is `aria-hidden`, the accessible name is the platform's; the list is a `<ul>` labelled “Orbit Weekly elsewhere”, links carry `rel="me"`.
+3. **The social row renders only what Ghost has — and its glyphs are the theme's own per-platform set.** The glyphs are the same Tabler family the Icon Picker uses (P0·2's library ruling), **never typed two-letter boxes**, but they are no longer picked per row: the theme ships one partial per platform and the helper's `type` chooses it, in block form with a neutral fallback glyph inside so a platform Ghost adds before the set catches up still renders. The drawn frames use neutral stroke placeholders for them. **The split is withdrawn by the owner's ruling of 29 August 2026: there is one source, and it is Ghost.** Accounts are configured in Ghost Admin (Settings → General → Social accounts) and the row is **`{{#social_accounts @site}}`** over them — nine platforms (**x, facebook, linkedin, bluesky, threads, mastodon, tiktok, youtube, instagram**), a platform with no value skipped by Ghost, Ghost's order the drawn order. Each row takes its address from the helper's **`href`**, which is a finished address: **no design in A3 prints a stored handle**, and the helper's `username` is read by nothing. The accessible name is the helper's **`name`**; the icon is selected by the helper's **`type`** through a dynamic partial in **block form** with a fallback glyph inside it, so a platform Ghost adds before the icon set catches up degrades to a neutral mark instead of erroring the page. **Version gate:** on Ghost 5.x, which has no such helper, the row is Facebook and X through their own link helpers; on 6.x it is the nine. The **`{{else}}` branch is the empty state** — nothing connected, and the row and its gap are removed, never empty circles, never a heading over nothing. **The authored extension list, its platform picker, its Add, its Remove and its six-entry cap are all deleted**, and with them the category's fourth invented field group. Two controls, category-wide: **Icon style** (Bare · Outlined box · Filled box) and the display control, extended — **Glyphs · Labels · Short labels (Fb, X, Li, In, Yt) · Off**. Size and colour role are **one value for the whole row** rather than per icon — the rows are Ghost's, so there is nothing per-row to open — set as roles, never hexes, and a role failing AA on its ground disables with the ratio shown. Geometry unchanged: 34 px box (bare, outlined or filled per Icon style), 30 px inside a legal line (A3·8, A3·15), a real 44 px box at ≤ 767. Names are platforms, not glyphs — the glyph is `aria-hidden`, the accessible name is the platform's; the list is a `<ul>` labelled “Orbit Weekly elsewhere”, and each link carries `rel="me noopener"` with `target="_blank"` — the markup inside the helper's block is ours, which is where those attributes are added.
 4. **The legal line.** One order everywhere: **copyright · Privacy · Terms · Built with Inflozo**, 13 px muted, middots in the border token generated as CSS. The year is generated, never typed. **`legalLinks[]` is a standard P0·3 repeater** — Add arrives with content (“New page” → `/`), Remove never disabled above zero, drag reorders, labels edit inline (P0·1), URLs open the Ghost-aware Link Picker — **capped at six, raised from four**: Privacy · Terms · Disclaimer · Imprint already makes four. **The credit reads “Built with Inflozo”, linking to inflozo.com. On the Free plan the control is disabled-on with the reason shown in the sidebar; only Pro may hide it.** The previous “Published with Ghost” with a free Show/Hide toggle is corrected across all sixteen designs — one change, every frame that draws the line. **Legal layout** is one category control — **One line · Copyright left, links right** — carrying the owner's “move Privacy / Terms right” asks: drawn at the split value on A3·4, A3·5, A3·7, A3·9 and A3·11 (copyright and the credit left, Privacy and Terms right); A3·6 keeps its stacked variant, locked, with © and the credit under the links; A3·16's bar defers to the released footer's own legal line. At ≤ 767 the split stacks back into the wrapped group, items never breaking mid-item.
 
 **Ghost secondary navigation as a source.** Wherever a design draws link columns, a **Columns source** control offers **Authored · From Ghost secondary nav (prefixes)**, the same scheme as A1: a `+` label heads a column, following `-` items are its links, unprefixed items are plain links. Bound columns become read-only rows (“Edit navigation in Ghost”) with no Add. **ARCHITECT: registry addition — `nav-transform`**, stated on the frames and here; per owner ruling the scheme requires JavaScript and gets **no no-JS accommodation** — the degradation line states the flat raw-prefix list and stops. Drawn in the panel on A3·2 (the design that settles the columns) and as A3·11's Links source; every other design drawing the shared column list inherits the control with it.
@@ -72,23 +82,23 @@ These apply to all 16 designs and are not repeated per design.
 
 **Motion.** 160 ms ease-out, one transition per state change. The category's whole budget: link and glyph hovers, the accordion's height at ≤ 767, A3·9's 1.02 image hover, A3·16's release. All suppressed under `prefers-reduced-motion`, thresholds unchanged. Nothing animates while the section is being edited.
 
-**Data from Ghost.** Site title, logo, Facebook and X from settings; posts, tags and counts from content. Everything else is section content — including the contact fields, the credits, the extra social platforms and `footerBelow`, the four **invented** groups. **Flagged:** a site with several footers keeps those four in step by hand; Ghost gives us nowhere else to put them.
+**Data from Ghost.** Site title, logo, Facebook and X from settings; posts, tags and counts from content. Social accounts come from Ghost too, through `{{#social_accounts @site}}`. Everything else is section content — including the contact fields, the credits and `footerBelow`, **three invented groups where there were four**: the extra social platforms are gone, deleted with the authored list by the owner's ruling. **Flagged:** a site with several footers keeps those four in step by hand; Ghost gives us nowhere else to put them.
 
 **Empty-data floor.** Every element that leaves takes its gap; nothing is substituted for what is missing. No site title → no footer, and the editor says the site needs a name. Where a design's own subject is absent, **the design hides what does not apply and keeps its own arrangement** (Part A·A8); the sidebar states what is not drawn. No design names a sibling. Fields a design does not draw are kept, not cleared, and return on switching.
 
 **The Site-wide group.** `showAttribution` (disabled-on for Free with the reason shown; Pro may hide), Back to top and Shows on sit below each design's own controls, beside the universal Background role, Vertical spacing and Top divider and the category's Legal layout; none count against the design's own list.
 
-**The item lists.** Two repeaters run through the category, and two designs add a third. `linkColumns[]` — a column is `heading` (req, ≤ 24) plus `links[]`, each `label` (req, ≤ 28) and `url` (req). `social[]` — read-only rows from Ghost's social accounts (Facebook and X on 5.x; all nine platforms on ≥ 6.36), each linking to the setting that owns it, plus an authored extension list of `platform` (picked in the Icon Picker's Social / Brands group) + `url`. `legalLinks[]` — the P0·3 repeater, 0–6. A3·11 adds `credits[]` and, this pass, `creditsGroups[]`; A3·13's `tagsList[]` is a picker over Ghost's tags rather than an authored list.
+**The item lists.** Two repeaters run through the category, and two designs add a third. `linkColumns[]` — a column is `heading` (req, ≤ 24) plus `links[]`, each `label` (req, ≤ 28) and `url` (req). `social[]` — **not a repeater at all, as of the owner's ruling:** read-only rows from Ghost's own social accounts through `{{#social_accounts @site}}` (Facebook and X through their link helpers on 5.x; the nine platforms on 6.x), each row linking to the setting in Ghost that owns it, with **no Add, no Remove, no reorder and no authored extension list**. `legalLinks[]` — the P0·3 repeater, 0–6. A3·11 adds `credits[]` and, this pass, `creditsGroups[]`; A3·13's `tagsList[]` is a picker over Ghost's tags rather than an authored list.
 
 **Where the controls sit.** Each list is a repeater in the sidebar, below the design's own controls and above the Site-wide group: one row per item with a drag handle, a remove action, and **Add …** at the end of the list. Selecting an item on the canvas selects its row and opens that item's fields. Keyboard: ⌥↑ / ⌥↓ moves the focused row.
 
-**What Add produces — never a blank row.** A new column arrives as heading “More” holding one link, “Archive” → `/archive/`, and lands last. A new link arrives as “New link” → `/`, lands at the foot of its column, and opens its label for typing. A new social entry is the platform picker rather than a text field, and lands at the right end of the row. An empty shell in a footer publishes as a hole, so nothing is added empty.
+**What Add produces — never a blank row.** A new column arrives as heading “More” holding one link, “Archive” → `/archive/`, and lands last. A new link arrives as “New link” → `/`, lands at the foot of its column, and opens its label for typing. **There is no Add for a social account** — accounts come from Ghost, so where the Add would have been the sidebar says “Set in Ghost → Settings → Social accounts” instead of leaving an author looking for a button. An empty shell in a footer publishes as a hole, so nothing is added empty.
 
 **Remove, and the floors.** Remove sits on the row and is undoable. Removing a column's last link removes the column and says so. At a design's minimum the remove action is disabled with its reason shown, never silently.
 
 **Reorder.** Columns read left to right and links read top to bottom, so authored order is drawn order everywhere in A3. Two designs make it consequential rather than merely visible: **A3·6** reads the first authored group as its primary row, and **A3·16** draws the first column's first N links in the pinned bar.
 
-**Caps, stated once.** Seven columns and eight links a column are settlement 1's. **Six social entries** is the third: at ≤ 767 six 44 px boxes on a 6 px gap are 294 px of a 350 px measure, and Add is disabled at six with “Six platforms is the most the row can hold.” *Flagged: the six is mine.*
+**Caps, stated once.** Seven columns and eight links a column are settlement 1's, and they are now the only authored caps in the category. **The six-social cap is deleted** with the authored list it capped: Ghost decides how many accounts exist, up to its nine, so there is nothing to cap and nothing to refuse. What the design owes instead is a **fit rule**: six 44 px boxes on a 6 px gap are 294 px of a 350 px measure at 390, so **a seventh onward wraps onto a second centred row at the same gap**, and the row's own height grows rather than the boxes shrinking. *Flagged: the wrap is mine; the nine are Ghost's.*
 
 **Two rules about item controls, and they are architectural rather than stylistic.** (1) **A design control writes one value onto the section and the stylesheet reads it, so it applies to every item at once.** “Make column three wider” is not expressible by construction, and where a design appears to need per-item styling it is two designs — A3 already ships that pair, A3·2 on the page ground and A3·5 on contrast. (2) **Inside an item the user edits content only** — text, image, link — never layout, spacing, alignment or emphasis. Selecting a column gives its heading and its links; selecting a link gives label and URL; selecting a social entry gives the URL alone, because the platform's name is the platform's.
 
@@ -112,15 +122,15 @@ A brand-and-social row above the legal line's own second row, over one hairline.
 
 **Items.** `social[]` only: this design draws no columns.
 
-- **Add.** Add platform under the row's list; the platform picker rather than a blank row, landing last, which is the right end of the row.
-- **Remove.** Any entry. Removing the last one removes the row and its 8 px gap with it and the lockup and legal group close up — the design's stated empty state, reached by emptying the list.
-- **Reorder.** Drag; order is the drawn left-to-right order. Meaningful to look at, load-bearing for nothing — say so plainly rather than implying a hierarchy of platforms.
-- **Counts.** 0–6. Designed for two to four, which is what Ghost's two fields plus a theme entry gives; at six the row is 294 px at 390 and Add is disabled. There is no minimum: zero is a legitimate authored state, not a broken one.
-- **Zero.** Row and gap removed. Never an empty circle, never an outlined icon pointing at a contact page, never a heading over nothing.
-- **Inside an item.** The URL, and nothing else. The platform is chosen from the list and its name is the platform's, which is what keeps “names are platforms, not glyphs” true. No item has an optional field, so no item has an empty appearance.
+- **Add.** **None, by the owner's ruling.** Accounts are added in Ghost Admin, not here; where the Add button was, the sidebar reads **“Set in Ghost → Settings → Social accounts”** and links out to it.
+- **Remove.** **None here either** — a row is removed by clearing that platform in Ghost. The rule that Remove never greys out has no subject in this list, because there is no Remove to grey.
+- **Reorder.** Not offered. **Ghost's order is the drawn order**, left to right; an inert drag handle would be worse than no handle, so there is none, and the sidebar says where the order comes from.
+- **Counts.** 0–9, and none of them ours: Ghost's nine platforms, skipping any with no value set. Two to four is what most sites will have. There is no minimum and no maximum to police — **at seven and above the row wraps onto a second centred row** at ≤ 767 rather than shrinking its boxes.
+- **Zero.** Nothing connected in Ghost → the helper's `{{else}}` branch runs, and the row and its 8 px gap are removed; the lockup and the legal group close up. Never an empty circle, never an outlined icon pointing at a contact page, never a heading over nothing.
+- **Inside an item.** **Nothing is editable here.** The address is the helper's `href`, the name is the helper's `name`, the icon follows the helper's `type`; selecting a row on the canvas selects the read-only row in the sidebar and offers the link out to Ghost. This is what keeps “names are platforms, not glyphs” true without anyone typing anything.
 - **The kept column list is not shown on this design.** A repeater whose items are never drawn invites editing into a void; the list is kept intact and returns on switching to a design that draws it. *Flagged: mine.*
 
-**Content fields.** `wordmark` (req) · `mark` (opt) · `social[]` · `copyright` · `legalLinks[]` · `showAttribution`. Does not display `linkColumns`, `tagline`, `description`, the newsletter group, the contact group, `credits`, `latestPosts`, `tags`, `image` — all kept.
+**Content fields.** `wordmark` (req) · `mark` (opt) · `social[]` (**read-only, from Ghost**) · `copyright` · `legalLinks[]` · `showAttribution`. Does not display `linkColumns`, `tagline`, `description`, the newsletter group, the contact group, `credits`, `latestPosts`, `tags`, `image` — all kept.
 
 **Controls.**
 
@@ -133,7 +143,7 @@ A brand-and-social row above the legal line's own second row, over one hairline.
 
 Universal, outside the list: Background role; Vertical spacing, resolving 20 · 28 · 40 a side here; Top divider, drawn at Line (the old Top edge's values map onto it). Attribution is the locked Site-wide control. **The panel draws `legalLinks[]`'s P0·3 repeater** — this is the settlement design, so the drawn example lives here: two rows (Privacy, Terms), Add-with-content, the 2–6 range line.
 
-**Data.** Site title and logo from Ghost settings; Facebook and X from its social fields; further platforms from the theme-level list (**invented**). Copyright year generated. No logo → the initial square.
+**Data.** Site title and logo from Ghost settings. **The social row is Ghost's, whole:** `{{#social_accounts @site}}` over the accounts set in Ghost Admin, each row's address the helper's finished `href`, its name the helper's `name`, its icon keyed off the helper's `type`, in Ghost's order, with `{{else}}` as the empty state — **nothing about it is authored in INFLOZO, and no handle is ever printed.** This is the design that settles the social row, so the rule is recorded here for the other fifteen; the theme-level extension list it used to name is deleted. Copyright year generated. No logo → the initial square.
 
 **Responsive.** 1440–768: two rows — lockup and social above (Social position: In brand block draws the glyphs beside the lockup), the legal line on its own row beneath; page padding 72 → 40, social gap 8 → 4. ≤ 767: three centred rows in source order — lockup, social, legal; glyph boxes 34 → 44 px with a 6 px gap; the legal line wraps as a group at 8 px and items never split mid-item.
 
@@ -950,25 +960,25 @@ Three of the registry's 31, and nothing coined. Eleven designs declare none at a
 
 ## Item lists — roster
 
-Four lists across the category — this pass gives `legalLinks[]` the P0·3 repeater it lacked (0–6 on every design, Add-with-content, remove never disabled above zero, drag reorder, labels inline, URLs via the Link Picker). `linkColumns[]` is drawn by fourteen designs and kept by all sixteen; `social[]` is drawn by fifteen (Ghost rows read-only and version-gated, plus the authored extension); `credits[]`, `creditsGroups[]` and `tagsList[]` belong to one design each.
+Three authored lists across the category — `social[]` stopped being one this pass and is now read-only rows from Ghost — — this pass gives `legalLinks[]` the P0·3 repeater it lacked (0–6 on every design, Add-with-content, remove never disabled above zero, drag reorder, labels inline, URLs via the Link Picker). `linkColumns[]` is drawn by fourteen designs and kept by all sixteen; `social[]` is drawn by fifteen (Ghost rows read-only and version-gated, plus the authored extension); `credits[]`, `creditsGroups[]` and `tagsList[]` belong to one design each.
 
 | # | Design | Columns drawn | Links a column | Social | Other list |
 |---|---|---|---|---|---|
-| 1 | Minimal Line | none (kept, not shown) | — | 0–6 | — |
-| 2 | Columns | 2–7; 1 renders as one column | 1–8 | 0–6 | — |
-| 3 | Two-Tier | 2–7 | 1–8 | 0–6 | — |
-| 4 | Newsletter Band | 0–3 drawn; above three kept | 1–8 | 0–6 | — |
-| 5 | Contrast Band | 2–4, capped | 1–8 | 0–6 | — |
-| 6 | Centred Stack | flattened, 12 links total | 1–8 | 0–6 | — |
-| 7 | Big Type | 1–7 at Columns; row of 12 otherwise | 1–8 | 0–6 | — |
-| 8 | Sitemap | 5–7 designed, 1–7 possible | 1–8 | 0–6 | — |
-| 9 | Latest Posts | 1 drawn, rest kept | 1–8 | 0–6 | posts, 2–4, from Ghost — no Add |
-| 10 | Contact Block | 2 drawn, third kept | 1–8 | 0–6 | contact fields, fixed four, not a list |
-| 11 | Colophon | flattened row | 1–8 | 0–6 | `credits[]`, 0–6 rows |
-| 12 | Card | 2–4, capped | 1–8 | 0–6 | — |
-| 13 | Tags | 1 drawn | 1–8 | 0–6 | `tagsList[]`, 3–16, a tag picker |
-| 14 | Image Band | 1–7 at Columns; row of 12 otherwise | 1–8 | 0–6 | image is one field, not a list |
-| 15 | Wrap | flattened, 24 links total | 1–8 | 0–6 | — |
+| 1 | Minimal Line | none (kept, not shown) | — | 0–9, Ghost's | — |
+| 2 | Columns | 2–7; 1 renders as one column | 1–8 | 0–9, Ghost's | — |
+| 3 | Two-Tier | 2–7 | 1–8 | 0–9, Ghost's | — |
+| 4 | Newsletter Band | 0–3 drawn; above three kept | 1–8 | 0–9, Ghost's | — |
+| 5 | Contrast Band | 2–4, capped | 1–8 | 0–9, Ghost's | — |
+| 6 | Centred Stack | flattened, 12 links total | 1–8 | 0–9, Ghost's | — |
+| 7 | Big Type | 1–7 at Columns; row of 12 otherwise | 1–8 | 0–9, Ghost's | — |
+| 8 | Sitemap | 5–7 designed, 1–7 possible | 1–8 | 0–9, Ghost's | — |
+| 9 | Latest Posts | 1 drawn, rest kept | 1–8 | 0–9, Ghost's | posts, 2–4, from Ghost — no Add |
+| 10 | Contact Block | 2 drawn, third kept | 1–8 | 0–9, Ghost's | contact fields, fixed four, not a list |
+| 11 | Colophon | flattened row | 1–8 | 0–9, Ghost's | `credits[]`, 0–6 rows |
+| 12 | Card | 2–4, capped | 1–8 | 0–9, Ghost's | — |
+| 13 | Tags | 1 drawn | 1–8 | 0–9, Ghost's | `tagsList[]`, 3–16, a tag picker |
+| 14 | Image Band | 1–7 at Columns; row of 12 otherwise | 1–8 | 0–9, Ghost's | image is one field, not a list |
+| 15 | Wrap | flattened, 24 links total | 1–8 | 0–9, Ghost's | — |
 | 16 | Mini Bar | shared list; bar draws first column's first 1/3/5 | 1–8 | released footer only | — |
 
 **Three lists have no Add at all, and each for a different reason.** **A3·9's posts** come from Ghost and are ordered newest-first; **A3·10's four contact fields** are a fixed set in a fixed order, and a fifth detail is A16's; **A3·13's chips** are tags, so its Add is a picker over Ghost's list rather than a new row. In all three the sidebar says so where the Add button would have been, rather than leaving an author to look for it.
@@ -1027,21 +1037,98 @@ Frames updated: `A3-0 Category Proof`, `A3-2 Columns`, `A3-4 Newsletter Band`, `
 
 | Rule | Change |
 |---|---|
-| A8 | **All hand-offs withdrawn.** A3·2, A3·8, A3·10 draw the brand block alone when columns run out; A3·15 draws fewer items; **A3·7 shrinks a long name toward a 44 px floor, adding a line before going below it** instead of becoming A3·6 ⚑; A3·3's empty tier leaves the bar as its own composition; A3·5 and A3·12 **advise** A3·8 past their caps rather than handing off. A3·1's "fallback five designs hand off to" is struck, as is the structural-descriptor note about a "fallback web". A3·16's release is described as one element unpinning, not as a hand-off pattern borrowed from A1. |
-| A9 | A3·4's subscribe ask is conditional on self-signup, members being enabled, and — for a paid ask — a payment provider; the Portal manage link does nothing without script. Its field controls stay disabled with the reason (owner's ruling). |
-| A10 | **A3·4's "posts natively, works without JavaScript" claim is withdrawn** — Ghost's signup endpoint refuses a plain POST. The form is replaced by P0·4's notice at the band's height; **the four form states are untouched.** New frame. |
-| A2 | Remove is active at every floor, with one-clause sentences that point at no other control. |
-| A5 | **How many posts becomes a 2–4 picker**; item counts are steppers with visible cap reasons. **Columns keeps its named values** — owner's ruling that A5 covers items, not arrangement. |
-| A6 | Universals narrow with a reason, never rename or extend; swatch row is **Base**; no "Inherit" anywhere in A3. |
-| A1 | Not applicable: A3 renders no person. |
-| B1 | A3 draws no search affordance; footer links may point at **Ghost search** via the link picker. |
-| B5 | Ctrl-K unbound; nothing in A3 bound it. |
-| A7 | **[Free]: 1 Minimal Line and 16 Mini Bar**, confirmed by the owner. |
+| No design ever turns into another design | **All hand-offs withdrawn.** A3·2, A3·8, A3·10 draw the brand block alone when columns run out; A3·15 draws fewer items; **A3·7 shrinks a long name toward a 44 px floor, adding a line before going below it** instead of becoming A3·6 ⚑; A3·3's empty tier leaves the bar as its own composition; A3·5 and A3·12 **advise** A3·8 past their caps rather than handing off. A3·1's "fallback five designs hand off to" is struck, as is the structural-descriptor note about a "fallback web". A3·16's release is described as one element unpinning, not as a hand-off pattern borrowed from A1. |
+| Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript | A3·4's subscribe ask is conditional on self-signup, members being enabled, and — for a paid ask — a payment provider; the Portal manage link does nothing without script. Its field controls stay disabled with the reason (owner's ruling). |
+| The no-JavaScript notice | **A3·4's "posts natively, works without JavaScript" claim is withdrawn** — Ghost's signup endpoint refuses a plain POST. The form is replaced by P0·4's notice at the band's height; **the four form states are untouched.** New frame. |
+| The Remove button never greys out | Remove is active at every floor, with one-clause sentences that point at no other control. |
+| Item counts are a number picker | **How many posts becomes a 2–4 picker**; item counts are steppers with visible cap reasons. **Columns keeps its named values** — owner's ruling that A5 covers items, not arrangement. |
+| A design may offer fewer choices on a shared control, and must say why | Universals narrow with a reason, never rename or extend; swatch row is **Base**; no "Inherit" anywhere in A3. |
+| Avatars with no photograph | Not applicable: A3 renders no person. |
+| The deleted Search category | A3 draws no search affordance; footer links may point at **Ghost search** via the link picker. |
+| The retired keyboard shortcut | Ctrl-K unbound; nothing in A3 bound it. |
+| The two free designs are the owner's choice | **[Free]: 1 Minimal Line and 16 Mini Bar**, confirmed by the owner. |
 
 ### Open questions
 
 1. ~~A3·7's two-line clip.~~ **Closed by the owner:** the name **shrinks below 72 px rather than being cut**, to a **44 px floor**, and past the floor **the line count gives rather than the type size**. **One floor at every width.** The character figures come from measuring the drawn names (0.44 em per character): two lines at the floor hold about 134 characters on the desktop measure and about 36 on a phone's. Fill width is already measured at build, so none of this needs browser measurement or script. **Corrected twice in this pass** ⚑ — a first draft claimed 100 characters from an estimate, a second claimed 70 and invented a 28 px mobile floor from an advance mis-read off container widths rather than ink. **Both are withdrawn.** The 44 px floor is the one number here that is mine, and the stress frames now draw the same name at both measures so the arithmetic is checkable by looking.
 2. ~~A3·10's imprint gap.~~ **Closed by the owner: left as-is** — the fields exist and the site owner knows their own law; INFLOZO encodes no jurisdiction's rule and adds no panel note. Recorded for the record: Where a footer address is legally required, the field exists but no jurisdiction's rule is encoded, and **Ghost supplies no site address** (Fact 3), so the four contact fields are section content the author types. Unchanged by this pass, restated because Fact 3 makes it sharper: nothing can pre-fill them.
 3. **`nav-transform` still needs to exist** (finding 1, unchanged) — and it is the one place in A3 with a deliberate no-JS loss, which now sits beside A10's notice as the category's second script dependency.
+
+## Patch notes — footer links pass (29 August 2026)
+
+Frames updated: **`A3-0 Category Proof`** (the social settlement, the legal settlement's stale four-link figure, the Ghost-data line, the caps card, and two new cards in the patch-pass column) and **`A3-1 Minimal Line`** (the social DATA caption, the panel's social group, the spec card's Data paragraph). No other frame needed a change: the member rulings were already drawn, and the social ruling changes where the row's content comes from — not its geometry, its glyphs, its accessible names or any drawn state.
+
+**The owner's three answers, applied.** All three arrived on 29 August 2026 and none is a guess.
+
+| Question | Ruling | What it changed here |
+|---|---|---|
+| Which two designs are free | **1 Minimal Line and 16 Mini Bar** | Confirmed; the line at the head of this document is now his word rather than a carried-forward suggestion. |
+| Where a footer link to sign-in or an account should point | **An ordinary authored link — the editor sets the label and the address** | No member-destination picker, no special row. The panel says the pop-up address needs script, names Ghost's ordinary account page as the address that does not, and states plainly that the theme cannot hide an authored link on a site with no members. A3·4's own subscribe rules are untouched. |
+| What to do with a handle pasted into a social entry | **The question is void: INFLOZO does not let anyone add a social account.** Accounts are set in Ghost Admin and the footer renders only those, through Ghost's `{{#social_accounts @site}}` helper | `social[]` stops being a repeater: the authored extension list, its platform picker, Add, Remove, reorder and the six-entry cap are all deleted, and the category's invented field groups drop from four to three. The helper hands the theme a finished address, so the handle problem cannot occur — nine platforms, Ghost's order, `{{else}}` as the empty state, the icon keyed off `type` through a block-form partial with a fallback. |
+
+**Already satisfied before this pass — re-checked, not redone.** The earlier session's work is confirmed rather than repeated.
+
+| Rule | Where it already stood |
+|---|---|
+| Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript | A3·4 §4: the field does not render with self-signup off or members disabled, a paid ask additionally needs a payment provider, the sidebar names which condition is in force, and the Portal manage link carries **nothing happens without JavaScript**. Drawn on A3-4's DATA and MEMBER frames and in its panel. |
+| The no-JavaScript notice | A3·4 §4: the “posts natively” claim is withdrawn, the notice replaces the form at the band's own height, and the four working states are untouched. Drawn on A3-4's NO JAVASCRIPT frame. |
+| No design ever turns into another design | Withdrawn across all sixteen in the previous pass — **except one leftover frame card, cleared this pass** (below). |
+| The Remove button never greys out | Remove active at every floor, one-clause reasons, pointing at no other control. |
+| Slider labels | No subject: A3 draws no slider. |
+| Gap names are “Tight · Normal · Loose” | Any gap control in A3 reads those three; Vertical spacing keeps Compact · Comfortable · Spacious. |
+| Item counts are a number picker | Links per column, legal links, credit rows, chips and How many posts are steppers; Columns stays a named arrangement control by the owner's ruling. |
+| A design may offer fewer choices on a shared control, and must say why | Universals narrow with a stated reason, never rename or extend; the swatch row is **Base**; no “Inherit” anywhere in A3. |
+| Avatars with no photograph | No subject: A3 renders no person. |
+| The two free designs are the owner's choice | Ruled 1 Minimal Line and 16 Mini Bar — but **the line the merge reads was missing**, and is added by this pass (below). |
+
+**Changed by this pass.**
+
+| Rule or ruling | Change |
+|---|---|
+| Social links go through Ghost's own link helper | **Settled the whole way by the owner's ruling: the row is Ghost's, whole.** `{{#social_accounts @site}}` supplies each row's finished address, its accessible name and its icon key; **nothing is authored, so no handle can be printed.** The authored extension list and everything attached to it is deleted, and the sidebar's rows are read-only with a link out to Ghost. Nothing drawn changes. |
+| Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript | **Extended from buttons to links, in the form the owner ruled.** A member link is an ordinary authored link whose label and address the editor owns; the panel carries **with JavaScript off, nothing happens** for a pop-up address, names Ghost's ordinary account page as the alternative, and states that an authored link cannot be hidden by the theme on a site with no members. A3·4's own rules are unchanged. |
+| No design ever turns into another design | **One leftover cleared.** `A3-0`'s caps card still read “A3·2 with no columns → A3·1 … A3·5 above four columns → A3·8”, contradicting the prose that had already withdrawn every hand-off. The card now states the caps, the advice and the hiding rule, and names no design as another design's outcome. |
+| The two free designs are the owner's choice | **The `**[Free] designs:**` line is now present**, on its own line at the head of this document, in the required shape, naming **1 Minimal Line · 16 Mini Bar** — **confirmed by the owner on 29 August 2026**. |
+| — (not a rule: a stale figure) | The legal settlement's card on `A3-0` said the legal field “accepts up to four”; the cap is six. Corrected to agree with the prose. |
+
+**The no-JavaScript line, all sixteen.** One clause each, so the set can be read at once. Category-wide, `core` never runs, so every JS-conditional rule stays in its no-JS branch, and **no A3 design loses content without JavaScript.**
+
+| # | Design | Module | With JavaScript off |
+|---|---|---|---|
+| 1 | Minimal Line | none | Identical — lockup, glyph row, legal line and generated year are all server-rendered. |
+| 2 | Columns | `accordion` (≤ 767, five to seven columns) | Native `<details>` opens and closes with no script; only the 160 ms height transition is lost. |
+| 3 | Two-Tier | `accordion` (same condition) | Both grounds and both tiers render; `<details>` works; the division the reader sees is unchanged. |
+| 4 | Newsletter Band | `member-form` | **The form is replaced by the notice** — “Signing up needs JavaScript — turn it on to subscribe.” The four working states are Ghost's script and stay as drawn. |
+| 5 | Contrast Band | none | Identical — the cap keeps the collapse at the open grid, so there is no accordion to lose. |
+| 6 | Centred Stack | none | Identical — one order at every width, nothing to collapse. |
+| 7 | Big Type | none at the drawn setting; `accordion` at Columns | The name is a CSS clamp, so it still fits and still zooms; at Columns, `<details>`. |
+| 8 | Sitemap | `accordion` (≤ 767, always) | `<details>` throughout, first group server-open; every link is reachable. |
+| 9 | Latest Posts | none | Posts, titles, dates and images are server-rendered; only the 1.02 hover is lost. |
+| 10 | Contact Block | none | `mailto:` and `tel:` are hrefs; the block is static text. |
+| 11 | Colophon | none | Prose and credits are server-rendered. **Exception:** Links source *From Ghost secondary nav* is JavaScript-only by the owner's ruling — the flat raw-prefix list is what shows, and that is stated rather than accommodated. |
+| 12 | Card | none | Identical — inset, radius, hairline and the dark-mode shadow drop are CSS. |
+| 13 | Tags | none | Chips, counts, order and the overflow link are server-rendered. |
+| 14 | Image Band | none at the drawn setting; `accordion` at Columns | Band, crop and scrim are CSS; the height is reserved before the image arrives. |
+| 15 | Wrap | none | One wrapping list, separators as CSS content; nothing to collapse. |
+| 16 | Mini Bar | `slide-in-card` | The bar renders **in flow, unpinned, in place** — the released state is the no-script state, and no content is withheld. |
+
+Two script dependencies exist in the whole category and both are stated, never hidden: **A3·4's form** (the notice replaces it) and **the secondary-navigation prefix scheme** (owner-ruled, no accommodation). To them this pass adds a third, conditional on what an author does: **a footer link pointed at Ghost's own pop-up**, which carries the same sentence.
+
+**Confirmations.**
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this category's roster, and both **confirmed by the owner on 29 August 2026**.
+
+### Open questions
+
+Carried forward, unchanged: **`nav-transform` still needs to exist** (finding 1), and the four earlier findings stand as written.
+
+**Closed on 29 August 2026 — all three of this pass's questions were answered by the owner and are applied above.**
+
+1. ~~Which two designs are free.~~ **1 Minimal Line and 16 Mini Bar**, confirmed.
+2. ~~What a footer link pointed at the sign-in or account pop-up should point at.~~ **Neither is prescribed: it is an ordinary authored link and the editor sets its label and address.** The panel carries the script note and names the address that works without script; it does not choose for the author.
+3. ~~What the editor should do with a handle pasted into an authored social entry.~~ **Void — no one adds a social account in INFLOZO.** Accounts live in Ghost Admin and the footer renders them through Ghost's own helper, which hands over a finished address.
+
+**One item for the architect, arising from ruling 3 rather than from a rule:** the theme needs one icon partial per platform for Ghost's nine — x, facebook, linkedin, bluesky, threads, mastodon, tiktok, youtube, instagram — plus the neutral fallback glyph that the block-form dynamic partial falls back to. **Ghost 5.x has no `social_accounts` helper**, so the 5.x branch stays Facebook and X through their own link helpers; that branch is now the only place in A3 where a stored handle exists at all, and it is Ghost's helper that resolves it.
 
 — End of specification —

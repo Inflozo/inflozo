@@ -1,6 +1,35 @@
 # A28 Comments — written specification
 
-10 designs · Paper pack · drawn 23 August 2026 · **controls reconciled 25 August 2026**
+10 designs · Paper pack · drawn 23 August 2026 · **controls reconciled 25 August 2026** · **design patch pass, 29 August 2026**
+
+**Design patch pass — 29 August 2026 (this document's current state).** Three platform facts landed on this
+category and every design in it. **The comment count is drawn by Ghost's own script** — `{{comment_count}}`
+renders a placeholder that Ghost's comments script fills — so **with JavaScript off there is no number at all:
+not a zero, nothing**. Every design's no-JavaScript line is rewritten, and **no section's accessible name
+depends on the count any more**: 1 Rule's count leaves the `h2`, **9 Big Count's `h2` is its 13 px label
+rather than its figure**, and 10 Slim takes `aria-label="Comments"` at Count only as well as at None.
+**The comment box's colour is a setting inside Ghost and Inflozo does not change it**, so **the Block colour
+row is deleted from the Data group in all ten**, no design passes `mode=` at all, and a read-only row links to
+the setting instead — which withdraws the previous pass's "Match the page resolves to `auto`" fix as moot and
+means **4 Contrast Band is offered only where the project's colour scheme is pinned**. **Ghost's signup
+endpoint refuses a plain form submission**, tested against two live Ghost servers, so 8 Prompt's "posts
+natively" promise is withdrawn and **the designed no-JavaScript notice replaces its form**, with the sent,
+error and loading states unchanged. **Three hand-off phrases were deleted** (2, 6, 8) — no design turns into
+another. **No count label carried a "%", so there was nothing to remove.** **Nothing was renumbered.**
+
+**[Free] designs:** 1 Rule · 5 Boxed
+
+*(Shortlisted in this pass — 1 Rule, 5 Boxed, 10 Slim, 3 Panel, 2 Split Head — and **confirmed by the owner on
+29 August 2026**: the category default plus the one thin outlined box. Neither needs a photograph, a list or a
+member button, and both draw identically with JavaScript switched off.)*
+
+**Two further rulings landed with it, both on 29 August 2026.** **The shared background row gains a fourth
+value — *None: show whatever is behind*** — which retires the word "Inherit" and gives **10 Slim** a real value
+to be locked at; the change is **library-wide** and is recorded as a finding for the architect rather than a
+local invention. And **a design that cannot work on a site is not offered on it**: where a project's colour
+scheme follows the visitor's device, **4 Contrast Band is drawn greyed in the picker and cannot be placed**,
+under one line — *"Needs a fixed light or dark site — change that in your theme settings and this becomes
+available."* It is withheld, never switched.
 
 The frames are `A28-0 Category Proof.dc.html` and `A28-1` … `A28-10`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -8,8 +37,7 @@ that was written down. Every invented decision is marked ⚑ here and on the fra
 
 This revision folds in the controls-reconciliation pass. Six things now sit on every design: the
 **universal trio outside each control list** (with each design's old Padding row, and five designs'
-Divider rows, retired into it), the Comments block group recut as **the Data group** with
-**Match the page fixed for dual-mode sites**, the count's three words as **authored fields**,
+Divider rows, retired into it), the Comments block group recut as **the Data group** with **Match the page fixed for dual-mode sites** *(since withdrawn in the design patch pass — the box's colour is Ghost's own setting and the row is gone)*, the count's three words as **authored fields**,
 `rules[]` **settled at one to four**, a **`<noscript>` line** under the head, and every authored
 string **inline-editable** with the P0 primitives. Two designs gained a state: **8 Prompt** designs
 the free member under paid-only commenting, **9 Big Count** stops shipping a display-scale zero.
@@ -102,8 +130,11 @@ Every design obeys these unless its own entry says otherwise.
   (On · Off) was Top divider under another name and is gone too** — Line is what On drew, Fade is new,
   Line stays their default. **3's Inset, 5's Inset and 5's Head row stay**: a plane's internal
   padding, a box's internal padding and a border *inside* a box are not the space around a section.
-  **Background role is locked at Contrast on 4 and at Inherit on 10**, and **Top divider at None on
-  4**, each with the reason shown.
+  **Background role is locked at Contrast on 4 and at None on 10**, and **Top divider at None on
+  4**, each with the reason shown. **The shared row gains a fourth value in this pass — *None: show whatever is
+  behind*** — **Ruled by the owner on 29 August 2026** ⚑, which retires the word "Inherit" and gives 10 Slim a
+  real value to be locked at. **The change lands on the shared control for every category**, so it is a finding
+  for the architect and not this category's invention.
 - **The seam.** A28 draws its own top padding: Vertical spacing's **64 · 96 · 132** at 1440, **80** at
   834, **64** at 390 ⚑ — A17's ladder. **10 Slim runs its own shorter ladder** ⚑, 40 · 64 · 96, and
   says so.
@@ -113,8 +144,10 @@ Every design obeys these unless its own entry says otherwise.
 - **The head.** One control, four values — **Label** 13 px uppercase tracked .08em · **Heading** 28 px
   in the heading font · **Count only** 22 px · **None** — all reading one `headingText`, default
   **"Discussion"** ⚑. **6 Rail and 9 Big Count have no Heading control** (the rail and the figure are
-  the head); **7 offers two values, 10 offers three.** At None the section takes
-  `aria-label="Comments"` ⚑ — a translation-catalog string, not a literal.
+  the head); **7 offers two values, 10 offers three.** At None the section takes `aria-label="Comments"` ⚑ — a
+  translation-catalog string, not a literal. **No section is ever named by its count** ⚑ — Ghost's script
+  draws the number, so 1's count sits beside the `h2` rather than inside it, **9's `h2` is its 13 px label
+  rather than its figure**, and 10 takes the `aria-label` at Count only as well as at None.
 - **The type.** Head 28 · 22 · 17 · 13 by value; the figure 76 or 104 in 9. Count 15, 17 in 9. Rules
   15, 14 in 6's rail. **Nothing below 13, and nothing between 13 and 15** ⚑.
 - **The count's own words.** `countSingular` "comment", `countPlural` "comments", `countEmpty`
@@ -122,11 +155,13 @@ Every design obeys these unless its own entry says otherwise.
   inline**, because the canvas shows one of the three at a time and editing in place would silently
   rewrite whichever variant happened to be on screen. **P0·6**'s state switcher steps 0 · 1 · many to
   see each. **The number itself is Ghost's** and shows P0·1's lock pill.
-- **The block's mode.** **Match the page resolves to `auto` when the site ships both modes and to the
-  pack's mode when it ships one** ⚑. An Inflozo theme with dark mode enabled flips with the reader's
-  system, so for those sites `auto` **is** the page's mode; the old rule — always the pack's fixed
-  mode — sent every dark-scheme reader a light thread. **4 Contrast Band's forced value is
-  untouched**: a band that inverts the page cannot follow a system preference.
+- **The comment box's colour.** **It is a setting inside Ghost, and Inflozo does not change it** ⚑ — so
+  **no A28 design passes `mode=` at all**, the Block colour row is gone from every panel, and a read-only row
+  **links to the setting** in its place. The previous pass's "Match the page resolves to `auto`" fix is
+  **withdrawn as moot**. **4 Contrast Band is what this costs**: its band inverts the page, the box cannot be
+  inverted with it, so that design is **offered only where the project's colour scheme is pinned** ⚑ — on a
+  site that follows the visitor's system preference, half the audience would read a light thread on a dark
+  band. **The design is not offered there and never turns into another design.**
 - **Accent, once at most.** **Only 8 Prompt draws accent at all** — its buttons, or its link. No head,
   count, rule, bullet, chevron or figure is ever accent ⚑. **The accent inside the block is Ghost's and
   is not counted, because it is not ours.**
@@ -136,18 +171,24 @@ Every design obeys these unless its own entry says otherwise.
   **planes, boxes and bands do not collapse at all** (3, 4, 5, 7). Every element that leaves a width
   has a stated destination.
 - **Dark.** A27's step, unchanged: ground `#171511`, surface `#211D17`, hairline `#332E27`, warm
-  shadows dropped and the hairline carrying every plane. **The block is passed the page's mode** —
-  which on a dual-mode site is `auto` — except on 4, where the band decides ⚑.
+  shadows dropped and the hairline carrying every plane. **The block is passed no mode at all** ⚑ — its colour is Ghost's own
+  setting in both schemes, which is why 4 Contrast Band is offered only where the project's colour scheme is
+  pinned.
 - **No JavaScript, said out loud.** A `<noscript>` line sits under the head in all ten — **"Comments
   need JavaScript."**, a **theme translation-catalog string** (`comments.noscript`), **not an authored
   field** ⚑. One line of markup, no module, taking the muted text token at the count's size, at the
   position the block would have occupied: no box, no icon, no border — a sentence, not an error state.
-  It stops the chrome promising a thread that never loads. **Drawn once, on the proof frame**, because
-  it is identical in all ten and changes no design's arrangement.
+  It stops the chrome promising a thread that never loads. **With JavaScript off there is no
+  count either** ⚑ — Ghost's script draws the number as well as the thread, so a scriptless page shows no
+  count at all, not a zero, and no `countEmpty` line; the head, the rules and that one sentence are what
+  remain. **Drawn on the proof frame** — on **two** designs since this pass, 1 Rule and 9 Big Count, because
+  the figure *is* 9's count and its absence is the category's hardest case.
 - **Print.** **No A28 section prints** ⚑ — head, rules, `<noscript>` line and block all go. A printed
   page cannot be commented on. The second category in a row that prints nothing.
-- **Behaviour.** **Two designs declare a module** — 7's `accordion`, 8's `member-form` — both from the
-  registry, both quoted. The other eight declare none. **No design declares a module for the block
+- **Behaviour.** **Two designs declare a module** — 7's `accordion`, 8's `member-form` — both from
+  the registry, both quoted. **Only one of the two survives without JavaScript**: 7's bar opens and closes,
+  and **8's form no longer posts** ⚑ — Ghost's signup endpoint refuses a plain submission, so the designed
+  no-JavaScript notice replaces it. The other eight declare none. **No design declares a module for the block
   itself, because Ghost's script is not in the registry** ⚑. **No registry addition was needed in this
   pass**: the upgrade action is a Portal link, the `<noscript>` line is markup, and 9's At zero is
   server-side. **No frame carries an "ARCHITECT: registry addition" note.**
@@ -165,7 +206,7 @@ counted** ⚑, plus one read-only row.
 
 | Field | Type | Values |
 |---|---|---|
-| `blockMode` | enum req | Match the page · Light · Dark → `mode=` · **forced and disabled in 4** ⚑ |
+| *Comment box colour* | read-only | **Deleted as a control in this pass** ⚑ — the box takes its colour from a setting inside Ghost, Inflozo does not change it, and **no design passes `mode=`**. The row links to the setting |
 | `avatarSaturation` | enum req | Muted 40 · Standard 60 · Vivid 80 → `saturation=` |
 | `whenClosed` | enum req | Show the notice · Hide the section · **Hide is 10's default** ⚑ |
 | *Who can comment* | read-only | Nobody · All members · Paid-members only — **Ghost → Settings → Membership owns it; the section reports it and cannot change it** ⚑ |
@@ -195,6 +236,9 @@ line.
 
 ### The roster
 
+**[Free] designs:** 1 Rule · 5 Boxed — **recommended in this pass, awaiting the owner's word.** That line at
+the head of this document is the merge's only input.
+
 | # | Design | Tuple | When the content is thin | Ctl | Module |
 |---|---|---|---|---|---|
 | 1 | Rule | `stack · none · page · none · none · one hairline above a labelled count` | Rules line goes; head sits 36 above the block | 4 | — |
@@ -204,7 +248,7 @@ line.
 | 5 | Boxed | `stack · box · page · none · none · one hairline box round head and block` | The box is drawn round a short block | 5 | — |
 | 6 | Rail | `edge rail · none · page · few · none · the head standing in the margin` | Rail keeps 240; below 1,200 it stacks | 4 | — |
 | 7 | Disclosure | `bar · none · page · none · none · the block behind a disclosure bar` | No bar at all when commenting is off | 4 | `accordion` |
-| 8 | Prompt | `form · none · page · none · none · the member prompt leads` | Free member → upgrade form; member → 1 Rule | 6 | `member-form` |
+| 8 | Prompt | `form · none · page · none · none · the member prompt leads` | Free member → upgrade form; member → the prompt hides and the block leads | 6 | `member-form` |
 | 9 | Big Count | `split · none · page · none · none · the count at display size` | At zero: the count line, not the figure | 5 | — |
 | 10 | Slim | `stack · none · transparent · none · none · a single line and no ground` | Hides the section by default | 4 | — |
 
@@ -221,8 +265,8 @@ draws no pictures at all, and the only faces on the page are the ones Ghost draw
 **What the check cannot promise.** 1 Rule and 10 Slim differ in ground and in very little else — one
 draws a hairline and its own ground, the other declares neither. The distinction is real (10 can be
 dropped inside a plane and take its colour; 1 cannot) but **it rests on the emphasis phrase, which no
-machine reads.** The reconciliation gives it one machine-readable consequence: **10's Background role
-is locked at Inherit and 1's is not** (finding 7).
+machine reads.** The reconciliation gives it one machine-readable consequence: **10's Background role is locked at *None: show whatever is behind* and 1's is not** — the shared row's new
+fourth value, **Ruled by the owner on 29 August 2026** (finding 7).
 
 ### Repeating items — the whole category, in one place
 
@@ -273,7 +317,7 @@ The list is **P0·3's shared item controls**, unchanged:
 | `upgradeHeading` | text | req in 8 | 40 ch | **8 only · new** ⚑ · default "Commenting is for paid members" |
 | `upgradeButton` | text | req in 8 | 20 ch | **8 only · new** ⚑ · default "Upgrade" · Portal `account/plans` |
 | `showLabel` · `hideLabel` | text | yes | 12 ch each | **7 only** · defaults "Show" and "Hide" ⚑ |
-| `blockMode` | enum | no | Match the page · Light · Dark | All ten · forced in 4 ⚑ |
+| ~~`blockMode`~~ | — | — | **deleted in this pass** ⚑ | **No design writes it.** The comment box's colour is a Ghost setting; the Data group links to it and passes no `mode=` |
 | `avatarSaturation` | enum | no | Muted · Standard · Vivid | All ten |
 | `whenClosed` | enum | no | Show the notice · Hide the section | All ten · Hide in 10 ⚑ |
 | `signedOutReaders` | enum | no | The prompt only · The prompt and the block | **8 only** ⚑ |
@@ -283,7 +327,7 @@ Read from Ghost, never authored:
 
 | Value | Type | Read by |
 |---|---|---|
-| `{{comment_count}}` | int | All ten · pluralised by the three authored words ⚑ · **twice in 9**, bare and pluralised |
+| `{{comment_count}}` | int | All ten · pluralised by the three authored words ⚑ · **twice in 9**, bare and pluralised · **drawn by Ghost's script, so it is absent with JavaScript off** ⚑ |
 | `{{#if comments}}` | bool | All ten · false → `whenClosed` |
 | `{{#if @member}}` | bool | **8 only** · with the commenting setting, decides between three arrangements |
 | *Ghost setting:* commenting | enum | **Read-only in the sidebar, in all ten** ⚑ · **8 reads it to choose an arrangement** |
@@ -330,24 +374,25 @@ rules (On · Off) · Width (Measure · Content). **Four.** Then the universal tr
 replaces the block, or the section goes at Hide. **The section never draws a placeholder comment, an
 outline or a reserved height** ⚑.
 
-**Behaviour module.** **none.** **No-JS: the frame is unchanged and the block does not render** — the
-`<noscript>` line stands where it would have been. **Category-wide, not a design defect** ⚑ (finding
-3).
+**Behaviour module.** **none.** **No-JS: the block does not render and neither does the count** ⚑ — Ghost's
+script draws the number, so a scriptless page shows **no count at all: not a zero, nothing**. The hairline, the
+head, the rules line and the `<noscript>` line stand alone. **Category-wide, not a design defect** ⚑
+(finding 3).
 
 **Accessibility.** `<section aria-labelledby>` named by the head, an `h2`; `aria-label="Comments"` at
-Heading None ⚑. The count is inside the heading. **Focus order enters the block after the rules line
+Heading None ⚑. **The count is beside the heading and never inside it** ⚑ — Ghost's script draws it, and a name that can be
+missing is not a name; `aria-label="Comments"` covers Count only as well as None. **Focus order enters the block after the rules line
 and the theme controls no stop inside it** ⚑.
 
 **Reconciled.** Padding retired into **Vertical spacing** and **Divider (On · Off)** into **Top
 divider (None · Line · Fade)**, both outside the list — Line is what On drew, Fade is new, and Line
 stays the default because the hairline above the head is the seam this design is built on. The count's
-three words become fields, Match the page resolves to `auto` on a dual-mode site, the block group is
+three words become fields, Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group is
 recut as the Data group, and the `<noscript>` line arrives. **Four controls of its own.**
 
 **Flagged ⚑.** "Discussion" as the default head · `countEmpty` "No comments yet" · always passing
 `title="" count=false` · the count moving under the label at 390 · Width doing nothing below 834 · A28
-sitting below A26 and above A27 · drawing nothing extra when signed out · no-JS leaving the frame alone
-but for one line.
+sitting below A26 and above A27 · drawing nothing extra when signed out · no-JS leaving the head and the rules standing with no count and no block, above one line.
 
 ---
 
@@ -379,12 +424,12 @@ House rules, Sticky head.**
 **Data.** As 1 Rule. The count sits under the heading and **is not repeated anywhere else** ⚑.
 
 **Empty state.** Rules off or list empty → the column is head and count alone at 320, and **the block
-does not widen** ⚑. Heading None with rules on → a column of rules with no head, drawn and legal. Both
-off → the design is 1 Rule and the editor says so ⚑.
+does not widen** ⚑. Heading None with rules on → a column of rules with no head, drawn and legal. Both off → the column is a count alone at 320, the block still does not
+widen, and **it is still 2 Split Head** ⚑ — the panel may advise 1 Rule and never switches to it.
 
 **Behaviour module.** **none.** Sticky head is CSS — `position: sticky` needs no JavaScript and
-declares no module ⚑. **No-JS: frame unchanged, block absent, the `<noscript>` line in its place**
-(finding 3).
+declares no module ⚑. **No-JS: the block is absent and so is the count** ⚑ — the left column is a head, its rules and the
+`<noscript>` line, with no number and no zero (finding 3).
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. **The rules are a `<ul>`**, so a screen
 reader announces "list, 3 items" before the block ⚑. DOM order head → rules → block at every width.
@@ -392,7 +437,7 @@ reader announces "list, 3 items" before the block ⚑. DOM order head → rules 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`rules[]` is
 settled at one to four** ⚑ — one rule is drawn as one bulleted line, and removing the last sets House
 rules to Off — and the list is named as **P0·3's** item controls. The count's words become fields,
-Match the page resolves to `auto` on a dual-mode site, the block group is recut as the Data group.
+Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group is recut as the Data group.
 **Four controls of its own.**
 
 **Flagged ⚑.** 320 · 72 · 904 · top-aligning to the block's box · collapsing at 834 · List as this
@@ -431,9 +476,8 @@ universal trio and the Data group. **Quick: Heading, Panel width, Inset, House r
 plane and **the plane shrinks to its content** ⚑. At Hide the section **the plane goes with the
 section** — it is the section's ground, not the page's furniture ⚑.
 
-**Behaviour module.** **none.** **No-JS: frame unchanged, block absent** — which here leaves a plane
-carrying a head, a rules line, 96 px of inset **and the `<noscript>` line**, which is the design that
-needed it most ⚑.
+**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — which here leaves a plane carrying a head, a rules
+line, 96 px of inset **and the `<noscript>` line**, and it is the design that needed that line most.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. **The plane is a `<div>` with no role** ⚑ —
 it is a colour, not a region. Muted on surface is 5.4:1 in Paper light, re-checked per pack.
@@ -443,7 +487,7 @@ padding is not the space around the section — **the ladder A27·4 Panel leaves
 disagreement is recorded rather than settled uninstructed**. **Background role is deliberately
 unlocked**, on A27·4's argument: the plane is one step from the page at every value, and at Contrast it
 lifts *off* the band rather than becoming 4 Contrast Band, whose block sits *on* it. Count words become
-fields, Match the page resolves to `auto`, the block group is recut as the Data group. **Five controls
+fields, Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group is recut as the Data group. **Five controls
 of its own.**
 
 **Flagged ⚑.** 816 = 720 + 2×48 · inset stepping to 32 and 20 by width · the plane surviving at 390 ·
@@ -473,20 +517,21 @@ Band edges Content the inset drops 72 → 40 → 24** ⚑.
 
 **Controls.** Heading · Band edges (Full bleed · Content) · Alignment (Left · Centre) · House rules
 (On · Off) · Width (Measure · Content). **Five.** Then the universal trio — **Background role locked at
-Contrast and Top divider locked at None**, reasons shown — and the Data group, **with Block colour
-forced and disabled** ⚑ (A27·12's precedent). **Quick: Heading, Band edges, Alignment, Width.**
+Contrast and Top divider locked at None**, reasons shown — and the Data group, **whose Block colour row is gone** ⚑ — there is nothing left to force: the box's colour is
+Ghost's own setting and this design needs it pointed at the band. **Quick: Heading, Band edges, Alignment, Width.**
 
-**Data.** As 1 Rule. The mode attribute is computed from the band, not authored: `mode="dark"` in a
-light pack, `mode="light"` in a dark one ⚑. **The category's Match-the-page fix does not reach this
-design** — a band that inverts the page cannot follow the reader's system. **Alignment moves the head
+**Data.** As 1 Rule. **No `mode` attribute is passed at all** ⚑ — the comment box takes its colour from a
+setting inside Ghost, which this design needs pointed at the band: dark in a light pack, light in a dark one.
+**So this design is offered only on a project whose colour scheme is pinned** ⚑; where the scheme follows the
+visitor's system, half the audience would read a light thread on a dark band. **Alignment moves the head
 and the rules; the block never centres** ⚑.
 
 **Empty state.** Rules off → head and block. `{{#if comments}}` false → the notice in contrast ink
 inside the band; **at Hide the section the entire band goes** ⚑ and the route closes A26 straight into
 A27.
 
-**Behaviour module.** **none.** **No-JS: frame unchanged, block absent** — a band with a head, one line
-and the `<noscript>` line in it, which is the honest consequence (finding 3).
+**Behaviour module.** **none.** **No-JS: the band draws, the block is absent and so is the count** ⚑ — a band with a head, one line and the
+`<noscript>` line in it, which is the honest consequence (finding 3).
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. Contrast ink on contrast ground is 14.6:1 in
 Paper light and 13.9:1 in Paper dark; **a pack whose muted contrast fails is corrected in the pack, not
@@ -534,15 +579,15 @@ row, Inset.**
 block sits at the inset. `{{#if comments}}` false → the notice inside the box, box kept; at Hide the box
 goes with the section. Zero comments → **the box closes round a short block and reserves no height** ⚑.
 
-**Behaviour module.** **none.** **No-JS: frame unchanged, block absent, the `<noscript>` line inside the
-box** (finding 3).
+**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — the box draws, the head row draws with nothing at its
+right-hand end, and **the `<noscript>` line is what the box contains** (finding 3).
 
 **Accessibility.** `<section aria-labelledby>`, head `h2` inside the head row. **The box is a `<div>`
 with no role and the divider is a border, not an `<hr>`** ⚑.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Head row and Inset both stay**, being a
 border *inside* the box and the box's internal padding rather than the section's seam and spacing.
-Count words become fields, Match the page resolves to `auto` on a dual-mode site, the block group is
+Count words become fields, Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group is
 recut as the Data group. **Five controls of its own.**
 
 **Flagged ⚑.** 800 = 720 + 2×40 · one hairline weight everywhere · no fill control · Heading None
@@ -564,7 +609,7 @@ the margin decides, not the breakpoint.
 
 **Responsive rule. 1440** rail 240, gap 48, block 1,008 on 1,296; label 13, count 22, rules 14.
 **1,200 and below** the rail leaves: label, count and rules stack above the block at the content width,
-rules step to 15 — **the stacked form is 1 Rule with a list instead of a line** ⚑. **834** as stacked,
+rules step to 15 — **stacked, it is still 6 Rail** ⚑, a label, a count and a list above the block. **834** as stacked,
 padding 80. **≤ 767** count under the label, padding 64. **Rail side and Sticky rail stop applying below
 1,200** ⚑.
 
@@ -577,16 +622,17 @@ control** ⚑ — the rail is the head, so a control offering four head values w
 second one. A27·7 Rail made the same call. Then the universal trio and the Data group. **Quick: Rail
 side, House rules, Count, Sticky rail.**
 
-**Data.** As 1 Rule. **The rail draws the count at 22 px, so `countEmpty` reads at display size when
-the post is quiet** ⚑ — the one place in A28 where a zero state is the biggest thing in the section, and
+**Data.** As 1 Rule. **The rail draws the count at 22 px, so `countEmpty` reads at display size when the post is quiet** ⚑ — and
+with JavaScript off neither the number nor that word renders at all ⚑ — the one place in A28 where a zero state is the biggest thing in the section, and
 the clearest reason the three words became fields.
 
 **Empty state.** Rules off → a label and a count in a 240 rail; **the block does not widen** ⚑. Count
 off and rules off → a label alone, legal and drawn. `{{#if comments}}` false → the notice in the 1,008
 column, rail kept; at Hide both columns go ⚑.
 
-**Behaviour module.** **none.** Sticky rail is CSS. **No-JS: frame unchanged, block absent, the
-`<noscript>` line in the 1,008 column** (finding 3).
+**Behaviour module.** **none.** Sticky rail is CSS. **No-JS: the block is absent and so is the count** ⚑ — and the count was 22 px, the biggest thing in the
+rail, so a scriptless rail is its label and its rules; `countEmpty` does not render there either, because that
+word is Ghost's script too (finding 3).
 
 **Accessibility.** `<section aria-labelledby>` named by the rail's label, which is the `h2` ⚑. **DOM
 order is rail then block at every width, including Rail side Right, where the visual order is reversed
@@ -594,12 +640,12 @@ by grid placement and the reading order is not** ⚑. Rules are a `<ul>`.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`rules[]`
 settled at one to four** with **P0·3's** item controls named. **The count's three words become fields**,
-which matters most here. Match the page resolves to `auto` on a dual-mode site; the block group is recut
+which matters most here. Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑; the block group is recut
 as the Data group. **Four controls of its own.**
 
 **Flagged ⚑.** A25's 240 · 48 · 1,008 division · no Heading control · the rail leaving at 1,200 · the
 block never widening · the count at the rail's display size · sticky off by default · reversing Rail
-side by placement rather than DOM order · the stacked form being 1 Rule with a list.
+side by placement rather than DOM order · the stacked form staying 6 Rail.
 
 ---
 
@@ -638,9 +684,10 @@ with nothing behind it is a control that lies.
 
 **Behaviour module.** `accordion`. **Registry no-JS, quoted:** "Native `<details>` — fully functional,
 keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the
-server-rendered `open` attribute." **The bar therefore works without JavaScript; the block inside it
-still does not render** ⚑, and the `<noscript>` line is what the reader finds when they open it
-(finding 3).
+server-rendered `open` attribute." **The bar therefore works without JavaScript; the block inside it does not render, and neither does the count
+on the bar** ⚑ — Ghost's script draws the number, so a scriptless bar is a label and a Show or Hide, and the
+`<noscript>` line is what the reader finds when they open it (finding 3). **The count is why this design puts a
+bar there at all, and that argument holds only with script.**
 
 **Accessibility.** `<details>` / `<summary>`, so the open state is announced by the browser and needs no
 `aria-expanded` of ours ⚑. **The `h2` is inside the `<summary>`**, which keeps the section in the
@@ -652,8 +699,7 @@ the rest of the bar still toggles, and **P0·1's Link action is disabled there w
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`showLabel`
 and `hideLabel` now edit inline**, with the two rulings above — the click that edits is not the click
-that toggles, and Link is disabled inside a `<summary>`. Count words become fields, Match the page
-resolves to `auto` on a dual-mode site, the block group is recut as the Data group. **Four controls of
+that toggles, and Link is disabled inside a `<summary>`. Count words become fields, Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group is recut as the Data group. **Four controls of
 its own.**
 
 **Flagged ⚑.** Default state Open · Heading offering two values · the whole bar as the target · keeping
@@ -664,8 +710,10 @@ closed · dropping the rotation under reduced-motion.
 
 ## 8 · Prompt
 
-**Descriptor.** The publication's own membership prompt in place of the block for readers who cannot
-comment, with the count of the discussion they cannot see.
+**Descriptor.** The publication's own membership prompt in place of the block for readers who cannot comment,
+with the count of the discussion they cannot see — **a count Ghost's script draws, and a form Ghost's script
+posts** ⚑, so with JavaScript off the reader gets the prompt, no number, and a designed notice where the field
+was.
 
 **Structural descriptor.** `form · none · page · none · none · the member prompt leads` — the only
 `form` in A28. Ground `page`: **the prompt's plane is the prompt's, not the section's** ⚑, the same
@@ -692,11 +740,12 @@ prompt only · The upgrade prompt and the block)** ⚑ · House rules (On · Off
 Signed-out readers, Free members.**
 
 **Data.** `{{#if @member}}` **and the Ghost commenting setting** decide between **three arrangements**
-⚑. **Signed out** → head, count and the prompt; the count comes from `{{comment_count}}`, which renders
-without the block ⚑. **Signed-in free member, commenting paid-members only** → head, count and **the
+⚑. **Signed out** → head, count and the prompt; the count comes from `{{comment_count}}`, which renders without the block ⚑ — **but only with JavaScript**:
+Ghost's script draws that number, so a scriptless signed-out reader gets the prompt and no count at all ⚑. **Signed-in free member, commenting paid-members only** → head, count and **the
 prompt in upgrade form**: `upgradeHeading`, the shared `promptBody`, `upgradeButton` on Portal's
 `account/plans` through **P0·4**, and **no email field**, because this reader already has an account ⚑.
-**Member who can comment** → the block, no prompt, and the design is 1 Rule. **0 and signed out** → the
+**Member who can comment** → the prompt hides and the block leads, **and it is still 8 Prompt** ⚑ — the panel
+may advise 1 Rule and never switches to it. **0 and signed out** → the
 prompt under the `countEmpty` line, the weakest case and still composed. **Ghost's own prompt inside the
 block cannot be suppressed** ⚑, which is why the second value of either row shows two calls to action
 and says so on the control. **ARCHITECT: verify** — what Ghost renders to the free member inside the
@@ -709,10 +758,12 @@ reader is signed in. `{{#if comments}}` false → the notice and **no prompt of 
 a reader into a conversation that is closed is worse than saying it is closed.
 
 **Behaviour module.** `member-form` at Form Email field; **none** at Link only, and **none in the
-upgrade state**, which is a link to Portal. **Registry no-JS, quoted:** "The `<form>` posts natively to
-Ghost's members endpoint; Ghost's own server response replaces the designed sent state." **So with
-JavaScript off this is the one A28 design that still does its job** ⚑ — the prompt is server-rendered
-and the form still posts.
+upgrade state**, which is a link to Portal. **The registry's "posts natively to Ghost's members endpoint" quote is withdrawn** ⚑ — tested against two live
+Ghost servers, Ghost's signup endpoint refuses a plain form submission — so **the designed no-JavaScript notice
+replaces the form** at the form row's own height: *"Signing up needs JavaScript — turn it on to comment."* The
+**sent, error and loading states are Ghost's own script and are unchanged**. **Both buttons are conditional**:
+they do not render where the connected site cannot take them (self-signup switched off, or no payment provider
+connected), and where they do they open Ghost's own window — **with JavaScript off, nothing happens** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`, `promptHeading` — or `upgradeHeading` — an
 `h3`. The field has a real `<label>`, visually hidden, reading "Email address" ⚑. Errors are Ghost's and
@@ -777,19 +828,20 @@ conversation nobody can join is a number without a referent.
 
 **Behaviour module.** **none.** **No `count-up`** ⚑ — the registry has it and A10 uses it, but animating
 the size of a discussion as the reader arrives is a claim about momentum the section cannot support.
-**No-JS: frame unchanged, block absent, the `<noscript>` line in the block's column** (finding 3).
+**No-JS: the block is absent and so is the figure** ⚑ — the figure *is* the count and Ghost's script draws it,
+so a scriptless column is its 13 px label and its rules line, and **At zero's count line does not render
+either** (finding 3).
 
-**Accessibility.** `<section aria-labelledby>` named by **the figure and its word together, which form
-the `h2`** ⚑ — "24 comments", not "24". **At zero and At zero: Count line, the `h2` is that line** ⚑ —
-"No comments yet" — so the section is never named by a bare numeral. The 13 px label is a `<span>`
-inside it, not a second heading. **The figure takes the text token and never the accent** ⚑.
+**Accessibility.** `<section aria-labelledby>` named by **the 13 px label, which is the `h2`** ⚑ — **not the
+figure and its word, as it was**: Ghost's script draws the figure, and a name that can be missing is not a name.
+**At Label Off the section takes `aria-label="Comments"`** ⚑. The figure and its word are a `<p>`, and **the
+figure takes the text token and never the accent** ⚑.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **At zero:
 Figure · Count line** arrives, defaulting to **Count line** ⚑ — a display-scale 0 on a quiet site is an
 embarrassment, so the shipped zero state is the 15 px count line and the old behaviour is a value a
 publication chooses. **The count's three words become fields**, which matters most in the design that
-sets one of them at 17 px next to a 104 px figure. Match the page resolves to `auto` on a dual-mode
-site; the block group is recut as the Data group. **Five controls of its own.**
+sets one of them at 17 px next to a 104 px figure. Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑; the block group is recut as the Data group. **Five controls of its own.**
 
 **Flagged ⚑.** 416 · 72 · 808 · 76 and 104 as the two sizes · the figure never shrinking or wrapping ·
 **Count line as the zero default** · no Heading control · collapsing at 1,200 · refusing `count-up` ·
@@ -819,8 +871,8 @@ text** ⚑.
 **Controls.** Heading (Count only · Label · None — **Heading is not offered** ⚑) · Alignment (Left ·
 Centre) · House rules (On · Off, **off by default**) · Width (Measure · Content). **Four — still the
 shortest panel in A28.** Then the universal trio — **Vertical spacing running this design's own 40 · 64
-· 96 ladder at Compact by default**, and **Background role locked at Inherit** ⚑ — and the Data group,
-**defaulting to Hide the section** ⚑. **Quick: Heading, Alignment, House rules, Width.**
+· 96 ladder at Compact by default**, and **Background role locked at *None: show whatever is behind*** ⚑ — the shared row's new fourth value — and
+the Data group, **defaulting to Hide the section** ⚑. **Quick: Heading, Alignment, House rules, Width.**
 
 **Data.** As 1 Rule. **0** → the `countEmpty` line at 17 px above Ghost's editor, which at this scale is
 the whole section.
@@ -829,20 +881,21 @@ the whole section.
 nothing of the theme is visible** ⚑. That is legal, it is drawn, and it is the extreme this design
 exists to reach. `{{#if comments}}` false → nothing renders, by default.
 
-**Behaviour module.** **none.** **No-JS: frame unchanged, block absent** — at Heading None that leaves
-**the `<noscript>` line alone in an otherwise empty section** ⚑, which is the honest floor of finding 3
-and is now at least a sentence rather than nothing.
+**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — at Heading None, and at Heading Count only, that
+leaves **the `<noscript>` line alone as the whole section**, which is the honest floor of finding 3.
 
-**Accessibility.** `<section aria-labelledby>` named by the count line, which is the `h2`; at Heading
-None the section takes `aria-label="Comments"` ⚑. **A 17 px muted head on a transparent ground is
+**Accessibility.** `<section aria-labelledby>` named by the head at Heading Label; **at Count only and at None
+the section takes `aria-label="Comments"`** ⚑ — the count can never be the name, because Ghost's script draws
+it. **A 17 px muted head on a transparent ground is
 checked against the ground it is dropped onto, not against the page** ⚑ — surface and page in Paper
 differ by 2 % and both pass.
 
 **Reconciled.** Padding retired into **Vertical spacing** — **keeping this design's own 40 · 64 · 96
 ladder and its Compact default**, recorded as a named exception rather than flattened into the
-category's. **Background role is locked at Inherit**, because ground `transparent` is this design's
-identity and every pack role paints; **the value does not exist in the product yet, and that is finding
-7**. Count words become fields, Match the page resolves to `auto` on a dual-mode site, the block group
+category's. **Background role is locked at *None: show whatever is behind***, the shared row's new fourth value —
+**Ruled by the owner on 29 August 2026** — because ground `transparent` is this design's identity and every pack role
+paints. **The value exists in the design system and not yet in the product, and it lands on the shared control
+for every category**: that is finding 7. Count words become fields, Block colour has since left the panel altogether — the box's colour is Ghost's own setting ⚑, the block group
 is recut as the Data group. **Four controls of its own.**
 
 **Flagged ⚑.** Ground `transparent` rather than `page` · the 40 · 64 · 96 ladder · Compact as the
@@ -856,19 +909,21 @@ section as this design's default · allowing a section with nothing of the theme
 
 1. **The block's accent is Ghost's, not the pack's.** Ghost's comments UI takes its accent from the
    site's accent colour setting. A theme in the Tangerine pack with a Ghost accent of blue shows a blue
-   Reply button in every A28 section ⚑. **Inflozo must write the pack's accent into Ghost's accent
-   setting at deploy**, or the category cannot keep its tokenisation promise. The one finding that has
-   to be solved outside the theme.
+   Reply button in every A28 section ⚑. **Inflozo must write the pack's accent into Ghost's accent setting at deploy**, or the category cannot keep its
+   tokenisation promise. **The comment box's colour scheme is the same problem, found in this pass** ⚑ — it too
+   is a setting inside Ghost that a theme cannot pass, which is why the Block colour row is gone and why
+   4 Contrast Band is offered only on a pinned colour scheme. **Both have to be solved outside the theme.**
 2. **Nothing inside the block can be styled or audited.** Type scale, spacing, avatars, buttons, focus
    rings and contrast are all Ghost's, inside a sandboxed frame. **The category's accessibility
    statement and its pack conformance both stop at the dashed outline** ⚑, and every design says so
    rather than implying a coverage it does not have.
 3. **No JavaScript means no comments.** All 31 registry modules degrade; Ghost's comments-ui is not one
-   of them and has no server-rendered equivalent. **With JavaScript off, all ten designs render their
-   frame and no block** ⚑. 7's bar still opens and closes and 8's form still posts — the only two A28
-   behaviours that survive. **The `<noscript>` line added in this pass makes the state readable; it does
-   not answer the finding.** Whether the frame should render at all when the block cannot is still the
-   architect's call.
+   of them and has no server-rendered equivalent. **With JavaScript off, all ten designs render their frame, no block — and no count** ⚑, corrected in this
+   pass: `{{comment_count}}` is a placeholder Ghost's script fills, so there is no number, not even a zero, and
+   no `countEmpty` line either. 7's bar still opens and closes; **8's form no longer posts** — Ghost's signup
+   endpoint refuses a plain submission, so the notice replaces it. **The disclosure is the only A28 behaviour
+   that survives.** **The `<noscript>` line makes the state readable; it does not answer the finding.** Whether
+   the frame should render at all when the block cannot is still the architect's call.
 4. **Is a plane a ground or a containment?** A25·3 Sheet called a raised plane `card · surface`; A26·3
    and A27·4 called the same thing a ground with containment `none`. **A28 follows the later reading**
    ⚑ — 3 Panel is `stack · none · surface` — but the two cannot both be right, and the reconciliation
@@ -884,13 +939,14 @@ section as this design's default · allowing a section with nothing of the theme
 6. **Route awareness, again.** A28 cannot know that an A26 footer sits directly above it, so the two
    paddings sit adjacent — 192 px at Comfortable. The third category in a row to raise it, and the same
    mechanism resolves all three.
-7. **The universal Background role has no "inherit" value.** ⚑ **New in this pass.** 10 Slim's ground is
+7. **The universal Background role gains a fourth value, *None: show whatever is behind*.** ⚑ **New in this pass.** 10 Slim's ground is
    `transparent` — it declares none and shows whatever it is dropped onto, which is the whole of its
    difference from 1 Rule — and the universal control offers Background · Surface · Contrast, all three
-   of which paint. The row is **locked at Inherit** on that design with the reason shown, but **the
-   value does not exist in the product yet**: either the control gains it, or A28·10's ground slot has
-   to change and the design loses the reason it exists. **A28 is the first category to need it**; every
-   category with a transparent design will need it next.
+   of which paint. **Settled on 29 August 2026** ⚑: **the shared control gains a fourth value, *None: show whatever is behind***,
+   the word "Inherit" is withdrawn, and **10 Slim's row is locked at None** with the reason shown. **What is
+   owed now is the build** — the value exists in the design system and not yet in the product — and **it lands
+   on the shared control for every category, not on A28**. A28 is simply the first category to need it; every
+   category with a design that paints no ground needs it next.
 
 ---
 
@@ -944,9 +1000,10 @@ else in this pass changes what the site renders at the defaults.
   and its Compact default.
 - **3 Panel keeps an Inset ladder where A27·4 Panel's inset is fixed at 40 px with no control.** The two
   categories now disagree about the same component. Recorded, not settled uninstructed.
-- **10 Slim's Background role is locked at a value the product does not have.** Inherit is named on the
-  frame with its reason; **finding 7** asks for it. The alternative — unlocking the row and letting three
-  painting values overwrite a `transparent` ground — would delete the design's reason to exist.
+- **10 Slim's Background role was locked at a value the product does not have.** **Settled in the design patch
+  pass**: the shared row gains *None: show whatever is behind*, "Inherit" is withdrawn as a word, and 10 Slim's
+  row is locked at None. The alternative — unlocking the row and letting three painting values overwrite a
+  `transparent` ground — would have deleted the design's reason to exist.
 - **Member Visibility lands nowhere in A28.** Nine designs draw no CTA at all: the only call to action
   on the page is inside Ghost's block, and Ghost gates it. **8 Prompt is rule 9's own exception** — its
   Signed-out readers and Free members rows plus the Ghost commenting setting are a richer member-state
@@ -970,6 +1027,164 @@ else in this pass changes what the site renders at the defaults.
 - **The `<noscript>` line is drawn once, on the proof frame, rather than ten times.** It is identical in
   all ten, sits in the same place relative to the head, and changes no arrangement — so ten redraws
   would have added no information. Each design's panel and spec name it.
-- **Two open questions, named rather than answered.** (1) Finding 5's live check: what Ghost renders to
-  a signed-in free member under paid-only commenting. (2) Finding 7: whether the universal Background
-  role gains an Inherit value or A28·10 changes its ground slot.
+- **One open item, named rather than answered.** Finding 5's live check: what Ghost renders to a signed-in free
+  member under paid-only commenting. **Finding 7 is now closed** — the shared Background row gains *None: show
+  whatever is behind* and 10 Slim's row is locked at it.
+
+---
+
+## Patch notes — comments patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are named,
+never numbered. Where a ruling could not be applied without inventing a decision, it is written here as an
+**open question** and asked in plain words at the end.
+
+**Frames changed — all eleven:** `A28-0 Category Proof` and `A28-1` … `A28-10`. Every design frame carries a
+dated **design patch pass** panel at the top saying what changed on it and why, and `A28-0` carries the
+category's version of the same panel above the settlements. **The drawn no-JavaScript state was redrawn** and
+now shows two designs — 1 Rule and 9 Big Count — because the figure *is* 9's count. **8 Prompt gained one drawn
+frame**: the no-JavaScript notice standing where its form was. **No layout was redesigned, no measure moved and
+no colour changed.**
+
+### This category's own rulings
+
+| What changed | Why, and where |
+|---|---|
+| **The comment count is drawn by Ghost's own script, so with JavaScript off there is no number at all.** `{{comment_count}}` renders a placeholder that Ghost's comments script fills — **not a zero, nothing**, and no `countEmpty` line either. **Every design's no-JavaScript line is rewritten**, in the spec and on the frame; the proof frame's claim that *the count still renders because it is Handlebars* is **deleted**; the drawn state lost its count. Consequences by design: **6 Rail's** 22 px count and its display-scale "No comments yet" both go, leaving a label and a list; **7 Disclosure's** bar still opens but the number that justified putting it there is absent; **8 Prompt's** signed-out reader gets the prompt and no count; **9 Big Count** has no figure at all; **10 Slim** at Count only is the `<noscript>` line and nothing else. | *(The count is Ghost's script, not the template's.)* |
+| **No section is named by its count.** A name Ghost's script has to draw is a name that can be missing, so every section's accessible name is now something the theme itself renders. **1 Rule's count leaves the `h2`** and sits beside it; **9 Big Count's `h2` is its 13 px label, not the figure and its word**, and at Label Off the section takes `aria-label="Comments"`; **10 Slim takes that label at Count only as well as at None**; 7's `h2` inside the `<summary>` is the head alone. The other six were already named by their head and now say so. | *(The count is Ghost's script, not the template's.)* |
+| **The comment box's colour is a setting inside Ghost, and Inflozo does not change it.** **The Block colour row (Match the page · Light · Dark) is deleted from the Data group in all ten**, **no design passes `mode=` at all**, and a **read-only row links to the setting in Ghost** in its place. The previous pass's "Match the page resolves to `auto` on a dual-mode site" fix is **withdrawn as moot** — there is nothing left to resolve. Every drawn helper annotation on every frame lost its `mode=`. | *(Ghost owns the comment box; we own the chrome around it.)* |
+| **4 Contrast Band is offered only where the project's colour scheme is pinned.** Its band inverts the page and the thread inside it can no longer be inverted with it, so on a project that follows the visitor's system preference **half the audience would read a light thread on a dark band**. The panel says so, and links to the Ghost setting the band needs pointed at it — dark box in a light pack, light box in a dark one. **It is withheld, not switched**: the design never becomes another design. **Ruled by the owner on 29 August 2026**: where the scheme is not pinned the design is **drawn greyed in the picker and cannot be placed**, under one line — *"Needs a fixed light or dark site — change that in your theme settings and this becomes available."* A site already using it is unaffected until its scheme changes. | *(Ghost owns the comment box; we own the chrome around it.)* |
+| **No count label carried a "%".** Checked on all eleven frames: the count is a number and a word, never a share. **No subject, nothing removed.** | *(The count is Ghost's script, not the template's.)* |
+
+### The library-wide rules
+
+| Rule | What it did here |
+|---|---|
+| **The two free designs are the owner's choice — ask him** | Shortlisted the five plainest designs, none of which needs photography: **1 Rule** (the category default — a hairline, a label, a count and one line; nothing in it can be empty), **5 Boxed** (one hairline box, no fill and no shadow — the smallest thing here that still looks finished), **10 Slim** (one muted line and no ground of its own; it hides itself when commenting is off), **3 Panel** (the same stack on one raised plane) and **2 Split Head** (the house rules in a left column, for a publication that moderates). **Recommended 1 Rule · 5 Boxed**, and the line is at the head of this document in the required shape. **Awaiting the owner's word — question 1.** |
+| **No design ever turns into another design** | **Three hand-off phrases deleted.** **2 Split Head** — *both off → the design is 1 Rule* becomes: the column carries the count alone at 320, the block still does not widen, and it is still 2 Split Head. **6 Rail** — *stacked, the design is 1 Rule with a list instead of a line* becomes: stacked, it is still 6 Rail, a label, a count and a list above the block; the inherited A25·1 hand-off phrasing is withdrawn with it. **8 Prompt** — *member who can comment → the design is 1 Rule* becomes: the prompt hides, the block leads, and it is still 8 Prompt. **In every case the panel may advise the neighbouring design and never switches to it**, and the roster's thin-content cell for 8 was rewritten to match. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **One subject: 8 Prompt, the only design in the category that draws a button.** Both of its buttons — Sign up (Portal's signup) and Upgrade (Portal's plans) — now carry the two lines in the panel and on the frame: **they do not render where the connected site cannot take them** (self-signup switched off, or no payment provider connected), and where they do render they open Ghost's own window, so **with JavaScript off, nothing happens**. The other nine draw no call to action at all: the only one on the page is inside Ghost's block, and Ghost gates it. |
+| **The no-JavaScript notice** | **One subject: 8 Prompt's email form.** The registry's *"the `<form>` posts natively to Ghost's members endpoint"* quote is **withdrawn** — Ghost's signup endpoint refuses a plain form submission — so **the designed notice replaces the form** at the form row's own height: *"Signing up needs JavaScript — turn it on to comment."* Plain text, not an alert; no field and no button; the sign-in line kept beneath it. **Drawn on 8's frame beside the form it replaces.** **The sent, error and loading states are unchanged** — they are Ghost's own script and they work. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all ten. The swatch row is **Base**. **Background role is locked in two** — 4 Contrast Band at Contrast, 10 Slim at **None: show whatever is behind** — each with the reason drawn. **No design renamed a shared control**, and this pass **deleted** one row, Block colour, from all ten with the reason drawn in its place. **The one conflict this rule raised is closed by the owner**: it also says there is no "Inherit" choice anywhere, and 10 Slim's row was locked at exactly that value — so **the shared row gains a fourth value, *None: show whatever is behind*, the word "Inherit" is withdrawn, and 10 Slim is locked at None**. The change is **library-wide** and is a finding for the architect, not a value this category invented. |
+| **Item counts are a number picker** | **No subject.** A28 has no count row. Its one authored list, `rules[]`, is P0·3's add-and-remove list, not a number, and its floor and ceiling (one to four) were settled in the previous pass. |
+| **The Remove button never greys out** | **One subject: `rules[]` on 2 Split Head and 6 Rail.** Already compliant and unchanged by this pass: **✕ is never disabled, never dimmed and never hidden**, removing the last rule sets House rules to Off rather than leaving an empty list, and it is **Add** that stops at four with the reason shown. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A28 draws no gap control. Its three surviving ladders are internal padding — 3 Panel's Inset, 5 Boxed's Inset, and 10 Slim's own vertical-spacing ladder — each in the standard padding words. |
+| **Slider labels** | **No subject.** A28 draws no slider. Every control is a named-value row or a read-only row, and each title says what it affects. |
+| **Avatars with no photograph** | **No subject.** A28 renders no person and draws no initials: every face and every avatar on the page is Ghost's, inside the block, where the theme cannot reach. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10.** Ten designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted. |
+
+### The no-JavaScript line, per design
+
+| # | Design | Behaviour declared | Without JavaScript |
+|---|---|---|---|
+| 1 | Rule | — | Hairline, head and rules line render. **No block and no count** — the right-hand end of the head row is empty. The `<noscript>` line stands where the block would have been. |
+| 2 | Split Head | — | Both columns render; sticky is CSS. **No block and no count** — the left column is a head, its rules and the `<noscript>` line. |
+| 3 | Panel | — | The plane, its inset, the head and the rules render. **No block and no count**; the `<noscript>` line is what the plane carries. |
+| 4 | Contrast Band | — | The band, its bleed and its derived colours render — **the design's whole argument survives**. **No block and no count.** |
+| 5 | Boxed | — | Box, head row, divider and inset render. **No block and no count**; the `<noscript>` line is what the box contains. |
+| 6 | Rail | — | The rail, its label and its rules render; sticky is CSS. **No block, and no 22 px count** — nor the display-scale "No comments yet". |
+| 7 | Disclosure | `accordion` | **The bar opens and closes** — native `<details>`, and Default state resolves to the server-rendered `open`. **No count on the bar**, and opening it reveals the `<noscript>` line. |
+| 8 | Prompt | `member-form` at Form Email field | The prompt's words are server-rendered and render. **The notice replaces the field and button** — the form does not post. **No block and no count.** Both buttons open nothing. |
+| 9 | Big Count | — | The 13 px label and the rules line render. **No block and no figure** — the figure *is* the count — and no At-zero count line. |
+| 10 | Slim | — | The head renders at Heading Label. **No block and no count**; at Heading Count only, **the `<noscript>` line is the whole section**. |
+
+### Still owed from the previous pass
+
+**The live check on 8 Prompt is still owed.** What Ghost renders to a signed-in free member inside the block
+when commenting is set to paid-members only is undocumented and was not verifiable; 8 Prompt designs that state
+and the other nine assume Ghost handles it. The **ARCHITECT: verify** flag stays on 8's frame.
+
+### Open questions
+
+**QUESTION 1 — Which two designs a free site gets — ANSWERED: 1 Rule · 5 Boxed**
+
+Every category gives two of its ten designs away, and which two is your call. The five plainest here — the ones
+a real site could ship without looking unfinished, and that need no photography — are **1 Rule** (a hairline, a
+small label, the count at the other end of it and one line of house rules), **5 Boxed** (the same words inside
+one thin outlined box), **10 Slim** (a single quiet line and no background of its own), **3 Panel** (the words
+and the discussion on one raised panel) and **2 Split Head** (the house rules in a column beside the
+discussion).
+
+1. **1 Rule · 5 Boxed — the default and the outline. (RECOMMENDED)**
+   A free site gets the arrangement most publications expect, plus one with a visible container, so the two do
+   not read as the same design twice. Costs nothing: neither needs a photograph, a list or a member button, and
+   both draw identically whether or not the visitor has JavaScript. What it gives up: no free design carries the
+   house rules as a list, so a publication that moderates has to fit its rules into one line.
+   A visitor sees a thin line, the word "Discussion", "24 comments" at the far right, one line of house rules,
+   then Ghost's comment box.
+2. **1 Rule · 2 Split Head — the default and the one for moderators.**
+   The free set can then carry up to four house rules as a list beside the discussion, which is what a
+   publication with a comment problem actually needs. Costs: the customer has to write those rules, and a
+   fixed 320-wide column narrows the discussion on a laptop.
+   A visitor sees the rules stacked at the left — *Be kind · Stay on the story · No links to your own work* —
+   with the comment box beside them.
+3. **1 Rule · 10 Slim — the two quietest.**
+   The smallest possible footprint under an article. Costs: 10 Slim and 1 Rule are nearly the same design — a
+   free customer effectively gets one idea twice — and 10 Slim hides the whole section by default when
+   commenting is switched off, which can read as a missing feature.
+   A visitor sees one muted line, "24 comments", then the comment box.
+
+**QUESTION 2 — The design that draws no background of its own — ANSWERED: the shared row gains "None"**
+
+One design in this category, **10 Slim**, exists because it declares no background: dropped inside a coloured
+panel it takes that panel's colour instead of painting over it. The shared background row offers three values
+and **all three paint**, so the design's row is locked at a fourth, "Inherit", **which the product does not
+have** — and one of the library rules says the word "Inherit" should not appear anywhere. The two cannot both stand.
+**Closed: option 1.**
+
+1. **Give the shared background row a fourth value — "None", meaning show whatever is behind. (RECOMMENDED)**
+   It is the honest description of what several designs across the library will need, and it makes the rule and
+   the design agree. Costs: the shared row changes for every category, and an editor can then set any section
+   to no background, which on a design that needs one will look unfinished until they change it back.
+   The editor sees *Background: Background · Surface · Contrast · None*.
+2. **Lock the row at the ordinary page background instead.**
+   Nothing new to build, and on a normal page a visitor sees no difference at all. Costs: dropped inside a
+   coloured panel the section would paint the page colour over it — which is precisely the one thing this
+   design was for, so it becomes 1 Rule with a smaller head.
+   The editor sees *Background: Background (locked — this design draws no ground of its own)*.
+3. **Delete 10 Slim.**
+   The rule is satisfied with no product change. Costs: the quietest design in the category goes, the roster
+   drops to nine, and the number 10 becomes a permanent gap that can never be reused.
+   A visitor on a site that used it would see whichever design replaced it.
+
+**QUESTION 3 — What a customer sees when a design needs a fixed light-or-dark site — ANSWERED: it is not offered**
+
+**4 Contrast Band** puts the discussion on an inverted band — dark on a light site. Ghost's comment box takes
+its colour from a setting inside Ghost, which you set once, so the band only works on a site whose colour
+scheme is fixed. On a site that follows each visitor's device, half the audience would get a light comment box
+on a dark band. What should that customer see?
+
+1. **The design is not offered, with one line saying why and how to make it available. (RECOMMENDED)**
+   Nobody can pick something that will look broken for half their readers, and the line tells them the fix:
+   fix the site's colour scheme, then this design appears. Costs: a customer who wants it has to change a site
+   setting first, and one design quietly missing from a list of ten needs explaining.
+   The editor sees the design greyed in the picker: *Needs a fixed light or dark site — change that in your
+   theme settings and this becomes available.*
+2. **It is offered with a warning, and they can place it anyway.**
+   Nothing is withheld; the customer decides. Costs: the warning is read once and the mismatch lives on the
+   site forever, and it is the kind of fault a customer blames on us rather than on a setting.
+   The editor sees a caution line under the design: *Half your readers will see a light comment box on this
+   dark band.*
+3. **Offering it fixes the site's colour scheme automatically.**
+   The design always looks right. Costs: placing one section silently changes a site-wide setting, and every
+   reader who preferred dark mode loses it — far too much for one section to decide.
+   The editor sees nothing; their site stops following readers' devices.
+
+**Answered on 29 August 2026 — all three as recommended.** **Question 1: 1 Rule · 5 Boxed**, recorded in the
+line at the head of this document and on the roster. **Question 2: the shared background row gains a fourth
+value, *None: show whatever is behind***; the word "Inherit" is withdrawn, 10 Slim's row is locked at None, and
+**the change lands on the shared control for every category** — a finding for the architect rather than a value
+this category invented. **Question 3: a design that cannot work on a site is not offered on it** — where the
+colour scheme follows the visitor's device, 4 Contrast Band is drawn greyed in the picker and cannot be placed,
+under one line saying why and how to enable it; a site already using it is unaffected until its scheme changes.
+**All three are closed. The one item still open in this category is not a question but a check**: what Ghost
+renders to a signed-in free member inside the block when commenting is set to paid-members only.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10** — ten designs, no gap created or
+  closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required
+  shape, and names **1 Rule** and **5 Boxed** — both of which exist in this category's roster. It is the
+  owner's own choice, **confirmed on 29 August 2026**.
+- **No registry module was invented.** A28 declares `accordion` (7) and `member-form` (8) — both existing
+  entries — and no frame carries an "ARCHITECT: registry addition" note.

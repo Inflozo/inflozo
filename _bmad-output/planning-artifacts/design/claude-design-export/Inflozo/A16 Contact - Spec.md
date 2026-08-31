@@ -1,6 +1,7 @@
 # A16 Contact — written specification
 
-15 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation patch 24 August 2026**
+15 designs · Paper pack · drawn 23 August 2026 · controls-reconciliation patch 24 August 2026 ·
+**design patch pass 30 August 2026**
 
 The frames are `A16-0 Category Proof.dc.html` and `A16-1` … `A16-15`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -215,9 +216,10 @@ Every design obeys these unless its own entry says otherwise.
   A6·11's call, carried.
 - **Members.** **Member visibility** — Everyone · Logged out · Free members · Paid members — ships on
   the ten form designs, because the form is their call to action; **the five that draw no action do
-  not carry it** ⚑, and that absence is recorded rather than invented. **Prefill for members** (On ·
-  Off, On by default ⚑) fills name and email from `@member.name` and `@member.email`
-  **server-side, with no script**; a signed-out reader sees the empty form at either value.
+  not carry it** ⚑, and that absence is recorded rather than invented. **No member detail is ever printed into the page** ⚑ — the *Prefill for
+  members* row the controls patch added is **withdrawn, 30 August 2026**, and **the fields start
+  empty for every reader**, signed in or out. An Inflozo theme never prints a member's own details
+  into the page, so at *Logged out* there is no prefill left to suppress either.
 
 - **Behaviour.** **Ten designs ask for `contact-form` — ARCHITECT: registry addition** ⚑. They
   declared `member-form`, which posts to Ghost's members endpoint and is the wrong module, not
@@ -238,7 +240,7 @@ Every design obeys these unless its own entry says otherwise.
 
 ### The controls every form design shares — the Delivery group
 
-Five rows and two captions, identical in all ten designs that draw a form, **below** each design's
+Four rows and two captions, identical in all ten designs that draw a form, **below** each design's
 own controls and **not counted toward its control budget** ⚑. **The five designs with no form do not
 show the group at all** ⚑; the rows are kept on the section and return on switching.
 
@@ -248,7 +250,6 @@ show the group at all** ⚑; the rows are kept on the section and return on swit
 | `deliveryTarget` (The destination) | text req | The address, or the service's endpoint URL. **An Inflozo project setting, promotable to a Ghost Admin custom setting (text)** ⚑ — the owner changes it without a redeploy. **Validated per mode**: an email address, or an `https` URL. **Empty is editor-only and blocks publishing** ⚑ |
 | `afterSending` | enum req | Show the message in place · The service's own page. **Disabled at *An email address*** ⚑ — the mail app is the response |
 | `consentMode` (A consent line) | enum req | Off · A line of text (**default** ⚑) · A checkbox. **A checkbox everyone ticks is a worse record than a sentence everyone reads** |
-| `prefillMembers` (Prefill for members) | enum req | On (**default** ⚑) · Off. Name and email from `@member.name` and `@member.email`, **server-side, no script** ⚑ |
 
 **Two captions sit under the group, and neither is a row** ⚑. **Spam** — a hidden honeypot plus the
 service's own guard, **no captcha at any value** ⚑; it was a read-only row, and a read-only row that
@@ -269,14 +270,14 @@ neither, that design is editor-only too.
 | # | Design | Tuple | Ctl | Module |
 |---|---|---|---|---|
 | 1 | Split | `split · none · page · none · none · form beside the details column` | 7 | `contact-form` ⚑ req. |
-| 2 | Centred | `form · none · page · none · none · one centred form, no details` | 5 | `contact-form` ⚑ req. |
+| 2 | Centred **[Free]** | `form · none · page · none · none · one centred form, no details` | 5 | `contact-form` ⚑ req. |
 | 3 | Card | `form · card · page · none · none · the ask on an inset card` | 6 | `contact-form` ⚑ req. |
 | 4 | Panel | `form · none · surface · none · none · the ask on a raised plane` | 8 | `contact-form` ⚑ req. |
 | 5 | Contrast Band | `form · none · contrast · none · none · the ask on an inverted band` | 8 | `contact-form` ⚑ req. |
 | 6 | Details Grid | `grid-of-N · none · page · few · none · detail blocks without a form` | 5 | none |
 | 7 | Map Split | `split · none · surface · none · left · a map holding one half` | 6 | `contact-form` ⚑ req. |
 | 8 | Locations | `grid-of-N · none · surface · few · top · one card per location` | 5 | none |
-| 9 | Slim Bar | `bar · none · surface · none · none · one line, the address inline` | 5 | none |
+| 9 | Slim Bar **[Free]** | `bar · none · surface · none · none · one line, the address inline` | 5 | none |
 | 10 | Big Type | `stack · none · transparent · none · none · the address at display scale` | 5 | none |
 | 11 | Enquiry Types | `form · none · surface · few · none · one radio row per enquiry` | 4 | `contact-form` ⚑ req. |
 | 12 | Boxed | `form · box · page · none · none · the ask in a hairline box` | 6 | `contact-form` ⚑ req. |
@@ -284,10 +285,40 @@ neither, that design is editor-only too.
 | 14 | Reasons | `split · none · page · few · none · three reasons beside the form` | 5 | `contact-form` ⚑ req. |
 | 15 | Cover | `form · none · image · none · background · the ask over a cover photograph` | 8 | `contact-form` ⚑ req. |
 
+**[Free] designs:** 2 Centred · 9 Slim Bar
+
 **CTL is own controls only**, and the old 4–7 norm is lifted to the PRD's ~15 ⚑: the universal
 trio, the item list, the delivery group and the Data group all sit outside the count. **MODULE reads
 `contact-form` on the ten form designs and it is a request, not a registry entry** ⚑ — the declared
 `member-form` posts to Ghost's members endpoint. **The five that draw no form still declare none.**
+
+### The no-JavaScript line, design by design
+
+**Every design states what a visitor without JavaScript gets.** The ten form designs answer twice,
+because the answer depends on where the form goes; the five that draw no form answer once, because
+nothing they draw needs script at all.
+
+| # | Design | With JavaScript unavailable |
+|---|---|---|
+| 1 | Split | *An email address*: the fields stay, **the designed notice takes the submit button's place** and its `mailto:` link works ⚑. *A form service*: the `<form action method="post">` posts natively; no notice |
+| 2 | Centred | As 1. The notice is centred with the form and clamped to the form's 560 |
+| 3 | Card | As 1, **the notice inside the card** above the consent line |
+| 4 | Panel | As 1, **the notice on the plane**, a step away from it as the fields are |
+| 5 | Contrast Band | As 1, **the notice in the carried colour, not the accent** ⚑ — 4.5:1 on the band |
+| 6 | Details Grid | **Nothing needs script.** Four labelled values, the email a `mailto:` and the phone a `tel:` |
+| 7 | Map Split | As 1. **The map is a static image and its Directions is an `<a>`**, so the half that is not the form is unaffected |
+| 8 | Locations | **Nothing needs script.** Each card's Directions is an `<a>`; the addresses are selectable text |
+| 9 | Slim Bar **[Free]** | **Nothing needs script.** The address is a `mailto:` and the phone a `tel:` on one line |
+| 10 | Big Type | **Nothing needs script.** The address is a `mailto:` at display size |
+| 11 | Enquiry Types | As 1, with one stated limit: **the notice offers the section's own destination, not the selected type's** ⚑ — a template cannot read a radio. The radios are real inputs and stay drawn |
+| 12 | Boxed | As 1, **the notice inside the box** above the consent line |
+| 13 | Directory | **Nothing needs script.** Every row's address is a `mailto:` |
+| 14 | Reasons | As 1. **The reasons sit above the form** and are text, so they read either way |
+| 15 | Cover | As 1, **the notice white on the scrim** at 8.4:1, above the consent line |
+
+**The notice is one component, drawn once** — see the component inventory — and **the submit button
+is not rendered at *An email address* without script** ⚑, because a button that cannot post is worse
+than no button.
 
 ### Tuple uniqueness — the honest statement
 
@@ -327,8 +358,9 @@ distinctions are real and visible; they are not machine-checkable.
   rule above it goes too ⚑. Inside an entry the user edits **the platform, the URL and the optional
   handle** and nothing else.
 
-- **`locations[]`** — 7 (the first only), 8 (all). **New in A16** ⚑. Add is **seeded with the
-  site's own city and a placeholder address** and lands last ⚑; **Remove is never disabled** ⚑ —
+- **`locations[]`** — 7 (the first only), 8 (all). **New in A16** ⚑. Add is **seeded with a placeholder
+  name and a placeholder address** and lands last ⚑ — **nothing is read from the site** ⚑, because no
+  Ghost setting carries an address or a city; **Remove is never disabled** ⚑ —
   which retires the old "disabled at one in 8" rule, because the editor already draws the zero state;
   **reorder is meaningful in both** — in 8 it is reading order, and **in 7 the first entry is the one
   on the page** ⚑. **1–6, drawn for 2–3**; four or more wraps at the same card size rather than
@@ -408,7 +440,7 @@ or emphasis.
 | `label` | text | opt | 20 ch | 9 | The strip's label; **defaults to `@site.title`** ⚑ |
 | `directionsLabel` | text | opt | 20 ch | 8 | Default "Directions" |
 | `image` · `imageAlt` · `imageFocus` | image + text + enum | **req in 15** | 120 ch alt | 15 | **`imageFocus` is now a control as well as a field** ⚑ — Centre · Top · Bottom, in the panel and in the Image Picker's popover |
-| `deliveryMode` · `afterSending` · `consentMode` · **`prefillMembers`** | enum ×4 | req | — | the 10 form designs | The shared delivery group. **`prefillMembers` is new** ⚑ — On · Off, server-side |
+| `deliveryMode` · `afterSending` · `consentMode` | enum ×3 | req | — | the 10 form designs | The shared delivery group, **four rows since 30 August 2026** ⚑ — **`prefillMembers` is withdrawn**, because a theme never prints a member's own details into the page |
 | **`deliveryTarget`** | project setting | req to publish | — | the 10 form designs | **Not section content** ⚑ — an Inflozo project setting, promotable to a Ghost Admin custom setting (text); validated per mode; **empty blocks publishing** |
 | **`memberVisibility`** | enum | opt | — | the 10 form designs | Everyone (default) · Logged out · Free members · Paid members. **Absent on 6, 8, 9, 10, 13**, which draw no action ⚑ |
 | **`contactRows`** | boolean ×4 | opt | — | 1, 4, 5 | Post · Email · Phone · Replies, one toggle a row ⚑. **`rowIcons`** (Show · Hide) and one icon slot a row travel with it |
@@ -507,7 +539,7 @@ off removes the block and its gap**, which is the state that used to be *Off*); 
 **Social accounts: From Ghost (version-gated) · Authored** carry A3's fix, so **the frames' two-letter
 boxes become the neutral stroke placeholder** and the glyph is the Icon Picker's; Blurb arrives;
 **Member visibility** ships; the delivery group is rebuilt around the `mailto:` honesty fix, the
-project-setting destination and **Prefill for members**; **A11y** gains the no-script state — fields,
+project-setting destination and **the no-JavaScript notice**; **A11y** gains the no-script state — fields,
 a visible `mailto:` line, no submit button — and the row icons are `aria-hidden` with the label
 still the accessible text.
 
@@ -555,7 +587,7 @@ which is the fix that matters most in this design.
 draws no socials, no contact rows and no icons**, so the category's social and per-row fixes land
 elsewhere and its four stored lists are untouched. **Member visibility** ships with the form; the
 delivery group is rebuilt (`mailto:` composed by script, the no-script line, the project-setting
-destination, Prefill for members, Spam as a caption); **A11y** gains the no-script state.
+destination, Spam as a caption); **A11y** gains the no-script state.
 
 ---
 
@@ -789,7 +821,7 @@ design as the fallback.
     place, not the picture** ⚑. The address is an `<address>` element. **Focus order is map link,
     address, form** in both arrangements, because *Map side: Right* reorders the DOM, not just the
     flex ⚑.
-    **Repeating items** — `locations[]`: one drawn. Add lands last seeded with the site's own city ⚑;
+    **Repeating items** — `locations[]`: one drawn. Add lands last with a placeholder name and a placeholder address ⚑, never seeded from the site;
     Remove on the row; **reorder is meaningful** ⚑, because the first entry is the one on the page.
     **Flagged ⚑** the static-map settlement · map above at ≤ 1,080 · Message fixed at Short · both
     halves matching height · dark re-generating rather than filtering the image.
@@ -1242,8 +1274,9 @@ off by default ⚑.
 **Patched, 24 August 2026.** **`imageFocus` is surfaced as a control** ⚑ — it was a field with no
 UI at all — reachable from the panel and from the Image Picker's popover, with **Top named as the
 value to watch**, since text never sits over the top quarter where the scrim is weakest. **Blurb**
-arrives, disabled at *Head: Hide*. **Background role locks at Image** (a cover with no cover still
-hands off to 2 Centred), **Image height keeps its own name** and **Vertical spacing becomes the
+arrives, disabled at *Head: Hide*. **Background role locks at Image**, with the reason shown —
+a photograph is the design ⚑, and **with no image the design still renders as itself**: the scrim
+becomes the ground and the panel advises 2 Centred rather than handing anything to it ⚑ — **Image height keeps its own name** and **Vertical spacing becomes the
 block's inset inside the picture**. **Member visibility** ships; the delivery group is rebuilt;
 **A11y** gains the no-script state, whose `mailto:` line is white on the scrim at 8.4:1 and sits
 above the consent line. **There is still no dark-mode image variant** ⚑ — the scrim deepens instead.
@@ -1331,8 +1364,9 @@ Cumulative. Reused components are listed with the category that set them.
 | **The static map plate** | **A generated image inside a link, never an embed; re-generated for dark, never filtered** | **A16·7 — new** |
 | **The location card** | **16:9 map thumb flush to the top, name `h3` 22, address, hours under a hairline, Directions** | **A16·8 — new** |
 | **The enquiry radio row** | **A fieldset of 46 px radio rows that looks like tabs and is not one** | **A16·11 — new** |
-| **The delivery group** | **Five shared rows — Where it goes · The destination · After sending · A consent line · Prefill for members — with Spam and the form-state copy as captions beneath** | **A16 — new, rebuilt by the controls patch** |
-| **The composed `mailto:`** | **The script builds the URL out of the fields; the no-script state is a visible "Email us at …" line and no submit button** | **A16 — new in the controls patch** |
+| **The delivery group** | **Four shared rows — Where it goes · The destination · After sending · A consent line — with Spam and the form-state copy as captions beneath** | **A16 — new, rebuilt by the controls patch** |
+| **The composed `mailto:`** | **The script builds the URL out of the fields; the `mailto:` link itself works with no script at all** | **A16 — new in the controls patch** |
+| **The no-JavaScript notice** | **A hairline box in the submit button's place: one line saying the form needs JavaScript to send, the `mailto:` link beneath it, and no submit button** | **A16 — new in the design patch pass** |
 | **The destination setting** | **A project setting, promotable to a Ghost Admin custom setting, that blocks publishing until it is set** | **A16 — new in the controls patch** |
 | **The per-row contact toggles** | **One toggle a row over A3·10's fixed four, with an optional icon slot a row (mail · phone · pin · clock)** | **A16 — new in the controls patch** |
 | **The directions link** | **From address · Custom URL · Off — From address builds a maps-search URL out of the address** | **A16·7, A16·8 — new in the controls patch** |
@@ -1362,7 +1396,7 @@ Cumulative. Reused components are listed with the category that set them.
   outside each list (Background role locked on 5, 10 and 15; Top divider locked on 9 against
   *Rules*); **Padding, Band padding, Ground padding and the two Ground rows retired into it**; the
   **delivery group rebuilt** on the ten form designs (the composed `mailto:`, the project-setting
-  destination, **Prefill for members**, Spam and the form-state copy as captions, and the
+  destination, Spam and the form-state copy as captions, and the
   **ARCHITECT: registry addition (`contact-form`)** callout); new **EDITING**, **BEHAVIOUR** and
   **DATA** groups on all fifteen (Member visibility on the ten; **Social accounts: From Ghost ·
   Authored** on 1, 5, 6, 9, 10 and 12); the item lists restated as **P0·3** with **Remove never
@@ -1380,8 +1414,7 @@ Picker's); the **no-destination** state tile now says the section cannot publish
 designs' states frames gained **a no-script tile** — the fields, the visible "Email us at …" line and
 the un-rendered button — which is why the category now owns **eight states, not seven**. Everything
 else the patch added ships off or unchanged at its default: Row icons and Cell icons Hide, Top divider
-None, the button icon slots empty, Blurb Show, Image focus Centre, Address shown Email, Prefill for
-members On (which changes nothing for a signed-out reader), and the location `phone` and `email`
+None, the button icon slots empty, Blurb Show, Image focus Centre, Address shown Email, and the location `phone` and `email`
 empty. **If the build wants a drawn phone line on a location card, or a drawn row icon, those are
 frames this pass did not draw.**
 
@@ -1452,3 +1485,93 @@ frames this pass did not draw.**
 17. **"Twenty-six authored fields" versus the patched field list.** Restated: **thirty-seven fields,
     one project setting and one Ghost value**. Switching between any two designs still preserves
     everything typed, which was the point of the count rather than the number itself.
+
+---
+
+## Patch notes — design patch pass, 30 August 2026
+
+Every change in this pass, with the **name** of the rule that required it. Where a ruling could not
+be applied without inventing a decision, it is written here as an **open question** and asked at the
+foot of the pass rather than guessed.
+
+**Numbering.** Unchanged: **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15**. No gap
+was created or closed, no number reused, nothing renumbered.
+
+### What changed
+
+1. **A theme never prints a member's own details into the page** — the delivery group's *Prefill for
+   members* row is **deleted in all ten form designs**, and `prefillMembers` leaves the field list.
+   **The fields start empty for every reader**, signed in or out. *Member visibility* loses its
+   sentence about prefill never firing at *Logged out*: there is nothing left to fire. The group is
+   now **four rows and two captions**. Frames: all ten form panels, the proof frame's delivery tile
+   and its field table.
+2. **The no-JavaScript notice** — at *An email address* the loose "Email us at …" line becomes **a
+   small designed notice**: a hairline box in the submit button's place, one line saying the form
+   needs JavaScript to send, the `mailto:` link beneath it, and the muted sentence that says what
+   script adds. The submit button is still not rendered. **At *A form service* nothing changes** —
+   that form posts natively and needs no notice. Frames: the no-script tile in all ten form designs.
+3. **The no-JavaScript notice**, second half — **the sent, error and loading states are untouched.**
+   Only the "works without JavaScript" promise around them was wrong, and it was already withdrawn
+   by the controls patch. The `mailto:` link stays and **works with no script at all**; what script
+   adds is the pre-filled draft, composed out of the fields.
+4. **Some fields we drew do not exist** — a new location arrived **seeded with the site's own city**
+   in 7 Map Split and 8 Locations. **No Ghost setting carries an address or a city**, so the seeding
+   is withdrawn: Add still **arrives with content and never a blank card**, now **a placeholder name
+   and a placeholder address**. Frames: 7's and 8's item lists, the proof frame's `locations[]`
+   entry, and this document's repeating-items section.
+5. **No design ever turns into another design** — one phrase survived the earlier passes and is
+   deleted: **15 Cover's "a cover with no cover still hands off to 2 Centred"**. With no image the
+   design renders as itself, the scrim becoming the ground, and **the panel advises 2 Centred**
+   rather than handing it anything.
+6. **The two free designs are the owner's choice** — **ruled by the owner on 30 August 2026: 2
+   Centred and 9 Slim Bar.** One centred form and one line carrying the address: a free site can
+   ship either without a photograph, a map or a list. The roster marks both and carries the line the
+   merge reads.
+7. **The no-JavaScript line, design by design** — a new table above the tuple statement states, for
+   each of the fifteen, what a visitor without JavaScript gets. Nothing in it is new behaviour except
+   the notice; the five formless designs are recorded as needing no script at all.
+
+### The rules that land nowhere in A16, recorded rather than applied
+
+- **Avatars with no photograph** — A16 draws no person at any value.
+- **The Remove button never greys out** — already true in all four item lists since the controls
+  patch retired the two "disabled at" rules. Add is still capped, which is a limit and not a defence.
+- **Slider labels** — every scale row already names what it affects: Message height, Card width,
+  Plane padding, Strip padding, Image height.
+- **Gap names are Tight · Normal · Loose** — **A16 has no Gap row**, so there is nothing to rename.
+- **Item counts are a number picker** — the four item lists carry their own numbers and ceilings;
+  6 Details Grid's *Columns* divides one row into columns rather than counting marks, which is the
+  split ruled on 30 August across the library.
+- **A design may offer fewer choices on a shared control, and must say why** — re-checked on all
+  fifteen: Background role locked with its reason on 5, 10 and 15; Top divider locked on 9 against
+  *Rules*; *After sending* disabled at *An email address*. **The swatch row is called Base** —
+  A16 has no swatch row — and **there is no Inherit choice anywhere in the category**.
+- **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** — **A16 draws no
+  sign-up button, no subscribe button and no Portal link.** *Member visibility* decides who sees the
+  section, not what it posts.
+- **Ghost's templates cannot count, add or remember** — nothing published by A16 is counted, added or
+  remembered; there is no arithmetic in any of the fifteen.
+- **CSS cannot see content** — the two reorders the category declares (7's map above the form, 14's
+  lines above it) are **one document order at every width**, decided by the panel and not by the
+  window.
+- **Inside a blog post's body we own the stylesheet and nothing else** — A16 is a page section and
+  never renders inside a post's body. A33 Koenig Card Treatments owns that ground.
+
+### The three questions this pass raised, and the rulings — 30 August 2026
+
+**1 · Which two designs are free. Ruled: 2 Centred and 9 Slim Bar.** One centred form and one line
+with the address inline; neither depends on the customer having good photography, and one of the two
+needs no form at all. Recorded in the roster as **`**[Free] designs:** 2 Centred · 9 Slim Bar`**,
+which is the line the merge reads.
+
+**2 · Whether the no-JavaScript notice replaces the fields or stands in the button's place. Ruled:
+the fields stay and the notice takes the submit button's place.** As drawn in all ten form designs —
+the reader sees the shape of what was asked for, with a working `mailto:` one line below it, and
+nothing moves for a reader who does have script.
+
+**3 · What the notice offers in 11 Enquiry Types. Ruled: the section's own destination.** A template
+cannot read which radio a visitor picked, so the notice prints one address that always works and
+whoever reads it forwards the odd message. The per-type addresses stay on the items and are used on
+the script path.
+
+**No open questions remain in this category.**

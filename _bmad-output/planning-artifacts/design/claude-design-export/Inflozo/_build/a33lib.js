@@ -546,13 +546,13 @@ function states(t, w, tr, d) {
     cell('FILE · THE GLYPH IS THE ONLY HOVER', `<span style="display:inline-flex;filter:brightness(.97)">${fileCard(t, w, tr, { m:400, pw:436, desc:false })}</span>`)}</div>`;
   const second = tile({ w:652, bg:'#FFFFFF', border:'#EBE5DB', label:'BUTTON, FILE · 44 PX MINIMUM TARGET EVERYWHERE',
     body:`<div style="background:${t.bg};border-radius:8px;padding:18px">${btnRow}</div>` });
-  const third = tile({ w:652, bg:'#FFFFFF', border:'#EBE5DB', label:'TOGGLE · CLOSED AND OPEN · NATIVE ' + '&lt;details&gt;' + ', NOT A SCRIPT ⚑',
+  const third = tile({ w:652, bg:'#FFFFFF', border:'#EBE5DB', label:'TOGGLE · CLOSED AND OPEN · GHOST EMITS A DIV, AN H4 AND A BUTTON — NOT DISCLOSURE MARKUP ⚑',
     body:`<div style="background:${t.bg};border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:18px">${
       toggleCard(t, w, tr, { m:420, pw:456 })}${toggleCard(t, w, tr, { m:420, pw:456, open:true })}</div>` });
   const fourth = tile({ w:652, bg:'#F7F5F2', border:'#E7E2DB', label:'WHAT DOES NOT CHANGE · THE FOUR STATES EVERY A33 DESIGN OWES',
     body:`<div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px;line-height:1.65;color:#3A3835;min-height:150px">
       <span>${b('In the editor every card draws at its resting state')} ⚑ — the toggle closed, no hover, no ring. ${b('The treatment is CSS')}, so the edit-time picture and the published picture are the same.</span>
-      <span>${b('With JavaScript off fifteen of the twenty cards are identical')} ⚑. ${b('The toggle keeps working')} — native ${code('&lt;details&gt;')}. ${b('Five depend on scripts that are Ghost’s, not A33’s')} ⚑: the gallery’s row ratios, the audio and video players, the signup card’s post, and the embed’s provider markup. ${b('The registry has no module for any of them')} — a finding, not a design, and A33 declares ${code('core')} rather than inventing one.</span>
+      <span>${b('With JavaScript off fourteen of the twenty cards are identical')} ⚑. ${b('The toggle cannot open')} — Ghost emits a plain container with an ${code('h4')} and a ${code('button')}, not disclosure markup, so its open and close are Ghost’s script. ${b('Six depend on scripts that are Ghost’s or the provider’s, not A33’s')} ⚑: the toggle’s open and close, the gallery’s row ratios, the audio and video players, the signup card’s post, and the embed’s provider markup. ${b('The registry has no module for any of them')} — a finding, not a design, and A33 declares ${code('core')} rather than inventing one.</span>
       <span>${b('The treatment never restyles what is inside an iframe')} ⚑. The embed card’s frame, radius and caption are A33’s; the provider’s markup is the provider’s.</span>
       <span>${b('No control in A33 styles one card of one post')} ⚑ — a value is written once, site-wide, and every card of that type reads it.</span></div>` });
   return `<div style="width:1360px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">${first}${second}${third}${fourth}</div>`;
@@ -590,9 +590,9 @@ function a11y(t, w, tr, d) {
         [['image, gallery, embed', `${code('&lt;figure&gt;')} + ${code('&lt;figcaption&gt;')} — the caption is inside the figure, so it is read with the image, not after it`],
          ['bookmark', `one ${code('&lt;a&gt;')} around the whole card · one focus stop · the thumbnail is ${code('aria-hidden')} and the title is the accessible name`],
          ['callout', `a ${code('&lt;div&gt;')} with no role · ${b('the emoji carries aria-hidden')} ⚑ so it is not announced as “pushpin”`],
-         ['toggle', `${code('&lt;details&gt;')} / ${code('&lt;summary&gt;')} — keyboard-operable with no script; ${b('the heading inside is a')} ${code('&lt;div&gt;')}, ${b('never an h-level')} ⚑, so the article’s heading outline stays intact`],
+         ['toggle', `a plain ${code('&lt;div&gt;')} holding an ${code('h4')} and a ${code('button')} — ${b('not disclosure markup')} ⚑; the heading level is Ghost’s, the button is the only focus stop, and ${b('no stylesheet can add the aria-expanded it lacks')} — a Ghost limitation`],
          ['button', `an ${code('&lt;a&gt;')} styled as a button · 48 px tall, 44 px minimum target at every width`],
-         ['product', `${b('the rating is text as well as stars')} — “4 out of 5” ⚑ · the stars are ${code('aria-hidden')}`],
+         ['product', `${b('Ghost renders the rating as stars with no text equivalent and a theme cannot add one')} ⚑ — a Ghost limitation, recorded rather than fixed: a screen-reader user hears no rating at all`],
          ['file', `the link names the file and its size: “Download catalogue-2026-08.csv, 1.4 MB” ⚑`],
          ['header', `${b('the heading is an h2')} ⚑ — Ghost emits ${code('h2')}/${code('h3')} and A33 never promotes one to ${code('h1')}; the post title is the page’s only ${code('h1')}`]].map(([k, v], i) =>
           `<div style="display:flex;gap:14px;padding:9px 0;${i ? 'border-top:1px solid #F1EDE6' : ''}"><span style="width:150px;flex-shrink:0;font-family:${MONO};font-size:10.5px;color:#6E6A64;padding-top:2px">${k.toUpperCase()}</span><span style="flex:1">${v}</span></div>`).join('')}</div>` })}${
@@ -679,7 +679,7 @@ function quickRows(d) {
 /* ── registry degradations, quoted verbatim — never composed ──────────── */
 const MOD = {
   core: 'Never runs; the <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">.js-enabled</code> class is never set, so all JS-conditional CSS stays in its no-JS branch.',
-  accordion: 'Native <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;details&gt;</code> — fully functional, keyboard-operable, opens and closes with no JS at all. A9’s <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">default state</code> control resolves to the server-rendered <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">open</code> attribute.',
+  accordion: 'The registry’s quoted degradation does not hold inside a Koenig post ⚑ — Ghost’s toggle card is a plain container with a heading and a button, not disclosure markup, so <b>with JavaScript off it cannot open</b>. A33 declares <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">accordion</code> as the nearest module and drops the quote.',
   lightbox: 'Each thumbnail is an <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;a href&gt;</code> to the full-size image; clicking opens it as a normal page.',
   'video-facade': 'The poster is an <code style="font-family:\'JetBrains Mono\',monospace;font-size:12px">&lt;a href&gt;</code> to the video’s canonical URL (YouTube/Vimeo watch page).'
 };

@@ -18,6 +18,12 @@ Every rule below is stated once here and once on the design's own frames and spe
 
 **Third pass — the controls-reconciliation patch (this document's current state), 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface, reusing the shared **P0 editor primitives by name** — the P0·1 inline toolbar and link popover, the P0·2 icon slots and Icon Picker, the P0·3 item controls, the P0·4 member-aware action editor, the P0·5 populate-from panel, the P0·6 state switcher — never redesigning them. Every design gains the universal trio outside its own list; every Padding row and every Ground row retires into it; Member visibility lands on the eleven CTA-bearing designs; `itemIcon` becomes the P0·2 icon slot wherever it is drawn; every `itemImage` gains Image focus in the Image Picker popover; and **Content source: Authored · From posts** lands on 8 Media Top, 13 Spotlight and 14 Scroller — the owner's ruling, and the first Ghost data in A5. No layout was redesigned, no module changed, and no section frame moved. Where this pass conflicts with an earlier ruling, the conflict is recorded — one line each — in the closing **Reconciliation notes**, which open with every frame changed.
 
+**Fourth pass — the design patch pass (this document's current state), 30 August 2026.** The ten library-wide rules were applied to the category and read back against every design in it, together with the four platform facts the pass rests on. **Two rules changed something drawn or promised, and eight were already satisfied.** The rule that **no design ever turns into another design** deleted five sentences — 3 Four Up "is 1 Three Up" at three items, 7 Alternating Media "is 6 Rows" with no pictures, 8 Media Top "is 4 Cards" with no pictures, 12 Tabs offering the switch to 4 Cards at one item, and the shared floor's promise that crossing a floor "offers the switch" — and the designs now hide what does not apply while the panel advises. The rule that **the Remove button never greys out** reached exactly one place, **14 Scroller's Remove at five cards**, which is no longer disabled. Beyond the rules, four platform facts cost this category five measurements and one promise: **11 Checklist's two columns are CSS column balance rather than a computed row count**, **15 Index's numerals are the loop's own one-based counter with a fixed twelve-value lookup over it**, **5 Split Head's sticky head is no longer withdrawn by a measured 240 px**, **9 Bento's large picture is no longer dropped below a derived 120 px**, **12 Tabs' fall-back tab clips by its own width rather than counting characters**, and **14 Scroller's five-card floor is not enforced against a bound feed**. **Nothing was renumbered, no design was deleted, and no module name was coined.** Every change is listed with the name of the rule that required it in **Patch notes** at the end.
+
+**[Free] designs:** 1 Three Up · 6 Rows
+
+*The owner's ruling, 30 August 2026 — not a recommendation. Two different shapes, both photograph-proof: a three-column grid across the page and a hairline-divided list down it. The shortlist he chose from was 1 Three Up, 4 Cards, 6 Rows, 11 Checklist and 15 Index.*
+
 **Two findings**, at the end: the double heading `tabs` gives 12 with JavaScript off, and the fact that no registry sentence covers 14's rule.
 
 ---
@@ -56,7 +62,13 @@ Everything in this section applies to all sixteen unless a design says otherwise
 
 **Responsive floor.** Every count is one column at ≤ 767 unless the design names another arrangement — 3 Four Up keeps two where its body copy is hidden, 11 Checklist keeps two, 14 Scroller keeps its rail, 15 Index keeps two at Compact. At 1080 and below Four becomes two and Three becomes two; Two stays two. A design that changes arrangement at a width states the width in words.
 
-**Data.** Features are authored — there is no feature object in the API — and every number a reader sees is typed by the site owner, **with one owner-ruled exception this pass: 8 Media Top, 13 Spotlight and 14 Scroller carry Content source (Authored · From posts) through the P0·5 panel** — picture ← the post's feature image, title ← post title, body ← excerpt, item link ← the post. Bound, the item list is the P0·3 Ghost-sourced list — no Add, no Remove, no drag — and post content is plain-text-locked. The other thirteen stay authored-only, and the hand-off note pointing post-shaped wants at A17 stays for them. Every design is offered on every route.
+**Data.** Features are authored — there is no feature object in the API — and every number a reader sees is typed by the site owner, **with one owner-ruled exception this pass: 8 Media Top, 13 Spotlight and 14 Scroller carry Content source (Authored · From posts) through the P0·5 panel** — picture ← the post's feature image, title ← post title, body ← excerpt, item link ← the post, **How many** a number picker. Bound, the item list is the P0·3 Ghost-sourced list — no Add, no Remove, no drag — and post content is plain-text-locked. **How many is a number picker in the Data group on all three — 1 to 9, default six — because a bound list needs a number and Ghost has no "posts per page" setting a theme can read.** *The owner's ruling, 30 August 2026: the site chooses the number rather than being given a fixed six.* The other thirteen stay authored-only, and the hand-off note pointing post-shaped wants at A17 stays for them. Every design is offered on every route.
+
+**No design in A5 turns into another design.** A placed design is the design that renders, at every count and with any field absent: what does not apply is **hidden** — the text tile where an item has no picture, an empty right end where it has no meta, no arrows and no rule on 14 Scroller where the track already fits the window, dividers that stop where the items do on 16 Panel — and the panel **advises** ("at one feature, 13 Spotlight reads better"), which a site may ignore. At zero items every design does not render, and that is the answer rather than a hand-off. Five sentences that said otherwise were deleted in this pass and are listed in the Patch notes.
+
+**Member asks are conditional, and Ghost's sign-up pop-up needs JavaScript.** The eleven designs that draw `primaryAction` — 1, 2, 3, 4, 5, 6, 8, 10, 11, 13 and 15 — carry two notes at the action's own editor: the button **does not render when the connected site has self-signup switched off or no payment provider connected**, and where it opens Ghost's own sign-up pop-up, **with JavaScript off nothing happens**. This is a different thing from Member visibility, which hides the whole section server-side, and the two are scope-tagged apart as P0·4 draws. The five designs that keep the field undrawn — 7, 9, 12, 14 and 16 — carry neither note.
+
+**No design in A5 holds a form.** There is no subscribe field, no sign-in field and no newsletter input anywhere in the sixteen, so **no design draws the no-JavaScript form notice** and nothing in this category ever claimed a reader could subscribe without JavaScript. Each design's own no-JavaScript line is written in its section below and gathered in one table before the Patch notes.
 
 **Empty.** No items authored → the section does not render and the editor names the field. No eyebrow, sub, action or note → each simply absent. Per-design empty states are below.
 
@@ -64,11 +76,11 @@ Everything in this section applies to all sixteen unless a design says otherwise
 
 **Add item lands last in every design in A5** — there is no design here where a new item arrives anywhere but the end of the set — and it arrives carrying content rather than an empty shell: `itemTitle` “A new feature”, `itemBody` “One sentence on what it gives a reader.”, the fall-back mark for `itemIcon`, no picture, no link, with the title selected for typing. A design that draws pictures gets its own text-tile rule for the moment before one is chosen, which is the empty state it already specifies rather than a gap. *Flagged: the placeholder's wording and the land-last rule are mine.*
 
-**Remove** is on the row and is undoable. Each design states its own floor below; where removing crosses one, the sidebar names the design that suits the smaller set and offers the switch, and nothing is deleted that removal did not delete. **Removing an item renumbers nothing anywhere except 15 Index**, which says so and warns first.
+**Remove** is on the row and is undoable. Each design states its own floor below; where removing crosses one, **Remove stays visible and clickable and clicking it says why the set cannot go lower** — never dimmed, never hidden — and the panel may name the design that suits the smaller set **as advice**. Nothing is deleted that removal did not delete, and no floor hands the section to another design. **Removing an item renumbers nothing anywhere except 15 Index**, which says so and warns first.
 
 **Order** is authored order, DOM order and visual order in all sixteen — 9 Bento's Large tile Right and 7's alternation are grid placement, never a source reorder. Order is **load-bearing on five designs and reading order only on the other eleven**: 9 Bento (item 1 is the large tile), 12 Tabs (item 1 is what a published page opens on), 13 Spotlight (item 1 is the spotlight), 14 Scroller (the first cards are what a reader sees before scrolling) and 15 Index (position generates the numeral). Each says so on its own repeater rather than leaving it to be discovered.
 
-**Counts.** Every design names the band its arrangement is drawn for and what it does at each end. **The category ceiling is nine**, past which Add is disabled and the editor names A17 Post Grids — with three stated exceptions that run to twelve: 3 Four Up, 11 Checklist and 15 Index.
+**Counts.** Every design names the band its arrangement is drawn for and what it does at each end. **The category ceiling is nine**, past which Add is disabled and the editor names A17 Post Grids — with three stated exceptions that run to twelve: 3 Four Up, 11 Checklist and 15 Index. **A5 draws no Count row anywhere:** the count is the length of the item list, so there is no row of fixed words — Three · Four · Six — to convert into a picker. Every maximum sits on **Add**, disabled with its number and its reason at the control; the maxima are nine, twelve on 3, 11 and 15, four on 7, and six on 2 and 12.
 
 **Zero items** → **the section does not render**, in all sixteen: no head over an empty set, no placeholder items, no empty cells, no band or panel with nothing in it. The editor names `items[]` as the field it needs. This is §0's empty state restated in item terms, and no design in A5 varies it.
 
@@ -180,7 +192,7 @@ Four items across 300 px each, the densest grid the ladder allows, and the desig
 **Items.**
 
 - **Add.** Last. At **Body copy Hide** the placeholder body is still written and still kept — the copy stays in the editor at that value, which is the control's own rule — and it is simply not drawn.
-- **Remove.** Never disabled. Below four the row divides by the item count; at three the section is 1 Three Up at a 36 px container and the sidebar names it.
+- **Remove.** Never disabled. Below four the row divides by the item count; at three the row divides by the item count **at this design's own 36 px container and its own type steps**, and the panel advises 1 Three Up — advice, never a switch.
 - **Reorder.** Drag. **Reading order only.**
 - **Counts.** Designed for **eight or twelve** — full rows of four, and this is the design for the long set. Six items give a row of four and a row of two, left-aligned at their column width. **Add is disabled at twelve**, one of the three places in A5 that pass nine, with A17 Post Grids named.
 - **Zero.** The section does not render.
@@ -260,7 +272,7 @@ The head as a left column beside a two-across grid, with the section's one actio
 **Items.**
 
 - **Add.** Last. The list sits under **Head width** in the panel, the head's own fields being above it.
-- **Remove.** Never disabled, with one consequence worth stating: **Follows the scroll is available only while the grid is at least 240 px taller than the head** — about five items — so removing items can withdraw the value, and the panel says why rather than leaving a control that does nothing.
+- **Remove.** Never disabled, with one consequence worth stating: **Follows the scroll is available at every count above 1080** — no measurement withdraws it, CSS being unable to see how tall the grid's text runs — and the panel advises that **from about five features the head has room to travel**. With fewer, sticky simply has nowhere to go, which is a still head rather than a broken one.
 - **Reorder.** Drag. **Reading order only.**
 - **Counts.** Designed for **four to eight** — a two-across grid beside a 440 px head. Fewer than three divides the grid by the item count and the head keeps its width. Add is disabled at nine with A17 named.
 - **Zero.** The section does not render. **The head column is not drawn over an empty grid** — a head with nothing beside it is a column of sub, which is the same argument as the effectively-required title.
@@ -272,7 +284,7 @@ The head as a left column beside a two-across grid, with the section's one actio
 
 **The division.** 440 + 64 + 792 at the default, the grid in two 380 px columns. **The item title is read off the column's measure rather than the count** — 380 px is Three Up's column within thirty pixels — and at Head width Wide it steps 21 → 19, since 340 px is Four Up's.
 
-**Follows the scroll** is `position: sticky` with a 96 px top offset, bounded by the section, **offered only where the grid is at least 240 px taller than the head** (about five items) and only above 1080. Reduced motion does not change it: sticky is a position, not an animation.
+**Follows the scroll** is `position: sticky` with a 96 px top offset, bounded by the section, **offered at every count above 1080**, with the panel advising that from about five features the head has room to travel — nothing is measured, CSS being unable to see how tall the items' text runs. Reduced motion does not change it: sticky is a position, not an animation.
 
 **Responsive.** The column division holds to 1081. **At 1080 and below the head goes above the grid on a 600 px measure and the grid keeps two columns**; Head width and Head behaviour are both unavailable and the panel says why. One column at ≤ 767, the action full width at 48 px **still in the head**.
 
@@ -354,7 +366,7 @@ Picture-and-text rows whose sides alternate, for two to four features that each 
 
 **Responsive.** Two halves down to 768 — 361 px each on a 32 px gutter at 834, title 24, row gap 56, and the design's real limit rather than its breakpoint. At ≤ 767 every row stacks with **the picture always first** and the crop goes **3:2 → 16:9**, the only crop change in A5; title 22, 40 px between items, the mount 10 px.
 
-**Empty.** An item with no picture becomes a **text tile**: the 3:2 box in hover surface carrying the title at 19 px bottom-left, the title not repeated beside it, the crop held. No item with a picture → the section is 6 Rows at a 28 px title, named.
+**Empty.** An item with no picture becomes a **text tile**: the 3:2 box in hover surface carrying the title at 19 px bottom-left, the title not repeated beside it, the crop held. No item with a picture → **every row draws text alone at this design's own geometry** — 620 px halves, the 28 px title, the 72 px row gap — and the panel advises 6 Rows.
 
 **a11y.** Picture then text in the DOM on every row; alternation is `row-reverse`, never a source reorder. `alt` empty by default and authorable, the editor asking what the picture adds. **The text tile is `aria-hidden`** — unlike A4·13's deliberate repeat, because the h3 beside it already says the words.
 
@@ -377,7 +389,7 @@ A picture across the top of every item, three across, on 4 Cards' plane. Where 7
 **Items.**
 
 - **Add.** Last. The new card arrives picture-less and draws the 16:9 **text tile**, which is the design's own empty rule rather than a hole in the grid.
-- **Remove.** Never disabled. At one item the sidebar names 13 Spotlight; at no item with a picture the design **is** 4 Cards, which it already says.
+- **Remove.** Never disabled. At one item the sidebar names 13 Spotlight; at no item with a picture **the grid draws its cards without a picture band**, at this design's own 24 px text padding, and the panel advises 4 Cards.
 - **Reorder.** Drag. **Reading order only** — no card is featured at either plane value.
 - **Counts.** Designed for **three, six or nine**. Below three the row divides by the item count. Add is disabled at nine with A17 named, and **this is the design 7 hands off to at the fifth item.**
 - **Zero.** The section does not render.
@@ -385,7 +397,7 @@ A picture across the top of every item, three across, on 4 Cards' plane. Where 7
 
 **Fields.** As 7, with `primaryAction` and `note` drawn.
 
-**Controls.** Item plane (Card · None) · Head alignment · Item link (None · Text link · Whole item, **available at both planes**) · Below the set · Member visibility. Universal: Background role with Contrast unavailable — six photographs on an inverted band is 10's problem, and 10 draws icons — · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — picture ← feature image, title ← post title, body ← excerpt, item link ← the post; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. Image focus rides in the Image Picker popover.
+**Controls.** Item plane (Card · None) · Head alignment · Item link (None · Text link · Whole item, **available at both planes**) · Below the set · Member visibility. Universal: Background role with Contrast unavailable — six photographs on an inverted band is 10's problem, and 10 draws icons — · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — picture ← feature image, title ← post title, body ← excerpt, item link ← the post; **How many, a number picker, 1 to 9, default six** — Ghost has no "posts per page" setting a theme can read, so the number belongs to this section; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. Image focus rides in the Image Picker popover.
 
 **The card.** 4 Cards' plane and gaps unchanged, with the picture **16:9, fixed** (410 × 231), flush to the top corners at the card's radius under `overflow: hidden`, and 24 px of text padding rather than 28.
 
@@ -397,7 +409,7 @@ A picture across the top of every item, three across, on 4 Cards' plane. Where 7
 
 **Responsive.** Three across to 1081, two at 1080 and below (365 px card, 207 px picture, title 20). One column at ≤ 767, 16 px between cards at Card and 28 at None, text padding 20, **the crop held at every width**.
 
-**Empty.** A picture-less item becomes the **text tile** at 16:9. No item with a picture → the design is 4 Cards, named.
+**Empty.** A picture-less item becomes the **text tile** at 16:9. No item with a picture → the cards are drawn without a picture band and the panel advises 4 Cards.
 
 **a11y.** At Whole item one `<a>` per card wrapping picture, h3 and body. `alt` empty by default **and it should stay empty inside a linked card** — the editor names what filling it does to the link's name. Pictures carry dimensions and `loading="lazy"`. The 4% brightness carries no meaning; the underline does.
 
@@ -432,7 +444,7 @@ One tile at four times the size of the others, with the rest filling the cells a
 
 **Background role, reconciled.** The old refusal becomes the universal control's lock: Background role ships locked at Background with the old argument as its shown reason — a surface ground needs 4 Cards' step-up on every tile, and six lifted tiles on a lifted ground read as one block with seams; `contrast` is 10 Contrast Band, which the lock's note still names.
 
-**The grid.** Three 410 px columns, 190 px rows, 32 px gap; **the first item spans 2 × 2 (852 × 412) and the rest fill the remaining cells in written order**. Tiles are 4 Cards' Hairline plane, padding 28 large and 24 small. Large title 28 px (7's), small title 19 px with 15 px body (3's). The large picture's crop is **derived from the tile's remaining height** and is dropped below 120 px with the reason named.
+**The grid.** Three 410 px columns, 190 px rows, 32 px gap; **the first item spans 2 × 2 (852 × 412) and the rest fill the remaining cells in written order**. Tiles are 4 Cards' Hairline plane, padding 28 large and 24 small. Large title 28 px (7's), small title 19 px with 15 px body (3's). The large picture **takes the space the words leave, at a 120 px minimum, and the tile grows rather than the picture being dropped** — CSS cannot measure how tall a tile's words run, so nothing a reader sees is withdrawn by a measurement.
 
 **Two media controls is the category's one exception** to settlement 2's section-wide rule: an 852 px tile and a 410 px tile want different things.
 
@@ -512,7 +524,7 @@ Two columns of one-line items with a small mark at the left. The design settleme
 
 **No head alignment** — the head is always left, because the list is. **No item link and no media:** eight one-line links is a navigation list, and a glyph beside a check mark is two marks doing one job.
 
-**The list.** Two columns on a 1000 px measure with a 64 px gutter, filled **down the first column then the second** (`grid-auto-flow: column`, `ceil(n / 2)` rows) so visual order and DOM order agree; an odd count puts the extra entry at the foot of the first column. Entry 17 px in the **body font at 500**, still an `<h3>`. Mark 16 px with a 14 px gap and a 3 px optical lift. The hairline at Rules Show runs to the end of its own column, never across both.
+**The list.** Two columns on a 1000 px measure with a 64 px gutter, filled **down the first column then the second** (**CSS column balance** — a template cannot count its own items and neither can CSS, so the two columns are balanced rather than divided by a computed row count) so visual order and DOM order agree; an odd count puts the extra entry at the foot of the first column. Entry 17 px in the **body font at 500**, still an `<h3>`. Mark 16 px with a 14 px gap and a 3 px optical lift. The hairline at Rules Show runs to the end of its own column, never across both.
 
 **The accent.** Check and Dot spend the accent once per entry — a stated departure from §2's twice, on the argument that at Check the mark is the only thing making eight lines a list of things included. **A check is a claim;** Dot is for a list that is only a list, and Rule uses no accent at all.
 
@@ -542,14 +554,14 @@ One item at a time behind a labelled row of tabs. The category's only behaviour,
 
 **Items.**
 
-- **Add.** Last — the right end of the tab row. The item arrives with §0's content and **no `tabLabel`**, so its tab reads the title clipped to 20 characters with the clip disclosed, which is the design's own rule, and the sidebar names the field. **Add is disabled at six** with 6 Rows and 4 Cards named: six labels at 15 px with 28 px between them is about 900 px of 1,296, and at seven the row wraps.
-- **Remove.** On the row, undoable, and **the canvas returns to whichever item the sidebar then selects** rather than to a removed panel. Removing to one leaves one tab over one panel, which is a feature with a label above it; the sidebar names 4 Cards and offers the switch. Below two there is no tab set.
+- **Add.** Last — the right end of the tab row. The item arrives with §0's content and **no `tabLabel`**, so its tab reads the item title **clipped by the tab's own width** — neither CSS nor the template can count characters — and the sidebar names the field. **Add is disabled at six** with 6 Rows and 4 Cards named: six labels at 15 px with 28 px between them is about 900 px of 1,296, and at seven the row wraps.
+- **Remove.** On the row, undoable, and **the canvas returns to whichever item the sidebar then selects** rather than to a removed panel. Removing to one leaves one tab over one panel, which is a feature with a label above it; the panel advises 4 Cards — advice, never a switch. Below two there is no tab set.
 - **Reorder.** Drag. **Load-bearing:** item 1 is what a published page opens on and **there is no default-tab control**, so whatever every reader must read belongs in position 1 — the same rule A2·9 Rotator states, for the same reason. It is also the first panel in the no-JS stack.
 - **Counts.** **Two to six**, the design's own band and its arithmetic. A site whose items differ by more than about 120 px of text is advised toward 6 Rows, and the sidebar measures that as the list is edited rather than at save. *Flagged, this pass: where the advisory surfaces.*
 - **Zero.** The section does not render — no tab row above an empty panel.
 - **Inside an item.** `itemTitle` (req) · `tabLabel` (opt, ≤ 20, hard) · `itemBody` · `itemImage` + `itemImageAlt` · the link pair. Empty `tabLabel` → the clipped title. **No picture on one item of six at Panel media Picture → that panel draws 8 Media Top's text tile at 3:2**, since Panel media is a section value and cannot be set for one panel. *Flagged, this pass.* `itemIcon` and `itemMeta` kept, never drawn.
 
-**Fields.** As 8 **plus `tabLabel`** (≤ 20, hard) — the only design that draws it; absent, the tab reads `itemTitle` clipped to 20 with the clip disclosed. `itemIcon`, `itemMeta`, `primaryAction` and `note` kept and not drawn — a section action under a panel would look like the panel's own. **Two to six items; six is the ceiling** and seven names 6 Rows or 4 Cards.
+**Fields.** As 8 **plus `tabLabel`** (≤ 20, hard) — the only design that draws it; absent, the tab reads `itemTitle` **clipped by the tab's own width**; the 20-character cap is enforced **on the field, in the editor**, where a string can be counted. `itemIcon`, `itemMeta`, `primaryAction` and `note` kept and not drawn — a section action under a panel would look like the panel's own. **Two to six items; six is the ceiling** and seven names 6 Rows or 4 Cards.
 
 **Controls.** Tabs and head (Left · Centred — one control for both) · Panel media (Picture · None, **no Icon**) · Picture side (Right · Left, **the same on every panel, no alternation**) · Item link (None · Text link). Universal: Background role with Contrast unavailable (a tab row on a band needs an active state the packs do not define) · Vertical spacing · Top divider. No Member visibility: no section action is drawn. Every panel picture carries Image focus in the Image Picker popover.
 
@@ -592,7 +604,7 @@ One feature at picture scale with the rest reduced to single lines beneath it. W
 
 **Fields.** As 8. **Only the first item's `itemImage`, `itemBody`, `itemLinkLabel` and `itemLinkUrl` are drawn**; the rest contribute their `itemTitle` alone. `itemBody` is **unclamped** on the spotlight. **The spotlight is the first item and there is no control for it** — a user drags an item to the top. The frames spotlight the full archive rather than the weekly letter, which is that re-ordering, stated.
 
-**Controls.** Spotlight media (Picture · None; 3:2 fixed, no Icon; **at None the title steps 34 → 30**) · Picture side (Left · Right) · The rest (Entries under the spotlight · Beside the text · Hidden) · Mark (Check · Dot · Rule — 11's values) · Item link (None · Text link, **on the spotlight only**) · Member visibility. Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — the spotlight is the first post, the entries the rest; picture ← feature image, title ← post title, body ← excerpt, spotlight link ← the post; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. **The note naming A19 Featured and Spotlight for a post-shaped spotlight is drawn on the design itself**, beside the source control. Image focus rides in the Image Picker popover.
+**Controls.** Spotlight media (Picture · None; 3:2 fixed, no Icon; **at None the title steps 34 → 30**) · Picture side (Left · Right) · The rest (Entries under the spotlight · Beside the text · Hidden) · Mark (Check · Dot · Rule — 11's values) · Item link (None · Text link, **on the spotlight only**) · Member visibility. Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. **Data:** Content source (Authored · From posts) with the P0·5 panel — the spotlight is the first post, the entries the rest; picture ← feature image, title ← post title, body ← excerpt, spotlight link ← the post; **How many, a number picker, 1 to 9, default six**, Ghost having no "posts per page" setting a theme can read; bound, the Items list loses Add, Remove and drag and post content is plain-text-locked. **The note naming A19 Featured and Spotlight for a post-shaped spotlight is drawn on the design itself**, beside the source control. Image focus rides in the Image Picker popover.
 
 **No head alignment:** the head is always left, as on 11. **The entries are never links** — 11's rule, carried. **Whole item is not offered:** a link over a 760 px picture and its text is a target the size of a window.
 
@@ -623,7 +635,7 @@ A rail of cards that overflows sideways instead of wrapping. The library's overf
 **Items.**
 
 - **Add.** Last — the right end of the rail, off-screen, which is where a new card belongs in the one design that has an off-screen. The card arrives picture-less and draws 8 Media Top's text tile at 16:9.
-- **Remove.** On the row, and **Remove is disabled at five** with the reason shown and 4 Cards named: a rail with nothing off-screen is a grid with a scrollbar. That is the design's own floor rather than a soft limit; six to five is allowed and leaves the rail at it.
+- **Remove.** On the row, and **never disabled — not even at five.** The floor is defended by explaining it rather than by dimming a control: at five cards Remove stays visible and clickable, and clicking it says why the set cannot go lower — "a rail needs at least five features; with fewer, nothing sits off-screen and this is a grid with a scrollbar". 4 Cards is named there as advice.
 - **Reorder.** Drag. **Load-bearing in one way:** the first two or three cards are what a reader sees before scrolling, so order decides what is seen at all. Nothing beyond that is emphasised — no card is larger, and Card width is one value on the rail.
 - **Counts.** **Five minimum, nine advised as the ceiling** — the design's own numbers. Add is disabled at nine, naming 4 Cards for a set that should wrap and A17 Post Grids for a long one. **One rail per page**, flagged rather than prevented, and about the page rather than the list. **Never for pricing or anything a reader compares**, which is A7's.
 - **Zero.** The section does not render — no rail, no arrows, no rule.
@@ -631,9 +643,9 @@ A rail of cards that overflows sideways instead of wrapping. The library's overf
 
 **Fields.** As 8; `itemMeta`, `tabLabel`, `primaryAction` and `note` kept and not drawn — the head carries the arrows where the action would sit. **Five items minimum** (below five the editor names 4 Cards: a rail with nothing off-screen is a grid with a scrollbar), **nine advised as the ceiling**, naming 4 Cards again and A17 Post Grids for a long set. **One rail per page**, flagged rather than prevented. **Never for pricing or anything a reader compares.**
 
-**Controls.** Card width (Narrow 280 · Medium 320 · Wide 380 — **Wide steps the title to 21 and the body to 16**, the measure rule) · Media (Picture · Icon · None; 16:9 fixed, a missing picture becoming 8's text tile) · Rail edges (Bleeds right · Page margin — always bleeds right at ≤ 767, and **at Page margin, Rail controls None is unavailable**) · Rail controls (Arrows · A rule · None, **no dots at any value**, None by default on a phone) · Item link (None · Text link · Whole item). Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. No Member visibility: no section action is drawn — the head carries the arrows instead. **Data:** Content source (Authored · From posts) with the P0·5 panel, the same mapping as 8; bound, the Items list loses Add, Remove and drag, the five-card floor still holds, and **rail behaviour is unchanged — same snap, same arrows, same rule**. Image focus rides in the Image Picker popover. The arrow labels are theme translation-catalog strings.
+**Controls.** Card width (Narrow 280 · Medium 320 · Wide 380 — **Wide steps the title to 21 and the body to 16**, the measure rule) · Media (Picture · Icon · None; 16:9 fixed, a missing picture becoming 8's text tile) · Rail edges (Bleeds right · Page margin — always bleeds right at ≤ 767, and **at Page margin, Rail controls None is unavailable**) · Rail controls (Arrows · A rule · None, **no dots at any value**, None by default on a phone) · Item link (None · Text link · Whole item). Universal: Background role with Contrast unavailable (the photograph-scrim rule) · Vertical spacing · Top divider. No Member visibility: no section action is drawn — the head carries the arrows instead. **Data:** Content source (Authored · From posts) with the P0·5 panel, the same mapping as 8; bound, the Items list loses Add, Remove and drag, **the five-card floor is not enforced against a feed** — nobody can count what a feed will return before the page is served — and **rail behaviour is unchanged: same snap, same card width, same bleed**, with the arrows and the rule drawn only where the track does not fit. **How many is a number picker, 1 to 9, default six**, advising at the control that below five nothing sits off-screen. Image focus rides in the Image Picker popover. The arrow labels are theme translation-catalog strings.
 
-**The rail.** Cards 24 px apart (20 at 834, 16 on a phone), the card 8 Media Top's narrowed with 20 px of text padding. **The right bleed is the affordance:** a card sliced by the window says “more this way” better than an arrow, and the rail does not bleed past a final card. Arrows are A1·14's 38 px icon button, outlined, in the head's right, 40% and `disabled` at an end. The rule is a 3 px track 240 px wide, 24 px under the rail, **not draggable and not a scrollbar**. Snap is **`proximity`**; an arrow press moves one card to the left margin.
+**The rail.** Cards 24 px apart (20 at 834, 16 on a phone), the card 8 Media Top's narrowed with 20 px of text padding. **The right bleed is the affordance:** a card sliced by the window says “more this way” better than an arrow, and the rail does not bleed past a final card. Arrows are A1·14's 38 px icon button, outlined, in the head's right, 40% and `disabled` at an end. **Where the track already fits the window the arrows and the rule are not drawn at all** — the section hides what does not apply rather than showing an inert control. The rule is a 3 px track 240 px wide, 24 px under the rail, **not draggable and not a scrollbar**. Snap is **`proximity`**; an arrow press moves one card to the left margin.
 
 **Responsive.** **The arrangement does not change at any width** — card 320 / 300 / 280, gap 24 / 20 / 16 — which is the argument for the design existing. The sub leaves the head at 834 to keep the arrows on its line.
 
@@ -653,14 +665,14 @@ A large numeral where the icon would be. The editorial answer to the media quest
 
 **Archetype.** grid-of-N
 
-**Behaviour module.** **none.** The numerals are generated server-side from the list's order, so they are in the HTML like any other text; the rule, the meta's two positions and the two arrangements are CSS. **JS off:** identical.
+**Behaviour module.** **none.** The numerals are **the loop's own one-based counter**, and the padded 01 and the Letters value are **a fixed twelve-value lookup over that counter rather than arithmetic** — which is where twelve comes from at both values, not at Letters alone. They are in the HTML like any other text; the rule, the meta's two positions and the two arrangements are CSS. **JS off:** identical.
 
 **Items.**
 
 - **Add.** Last, **taking the next numeral** — 07 after 06, G after F. The item arrives with §0's content; at **Compact** the placeholder body is written, kept and not drawn.
 - **Remove.** Never disabled, and it is the one removal in A5 with a consequence for every item after it: **deleting an item renumbers the rest**, which the editor says before it happens. A reader's “see item 04” survives nothing.
 - **Reorder.** Drag. **Load-bearing:** position generates the numeral, so moving an item renumbers it and its neighbours. **This is the only design in A5 where reordering changes what is drawn rather than only where.**
-- **Counts.** **Two to twelve** — Letters run A to L, which is where twelve comes from. Designed for six or nine at **Full** and eight or twelve at **Compact**. Above twelve Add is disabled: Letters has no thirteenth value, and A17 Post Grids is named.
+- **Counts.** **Two to twelve** — Letters run A to L, which is where twelve comes from. Designed for six or nine at **Full** and eight or twelve at **Compact**. Above twelve Add is disabled: **neither numeral value has a thirteenth entry in its lookup**, and A17 Post Grids is named.
 - **Zero.** The section does not render, and **the numerals do not exist without items** — there is no 01 over an empty grid.
 - **Inside an item.** `itemTitle` (req) · `itemBody` (not drawn at Compact) · `itemMeta` · **and no numeral**: it is generated, not a field, so it cannot be typed, skipped, or moved independently of its item. `itemIcon` and `itemImage` are kept and never drawn — the numeral is the media. No meta → that rule's right end is empty and the others keep theirs. **Ordinal language in a title** — First, Then, Next, Finally, Step — makes the editor name A13 Process and offer the Letters value; it advises and does not prevent.
 
@@ -756,7 +768,7 @@ Tuple shape: `archetype · containment · ground · item-count class · media pl
 
 **The cluster, stated rather than left to trip someone.** Five designs share `grid-of-N · none · page · many · none` and separate on the sixth slot alone — 1 Three Up (three bare columns), 3 Four Up (optional body copy), 4 Cards (one plane per item), 11 Checklist (accent mark per entry) and 15 Index (generated position numeral). That is more designs on one prefix than any earlier category has carried, and it is what a features category is: bare grids on the page's own ground. Each of the five earns its place on something no control can express — 3's control removes a field from the DOM and buys a column; 4's plane changes the item's geometry, its hover and its link model; 11's item is a title with no body at all; 15's most conspicuous element is generated rather than authored; and 1 is the floor the other four are departures from. **Two more sit beside the cluster** and differ by one slot each: 2 Two Up on count, 16 Panel on containment and ground.
 
-**Not used as a separator.** Padding, head alignment, item link, media treatment, density, rules, insets, `itemMeta` and the Ground control's own range never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does the fallback web — that 7, 8, 9, 12, 13 and 14 all resolve to 4 Cards or 6 Rows when their pictures or their counts are absent is a hand-off, not a structure.
+**Not used as a separator.** Padding, head alignment, item link, media treatment, density, rules, insets, `itemMeta` and the Ground control's own range never appear in a tuple: they are controls, and two designs that differ only by a control setting are one design. Neither does what a design does when its pictures or its counts are absent: **no design in A5 resolves into another one.** Each hides what does not apply and the panel advises, so there is no fallback web left to separate designs by — the sentences that described one were deleted on 30 August 2026.
 
 **One name that does not match its archetype.** 12 Tabs is `carousel` while its module is `tabs`: one item of several at a time behind an explicit control is A2·9 Rotator's reading, the closed list has no tabs value, and `nav` would say the labels navigate, which they do not. 12 and 14 are the category's two `carousel`s and differ on three further slots.
 
@@ -843,8 +855,132 @@ In `A5-0 Category Proof.dc.html`:
 8. **Member visibility's trigger** — the audit names the "Below the set: Action" row; 3, 6, 13 and 15 draw the action from fields with no such row, so the control lands on all eleven CTA-bearing designs per ground rule 9, and the five that keep `primaryAction` undrawn (7, 9, 12, 14, 16) carry none, stated on each frame.
 9. **12's refused default-tab control** — stands; this pass adds only the repeater head's wording, "drag a feature to the first position to change what opens first", and confirms `tabLabel` edits inline on canvas.
 10. **13's A19 note** — moved from prose onto the design itself, drawn beside the Content source control; the hand-off table keeps its row.
-11. **14's five-item floor under From posts** — the floor holds against a bound feed: fewer than five matching posts and the editor names 4 Cards, the same sentence as authored mode; snap, arrows and the rule are unchanged at both sources.
+11. **14's five-item floor under From posts** — ~~the floor holds against a bound feed~~ **superseded on 30 August 2026:** nobody can count a feed before the page is served, so the floor is not enforced there; the rail draws what the feed returns and hides its arrows and its rule where the track fits. Snap, card width and the bleed are unchanged at both sources.
 12. **Fixed English** — 14's arrow labels ("Previous features" / "Next features") were the category's one visitor-facing literal pair; they are theme translation-catalog strings now. Everything else a reader sees was already an authored field.
 13. **The six-control norm** — 8, 13 and 14 now run a Data group beside their lists; all sixteen stay legal under the lifted ~15 ceiling plus the universal trio and the Data group, and Quick Controls stay the 3–5 highest-impact per design.
 14. **A5-0 Category Proof** — its shared field list and category rules predate this pass (the icon slot, Image focus in the popover, Member visibility, the Data group on three designs); A5-0 was not redrawn, and per the consistency rule the drawn panels are the authority until it is.
 15. **The two findings stand** — 12's double heading with JavaScript off and 14's rule having no registry sentence remain **ARCHITECT: registry** questions; nothing in this pass touched either, and no module name was coined.
+
+
+---
+
+## Roster after the patch — sixteen designs, nothing renumbered
+
+*The **[Free] designs:** line for this category is at the head of this document and is written there once, so the merge reads one line and nothing can drift. It carries the owner's ruling of 30 August 2026 — 1 Three Up · 6 Rows.*
+
+| # | Design | What it is for | Section action | Behaviour |
+|---|---|---|---|---|
+| 1 | Three Up **[Free]** | the category's floor: three bare items on the page's ground | yes | none |
+| 2 | Two Up | two items whose body copy needs a sentence, capped at a 520 px measure | yes | none |
+| 3 | Four Up | the densest grid, and the design for eight or twelve | yes | none |
+| 4 | Cards | one plane per item, and where the plane is settled | yes | none |
+| 5 | Split Head | the head as a column beside the grid, its action inside it | yes | none |
+| 6 | Rows **[Free]** | one item per full-width row, a hairline between | yes | none |
+| 7 | Alternating Media | picture-and-text rows whose sides alternate | no | none |
+| 8 | Media Top | a picture across the top of every card | yes | none |
+| 9 | Bento | one tile at four times the size, from position alone | no | none |
+| 10 | Contrast Band | the whole set on the inverted ground | yes | none |
+| 11 | Checklist | two columns of one-line entries with a mark | yes | none |
+| 12 | Tabs | one item at a time behind a labelled row | no | `tabs` |
+| 13 | Spotlight | one item as the subject, the rest single lines | yes | none |
+| 14 | Scroller | a rail that overflows sideways instead of wrapping | no | `carousel` |
+| 15 | Index | a generated numeral where the media would be | yes | none |
+| 16 | Panel | the whole set on one inset surface panel | no | none |
+
+## Control lists after the patch — what moved
+
+Nothing was renamed and no value was added to a shared row. The rows below are the only control changes in the pass; every other row on every design stands as written in its own section.
+
+| Design | Change | Rule |
+|---|---|---|
+| 5 Split Head | **Head behaviour: Follows the scroll** is available at every count above 1080; the 240 px availability test is gone and the panel advises "from about five features the head has room to travel" | CSS cannot see content |
+| 8 Media Top | **Data group gains How many** — a number picker, 1 to 9, default six | item counts are a number picker · some fields we drew do not exist |
+| 13 Spotlight | **Data group gains How many** — a number picker, 1 to 9, default six | item counts are a number picker · some fields we drew do not exist |
+| 14 Scroller | **Data group gains How many** — a number picker, 1 to 9, default six, advising that below five nothing sits off-screen; **Rail controls' arrows and rule are not drawn where the track already fits** | item counts are a number picker · no design ever turns into another design |
+| 11 Checklist | **Density keeps its name and its three values** — a shared control, and a design may never rename one | slider labels · a design may offer fewer choices but never rename a shared control |
+| 16 Panel | **Inset keeps Snug 16 · Comfortable 40 · Wide 72** — the shared row drawn identically in A3·12, A4·8 and A6·4 | a design may offer fewer choices but never rename a shared control |
+| all sixteen | **No Count row exists in A5**; the count is the item list's length and every maximum sits on Add, disabled with its number and its reason | item counts are a number picker |
+| all sixteen | **No colour swatch row and no "Inherit" value** exists in the category, so there is no "Base" row to rename and nothing to remove | a design may offer fewer choices, and must say why |
+
+## Data fields after the patch
+
+**Authored, in all sixteen:** `eyebrow` · `title` · `sub` · `items[]` (`itemTitle` req · `itemBody` · `itemIcon` · `itemImage` + `itemImageAlt` · `itemMeta` · `itemLinkLabel` + `itemLinkUrl` · `tabLabel`) · `primaryAction` · `note`. Which design draws which is on its own Fields line, and a field a design does not draw is kept rather than cleared.
+
+**From Ghost, on three designs only** — 8 Media Top, 13 Spotlight, 14 Scroller, at Content source: From posts: the post's **feature image**, **title**, **excerpt** and **own link**, plus **How many**, which is this section's number and not Ghost's. Nothing else in A5 comes from Ghost.
+
+**Asked for and not available, recorded rather than drawn:** a "posts per page" setting inside Ghost's admin (there is none a theme can read, which is why How many is written here); a member's join date, a member's newsletter list, a newsletter's cadence and the site's postal address (A5 draws none of them and asked for none). **No field in A5 requires the template to count, add or remember:** 15 Index's numerals are the loop's own one-based counter with a fixed twelve-value lookup over it, 11 Checklist's columns are CSS column balance, and the row-gap tighten on 1, 2 and 3 when no item anywhere has a body is one section value the editor writes when the list changes.
+
+## The no-JavaScript line, design by design
+
+**A5 holds no subscribe or sign-in field anywhere, so no design draws the no-JavaScript form notice.** What each design gives a visitor with the script gone:
+
+| # | Design | With JavaScript off |
+|---|---|---|
+| 1 | Three Up | identical — head, items, icons and the action are all server-rendered |
+| 2 | Two Up | identical — the cap is a `max-width`, the stack at 1081 a media query |
+| 3 | Four Up | identical at both values of Body copy, which removes the paragraph server-side |
+| 4 | Cards | identical — the three treatments, the row stretch and Whole item are CSS and an `<a>` |
+| 5 | Split Head | identical, sticky included — `position: sticky` is CSS |
+| 6 | Rows | identical — hairlines are borders, Whole row is an `<a>` |
+| 7 | Alternating Media | identical — alternation is `row-reverse` on even rows |
+| 8 | Media Top | identical; `loading="lazy"` and the explicit dimensions are attributes |
+| 9 | Bento | identical — the 2 × 2 span is grid placement, so the emphasis survives |
+| 10 | Contrast Band | identical — band, lift, hairline and ring are token arithmetic in CSS |
+| 11 | Checklist | identical — nothing here is a checkbox and nothing is persisted |
+| 12 | Tabs | **all panels render stacked and visible, each preceded by its tab label as a heading** (the registry's own degradation). The cross-fade and the held panel height go; the phone row's sideways scroll survives. The double announcement this creates is finding 1. |
+| 13 | Spotlight | identical; at The rest: Hidden the entries are absent server-side, so nothing is downloaded and unread |
+| 14 | Scroller | **the rail is fully usable** — a native horizontally-scrollable snap strip, every card, picture and link reachable, the container keeping its tab stop and label. Only the arrow pair goes, and the rule with it — finding 2. |
+| 15 | Index | identical — the numerals are in the HTML like any other text |
+| 16 | Panel | identical — the plane, the inset and the dividers are CSS |
+
+**Member asks:** the eleven designs that draw the section action carry the conditional-render note and, where the action opens Ghost's own sign-up pop-up, the line **with JavaScript off, nothing happens**. The five that do not draw the field carry neither.
+
+## Behaviour declared, design by design — unchanged
+
+`tabs` on **12 Tabs**; `carousel` on **14 Scroller**; **nothing at all on the other fourteen**. `core` is assumed and not listed per design. **No module name was coined in this pass**, no module was renamed, and the two registry questions in **Two findings** stand exactly as written.
+
+---
+
+## Patch notes — features patch, 30 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are named, never numbered: the letter-and-number codes elsewhere in this project are filing labels.
+
+**Frames changed — seventeen, and every one of them.** `A5-0 Category Proof` gains a **DESIGN PATCH PASS** section: the numbering line, the free-designs line and its shortlist, the five deleted hand-off sentences, what the designs hide instead, the one Remove that was disabled, the count position, the two shared controls that keep their names, the member asks, the no-JavaScript line, and the five measurements the platform facts cost. **All sixteen design frames** gain a **DESIGN PATCH** block naming, for that design, what it now hides instead of switching, where its maximum sits, that Remove never greys out, whether it draws a member ask, and what a visitor gets with JavaScript off. **No section frame was restyled, no arrangement moved, and no type scale, colour pack or spacing step changed.**
+
+### What changed, and the rule that required it
+
+1. **Five hand-off sentences are deleted** — *no design ever turns into another design*. 3 Four Up at three items "is 1 Three Up at a 36 px container"; 7 Alternating Media with no pictures "is 6 Rows at a 28 px title"; 8 Media Top with no pictures "**is** 4 Cards" (twice — the Items note and the Empty line); 12 Tabs at one item, where the sidebar "names 4 Cards and offers the switch"; and the shared floor's promise that crossing a floor "offers the switch". The structural-descriptor section's "fallback web" paragraph is rewritten for the same reason.
+2. **What the designs do instead is hide what does not apply** — *no design ever turns into another design*. 3 divides the row by the item count at its own container; 7 draws text-only rows at its own geometry; 8 draws cards with no picture band; 12 draws one tab over one panel; 14 Scroller draws **no arrows and no rule where the track already fits the window**; 6 Rows and 16 Panel leave an empty right end where an item has no meta; 16's dividers stop where the items do; 9 Bento returns the space to the words on a picture-less large tile. At zero items every design does not render.
+3. **The panel advises and never switches** — *no design ever turns into another design*. Every named destination in A5 is now advice at a control: 13 Spotlight for a one-feature section, 4 Cards for a set that should wrap, 6 Rows for entries that have outgrown a line, A6 CTA Banners for a single offer, A17 Post Grids past the ceiling, A13 Process for ordinal language, A19 Featured and Spotlight for a post-shaped spotlight.
+4. **14 Scroller's Remove is no longer disabled at five** — *the Remove button never greys out*. It stays visible and clickable at the floor and explains why the set cannot go lower: "a rail needs at least five features; with fewer, nothing sits off-screen and this is a grid with a scrollbar". This was **the only disabled Remove in the category**; the other fifteen already never dimmed it, and the three removals with consequences keep their warnings — 9 Bento's promotion into the large tile, 13 Spotlight's promotion to the spotlight, 15 Index's renumbering.
+5. **The count position is stated on all sixteen** — *item counts are a number picker*. A5 draws **no Count row at all**: the count is the item list's length, so there was no row of fixed words to convert. Every maximum sits on Add, disabled with its number and its reason at the control — nine as the category ceiling, twelve on 3, 11 and 15, four on 7, six on 2 and 12.
+6. **Three designs gain How many as a number picker** — *item counts are a number picker*, with *some fields we drew do not exist* behind it. 8 Media Top, 13 Spotlight and 14 Scroller bind to posts, and a bound list needs a number that nothing in Ghost's admin supplies. 1 to 9, default six; 14 advises at the control that below five nothing sits off-screen. **The owner's ruling, 30 August 2026:** the site chooses the number — a fixed six with no control was refused.
+7. **Two shared controls keep their names and their values** — *slider labels*, held against *a design may never rename a shared control*. **Density** on 11 Checklist (Compact 12 · Comfortable 16 · Spacious 24) is drawn under that name in four other categories, and **Inset** on 16 Panel (Snug 16 · Comfortable 40 · Wide 72) is A3·12's, A4·8's and A6·4's row unchanged. Renaming either would make A5 disagree with documents that are already patched. Every other scale row in A5 already reads Compact · Comfortable · Spacious, and the two width rows keep the library's Narrow · Medium · Wide.
+8. **Nothing to rename for gaps** — *gap names are "Tight · Normal · Loose"*. **A5 draws no gap control:** item gaps are fixed values in the arrangement, and the scale rows are spacing and padding ladders under their own names.
+9. **The narrowings all keep their stated reasons and none was renamed** — *a design may offer fewer choices on a shared control, and must say why*. Contrast disabled with its reason on 4, 7, 8, 12, 13 and 14; Background role locked on 9, 10 and 16; Vertical spacing locked on 16; Picture and Icon in accent refused on 10, the accent action disabled with its 3.2:1 shown. **A5 has no colour swatch row, so there is no "Base" row to rename, and no "Inherit" value exists anywhere in the category** — there was none to remove.
+10. **Eleven designs gain the member-ask notes** — *member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript*. 1, 2, 3, 4, 5, 6, 8, 10, 11, 13 and 15: the action **does not render** where the connected site has self-signup off or no payment provider connected, and where it opens Ghost's own pop-up, **with JavaScript off nothing happens**. Scope-tagged apart from Member visibility, which hides the section server-side. 7, 9, 12, 14 and 16 draw no action and carry neither note, stated on each frame.
+11. **No design draws a no-JavaScript form notice, and none needed one** — *the no-JavaScript notice*. **A5 holds no subscribe or sign-in field anywhere**, and no sentence in the category promised a subscription without JavaScript. The pass instead wrote **the no-JavaScript line on every design** (table above): fourteen identical, 12 Tabs stacked with its labels as headings, 14 Scroller a fully usable snap strip minus its arrows and its rule.
+12. **Avatars land nowhere and are recorded** — *avatars with no photograph*. A5 draws no person in sixteen designs: no author, no member, no initials plate. Neither the two-initial rule nor the one-letter rule applies.
+13. **11 Checklist's two columns are CSS column balance** — *Ghost's templates cannot count, add, or remember*. The old rule computed `ceil(n / 2)` grid rows, which needs a count of the items; a template cannot count its own loop and CSS cannot count them either. The fill direction (down the first column, then the second), the odd entry at the foot of the first column and the hairline that runs to the end of its own column are unchanged.
+14. **15 Index's numerals are the loop's own one-based counter, with a fixed twelve-value lookup over it** — *Ghost's templates cannot count, add, or remember*. No arithmetic anywhere: the padded **01** and the **Letters** value are each a twelve-entry lookup on the counter, which is why **twelve is the ceiling at both numeral values** rather than at Letters alone. Renumbering on remove and on reorder is unchanged, warning included.
+15. **14 Scroller's five-card floor is not enforced against a bound feed** — *Ghost's templates cannot count, add, or remember*. Nobody can count what a feed returns before the page is served, so the rail draws what it gets and hides its arrows and its rule where the track fits. The floor still holds in authored mode, where the editor can see the list. Reconciliation note 11 is superseded and says so.
+16. **The row-gap tighten when no item anywhere has a body is written by the editor** — *Ghost's templates cannot count, add, or remember*. On 1, 2 and 3 it is one section value the editor writes when the list changes and the stylesheet reads; a template cannot look across its own loop to ask whether any item has a body.
+17. **5 Split Head's sticky head is no longer withdrawn by a measurement** — *CSS cannot see content*. "Available only while the grid is at least 240 px taller than the head" asked CSS to read how tall the items' text runs. Follows the scroll is now available at every count above 1080, and the panel advises "from about five features the head has room to travel".
+18. **9 Bento's large picture is no longer dropped below a derived 120 px** — *CSS cannot see content*. It takes the space the words leave at a **120 px minimum and the tile grows** instead, so what a reader sees no longer depends on how long the words are.
+19. **12 Tabs' fall-back tab clips by its own width** — *CSS cannot see content*. Where no `tabLabel` is typed the tab draws the item title and lets it clip; the **20-character cap stays on the field, in the editor**, where a string can be counted. The advisory about items differing by more than about 120 px of text is the editor's and stays there.
+20. **Nothing in A5 renders inside a post's body** — *inside a blog post's body we own the stylesheet and nothing else*. These are placeable page sections whose markup, ARIA and text this project owns end to end. Recorded, applied nowhere.
+21. **Nothing was renumbered and no design was deleted.** Sixteen designs, 1 to 16, no gaps, no number reused.
+
+### Open questions for the architect — both unchanged
+
+1. **12 Tabs is announced twice with JavaScript off.** The registry's degradation precedes each stacked panel with its tab label as a heading; each panel already contains an h3 that repeats that label deliberately. Either the module's heading is suppressed where a panel carries one, or this design's h3 repeat is dropped in the no-JavaScript branch. **ARCHITECT: registry ruling.** No module name was coined.
+2. **14 Scroller's rule has no registry sentence.** `carousel`'s degradation names dots and arrow buttons; this design refuses dots and offers a 3 px static rule instead. Read here as an indicator and hidden with the arrows. Either the registry's sentence gains the rule, or the rule is specified as a CSS-only element that survives. **ARCHITECT: registry ruling.**
+
+### The owner's rulings — 30 August 2026
+
+**Nothing in this category is left open to him.** The two registry questions above remain the architect's.
+
+1. **The free designs are 1 Three Up and 6 Rows** — *the two free designs are the owner's choice*. Two different shapes doing different jobs — three columns across the page, and a list down it with a hairline between the rows — and neither needs the customer to own good photographs. The line at the head of this document is his answer, written once in the shape the merge reads literally; `A5-0 Category Proof` carries the same words. The three pairs he refused: 1 with 4 Cards (the same arrangement twice), 1 with 11 Checklist (no room for a sentence under an entry), 6 with 15 Index (numerals that imply an order the design says it does not have).
+2. **How many is a control the site sets** — *item counts are a number picker*. A number picker, **1 to 9, default six**, in the Data group on 8 Media Top, 13 Spotlight and 14 Scroller. Six is only the starting value: a site that wants three features from its posts sets three, and one that wants nine sets nine. **A fixed six with no control was refused**, and so was a range running to twelve — past nine the set belongs in A17 Post Grids. 14 Scroller advises at the control that below five nothing sits off-screen.
+3. **The rail draws whatever the posts give it, and hides its arrows and its rule when the track already fits** — *no design ever turns into another design*, with *Ghost's templates cannot count, add, or remember* behind it. A reader never sees a control that does nothing, and three bound posts still draw three tidy cards. **The greyed-arrows alternative was refused** — two dead buttons teach a reader to distrust them — and so was refusing to render below five posts, which would make a section appear on a home page the day a fifth post was published, with nobody touching the editor.
+

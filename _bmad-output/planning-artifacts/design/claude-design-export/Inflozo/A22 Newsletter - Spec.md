@@ -1,6 +1,7 @@
 # A22 Newsletter / Subscribe — written specification
 
-16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation patch, 25 August 2026**
+16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation patch, 25 August 2026** ·
+**newsletter patch, 28 August 2026**
 
 The frames are `A22-0 Category Proof.dc.html` and `A22-1` … `A22-16`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -23,6 +24,23 @@ field list is repeated below because the build reads it.
 *(The master brief files these specs at `prds/prd-Inflozo-2026-08-17/sections-inventory.md`. That
 path does not exist in this project; A1–A29 are specified in root-level `<ID> — Spec.md` files and
 this follows them.)*
+
+**Newsletter patch (28 August 2026).** Four claims in this category were wrong about what Ghost can do, and
+all four are corrected here and on all seventeen frames. **A subscribe form cannot work without
+JavaScript** — Ghost's signup endpoint refuses a plain form submission, so every design replaces the form
+with the designed no-JavaScript notice and the "posts natively" floor is withdrawn. **A theme is never told
+which newsletters a member has** — "You are subscribed" becomes **"Signed in"**. **A newsletter has no
+cadence field** — the generated meta line's "weekly" and "twice a month" are deleted, and what is left is
+**one word — "Members" — drawn only where `visibility` is `paid`** ⚑ *(the owner's ruling, 28 August
+2026)*; a letter any member receives carries no word at all. **"Not public" is not the same as paid** — the Members badge is drawn only
+where a newsletter's `visibility` is `paid`, and 10 Choice's tick-to-swap Portal field is replaced by a
+static members link. Every subscribe ask also carries its two conditional lines: it does not render where
+the connected site cannot support it, and a button that opens Ghost's own sign-up pop-up does nothing with
+JavaScript off. **Nothing was renumbered.**
+
+**[Free] designs:** 1 Inline Row · 13 Boxed
+
+*(Shortlisted, recommended and **confirmed by the owner on 28 August 2026**.)*
 
 ---
 
@@ -66,9 +84,22 @@ design carries a per-state control and none ever did.
 section cannot repoint it** ⚑ — the row is read-only in all sixteen panels. **The markup speaks
 Ghost's own contract** ⚑ *(new in this pass)*: the `<form>` carries
 `data-members-form="subscribe"`, the email field `data-members-email`, and the name field
-`data-members-name` when *Ask for a name* is on. Ghost's members script drives loading, success and
-error; **`member-form`'s only job is mapping those three onto the designed seven**. The native POST
-is the no-JS floor and is unchanged. Ghost sends its own confirmation and answers an
+`data-members-name` when *Ask for a name* is on. **And the newsletter is chosen in the markup too** ⚑
+*(newsletter patch, checked against Ghost's own theme documentation on 28 August 2026)*:
+`data-members-newsletter` on an input, **its value the newsletter's `name`, not its `id`** — hidden where
+the section posts to one letter (1–9, 11–14, 16), a **checkbox per letter in 10 Choice**, one hidden input
+per card in 15 Two Up. Ghost's documented `{{#get "newsletters"}}` loop is exactly 10 Choice's arrangement,
+so the design was right and the contract was written short. **Errors surface in a child element carrying
+`data-members-error`** ⚑, which is the invalid state's own slot. Ghost's members script drives loading,
+success and error; **`member-form`'s only job is mapping those three onto the designed seven**. **There is no no-JavaScript floor** ⚑
+*(corrected in the newsletter patch)*: tested against both live Ghost servers, the magic-link endpoint
+**refuses a plain form submission**, so a scriptless field would take an address and lose it. Every design
+therefore **replaces the form with P0·4's no-JavaScript notice** at the form row's own height — *"Signing up
+needs JavaScript — turn it on to subscribe."*, the note kept beneath it, no field and no button — and the
+notice is **plain text, not an alert** ⚑. **The sent, error and loading states are untouched.** **The ask is
+also conditional on the connected site** ⚑: it does not render with self-signup switched off or members
+disabled, a paid ask needs a payment provider connected, and **any button that opens Ghost's own sign-up
+pop-up does nothing with JavaScript off**. Ghost sends its own confirmation and answers an
 already-subscribed address in the same slot. **With members disabled the substitution happens at the
 server**, before the page is sent: the field goes, the button becomes a link to the subscribe page,
 the placeholder and note are kept, and **the state holds with or without JavaScript** ⚑.
@@ -83,15 +114,23 @@ for exactly two. The other fourteen post to the newsletter named in the shared s
 defaulting to the site's own default, **and the sidebar names which one** ⚑. **Ghost's newsletter
 order is the order** in both designs — no picker, no reorder, no per-newsletter styling ⚑. **Zero
 newsletters is not reachable**: Ghost ships every site with one and it cannot be deleted ⚑.
-**A paid-visibility newsletter is not subscribable by address** ⚑ *(new in this pass)*: where the
-target letter's `visibility` is not `public`, the ask routes to **Portal signup**
-(`#/portal/signup`), gated on `@site.paid_members_enabled`, and the letter carries a **Members**
-badge. Collecting an address that cannot receive the letter is subscribing a reader into silence,
-and that was the defect.
+**A paid newsletter is not subscribable by address** ⚑: where the target letter's `visibility` is
+`paid`, the ask is a **link to Ghost's sign-up** (`#/portal/signup`), gated on
+`@site.paid_members_enabled`, and the letter carries a **Members** badge. Collecting an address that cannot
+receive the letter is subscribing a reader into silence, and that was the defect. **The condition is
+`paid`, not "not public"** ⚑ *(corrected in the newsletter patch)* — Ghost gives a newsletter no
+`public` value, so the old condition badged nearly every letter and told a reader nothing. **In 10 Choice
+a paid letter carries no checkbox at all** ⚑ *(corrected)*: the row draws the badge and a **static** members
+link, rendered at the server, so nothing swaps when a reader ticks anything and no behaviour is needed for
+it. **In 15 Two Up the paid card's form is a link for the same reason**, also server-rendered. **The link
+opens Ghost's own sign-up pop-up: with JavaScript off, nothing happens** ⚑, and it does not render where the
+site has self-signup off or no payment provider connected.
 
 **4 · The already-subscribed signed-in member.** **The form is never drawn to them** ⚑ at the shared
-control's default. In its place, at identical height: "You are subscribed", one line naming which
-letter and where it lands, and **a link to `#/portal/account/newsletters`** ⚑ — Ghost's own
+control's default. In its place, at identical height: **"Signed in"** ⚑ *(corrected in the newsletter
+patch — the line read "You are subscribed" and named which letter and where it lands, and **Ghost does not
+tell a theme which newsletters a member has**, so no design can say it)*, the signed-in address beneath it,
+and **a link to `#/portal/account/newsletters`** ⚑ — Ghost's own
 preferences panel, not a section-built one. The alternative value exists and is not the default:
 *The form anyway*, for a publication that wants a second address captured. **14 Slide-in Card ignores
 the control** ⚑ and never renders for a subscriber at either value. **This is not Member
@@ -161,7 +200,9 @@ Every design obeys these unless its own entry says otherwise.
   4, 7 and 9 print as 1 Inline Row's head on white with the note beneath.
 - **Behaviour.** **All sixteen declare `member-form`.** **One declares a second module** — 14
   Slide-in Card's `slide-in-card` ⚑. **This pass coined nothing**: the Portal route is a link, and
-  the badge, the meta line and the member count are template strings.
+  the badge, the meta line and the member count are template strings. **The newsletter patch coined nothing
+  either** — the no-JavaScript notice is P0·4's, drawn markup with no behaviour, and **every design with a
+  form draws it in place of the form** ⚑, the sent, error and loading states unchanged.
 - **The context footer strip reads "Built with Inflozo"** ⚑ *(corrected in this pass)* — FR-J15
   applies to every frame it appears in, including low-opacity page chrome drawn only for context.
 - **Refused category-wide, each with a reason:** a third-party provider field ⚑ (the endpoint is
@@ -269,8 +310,9 @@ noreferrer · sponsored**. That is `eyebrow`, `heading`, `blurb`, `placeholder`,
   the generated meta line and the **Members** badge. Clicking one says **"Edit in Ghost"**, and where
   the string is generated rather than stored the pill says so.
 - **Translation-catalog strings** ⚑, not fields: "Subscribing…", "Use a different address", the
-  visually-hidden "Email address" label, the generated meta line's words ("Free", "Members",
-  "weekly", "twice a month") and the **Members** badge. The rule the patch set — no fixed English
+  visually-hidden "Email address" label, the generated meta line's one word ("Members" —
+  **"Free", "weekly" and "twice a month" are all deleted** ⚑, the line being drawn only on a paid letter),
+  the no-JavaScript notice's sentence and the **Members** badge. The rule the patch set — no fixed English
   visitor-facing string ships — is met either by a field with a default or by the catalogue, and this
   list says which for every string in the category.
 
@@ -278,7 +320,7 @@ noreferrer · sponsored**. That is `eyebrow`, `heading`, `blurb`, `placeholder`,
 
 | # | Design | Tuple | Ctl | Module beyond `member-form` |
 |---|---|---|---|---|
-| 1 | Inline Row | `form · none · page · none · none · field and button in one centred row` | 6 | — |
+| 1 | Inline Row **[Free]** | `form · none · page · none · none · field and button in one centred row` | 6 | — |
 | 2 | Card | `form · card · page · none · none · the ask on an inset card` | 6 | — |
 | 3 | Split | `split · none · page · none · none · the form standing beside the head` | 6 | — |
 | 4 | Contrast Band | `form · none · contrast · none · none · the ask on an inverted band` | 7 | — |
@@ -290,7 +332,7 @@ noreferrer · sponsored**. That is `eyebrow`, `heading`, `blurb`, `placeholder`,
 | 10 | Choice | `form · none · surface · few · none · one checkbox row per newsletter` | 6 | — |
 | 11 | Reasons | `split · none · page · few · none · three reasons beside the field` | 5 | — |
 | 12 | Issue Preview | `feed · none · page · many · left · three recent issues under the ask` | 5 | — |
-| 13 | Boxed | `form · box · page · none · none · the ask in a hairline box` | 5 | — |
+| 13 | Boxed **[Free]** | `form · box · page · none · none · the ask in a hairline box` | 5 | — |
 | 14 | Slide-in Card | `sticky · card · transparent · none · none · a corner card that arrives late` | 6 | `slide-in-card` ⚑ |
 | 15 | Two Up | `grid-of-N · none · page · few · none · one card per newsletter` | 5 | — |
 | 16 | Quote | `stack · none · page · one · none · a reader's line above the field` | 5 | — |
@@ -338,7 +380,8 @@ machine-checkable.
   reachable.** One → 10 draws no rows and names 5 Panel; 15 draws one card and names 2 Card, neither
   switching ⚑. Two to four is what both are built for. Five or more → 15 names 10 Choice ⚑.
   Fields shown: `name` always, `description` when present, `visibility` in 15's generated meta line
-  and — since this pass — **in 10's Members badge**.
+  and in 10's Members badge — **both only where that value is `paid`** ⚑, and **the cadence half of the
+  meta line is deleted**, Ghost's newsletters carrying no cadence field.
 - **Ghost's posts** — 12 Issue Preview alone, and since this pass **through the shared P0·5 panel**.
   **No Add and no Remove** ⚑ except at *Hand-picked*, where the picked list is a list of references
   with P0·3's controls (drag to reorder, ✕ never disabled, Add pre-filled with the next newest post)
@@ -375,7 +418,7 @@ section is selected in the editor.
 | `doneHeading` | text | opt | 40 ch | all 16 | Default "Check your inbox" · edited in P0·6's Done state |
 | `doneText` | text | opt | 120 ch | all 16 | **Names the address that was typed** ⚑ |
 | `invalidText` | text | opt | 60 ch | all 16 | Default "That address doesn't look right." |
-| `subscribedText` | text | opt | 90 ch | all 16 | The signed-in subscriber's line |
+| `subscribedText` | text | opt | 90 ch | all 16 | **The signed-in line** ⚑ — default "Signed in"; it names the signed-in address and **claims no subscription**, Ghost not telling a theme which letters a member takes |
 | `manageLabel` | text | opt | 24 ch | all 16 | Default "Manage your preferences"; its target is read-only |
 | `label` | text | opt | 20 ch | 9 | The strip's inline label; **defaults to the newsletter name** ⚑ |
 | `issuesLabel` | text | opt | 24 ch | 12 | Default "The last three issues" ⚑ |
@@ -387,7 +430,7 @@ section is selected in the editor.
 | `imageAlt` | text | opt | 120 ch | 6 | **Drawn as an alt in 6, stored and unused in 7** ⚑ |
 | `imageFocus` | enum | opt | — | **6, 7** | Centre · Top · Bottom — **a control since this pass** ⚑, in the panel and in the Image Picker popover |
 | `socialProof` | enum | req | — | 1–8, 13, 16 | Off (default) · Member count |
-| `membersBadge` | enum | req | — | 10, 12 | Off · On (default On where any item is not public) — **generated, never typed** ⚑ |
+| `membersBadge` | enum | req | — | 10, 12 | Off · On — **generated, never typed** ⚑. **10: only where a newsletter's `visibility` is `paid`** ⚑ *(corrected)*. **12: where a post's `visibility` is not `public`** — a real gate on a post, and unchanged |
 | `memberVisibility` | enum | req | — | all 16 | Source group; Everyone · Logged out · Free · Paid |
 | *members enabled* | Ghost | req | — | all 16 | A site setting; the section reacts, never sets it ⚑ |
 | *the signed-in member* | Ghost | opt | — | all 16 | And which newsletters they already take |
@@ -438,9 +481,12 @@ all sixteen**; only departures from its standard degradation are restated per de
    allowed** and the `<form>` then takes `aria-label="Subscribe to Orbit Weekly"`. Placeholder and
    button label fall back to defaults rather than rendering empty ⚑. **`socialProof: Member count`
    with members off draws nothing** — not a zero ⚑.
-9. **Module.** `member-form`, edit-safe. **No-JS:** "The `<form>` posts natively to Ghost's members
-   endpoint; Ghost's own server response replaces the designed sent state." Empty and invalid survive
-   without script; submitting and the in-place done state are the JS path.
+9. **Module.** `member-form`, edit-safe. **The registry's "posts natively to Ghost's members endpoint"
+   line is withdrawn** ⚑ *(newsletter patch)* — Ghost's signup endpoint refuses a plain form submission, so
+   a scriptless field would take an address and lose it. Nothing of the form survives without script.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2** ⚑. Visually-hidden label; `type`, `autocomplete`, `inputmode`,
     `required`; `aria-invalid` on error with focus held. **The note is both the `aria-describedby`
     target and the `aria-live="polite"` region** ⚑; **the proof line is outside it** ⚑ — a count is
@@ -480,6 +526,9 @@ five state strings through P0·6; the button taking a P0·2 icon.
 8. **Empty.** No blurb → a shorter card, **nothing reserved** ⚑. No note → 22 px less. **Never an
    empty card**: with no heading, no blurb and no note the panel names 1 Inline Row ⚑.
 9. **Module.** `member-form`. The card is a token substitution in CSS and declares nothing.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The card is a `div` with no role and no label** ⚑. Light: heading
     14.0:1 on `surface`, blurb 5.3:1; dark 13.1:1.
     **Repeating items** — none.
@@ -513,6 +562,9 @@ form contract, editing and the footer strip as category-wide.
 8. **Empty.** No blurb → the head is an eyebrow and a heading and **the form column does not move
    up** ⚑. No note → the form column loses 22 px.
 9. **Module.** `member-form`.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **DOM order is head then form at every width and at either Form side**
     ⚑. Light: heading 13.4:1, blurb 5.1:1.
     **Repeating items** — none.
@@ -544,6 +596,9 @@ behind **both** columns, never one ⚑. Source group, form contract, editing, fo
 8. **Empty.** No blurb → the band shortens, **no minimum height** ⚑. With neither heading nor blurb
    the band is a 46 px row inside its padding and the panel names 9 Slim Bar ⚑.
 9. **Module.** `member-form`.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The band is a section landmark, not a banner** ⚑. **Focus and invalid
     borders take the carried colour, not the accent** ⚑, and **so does the proof line** ⚑. Light band:
     heading and button label 13.4:1, **placeholder 4.9:1 at 15 px** ⚑ — the tightest ratio and the
@@ -580,6 +635,9 @@ band to draw it on. Source group, form contract, editing, footer strip.
 8. **Empty.** No blurb → a shorter plane ⚑. **The plane renders whatever is inside it and is never
    drawn empty**; with no heading and no blurb the panel names 9 Slim Bar ⚑.
 9. **Module.** `member-form`. The plane declares nothing.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The plane is decorative: no role, no label** ⚑. Light: heading 14.0:1,
     blurb 5.3:1; dark 13.1:1.
     **Repeating items** — none.
@@ -616,6 +674,9 @@ form contract, editing, footer strip.
    No alt → the editor asks and the picture publishes with `alt=""` rather than a guessed sentence ⚑.
 9. **Module.** `member-form`. The picture is a CSS background on a real `{{img_url}}`, positioned
    from `imageFocus`.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The picture carries a real alt, not an empty one** ⚑ — the opposite
     call from 7 Cover. **DOM order is words then picture at every width** ⚑; at ≤ 767 the picture is
     placed above the words by grid placement, so reading order and DOM order differ, which is stated.
@@ -655,6 +716,9 @@ spacing.** Source group, form contract, editing (the alt edits in the Image Pick
    the hand-off is the empty state** ⚑.
 9. **Module.** `member-form`. The image is a CSS background positioned from `imageFocus` and the
    scrim a gradient; neither is measured.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The background image is decorative and takes an empty alt** ⚑.
     **Focus and invalid borders take white, not the accent** ⚑, and so does the proof line.
     Checked at Medium on the darkest and lightest thirds: heading 12.1:1, **placeholder 4.9:1 at
@@ -692,6 +756,9 @@ Source group, form contract, editing, footer strip.
 8. **Empty.** No eyebrow → the heading rises to the spacing ⚑. **No heading is not a supported
    state** ⚑ — the display line is the design.
 9. **Module.** `member-form`.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** **76 px is a size, not a level** ⚑ — the same `h2` as everywhere in A22. **The rule is a
     `div`, not an `hr`** ⚑. Light: heading 13.4:1, placeholder 5.1:1, button label 4.6:1.
     **Repeating items** — none.
@@ -731,6 +798,9 @@ low-opacity page chrome exactly as it does to a masthead. Source group, form con
 8. **Empty.** No label at *Custom* → falls back to the newsletter name ⚑. **The strip never renders
    empty**: its floor is a label and a field.
 9. **Module.** `member-form`.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** **No heading at all** ⚑ — the label is a `<p>` and the `<form>` carries
     `aria-label="Subscribe to the Friday edition"`, A3·4's rule. **At ≤ 767 DOM order is label then
     form**, matching reading order. Light: label 14.0:1, placeholder 5.3:1.
@@ -767,18 +837,27 @@ editing (the newsletter's own name says "Edit in Ghost"), footer strip.
 7. **Data.** `{{#get "newsletters"}}` ⚑ — **the whole set, in Ghost's own order, with no limit
    control**. **0** not reachable ⚑. **1** → the rows are not drawn and the panel names 5 Panel
    without switching ⚑. **many** → two to four is the design; five or more grows the plane and
-   scrolls the page, never the section ⚑. **A letter whose `visibility` is not public draws the
-   Members badge**, and **a ticked paid-only letter routes the button to Portal signup** ⚑ —
-   `#/portal/signup`, gated on `@site.paid_members_enabled`; the field goes and the button-as-link
-   takes its place, which is the substitution this category already owns. **With paid members off
-   the ordinary form stays** and the badge is the only signal ⚑. **Members off** → **the whole design
+   scrolls the page, never the section ⚑. **A letter whose `visibility` is `paid` draws the
+   Members badge** ⚑ *(corrected in the newsletter patch — the condition was "not public", and Ghost gives a
+   newsletter no `public` value, so nearly every letter was badged)*, **and that letter carries no checkbox
+   at all** ⚑ *(corrected)*: the row draws the badge and a **static** link to `#/portal/signup`, gated on
+   `@site.paid_members_enabled`, rendered at the server. **Nothing swaps when a reader ticks anything** —
+   the old design swapped the field for the link on tick, which needed behaviour the category does not
+   declare and left a scriptless reader with a tick that did nothing. **With paid members off the ordinary
+   form stays** and the badge is the only signal ⚑. **The link opens Ghost's own sign-up pop-up: with
+   JavaScript off, nothing happens** ⚑. **Members off** → **the whole design
    goes** ⚑, which is why this design defaults to *Hide the section*.
 8. **Empty.** A newsletter with no description → **that row draws Name only** and falls to 44 px ⚑.
-   **Never a placeholder row and never an empty checkbox list** ⚑. Every letter public → the badge
-   row has nothing to draw and hides itself ⚑.
-9. **Module.** `member-form`. **Without JS the checkboxes are real inputs in the same form and post
-   with the address** ⚑ — this design loses nothing at all. The Portal route is a link and needs no
-   module.
+   **Never a placeholder row and never an empty checkbox list** ⚑. No paid letter → the badge has nothing to draw and hides
+   itself ⚑, and every row is an ordinary checkbox.
+9. **Module.** `member-form`. **"Without JS the checkboxes still post with the address" is withdrawn** ⚑
+   *(newsletter patch)* — the endpoint refuses a plain submission, so the field and the checkbox rows are
+   both replaced by the notice; this design loses what every other design loses. **The members link on a
+   paid row is static markup** and needs no module, but **it opens Ghost's own sign-up pop-up, which needs
+   JavaScript** ⚑.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**; **the rows are a fieldset with a visually-hidden legend** ⚑. Each row is
     a real `<label>` wrapping the input, so **the whole 56 px row is the target** ⚑. **The badge is
     inside the label's accessible name** ⚑ — "Field Notes, Members" — so the tick does not promise
@@ -791,8 +870,9 @@ editing (the newsletter's own name says "Edit in Ghost"), footer strip.
 
 **Reconciled.** Six of its own — **Members badge** ⚑ new (15's generated meta, reused on the row) and
 **Pre-ticked: None enabled** ⚑, because a reader ticking their own boxes is a legitimate default set
-and *All* is the consent anti-pattern this category's own notes worry about. **A ticked paid-only
-letter routes to Portal signup** ⚑, gated on `@site.paid_members_enabled`. **Background role is
+and *All* is the consent anti-pattern this category's own notes worry about. **A paid letter carries no
+checkbox and a static members link** ⚑ *(newsletter patch, replacing the tick-to-swap Portal field)*, gated
+on `@site.paid_members_enabled`, and **the badge is drawn only where `visibility` is `paid`** ⚑. **Background role is
 locked at Surface** ⚑ — the plane is the ground; the rows are what separate this from 5.
 **Padding retired into Vertical spacing.** **Two frames redrawn**: the members-only row now carries
 the badge, and the states frame gained a ticked-paid-letter state. Source group, form contract,
@@ -821,6 +901,9 @@ editing (names, descriptions and visibility say "Edit in Ghost"), footer strip.
    form rises in its column and the reasons do not move ⚑. **An empty icon slot renders nothing**
    and the line closes up to its text ⚑.
 9. **Module.** `member-form`. The reasons are static markup.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The reasons are a `<ul>`** ⚑; the numbers are CSS content and are not
     read out, and **an icon is `aria-hidden` decoration** ⚑ — the line's text carries the meaning.
     **DOM order is head, form, reasons at every width** ⚑. Light: reasons 13.4:1, marks 5.1:1.
@@ -873,6 +956,9 @@ reasons are this design's proof. Source group, form contract, editing, footer st
    says so in the editor rather than the canvas drawing an empty band.
 9. **Module.** `member-form`. The issue rows are server-rendered links; there is no `load-more` and no
    `infinite-scroll` here — the archive link is a real page.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**; **issue titles are `h3` inside their anchors** ⚑ and **the label above
     them is a paragraph, not a heading** ⚑. **The whole row is the anchor** ⚑. Thumbnails `alt=""` ⚑.
     **The Members badge is inside the anchor's accessible name** ⚑ — "…, 8 August 2026, Members".
@@ -889,7 +975,9 @@ Data panel** ⚑, and **How many issues left the design's own list** to become t
 **The archive link follows the source** ⚑: the tag's archive at *By tag*, the author's at *By
 author*, the post index otherwise — Ghost still has no newsletter archive route. **Padding retired
 into Vertical spacing.** **One frame redrawn**: the members-only issue's meta line ends in
-**Members**. Source group, form contract, editing (post content says "Edit in Ghost"), footer strip.
+**Members**. **This badge is on a post, not a newsletter** ⚑ *(newsletter patch)*: a post's `visibility`
+does have a `public` value, so "not public" is a real gate here and the condition is unchanged — only
+10 Choice's newsletter badge was wrong, and the two are no longer described as one rule. Source group, form contract, editing (post content says "Edit in Ghost"), footer strip.
 
 ---
 
@@ -909,6 +997,9 @@ into Vertical spacing.** **One frame redrawn**: the members-only issue's meta li
 7. **Data.** As 1. **Members off** → the box renders and holds the button-as-link ⚑.
 8. **Empty.** No blurb → a shorter box ⚑. **Never an empty box**: the panel names 1 Inline Row ⚑.
 9. **Module.** `member-form`. The box is a border.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **The box is a `div` with no role and no label** ⚑; **its hairline is
     1.4:1 and is decorative** ⚑, which is why no value thickens it. Light: heading 13.4:1, blurb
     5.1:1.
@@ -949,9 +1040,13 @@ editing, footer strip.
    px less.
 9. **Module.** **Two** ⚑ — `slide-in-card` and `member-form`, both edit-safe. **No-JS, quoted:**
    `slide-in-card` — "The card renders statically in the document flow near the page end rather than
-   sliding in." `member-form` — "The `<form>` posts natively to Ghost's members endpoint; Ghost's own
-   server response replaces the designed sent state." **Together: with script off this is an ordinary
-   bordered card at the page foot with a working form in it** ⚑.
+   sliding in." `member-form` — **its registry line is withdrawn** ⚑; the endpoint refuses a plain
+   form submission and the notice replaces the form. **Together: with script off the card renders statically
+   at the page foot and carries the no-JavaScript notice where the form would be** ⚑ *(corrected in the
+   newsletter patch — it said "with a working form in it", and there is no working form without script)*.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Heading **h2**. **It is not a dialog** ⚑ — no `role="dialog"`, no focus trap, no
     `aria-modal`; it does not block the page. A `<section aria-labelledby>` that becomes visible;
     **focus is not moved to it on arrival** ⚑ and it is announced with `aria-live="polite"` once. The
@@ -999,8 +1094,13 @@ its lines on the ask. Source group (Member visibility included), form contract, 
 8. **Empty.** A newsletter with no description → **that card draws Description: Hide** and the grid
    equalises heights anyway ⚑. **Never an empty card and never a placeholder card** ⚑. A paid card at
    the Portal route is **shorter by the field's height** and the grid equalises ⚑.
-9. **Module.** `member-form`, declared once and binding both forms ⚑. With script off both post
-   natively and independently; the Portal route is a link and needs no module.
+9. **Module.** `member-form`, declared once and binding both forms ⚑. **"With script off both post
+   natively and independently" is withdrawn** ⚑ *(newsletter patch)* — neither can, so **each card draws the
+   notice in its own form's place**, independently, at the card's own height. The paid card's members link is
+   static markup and needs no module; **it opens Ghost's sign-up, which needs JavaScript** ⚑.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** Section heading **h2**; **each newsletter's name is an `h3`** ⚑. **Each card is its own
     `<form>` with its own visually-hidden label** ⚑ — except a paid card at the Portal route, which
     is a link and not a form ⚑. Focus order: heading → card one → card two.
@@ -1041,6 +1141,9 @@ Source group, form contract, editing, footer strip.
    without switching ⚑; the rule goes with the quote. No attribution → **the quote stands
    unattributed** ⚑, which the editor flags as weak rather than blocking. No detail → the middot goes ⚑.
 9. **Module.** `member-form`. The quote is static markup.
+   **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
+   button: *"Signing up needs JavaScript — turn it on to subscribe."*, the note kept beneath. **Sent, error
+   and loading are untouched**, and the members-off substitution is a server one and holds either way.
 10. **A11y.** **The quote is a `<blockquote>` with a `<cite>` in its attribution** ⚑ — not a heading,
     at any size. **The 24 px line under the rule is the `h2`** ⚑, stated so the build does not promote
     the quote. Light: quote 13.4:1, attribution 5.1:1.
@@ -1094,10 +1197,40 @@ its attribution and detail all inline), footer strip.
    still the category's other answer, and the two are not offered in the same column.
 8. **Paid-visibility newsletters cannot be subscribed to by address.** ⚑ *(new)* A `visibility: paid`
    newsletter accepts no free member, so a form that takes an address for one is collecting silence.
-   10 and 15 route to Portal signup, gated on `@site.paid_members_enabled` — but **there is no theme
-   API for "which tier grants this newsletter"**, so the route is Portal's generic signup rather than
-   a specific plan. **A site with paid letters and Stripe switched off is a real dead end**: the badge
+   10 and 15 link to Portal signup, gated on `@site.paid_members_enabled` — but **there is no theme
+   API for "which tier grants this newsletter"**, so the link is Portal's generic signup rather than
+   a specific plan, **and it needs JavaScript to open**. **Corrected in the newsletter patch:** the badge
+   condition is `paid` rather than "not public" — Ghost gives a newsletter no `public` value, so the old
+   condition badged nearly every letter — and 10's field no longer swaps for the link on a tick; a paid
+   letter simply has no checkbox. **A site with paid letters and Stripe switched off is a real dead end**: the badge
    says Members and the ordinary form is all there is.
+
+9. **A subscribe form cannot work without JavaScript, and this category is nothing but forms.** ⚑ *(new in
+   the newsletter patch)* Ghost's signup endpoint refuses a plain form submission — tested against both live
+   servers — so the registry's `member-form` line, quoted in all sixteen designs, was wrong about the one
+   thing it promised. Every design now draws **P0·4's notice** in the form's place. **Two consequences worth
+   naming**: the whole category has a hard script dependency, which no other content category has, and
+   `member-form`'s registry entry needs rewriting for every category that quotes it — **A2·5, A3·4, A30
+   and A32 quote the same withdrawn sentence**. That is a registry correction, not a section one.
+10. **Ghost tells a theme nothing about a member's newsletters, and a newsletter has no cadence.** ⚑ *(new
+   in the newsletter patch)* Two fields the category drew do not exist. The subscribed line could not know
+   which letter a reader takes, so it is now **"Signed in"** and names only the address. The generated meta
+   line could not know "weekly" or "twice a month", so it is **one word read from `visibility`**. **What is
+   lost is real**: a publication that sends a weekly and a monthly letter cannot say so in a generated
+   line, and must write it into the newsletter's own description in Ghost, which is authored text the
+   section renders verbatim.
+
+11. **A subscribe form cannot take a payment, and Ghost's documentation says so plainly.** ⚑ *(new in the
+   newsletter patch, checked against Ghost's theme documentation on 28 August 2026)* A `data-members-form`
+   submission **creates a free member and sends a magic link** — nothing in it asks for money, whatever
+   letter the reader ticked. Payment is a **separate Portal checkout**: `data-portal="signup/TIER_ID/monthly"`
+   or `/yearly`, which needs **Stripe connected**, needs **JavaScript**, and needs a **tier ID the
+   publication copies out of Ghost Admin**. **Two consequences for this category.** A reader who ticks a paid
+   letter and submits an address is not asked to pay and does not receive the letter — the silence finding 8
+   describes, now confirmed rather than inferred. And a section *could* carry a real checkout button, but only
+   if the editor pastes a tier ID, because **Ghost gives a theme no mapping from a newsletter to the tier that
+   grants it** — the same gap finding 8 names, now with a price on it: that missing mapping is the only thing
+   between a paid letter and a working checkout.
 
 **Repeated from A21 and A26–A29 and still open:** a section cannot know what precedes it on the
 route. It matters more here — **a page can carry a newsletter section, A3·4's footer band and
@@ -1138,15 +1271,16 @@ Cumulative. Reused components are listed with the category that set them.
 | **The form row** | **Visually-hidden label, 46 px field, 46 px button 10 px apart, 13 px note under** | **A3·4 — carried verbatim** |
 | **The seven form states** | **Empty · focus · invalid · submitting · done · subscribed · members-off, at one height** | **A22 — extending A3·4's four** |
 | **The stacked form** | **Field and button 48 px each, 8 px apart, field text 16 — the ≤ 767 geometry** | **A22** |
-| **The subscribed line** | **"You are subscribed" + a link to `#/portal/account/newsletters`, in the form's slot** | **A22** |
-| **The button-as-link** | **The members-off substitution — and, since this pass, the paid-only Portal route** | **A22** |
+| **The signed-in line** | **"Signed in" + the member's address + a link to `#/portal/account/newsletters`, in the form's slot** | **A22 — corrected in the newsletter patch** |
+| **The button-as-link** | **The members-off substitution, and the paid letter's static members link — both rendered at the server** | **A22** |
+| **The no-JavaScript form notice** | **P0·4's notice at the form row's own height: one sentence, the note beneath, no field and no button** | **P0·4 — drawn in all sixteen by the newsletter patch** |
 | **Newsletter row** | **20 px checkbox, name 17, description 14 muted, the whole 56 px row a label** | **A22·10** |
 | **Newsletter card** | **Generated meta line, name 26, description, its own stacked form** | **A22·15** |
-| **Generated newsletter meta** | **"Free · weekly" / "Members · twice a month", read from visibility and cadence, never typed** | **A22·15** |
-| **Members badge** | **The generated meta reduced to one word, in a row or a meta line, inside the accessible name** | **A22·10, A22·12 — new in this pass** |
+| **Generated newsletter meta** | **One word read from `visibility` — "Members", drawn only where that value is `paid`; nothing on any other letter, the card closing up. Never typed, and the cadence half is deleted** ⚑ | **A22·15 — corrected in the newsletter patch** |
+| **Members badge** | **The generated meta reduced to one word, in a row or a meta line, inside the accessible name — on a newsletter only where `visibility` is `paid`** ⚑ | **A22·10, A22·12** |
 | **Member-count proof line** | **One muted 13 px line, `{{total_members}}` pre-rounded, template edited around the number** | **A22 — new in this pass** |
 | **The Newsletter source group** | **Six shared rows: Which newsletter · Ask for a name · Signed-in subscriber · Member visibility · Posts to (read-only) · Members disabled** | **A22 — new in this pass** |
-| **Ghost's form contract** | **`data-members-form` · `data-members-email` · `data-members-name`, with the native POST as the floor** | **A22 — new in this pass** |
+| **Ghost's form contract** | **`data-members-form` · `data-members-email` · `data-members-name` — and **no native-POST floor**: the endpoint refuses a plain submission** ⚑ | **A22 — corrected in the newsletter patch** |
 
 ---
 
@@ -1227,3 +1361,141 @@ Then, one line each, where this pass and the category's own earlier rulings disa
   sixteen and `slide-in-card` in 14; the Portal route is a link and the badge, meta line and count are
   template strings. There was no Preview row to delete — the category refused per-state controls at
   the outset, which is why P0·6's state pill needed no argument here.
+
+---
+
+## Patch notes — newsletter patch, 28 August 2026
+
+Every change carries the **name** of the rule that required it. Rules are named, never numbered: the
+letter-and-number labels elsewhere in this project are filing codes and say nothing about what a rule
+requires.
+
+**Frames updated — all seventeen.** `A22-0 Category Proof` (a new **newsletter patch** table, the patch
+paragraph, the roster's two [Free] marks, settlements 2, 3 and 4, finding 4 and two component-inventory
+rows) and every design frame `A22-1` … `A22-16`, each of which gained **a drawn NO JAVASCRIPT state**
+beside its members-off state, a corrected **SIGNED IN** state, a corrected behaviour block, a corrected
+no-JS line in its written-spec card, and a **newsletter patch** line in its ⚑ RECONCILED card. **Redrawn
+beyond captions:** `A22-10 Choice`'s ticked-paid-letter state, now a paid row with no checkbox and a static
+members link; `A22-15 Two Up`'s generated meta line, now one word in all fifteen places it is drawn.
+**Nothing else moved** — no layout, type scale, colour pack or spacing value changed.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **The no-JavaScript notice** | **The "posts natively, works without JavaScript" claim is withdrawn in all sixteen.** Ghost's signup endpoint refuses a plain form submission, so the form is replaced by **P0·4's notice** at the form row's own height — one sentence, the note beneath, no field and no button — and a **NO JAVASCRIPT** state is drawn on every design's states frame. **The sent, error and loading states are untouched.** Three designs lose a specific claim with it: **10 Choice's** "the checkboxes are real inputs and post with the address — this design loses nothing at all", **14 Slide-in Card's** "an ordinary bordered card at the page foot with a working form in it", and **15 Two Up's** "with script off both post natively and independently". The category now has a hard script dependency; finding 9 records it, including that the same withdrawn registry sentence is quoted in A2, A3, A30 and A32. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | Every subscribe ask in the category carries two panel lines: it **does not render** where the connected site has self-signup switched off, members disabled, or — for a paid ask — no payment provider connected; and any button that opens **Ghost's own sign-up pop-up does nothing with JavaScript off**. That covers 10 Choice's and 15 Two Up's members links, the members-off button-as-link where it points at Portal, and any button an editor re-points. |
+| **The cadence line goes** | Ghost's newsletters carry **no cadence field**, so half of "Free · weekly" could never be generated. The **generated newsletter meta is now one word read from `visibility` — "Members", drawn only where that value is `paid`** ⚑ — in 15 Two Up's card meta and 10 Choice's badge; **a letter any member receives carries no word at all** (the owner's ruling, 28 August 2026), and the card closes up rather than reserving the line. "Free", "weekly" and "twice a month" all leave the translation catalogue. A newsletter's own **description** is authored in Ghost and is untouched, so a publication that wants to say "twice a month" still can, in its own words. |
+| **The Members badge is paid-only** | The condition was "`visibility` is not `public`". **Ghost gives a newsletter no `public` value**, so that badged nearly every letter and told a reader nothing. It is now drawn **only where `visibility` is `paid`**, in 10 Choice's rows and 15 Two Up's meta line. **12 Issue Preview badges posts, not newsletters** — a post's `visibility` does have a `public` value, so "not public" is a real gate there and that badge is unchanged; the two are no longer described as one rule. |
+| **"You are subscribed" becomes "Signed in"** | **Ghost does not tell a theme which newsletters a member has**, so no design can claim a subscription. The line reads **"Signed in"**, names the signed-in address, and links to Ghost's own preferences panel. The state, its geometry, its height and the control that governs it are unchanged. `subscribedText` keeps its name and cap and its default changes. |
+| **No design ever turns into another design** | Nothing in this patch introduced a hand-off, and the paid-letter correction removed a state change that behaved like one: **10 Choice's field no longer swaps for a Portal link when a reader ticks a paid letter.** A paid letter has **no checkbox**; its row draws the badge and a **static** members link, rendered at the server, always present. |
+| **The two free designs are the owner's choice** | Shortlisted the plainest, photography-free designs — **1 Inline Row · 13 Boxed · 2 Card · 5 Panel · 9 Slim Bar** — recommended **1 Inline Row and 13 Boxed**, and **the owner confirmed that pair on 28 August 2026**. Marked in the roster and on the proof frame. The line the merge reads is in §0: **`**[Free] designs:** 1 Inline Row · 13 Boxed`**. |
+| **Avatars with no photograph** | **No subject in this category.** A22 renders no person: no author, no member avatar, no initials anywhere in sixteen designs. |
+| **The Remove button never greys out** | **One subject: 11 Reasons' authored list**, whose floor is one line. Unchanged by this patch and already compliant — ✕ is never disabled, and *Add* disables at three with its reason readable. The Ghost-sourced lists in 9, 10, 15 and 12 have no Add and no Remove at all. |
+| **Slider labels** | **No subject.** A22 draws no slider; every control is a named-value row whose title says what it affects. |
+| **Gap names are "Tight · Normal · Loose"** | **No subject.** A22 has no gap control, and no Tight/Even/Airy or Tight/Standard/Wide exists here to replace. |
+| **Item counts are a number picker** | **One subject, and it is not this category's control:** 12 Issue Preview's *Count* lives in the shared populate-from panel (Three · Four · Six). Recorded as an inherited row rather than corrected here, so the shared panel is not forked by one category. |
+| **A design may offer fewer choices on a shared control, and must say why** | Unchanged by this patch and re-checked: the swatch row is **Base**, there is **no "Inherit" value anywhere** in A22, no shared control is renamed or extended, and every narrowing shows its reason — Background role locked on 4, 5, 6, 7 and 10; all three universal rows locked on 14; 9 Slim Bar's Field width offering no Wide value. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, nothing reused, nothing deleted. |
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen
+   designs, no gaps and no renumbering.
+2. **The `**[Free] designs:**` line is present** in §0, on its own line, and names **1 Inline Row** and
+   **13 Boxed** — both of which exist in this category's roster, and both **confirmed by the owner on
+   28 August 2026**.
+
+### Open questions
+
+**QUESTION 1 — Which two designs are free** · **ANSWERED 28 AUGUST 2026: 1 Inline Row and 13 Boxed**, the recommendation confirmed. Recorded in §0 and in the roster; kept here for the record.
+
+Two of the sixteen newsletter designs ship in the free theme. Which two is your call. These five are the
+plainest — a site could publish any of them and not look unfinished, and none of them needs the customer to
+have good photography:
+
+1. **1 Inline Row and 13 Boxed.** *(RECOMMENDED)*
+   Inline Row is a heading, a sentence and a field on the page, with nothing around it. Boxed is the same
+   ask inside a thin outline, which gives it an edge on a busy page. They differ in kind rather than degree,
+   so a free customer gets a real choice.
+   *What it gives up:* the free theme has no version with a filled or raised background, so a free site's
+   newsletter block never separates itself from the page by colour.
+2. **1 Inline Row and 2 Card.**
+   Card puts the ask on a raised white card. It looks the most "designed" of the plain five and is the one
+   most customers would pick first.
+   *What it costs:* a card is a stronger visual claim than most page layouts want, and the free pair then has
+   nothing quiet on a busy page.
+3. **1 Inline Row and 9 Slim Bar.**
+   Slim Bar is a single 93 px strip with a label and a field — the smallest newsletter section in the
+   library, made to sit under a header or above a footer.
+   *What it costs:* it has no heading and no body copy at all, so a free customer who wants to explain the
+   letter has only one design that can, and Slim Bar can read as page furniture rather than an invitation.
+
+*Example.* A free customer building a home page picks the newsletter block and sees two options: with
+option 1, "a plain ask" and "a plain ask in a box". With option 2, "a plain ask" and "an ask on a white
+card".
+
+**QUESTION 2 — What a paid newsletter's row does in the design that lists several letters** · **CHECKED
+AGAINST GHOST'S DOCUMENTATION, 28 AUGUST 2026, AND ANSWERED BY IT.** The owner asked whether ticking a paid
+letter and clicking Subscribe would ask the reader for payment. **It would not.** Ghost's theme
+documentation is explicit that a members form creates a free member and sends an email link; payment happens
+only through a Portal checkout link carrying a tier's ID, which needs Stripe and JavaScript. So a ticked paid
+letter takes an address, makes a free member, and sends nothing — **option 1 stands as drawn**, and finding
+11 records the platform fact. **A fourth option the documentation opens up** is recorded there too: the row
+could carry a real checkout button, but only if the editor pastes a tier ID out of Ghost Admin, since Ghost
+gives the theme no way to tell which tier grants which letter. Not drawn, and not recommended without the
+owner asking for it.
+
+Design 10 Choice lists the site's newsletters as tick boxes above one email field. A **paid** newsletter
+cannot be delivered to an email address alone — the reader has to have an account and a subscription — so
+ticking one and typing an address subscribes them to silence. The old drawing swapped the email field for a
+"join" link the moment a reader ticked a paid letter, which needs code we do not have in this section, and
+would leave a reader with scripts turned off ticking a box that does nothing. **I have drawn option 1 and
+this question asks you to confirm it.**
+
+1. **A paid letter has no tick box: the row shows the letter, a "Members" mark and a permanent link to join.**
+   *(RECOMMENDED)*
+   Nothing changes as the reader clicks, so nothing can go wrong, and the row tells the truth before anybody
+   types anything.
+   *What it gives up:* a reader cannot tick the free letter and the paid letter in one gesture; joining is a
+   separate step, on a separate page.
+2. **Keep the tick box for the paid letter and put one permanent line under the field:** "Field Notes is for
+   members — join to get it", with the link in it.
+   *What it costs:* a reader can still tick a letter they will not receive, and the explanation sits below
+   the field rather than on the row they ticked.
+3. **Leave paid letters out of the list entirely.**
+   *What it costs:* the publication cannot advertise its paid letter where it lists the others, and a reader
+   has no way to discover it from this section.
+
+*Example.* A site sends "The Friday edition" free and "Field Notes" to members only. Under option 1 the
+reader sees one tick box, one email field, and beneath it "Field Notes · Members — Join to get Field Notes".
+Under option 2 they see two tick boxes and a line of explanation under the field.
+
+**QUESTION 3 — What the one-word letter mark says for a letter every member receives** · **ANSWERED
+28 AUGUST 2026: no word at all unless the letter is paid.** The mark is "Members" on a paid letter and
+absent on every other, and the card closes up rather than reserving the line. Redrawn in 15 Two Up (eleven
+places) and already the condition in 10 Choice's badge. Kept below for the record.
+
+The line above each newsletter's name used to read "Free · weekly". "Weekly" is gone — Ghost does not record
+how often a letter goes out. That leaves one word, and the word for a paid letter is "Members". A letter that
+any signed-in reader receives, free or paying, is the awkward case.
+
+1. ~~**"Free".**~~ *(recommended, and not chosen)*
+   It answers the question a reader is actually asking — does this cost anything — and it is the word the
+   design was drawn with.
+   *What it gives up:* strictly, the reader still needs an account, so "free" means "free to receive", not
+   "no sign-up".
+2. **"Members".** Accurate — every letter goes to members — but then the mark is the same word on every
+   letter and stops telling anybody anything.
+3. **No word at all** unless the letter is paid. **← chosen by the owner.**
+   Cleanest and least arguable, but the line above the name disappears on most sites, and the cards lose a
+   line of vertical rhythm they were drawn with.
+
+*Example.* A site with a free letter and a paid one shows, under option 1, "Free" over one card and
+"Members" over the other. Under option 3, nothing over the first card and "Members" over the second.
+
+**Not a question, recorded for the architect:** the withdrawn "posts natively to Ghost's members endpoint"
+sentence is the shared `member-form` registry line, and **A2·5 Capture, A3·4 Newsletter Band, A30 and A32
+quote it too**. Correcting it there is a registry job, not this category's, and finding 9 names it.
+
+— End of specification —

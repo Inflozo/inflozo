@@ -7,6 +7,26 @@ The frames are `A20-0 Category Proof.dc.html` and `A20-1` … `A20-15`. **Where 
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
 that was written down. Every invented decision is marked ⚑ here and on the frame.
 
+**Design patch pass — 29 August 2026 (this document's current state).** Three rulings landed on this
+category and two of them changed what is drawn. **Ghost's templates cannot look at the previous item
+inside a loop**, so 7 Index's letter heads are cut in by a small script and its no-JavaScript state is a
+flat alphabetical list. **Ghost returns at most 100 tags** and warns above that, so *Show* is a number
+picker with that ceiling and the truncation stated. **A tag's own colour reaches a theme only on a
+recent Ghost**, and the five designs that read it now say so in the panel. Alongside those, the ten
+library-wide rules were applied to the category: **12 Panel's hand-off to 1 Chips is deleted** — no
+design turns into another design — the hand-picked list's Remove never greys out, and item counts are
+a number picker rather than a row of fixed buttons. **Nothing was renumbered.** Two questions the
+reconciliation pass had left open were also ruled: **8 Big Type gains the all-topics link switch** and
+**9 Rail gains the Counts row**, neither changing what is drawn. Every change is listed with the name
+of the rule that required it in **Patch notes** at the end.
+
+**[Free] designs:** 1 Chips · 14 Slim
+
+*(Shortlisted in this pass — 1 Chips, 5 Split Head, 7 Index, 11 Ledger, 14 Slim: the plainest designs,
+and the five that do not depend on the customer having good photography — and **ruled by the owner on
+29 August 2026**: the category default and the quietest line in it. A free site gets a pill row it can
+put anywhere and a one-line topic bar, neither of which needs a picture.)*
+
 **What the reconciliation pass did.** The category was audited, design by design, against the PRD's
 control vocabulary and Ghost's verified data surface, thinking like an end user editing their own
 site. It retired **Padding** into the universal **Vertical spacing** in all fifteen panels, added the
@@ -85,8 +105,10 @@ characters and is drawn at every width.
 
 **4 · Zero, one, many, and where the links go.** **Zero public tags removes the section entirely** ⚑
 in all fifteen; the editor draws a dashed placeholder naming why. **One tag is drawn as one tag** in
-fourteen of the fifteen — no widening, no centring, no stretching — and **12 Panel is the one design
-that hands off** ⚑, to 1 Chips, below four, at every source including Hand-picked. **Every tag name
+all fifteen — no widening, no centring, no stretching — and **no design in A20 hands off to another**
+⚑ *amended 29 August 2026*: 12 Panel's hand-off to 1 Chips is deleted, so below four topics it draws
+its box with the one column the set fills and its panel advises that 1 Chips reads better at that
+count. Advice, never a switch. **Every tag name
 links to that tag's Ghost archive** ⚑, which is **A29 Archive Headers'** page and is not yet
 designed; the all-topics link points at a site tag index **Ghost does not provide** ⚑ (finding 1).
 
@@ -118,7 +140,7 @@ Every design obeys these unless its own entry says otherwise.
   **6 spends none at all** ⚑, because a pack's accent is checked against `background` and not against
   `contrast` — A6's rule. **No name, count, rule, middot or letter head is ever accent.** **Tag
   colour: Tag's own is a separate mechanism** ⚑ — a tag's own `accent_color` as a fill or a plate
-  tint, with a derived on-colour — and it never becomes the section's accent.
+  tint, with a derived on-colour — and it never becomes the section's accent. **Tag's own needs a recent Ghost** ⚑ *29 August 2026* — a tag's colour reaches a theme only on a recent release, and **on an older Ghost every tag falls back to Theme**, silently and site-wide, with nothing drawn empty; the panel states the requirement. **On an older Ghost the row is greyed with the reason shown** — "Your Ghost version does not support topic colours" — and every tag takes the theme colour, so nobody sets a colour and wonders why nothing happened; **ruled by the owner on 29 August 2026**. **ARCHITECT: the version number itself is the product's to supply**, named once and not repeated per design.
 - **Targets.** **Nothing the theme draws is under 44** ⚑. Pills 32-in-44 at Compact and 44 px boxes
   above it; chips 38-in-44; rows and lines on a 44 px minimum; tiles are the whole cell. **Hover
   fills bleed 8–12 px past the measure** ⚑; focus rings inset 2 px wherever the target meets a page
@@ -136,10 +158,10 @@ Every design obeys these unless its own entry says otherwise.
   re-tokenised** ⚑ — 13 Overlay's scrim, at all three of its new strengths.
 - **Print.** **A20 prints as names only** ⚑ — pictures, planes, boxes, bands, counts, descriptions
   and tag colours all drop, and the section prints as one line of topic names under its heading.
-- **Behaviour.** **Two designs declare a module** — 9's `carousel`, 15's `filter-strip` — both from
-  the fixed registry, both quoted, both fully usable without JS. The other thirteen declare none.
-  **This pass coined no module name and added no behaviour**, so no frame carries *ARCHITECT: registry
-  addition*.
+- **Behaviour.** **Three designs declare a module** ⚑ *amended 29 August 2026* — 9's `carousel`,
+  15's `filter-strip`, and **7's `group-headings` at Group by: Initial** — all three from the fixed
+  registry, all three quoted, all three fully usable without JS. The other twelve declare none.
+  **No module name was coined in either pass**, so no frame carries *ARCHITECT: registry addition*.
 - **Refused category-wide, each with a reason:** `marquee` on 14 ⚑ (a moving list of topics cannot be
   read) · `shuffle` anywhere ⚑ (a set whose order changes on reload cannot be proof-read) ·
   `load-more` and `infinite-scroll` (a tag set is finite and Show clamps it) · `reveal` ⚑ · a
@@ -159,9 +181,12 @@ design's control count** and they sit below its own list, above the Data group.
 | **Vertical spacing** | Compact · Comfortable · Spacious | 64 · 96 · 132; **40 · 64 · 96 in 14 and 15** ⚑. **This is the retired Padding row under its real name** |
 | **Top divider** | None · Line · Fade | Drawn above the section on the page ground. **Disabled in 14** where Rules already draws that hairline ⚑; drawn **above** the band in 6, never inside it ⚑ |
 
-**Two designs lock their ground, and only two.** 6 Contrast Band is an inverted band — at Background
-it is 1 Chips, which the Design picker already offers. 14 Slim is the category's only `transparent`
-ground — on a surface it is 15's chip bar. **3 Cards, 11 Ledger and 15 Filter Bar do not lock**: in
+**Two designs lock their ground, and only two.** ⚑ *Reasons rewritten 29 August 2026 — a locked value
+states its own reason and never names what the section would "become".* 6 Contrast Band's inverted
+band **is** the design, so Background has nothing to invert; if a plain pill row on the page ground is
+wanted, the panel names **1 Chips as the design to place**. 14 Slim is the category's only
+`transparent` ground, and on a surface or a contrast ground its two rules stop reading as rules; the
+panel names **15 Filter Bar as the design to place** for a bar on a surface. Both are advice. **3 Cards, 11 Ledger and 15 Filter Bar do not lock**: in
 those three the plane, the plane and the bar are the design's own control (*Plane*, *Plane*, *Bar*),
 and Background role is the ground behind it. **13 Overlay does not lock either** ⚑ — the pictures are
 the tiles' own ground, not the section's.
@@ -176,13 +201,14 @@ and the universal trio, and **not counted** toward any design's control count �
 |---|---|---|
 | `tagSource` | enum req | All tags · This post's tags · This author's tags · **Hand-picked** ⚑ → `{{#get "tags" filter="visibility:public"}}` |
 | `tagPicks[]` | list opt | **Shown at Hand-picked only.** 1–12 tag references ⚑ |
-| `tagCount` | enum req | Four · Six · Eight · Twelve · All → `limit`. **A count, never a chosen set.** Disabled at Hand-picked ⚑ |
+| `tagCount` | number req | **A number picker, 1–100** ⚑ *29 August 2026* → `limit`; per-design maxima below. **A count, never a chosen set.** **Ghost returns at most 100 tags** and warns above it, so the panel states the cap and the truncation ⚑. Disabled at Hand-picked ⚑ |
 | `tagOrder` | enum req | Most posts first · Fewest first · A–Z · Ghost's order ⚑ · **forced to A–Z and disabled in 7** ⚑ · disabled at Hand-picked ⚑ |
 | `showEmptyTags` | enum req | Hide (default ⚑) · Show — tags whose `count.posts` is 0 |
 
 **Hand-picked, in full.** ⚑ A list of **references** to Ghost's tags, with the shared **P0·3 item
-controls**: drag to reorder, **✕ to remove and never disabled**, and **Add arrives pre-filled with
-the next most-used tag, never blank**. **1–12 references**; the section stores references and never
+controls**: drag to reorder, **✕ to remove and never disabled — at one reference it stays visible and
+clickable and says why it cannot go lower: "a hand-picked list needs at least one topic"** ⚑
+*29 August 2026* — and **Add arrives pre-filled with the next most-used tag, never blank**. **1–12 references**; the section stores references and never
 copies, so **a renamed tag renames itself here and a deleted tag drops out silently**. **Picked order
 is drawn order**, which is why *Order* disables; the list is the count, which is why *Show* disables.
 A23's tag-chips repeater is the exact precedent. Per design: **10 Lead and Rest leads with the first
@@ -195,6 +221,16 @@ that has no post, and This author's tags off an author route, fall back to All t
 says so in place of an empty state: *"This page has no post, so all topics are shown."* Nothing
 renders empty and no section disappears for a routing reason. The fallback is server-side, in the
 same `{{#get}}`.
+
+**Show, in full.** ⚑ *29 August 2026.* It is **a number picker** — item counts are a number picker,
+never a row of fixed buttons — and it clamps the query's `limit`, so the tag past the count is not
+fetched rather than hidden. **100 is Ghost's own ceiling**: asking for every tag trips Ghost's warning
+and silently returns 100 anyway, so the picker stops at 100 and the panel states both the cap and the
+truncation instead of promising "all". **Each design caps its own maximum, with the reason drawn beside
+the greyed numbers**: 40 in 1, 6, 11 and 12 · 30 in 5 · 20 in 2, 4, 9, 14 and 15 · 14 in 8 and 10 ·
+12 in 3 · **6 in 13**, whose default is 4 · **100 in 7**, the design built for the whole set. The old
+Four · Six · Eight · Twelve · All row is retired, and **the "All" value is retired with it** ⚑ — it
+promised something Ghost does not do.
 
 **Internal `#hash` tags have no control** ⚑ — they are excluded by the filter and cannot be shown.
 
@@ -224,20 +260,20 @@ same `{{#get}}`.
 
 | # | Design | Tuple | When the content is thin | Ctl | Module |
 |---|---|---|---|---|---|
-| 1 | Chips | `grid-of-N · none · page · many · none · a wrapping row of pills` | One pill; nothing else changes | 6 | — |
+| 1 | Chips **[Free]** | `grid-of-N · none · page · many · none · a wrapping row of pills` | One pill; nothing else changes | 6 | — |
 | 2 | Tiles | `grid-of-N · none · page · many · top · a four-up tile grid, picture over name` | Plate for a missing picture; short last row left-aligned | 6 | — |
 | 3 | Cards | `grid-of-N · none · surface · many · none · hairline cards on a raised plane` | Card keeps the row height; plane keeps full width | 6 | — |
 | 4 | Rows | `feed · none · page · many · left · ruled rows with a square thumbnail` | One row between two hairlines | 5 | — |
 | 5 | Split Head | `split · none · page · many · none · the head standing in a left column` | Second column not drawn and not widened | 4 | — |
 | 6 | Contrast Band | `grid-of-N · none · contrast · many · none · an inverted band of pills` | A full-height band for one pill ⚑ | 6 | — |
-| 7 | Index | `table · none · page · many · none · an alphabetical index in balanced columns` | One letter, one name, three empty columns | 4 | — |
-| 8 | Big Type | `stack · none · page · many · none · tag names set at display size` | One ruled line at full display size | 4 | — |
-| 9 | Rail | `carousel · none · page · many · top · a scroll-snap strip of picture tiles` | Arrows disable, dots undrawn, tiles left-align | 5 | `carousel` |
+| 7 | Index | `table · none · page · many · none · an alphabetical index in balanced columns` | One letter, one name, three empty columns | 4 | `group-headings` ⚑ |
+| 8 | Big Type | `stack · none · page · many · none · tag names set at display size` | One ruled line at full display size | 5 ⚑ | — |
+| 9 | Rail | `carousel · none · page · many · top · a scroll-snap strip of picture tiles` | Arrows disable, dots undrawn, tiles left-align | 6 ⚑ | `carousel` |
 | 10 | Lead and Rest | `split · none · page · many · left · one topic at picture size, the rest listed` | Lead alone in its 624 column; right column undrawn | 5 | — |
 | 11 | Ledger | `table · none · surface · many · none · counts aligned in a right-hand column` | One row, column head kept | 4 | — |
-| 12 | Panel | `grid-of-N · box · page · many · none · the whole set in one hairline box` | **Hands off to 1 Chips below four** ⚑ | 4 | — |
+| 12 | Panel | `grid-of-N · box · page · many · none · the whole set in one hairline box` | One column inside the box; box, head and link kept ⚑ | 4 | — |
 | 13 | Overlay | `grid-of-N · none · page · few · background · names set over their own pictures` | Cells divide the full width by the count | 5 | — |
-| 14 | Slim | `bar · none · transparent · many · none · one rule-bounded line of names` | One name, no separator, rules unchanged | 5 | — |
+| 14 | Slim **[Free]** | `bar · none · transparent · many · none · one rule-bounded line of names` | One name, no separator, rules unchanged | 5 | — |
 | 15 | Filter Bar | `nav · none · surface · many · none · the set as a chip bar with one active` | All plus one chip, drawn | 5 | `filter-strip` |
 
 **Ctl counts controls the design owns.** The universal trio and the Data group are on top of every
@@ -293,7 +329,8 @@ draws are the roster and the repeating-items table on the proof frame.
   order="count.posts desc"}}`. Designed for 6–18; correct at 1–40. **0 → no section** ⚑ · **1 → one
   pill**, no hand-off · many → Show clamps the query, not the CSS. At Hand-picked the list is the set.
 - **8 · Empty state.** No `introText` → heading-only head, gap held. No `linkUrl` → no link even at
-  On ⚑. No `accent_color` on a tag at Tag's own → that pill falls back to Theme ⚑. No tags → no
+  On ⚑. No `accent_color` on a tag at Tag's own → that pill falls back to Theme ⚑; **on a Ghost too
+  old to expose a tag's colour, every pill falls back to Theme** ⚑ *29 August 2026*. No tags → no
   section.
 - **9 · Module.** **None; `core` assumed. No-JS: pixel-identical** — every pill is an `<a href>`.
 - **10 · A11y.** `<section aria-labelledby>`; `<ul>` of `<li><a>` in query order; the count is inside
@@ -305,6 +342,13 @@ draws are the roster and the repeating-items table on the proof frame.
 **Reconciled.** Padding retired into **Vertical spacing** outside the list; **Tag colour Theme ·
 Tag's own** added; **Hand-picked** joins `tagSource` and the off-route fallback is stated; the
 all-topics link opens the Link Picker and takes an optional icon. Six controls of its own.
+
+**Patched, 29 August 2026.** **Tag colour: Tag's own now states its Ghost version requirement** and
+falls back to Theme on an older release — *a tag's own colour needs a recent Ghost*. **The Background
+role row no longer says the section "turns into 6 Contrast Band"**: at Contrast it stays 1 Chips and
+takes the on-contrast colours, and 6 is named as advice — *no design ever turns into another design*.
+**Show is a number picker, 1–40**, with Ghost's 100-tag cap and its truncation stated. Nothing this
+design draws changed.
 
 ---
 
@@ -339,6 +383,10 @@ all-topics link opens the Link Picker and takes an optional icon. Six controls o
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag colour** added and spent on the
 plate tint ⚑; **Hand-picked** joins `tagSource`; the link opens the Link Picker and takes an icon.
 **Image focus is not added** ⚑ — there is no authored image field in A20. Six controls of its own.
+
+**Patched, 29 August 2026.** **Tag colour: Tag's own states its Ghost version requirement**, and on an
+older release every plate falls back to the hover surface in the theme's own colours. **Show is a
+number picker, 1–20**, with Ghost's 100-tag cap stated. Nothing this design draws changed.
 
 ---
 
@@ -475,6 +523,11 @@ spacing**; **Background role is locked at Contrast** with the reason shown; **th
 80 · 64 · 56 keeps its own name**; Top divider draws above the band, never inside it. Six controls of
 its own.
 
+**Patched, 29 August 2026.** **The lock reason is rewritten**: it read "at Background it is 1 Chips".
+The inverted band **is** the design, so Background has nothing to invert, and 1 Chips is named as the
+design to place instead — *no design ever turns into another design*. **Tag colour: Tag's own states
+its Ghost version requirement.** **Show is a number picker, 1–40.** Nothing this design draws changed.
+
 ---
 
 ### A20·7 — Index
@@ -492,22 +545,40 @@ its own.
   **No optional Ghost field is read**, which is why it is correct at forty tags.
 - **6 · Controls.** Heading · Columns Three · Four · Five · Group by Initial · Nothing · Counts.
   **Four.** Quick: Columns, Group by, Counts. **Cut:** sortable columns, a letter jump-bar, an
-  all-topics link.
-- **7 · Data.** `limit="all" order="name asc"`. **Order is forced to A–Z and disabled at every
-  source, Hand-picked included** ⚑ — the only override in the category. Designed for 12–60; correct
-  at 1–100. **0 → no section** · **1 → one letter, one name, three empty columns** ⚑ · **tags with 0
+  all-topics link. **At Group by: Initial the design declares `group-headings`** ⚑ *29 August 2026*,
+  and the row says so; at Nothing no module is declared.
+- **7 · Data.** `order="name asc"` with `limit` from the Data group's *Show*, **a number picker whose
+  ceiling here is 100** ⚑ *29 August 2026* — `limit="all"` trips Ghost's own warning and silently
+  returns 100 anyway, so the panel states the cap and the truncation rather than promising every tag.
+  **Order is forced to A–Z and disabled at every source, Hand-picked included** ⚑ — the only override
+  in the category. Designed for 12–60; correct at 1–100. **0 → no section** · **1 → one letter, one name, three empty columns** ⚑ · **tags with 0
   posts draw muted at Show** ⚑.
 - **8 · Empty state.** A letter with no tags is not drawn — there is no empty-letter slot ⚑.
-- **9 · Module.** **None; `core` assumed. No-JS: pixel-identical** — CSS multi-column with
-  `break-inside: avoid`.
-- **10 · A11y.** **One `<ul>` per letter group, each preceded by an `<h3>` carrying the letter** ⚑.
-  CSS columns preserve DOM order. Counts read "19 posts" even when drawn as a bare number ⚑.
-- **Flagged ⚑** — the forced A–Z, now including Hand-picked · muted empty tags · two columns at 390 ·
-  type not shrinking · the letter as an `<h3>` · the bleeding hover fill · no empty-letter slot.
+- **9 · Module.** **`group-headings`** ⚑ *29 August 2026, from the registry* — **at Group by: Initial
+  only**; at Nothing none is declared and `core` is assumed. Ghost's templates cannot tell that the
+  first letter changed between two tags — no arithmetic, and no access to the previous item inside a
+  loop — so the letter heads are cut in by the browser from each name's first character. **Edit-safe:
+  yes.** **No-JS: the index renders flat and ungrouped** — every name present, alphabetical, in the
+  same CSS multi-column layout, **no letter heads, no hairlines above them and no gap where a group
+  would have been**. The counts and the links are untouched, so the flat state is a complete index
+  rather than a degraded one.
+- **10 · A11y.** **One `<ul>` per letter group, each preceded by an `<h3>` carrying the letter** ⚑
+  once the module has run; **server-side, without it, one `<ul>` of every name in alphabetical order**
+  ⚑ *29 August 2026* — correct in both states, with the letters as the only difference. CSS columns
+  preserve DOM order. Counts read "19 posts" even when drawn as a bare number ⚑.
+- **Flagged ⚑** — the forced A–Z, now including Hand-picked · **the grouping needing a script and its
+  flat no-JavaScript state** ⚑ · **the 100-tag cap and its silent truncation** ⚑ · muted empty tags ·
+  two columns at 390 · type not shrinking · the letter as an `<h3>` · the bleeding hover fill · no
+  empty-letter slot.
 
 **Reconciled.** Padding retired into **Vertical spacing** — **four controls of its own**.
 **Hand-picked** joins `tagSource`, and **Order remains forced to A–Z** there too ⚑: an index that is
 not alphabetical is not an index. Empty tags at Show still draw muted.
+
+**Patched, 29 August 2026.** **Group by: Initial declares `group-headings`** and renders flat and
+ungrouped without JavaScript — *grouping needs a small script*. **Show is a number picker, 1–100**,
+with Ghost's cap and its silent truncation stated in the panel — *item counts are a number picker*.
+The frame gained the flat no-JavaScript state; nothing else it draws changed.
 
 ---
 
@@ -524,25 +595,28 @@ not alphabetical is not an index. Empty tags at Show still draw muted.
   Picker and the label taking an optional icon. **No `headingText` and no `introText`** ⚑ — both are
   kept, unread, for the design the user switches to next. Read: `name`, `url`, `count.posts`.
 - **6 · Controls.** Type size Compact 44 · Comfortable 56 · Spacious 72 · Label Off · On · Counts ·
-  Rules Off · On. **Four.** Quick: Type size, Counts, Rules. **Cut:** alignment, a heading, a per-line
-  size, an auto-fit ⚑.
+  Rules Off · On · **All topics link Off · On** ⚑ *29 August 2026*. **Five.** Quick: Type size, Counts,
+  Rules. **Cut:** alignment, a heading, a per-line size, an auto-fit ⚑.
 - **7 · Data.** Designed for 4–10; correct at 1–14. **0 → no section** · **1 → one ruled line at full
   display size** ⚑ · above 10 the section is taller than a screen and the panel suggests 7 ⚑.
 - **8 · Empty state.** **A tag name is never absent in Ghost, so this design has no missing-field
   case** ⚑. Counts Off removes the right-hand column rather than leaving a gap. **No `linkUrl` → no
-  link, and there is still no switch for it** ⚑.
+  link even at On** ⚑ — and **the switch now exists** ⚑ *29 August 2026*.
 - **9 · Module.** **None; `core` assumed. No-JS: pixel-identical.** `typewriter` considered and
   refused ⚑ — a list of seven typed names is six waits.
 - **10 · A11y.** `<ul>`/`<li>`, each line one `<a>` with an `<h3>`. **At Label On the 13 px eyebrow
   is the section's `<h2>`** ⚑; at Off the section takes the catalogue string `aria-label="Topics"`.
   Hover underlines the name only.
-- **Flagged ⚑** — no heading field · the link dropping at 390 · the link having no switch · named
+- **Flagged ⚑** — no heading field · the link dropping at 390 · **the link's new switch, On by default** ⚑ *29 August 2026* · named
   sizes with no auto-fit · the eyebrow acting as the `<h2>` · Rules Off changing the gap.
 
-**Reconciled.** Padding retired into **Vertical spacing** — four controls of its own. **Hand-picked**
-joins `tagSource`; the link opens the Link Picker and takes an icon. **No All topics link toggle was
-added here**: the patch named 3 and 6, and **this design's link is drawn with no control too** ⚑ —
-recorded as an open question in the Reconciliation notes rather than settled uninstructed.
+**Reconciled.** Padding retired into **Vertical spacing**. **Hand-picked** joins `tagSource`; the link
+opens the Link Picker and takes an icon.
+
+**Patched, 29 August 2026.** **All topics link Off · On added, On by default** — the owner closed the
+reconciliation pass's open question, so this design owns **five controls** and nothing drawn changes.
+**Show is a number picker, 1–14**, with Ghost's 100-tag cap stated, and **the hand-picked ✕ never greys
+out**.
 
 ---
 
@@ -560,8 +634,8 @@ recorded as an open question in the Reconciliation notes rather than settled uni
   translation-catalog strings** ⚑, not authored fields. Read: `name`, `url`, `count.posts`,
   `feature_image` opt, `accent_color` at Tag colour ⚑.
 - **6 · Controls.** Heading · Cell width Compact 240 · Comfortable 306 · Spacious 416 · Image ratio ·
-  Controls Arrows · Dots · Both · **Tag colour** ⚑. **Five.** Quick: Cell width, Image ratio,
-  Controls. **Cut:** autoplay ⚑, loop, an interval, a peek amount, an Image focus ⚑.
+  Controls Arrows · Dots · Both · **Tag colour** ⚑ · **Counts Off · Number · Posts** ⚑ *29 August 2026*.
+  **Six.** Quick: Cell width, Image ratio, Controls. **Cut:** autoplay ⚑, loop, an interval, a peek amount, an Image focus ⚑.
 - **7 · Data.** Designed for 6–14; correct at 1–20. **0 → no section** · **1 → one tile, no arrows,
   no dots** ⚑ · **when the fetched set fits the track, arrows disable and dots are not drawn** ⚑ —
   the design does not become a grid. At Hand-picked **picked order is track order**, which is the one
@@ -576,13 +650,17 @@ recorded as an open question in the Reconciliation notes rather than settled uni
   "Previous topics" / "Next topics" — **catalogue strings** ⚑ — and take `disabled` at the ends ⚑.
   Dots `aria-hidden`.
 - **Flagged ⚑** — the unpadded right edge · disabled rather than hidden arrows · arrows dropping at
-  390 · dots as indicator only · the focusable track · the fits-the-track state · no autoplay · the
-  missing Counts row.
+  390 · dots as indicator only · the focusable track · the fits-the-track state · no autoplay · **the new Counts row** ⚑ *29 August 2026*.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag colour** added and spent on the
 plate ⚑; **Hand-picked** joins `tagSource`; the arrow labels become **translation-catalog strings**
 ⚑. Five controls of its own. **The panel still shows no Counts row** while the shared field list says
 this design reads `count.posts` ⚑ — recorded in the Reconciliation notes, not resolved quietly.
+
+**Patched, 29 August 2026.** **Counts Off · Number · Posts added at Number** — the owner closed the
+reconciliation pass's open question, so the panel and the shared field list agree and this design owns
+**six controls**. **Tag colour: Tag's own states its Ghost version requirement** and greys out on an
+older Ghost. **Show is a number picker, 1–20.** Nothing this design draws changed.
 
 ---
 
@@ -677,24 +755,32 @@ sorting is still refused.
 - **5 · Fields.** Head four, inline-editable, all inside the box. Read: `name`, `url`, `count.posts`.
 - **6 · Controls.** Box inset Compact 28 · Comfortable 40 · Spacious 56 · Columns Two · Three ·
   Four · Counts · All topics link. **Four.** Quick: Box inset, Columns, Counts. **Cut:** a box fill
-  ⚑, a box shadow ⚑, a border weight, a corner radius, the hand-off threshold ⚑.
-- **7 · Data.** Designed for 8–24; correct at 4–40. **0 → no section** · **1–3 → hands off to 1
-  Chips**, keeping this design's head, link and spacing ⚑, **and that holds at Hand-picked too** ⚑ ·
+  ⚑, a box shadow ⚑, a border weight, a corner radius, and **the hand-off itself** ⚑ *29 August 2026*
+  — deleted, not turned into a control.
+- **7 · Data.** Designed for 8–24; **correct at 1–40** ⚑ *29 August 2026*. **0 → no section** ·
+  **1–3 → the box is drawn with the one column the set fills**, head, link, hairline and spacing
+  unchanged, and **the panel advises that 1 Chips reads better at that count** ⚑ — at Hand-picked too ·
   **a part-filled last column is left empty, never balanced** ⚑.
 - **8 · Empty state.** Head strings absent → the rule sits at the top of the box. Fewer than four
-  tags → the hand-off. The editor names it: "Fewer than four topics, so this section is showing Chips
-  instead." — **product UI, not a theme string** ⚑.
-- **9 · Module.** **None; `core` assumed. No-JS: pixel-identical. The hand-off is server-side** ⚑ —
-  a Handlebars `{{#if}}` on the returned count, not a client-side swap.
+  tags, or fewer than four references → **the box keeps its hairline, head and link and draws one
+  column**. The editor advises: "Three topics here — 1 Chips reads better at this count." —
+  **product UI, not a theme string** ⚑, and **advice rather than a switch** ⚑ *29 August 2026*.
+- **9 · Module.** **None; `core` assumed. No-JS: pixel-identical.** **Nothing in this design is
+  conditional on the returned count any more** ⚑ *29 August 2026* — the deleted hand-off was its one
+  server-side branch; what is left is a column count the stylesheet resolves.
 - **10 · A11y.** One `<ul>` spanning all drawn columns, down then across ⚑. `<h2>` inside the box,
   `<h3>` per topic. **The box is not a landmark and takes no role** ⚑. Ring inset 2 px.
-- **Flagged ⚑** — the hand-off and its threshold of four, now including Hand-picked · no fill or
-  shadow · columns never balanced · the part-filled column · the box hairline's 1.4:1 in dark · the
-  box taking no role.
+- **Flagged ⚑** — **the deleted hand-off and the advisory that replaced it** ⚑ *29 August 2026* · no
+  fill or shadow · columns never balanced · the part-filled column · the box hairline's 1.4:1 in dark ·
+  the box taking no role.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Box inset keeps its name** as the box's
-own ladder. **Hand-picked** joins `tagSource`, and **the hand-off below four holds for it too** ⚑ —
-a picked set of three is still a set of three. Four controls of its own.
+own ladder. **Hand-picked** joins `tagSource`. Four controls of its own.
+
+**Patched, 29 August 2026.** **The hand-off to 1 Chips is deleted** — *no design ever turns into
+another design*. Below four topics the box hides the columns it cannot fill and the panel advises;
+the advisory is product UI and is not a control. **Show is a number picker, 1–40.** The states frame
+lost its hand-off panel and gained a three-topics-in-the-box panel.
 
 ---
 
@@ -783,6 +869,11 @@ needs it. Padding retired into **Vertical spacing**, carrying this design's **40
 hairline** ⚑. **Hand-picked** joins `tagSource`. Five controls of its own — and `count.posts` now
 reaches all fifteen designs, so "the only design that does not read it" is retired ⚑.
 
+**Patched, 29 August 2026.** **The lock reason is rewritten**: it read "on a surface it is 15's chip
+bar". The two rules **are** the design, and **15 Filter Bar is named as the design to place** for a bar
+on a surface — *no design ever turns into another design*. **Show is a number picker, 1–20.** Nothing
+this design draws changed.
+
 ---
 
 ### A20·15 — Filter Bar
@@ -827,6 +918,10 @@ Background role is the ground behind the bar and *Bar* still governs the bar. **
 with **the active chip keeping the accent** ⚑ — a route's own colour and the current-page mark cannot
 both be the fill. **Hand-picked** joins `tagSource`; the label and `allChipLabel` edit inline. Five
 controls of its own; **the sticky remains a registry gap** ⚑.
+
+**Patched, 29 August 2026.** **Tag colour: Tag's own states its Ghost version requirement**; on an
+older Ghost every chip is Theme and the active chip keeps the accent, which is what it does anyway.
+**Show is a number picker, 1–20.** Nothing this design draws changed.
 
 ---
 
@@ -874,7 +969,7 @@ safe.
 | `introText` | text | opt | 220 ch | 1, 2, 3, 5, 6, 7, 9, 10, 12, 13 | Clamped 560 at 1440; 280 in 5's head column |
 | `linkLabel` | text | opt | 24 ch | 1, 2, 3, 5, 6, 8, 12, 14 | Default "All topics" ⚑; takes an optional P0·2 icon |
 | `linkUrl` | url | opt | — | same eight | **Ghost has no all-tags route** ⚑ — finding 1. Opens the Link Picker |
-| `allTopicsLink` | enum | req | — | 1, 2, 3, 5, 6, 12, 14 | Off · On. **New in 3 (Off) and 6 (On)** ⚑; **8 draws the link with no toggle** ⚑ |
+| `allTopicsLink` | enum | req | — | 1, 2, 3, 5, 6, **8** ⚑, 12, 14 | Off · On. **New in 3 (Off) and 6 (On)**, and **in 8 (On)** ⚑ *29 Aug, the owner's ruling* — no design now draws the link without a switch |
 | `leadLabel` | text | opt | 24 ch | 10 | **Default derived from `tagOrder`** ⚑; blank at Fewest first and at Hand-picked |
 | `colTopic` · `colCovers` · `colPosts` | text | opt | 20 ch | 11 | Defaults "Topic", "What it covers", "Posts" ⚑; inline-editable in place |
 | `allChipLabel` | text | opt | 16 ch | 15 | Default "All" ⚑ |
@@ -882,13 +977,13 @@ safe.
 | `verticalSpacing` | enum | req | — | all fifteen | **Universal** ⚑. 64 · 96 · 132; **40 · 64 · 96 in 14 and 15**. **Replaces `padding`** |
 | `topDivider` | enum | req | — | all fifteen | **Universal** ⚑. None · Line · Fade; disabled in 14 where Rules draws that hairline |
 | `headingKind` | enum | req | — | 1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 13 | Label · Heading · Heading and intro · None |
-| `counts` | enum | req | — | all fifteen | Off · Number · Posts; **14 has Off · Number, new in this pass** ⚑; 15 has no Posts value; **9's panel shows no row** ⚑ |
-| `tagColour` | enum | req | — | 1, 2, 6, 9, 15 | **New** ⚑. Theme (default) · Tag's own — the fill in 1, 6, 15; the plate tint in 2, 9 |
+| `counts` | enum | req | — | all fifteen | Off · Number · Posts; **14 has Off · Number** ⚑; 15 has no Posts value; **9's panel gains the row** ⚑ *29 Aug, the owner's ruling* — every design now draws the control it reads |
+| `tagColour` | enum | req | — | 1, 2, 6, 9, 15 | Theme (default) · Tag's own — the fill in 1, 6, 15; the plate tint in 2, 9. **Tag's own needs a recent Ghost** ⚑ *29 Aug*; on older releases the row is **greyed with the reason shown** and every tag takes the theme colour |
 | `scrim` | enum | req | — | 13 | **New** ⚑. Light · Medium (default) · Strong; Light disabled against a pale bottom third |
 | `separator` | enum | req | — | 14 | **New** ⚑. Middot (default) · Slash · Icon (P0·2 slot); always CSS `::before` |
 | `tagSource` | enum | req | — | all fifteen | *Data group.* All tags · This post's · This author's · **Hand-picked** ⚑; **off-route the middle two fall back to All tags** ⚑ |
-| `tagPicks[]` | list | opt | 1–12 | all fifteen | *Data group.* **New** ⚑. Tag references with the P0·3 item controls; Add pre-filled with the next most-used tag |
-| `tagCount` | enum | req | — | all fifteen | *Data group.* Four · Six · Eight · Twelve · All → `limit`; disabled at Hand-picked |
+| `tagPicks[]` | list | opt | 1–12 | all fifteen | *Data group.* **New** ⚑. Tag references with the P0·3 item controls; Add pre-filled with the next most-used tag; **✕ stays live at one reference and says why it cannot go lower** ⚑ *29 Aug* |
+| `tagCount` | number | req | 1–100 | all fifteen | *Data group.* **A number picker** ⚑ *29 Aug* → `limit`; **Ghost's ceiling is 100 and it truncates silently above it**, stated in the panel; per-design maxima greyed with their reason; disabled at Hand-picked |
 | `tagOrder` | enum | req | — | all fifteen | *Data group.* Most posts · Fewest · A–Z · Ghost's; **forced A–Z in 7** ⚑; disabled at Hand-picked |
 | `showEmptyTags` | enum | req | — | all fifteen | *Data group.* Hide (default ⚑) · Show |
 | `name` | Ghost | req | — | all fifteen | Never clamped, ellipsised or auto-fitted ⚑; never inline-editable ⚑ |
@@ -896,7 +991,7 @@ safe.
 | `count.posts` | Ghost | opt | — | all fifteen | Needs `include="count.posts"`; dropped at Counts Off ⚑ |
 | `description` | Ghost | opt | 300 ch | 3, 4, 11 | Absent on most sites ⚑; every reader states its absence |
 | `feature_image` | Ghost | opt | — | 2, 4, 9, 13 | Absent → the tag plate (13: hover surface, no scrim) ⚑. **No alt, no focal point, no Image focus** ⚑ |
-| `accent_color` | Ghost | opt | — | 1, 2, 6, 9, 15 | **Read at Tag colour: Tag's own** ⚑, with a derived on-colour; **the "never read" rule is amended in this pass** |
+| `accent_color` | Ghost | opt | — | 1, 2, 6, 9, 15 | **Read at Tag colour: Tag's own** ⚑, with a derived on-colour; **the "never read" rule is amended**. **Only on a recent Ghost** ⚑ *29 Aug* — older releases do not expose it, the control greys out with the reason, and every tag takes the theme colour |
 | `visibility` | Ghost | req | — | the query only | `filter="visibility:public"` — internal `#hash` tags never fetched ⚑ |
 
 Per-design enums that are not shared — *Per row*, *Image ratio*, *Density*, *List columns*,
@@ -942,6 +1037,19 @@ the toggle.
    tag will produce an invisible chip edge**, and there is no place in Ghost to warn about it. The
    product should decide whether the editor validates tag colours or the theme silently floors them.
 
+9. **Ghost's tag ceiling is 100, and it does not say so out loud.** ⚑ *29 August 2026.* Asking for
+   every tag trips Ghost's own warning and silently returns 100, so the theme cannot promise "all
+   topics" and 7 Index — the design that means all of them — is the one that meets it. **The section
+   states the cap and the truncation**; what it cannot do is tell a 130-topic site which 30 are
+   missing. The product should decide whether the editor warns a site that has more tags than the
+   ceiling.
+10. **The minimum Ghost release for a tag's own colour is unpinned.** ⚑ *29 August 2026.* Five designs
+   read a tag's `accent_color`, which reaches a theme only on a recent Ghost; the fallback is designed
+   (every tag takes the theme colour, silently) but **the version number is a product fact this
+   document cannot invent**. **Ruled on 29 August 2026: the control is greyed on an older site
+   with the reason shown**, and every tag takes the theme colour. What remains is mechanical — the
+   product must know the site's Ghost version and hold the minimum release as one value.
+
 **Three things A20 settled that the next tag-bearing category should reuse rather than re-decide:**
 the tag plate carrying the tag's own name ⚑, hiding zero-post tags by default ⚑, and **Hand-picked as
 a list of references rather than a copy** ⚑.
@@ -949,6 +1057,10 @@ a list of references rather than a copy** ⚑.
 ---
 
 ## Reconciliation notes
+
+**Superseded in part on 29 August 2026.** This section records the reconciliation pass. Where it and
+the **Patch notes** below disagree — the module count, 12 Panel's hand-off, the *Show* row, a tag's
+colour — **the Patch notes are the later ruling**. Everything else here stands.
 
 **Frames changed in this pass — sixteen, and every one of them.** `A20-0 Category Proof` (the
 roster's control counts re-counted, the shared field list re-cut with seven new rows and six
@@ -994,7 +1106,8 @@ state.
 - **`marquee` on 14 stays refused** even though the design now has a separator control — a moving list
   of topics still cannot be read.
 
-**Two things this pass found, did not fix, and will not pretend to have fixed.**
+**Two things this pass found and did not fix — both closed by the owner on 29 August 2026.** The
+rulings are in the Patch notes: 8 gains the switch, On by default; 9 gains the Counts row, at Number.
 
 - **8 Big Type draws the all-topics link with no control** ⚑ — the same fault the patch named in 6.
   The patch named 3 and 6 only, so the switch was not added uninstructed; 8 has the Link Picker and
@@ -1010,3 +1123,76 @@ state.
 unused here**. **No Image focus**: A20 has no authored image field, only Ghost's `feature_image`,
 so there is nothing for a focus to attach to; it stays finding 2. **No module was coined**: the
 sticky filter bar remains finding 6, and no frame carries *ARCHITECT: registry addition*.
+
+---
+
+## Patch notes — tag collections patch, 29 August 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named and never numbered: the codes are filing labels and mean nothing outside this project.
+
+| Rule or fact | What changed in A20 |
+|---|---|
+| **Grouping needs a small script** | **7 Index declares `group-headings`**, the registry's module, at *Group by: Initial*. Ghost's templates cannot tell that the first letter changed between two tags — there is no arithmetic in a template and no way to look at the previous item inside a loop — so the letter heads are cut in by the browser from each name's first character. **Its no-JavaScript state is a flat, ungrouped alphabetical list**: every name present, in the same columns, on the same 15/30 line, with no letter heads, no hairlines above them and no gap where a group would have been. Counts and links are untouched, so the flat state is a complete index rather than a degraded one; that state is drawn on the frame. At *Group by: Nothing* nothing is needed and nothing is declared. **The category now names three modules and coined none.** |
+| **The tag count is capped at 100** | The Data group's *Show* **states Ghost's ceiling and its truncation** in all fifteen panels: asking for every tag trips Ghost's own warning and silently returns 100 anyway, so the theme promises 100 rather than "all". **The "All" value is retired** — it named something Ghost does not do. 7 Index, the design that means all of them, is the design that meets the cap, and its query note says so. |
+| **Item counts are a number picker** | *Show* is **a number picker**, 1 to the design's own maximum, where it drew Four · Six · Eight · Twelve · All. **Each design caps its own maximum with the reason drawn beside the greyed numbers**: 40 in 1, 6, 11 and 12 · 30 in 5 · 20 in 2, 4, 9, 14 and 15 · 14 in 8 and 10 · 12 in 3 · **6 in 13 Overlay**, whose default is 4 because a full-picture tile is expensive · **100 in 7 Index**. Nothing else about the row changed: it is still a count and never a chosen set, and it is still disabled at Hand-picked. |
+| **A tag's own colour needs a recent Ghost** | *Tag colour: Tag's own* in **1, 2, 6, 9 and 15** now states the version requirement in the panel, and **on an older Ghost every tag falls back to Theme** — silently, site-wide, with nothing drawn empty and no layout change. **Ruled by the owner on 29 August 2026: on an older site the row is greyed with the reason shown** — "Your Ghost version does not support topic colours" — so nobody sets a colour in Ghost and wonders why the page did not change, and every tag takes the theme colour. **ARCHITECT: the version number itself is the product's to supply**, held as one value and named once rather than repeated per design; that is what remains of finding 10. |
+| **No design ever turns into another design** | **One deletion and three rewrites.** **12 Panel's hand-off to 1 Chips is deleted.** Below four topics it now draws its own box — hairline, head, link and inset unchanged — and **hides what does not apply**, collapsing three columns to the one the set fills; **the panel advises** "Three topics here — 1 Chips reads better at this count", which is product UI and not a control. Its states frame lost the hand-off panel and gained a three-topics-in-the-box panel; its data line moves from *correct at 4–40* to **1–40**. Three locked or shared rows named another design as what the section becomes and now state their own reason instead: **1 Chips'** Background role (at Contrast it stays 1 Chips on the on-contrast colours), **6 Contrast Band's** lock (the band is the design; 1 Chips is named as the design to place) and **14 Slim's** lock (the rules are the design; 15 Filter Bar is named for a bar on a surface). **A20 now has no hand-off anywhere.** |
+| **The Remove button never greys out** | The hand-picked list's **✕ stays visible and clickable at one reference**, and clicking it explains why it cannot go lower — "a hand-picked list needs at least one topic". Never dimmed, never hidden, in all fifteen panels. This is the category's only repeating list; every other value in A20 is Ghost's and has no Add or Remove at all. |
+| **The two free designs are the owner's choice** | Shortlisted the five plainest designs, none of which depends on the customer having good photography — **1 Chips · 5 Split Head · 7 Index · 11 Ledger · 14 Slim** — and recommended two. **The owner chose 1 Chips · 14 Slim on 29 August 2026** — the category default and the quietest line in it: a pill row that can go anywhere, and a one-line topic bar. Neither needs a picture, a description or a colour. The line is at the head of this document and the badge is on the roster. |
+| **Avatars with no photograph** | **No subject.** A20 draws no person: no `profile_image`, no initials block. The one initial in the category is the tag plate's below 96 px, which is a **tag's** name reduced to its first letter — one letter, from Ghost, which is what the rule asks for anyway. |
+| **Slider labels · gap names** | **No subject.** A20 draws no slider and no gap control. Every control is a named-value row or a number picker whose title says what it affects — Tag size, Per row, Density, Box inset, Tile height, Name size, Cell width, Head width, Columns, Show — and the three shared values are Compact · Comfortable · Spacious throughout. |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen panels. The swatch row is **Base**; **there is no "Inherit" value anywhere in A20**; no design renames a shared control or adds a value to one. Three offer fewer, each with the reason drawn in place of the values: **Background role locked at Contrast in 6** and **at Background in 14**, and **Order forced to A–Z in 7**. |
+| **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject.** A20 bears no call to action: no subscribe button, no paid tier, no Portal link, no member form. The all-topics link is navigation — the call A14 made for its See-all link — so **P0·4 stays unused here** and there is nothing to make conditional. |
+| **The no-JavaScript notice** | **No subject, and no claim to withdraw.** A20 contains no subscribe or sign-in form, so there is nothing for the notice to replace. The per-design no-JavaScript line was already honest in fourteen of the fifteen and is now honest in all fifteen: **7 Index gained a real one** with this pass. |
+| **Two carried-over questions, closed by the owner** | Both were recorded as open by the reconciliation pass and neither was fixed uninstructed; **the owner ruled on 29 August 2026**. **8 Big Type gains the All topics link switch, On by default** — no design in A20 now draws that link without a control — taking it from four controls to **five**. **9 Rail gains the Counts row at Number**, the control its tiles already drew, taking it from five to **six** and making the panel and the shared field list agree. **Neither changes what is drawn.** |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Fifteen designs, nothing renumbered, no gap created or closed, no number reused, nothing deleted. |
+
+**Frames updated — all sixteen.** `A20-0 Category Proof` (the roster's thin-content and module
+columns, the **[Free]** line, the third module in the behaviour floor, the *Show* paragraph, the tag
+colour note, and a patch table) and every design frame (the number-picker *Show* with its own cap, the
+✕ that never greys out, and a patch table naming the rules). **Three frames changed what is drawn:**
+**7 Index** gained the flat no-JavaScript state and declares `group-headings`; **12 Panel** lost its
+hand-off state and gained the three-topics-in-the-box state; the proof frame gained the [Free] line and
+the patch table. **The visual language, type scale, colour packs and spacing system are untouched**, and
+no design not named in this pass was changed.
+
+**The four open questions are closed.** All four were put to the owner and **all four were ruled on
+29 August 2026**: the free pair is **1 Chips · 14 Slim**; a tag's own colour **greys out with the reason
+shown on an older Ghost**; **8 Big Type gains the all-topics link switch**, On by default; **9 Rail gains
+the Counts row** at Number. **One item remains, and it is the architect's rather than the owner's:** the
+minimum Ghost release for a tag's colour is a product fact this document does not invent — finding 10.
+
+---
+
+## Confirmation
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+  fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+  required shape, and names **1 Chips** and **14 Slim** — both of which exist in this category's
+  roster. It is **the owner's own choice, ruled on 29 August 2026**.
+
+---
+
+## The owner's rulings — 29 August 2026
+
+All four questions this pass raised were put to the owner and all four were answered. Recorded here in
+his words' effect, and applied throughout this document and the frames.
+
+1. **The two free designs are 1 Chips and 14 Slim.** The category default and the quietest line in it: a
+   pill row that sits anywhere, and one line of topic names between two hairlines. Neither needs a
+   picture, a description or a topic colour, so a free site can ship both on day one. 5 Split Head, 7
+   Index and 11 Ledger were the rest of the shortlist and stay paid.
+2. **"Use the topic's own colour" names a minimum Ghost version, and greys out below it with the reason
+   shown.** An editor on an older site reads why the control is unavailable instead of setting colours
+   in Ghost and watching nothing happen; every tag takes the theme colour there. **The version number
+   itself is the one thing still outstanding, and it is the architect's**: the product must hold the
+   minimum release as a single value and know the site's Ghost version. Finding 10.
+3. **8 Big Type gains the All topics link switch, On by default.** Nothing drawn changes today, and the
+   design goes from four controls to five. No design in A20 now draws that link without a control.
+4. **9 Rail gains the Counts row, at Number.** The tiles already drew the count; now the panel has the
+   switch, the shared field list and the panel agree, and the design goes from five controls to six.
+
+**Nothing else was decided here.** Where this pass could not apply a ruling without inventing a decision
+it is written as a finding, not as a fact.

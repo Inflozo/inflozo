@@ -39,13 +39,13 @@ const d4 = {
   a11yNote:`${b('The step-up is a width, and widths are not announced')} ⚑. The one real cost is a 1,040 caption line, which is named in the panel and in field 10 rather than discovered.`,
   controls:{
     name:'Wide', n:4, count:'SIX',
-    sub:'Every media card one rung wider than authored; text unmoved.',
+    sub:'Images, GIFs and video one rung wider than authored; text unmoved.',
     rows:K.quickRows({ space:1, spaceVals:['Compact 32', 'Comfortable 56', 'Spacious 72'], cap:0, credit:1,
       capHelp:`13.5 px in ${code('text-muted')}. ${b('Its width is the Caption alignment row below')}, not the measure.` }).concat([
       K.seg('Media steps up', ['One rung', 'Two rungs', 'Not at all'], 0,
-        `Regular → 1,040 · regular → 1,296 · no change. ${b('Not at all makes this treatment 1 Plain')} ⚑ and is offered so a user can keep the caption behaviour without the width.`),
-      K.seg('What steps up', ['Images', 'Images and galleries', 'Every media card'], 2,
-        `${b('Every media card means image, gallery, embed and the product’s image')} ⚑ — never the bookmark’s thumbnail, which is furniture rather than media.`),
+        `Regular → 1,040 · regular → 1,296 · no change. ${b('At Not at all nothing steps up and the caption behaviour stays')} ⚑ — the treatment is still 4 Wide and the width simply is not there.`),
+      K.seg('What steps up', ['Images', 'Images and video'], 1,
+        `${b('Two values, and the reason is Ghost’s')} ⚑ — Ghost fixes the width of a gallery and of an embed and a theme may not override it, so neither can step up. Images and video is the default, being everything that can move. Never the bookmark’s thumbnail, which is furniture rather than media, and ${b('never the product card’s photograph')} ⚑, which belongs to a copy card and moves only with it.`),
       K.seg('Caption alignment', ['To the measure', 'To the media'], 1,
         `${b('To the media is this treatment’s default and the reason it is a separate design')} ⚑ — the caption belongs to the picture here, not to the column.`)
     ]),
@@ -58,7 +58,7 @@ const d4 = {
   respCap:'TABLET 834 · NO WIDE COLUMN, SO NO STEP-UP · MOBILE 390 · EVERY WIDTH IS 350',
   tabletLabel:'834 · media 754 = the content box · the step-up has nowhere to go ⚑',
   mobileLabel:'390 · media 350 · caption 350 · space 32',
-  respNote:`${b('The step-up needs a wide column and there is none below 1024')} ⚑, so at 834 every media card is the content box’s 754 and this treatment is 1 Plain with a caption that happens to be the same width as the measure. ${b('That is not a degradation, it is the ladder')} — and it is the reason the primary frame is drawn at 1440 and labelled 1440. ${b('At ≤ 767 caption alignment has no meaning')}: media and measure are both 350.`,
+  respNote:`${b('The step-up needs a wide column and there is none below 1024')} ⚑, so at 834 every media card is the content box’s 754 and the caption happens to be the same width as the measure. ${b('4 Wide is still the treatment in force')} ⚑ — the step-up is simply not there. ${b('That is not a degradation, it is the ladder')} — and it is the reason the primary frame is drawn at 1440 and labelled 1440. ${b('At ≤ 767 caption alignment has no meaning')}: media and measure are both 350.`,
   darkNote:`${b('Dark changes nothing about width')} ⚑ — the resolution table is the same at both. What it changes is the ${b('placeholder')}: the striped fill goes to the dark pair, and ${b('a 1,040 image on a #171511 ground needs no border where the light mode’s #FBF9F5 sometimes wants one')} ⚑. The caption at ${code('text-muted')} on the dark ground is 6.1:1.`,
   spec:[[
     specRow(1, 'Descriptor', 'Every media card renders one rung wider than the width its author gave it — regular at the wide column’s 1,040, wide and full at the content box’s 1,296 — with the text at the measure and the caption aligned to the media.'),
@@ -66,7 +66,7 @@ const d4 = {
     specRow(3, 'Archetype', `media frame. Its ladder: the frame narrows to the container and the caption follows it. ${b('One departure')} — ${b('below 1024 the step-up has nowhere to go')} and every media card is the content box ⚑.`),
     specRow(4, 'Responsive rule', `${b('1440')} text 720; media regular → 1,040, wide → 1,296, full → 1,296; caption at the media’s width; space 56. ${b('834')} text 754; ${b('every media card 754')} ⚑; caption 754. ${b('≤ 767')} everything 350, space 32, ${b('caption alignment has no meaning')}.`),
     specRow(5, 'Content fields', FIELDS),
-    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Media steps up')} One rung · Two rungs · Not at all. ${b('What steps up')} Images · Images and galleries · Every media card. ${b('Caption alignment')} To the measure · To the media. ${b('Then What Ghost owns')}, not counted.`)
+    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Media steps up')} One rung · Two rungs · Not at all. ${b('What steps up')} Images · Images and video — two values, the reason Ghost’s. ${b('Caption alignment')} To the measure · To the media. ${b('Then What Ghost owns')}, not counted.`)
   ], [
     specRow(7, 'Data', DATA),
     specRow(8, 'Empty state', `${b('A media card with no caption sits wide with nothing tying it to the column')} ⚑ — the known cost of this treatment, and the reason Caption alignment: To the measure exists. No caption → no ${code('&lt;figcaption&gt;')}, space closes. One gallery image → one image at the stepped-up width. ${b('A post with no media cards at all renders as 1 Plain')} ⚑ — nothing in this treatment applies, and nothing looks broken. No cards → nothing renders.`),
@@ -114,9 +114,9 @@ const d5 = {
     sub:'Full takes the viewport and loses its corners; wide takes the box.',
     rows:K.quickRows({ space:1, spaceVals:['Compact 32', 'Comfortable 56', 'Spacious 72'], cap:0, credit:1 }).concat([
       K.seg('Full resolves to', ['Content 1296', 'Viewport edge'], 1,
-        `${b('At Content 1296 this treatment is 1 Plain')} ⚑ — offered so a publication can keep the two-rung ladder without the bleed, on a site whose layout has no room for one.`),
-      K.seg('Bleed applies to', ['Images', 'Images and galleries', 'Every media card'], 1,
-        `${b('Every media card includes the embed')}, and an embedded iframe at 1,440 is 810 px tall ⚑ — offered, and not the default for that reason.`),
+        `${b('At Content 1296 full stops at the content box and no card reaches the window')} ⚑ — offered so a publication can keep the two-rung ladder without the bleed. The treatment is still 5 Full Bleed; the bleed is simply not there.`),
+      K.seg('Bleed applies to', ['Images', 'Images and video'], 0,
+        `${b('Two values, and the reason is Ghost’s')} ⚑ — Ghost fixes the width of a gallery and of an embed and a theme may not override it, so neither can reach the viewport edge. The old default included galleries, so ${b('the default carries down to Images')}.`),
       K.seg('Caption on a bleed', ['In the measure', 'Under, full width', 'Over the image, at the foot'], 0,
         `${b('In the measure is the default and the only value that keeps one text column')} ⚑. Over the image uses A20·13’s warm scrim and ${b('is disabled where the carried colour fails AA')}, with the ratio shown.`)
     ]),
@@ -137,7 +137,7 @@ const d5 = {
     specRow(3, 'Archetype', `media frame. ${b('Two departures')}: the bleed is the viewport at every width including 390, and ${b('wide skips the 1,040 rung')} ⚑.`),
     specRow(4, 'Responsive rule', `${b('1440')} regular 720, wide 1,296, ${b('full 1,440 with no radius and no margin')}; caption 720 left-aligned to the measure; space 56. ${b('834')} regular and wide both 754, full 834, caption 690. ${b('≤ 767')} regular and wide 350, ${b('full 390')}, caption 350 on the 20 margin, space 32.`),
     specRow(5, 'Content fields', FIELDS),
-    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Full resolves to')} Content 1296 · Viewport edge. ${b('Bleed applies to')} Images · Images and galleries · Every media card. ${b('Caption on a bleed')} In the measure · Under, full width · Over the image, at the foot — ${b('the last value disabled with its ratio shown where the carried colour fails AA on the scrim')} ⚑. ${b('Then What Ghost owns')}, not counted.`)
+    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Full resolves to')} Content 1296 · Viewport edge. ${b('Bleed applies to')} ${b('Images')} (default) · Images and video — two values, the reason Ghost’s. ${b('Caption on a bleed')} In the measure · Under, full width · Over the image, at the foot — ${b('the last value disabled with its ratio shown where the carried colour fails AA on the scrim')} ⚑. ${b('Then What Ghost owns')}, not counted.`)
   ], [
     specRow(7, 'Data', DATA),
     specRow(8, 'Empty state', `${b('A bleed with no caption closes its space and the next paragraph follows at the spacing value')} ⚑ — no empty band, no placeholder line. A gallery with one image bleeds as one image. ${b('An author who marks no card full sees 1 Plain with a 1,296 wide rung')} ⚑ — the treatment is not broken by the absence of the thing it is for. No cards → nothing renders.`),
@@ -187,7 +187,7 @@ const d6 = {
       capHelp:`13.5 px. ${b('A caption belongs to a media card, and media cards do not invert')} ⚑ — so captions in this treatment are always on the page ground.` }).concat([
       K.seg('Band width', ['Measure 720', 'Wide 1040', 'Content 1296'], 1,
         `${b('1,040 by default so a band and a wide image share one secondary width')} ⚑. Below 1024 the band is the content box; below 768 it is the measure.`),
-      K.seg('Which cards invert', ['Callout only', 'Every copy card', 'Copy cards and the header'], 1,
+      K.seg('Which cards invert', ['Callout only', 'Every copy card'], 1,
         `${b('Image, gallery, embed, video and GIF never invert at any value')} ⚑ — A19’s photograph rule is not a control. Every copy card means callout, toggle, bookmark, button, product, file, call to action, audio, HTML and signup.`),
       K.seg('Action on the band', ['The carried colour', 'The accent, re-checked'], 0, undefined, [1]),
       `<div style="display:flex;flex-direction:column;gap:5px;margin-top:-9px"><span style="font-size:11px;color:#6E6A64;line-height:1.5">${b('The accent is disabled in Paper: #D96C3F on #232019 is 3.4:1 and fails AA')} ⚑. The value is shown struck through with its ratio rather than removed, because it passes in four of the twelve packs.</span></div>`
@@ -209,7 +209,7 @@ const d6 = {
     specRow(3, 'Archetype', `article body. ${b('Three departures')}: the band becomes the content box at 834 and the measure at ≤ 767; ${b('the content column is 302 at 390')}; ${b('five of the twenty cards never take the band')} ⚑.`),
     specRow(4, 'Responsive rule', `${b('1440')} band 1,040 centred, content 720, padding 32, space 56; media 720 · 1,040 · 1,296 on the page ground. ${b('834')} band 754, content 690. ${b('≤ 767')} band 350, content 302, padding 24, space 32 ⚑.`),
     specRow(5, 'Content fields', FIELDS),
-    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Band width')} Measure 720 · Wide 1040 · Content 1296. ${b('Which cards invert')} Callout only · Every copy card · Copy cards and the header. ${b('Action on the band')} The carried colour · The accent, re-checked — ${b('the second value disabled in Paper with 3.4:1 shown')} ⚑. ${b('Then What Ghost owns')}, not counted.`)
+    specRow(6, 'Controls, in sidebar order', `${b('Space around cards')} Compact 32 · Comfortable 56 · Spacious 72. ${b('Captions')} Under, left · Under, centred · Hidden. ${b('Credit line')} With the caption · Its own line · Hidden. ${b('Band width')} Measure 720 · Wide 1040 · Content 1296. ${b('Which cards invert')} Callout only · ${b('Every copy card')} — two values ⚑; the third, Copy cards and the header, is gone because the header card carries the author’s own inline colours. ${b('Action on the band')} The carried colour · The accent, re-checked — ${b('the second value disabled in Paper with 3.4:1 shown')} ⚑. ${b('Then What Ghost owns')}, not counted.`)
   ], [
     specRow(7, 'Data', DATA),
     specRow(8, 'Empty state', `As 1 Plain, with one addition: ${b('a bookmark with no scraped thumbnail takes the whole content column on the band and the 168 px is not held open')} ⚑. ${b('A post whose only cards are images renders with no band at all')} ⚑ — the treatment is invisible, and that is correct rather than broken. No cards → nothing renders.`),
