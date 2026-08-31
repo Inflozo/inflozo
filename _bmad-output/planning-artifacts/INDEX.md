@@ -1,12 +1,12 @@
 ---
 title: Inflozo — Document Index
 generated: by `tools/doc-audit.py --generate` — do not hand-edit
-updated: 2026-08-28
+updated: 2026-08-31
 ---
 
 # Document index
 
-**83 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**84 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -66,7 +66,7 @@ points at a file that is gone, or if this file is out of date.
 | **[The security gate](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql)**<br>`_bmad-output/planning-artifacts/architecture/.../RLS-TEST.sql` | E1's exit criterion and the acceptance test for a restore. 70 assertions, and it ABORTS on failure — it used to print FAIL and exit 0, which is why six holes survived three rounds. Mutation-tested: reverting any fix turns it red. Pure SQL, so it runs in psql or the Supabase dashboard editor. |
 | **[The string catalog](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/appendix-h1-string-catalog.md)**<br>`_bmad-output/planning-artifacts/prds/.../appendix-h1-string-catalog.md` | Every user-visible string, keyed and namespaced per category. Append-only and never reworded in place, because a superseded key orphans every user override built on it. |
 | **[Theme and arithmetic, checked](_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/verify-mechanical-theme-and-math.md)**<br>`_bmad-output/planning-artifacts/prds/.../verify-mechanical-theme-and-math.md` | The same treatment for emitted-theme structure and the numbers in the financial model. |
-| **Design library export — all 34 categories** *(688 files)*<br>`_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/` | Claude Design's export: the zip (authoritative) plus the owner's extraction in Inflozo/ — 34 per-category spec files, the design frames, the S1-S13 app screens and M1-M9 pages, and the owner's A1-A3 controls-audit notes. Categories 13+ carry all ten spec fields natively; the controls-reconciliation pass over all 34 is CONTROL-PROMPTS.html. |
+| **Design library export — all 34 categories** *(662 files)*<br>`_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/` | Claude Design's export: the zip (authoritative) plus the owner's extraction in Inflozo/ — 34 per-category spec files, the design frames, the S1-S13 app screens and M1-M9 pages, and the owner's A1-A3 controls-audit notes. Categories 13+ carry all ten spec fields natively; the controls-reconciliation pass over all 34 is CONTROL-PROMPTS.html. |
 | **Stress fixture README** *(1 files)*<br>`tools/stress/` | How to run the fixture and the gate. |
 
 
@@ -80,6 +80,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Decision-sheet template](tools/probe/report-template.html)**<br>`tools/probe/report-template.html` | Copy it, replace the findings array, change nothing else. |
 | **[Diagram geometry checker](tools/svg-check.py)**<br>`tools/svg-check.py` | The architecture diagrams are hand-written SVG, and a browser will draw text straight through a box without complaining. Finds text that overflows its frame, text crossing a shape it does not belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was reported — and its first version missed the worst case by only parsing two-point paths. |
 | **[Did the design pass apply the rulings?](tools/verify-design-pass.py)**<br>`tools/verify-design-pass.py` | One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. --extract dumps the per-category fields and modules for the two deferred derivations, marking every spec the parser cannot read rather than reporting an empty list as success. |
+| **[Draft the Content: storage contract](tools/derive-content-lines.py)**<br>`tools/derive-content-lines.py` | Drafts each category's Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner's 2026-08-31 ruling it lists only what a user types; Ghost's own read values are named in a note instead. Reads the specs' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched. |
 | **[FR-G5 tuple gate](tools/tuple-check.py)**<br>`tools/tuple-check.py` | Verifies every live design's structural tuple, read from the export through tools/export-roster.py: six slots, five closed sets (the authority for the vocabulary), unique within each category, contiguous numbering. Mutation-tested — a forced collision and an out-of-vocabulary slot each turn it red. Run by doc-audit --check; category-prompts.py reads its sets, so a set change here requires a prompt regeneration. |
 | **[Fixture sections](tools/stress/sections.js)**<br>`tools/stress/sections.js` | The annotated HTML the fixture compiles. |
 | **[Ghost fixture seeder](tools/probe/seed-ghost.py)**<br>`tools/probe/seed-ghost.py` | Seeds both Ghosts identically. |

@@ -106,7 +106,7 @@ the members it is asking is not a paywall. Every Portal fragment inside a member
 ### Group 1 · Structure & Chrome
 
 **A1. Headers & Navigation (15)** — Used on `default.hbs` (site-wide).
-Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigation` + manual items), cta?, search toggle, member links toggle. Controls: sticky (None/Sticky/Sticky-shrink), nav alignment, CTA toggle, search toggle, member-links toggle. Data: `@site.navigation`, secondary nav, `@member` state swap (Sign in ↔ Account).
+Content: logo, siteTitle, navItems[], navItems[].children[], signInLabel, ctaLabel, ctaUrl, ctaLabelShort, moreLabel, searchTrigger, darkModeToggle, tagline, dateLine, dateMode, customDate, logoLight, featuredPost, featuredHeading, menuLabel, closeLabel, panelTags, railHeading, byTopicHeading, byAuthorsHeading, panelColumns[], children[].description, stripNote, stripItems[], secondaryNav[], socialLinks[]. Controls: sticky (None/Sticky/Sticky-shrink), nav alignment, CTA toggle, search toggle, member-links toggle. Data: `@site.navigation`, secondary nav, `@member` state swap (Sign in ↔ Account).
 <!-- roster:A1 -->
 1. **Rail** [Free] — The undecorated single row — logo, nav, actions, hairline — and the only design that adds nothing to it; four other designs fall back to this arrangement rather than inventing one.
 2. **Split Rail** — The only design with a centred wordmark and the nav split around it, so the header reads from an axis of symmetry rather than left to right.
@@ -133,7 +133,7 @@ Content: logo (auto `@site.logo`/title, overridable), nav (auto `@site.navigatio
 - **Ghost's bar is switched off by clearing it, and only the user's own site can do that.** No theme can suppress it — `{{ghost_head}}` is mandatory — but Ghost emits **nothing at all** when `announcement_content` or `announcement_visibility` is empty. So after seeding, Inflozo offers a **one-click "turn Ghost's bar off"**, which is safe *because the copy is already inside Inflozo by then*, and is an explicit consented action rather than something done quietly (P8). Declining leaves both bars, which is a legitimate choice and looks obviously deliberate rather than broken.
 - **If the user never seeds**, nothing changes and no warning is invented — but the stack is **visible while designing**: Ghost's bar is **shimmed as a strip at the top of the canvas** (FR-H5), taking real vertical space above the header, so an A2 design placed below it is authored against what the visitor will actually see rather than against a page missing its top strip. No warning is needed once the thing being warned about is on screen.
 
-Content: message (inline link support), cta?, dismiss toggle. Controls: dismissible, rotation (for multi-message), show to (Everyone / Logged out / Free members / Paid members).
+Content: message, messageShort, linkLabel, linkUrl, dismissible, audience, dismissMemory, ctaLabel, ctaUrl, ctaLabelShort, label, headline, body, emailPlaceholder, submitLabel, successMessage, endsAt, expiredMessage, expiredCtaLabel, expiredCtaUrl, metaText, messages[], image, imageAlt, secondaryLabel, askAgainAfter, chipLabel. Controls: dismissible, rotation (for multi-message), show to (Everyone / Logged out / Free members / Paid members).
 <!-- roster:A2 -->
 1. **Rule** [Free] — The category's floor — one line on a contrast band with nothing added to it, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 2. **Split** [Free] — The only single-row bar whose action is a filled button at the right margin, and the only one that breaks its row on a content threshold rather than at a width.
@@ -153,7 +153,7 @@ Content: message (inline link support), cta?, dismiss toggle. Controls: dismissi
 <!-- /roster:A2 -->
 
 **A3. Footers (16)** — Site-wide.
-Content: logo/wordmark, description?, link columns (manual + auto nav), social links, newsletter toggle, legal line, credit toggle (Pro-gated — FR-J15). Controls: column count, social style (Icons/Labels), newsletter embed toggle, back-to-top toggle.
+Content: wordmark, mark, social[], copyright, legalLinks[], showAttribution, tagline, description, latestPosts, tags, image, linkColumns[], newsletterPlaceholder, newsletterButtonLabel, newsletterNote, newsletterSuccess, newsletterSuccessShort, memberSubscribedLine, memberManageLabel, postsHeading, postsSource, postsCount, contactHeading, address, email, phone, hours, credits[], creditsGroups[], heading, creditsHeading, tagsHeading, tagsOrder, tagsCount, tagsList[], showTagCounts, imageSource, imageAlt, footerBelow. Controls: column count, social style (Icons/Labels), newsletter embed toggle, back-to-top toggle.
 <!-- roster:A3 -->
 1. **Minimal Line** [Free] — The category's floor — a brand row over a legal row with nothing added to them, spending no accent — the category's least-furnished arrangement, which is what makes it the baseline.
 2. **Columns** — The design that settles the column grid — brand block at the left margin, authored columns filling the measure — and the only one whose column count is free to run the whole 2–7 range, which is what the seven-column cap, the eight-link cap and the accordion threshold are written against.
@@ -176,7 +176,7 @@ Content: logo/wordmark, description?, link columns (manual + auto nav), social l
 ### Group 2 · Marketing Sections
 
 **A4. Heroes (17)** — Home, custom pages.
-Content: eyebrow?, headline, subhead?, primary cta, secondary cta?, media (image?/none), badge?. Controls: media side, text alignment, CTA arrangement, media frame (None/Rounded/Browser/Tilt).
+Content: eyebrow, headline, sub, primaryAction, secondaryAction, note, proof[], valueSource, image, imageAlt, imageFocus, pictureFocus, imageCaption, issueLine, videoUrl, videoPoster, videoDuration, deadline, scrollCueLabel, quote, quoteName, quoteRole, quotePortrait, meta. Controls: media side, text alignment, CTA arrangement, media frame (None/Rounded/Browser/Tilt).
 <!-- roster:A4 -->
 1. **Centred** [Free] — The category's floor — the whole set centred on a measure with no picture and nothing added to it, the arrangement 5 Image Under's own no-band state resembles, and the design the type and action ladders are established on.
 2. **Flush Left** — The only design that leaves half its width deliberately empty, and the only one carrying authored proof pairs — the arrangement 3, 13 and 18 each approach in their own no-picture states, none of which switch design (the rule that no design ever turns into another design), when their picture is absent.
@@ -198,7 +198,7 @@ Content: eyebrow?, headline, subhead?, primary cta, secondary cta?, media (image
 <!-- /roster:A4 -->
 
 **A5. Features (16)** — Home, custom pages.
-Content: heading?, intro?, items[] {icon?, image?, title, body, link?}. Controls: columns (2/3/4), icon style (Line/Filled/Tile), item alignment, item count.
+Content: eyebrow, title, sub, items[], itemTitle, itemBody, itemIcon, itemLinkLabel, itemLinkUrl, primaryAction, note, itemImage, itemImageAlt, itemMeta, tabLabel. Controls: columns (2/3/4), icon style (Line/Filled/Tile), item alignment, item count.
 <!-- roster:A5 -->
 1. **Three Up** [Free] — The category's floor — a centred head over three bare items on the page's own ground, adding nothing to the item, the grid, the head or the action, and the arrangement the fifteen designs after it are departures from.
 2. **Two Up** — The only design that caps its body copy inside a column wider than the cap — a 520 px measure in a 632 px item — which is the whole of what separates it from 1 Three Up with a column removed.
@@ -219,7 +219,7 @@ Content: heading?, intro?, items[] {icon?, image?, title, body, link?}. Controls
 <!-- /roster:A5 -->
 
 **A6. CTA Banners (15)** — Any template.
-Content: heading, subtext?, primary cta, secondary cta?, image?. Controls: alignment, emphasis (Band/Card/Full-bleed), show to (Everyone / Logged out / Free members / Paid members).
+Content: eyebrow, title, sub, primaryLabel, primaryUrl, secondaryLabel, secondaryUrl, note, fallbackLabel, fallbackUrl, image, membersLine, imageAlt, imageFocus, reasons[], secondTitle, secondSub, memberTitle, memberSub, upgradeLabel, signinLine, portrait, signerName, signerRole, portraitAlt. Controls: alignment, emphasis (Band/Card/Full-bleed), show to (Everyone / Logged out / Free members / Paid members).
 <!-- roster:A6 -->
 1. **Centred** [Free] — The category floor — the ask centred on the page's own ground with nothing added to it, and the arrangement the panel advises whenever another design's picture, list or signature is absent.
 2. **Flush Left** — The only design that draws a hairline above itself, and the only one whose right half is empty by arrangement rather than by a missing field.
@@ -242,7 +242,7 @@ Content: heading, subtext?, primary cta, secondary cta?, image?. Controls: align
 **Authoring rule, normative for every design that binds tiers — A7's 15, A22 #8, and A32's paywall designs under FR-H6.** Two constraints, both executed against Ghost 5.130.6 and 6.58.0 (VERIFY-AT-BUILD 14b, 33):
 1. **Emptiness is tested on a *filtered* get, never on `tiers.length`.** The visibility filter is applied to the serialized rows *after* the count is taken, so an unfiltered `{{#get "tiers"}}` on a site whose only paid tier is hidden reports `length` = 2 and yields **one** row — and `{{#if tiers.length}}` around a pricing section then renders a heading with no cards. Always carry `filter="visibility:public"`, under which count and rows agree.
 2. **No emitted `{{#get}}` uses `limit="all"`, and none exceeds `limit="100"`.** `GS090-NO-LIMIT-ALL-IN-GET-HELPER` and `GS090-NO-LIMIT-OVER-100-IN-GET-HELPER` are v6-spec warnings — invisible on Ghost 5, standing warnings on Ghost 6 against FR-J6's 0/0 target.
-Content: heading?, intro?, per-tier cta labels, footnote?, member-count line? (#12). Controls: billing toggle (Monthly/Yearly/Toggle), highlight tier select, benefit display (Checks/Plain), free-tier visibility, member-count line toggle (#12). Data: live tiers or sample; the member count on #12 comes from `{{total_members}}` — **a string, always**, since Ghost rounds it down and appends `+`, so no design may format, compare or compute on it.
+Content: image, recommendedTier, badgeLabel, note, payLabel, eyebrow, title, sub, freeLabel, memberTitle, memberSub, reasons[]. Controls: billing toggle (Monthly/Yearly/Toggle), highlight tier select, benefit display (Checks/Plain), free-tier visibility, member-count line toggle (#12). Data: live tiers or sample; the member count on #12 comes from `{{total_members}}` — **a string, always**, since Ghost rounds it down and appends `+`, so no design may format, compare or compute on it.
 <!-- roster:A7 -->
 1. **Cards** [Free] — The category's floor: three equal cards on the page ground with nothing added to them, and the arrangement nine other panels advise rather than inventing one of their own.
 2. **Table** — The only real <table> in A7, the only design that draws a benefit matrix at all, the only one that scrolls — at every width below 1081, the phone included — and the only one that takes a fourth tier.
@@ -262,7 +262,7 @@ Content: heading?, intro?, per-tier cta labels, footnote?, member-count line? (#
 <!-- /roster:A7 -->
 
 **A8. Testimonials (15)**
-Content: items[] {quote, name, role?, avatar?, rating?, link?}, heading?. Controls: count, avatar toggle, rating toggle, motion (Static/Marquee/Carousel).
+Content: quotes[], image, avatar, sub, eyebrow, note, imageAlt, quote, name, role, org, title, linkLabel, linkUrl. Controls: count, avatar toggle, rating toggle, motion (Static/Marquee/Carousel).
 <!-- roster:A8 -->
 1. **Single** [Free] — The only design that draws one quotation with no card and no plane around it — the category's floor, and the arrangement eight other panels advise at a count of one. Nothing switches to it: a design placed on a page is the design that renders.
 2. **Three Up** [Free] — The category's card grid at its home scale — three equal 416 px cards on the page's own ground — and the design whose 24 px gutter the shared two-column step at 1080 keeps. The step is a measurement every columned design shares, not a change of design.
@@ -282,7 +282,7 @@ Content: items[] {quote, name, role?, avatar?, rating?, link?}, heading?. Contro
 <!-- /roster:A8 -->
 
 **A9. FAQ (15)**
-Content: heading?, intro?, items[] {question, answer}, contact cta?. Controls: columns (1/2), default state (First open/All closed/All open), divider style.
+Content: image, imageAlt, groupLabel, items[], group, anchor, id, title, sub, note, eyebrow, groups[], filterPlaceholder, noMatch, question, answer, linkLabel, linkUrl. Controls: columns (1/2), default state (First open/All closed/All open), divider style.
 <!-- roster:A9 -->
 1. **Accordion** [Free] — The category's floor accordion — one column of hairline rows with nothing added to it, the only design with no count control and the only one offering Open on load, and the arrangement seven others advise rather than inventing one of their own.
 2. **Two Column** — The only design that divides one list into two independent columns — split by count and never equalised by height — which is what makes settlement 4's two refusals visible on the page.
@@ -302,7 +302,7 @@ Content: heading?, intro?, items[] {question, answer}, contact cta?. Controls: c
 <!-- /roster:A9 -->
 
 **A10. Stats & Numbers (15)**
-Content: heading?, items[] {value, label, sublabel?}, source note?. Controls: count (2–4), count-up animation toggle, divider toggle.
+Content: image, imageAlt, lede, value, prefix, suffix, label, note, prev, share, eyebrow, title, source, sourceUrl, linkLabel, linkUrl, sub, noteUrl, stats[], noteMarker, markerVisible, noteVisible. Controls: count (2–4), count-up animation toggle, divider toggle.
 <!-- roster:A10 -->
 1. **Row** [Free] — The category's floor and the row every other design is measured against — an undecorated set of equal cells carrying seven controls, more than any other design in A10, and the only one that will put the label above the value.
 2. **Cards** — The only design that gives each stat a surface of its own — and, because a card has a visible edge, the only design in A10 that equalises the height of anything.
@@ -322,7 +322,7 @@ Content: heading?, items[] {value, label, sublabel?}, source note?. Controls: co
 <!-- /roster:A10 -->
 
 **A11. Logo Walls (15)**
-Content: heading?, logos[] {image, link?}. Controls: treatment (Grayscale/Original/Mono-invert), motion (Static/Marquee/Dual-marquee), density.
+Content: lede, leadLabel, restLabel, logo, logoDark, alt, url, caption, eyebrow, title, sub, note, linkLabel, linkUrl, logos[], shape. Controls: treatment (Grayscale/Original/Mono-invert), motion (Static/Marquee/Dual-marquee), density.
 <!-- roster:A11 -->
 1. **Row** [Free] — The category’s floor — one row of equal cells with nothing added to it: no container, no caption, no second size and no behaviour, and the arrangement eleven other panels name as advice rather than inventing one of their own.
 2. **Caption Row** — The only design where type and artwork share one horizontal band — a 13 px label in a 196 px column with the wall filling the 1,056 beside it — and the only one whose section field is required in practice for the design to exist.
@@ -342,7 +342,7 @@ Content: heading?, logos[] {image, link?}. Controls: treatment (Grayscale/Origin
 <!-- /roster:A11 -->
 
 **A12. About & Team (15)**
-Content: heading?, body, images[], team[] {name, role, image, link?}?, values[]?. Controls: team columns, portrait shape (Square/Rounded/Circle), values toggle. Data: optional bind team to Ghost authors.
+Content: eyebrow, title, sub, note, name, role, photo, url, bio, group, body, image, imageAlt, people[], text, socials[], linkLabel, linkUrl, photoAlt. Controls: team columns, portrait shape (Square/Rounded/Circle), values toggle. Data: optional bind team to Ghost authors.
 <!-- roster:A12 -->
 1. **Grid** [Free] — The category's floor — a circle above a name and a role in equal cells, with no container, no bio, no second size and no behaviour: the arrangement ten other designs advise rather than inventing one of their own.
 2. **Cards** — The only design where a person gets a plane of their own — a fill, a hairline and the pack radius around each card, equalised to its row's height — and therefore the only one where a short card is stretched rather than left short.
@@ -362,7 +362,7 @@ Content: heading?, body, images[], team[] {name, role, image, link?}?, values[]?
 <!-- /roster:A12 -->
 
 **A13. Process / How It Works (15)**
-Content: heading?, steps[] {title, body, icon?/image?}, cta?. Controls: step count (3–5), numbering style (Numerals/Dots/Icons), connector (Line/Arrow/None).
+Content: eyebrow, title, sub, body, note, linkLabel, linkUrl, image, imageAlt, label, duration, icon. Controls: step count (3–5), numbering style (Numerals/Dots/Icons), connector (Line/Arrow/None).
 <!-- roster:A13 -->
 1. **Three Up** [Free] — The category's floor — a numeral above a title above a paragraph in equal cells, with no container, no picture, no label and no behaviour: the arrangement five other panels advise rather than inventing one of their own.
 2. **Track** — The only design in which a single hairline joins the steps rather than dividing them — three to five markers in one line with the connector running through them — and the only one whose defining element rotates rather than collapsing when the steps stack.
@@ -382,7 +382,7 @@ Content: heading?, steps[] {title, body, icon?/image?}, cta?. Controls: step cou
 <!-- /roster:A13 -->
 
 **A14. Galleries (15)**
-Content: heading?, images[] {image, caption?, link?}. Controls: columns, gap (Tight/Normal/Loose), lightbox toggle, aspect (Natural/Square/Wide).
+Content: eyebrow, heading, blurb, credit, moreLabel, moreUrl, images[], image, alt, caption, link. Controls: columns, gap (Tight/Normal/Loose), lightbox toggle, aspect (Natural/Square/Wide).
 <!-- roster:A14 -->
 1. **Grid** [Free] — Six photographs in three even columns on the page ground, one enforced crop across every cell, each caption under its own frame. The category default. Every A14 grid goes to one column at 390 and stays the design it is — nothing in this category becomes anything else.
 2. **Masonry** — Three columns filled top to bottom with the list in order, every photograph at its uploaded ratio, captions under each frame. Nothing measures and nothing packs.
@@ -402,7 +402,7 @@ Content: heading?, images[] {image, caption?, link?}. Controls: columns, gap (Ti
 <!-- /roster:A14 -->
 
 **A15. Video & Embeds (15)**
-Content: heading?, embed url(s), poster image?, caption?, copy?. Controls: aspect (16:9/4:3/1:1/9:16), frame (None/Rounded/Browser/Device), autoplay-muted toggle (where allowed). Data: the episode designs (#5, #6) bind posts via the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, fixed Count, never paginated.
+Content: eyebrow, heading, blurb, credit, queueLabel, embedKind, embedLabel, playLabel, watchLabel, openLabel, transcriptLabel, videos[], url, title, description, poster, duration, start, transcriptUrl, tabLabel, chapters[]. Controls: aspect (16:9/4:3/1:1/9:16), frame (None/Rounded/Browser/Device), autoplay-muted toggle (where allowed). Data: the episode designs (#5, #6) bind posts via the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, fixed Count, never paginated.
 <!-- roster:A15 -->
 1. **Player** [Free] — One film at 960 centred under a centred head, the duration on the poster, one meta line under it. The category default and the frame every other design is built out of.
 2. **Split** — The film in a 720 column with eyebrow, heading, description, a labelled play action and the meta line held in a 480 column beside it. Two columns above 1,080.
@@ -422,7 +422,7 @@ Content: heading?, embed url(s), poster image?, caption?, copy?. Controls: aspec
 <!-- /roster:A15 -->
 
 **A16. Contact (15)** — (No form backend in Ghost: actions compile to email links, portal actions, or an external form/calendar embed URL control.)
-Content: heading, body?, email, socials[], locations[]?, embed url?. Controls: action type (Email button/Embed), social style, hours/info toggles.
+Content: deliveryTarget, eyebrow, heading, blurb, headingSmall, nameLabel, messageLabel, placeholder, buttonLabel, consentText, sentHeading, sentText, invalidText, failedText, postal, email, phone, replyHours, socialsLabel, socials[], socialsSource, socialsDisplay, locations[], enquiries[], reasons[], columnLabels, label, directionsLabel, image, imageAlt, imageFocus. Controls: action type (Email button/Embed), social style, hours/info toggles.
 <!-- roster:A16 -->
 1. **Split** — The head and the publication's own contact details in a 560 column at the left, the form in a 640 column at the right on a 96 px gutter. The category default; nothing is raised, boxed or photographed.
 2. **Centred** [Free] — A centred head on a 720 measure with the form beneath on 560, and no contact details at any value. The smallest complete form in A16.
@@ -444,7 +444,7 @@ Content: heading, body?, email, socials[], locations[]?, embed url?. Controls: a
 ### Group 3 · Ghost Content Sections
 
 **A17. Post Grids (18)** — Home, tag/author archives, custom pages. `bindingContext: posts` · `compileTarget: any` (native paginated context on collection templates, `{{#get}}` elsewhere — FR-H2).
-Content: post-bound per `prd.md` Appendix B — card fields: feature image, title, excerpt, date, author, reading time, primary tag; static: heading?, intro?, empty-state line. Controls: columns (2/3/4), image aspect (Natural/Square/Wide/None), excerpt length (Short/Long/Off), card frame (None/Border/Elevated), meta position (Above title/Below title). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
+Content: filterValue, postRefs, emptyHeading, emptyBody. Controls: columns (2/3/4), image aspect (Natural/Square/Wide/None), excerpt length (Short/Long/Off), card frame (None/Border/Elevated), meta position (Above title/Below title). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
 <!-- roster:A17 -->
 1. **Three Up** [Free] — Three 416 cells, image above tag, title, excerpt and meta. The category's default and what a site gets when it types "posts".
 2. **Two Up** — Two 636 cells — the largest ordinary image in the category — with three lines of excerpt.
@@ -467,7 +467,7 @@ Content: post-bound per `prd.md` Appendix B — card fields: feature image, titl
 <!-- /roster:A17 -->
 
 **A18. Post Lists (15)** — Same binding as A17; list-form. `bindingContext: posts` · `compileTarget: any`.
-Content: post-bound per A17's card model — title, excerpt, date, author, reading time, primary tag, feature image (as thumbnail); static: heading?, intro?, empty-state line. Controls: thumbnail (Off/Small/Large), excerpt length (Short/Long/Off), row divider (None/Line/Space), group headers (Off/Month/Year), meta lead (Date/Reading time/Tag). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
+Content: filterValue, postRefs, emptyHeading, emptyBody. Controls: thumbnail (Off/Small/Large), excerpt length (Short/Long/Off), row divider (None/Line/Space), group headers (Off/Month/Year), meta lead (Date/Reading time/Tag). Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
 <!-- roster:A18 -->
 1. **Rows** [Free] — Full-width rows on a hairline, text held to an 820 px measure at the left and a 200 px meta column hung at the right; no image at any setting. The category's default.
 2. **Thumb Rows** — 1 Rows with a fixed-size thumbnail at the leading edge, the text measure paying for it and the meta still hung.
@@ -487,7 +487,7 @@ Content: post-bound per A17's card model — title, excerpt, date, author, readi
 <!-- /roster:A18 -->
 
 **A19. Featured & Spotlight (15)** — Binds featured or hand-picked posts. `bindingContext: posts` · `compileTarget: any`.
-Content: post-bound — feature image, title, excerpt, **`custom_excerpt` (a distinct field — #11 binds this one and only this one)**, primary tag, author, date, reading time; static: eyebrow?, heading?, badge label?, cta?, quote attribution? (#11). Controls: image treatment (Fill/Contain/Scrim), excerpt toggle, meta toggles (date, author, reading time, tag chip), badge toggle, cta toggle. Data: group per FR-H2 with Source defaulting to **Featured** — `{{#get}}`-driven, fixed Count, never the main feed and never paginated.
+Content: eyebrow, title, sub, note, linkLabel, railLabel, linkUrl, image, source, filterValue, pickedPosts, count, order, fallback, url, featured, visibility, padding, titleSize, excerpt, meta, tag, ratio, mediaSide, alignment, divider, height, textPosition, scrim, card, cardPosition, imageWidth, columnWidth, railDetail, numeralSize, rowDensity, quoteMark, attribution, authorPhoto, label, detail, rule, trailing, carouselControls, quoteSize, railHeading. Controls: image treatment (Fill/Contain/Scrim), excerpt toggle, meta toggles (date, author, reading time, tag chip), badge toggle, cta toggle. Data: group per FR-H2 with Source defaulting to **Featured** — `{{#get}}`-driven, fixed Count, never the main feed and never paginated.
 <!-- roster:A19 -->
 1. **Split** [Free] — One featured post as a two-column split: text on a 560 px measure at the left, its feature image on 636 at the right, the two centred against each other. The category's default and the design the rest of it advises.
 2. **Full Bleed** — One featured post whose feature image fills the section edge to edge, with the eyebrow, title, excerpt, meta and call to action set on the picture over a bottom-up scrim of the pack's contrast colour.
@@ -507,7 +507,7 @@ Content: post-bound — feature image, title, excerpt, **`custom_excerpt` (a dis
 <!-- /roster:A19 -->
 
 **A20. Tag Collections (15)** — Binds tags (name, description, accent color, feature image, post count) and their posts. `bindingContext: tags` (+ `posts` on the designs that show them) · `compileTarget: any`.
-Content: tag-bound per `prd.md` Appendix B — name, description, accent color, feature image, `count.posts`, url; static: heading?, intro?, per-tag label overrides?. Controls: columns/density, count badge toggle, description toggle, tag image toggle, tag-accent tint toggle (uses the tag's own accent color when set). Data: tag source (All / Hand-picked / Visible only), Count, Order (Post count / Alphabetical / Newest); the per-tag post rows (#3, #14) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
+Content: tagPicks[], eyebrowText, headingText, introText, linkLabel, linkUrl, leadLabel, colTopic, colCovers, colPosts, allChipLabel. Controls: columns/density, count badge toggle, description toggle, tag image toggle, tag-accent tint toggle (uses the tag's own accent color when set). Data: tag source (All / Hand-picked / Visible only), Count, Order (Post count / Alphabetical / Newest); the per-tag post rows (#3, #14) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
 <!-- roster:A20 -->
 1. **Chips** [Free] — The whole public tag set as one wrapping row of hairline pills under a head, with the count inside each pill. The category default.
 2. **Tiles** — A four-up grid of picture tiles, one per topic, name and count under the picture.
@@ -527,7 +527,7 @@ Content: tag-bound per `prd.md` Appendix B — name, description, accent color, 
 <!-- /roster:A20 -->
 
 **A21. Author Showcases (15)** — Binds authors (name, bio, portrait, cover, socials, post count). `bindingContext: authors` (+ `posts` on the designs that show them) · `compileTarget: any`.
-Content: author-bound per `prd.md` Appendix B — name, bio, profile image, cover image, website/twitter/facebook, `count.posts`, url; static: heading?, intro?, role labels?. Controls: columns, portrait shape (Square/Rounded/Circle), bio toggle, socials toggle, post-count toggle. Data: author source (All / Hand-picked), Count, Order (Post count / Alphabetical); the per-author post rows (#5) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
+Content: authorPicks[], eyebrow, heading, blurb, railLine, actionLabel, actionUrl, linkLabel, linkUrl, colWriter, colWhere, colPosts, backgroundImage, roleOverride, emptyText. Controls: columns, portrait shape (Square/Rounded/Circle), bio toggle, socials toggle, post-count toggle. Data: author source (All / Hand-picked), Count, Order (Post count / Alphabetical); the per-author post rows (#5) use the FR-H2 Data group — `{{#get}}`-driven, never paginated.
 <!-- roster:A21 -->
 1. **Grid** — Portraits over names in an N-column grid on the page ground, each writer with a count, two bio lines and an archive link. The category default and the arrangement the other fourteen depart from.
 2. **Cards** — One raised surface card per writer, portrait left of the name, bio clamped at three lines and the link on a common foot. The category's tokenisation proof.
@@ -547,7 +547,7 @@ Content: author-bound per `prd.md` Appendix B — name, bio, profile image, cove
 <!-- /roster:A21 -->
 
 **A22. Newsletter / Subscribe (16)** — Portal-bound (`data-portal` signup); members-aware (hides/swaps for members via FR-D16 preview). `bindingContext: none` (+ `@member`; `tiers` on #8) · `compileTarget: any`.
-Content: heading, subtext?, button label, proof line?, frequency badge?. Controls: alignment, portal action (signup / signup/{tier} / upgrade), show to (Everyone / Logged out / Free members / Paid members), proof-line toggle, frequency-badge toggle, signed-in swap (Hide section / Show account link). Data: #7 Issue Preview uses the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, never paginated.
+Content: eyebrow, heading, blurb, placeholder, buttonLabel, note, proofLine, doneHeading, doneText, invalidText, subscribedText, manageLabel, label, issuesLabel, archiveLabel, reasons[], quote, quoteAttrib, quoteDetail, image, imageAlt. Controls: alignment, portal action (signup / signup/{tier} / upgrade), show to (Everyone / Logged out / Free members / Paid members), proof-line toggle, frequency-badge toggle, signed-in swap (Hide section / Show account link). Data: #7 Issue Preview uses the FR-H2 Data group (Source **By tag**) — `{{#get}}`-driven, never paginated.
 <!-- roster:A22 -->
 1. **Inline Row** [Free] — A centred eyebrow, heading and blurb with one form row beneath, on the page ground. The category default; nothing is raised, boxed or photographed.
 2. **Card** — The centred ask on an inset surface card, raised on the page ground. The category's tokenisation proof.
@@ -573,7 +573,7 @@ Content: heading, subtext?, button label, proof line?, frequency badge?. Control
 
 **A24. Post Headers (16)** — `post.hbs` and `page.hbs`. Binds title, excerpt, feature image (+alt/caption), tag, authors, date, reading time. `bindingContext: post` (opened inside `{{#post}}` on **both** templates — a page is a post whose data object is called `post`; see A25's dual-target rule and FR-H7) · `compileTarget: post.hbs, page.hbs`.
 **`@page.show_title_and_feature_image` (normative, `page.hbs` only).** On `page.hbs` this flag is genuinely toggleable from Ghost's own page-builder settings and **must** be honoured, or the user's toggle does nothing: every A24 design wraps its **title and feature-image markup** — and nothing else — in `{{#if @page.show_title_and_feature_image}}` when it compiles into `page.hbs`. On `post.hbs` the flag is always `true`, so gating there is a no-op and is not emitted. It is the sole `@page.*` property the theme may reference (FR-I1, FR-J6).
-Content: post/page-bound per `prd.md` Appendix B — title, custom excerpt, feature image + alt + caption, primary tag, authors, published date, reading time; static: kicker/eyebrow?, breadcrumb labels? (#16). Controls: feature image (Show/Hide), image treatment (Fill/Contain/Scrim), title alignment, meta row toggles (date, author, reading time, tag chip — the whole row is hidden on `page.hbs` per the Synthesis Defaults), excerpt/standfirst toggle, reading-progress toggle (#15).
+Content: shareLabel, copiedLabel, bylinePrefix, readingTimeSuffix, filedLabel, publishedLabel, readingTimeLabel. Controls: feature image (Show/Hide), image treatment (Fill/Contain/Scrim), title alignment, meta row toggles (date, author, reading time, tag chip — the whole row is hidden on `page.hbs` per the Synthesis Defaults), excerpt/standfirst toggle, reading-progress toggle (#15).
 <!-- roster:A24 -->
 1. **Centred** [Free] — Tag, title, standfirst and byline centred on one axis at three narrowing measures — 820, 720, 720 — with the feature image beneath at the full content width. The category default, the design a switch falls back to, and the only one that changes nothing in the Post block.
 2. **Flush Left** [Free] — Tag, title, byline and standfirst left-aligned on the article's own 720 measure between two hairlines, with the byline between the title and the standfirst. The only design whose header measure is the body measure, and one of seven that draw no picture.
@@ -597,7 +597,7 @@ Content: post/page-bound per `prd.md` Appendix B — title, custom excerpt, feat
 **Dual-target binding (normative — and not an exception to FR-G3's enum).** On `page.hbs` Ghost's root carries **both** `post` and `page` keys pointing at the **same object**, so `{{#post}}` and `{{#page}}` both reach it; both official themes use `{{#post}}`, and **Inflozo emits `{{#post}}` on both targets** so one design compiles identically to each (`appendix-b1-template-contexts.md` §3, §4.2). `bindingContext: post` is therefore correct on both, and FR-G3's enum gains no `page` value.
 
 **A post and a page are not the same *product*, and that difference lives in `compileTarget`.** A post is an article: it carries comments, an author byline, related posts and a reading table of contents. A page is a standing page — About, Our Story, Contact — and carries none of them, which is why **A26 post footers, A27 related posts and A28 comments declare `post.hbs` only** and can never be placed on a page canvas. What A25 does carry on both is the reading experience itself, and its defaults differ by target: on `page.hbs` the synthesized design ships **TOC off and share rail off**, because a standing page is usually short and rarely shared as an article — both remain available for the long-form exception (a detailed "Our Story", a documentation page). On `post.hbs` they default as before. The remaining target-specific obligation belongs to **A24**, not A25: on `page.hbs` `@page.show_title_and_feature_image` is genuinely toggleable and **must** be honoured (FR-I1).
-Content: the post/page body via `{{content}}` — no editable content props (the body is authored in Ghost, never in Inflozo); static: aside/callout label? (#12). On the canvas `{{content}}` resolves to the **style-guide fixture** (FR-H3, FR-H4), which is what makes these twelve designs — and the card treatments they sit around — designable at all. Controls: measure (Narrow/Comfort/Wide) (reading-column layout choice — distinct from the removed universal width control), **TOC** (Off/Left/Right, auto-hidden < 3 headings) and TOC style (Plain/Numbered/Rule), **drop cap** (Off/Serif/Display), share rail toggle, type scale (Normal/Large).
+Content: indexLabel, indexNote, shareLabel. Controls: measure (Narrow/Comfort/Wide) (reading-column layout choice — distinct from the removed universal width control), **TOC** (Off/Left/Right, auto-hidden < 3 headings) and TOC style (Plain/Numbered/Rule), **drop cap** (Off/Serif/Display), share rail toggle, type scale (Normal/Large).
 **Card styling is not A25's (normative).** Every `.kg-*` selector belongs to `cards.css`, emitted by the card design module (FR-Q7); an A25 design **never** emits a `.kg-*` rule into `screen.css`, and the compiler asserts it. Where a design's identity depends on card-adjacent styling — **#9 Photo Essay**'s full-bleed image cards, **#12 Split Aside**'s callout margin column — it declares the card-treatment values it needs and they are emitted into `cards.css` with everything else, so the two files never carry competing rules for the same selector and there is no order-dependent contest to lose. Removing A25 entirely does not strand the treatment: FR-Q9 keeps the selection in Theme Settings.
 <!-- roster:A25 -->
 1. **Measured** — The article on a centred 720 measure with the index in one margin and the share rail in the other, both drawn in margin the measure already had, neither able to move the text. The category default and the design a switch falls back to.
@@ -615,7 +615,7 @@ Content: the post/page body via `{{content}}` — no editable content props (the
 <!-- /roster:A25 -->
 
 **A26. Post Footers (15)** — Below content on `post.hbs`. `bindingContext: post` · `compileTarget: post.hbs`.
-Content: post-bound — authors (portrait, bio, links, more-by), tags, previous/next post, related posts; static: heading?, cta?, disclosure text? (#13), sign-off line? (#14). Controls: author bio toggle, tag chips toggle, share row toggle, prev/next toggle, newsletter/CTA block toggle, show to (Everyone / Logged out / Free members / Paid members). Data: the related and series rows (#5, #12) use the FR-H2 Data group — `{{#get}}` by primary tag, fixed Count, never paginated.
+Content: tagsLabel, archiveLabel, archiveUrl, authorLinkLabel, shareLabel, copiedLabel, rowLabels, ledgerLabels, columnLabels, prevKicker, nextKicker, deskLine, subscribeHeading, subscribeLine, subscribeButton, subscribedLine, upgradeHeading, upgradeLine, upgradeButton, tags[], authors[]. Controls: author bio toggle, tag chips toggle, share row toggle, prev/next toggle, newsletter/CTA block toggle, show to (Everyone / Logged out / Free members / Paid members). Data: the related and series rows (#5, #12) use the FR-H2 Data group — `{{#get}}` by primary tag, fixed Count, never paginated.
 <!-- roster:A26 -->
 1. **Author Bio** [Free] — The four blocks stacked on the article's measure in the fixed order, each opening with a hairline, the author block carrying the weight — 56 px avatar, name in the heading font, two clamped lines of bio, the socials row, a link to the author's archive. The category default and the design a switch falls back to.
 2. **Rows** — Every block a full-width row across the content measure, opened by a 120 px uppercase label column and closed by a hairline. The design that names its blocks instead of relying on their shape.
@@ -635,7 +635,7 @@ Content: post-bound — authors (portrait, bio, links, more-by), tags, previous/
 <!-- /roster:A26 -->
 
 **A27. Related Posts (12)** — `{{#get}}` by primary tag with fallback to latest. `bindingContext: post` (+ the `posts` the `{{#get}}` block yields) · `compileTarget: post.hbs`.
-Content: post-bound cards — feature image, title, excerpt, date, reading time, primary tag; static: heading? (default "Read next" — chrome string, FR-Q6). Controls: columns, image toggle, excerpt toggle, meta toggles (date, reading time, tag chip), heading text. Data: group per FR-H2 with Source fixed to **primary tag → latest fallback** (built-in) and Count default **3** — `{{#get}}`-driven, never paginated (the post context has no pagination).
+Content: relatedTag, relatedAuthor, postRefs, headingText, fallbackHeading, archiveLinkLabel, readingTimeSuffix. Controls: columns, image toggle, excerpt toggle, meta toggles (date, reading time, tag chip), heading text. Data: group per FR-H2 with Source fixed to **primary tag → latest fallback** (built-in) and Count default **3** — `{{#get}}`-driven, never paginated (the post context has no pagination).
 <!-- roster:A27 -->
 1. **Three Up** [Free] — Three related posts as three equal cards under a labelled hairline, on the content width.
 2. **Rows** [Free] — Related posts as titled rows on the article's measure, separated by hairlines, with no pictures anywhere. The design for an archive that is not illustrated.
@@ -652,7 +652,7 @@ Content: post-bound cards — feature image, title, excerpt, date, reading time,
 <!-- /roster:A27 -->
 
 **A28. Comments (10)** — Wrappers for `{{comments}}` (Ghost native). `bindingContext: post` (+ `@site.comments_enabled`) · `compileTarget: post.hbs`.
-Content: count heading label and the signed-out explainer (#9) — chrome strings from the Translations catalog (FR-Q6); the thread itself is Ghost's native `{{comments}}` output and carries no Inflozo content props. Controls: count header toggle, header size (Normal/Display), width (Match content measure / Full width), signed-out note toggle. Data: none — comments are not exposed by the Content API, so the canvas renders the **comments fixture** — **14 comments across 9 threads**, five of them carrying one reply, one with a long body and one in the signed-out state (FR-H3) — and the live thread is Ghost's. The count header has a real two-digit number to render because of it. What a theme may style **inside** Ghost's native thread output is a verify-at-build item (`prd.md` §7.6); until it is answered these ten designs are scoped to the chrome around the thread — panel, count header, header size, width, signed-out note.
+Content: headingText, rulesText, rules[], closedNotice, countSingular, countPlural, countEmpty, promptHeading, promptBody, promptButton, signinLabel, upgradeHeading, upgradeButton, showLabel, hideLabel. Controls: count header toggle, header size (Normal/Display), width (Match content measure / Full width), signed-out note toggle. Data: none — comments are not exposed by the Content API, so the canvas renders the **comments fixture** — **14 comments across 9 threads**, five of them carrying one reply, one with a long body and one in the signed-out state (FR-H3) — and the live thread is Ghost's. The count header has a real two-digit number to render because of it. What a theme may style **inside** Ghost's native thread output is a verify-at-build item (`prd.md` §7.6); until it is answered these ten designs are scoped to the chrome around the thread — panel, count header, header size, width, signed-out note.
 <!-- roster:A28 -->
 1. **Rule** [Free] — One hairline, a labelled count and a line of house rules above Ghost's block, on the article measure. The category default and the one the other nine depart from.
 2. **Split Head** — The head, count and house rules in a fixed left column beside Ghost's block. The design for a publication that moderates and wants its rules read.
@@ -674,7 +674,7 @@ the Shuffle ring is no longer partitioned. `compileTarget: tag.hbs, author.hbs` 
 — R-7 adds the collection template, on which *From Ghost* resolves only via a page key and otherwise offers
 Custom text alone. **A29 takes no third [Free] re-tier** (R-17): its old #7 was justified by an
 author-bound partition that no longer exists.
-Content: tag-bound (name, description, accent color, feature image, `count.posts`) or author-bound (name, bio, profile image, cover image, socials, `count.posts`) per the design's context; static: eyebrow?, breadcrumb labels? (#14). Controls: cover/backdrop image toggle, description/bio toggle, post-count toggle, socials toggle (author context), tag-accent tint toggle (built-in on #1 — uses the tag's own accent color when set), filter/sort strip toggle (#13) — when on, the strip renders server-side tag/author links that work with JS off, and refetches through the browser-safe Content API with JS on: **limit caps at 100**, and **sort offers only real schema columns** (`published_at`, `updated_at`, `title`).
+Content: eyebrow, titleOverride, description, featureImage, backLabel, backUrl, actionLabel, actionUrl, actionIcon, links[], allTopicsLabel, allTopicsUrl, emptyText. Controls: cover/backdrop image toggle, description/bio toggle, post-count toggle, socials toggle (author context), tag-accent tint toggle (built-in on #1 — uses the tag's own accent color when set), filter/sort strip toggle (#13) — when on, the strip renders server-side tag/author links that work with JS off, and refetches through the browser-safe Content API with JS on: **limit caps at 100**, and **sort offers only real schema columns** (`published_at`, `updated_at`, `title`).
 <!-- roster:A29 -->
 1. **Centred** [Free] — Eyebrow, name, description and count centred on a 720 measure. The category default and the arrangement the other thirteen depart from.
 2. **Split Head** — Name in a left column, description, count and back link in a right column on a fixed 100 px gutter. The design for archives that have a description.
@@ -693,7 +693,7 @@ Content: tag-bound (name, description, accent color, feature image, `count.posts
 <!-- /roster:A29 -->
 
 **A30. Members Pages (13)** — full-page membership designs; tier-bound; portal-wired. Ghost 6 has **no members template family**: the `signup.hbs` / `signin.hbs` / `account.hbs` trio under a `members` directory does not exist and never renders — that path is a fossil of the archived Lyra theme's own `routes.yaml` (`research-ghost-membership-pages.md` §9/§12). Each design is an ordinary **Ghost Page** whose template the user picks from the **Template dropdown** in Ghost's page editor — no `routes.yaml`, no Ghost Admin routing step. `bindingContext: tiers` + `@member` · `compileTarget: custom-{name}.hbs` (theme root, never a subdirectory; the filename becomes the dropdown label, title-cased — `custom-membership.hbs` → "Membership" — and is a **frozen public API** of the emitted theme once shipped — named, collision-checked and rename-blocked by the scheme in `prd.md` §7.4, enforced at the naming step in FR-I3). The stored `custom_template` survives a page rename; a slug-derived `page-{slug}.hbs` silently stops applying and outranks the user's own choice, so it is never emitted (`research-ghost-membership-pages.md` §0/§1/§2). Shuffle and Site Remix must not move an instance across the signup / signin / member-home boundary. **Paid CTAs gate on `@site.paid_members_enabled`, never on tier presence** — Ghost seeds a $5/mo "Default Product" tier at install, so a site that cannot take payment still returns a priced tier and would otherwise ship a dead buy button (§6). **Signin seam:** the form itself is themeable (`data-members-form="signin"`), but the one-time-code step hands off to a Portal modal Inflozo cannot design (§10).
-Content: tier-bound per FR-H6 (`{{#get "tiers"}}` — names, prices, currency, benefits; sample tiers when unlinked); static: heading, subtext?, benefit lines?, helper/legal line?, **sent-state copy** — the designed `.success` state of the on-page `data-members-form` (heading, body, resend link), carried by every signup and signin design (#1–#10); this is where the former "Magic-Link Sent" design now lives, as a form state rather than a page, because Ghost routes no URL to it; cta labels (portal actions signup / signin / signup/{tier} / account / `account/plans` / `account/profile` / `account/newsletters` via the Link Picker, plus `data-members-signout` for sign out — **`upgrade` is not a Portal action**: it falls through to Portal's default screen despite Ghost's own Source theme shipping `data-portal="upgrade"`, so #13 and every upsell CTA emit `account/plans` (§4/§12)). Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), brand panel toggle, helper links toggle, sent-state preview, newsletter-preferences toggle (#11 only).
+Content: image, imageFocus, eyebrow, heading, blurb, emailLabel, placeholder, ctaLabel, note, legal, signinPrompt, signinLinkLabel, signupPrompt, signupLinkLabel, signinHeading, signinBlurb, signinCta, sentHeading, sentText, sentAgainLabel, codeLabel, codeCta, expiredHeading, expiredText, invalidText, signedInText, signedInCtaLabel, paymentText, accessLabel, accessText, benefits[], benefitsLabel, imageAlt, accountHeading, accountBlurb, rowLabels, endsLabel, signOutLabel, portalNote, tierNote, freeRowHeading, freeRowText, freeCtaLabel, periodLabels, railLabels, stepLabels, stepThreeText. Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), brand panel toggle, helper links toggle, sent-state preview, newsletter-preferences toggle (#11 only).
 <!-- roster:A30 -->
 1. **Centred** [Free] — One centred column on the page ground carrying eyebrow, heading, blurb, the email field and an included list under a hairline; the same column, widened to 640, carries the account rows. The category default.
 2. **Split Pitch** — The case for membership in a 700 column with a numbered included list, and the form alone in a 520 column beside it. The left column is authored and never reacts to data.
@@ -715,7 +715,7 @@ slot, and **every design draws the private gate**, which is why #1 Centred and #
 `private.hbs` its [Free] pair and **#10's re-tier is withdrawn** (R-17). `error.hbs`: #1–#7 and #10 ·
 `private.hbs`: all ten · custom page templates (FR-I3): #8 Elsewhere and #9 Directory — each on a `custom-{name}.hbs` under the same frozen-filename scheme (`prd.md` §7.4).
 **A31's ids are now contiguous 1–10 (R-16).** The old roster skipped #8 because "Empty Tag State" had been retired — it declared a `compileTarget` of "the empty state of a collection template", which is not a file, and no surface could place it. **The export fills the slot with a real design**, `#8 Elsewhere` (recent posts under the message), so the gap closes and every id below is the export's own. The old warning against renumbering stands as a rule for the future — a renumber breaks references nobody re-checks — but it no longer describes this roster. `bindingContext`: `error` (`statusCode`, `message`, `errorDetails` — `research-ghost-binding-contexts.md` §10) on the error targets, `private` (`{{#if error}}` / `error.message` only — §11) on `private.hbs`, `none` on the utility pages. **A `{{#get}}` is refused on both `error.hbs` and `private.hbs` (R-7)**, which is a real constraint on `#8 Elsewhere`: its recent-posts block compiles only where the design is placed on a custom page template, and on the error target it renders its authored recovery list alone. Shuffle and Site Remix never move an instance to a different compile target.
-Content: on every `error.hbs` design the numeral **and** the message are bound to the error context — `{{statusCode}}` and `{{message}}`, never a literal status — so one `error.hbs` serves 404, 500 and every other status (FR-I1 emits no `error-404.hbs`/`error-4xx.hbs`); static: supporting line?, home-link label?, illustration slot?. On #10 the password form plus its `{{#if error}}` feedback line. On #6/#7/#9 ordinary static page content (heading, body, cta?, portal signup?). Controls: numeral display (Display/Compact/Hidden), supporting line (Off/Custom copy beneath the bound message), home-link toggle, search toggle, popular-posts toggle, illustration toggle. Data: the popular-posts block (#4) uses the FR-H2 Data group — `{{#get}}`-driven, fixed Count, never paginated.
+Content: code, eyebrow, heading, blurb, primaryLabel, primaryUrl, secondaryLabel, secondaryUrl, links[], linksLabel, image, imageAlt, imageFocus, postsLabel, directoryLabel, gateDisplayWord, gateFieldLabel, gateCtaLabel, gatePlaceholder, gateHelp, posts[], directory[]. Controls: numeral display (Display/Compact/Hidden), supporting line (Off/Custom copy beneath the bound message), home-link toggle, search toggle, popular-posts toggle, illustration toggle. Data: the popular-posts block (#4) uses the FR-H2 Data group — `{{#get}}`-driven, fixed Count, never paginated.
 <!-- roster:A31 -->
 1. **Centred** [Free] — One column optically centred in the viewport — code chip, heading, sentence, primary action beside a text link, and the authored recovery list under a hairline. No box, plane or band. The category default.
 2. **Split Reason** — Code, heading and sentence in the left column of the content box; primary action and recovery list in the right. Top-aligned, on an 80 px gap, with an optional hairline between.
@@ -732,7 +732,7 @@ Content: on every `error.hbs` design the numeral **and** the message are bound t
 ### Group 5 · Ghost Native Elements
 
 **A32. Paywall / Content CTA (12)** — **Non-placeable treatment** (see the carve-out above): the 12 designs are selectable inside the standalone **Paywall Template** editor, one active per project, and the compiler emits the chosen design as `partials/content-cta.hbs` — the override point Ghost renders inline at the members-only divider the user placed in the Ghost editor (`research-ghost-binding-contexts.md` §16). Tier-bound; portal-wired. A flagship differentiator. `bindingContext: post` + `tiers` + `@member` · `compileTarget: partials/content-cta.hbs` (rendered from `post.hbs`).
-Content: tier-bound per FR-H6 (names, prices, currency, benefits; sample tiers when unlinked); static: heading, subtext?, benefit lines?, cta labels (portal actions signup / signup/{tier} / upgrade). Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), preview treatment (None/Fade/Blur), progress meter toggle (#12) — **approximate by construction**: `reading_time` is computed before gating so it describes the full post, but only to ±137 words, so the meter reads "About X%" bucketed to 5% and hides itself under 3 minutes; preview treatment **Blur** on #10 requires the theme's own `partials/content-cta.hbs` wrapper, because Ghost emits preview blocks bare — plus the universal controls, since the paywall renders as a block of its own.
+Content: eyebrow, heading, blurb, ctaLabel, signinPrompt, signinLinkLabel, manageLinkLabel, legal, benefits[], benefitsLabel, image, imageAlt, imageFocus, barLine, barSub, meterLabel, periodLabels, tierNote. Controls: tier display (Cards/List/Off), billing toggle (Monthly/Yearly/Toggle), benefits display (Checks/Plain), preview treatment (None/Fade/Blur), progress meter toggle (#12) — **approximate by construction**: `reading_time` is computed before gating so it describes the full post, but only to ±137 words, so the meter reads "About X%" bucketed to 5% and hides itself under 3 minutes; preview treatment **Blur** on #10 requires the theme's own `partials/content-cta.hbs` wrapper, because Ghost emits preview blocks bare — plus the universal controls, since the paywall renders as a block of its own.
 <!-- roster:A32 -->
 1. **Fade** [Free] — The last visible paragraph fades into the page ground and the gate continues in the article's own measure — eyebrow, heading, sentence, button, sign-in line — with no box, plane or rule of its own. The category default.
 2. **Card** — The gate inside one centred surface card at the article's measure, at the pack's radius + 4 with the md warm shadow, standing in front of the article's fade. 1's stack in a containment.
@@ -749,7 +749,7 @@ Content: tier-bound per FR-H6 (names, prices, currency, benefits; sample tiers w
 <!-- /roster:A32 -->
 
 **A33. Koenig Card Treatments (6)** — **Non-placeable treatment.** Site-wide `cards.css` styling for all Ghost editor cards (callout, bookmark, button, toggle, gallery, header, product, audio, video, file, quote designs). One treatment active per project, **chosen in the card design module (FR-Q7)** — the six treatments are its starting points, and the module is where each card is then designed individually. `bindingContext: none` · `compileTarget: assets/css` (`cards.css` — FR-J3).
-Content: none — the cards are Ghost editor output; a treatment styles them and carries no content props. Controls: the treatment selector in the card design module (project-level, one active per project), reachable from **Theme Settings** whenever no Post Content section is placed (FR-Q9); no per-instance controls and no universal controls.
+Content: none authored in Inflozo — every field this category touches belongs to a Ghost editor card (`src`, `caption`, `html`, `emoji`, `rating`…) and is written by the customer inside Ghost. A33 styles those cards and stores only its own treatment controls, so there is nothing here that a design switch could lose. Controls: the treatment selector in the card design module (project-level, one active per project), reachable from **Theme Settings** whenever no Post Content section is placed (FR-Q9); no per-instance controls and no universal controls.
 <!-- roster:A33 -->
 1. **Plain** [Free] — Every card on the page ground at the article's measure, with no plane and no frame; a single hairline above and below the five cards that must read as one object — bookmark, toggle, audio, file, product — and a tinted plane on the callout and the call to action. The category default.
 2. **Card** — Every card on a surface panel at the article's measure — hairline, pack radius, warm sm shadow, 24 px padding — with the media inset inside the panel and the caption in the panel with it.
@@ -760,7 +760,7 @@ Content: none — the cards are Ghost editor output; a treatment styles them and
 <!-- /roster:A33 -->
 
 **A34. Pagination Styles (10)** — **Non-placeable treatment.** Designs behind the feed Pagination control (FR-H2). Numbered designs compile to `/page/2/` links via native pagination context; Load More and Infinite ship JS with numbered-link fallback. `bindingContext: pagination` (page, pages, total, next, prev — `prd.md` Appendix B) · `compileTarget: partials/pagination.hbs`, rendered inside the designated main feed's section.
-Content: none — the labels ("Older posts", "Newer posts", "Page {page} of {pages}", the load-more label) are chrome strings from the Translations catalog (FR-Q6). Controls: the **Pagination style** selector exposed by the designated main feed's FR-H2 Data group; no per-instance controls and no universal controls.
+Content: navLabel, newerLabel, olderLabel, moreLabel, endLabel. Controls: the **Pagination style** selector exposed by the designated main feed's FR-H2 Data group; no per-instance controls and no universal controls.
 <!-- roster:A34 -->
 1. **Numbers** — A centred cluster of page links on the page ground, windowed to seven slots with an ellipsis where it skips, the current page marked by weight and a 2 px accent underline, a directional link at each end and a position line beneath. The plainest form of the window, and the category's default.
 2. **Prev and Next** [Free] — Two directional links at the ends of the content measure, each with the destination's page number beneath, the position line centred between them, a hairline above. No page links, and the only A34 design that reaches the content edges.
