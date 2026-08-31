@@ -89,7 +89,7 @@ Derived by walking every one of the 485 variant descriptors in `sections-invento
 | 5 | **`rotator`** (crossfade between messages) | 2 | 15 | **Declared by:** A2-9, A4-16. A2 #9 *Rotating Messages* (up to 3 crossfading), A2 `rotation` control, A8 #9 *Avatar Row* ("one rotating quote") |
 | 6 | **`countdown`** | 3 | — | **Declared by:** A2-6, A4-11, A10-14. A2 #6 *Countdown*, A6 #11 *Countdown CTA* |
 | 7 | **`marquee`** (ticker) | 2 | 30 | **Declared by:** A2-8, A11-8. A2 #3, A4 #18, A8 #3, A8 #14, A9 #15, A11 #3, A11 #4, A19 #15 — plus A8 `motion: Marquee` (15) and A11 `motion: Marquee/Dual-marquee` (15) |
-| 8 | **`confetti`** (particles) | 0 | — | **NO DESIGN DECLARES IT** — candidate for removal from the registry. A2 #15 *Seasonal Confetti* |
+| ~~8~~ | ~~**`confetti`** (particles)~~ **DELETED 2026-08-31 — owner's ruling** | — | — | **No design in the library declares it.** Derived from the export by `tools/derive-module-reach.py`: its only appearances anywhere are in A2's and A4's "modules this category deliberately does not use" lists, which is the finding `reconcile-designs.md` §37.3 first raised and this pass confirmed. Struck rather than removed, so "add a confetti burst" is not proposed again. |
 | 9 | **`accordion`** | 41 | 15 | **Declared by:** A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7, A1-8, A1-10, A1-11, A1-12, A1-13, A1-14, A1-15, A1-16, A2-14, A3-2, A3-3, A3-7, A3-8, A3-14, A9-1, A9-2, A9-5, A9-6, A9-7, A9-8, A9-10, A9-12, A9-13, A9-14, A10-12, A12-14, A12-15, A28-7, A33-1, A33-2, A33-3, A33-4, A33-5, A33-6. A9 #1,#2,#3,#6,#7,#11,#12,#13,#14 + A9 `default state` control; A5 #8 *Accordion Features*; A28 #3 *Toggle Reveal* |
 | 10 | **`tabs`** | 7 | — | **Declared by:** A5-12, A7-10, A8-11, A9-11, A13-11, A15-10, A15-15. A5 #9 *Tabs Showcase*, A9 #8 *Category Tabs*, A13 #9 *Tabbed Stages*, A20 #4 *Topic Tabs* |
 | 11 | **`carousel`** | 12 | 15 | **Declared by:** A1-3, A5-14, A8-7, A11-9, A12-13, A13-8, A14-7, A14-8, A15-9, A20-9, A21-12, A27-10. A8 #7, A14 #3, A15 #15, A19 #4, A20 #9, A27 #4, A27 #9 — plus A8 `motion: Carousel` (15) |
@@ -148,9 +148,10 @@ Legend — **V** = hand-written vanilla; **L** = library recommended; **L?** = l
 | ~~`command-palette`~~ **DELETED (R-24)** | — | ~~`keydown` + `event.metaKey/ctrlKey`; reused `search-overlay`'s dialog, which is also deleted~~ | — | — | — | The concern recorded here proved decisive in the other direction: it must not shadow a native shortcut, and **⌘K is already `sodo-search`'s** (a keyboard-only entry point fails 2.1.1 for touch/AT users who cannot produce ⌘K) |
 | `dismiss` | **V** | `localStorage` + a content-hash key so a *new* message reappears after an old one was dismissed | — | — | ~0.3 KB | The close control is a real `<button>` with a `data-i18n` accessible name; focus moves to the next landmark on dismiss |
 | `rotator` | **V** | CSS `@keyframes` crossfade driven by a class swap; `Element.animate()` (Widely 2023-03) where finer control is wanted | — | — | ~0.4 KB | **WCAG 2.2.2 (Pause, Stop, Hide)**: auto-rotating content over 5 s needs a pause control, and must not rotate at all under `prefers-reduced-motion` — then it renders message 1 statically |
+| ~~`confetti`~~ **DELETED 2026-08-31** | **V** | ~~`Element.animate()` on ~30 absolutely-positioned spans, or a tiny canvas loop~~ | `canvas-confetti` 1.9.4 (ISC) | **6.89 KB** | Rejected on proportion at the time; the module itself is now deleted because **no design declares it** |
 | `countdown` | **V** | `Intl.NumberFormat`, `<time datetime>`, `setInterval` at 1 Hz | — | — | ~0.6 KB | **Real trap:** a per-second `aria-live` region floods AT. Ticking digits get `aria-live="off"` / `aria-hidden`, with one static accessible summary ("Offer ends 3 September 2026") beside them |
 | `marquee` | **V** | CSS `@keyframes translate` on a duplicated track; `animation-play-state: paused` on `:hover`/`:focus-within`; hard stop under `prefers-reduced-motion` | — | — | ~0.4 KB (JS only clones the track and measures for a seamless loop) | **WCAG 2.2.2 again** — a visible pause control is mandatory, not optional. The duplicated track must be `aria-hidden="true"` or the same content is announced twice |
-| `confetti` | **V** | `Element.animate()` on ~30 absolutely-positioned spans, or a tiny canvas loop | `canvas-confetti` 1.9.4 (ISC) | **6.89 KB** | Rejected on proportion: 6.89 KB — a sixth of the whole NFR-2 budget — for **one** decorative variant (A2 #15). ~0.7 KB vanilla | Fully `aria-hidden`, disabled under `prefers-reduced-motion`, and must not flash more than 3×/s (WCAG 2.3.1) |
+
 | `accordion` | **V** | **`<details>/<summary>`** (Widely 2022-07). Zero JS for the base case | — | — | ~0.2 KB, and *only* for single-open groups and A9's `default state` control | **Strongest vanilla case in the document.** Native disclosure is keyboard- and AT-correct with no ARIA authored at all, and satisfies FR-G4 with JS off by definition. Do **not** hand-roll `role="button" aria-expanded` div accordions — that is the classic axe failure this replaces |
 | `tabs` | **V** | Roving `tabindex`, `aria-selected`, `aria-controls`, arrow-key handling — ~45 lines against the W3C APG Tabs pattern | — | — | ~0.7 KB | **This one is earned, not free.** Tabs have real APG obligations (roving tabindex, Left/Right/Home/End, `aria-selected` on exactly one tab). Mitigation: **one shared module serving all four designs**, tested once against axe. A library would not be smaller — the correct implementation genuinely is this small |
 | `carousel` | **V** | **CSS `scroll-snap`** (Widely 2022-07) + `scrollIntoView({behavior, inline})` + `IntersectionObserver` for dot state. See §3.4 in full | Swiper / Embla / Keen / Glide / Splide | see **§3.4** | **Swiper rejected on budget** (core alone 19.61 KB = 49 % of NFR-2). scroll-snap is also a *more literal* reading of the designs | scroll-snap **wins on a11y**, not just size: no slide is ever cloned or `aria-hidden`, so the `aria-hidden-focus` violation class — the most common axe failure in carousels — is structurally impossible |
@@ -365,6 +366,7 @@ Each estimate is roughly **20–40 % of the nearest real library**, which is wha
 | `core` | 0.8 | | `price-toggle` | 0.3 |
 | `nav-drawer` | 0.7 | | `member-form` | 0.6 |
 | `header-scroll` | 0.4 | | `count-up` | 0.5 |
+| ~~`confetti`~~ | ~~0.7~~ **0 — deleted** | | `shuffle` | 0.2 |
 | `search-expand` | 0.3 | | `reveal` | 0.3 |
 | **`search-overlay`** | **1.8** | | `scroll-spy` | 0.5 |
 | `command-palette` | 0.6 | | `reading-progress` | 0.3 |
@@ -372,7 +374,6 @@ Each estimate is roughly **20–40 % of the nearest real library**, which is wha
 | `rotator` | 0.4 | | `share` | 0.6 |
 | `countdown` | 0.6 | | `load-more` | 0.9 |
 | `marquee` | 0.4 | | `infinite-scroll` | 0.3 |
-| `confetti` | 0.7 | | `shuffle` | 0.2 |
 | `accordion` | 0.2 | | `slide-in-card` | 0.3 |
 | `tabs` | 0.7 | | `filter-strip` | 0.4 |
 | `carousel` | 1.2 | | `typewriter` | 0.4 |
@@ -595,7 +596,6 @@ One line each. This is the acceptance criterion for the module's no-JS state.
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. | **no** — the message the editor is typing into rotates away |
 | `countdown` | The static deadline renders as a `<time datetime>` element ("Ends 3 September 2026"); no ticking digits. | **yes** — ticking digits interfere with nothing |
 | `marquee` | The track renders as a static row, horizontally scrollable via `overflow-x: auto`; nothing moves. | **no** — moves text under the cursor |
-| `confetti` | Nothing renders; purely decorative, entirely absent. | **yes** — decorative, no interaction *(orphan — see the note above)* |
 | `accordion` | Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute. | **no** — a collapsed panel hides content the editor must reach |
 | `tabs` | All panels render stacked and visible, each preceded by its tab label as a heading. | **no** — hidden panels are unreachable on the canvas |
 | `carousel` | The slide track is a native horizontally-scrollable `scroll-snap` strip — **fully usable**, only dots and arrow buttons are hidden. | **no** *(owner-ruled — settles A14 vs A15)* — off-screen slides cannot be clicked |
