@@ -7,7 +7,7 @@ updated: 2026-08-19
 ## Appendix A — Complete Section Inventory (normative)
 
 <!-- totals -->
-**Totals: 33 categories · 468 designs · 66 [Free] · 440 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
+**Totals: 33 categories · 467 designs · 66 [Free] · 439 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
 <!-- /totals -->
 **[Free] is positional and nothing else.** The first two designs of every category are Free; the two
 historical extras are struck (R-17). **A29 #7's and A31 #10's re-tiers are withdrawn** — A31's private
@@ -125,7 +125,7 @@ Content: logo, siteTitle, navItems[], navItems[].children[], signInLabel, ctaLab
 16. **Reveal** — The only design defined by scroll direction rather than scroll position: hidden going down the page, returned as a floating panel going up, in flow at the top.
 <!-- /roster:A1 -->
 
-**A2. Announcement Bars (15)** — Site-wide, above header. Part of the shell block (§4), and site-wide singletons like A1 and A3 — compiled into `default.hbs` once (FR-D5). `bindingContext: none` · `compileTarget: default.hbs`.
+**A2. Announcement Bars (14)** — Site-wide, above header. Part of the shell block (§4), and site-wide singletons like A1 and A3 — compiled into `default.hbs` once (FR-D5). `bindingContext: none` · `compileTarget: default.hbs`.
 **Ghost has an announcement bar of its own, and Inflozo's replaces it (owner ruling, verified feasible).** Ghost injects its native bar through `{{ghost_head}}` above everything the theme renders, so a site with both enabled shows **two stacked**. The resolution is that Inflozo's bar **takes over**, and the mechanism is fixed by what Ghost actually permits:
 
 - **The content is seeded, not live-bound.** Ghost's announcement text is **not readable at render time**: `announcement_content` is absent from Ghost's public settings allowlist, so it is on neither `@site` nor the Content API, and Ghost's own bar fetches it client-side from `/members/api/announcement/` because visibility is per-member and pages are cached. It **is** readable server-side with the Admin API key Inflozo already holds (the announcement settings are an ordinary non-core, non-secret group). So at connect, Inflozo **reads it once and offers to bring it across** — text into the message prop, `announcement_visibility` mapped onto the **show to** control, `announcement_background` onto the Background role. It then behaves like any other section: edited in Inflozo, server-rendered, working with JS off. This is FR-C4's auto-branding pattern — a **seed**, exactly like logo, accent and nav — not a live binding.
@@ -147,7 +147,6 @@ Content: message, messageShort, linkLabel, linkUrl, dismissible, audience, dismi
 10. **Pill** — The only design that is a detached object with air around it rather than a band, and the only one where a control — Sticky — changes what the design is rather than where it sits.
 11. **Toast** — The only design that arrives after the page has settled rather than being present at load, and the only one Escape dismisses from anywhere on the page.
 12. **Takeover** — The only design that carries imagery, and the only one tall enough to be mistaken for a hero.
-13. **Notice** — The only bottom-anchored bar in the top-stack's vocabulary — one sentence with an always-underlined policy link and a dismiss, recording nothing and gating nothing.
 14. **Edge** — The only design that is four pixels of furniture until it is pressed, and the only one whose two states differ by more than a control setting.
 15. **Triple** — The only design that shows more than one message at once without moving. Below 768 it draws its first slot alone and hides the other two — it stays itself at every width (Part A·A8).
 <!-- /roster:A2 -->

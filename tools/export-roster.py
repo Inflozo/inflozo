@@ -35,6 +35,13 @@ DELETED_DESIGNS = {
     ('A4', 15): "R-24 — a hero has no header to carry the Search control, so this one is "
                 "struck. 'A field that never renders a result' is now any hero's button "
                 "with the Link Picker destination set to Ghost search.",
+    # ── owner's ruling 2026-08-31, register 45(a) ───────────────────────────
+    ('A2', 13): "Register 45(a) — 'Consent' is cut. No behaviour module covers a consent "
+                "bar and the closest, `dismiss`, is the wrong idea: dismissing makes a bar "
+                "go away, while consent must be RECORDED and honoured on the next visit. "
+                "The owner chose to cut rather than write a `consent` module for one "
+                "design; a site that needs a consent bar uses Ghost's code injection, "
+                "which is the honest answer. The number is retired, not reused.",
 }
 
 CATEGORY_TITLES = {}   # filled from the spec filenames

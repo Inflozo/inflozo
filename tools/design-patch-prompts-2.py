@@ -129,9 +129,21 @@ WORK2 = {
   not drawn greyed — and the panel says why in one sentence. Pinning is the owner's deliberate
   choice and a visitor switch that overrides it makes the pin meaningless. Draw the panel in
   both states: toggle available under Auto, absent with its reason under a pin.
-- THE AVATAR RULE reaches A1-6, wherever a person's face appears in a header.""",
+- THE AVATAR RULE reaches A1-6, wherever a person's face appears in a header.
+- 4 OVERLAY: STICKY AND STAY-TRANSPARENT CANNOT BOTH BE ON (owner's ruling). A see-through
+  header is contrast-checked against the hero image beneath it. Let it stay stuck to the top and
+  it keeps that transparency over ordinary page content, where nobody checked it and the text can
+  become unreadable. So turning Sticky on GREYS OUT Stay-transparent, with the reason beside it —
+  use the greyed-control treatment from P0, this needs no new mechanism. Draw both states.""",
 
- 'A2': """- A2-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS. Write it as "collapses into
+ 'A2': """- DESIGN 13 "CONSENT" IS CUT (owner's ruling). Delete the frame and its entry from the
+  specification. No behaviour module covers a consent bar, and the nearest one — `dismiss` — is the
+  wrong idea: dismissing makes a bar go away, while a consent choice has to be RECORDED and honoured
+  on the next visit. A bar that forgets is a consent bar that does not work. The owner chose to cut
+  rather than build a module for one design; a site that needs one uses Ghost's code injection.
+  THE NUMBER 13 IS RETIRED. Do not close the gap, do not renumber, do not reuse it — every other
+  design keeps the number it has. The category now runs 1-12, 14, 15.
+- A2-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS. Write it as "collapses into
   sections under 768", and give its no-JS line BOTH states: what a visitor without JavaScript
   sees above that width, and what they see below it. One sentence covering only the narrow
   case is what this rule exists to stop.""",
@@ -145,6 +157,14 @@ WORK2 = {
   accent" spends the accent colour, so the Action button below the set can no longer use it:
   that control is GREYED with the sentence "not available while the media uses the accent
   colour" beside it. Draw the pair in both states. Use P0's treatment; do not invent one.""",
+
+ 'A9': """- 12 FILTER LOSES ITS FILTER CONTROL (owner's ruling). The design keeps its layout and
+  its rows; the filter strip comes off. The reason is that the filter would sort rows the SITE
+  OWNER typed, and with JavaScript off there is nothing for it to fall back to — the existing
+  filter module degrades by being real links to Ghost pages, and there are no Ghost pages for an
+  FAQ answer somebody wrote in a text box. Redraw the frame without the strip and remove the
+  control from the specification, including its no-JS line.
+  KEEP THE DESIGN AND ITS NUMBER. This is a control coming off, not a design being cut.""",
 
  'A12': """- "COUNT PER ROW" KEEPS ITS THREE NAMED VALUES — three, four, five. It is NOT a
   number picker, and this is the one carve-out to the rule that every item count is one. The
@@ -253,7 +273,7 @@ WORK2 = {
   mentions it.""",
 }
 
-ORDER = ['P0', 'A1', 'A2', 'A3', 'A5', 'A12', 'A13', 'A14', 'A15', 'A17',
+ORDER = ['P0', 'A1', 'A2', 'A3', 'A5', 'A9', 'A12', 'A13', 'A14', 'A15', 'A17',
          'A18', 'A19', 'A22', 'A24', 'A25', 'A26', 'A28', 'A33', 'A34']
 
 
