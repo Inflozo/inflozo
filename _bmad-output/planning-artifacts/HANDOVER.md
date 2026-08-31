@@ -73,9 +73,15 @@ the corollary that a fact nobody fetches needs no fixture, and AD-27 the five do
 the owner's instruction to clear them before step 5, and R-29's long-outstanding FR is written —
 **FR-Q10**, owned by E7. R-10 #1 and #7 are **withdrawn**, each refuted by execution.
 
-**What is left of step 4 is DESIGN work, and it is generated and waiting:**
-`DESIGN-PATCH-PROMPTS-2.html` — one prompt per category that has work, **P0 first**. Owed before **E4**
-and **E9** open; blocks neither step 5 nor step 6, so it can run alongside.
+**What is left of step 4 is DESIGN work, and it is IN PROGRESS:** the owner is running
+`DESIGN-PATCH-PROMPTS-2.html` in Claude Design — 20 prompts, P0 first.
+
+**When the patched export lands, there is a runbook and it is on the build board.** In short: replace
+the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive
+— `export-roster` → `inventory-gen --write` → `tuple-check` → `derive-module-reach` →
+`derive-content-lines` / `derive-control-lines` — then `doc-audit --check` **twice** (its sub-tools
+regenerate on failure, so the first run often self-heals). The only human step is last: read what each
+prompt flagged as unsure, and bring anything genuinely open to the owner as a numbered decision.
 
 ## What has already landed, so it is not redone
 

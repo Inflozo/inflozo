@@ -88,19 +88,74 @@ PROMPTS = [
  ('s6b', 'Readiness gate', 'live', None),
 ]
 
+# What to do the moment a patched export lands in the design-export folder, in order.
+# (command or None, what it is, why it matters / what a failure means)
+RUNBOOK = [
+ (None,
+  'Drop the export in, replacing the folder contents',
+  'The zip is authoritative and Inflozo/ is its extraction. Do not hand-merge: replace, then let the '
+  'checks below tell you what moved. Two things in there were edited in the REPO rather than in '
+  'Claude Design — the count-agnostic marketing copy and P0\u2019s mark allowlist — and step 2 is what '
+  'catches it if the re-export undid either.'),
+ ('python3 tools/verify-design-pass.py',
+  'Did the pass actually apply the rulings?',
+  'One check per ruling, run against the export. Every structural check must pass. Six prose scans '
+  'come back LOOK by design — they cannot tell a violation from a spec RECORDING that it removed the '
+  'thing, so a human reads those six. The last two checks guard the repo-side hand edits: if the '
+  're-export put a design total back on a marketing screen, or dropped P0\u2019s mark allowlist, they '
+  'go red here rather than months later.'),
+ ('python3 tools/export-roster.py > /dev/null && python3 tools/inventory-gen.py --write',
+  'Re-derive the library from what was actually drawn',
+  'The export is the count. This rewrites the inventory\u2019s totals and every category roster from '
+  'it, so no number is ever typed by hand. If a design was cut or renamed in the pass, this is where '
+  'it shows up.'),
+ ('python3 tools/tuple-check.py',
+  'Is every design still structurally distinct?',
+  'FR-G5\u2019s gate: six slots, five closed vocabularies, unique within a category, contiguous '
+  'numbering. A pass that edits arrangement or media placement can collide two designs without '
+  'anyone noticing \u2014 this is what notices.'),
+ ('python3 tools/derive-module-reach.py',
+  'Re-derive which designs declare which script',
+  'A9 loses its filter and A2-13 is gone, so at least two module rows change their design list. '
+  'Counts a module only where a design\u2019s OWN declaration names it \u2014 a mention in category prose '
+  'is not a declaration, which is what stops every A1 design claiming accordion by association.'),
+ ('python3 tools/derive-content-lines.py && python3 tools/derive-control-lines.py',
+  'Re-derive the storage contract and the control unions',
+  'The Content: line is the STORAGE CONTRACT \u2014 a field missing from it has nowhere to park when a '
+  'user switches design, and their words are lost. If the pass added a field to any spec, it has to '
+  'reach here or FR-D17\u2019s preservation gate fails on it.'),
+ ('python3 tools/doc-audit.py --check',
+  'The documentation gate \u2014 run it twice',
+  'Catalogue, index, generated artifacts, tuples, inventory-versus-export. The FIRST run after a '
+  'change often reports FAIL and fixes itself: its sub-tools regenerate on failure. That is the '
+  'tools working. The second run is the one that counts.'),
+ (None,
+  'Triage what came back \u2014 the only human step',
+  'Each prompt was asked to do two things beyond its work list: strike the Open questions that were '
+  'already settled and mark the ones that are not, and flag anything it was unsure of rather than '
+  'guess (A33\u2019s Ghost class names especially). Read those flags. Anything genuinely open comes to '
+  'the owner as a numbered decision \u2014 nobody answers one on his behalf.'),
+ (None,
+  'Then step 5 \u2014 journeys and flows',
+  'Nothing above blocks it and it never did; clearing first was a choice. The prompt is on this '
+  'board under STEP 5.'),
+]
+
+
 ACTIONS = [
  ('now', 'Step 5 — journeys and flows',
   'THE CRITICAL PATH. /bmad-ux authors the four journeys and eight flows from the PRD and prompt 2\'s '
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass TWO \u2014 generated and waiting for you',
-  'DESIGN-PATCH-PROMPTS-2.html: one self-contained Claude Design prompt per category that has work. '
-  'RUN P0 FIRST \u2014 the greyed-control treatment is drawn there once and every later category '
-  'points at it \u2014 then A1, A2, A3, A5, A12, A13, A14, A15, A17, A18, A19, A22, A24, A25, A26, '
-  'A28, A34. Nothing in it is a question: every item is already in the PRD and the spine, and this '
-  'carries it into the designs. Owed before E4 and E9 open, blocks neither step 5 nor step 6, so it '
-  'runs alongside step 5 at your pace.'),
+ ('now', 'Design patch pass TWO \u2014 IN PROGRESS in Claude Design',
+  'DESIGN-PATCH-PROMPTS-2.html \u2014 20 self-contained prompts, one per category with work. RUN P0 '
+  'FIRST: the greyed-control treatment is drawn there once and every later category points at it. '
+  'THREE PROMPTS CHANGED on 2026-08-31 after the owner ruled on register 45 \u2014 A1 (Sticky and '
+  'Stay-transparent may not both be on), A2 (design 13 Consent is CUT, number retired) and A9 (new '
+  'to the pass: 12 Filter loses its filter control). If those three were already run, run them '
+  'again. Nothing in the pass is a question: every item is already in the PRD and the spine. When '
+  'the export comes back, follow the runbook at the top of this board.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),
@@ -151,6 +206,12 @@ def build():
   {ps}
 </section>''')
 
+    rb = []
+    for n, (cmd, title, why) in enumerate(RUNBOOK, 1):
+        code = f'<code>{e(cmd)}</code>' if cmd else '<span class="nocmd">no command \u2014 by hand</span>'
+        rb.append(f'<li><div class="rbh"><span class="rbn">{n}</span><b>{e(title)}</b></div>'
+                  f'{code}<p>{e(why)}</p></li>')
+
     acts = {'now': [], 'soon': [], 'gate': []}
     for kind, t, d in ACTIONS:
         acts[kind].append(f'<li><b>{e(t)}</b><span>{e(d)}</span></li>')
@@ -163,6 +224,22 @@ def build():
 --accent:#1f6feb;--accent-s:#e9f0fe;--done:#12784a;--done-s:#e2f5ec;--run:#96650a;--run-s:#fff4d9;
 --next:#1f6feb;--wait:#8b8b93;--red:#b42318;--red-s:#fdeceb;
 --sh:0 1px 2px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.055)}}
+.runbook{{background:var(--card);border:1px solid var(--line);border-radius:16px;
+padding:24px 26px;box-shadow:var(--sh);margin:26px 0 4px}}
+.runbook h2{{font-size:1.12rem;margin:0 0 .4em;letter-spacing:-.01em}}
+.rblede{{color:var(--muted);font-size:.93rem;margin:0 0 18px;max-width:78ch}}
+ol.rb{{list-style:none;margin:0;padding:0;counter-reset:none}}
+ol.rb>li{{padding:14px 0;border-top:1px solid var(--line)}}
+ol.rb>li:first-child{{border-top:0;padding-top:0}}
+.rbh{{display:flex;align-items:center;gap:10px;margin-bottom:7px}}
+.rbn{{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-s);
+color:var(--accent);font-size:.76rem;font-weight:700;display:flex;align-items:center;
+justify-content:center}}
+.rbh b{{font-size:.99rem;letter-spacing:-.006em}}
+ol.rb code{{display:block;background:var(--code);border-radius:7px;padding:8px 11px;
+font-size:.82rem;overflow-x:auto;white-space:pre;margin:0 0 7px}}
+.nocmd{{display:block;color:var(--muted);font-size:.8rem;font-style:italic;margin:0 0 7px}}
+ol.rb p{{margin:0;color:var(--muted);font-size:.9rem;line-height:1.58;max-width:82ch}}
 @media(prefers-color-scheme:dark){{:root:not([data-theme=light]){{--bg:#131316;--card:#1b1b20;
 --ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
 --done:#5ed6a0;--done-s:#112f20;--run:#e8bd57;--run-s:#33280d;--next:#6ea8fe;--wait:#75757e;
@@ -243,6 +320,15 @@ drift apart.</p>
 <div class="rail">
 {''.join(f'<a class="{st}" href="#{k}"><span class="n">STEP {n}</span><span class="t">{e(t)}</span><span class="b"></span></a>' for k,n,t,st,_,_,_ in STEPS)}
 </div>
+
+<section class="runbook">
+  <h2>When the patched export lands \u2014 run these, in this order</h2>
+  <p class="rblede">Pass two is being run in Claude Design now. This is what happens the moment its
+  output is dropped into <code>design/claude-design-export/</code>. Every count in this project is
+  DERIVED from that export, so most of the list is re-derivation rather than editing \u2014 and the
+  one human step is at the end, not the start.</p>
+  <ol class="rb">{''.join(rb)}</ol>
+</section>
 
 <div class="acts">
   <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol></div>

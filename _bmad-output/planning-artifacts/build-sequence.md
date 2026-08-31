@@ -632,12 +632,20 @@ carries the new rule.
 on the owner's instruction to clear them before step 5). R-29's long-outstanding FR is written: it is
 **FR-Q10**, owned by E7. R-10 #1 and #7 are both **withdrawn**, each refuted by execution.
 
-**What is left is DESIGN work, and it is generated and waiting.**
+**What is left is DESIGN work, and it is IN PROGRESS (2026-08-31).**
 `DESIGN-PATCH-PROMPTS-2.html` (`tools/design-patch-prompts-2.py`) carries one self-contained prompt per
 category that has work — **P0 first**, because the greyed-control treatment is drawn there once and
-every later category points at it — then A1, A2, A3, A5, A12, A13, A14, A15, A17, A18, A19, A22, A24,
-A25, A26, A28, A34. Nothing in it is a question. It is owed before **E4** and **E9** open and blocks
-neither step 5 nor step 6, so it can run **alongside** step 5 at the owner's pace.
+every later category points at it. **20 prompts.** Nothing in it is a question. **Three of them changed
+on 2026-08-31** after the owner ruled register 45 — **A1** (Sticky and Stay-transparent may not both be
+on), **A2** (design 13 Consent is CUT, its number retired) and **A9** (new to the pass: 12 Filter loses
+its filter control) — so those three are re-run if they had already gone.
+
+**When the patched export comes back, the runbook is on the build board** and it is mostly
+re-derivation rather than editing, because the export is the count: replace the folder ·
+`verify-design-pass.py` (which also guards the two repo-side hand edits) · `export-roster` →
+`inventory-gen --write` · `tuple-check` · `derive-module-reach` · `derive-content-lines` /
+`derive-control-lines` · `doc-audit --check` **twice**. The one human step is last — read what each
+prompt flagged rather than guessed, and carry anything genuinely open to the owner.
 
 **Step 5 (`/bmad-ux`) is the critical path and is blocked by nothing** — see below.
 
