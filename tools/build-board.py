@@ -94,19 +94,13 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('soon', 'One design patch pass — the spec half of R-30 to R-38',
-  'The nine rulings you took on 2026-08-31 are IN the PRD and the spine already. What is left changes '
-  'drawn frames, so it is a Claude Design prompt rather than a repo edit: A12, A24, P0, A5, A14, A17, '
-  'A18, A19, A1, A28, A15, A22, A13, A34, A25, A2, A3. Owed before E4 and E9 open; blocks neither '
-  'step 5 nor step 6.'),
- ('soon', 'Three rulings with no normative half yet',
-  'R-2 (initials), R-10 (the thirteen corrections) and R-29 (share destinations \u2014 Appendix B, and '
-  'R11 still needs its FR drafted). Carried forward from the merge; not part of the 2026-08-31 set.'),
- ('soon', 'Three probes still open',
-  'reconcile-designs-decisions.md \u00a7E: E-2 (feature_image_caption\'s stored shape), E-3 '
-  '(@member prefill under cacheMembersContent) and E-4 (<details name> under the Baseline linter). '
-  'E-1 ran and refuted its own premise \u2014 there is no per-template {{#get}} budget, so the '
-  'hand-pick cap was withdrawn: no cap, the panel warns past 25.'),
+ ('now', 'Design patch pass TWO \u2014 generated and waiting for you',
+  'DESIGN-PATCH-PROMPTS-2.html: one self-contained Claude Design prompt per category that has work. '
+  'RUN P0 FIRST \u2014 the greyed-control treatment is drawn there once and every later category '
+  'points at it \u2014 then A1, A2, A3, A5, A12, A13, A14, A15, A17, A18, A19, A22, A24, A25, A26, '
+  'A28, A34. Nothing in it is a question: every item is already in the PRD and the spine, and this '
+  'carries it into the designs. Owed before E4 and E9 open, blocks neither step 5 nor step 6, so it '
+  'runs alongside step 5 at your pace.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

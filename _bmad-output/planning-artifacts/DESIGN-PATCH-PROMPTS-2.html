@@ -1,0 +1,2214 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Design patch prompts, pass two</title><style>*{box-sizing:border-box}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--patch:#96650a;--patch-s:#fff4d9;--build:#12784a;--build-s:#e2f5ec;
+--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--patch:#e8bd57;--patch-s:#33280d;--build:#5ed6a0;--build-s:#112f20;
+--sh:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.36)}}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 96px}
+h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 22px;font-size:.93rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);
+margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog{height:8px;flex:1;min-width:180px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--build);transition:width .3s}
+.count{font-weight:680;font-size:.9rem;white-space:nowrap}
+.btn{font:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+margin:0 0 14px;overflow:hidden}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
+.chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
+color:var(--accent);min-width:44px;text-align:center}
+.cname{font-weight:650;flex:1}
+.cmeta{color:var(--muted);font-size:.82rem}
+.tick{width:19px;height:19px;accent-color:var(--build);cursor:pointer;flex:none}
+.cat.done .cname{text-decoration:line-through}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px 16px}
+.cat.open .body{display:block}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;
+overflow:auto;max-height:460px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
+.note{background:var(--patch-s);color:var(--patch);border-radius:9px;padding:10px 13px;
+font-size:.87rem;margin:0 0 16px}
+.big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
+font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
+footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}</style></head>
+<body><div class="wrap">
+<div class="kick">Inflozo</div>
+<h1>Design patch pass two — one prompt per category</h1>
+<p class="lede">The spec half of every ruling taken after pass one, plus two things we learned by
+testing real Ghost servers. <b>Run P0 first</b> — the greyed-control treatment is drawn there once
+and every later category points at it. Then work down. Each prompt is self-contained: open a new
+Claude Design chat, paste, done. Your ticks are remembered in this browser.</p>
+<p class="lede"><b>Nothing here is a question.</b> The normative half of every item is already in
+the PRD and the architecture; this pass carries it into the designs. Verify each returned export
+with <code>python3 tools/verify-design-pass.py</code>.</p>
+<div class="cat" data-cat="P0">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark P0 done">
+    <span class="step">1</span>
+    <span class="cid">P0</span><span class="cname">Editor Primitives</span>
+    <span class="cmeta">shared controls</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · P0 Editor Primitives
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS
+every category&#x27;s side panel draws from. Change them here once and every category
+inherits it, which is why this runs first.
+
+THE WORK LIST FOR P0:
+
+- THE GREYED-CONTROL PATTERN IS DRAWN HERE ONCE AND EVERY CATEGORY INHERITS IT. A control
+  another control has switched off is drawn greyed with its reason as a short sentence beside
+  it. Draw the resting state, the greyed state and where the sentence sits. Categories will
+  point at this frame rather than each inventing a treatment.
+- RESTATE THE REMOVE BUTTON RULE in the item-list controls: never greys, never hides, and
+  clicking at the minimum produces the floor and the reason as one line of text under the list.
+- THE INITIALS FALLBACK in the &quot;Populate from...&quot; panel: a person with no photograph shows
+  initials, TWO letters where the user typed the name and ONE where Ghost supplied it. Draw
+  both, labelled, so no category has to guess which it is looking at.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A1">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A1 done">
+    <span class="step">2</span>
+    <span class="cid">A1</span><span class="cname">Headers</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A1 Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A1 Headers, 15 designs:
+
+   1. Rail
+   2. Split Rail
+   3. Stacked Masthead
+   4. Overlay
+   5. Floating Pill
+   6. Drawer-First
+   7. Mega Bar
+   8. Utility + Nav
+  10. Contrast Band
+  11. Side Rail
+  12. Boxed
+  13. Centre Nav
+  14. Icon Utilities
+  15. Big Type
+  16. Reveal
+
+THE WORK LIST FOR A1:
+
+- NO VISITOR DARK-MODE SWITCH WHEN THE SITE&#x27;S COLOUR SCHEME IS PINNED. If the owner has
+  chosen Light or Dark rather than Auto, the header&#x27;s dark-mode toggle is NOT OFFERED AT ALL —
+  not drawn greyed — and the panel says why in one sentence. Pinning is the owner&#x27;s deliberate
+  choice and a visitor switch that overrides it makes the pin meaningless. Draw the panel in
+  both states: toggle available under Auto, absent with its reason under a pin.
+- THE AVATAR RULE reaches A1-6, wherever a person&#x27;s face appears in a header.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A2">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A2 done">
+    <span class="step">3</span>
+    <span class="cid">A2</span><span class="cname">Announcement Bars</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A2 Announcement Bars
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A2 Announcement Bars, 15 designs:
+
+   1. Rule
+   2. Split
+   3. Badge
+   4. Two-Line
+   5. Capture
+   6. Countdown
+   7. Dateline
+   8. Ticker
+   9. Rotator
+  10. Pill
+  11. Toast
+  12. Takeover
+  13. Notice
+  14. Edge
+  15. Triple
+
+THE WORK LIST FOR A2:
+
+- A2-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS. Write it as &quot;collapses into
+  sections under 768&quot;, and give its no-JS line BOTH states: what a visitor without JavaScript
+  sees above that width, and what they see below it. One sentence covering only the narrow
+  case is what this rule exists to stop.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A3">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A3 done">
+    <span class="step">4</span>
+    <span class="cid">A3</span><span class="cname">Footers</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A3 Footers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A3 Footers, 16 designs:
+
+   1. Minimal Line
+   2. Columns
+   3. Two-Tier
+   4. Newsletter Band
+   5. Contrast Band
+   6. Centred Stack
+   7. Big Type
+   8. Sitemap
+   9. Latest Posts
+  10. Contact Block
+  11. Colophon
+  12. Card
+  13. Tags
+  14. Image Band
+  15. Wrap
+  16. Mini Bar
+
+THE WORK LIST FOR A3:
+
+- THE FOOTER ACCORDIONS DECLARE THEIR WIDTH. Same shape as A2-15: the accordion
+  behaviour only runs below a stated width, the declaration names it, and the no-JS line
+  describes both sides of it — a plain stacked list of links above the width, the same list
+  above it below.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A5">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A5 done">
+    <span class="step">5</span>
+    <span class="cid">A5</span><span class="cname">Features</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A5 Features
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A5 Features, 16 designs:
+
+   1. Three Up
+   2. Two Up
+   3. Four Up
+   4. Cards
+   5. Split Head
+   6. Rows
+   7. Alternating Media
+   8. Media Top
+   9. Bento
+  10. Contrast Band
+  11. Checklist
+  12. Tabs
+  13. Spotlight
+  14. Scroller
+  15. Index
+  16. Panel
+
+THE WORK LIST FOR A5:
+
+- THE DISABLED-CONTROL PATTERN, and this category is its worked example. &quot;Icon in
+  accent&quot; spends the accent colour, so the Action button below the set can no longer use it:
+  that control is GREYED with the sentence &quot;not available while the media uses the accent
+  colour&quot; beside it. Draw the pair in both states. Use P0&#x27;s treatment; do not invent one.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A12">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A12 done">
+    <span class="step">6</span>
+    <span class="cid">A12</span><span class="cname">About and Team</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A12 About and Team
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A12 About and Team, 15 designs:
+
+   1. Grid
+   2. Cards
+   3. Rows
+   4. Story and Team
+   5. Split Head
+   6. Portraits
+   7. Contrast Band
+   8. Founder
+   9. Faces
+  10. Directory
+  11. Slim
+  12. Big Type
+  13. Rail
+  14. Reveal
+  15. Groups
+
+THE WORK LIST FOR A12:
+
+- &quot;COUNT PER ROW&quot; KEEPS ITS THREE NAMED VALUES — three, four, five. It is NOT a
+  number picker, and this is the one carve-out to the rule that every item count is one. The
+  reason is that this control picks between three DRAWN layouts: at three the photograph is
+  large and a job title has room to wrap; at five it is small and a long title wraps twice.
+  Those are the only widths any frame here has been drawn and checked at, against a long role
+  and a wrapping name. Six across would give 196px photographs, which is the size the
+  wall-of-faces design uses precisely BECAUSE it draws no roles. A typed number would let an
+  editor choose a width nobody has looked at.
+  Note that &quot;how many people to show&quot; is a separate control and stays a number picker.
+- THE AVATAR RULE, across all fourteen Empty lines: TWO initials, because a team list is typed
+  by the user.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A13">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A13 done">
+    <span class="step">7</span>
+    <span class="cid">A13</span><span class="cname">Process</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A13 Process
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A13 Process, 15 designs:
+
+   1. Three Up
+   2. Track
+   3. Rows
+   4. Cards
+   5. Split Head
+   6. Contrast Band
+   7. Alternating Media
+   8. Rail
+   9. Big Numbers
+  10. Panel
+  11. Walkthrough
+  12. Media Top
+  13. Slim Bar
+  14. Index
+  15. Sticky Rail
+
+THE WORK LIST FOR A13:
+
+- A13-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS, with both sides of it
+  described in the no-JS line.
+- THE EMPTY STATE IS THIN HERE AND NEEDS WRITING. When the feed this category draws from has
+  nothing in it, show the designed &quot;nothing here yet&quot; state. It is never back-filled with the
+  newest posts — a visitor must not be shown posts nobody chose for that spot.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A14">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A14 done">
+    <span class="step">8</span>
+    <span class="cid">A14</span><span class="cname">Galleries</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A14 Galleries
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A14 Galleries, 15 designs:
+
+   1. Grid
+   2. Masonry
+   3. Mosaic
+   4. Panel
+   5. Split Head
+   6. Contrast Band
+   7. Carousel
+   8. Filmstrip
+   9. Full Bleed
+  10. Lead and Grid
+  11. Overlay
+  12. Captioned Rows
+  13. Contact Sheet
+  14. Index
+  15. Boxed
+
+THE WORK LIST FOR A14:
+
+- THE DISABLED-CONTROL PATTERN wherever one gallery control switches another off.
+  Greyed, with the reason beside it, using P0&#x27;s treatment.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A15">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A15 done">
+    <span class="step">9</span>
+    <span class="cid">A15</span><span class="cname">Video and Embeds</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A15 Video and Embeds
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A15 Video and Embeds, 15 designs:
+
+   1. Player
+   2. Split
+   3. Panel
+   4. Contrast Band
+   5. Full Bleed
+   6. Cover
+   7. Grid
+   8. Lead and Grid
+   9. Carousel
+  10. Playlist
+  11. Chapters
+  12. Embed Card
+  13. Thumb Rows
+  14. Slim Bar
+  15. Tabs
+
+THE WORK LIST FOR A15:
+
+- THE TITLE, DESCRIPTION AND POSTER ARE REQUIRED FIELDS THE CUSTOMER FILLS IN. NOTHING
+  IS EVER FETCHED FROM YOUTUBE, VIMEO OR ANY OTHER PROVIDER — not by our server, not by the
+  editor&#x27;s browser, at any point. The specification must say the fields are REQUIRED, not
+  &quot;fetched with a manual override&quot;, and the panel must ask for them rather than showing a
+  spinner or a &quot;fetch details&quot; button. Delete any affordance that implies a lookup.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A17">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A17 done">
+    <span class="step">10</span>
+    <span class="cid">A17</span><span class="cname">Post Grids</span>
+    <span class="cmeta">18 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A17 Post Grids
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A17 Post Grids, 18 designs:
+
+   1. Three Up
+   2. Two Up
+   3. Four Up
+   4. Cards
+   5. Lead and Grid
+   6. Split Head
+   7. Contrast Band
+   8. Overlay
+   9. Big Type
+  10. Ledger
+  11. Masonry
+  12. Bento
+  13. Thumb Side
+  14. Dense
+  15. Filtered
+  16. Load More
+  17. Panel
+  18. Edge to Edge
+
+THE WORK LIST FOR A17:
+
+- THE DISABLED-CONTROL PATTERN wherever one control switches another off.
+- THE AVATAR RULE across the eleven Meta designs. These bylines come from GHOST, so it is ONE
+  letter, not two.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A18">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A18 done">
+    <span class="step">11</span>
+    <span class="cid">A18</span><span class="cname">Post Lists</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A18 Post Lists
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A18 Post Lists, 15 designs:
+
+   1. Rows
+   2. Thumb Rows
+   3. Slim
+   4. Dated
+   5. Grouped
+   6. Split Head
+   7. Contrast Band
+   8. Row Cards
+   9. Big Type
+  10. Lead and List
+  11. Numbered
+  12. Panel
+  13. Timeline
+  14. Index
+  15. Load More
+
+THE WORK LIST FOR A18:
+
+- THE DISABLED-CONTROL PATTERN wherever one control switches another off, greyed with
+  the reason beside it.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A19">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A19 done">
+    <span class="step">12</span>
+    <span class="cid">A19</span><span class="cname">Featured and Spotlight</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A19 Featured and Spotlight
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A19 Featured and Spotlight, 15 designs:
+
+   1. Split
+   2. Full Bleed
+   3. Card
+   4. Poster
+   5. Contrast Band
+   6. Big Type
+   7. Overlap
+   8. Lead and Two
+   9. Alternating
+  10. Pair
+  11. Lead and Rail
+  12. Picks
+  13. Quote
+  14. Slim
+  15. Carousel
+
+THE WORK LIST FOR A19:
+
+- THE DISABLED-CONTROL PATTERN wherever one control switches another off, greyed with
+  the reason beside it.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A22">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A22 done">
+    <span class="step">13</span>
+    <span class="cid">A22</span><span class="cname">Newsletter</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A22 Newsletter
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A22 Newsletter, 16 designs:
+
+   1. Inline Row
+   2. Card
+   3. Split
+   4. Contrast Band
+   5. Panel
+   6. Image Split
+   7. Cover
+   8. Big Type
+   9. Slim Bar
+  10. Choice
+  11. Reasons
+  12. Issue Preview
+  13. Boxed
+  14. Slide-in Card
+  15. Two Up
+  16. Quote
+
+THE WORK LIST FOR A22:
+
+- THE EMPTY STATE IS THIN HERE AND NEEDS WRITING. A feed with nothing in it shows its
+  designed &quot;nothing here yet&quot; state — never hidden, and never back-filled with whatever is
+  newest.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A24">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A24 done">
+    <span class="step">14</span>
+    <span class="cid">A24</span><span class="cname">Post Headers</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A24 Post Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A24 Post Headers, 16 designs:
+
+   1. Centred
+   2. Flush Left
+   3. Split
+   4. Image Top
+   5. Full Bleed
+   6. Edge to Edge
+   7. Card
+   8. Contrast Band
+   9. Overlap
+  10. Big Type
+  11. Dateline
+  12. Rail
+  13. Sticky
+  14. Share Row
+  15. Slim
+  16. Two Column
+
+THE WORK LIST FOR A24:
+
+- DESIGN 13, THE STICKY READING BAR, RENDERS NOTHING WITHOUT JAVASCRIPT. No bar, and
+  NO RESERVED SPACE: the header simply scrolls away as every other Post Header design&#x27;s does.
+  The bar cannot be built without a script — a browser can only pin an element inside its
+  containing box, and the header it belongs to has scrolled out of view by then. Of the three
+  shapes we considered, a persistent title bar costs every such visitor 56px of phone screen
+  for a feature they are not getting, and a bar that is drawn but does not follow reads as
+  broken rather than as a choice. Rewrite design 13&#x27;s no-JS line to say exactly this.
+- THE CAPTION VERSION DIFFERENCE (Finding 1): state in the specification that italics and bold
+  inside a feature-image caption survive on Ghost 5 and are stripped on Ghost 6, so no caption
+  design may depend on them.
+- THE AVATAR RULE wherever a byline face appears — ONE letter, since these come from Ghost.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A25">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A25 done">
+    <span class="step">15</span>
+    <span class="cid">A25</span><span class="cname">Post Content Layouts</span>
+    <span class="cmeta">12 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A25 Post Content Layouts
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A25 Post Content Layouts, 12 designs:
+
+   1. Measured
+   2. Plain
+   3. Sheet
+   4. Contrast Band
+   5. Full Bleed
+   6. Hanging Heads
+   7. Sticky Index
+   8. Index Top
+   9. Share Rail
+  10. Marginalia
+  11. Ruled
+  12. Numbered
+
+THE WORK LIST FOR A25:
+
+- A PAGE LAYOUT MAY CARRY EXACTLY ONE POST CONTENT SECTION, AND THE EDITOR REFUSES A
+  SECOND. Two would print the article twice on the live page. It is refused AT PLACEMENT with
+  the reason shown — not accepted and warned about afterwards — because there is no reason to
+  want it, so nothing is lost by making it impossible. Draw the refusal.
+- THE SHARE RAIL USES THE SITE-WIDE SHARE LIST, in the order the site set, not its own. Every
+  sharing surface on a site offers the same destinations in the same order.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A26">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A26 done">
+    <span class="step">16</span>
+    <span class="cid">A26</span><span class="cname">Post Footers</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A26 Post Footers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A26 Post Footers, 15 designs:
+
+   1. Author Bio
+   2. Rows
+   3. Card
+   4. Contrast Band
+   5. Split
+   6. Slim
+   7. Next and Prev
+   8. Tag Row
+   9. Share Row
+  10. Big Type
+  11. Portrait
+  12. Subscribe
+  13. Rail
+  14. Ledger
+  15. Grid
+
+THE WORK LIST FOR A26:
+
+- THE SHARE ROW USES THE SITE-WIDE SHARE LIST, in the order the site set. Do not draw
+  a per-section destination picker.
+- WE DO NOT USE GHOST&#x27;S OWN SHARE POPUP, and the reason is worth carrying: it does not exist
+  on Ghost 5 at all — the same link opens the SIGN-IN box instead — and where it does exist it
+  is a sealed frame we cannot style, with a fixed order and no Mastodon. Our share links are
+  ordinary links and work with JavaScript off.
+- THE CAPTION VERSION DIFFERENCE (Finding 1) applies here too.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A28">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A28 done">
+    <span class="step">17</span>
+    <span class="cid">A28</span><span class="cname">Comments</span>
+    <span class="cmeta">10 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A28 Comments
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A28 Comments, 10 designs:
+
+   1. Rule
+   2. Split Head
+   3. Panel
+   4. Contrast Band
+   5. Boxed
+   6. Rail
+   7. Disclosure
+   8. Prompt
+   9. Big Count
+  10. Slim
+
+THE WORK LIST FOR A28:
+
+- NO VISITOR DARK-MODE SWITCH WHEN THE COLOUR SCHEME IS PINNED, and the comments
+  widget takes its light or dark appearance from that same pinned value rather than offering a
+  second selector of its own.
+- DESIGN 4 IS ONLY OFFERED WHEN THE COLOUR SCHEME IS PINNED. On a site set to Auto its forced
+  band renders wrong for half the audience.
+- THE COMMENT COUNT (Finding 2). Rewrite every no-JS line in this category: without JavaScript
+  the count renders NOTHING — no number, no word, no empty box, no element at all. The count&#x27;s
+  accessible label goes on the SURROUNDING element, never on the count. And the count&#x27;s words
+  are bare nouns — &quot;comment&quot;, &quot;comments&quot; — because Ghost&#x27;s script puts the number in front of
+  them; a &quot;%&quot; or &quot;{count}&quot; in that string renders literally on the page. Note the widget itself
+  DOES render without JavaScript, so its no-JS sentence is not the count&#x27;s.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A34">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A34 done">
+    <span class="step">18</span>
+    <span class="cid">A34</span><span class="cname">Pagination Styles</span>
+    <span class="cmeta">10 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS TWO · A34 Pagination Styles
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. You produced a library of Ghost theme sections, and it has already been through
+one patch pass. Since then the owner ruled on nine further questions and we tested two claims
+against real Ghost servers. This pass carries those results into the specifications and the
+frames. Nothing below is a proposal or a question — every item is already decided.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work
+list names. Where a change touches a drawn frame, change that frame; where it touches only the
+written specification, change only that.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+TWO THINGS WE LEARNED BY TESTING REAL GHOST SERVERS ON 2026-08-31. Both change
+what a specification may promise, and neither is a preference.
+
+FINDING 1 · THE FEATURE-IMAGE CAPTION RENDERS DIFFERENTLY ON THE TWO GHOST VERSIONS.
+   Same stored text, same template, different output. Ghost 6 quietly removes &lt;em&gt; and
+   &lt;strong&gt; from a caption while keeping links and &lt;b&gt;. Ghost 5 keeps everything. So a caption
+   design that leans on italics gets them on one supported version and not the other. Say so
+   in the specification rather than letting a builder discover it.
+
+FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
+   Not a zero, not an empty box, not a dash — the element is never created. Ghost writes the
+   number in with a script and PREPENDS it to your word, so the catalog string is the bare
+   noun (&quot;comment&quot;, &quot;comments&quot;) and must never contain a number or a placeholder. Any design
+   that reads the count aloud puts its accessible label on the surrounding element, never on
+   the count itself. The comments WIDGET does render without JavaScript; only its count does
+   not, so the two degrade differently and a single no-JS sentence cannot cover both.
+
+THIS CATEGORY — A34 Pagination Styles, 10 designs:
+
+   1. Numbers
+   2. Prev and Next
+   3. Bar
+   4. Pill
+   5. Counter
+   6. Load More
+   7. Endless
+   8. Contrast Band
+   9. Cards
+  10. Slim
+
+THE WORK LIST FOR A34:
+
+- THE EMPTY STATE IS THIN HERE AND NEEDS WRITING: a feed with nothing in it shows its
+  designed &quot;nothing here yet&quot; state.
+- &quot;POSTS PER PAGE&quot; POINTS AT INFLOZO&#x27;S OWN THEME SETTINGS, NEVER AT GHOST&#x27;S ADMIN. Ghost has
+  no such setting anywhere in its admin, so a link sending someone there sends them looking for
+  a control that does not exist. Fix the wording and the destination everywhere this category
+  mentions it.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+  navigator.clipboard.writeText(b.parentElement.querySelector('pre').textContent);
+  b.textContent='Copied';setTimeout(()=>b.textContent='Copy prompt',1400);}));
+document.querySelectorAll('.chead').forEach(h=>h.addEventListener('click',e=>{
+  if(e.target.classList.contains('tick'))return;
+  h.parentElement.classList.toggle('open');}));
+const K='inflozo-patch2';
+const st=JSON.parse(localStorage.getItem(K)||'{}');
+document.querySelectorAll('.cat').forEach(c=>{
+  const id=c.dataset.cat,t=c.querySelector('.tick');
+  if(st[id]){t.checked=true;c.classList.add('done');}
+  t.addEventListener('change',()=>{st[id]=t.checked;c.classList.toggle('done',t.checked);
+    localStorage.setItem(K,JSON.stringify(st));});});
+</script></body></html>

@@ -628,12 +628,16 @@ carries the new rule.
   doc-schema row shapes; and `Appendix C` finally defines **R-12's** never-greying Remove button, which
   had been cited for weeks without being written down.
 
-**What has NOT landed is DESIGN work, not repo work.** The spec half of those rulings changes drawn
-frames and spec text, so it belongs in a Claude Design patch prompt rather than an edit here: A12 (R-30)
-· A24-13 (R-31) · P0, A5, A14, A17, A18, A19 (R-33) · A1, A28 (R-34) · A15 (R-35) · A22, A13, A34 (R-36)
-· A25 (R-37) · A2, A3, A13 (R-38) · P0·3 (R-12). Owed before **E4** and **E9** open; blocks neither step
-5 nor step 6. **Three rulings still have no normative half at all** — **R-2**, **R-10** and **R-29**,
-the last of which also needs **R11's FR drafted**.
+**Every ruling from the merge now has its normative half in — R-2, R-10 and R-29 included** (2026-08-31,
+on the owner's instruction to clear them before step 5). R-29's long-outstanding FR is written: it is
+**FR-Q10**, owned by E7. R-10 #1 and #7 are both **withdrawn**, each refuted by execution.
+
+**What is left is DESIGN work, and it is generated and waiting.**
+`DESIGN-PATCH-PROMPTS-2.html` (`tools/design-patch-prompts-2.py`) carries one self-contained prompt per
+category that has work — **P0 first**, because the greyed-control treatment is drawn there once and
+every later category points at it — then A1, A2, A3, A5, A12, A13, A14, A15, A17, A18, A19, A22, A24,
+A25, A26, A28, A34. Nothing in it is a question. It is owed before **E4** and **E9** open and blocks
+neither step 5 nor step 6, so it can run **alongside** step 5 at the owner's pace.
 
 **Step 5 (`/bmad-ux`) is the critical path and is blocked by nothing** — see below.
 

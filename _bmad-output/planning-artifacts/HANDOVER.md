@@ -69,14 +69,13 @@ in `reconcile-designs-decisions.md` under §A3, one row per ruling. `Appendix D`
 pack token marked computed or authored), AD-10 gained the refusal to fetch from a video provider, AD-23
 the corollary that a fact nobody fetches needs no fixture, and AD-27 the five doc-schema row shapes.
 
-**What is left of step 4 is DESIGN work, not repo work** — the spec half of those rulings, which changes
-drawn frames and belongs in a Claude Design patch prompt: A12 (R-30) · A24-13 (R-31) · P0, A5, A14, A17,
-A18, A19 (R-33) · A1, A28 (R-34) · A15 (R-35) · A22, A13, A34 (R-36) · A25 (R-37) · A2, A3, A13 (R-38) ·
-P0·3 (R-12). Owed before **E4** and **E9** open; blocks neither step 5 nor step 6.
+**Nothing from the merge is owed a normative half any more.** R-2, R-10 and R-29 landed 2026-08-31 on
+the owner's instruction to clear them before step 5, and R-29's long-outstanding FR is written —
+**FR-Q10**, owned by E7. R-10 #1 and #7 are **withdrawn**, each refuted by execution.
 
-**Three rulings still have no normative half at all** and were not in the 2026-08-31 set: **R-2**
-(initials), **R-10** (the thirteen corrections) and **R-29** (share destinations — `Appendix B`, and
-**R11's FR still needs drafting**).
+**What is left of step 4 is DESIGN work, and it is generated and waiting:**
+`DESIGN-PATCH-PROMPTS-2.html` — one prompt per category that has work, **P0 first**. Owed before **E4**
+and **E9** open; blocks neither step 5 nor step 6, so it can run alongside.
 
 ## What has already landed, so it is not redone
 

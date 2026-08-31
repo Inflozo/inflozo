@@ -279,6 +279,20 @@ DOCS = [
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
  ('tools/design-patch-prompts.py', 'tool', 'Per-category design patch prompts',
   'Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here.'),
+ ('tools/design-patch-prompts-2.py', 'tool', 'Design patch prompts — pass two',
+  'Generates DESIGN-PATCH-PROMPTS-2.html: the SPEC half of every ruling taken after pass one — '
+  'R-30 to R-38, the carried-forward R-2/R-10/R-29, and two findings that came out of execution '
+  'rather than a ruling (the caption difference between majors, and the comment count rendering '
+  'nothing without JS). A SEPARATE file rather than an edit to pass one, because pass one is the '
+  'record of what was actually sent and a record is not rewritten. Imports the four Ghost facts, '
+  'the output contract and the page CSS from design-patch-prompts.py; rosters DERIVE from the '
+  'export. Only the work lists are authored, because a ruling cannot be derived.'),
+ ('planning-artifacts/DESIGN-PATCH-PROMPTS-2.html', 'live', 'Design patch prompts, pass two',
+  'The owner-facing page for the second patch pass — one prompt per category that has work, P0 '
+  'first because the greyed-control treatment is drawn there once and every later category points '
+  'at it. NOT YET RUN. Nothing in it is a question: the normative half of every item is already in '
+  'the PRD and the spine, and this carries it into the designs. Copy buttons and browser-stored '
+  'progress ticks; verify each returned export with tools/verify-design-pass.py.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS.html', 'live', 'Design patch prompts, per category',
   'The owner-facing page for the design patch pass — one prompt per category plus P0, with copy '
   'buttons and browser-stored progress ticks. THE PASS RAN on 2026-08-31 and '
@@ -418,6 +432,8 @@ def check():
     for tool, art, src in (('build-board.py', 'BUILD-BOARD.html', 'build-sequence.md'),
                            ('design-patch-prompts.py', 'DESIGN-PATCH-PROMPTS.html',
                             'the roster or the module registry'),
+                           ('design-patch-prompts-2.py', 'DESIGN-PATCH-PROMPTS-2.html',
+                            'the roster or a pass-2 work list'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
