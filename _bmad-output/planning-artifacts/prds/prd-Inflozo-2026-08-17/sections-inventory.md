@@ -65,7 +65,7 @@ AD-37 and is amended, not deleted.
 | **Controls** | its own list in sidebar order, each with its complete closed value set, Quick Controls first |
 | **Data** | what it binds, and its behaviour at 0, 1 and many items |
 | **Empty states** | what renders when optional content is absent |
-| **Behaviour** | which of FR-G7's 31 modules it declares (if any), whether each is edit-safe (FR-D20), and its **no-JS degradation, written out** — the module's degradation statement is an acceptance criterion, so a design declaring a module and omitting the statement is not ready to build |
+| **Behaviour** | which of FR-G7's behaviour modules it declares (if any), whether each is edit-safe (FR-D20), and its **no-JS degradation, written out** — the module's degradation statement is an acceptance criterion, so a design declaring a module and omitting the statement is not ready to build |
 | **Accessibility** | heading level, focus order, anything requiring a label |
 
 **The one-line descriptors below are the seed, not the specification.** They fix each design's structural identity and are normative for scope — the inventory's counts, tiers and carve-outs bind now. The full specification for a category is authored in that category's design session and lands here before its build story opens (§4). A category whose designs still carry only their descriptor has not yet been through that session.

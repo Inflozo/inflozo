@@ -6,6 +6,17 @@ created: 2026-08-18
 
 # Verification — mechanical corrections
 
+> **The arithmetic below was re-derived on 2026-08-18 and is left exactly as it was verified then.**
+> Two of its inputs have since changed and the *verdicts are still correct for the figures they were
+> taken over* — do not recompute them here. **Superseded inputs (2026-08-31):** the library is no
+> longer 34 categories / 485 designs / 70 `[Free]` — A23 Search was deleted whole and two further
+> designs were cut (ruling R-24, `reconcile-designs-decisions.md`), and the behaviour registry lost
+> more modules than it gained. **The live figures are derived, never restated:** run
+> `python3 tools/inventory-gen.py --check` for the library and `python3 tools/derive-module-reach.py`
+> for the registry. F.1 row 2's *rule* — two `[Free]` per category — survives the change and is now
+> gated by `tools/verify-design-pass.py`; only its total moved. §4's plan narrative describes the
+> plan as it stood in August 2026; `build-sequence.md` is where the plan lives now.
+
 Independent verification of the "mechanical" findings in `validation-report.md` (§ Medium (54), § Low (25)) before any of them is written into `prd.md`. Nothing below is taken from the report on trust; every claim was re-derived from primary sources.
 
 **Evidence base**

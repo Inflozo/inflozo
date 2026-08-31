@@ -107,9 +107,11 @@ def c_categories(S, lib):
         problems.append('A23 still live')
     if 'A23' in S:
         problems.append(f'A23 spec file still present ({S["A23"][0]})')
-    if len(live) != 33:
-        problems.append(f'{len(live)} live categories, expected 33')
-    return not problems, '; '.join(problems) or '33 categories, no A23'
+    # NOT `len(live) == 33`. The ruling is "A23 is gone", not "the library is 33 wide" — hardcoding a
+    # total here is the exact failure this project has hit twice (category-prompts.py's
+    # `assert len(names) == 31`, the board's "36 invariants"). The library's size is gated where it
+    # belongs, by tools/inventory-gen.py --check against the export.
+    return not problems, '; '.join(problems) or f'{len(live)} categories, no A23'
 
 
 def c_numbering(S, lib):
@@ -392,6 +394,47 @@ ADVISORY = {'R-8   no render-time hand-off', 'R-1   no computed byline counts',
             'R-4   no phantom @member fields',
             '--    extraction health (derivations)'}
 
+def c_no_design_total(S, lib):
+    """§37.7 / Appendix H — no S or M screen prints a library total.
+
+    The screens said "485 designs" in fifteen places and "70 Free designs" in three. Correcting the
+    figure was refused: Appendix H already forbids a design total in product copy, and a corrected
+    number goes stale at the next change. The screens were made count-agnostic by hand on 2026-08-31,
+    and this check is what keeps a Claude Design re-export from quietly putting them back.
+    """
+    hits = []
+    for fn in sorted(os.listdir(EXPORT)):
+        if not fn.endswith('.dc.html'):
+            continue
+        if not re.match(r'^(S\d|M\d|B |R |Index)', fn):
+            continue
+        t = open(os.path.join(EXPORT, fn), encoding='utf8').read()
+        for m in re.finditer(r'\b(\d{3})\+?\s*(?:designs?|sections?|Free\b)', t, re.I):
+            hits.append(f'{fn.split(" - ")[0]}: {m.group(0).strip()}')
+    return not hits, '; '.join(sorted(set(hits))[:6]) or 'no S/M screen prints a library total'
+
+
+def c_mark_allowlist(S, lib):
+    """P0-1 — a field's permitted marks are declared, and a mark it forbids is ABSENT, not greyed.
+
+    §37.7's last open P0 finding (A8's quotes permit no marks, A9's answers permit `code`). Fixed by
+    hand in the export on 2026-08-31; gated here so a re-export cannot drop it.
+    """
+    if 'P0' not in S:
+        return True, 'P0 spec not in this run (--only)'
+    t = S['P0'][1]
+    missing = []
+    if not re.search(r'\bnarrow\w*\b', t, re.I):
+        missing.append('no statement that a field may NARROW the default mark set')
+    # The rule, not one phrasing of it: a forbidden mark is ABSENT from the toolbar, never greyed.
+    absent = re.search(r'(absent from|not drawn|never drawn|does not appear)[^.]{0,90}toolbar', t, re.I) \
+        or re.search(r'toolbar[^.]{0,90}(absent|not drawn|never drawn)', t, re.I)
+    not_greyed = re.search(r'(not|never|rather than|instead of)\s+grey', t, re.I)
+    if not (absent and not_greyed):
+        missing.append('does not say a forbidden mark is ABSENT from the toolbar rather than greyed')
+    return not missing, '; '.join(missing) or 'P0 declares the default set, narrowing, and absence'
+
+
 CHECKS = [
     ('R-24  categories / A23 deleted', c_categories),
     ('B0    numbering holes preserved', c_numbering),
@@ -411,6 +454,8 @@ CHECKS = [
     ('R-5   no-JS notice on form designs', c_nojs_notice),
     ('R-1/3 new modules declared', c_new_modules),
     ('E     Patch notes + open questions', c_patch_notes),
+    ('§37.7 no design total on S/M screens', c_no_design_total),
+    ('§37.7 P0 mark allowlist', c_mark_allowlist),
     ('--    extraction health (derivations)', c_extraction_health),
 ]
 

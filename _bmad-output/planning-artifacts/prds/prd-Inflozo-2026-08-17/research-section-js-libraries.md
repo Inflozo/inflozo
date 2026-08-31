@@ -15,12 +15,12 @@ created: 2026-08-18
 
 ## 0. Executive summary
 
-1. **31 behaviour modules** (30 feature modules + 1 shared core) cover every interactive design in the 485-variant inventory. Full list in §2.
+1. **A fixed registry of behaviour modules** — one shared `core` plus the feature modules — covers every interactive design in the library. **§2.1's table is the list and the count** (standing rule 3); do not restate a number here. Full list in §2.
 2. **Every module ships as hand-written vanilla.** Exactly **two** were seriously contested — `carousel` and `search-overlay` — and both resolved to vanilla. **Net: zero third-party runtime libraries in a generated theme.** One conditional exception is held open (§3.6). **Amended 2026-08-27:** `search-overlay` no longer exists (ruling **R-24** — Ghost's native search only), so the one contested module that later won a vendoring exception under D3 has taken that exception with it; **FR-G7's zero-third-party rule is restored whole**. The module count is derived from §2.1, never restated (standing rule 3).
 3. **Swiper is rejected.** Not on ideology — on arithmetic. Swiper's *core alone*, with zero feature modules, is **19.61 KB gzipped** (measured). NFR-2's entire JS budget for a *maximal design* — every module plus the search overlay — is **40 KB gzipped**. One carousel would consume **49 %** of it. A minimal-but-honest modular Swiper build (core + navigation + pagination + a11y + keyboard) measures **27.48 KB gzipped** and breaks NFR-2 outright when combined with the rest of the module set (§4).
 4. **The inventory itself already specified the answer.** Every carousel design in Appendix A describes *snapping horizontal scroll* — "snap-scrolling cards with dots" (A8 #7), "snap carousel" (A19 #4), "horizontal snap strip" (A14 #3), "snap-scrolling tag chips rail" (A20 #9), "horizontal snap rail" (A27 #4), "compact horizontal scroll" (A15 #15). Not one asks for coverflow, cube, parallax or true infinite loop. **CSS `scroll-snap` + ~1.2 KB of shared vanilla control layer is not a compromise here; it is a more literal implementation of the designs than Swiper would be.**
 5. **Recommended baseline: Baseline "Widely Available", pinned by date, with a short explicit allowlist for safely-degrading enhancements.** As of 2026-08-18 that resolves to **Chrome/Edge 121, Firefox 122, Safari & iOS Safari 17.2** (computed in §A3). This unlocks `<dialog>`, `inert`, `:has()`, `IntersectionObserver`, `ResizeObserver`, `scroll-snap`, `Element.animate()`, container queries, `color-mix()` and `subgrid`. It **excludes** the `popover` attribute, CSS scroll-driven animations, View Transitions and `@starting-style` from load-bearing use.
-6. **A realistic heavy page lands at ~10.3 KB gzipped**, and a *maximal* design — every one of the 31 modules on one page — at **~17.5 KB gzipped**. Both comfortably inside NFR-2's 40 KB and the owner's 50 KB warning line (§4).
+6. **A realistic heavy page lands at ~10.3 KB gzipped**, and a *maximal* design — every module in §2.1 on one page — at **~17.5 KB gzipped**. (Both were measured against the pre-2026-08-27 registry, which has since lost more modules than it gained, so both stand as ceilings.) Both comfortably inside NFR-2's 40 KB and the owner's 50 KB warning line (§4).
 7. **Two budget facts the owner has not been told, and should be.** (a) Ghost's own `sodo-search` bundle, which Ghost core injects via `{{ghost_head}}` when site search is on, measures **86.50 KB gzipped** — *more than four times Inflozo's entire maximal-design module set*, and it is not Inflozo's to remove. (b) The owner's stated 50 KB / 100 KB envelope is **looser than the PRD's own NFR-2 gate of < 40 KB**. NFR-2 is the binding number; everything recommended here fits both.
 8. **One licence landmine found.** `typed.js`, the obvious pick for the typewriter design (A4 #13), **relicensed from MIT to GPL-3.0 at v3.0.0** (2026-01-24, verified on the npm registry). Under §5's filter it is a hard reject at v3 — and a hard reject at v2.1.0 too, because pinning a package at its last permissive version to dodge a relicence is a security-update dead end. Vanilla instead (~0.4 KB).
 
@@ -33,7 +33,7 @@ created: 2026-08-18
 | JS budget, maximal design | `prd.md` **NFR-2** | **< 40 KB gzipped** — every FR-J4 module. **The A23 search client is gone** (ruling R-24): search is Ghost's own `sodo-search`, which the theme neither ships nor pays for, so the measured figures are ceilings |
 | JS budget, owner's stated envelope | owner brief | warn at 50 KB/page, loud flag at 100 KB/page |
 | Render-blocking JS | **NFR-2 (3)** | none — every script `defer`red or `type="module"` |
-| Accessibility gate | **NFR-5** | axe-core, WCAG 2.1 AA, **zero violations**, across all 485 variants |
+| Accessibility gate | **NFR-5** | axe-core, WCAG 2.1 AA, **zero violations**, across every design in the library |
 | No-JS behaviour | **FR-G4** | every variant functional with JS disabled; JS is progressive enhancement |
 | Strings in JS | **FR-Q6** | no visitor-facing literal in any module; strings arrive as `data-i18n-*` on the mount element |
 | CSS authoring | **§7.1 / prd.md §7.3** | plain flat CSS, one file per variant, **no preprocessor, no build step, no autoprefixer** |
@@ -43,9 +43,9 @@ created: 2026-08-18
 
 ---
 
-## 2. The real module list (31 modules)
+## 2. The real module list
 
-Derived by walking every one of the 485 variant descriptors in `sections-inventory.md` for motion, timing, state, interactivity or a data fetch. "Designs" counts variants that *require* the module; "control reach" counts variants where a category-level control can switch it on.
+Originally derived by walking every variant descriptor in `sections-inventory.md` for motion, timing, state, interactivity or a data fetch; **re-derived from the design export on 2026-08-31** by `tools/derive-module-reach.py`. "Designs" counts variants that *require* the module; "control reach" counts variants where a category-level control can switch it on.
 
 ### 2.1 The modules
 
@@ -187,7 +187,7 @@ That leaves exactly **two** patterns where the code is genuinely non-trivial and
 
 ### 3.3 The one thing a library would still buy: shared external QA
 
-Rejecting libraries means Inflozo owns the a11y correctness of `tabs` and `carousel` itself. That is a real transfer of risk, and NFR-5's gate is what absorbs it: **8,730 renders per run × axe-core WCAG 2.1 AA at zero violations** (NFR-6(a)). Recommendation: add **one focused keyboard-interaction test per interactive module** — axe-core is a static-DOM checker and will not catch a broken roving tabindex or a focus that fails to return after `dialog.close()`. Roughly 12 Playwright specs, not 485.
+Rejecting libraries means Inflozo owns the a11y correctness of `tabs` and `carousel` itself. That is a real transfer of risk, and NFR-5's gate is what absorbs it: **the full render matrix per run (NFR-6(a): every design × 3 packs × 2 modes × 3 viewports) × axe-core WCAG 2.1 AA at zero violations** (NFR-6(a)). Recommendation: add **one focused keyboard-interaction test per interactive module** — axe-core is a static-DOM checker and will not catch a broken roving tabindex or a focus that fails to return after `dialog.close()`. Roughly 12 Playwright specs, not 485.
 
 ### 3.4 Reference table — every library evaluated, with real numbers
 
@@ -356,7 +356,7 @@ Each estimate is roughly **20–40 % of the nearest real library**, which is wha
 
 > **Total: ≈ 4.9 KB gzipped.** 12 % of NFR-2.
 
-### 4.4 The NFR-2 case — a *maximal* design, all 31 modules on one page
+### 4.4 The NFR-2 case — a *maximal* design, every module on one page
 
 | Module | Est. gzip | | Module | Est. gzip |
 |---|---|---|---|---|
@@ -521,7 +521,7 @@ Because §0's recommendation is **zero runtime dependencies**, the enforceable r
 
 A single hard line would ban `backdrop-filter` and `text-wrap: balance` — features whose failure mode is *literally nothing happening*. So:
 
-> **Tier 1 — Widely Available: unrestricted.** Any feature at Baseline Widely on the pinned date may be used anywhere in the 485 stylesheets and 31 modules, load-bearing.
+> **Tier 1 — Widely Available: unrestricted.** Any feature at Baseline Widely on the pinned date may be used anywhere in the design stylesheets and the modules, load-bearing.
 >
 > **Tier 2 — enhancement allowlist:** a **short, explicit, version-controlled list** of Baseline **Newly** features that may be used **only where the fallback is the design's own unstyled state and the design remains complete without it.** Nothing on this list may carry layout, contrast, or interaction.
 >
@@ -531,7 +531,7 @@ A single hard line would ban `backdrop-filter` and `text-wrap: balance` — feat
 
 ### 6.6 The CSS consequence — because there is no build step
 
-`prd.md` §7.1 mandates plain flat CSS with no preprocessor and **no autoprefixer**. That has one non-obvious cost the baseline decision does not remove, and it must be written down or every one of the 485 stylesheets will rediscover it:
+`prd.md` §7.1 mandates plain flat CSS with no preprocessor and **no autoprefixer**. That has one non-obvious cost the baseline decision does not remove, and it must be written down or every one of the design stylesheets will rediscover it:
 
 **Three properties in common use are *not* Baseline at all and have no unprefixed form that works.** These are the only sanctioned hand-written prefixes in the entire library:
 
@@ -551,7 +551,7 @@ Two further notes for section authors:
 
 | What | Tool | Licence | Enforces |
 |---|---|---|---|
-| The 485 flat stylesheets | **`stylelint-plugin-use-baseline`** 1.4.5, `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
+| The flat design stylesheets | **`stylelint-plugin-use-baseline`** 1.4.5, `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
 | The 31 JS modules | **`eslint-plugin-compat`** 7.0.2 against the pinned browserslist | MIT | DOM/JS APIs below the floor |
 | Compiled `assets/js/main.js` | **`size-limit`** 13.0.3, `limit: "40 KB"`, gzip | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input |
 | Third-party code | one grep asserting `assets/js/` contains only repo-authored files | — | §5's licence rule, by construction |

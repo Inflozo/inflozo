@@ -1,4 +1,5 @@
 ---
+title: Inflozo — Architecture Spine
 name: 'Inflozo'
 type: architecture-spine
 purpose: build-substrate
@@ -61,7 +62,7 @@ values and takes plain values back.
 
 ```mermaid
 graph TD
-  L["packages/library<br/><i>484 designs · packs · starters<br/>string catalog · Orbit Weekly · fixtures</i>"]
+  L["packages/library<br/><i>the design library · packs · starters<br/>string catalog · Orbit Weekly · fixtures</i>"]
   SR["packages/section-runtime<br/><i>parse · bind · controls→attrs<br/>marks · 2 emitters</i>"]
   GS["packages/ghost-shim<br/><i>Appendix B helpers, pure<br/>over recorded shapes</i>"]
   TC["packages/theme-compiler<br/><i>doc+library → theme file tree</i>"]
@@ -395,7 +396,7 @@ project maintains its own documents, not how the product behaves.)*
 | --- | --- |
 | Package naming | `@inflozo/library`, `@inflozo/section-runtime`, `@inflozo/ghost-shim`, `@inflozo/theme-compiler`. The app is `apps/web` and is not published. |
 | Design identity | `{categoryId}/{n}` — `a4/2` is Heroes #2. Stable forever: FR-J14 supersedes designs, never deletes them, and a deploy's variant manifest cites these ids. |
-| Files & directories | kebab-case everywhere on disk, including the 484 design directories. Emitted theme filenames derive from slugified layer names (§7.4) and are deterministic. **"Deterministic" is not "unique":** a conventional slug maps `Hero` and `HERO` to the same `hero`, so two layers can name one partial and the second silently overwrites the first (Round 2, executed — three distinct names produced two slugs). §7.4 already rules on this for **custom template names** — "two names slugifying identically collide; the second is refused and the user renames", *prevented at creation, never resolved at compile*, because auto-suffixing produces a file Ghost labels "Member Home 2" without saying why. The **layer-name → section-partial** surface has no such rule and needs one. It may legitimately differ — a section partial is referenced only by Inflozo's own emitted templates, never by a Ghost page, so silent disambiguation cannot detach anything — but it still breaks NFR-6(c1)'s committed snapshots and FR-J16's zero-false-positive drift check, so the rule and the slug function are both stated rather than left to the implementation. |
+| Files & directories | kebab-case everywhere on disk, including every design directory. Emitted theme filenames derive from slugified layer names (§7.4) and are deterministic. **"Deterministic" is not "unique":** a conventional slug maps `Hero` and `HERO` to the same `hero`, so two layers can name one partial and the second silently overwrites the first (Round 2, executed — three distinct names produced two slugs). §7.4 already rules on this for **custom template names** — "two names slugifying identically collide; the second is refused and the user renames", *prevented at creation, never resolved at compile*, because auto-suffixing produces a file Ghost labels "Member Home 2" without saying why. The **layer-name → section-partial** surface has no such rule and needs one. It may legitimately differ — a section partial is referenced only by Inflozo's own emitted templates, never by a Ghost page, so silent disambiguation cannot detach anything — but it still breaks NFR-6(c1)'s committed snapshots and FR-J16's zero-false-positive drift check, so the rule and the slug function are both stated rather than left to the implementation. |
 | Database identifiers | `snake_case`, plural tables, singular columns, `{table}_id` foreign keys, enums as Postgres types not check constraints. Wire fields keep the stored name (`unsynced_edits`), and JS carries the camelCase form of the same value. |
 | Ids & dates | `uuid` v4 defaulted in Postgres; never a client-minted id for a server-asserted row. `timestamptz` always, UTC always, ISO 8601 on the wire. Dates render in the site timezone only at the edge. |
 | Error shape | `{ code, message, detail?, action? }` (AD-24). HTTP status carries transport meaning only. |
@@ -405,7 +406,7 @@ project maintains its own documents, not how the product behaves.)*
 | Auth | Supabase Auth, magic link primary. Passkeys behind the `feature_flags` row above. 30-day rolling sessions. Note for E2, read from the registry rather than the PRD: the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, well below the ≥ 2.105.0 the PRD names — so the floor is a safe over-pin, not a capability boundary, and §7.6 item 4 still governs whether the API is usable. |
 | Secrets | Never in `NEXT_PUBLIC_*`. Ghost credentials in Vault via `site_credentials` (AD-7). The Content API key is not a secret and is delivered to the browser deliberately. |
 | CSP | Composed per session in `proxy.ts`, because `connect-src` must carry the active session's connected Ghost origins. **Two policies from one deployment, executed 2026-08-20 on Next 16.3.1 and Vercel Pro (`MEASUREMENTS.md` §18, R1 decision 5): a nonce policy on the app host and a static one on marketing.** The collision Round 1 feared does not exist — **setting a CSP header does not force dynamic rendering; reading the nonce does** — so the marketing site keeps SSG (`x-vercel-cache: PRERENDER`) *and* carries a policy, while only nonce-bearing app routes go dynamic. The nonce is verified per-request and verified to match the attribute in the delivered HTML; a mismatch fails silently, blocking every inline script under a policy that still looks correct. `script-src 'self'` with **no `'unsafe-eval'`** — nothing needs it, since Handlebars is never parsed in the browser. **This half is NOT yet verified and is a requirement on E5, not a measured property** (§18c): §18's probe proves the mechanism on a minimal app, and only a real canvas can show that nothing in the editor reaches for `new Function`. `frame-ancestors 'self'`, not `'none'`, because the editing iframe is same-origin. |
-| Styling | Tailwind styles `apps/web` and **only** `apps/web`. The 484 design stylesheets are flat CSS in `packages/library`, excluded from the app's Tailwind content globs, never scanned, never purged. The two never meet. |
+| Styling | Tailwind styles `apps/web` and **only** `apps/web`. The design stylesheets are flat CSS in `packages/library`, excluded from the app's Tailwind content globs, never scanned, never purged. The two never meet. |
 | Voice (Appendix H, normative) | One celebratory moment, at first deploy, and it respects `prefers-reduced-motion`. Library copy is **count-agnostic** — "hundreds of gorgeous sections", never a number, because FR-J14 moves it monthly. **"Design" is the only word** for what a category offers; *layout*, *variation* and *variant* name nothing, in the app, the marketing site and the docs alike. |
 | Logging | Structured JSON to Sentry (app + server) plus per-stage deploy timings on the `deploy_jobs` row. No user content, no Ghost credentials, no `codeinjection_*`, ever — FR-C2 computes one boolean and discards the payload. |
 | Testing | Core packages: pure unit tests, offline, no fixtures beyond `fixtures/`. Shell: Playwright against the running stack. Every external fact under AD-23 is a recording. |
@@ -431,7 +432,7 @@ project maintains its own documents, not how the product behaves.)*
 | `DOMPurify` | current | FR-K2 SVG sanitization on upload. The **only** sanitizer in the product — the canvas needs none (AD-4) |
 | `stylelint-plugin-use-baseline` | 1.4.5 | over the 484 flat stylesheets, `available: "widely"` + the Tier-2 allowlist |
 | `browserslist-config-baseline` | 0.5.0 | `widelyAvailableOnDate: 2026-08-18` → Chrome/Edge 121, Firefox 122, Safari/iOS 17.2 |
-| `eslint-plugin-compat` | 7.0.2 | over the 31 behaviour modules |
+| `eslint-plugin-compat` | 7.0.2 | over the behaviour modules (FR-G7 — the registry is the count) |
 | `size-limit` + `@size-limit/file` | 13.0.3 | `size-limit` has **no engine of its own** and measures nothing without a preset; the `file` preset is required. Its default metric is **brotli**, which is what NFR-2's 40 KB number therefore means |
 | `web-features` | 3.35.0 | the data the Baseline floor resolves from; recomputed and diffed per §7.6 item 17 |
 | `resend` | 6.20.0 | **six** transactional emails + Supabase Auth SMTP — the sixth is FR-P1's renewal reminder, added by owner decision in Round 4 (AD-33's seventh cron) |
@@ -473,7 +474,7 @@ inflozo/
       starters/               # 10 pre-wired projects
       strings/catalog.json    # appendix-h1; keys are dotted, never the English string
       orbit-weekly/           # the sample dataset + the three FR-H3 fixtures
-      modules/                # FR-G7's 31 behaviour modules, `core` first
+      modules/                # FR-G7's behaviour modules, `core` first
       CHANGELOG.json          # FR-J14's machine-readable library changelog
     section-runtime/          # AD-1 pure: parse · bind · controls→attrs · marks · 2 emitters
     ghost-shim/               # AD-1 pure: Appendix B's helper surface over recorded shapes
@@ -539,7 +540,7 @@ unwrap-before-resolve rule above stops Inflozo's markers being confused with an 
 `<!--__HBS_0__-->` in a design's `index.html` gets an entire `{{#foreach}}` block emitted twice
 (executed, Round 2). Moving user text behind an unforgeable marker fixed the half where a *user*
 types the token and left the half where an *author* does. Both halves need a shape that cannot
-collide, not a convention that must be remembered — 484 designs will have many authors.
+collide, not a convention that must be remembered — a library this size will have many authors.
 
 ### Core entities
 

@@ -166,7 +166,7 @@ Read from `gscan/lib/specs/v5.js:751` and `gscan/lib/checks/051-custom-fonts-css
 The check scans every `.css` and `.hbs` file and passes if **one file** contains **both**
 strings. Nothing in the PRD mentions it, and without it every theme Inflozo ships carries a
 standing warning — which makes G3's "warnings surfaced, always", FR-J6's 0/0 target and every
-category gate's automated sheet unmeetable at once, on all 484 designs simultaneously.
+category gate's automated sheet unmeetable at once, on every design in the library simultaneously.
 
 Closed by AD-18. The 40-section fixture scores 0/0 with the two variables present, which is
 the proof that the fix is sufficient at scale.

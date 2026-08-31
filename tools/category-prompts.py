@@ -473,7 +473,7 @@ h2.grp{{font-size:1.1rem;margin:34px 0 4px;font-weight:690}}
 footer{{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}}
 </style></head><body><div class="wrap">
 <div class="kick">Inflozo</div><h1>Category prompts</h1>
-<p class="lede">{f'All {len(cats)} categories are designed. These are the prompts that built them, kept for re-runs; the live design work has moved to the controls-reconciliation prompts.' if n_build == 0 else 'One button per category. <b>Patch</b> fixes a category you have already designed; <b>build</b> designs one you have not started. Every prompt is self-contained — copy, open a new Claude Design chat, paste, done.'}</p>
+<p class="lede">{'Every category is designed — these are the prompts that built them, kept for re-running a single one. A23 Search is deleted (ruling R-24) and has no copy button. The design work has moved on twice since: the controls pass, then the design patch pass.' if n_build == 0 else 'One button per category. <b>Patch</b> fixes a category you have already designed; <b>build</b> designs one you have not started. Every prompt is self-contained — copy, open a new Claude Design chat, paste, done.'}</p>
 {NEXT_STEP if n_build == 0 and os.path.exists(os.path.join(PLAN, 'CONTROL-PROMPTS.html')) else ''}
 
 <div class="counts">

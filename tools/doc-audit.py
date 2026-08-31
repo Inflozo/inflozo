@@ -45,22 +45,23 @@ DOCS = [
   'record traps that cost a round to find (a column REVOKE is a no-op under a table GRANT, TRUNCATE '
   'ignores RLS).'),
  ('architecture/.../RLS-TEST.sql', 'live', 'The security gate',
-  'E1\'s exit criterion and the acceptance test for a restore. 70 assertions, and it ABORTS on '
-  'failure — it used to print FAIL and exit 0, which is why six holes survived three rounds. '
-  'Mutation-tested: reverting any fix turns it red. Pure SQL, so it runs in psql or the Supabase '
-  'dashboard editor.'),
+  'E1\'s exit criterion and the acceptance test for a restore — the file is the count of its own '
+  'assertions. It ABORTS on failure; it used to print FAIL and exit 0, which is why six holes '
+  'survived three rounds. Mutation-tested: reverting any fix turns it red. Pure SQL, so it runs in '
+  'psql or the Supabase dashboard editor.'),
  ('architecture/.../PRELUDE.sql', 'live', 'Container stand-ins',
   'Fakes the Supabase-provided objects (auth, storage, the roles) so the schema and its proof run '
   'against a bare Postgres container. NEVER run against hosted Supabase — its auth.uid() stub would '
   'overwrite the real one with a NULL-returning function and silently disable every policy.'),
  ('architecture/.../MEASUREMENTS.md', 'live', 'Everything executed',
-  'The evidence file: 28 sections of things actually run against real infrastructure, each with the '
-  'command and its output. Five confident claims in this project have been falsified by execution; '
+  'The evidence file: everything actually run against real infrastructure — the file is the count — '
+  'each with the command and its output. Five confident claims in this project have been falsified by execution; '
   'this is where the executions live. The spine cites it rather than restating its numbers.'),
  ('architecture/.../VERIFY-AT-BUILD.md', 'live', 'External-facts register',
   'Every claim about Ghost, Supabase, Vercel or Dodo that code depends on, each with an owning epic '
-  'and a status. Started at 21 items and grows whenever the project rests on a new external fact. '
-  'Two items are launch-blocking.'),
+  'and a status. Started at 21 items and grows whenever the project rests on a new external fact — '
+  'the file is the count. The rows marked ⛔ are the ones that block something; both Ghost(Pro) rows '
+  'block public launch.'),
 
  # ── procedures and specifications ────────────────────────────────────────────
  ('architecture/.../RESTORE-RUNBOOK.md', 'live', 'How to restore the database',
@@ -76,23 +77,27 @@ DOCS = [
  ('architecture/.../ARCHITECTURE-IN-PLAIN-ENGLISH.html', 'live', 'The architecture, for a human',
   'The whole system explained without jargon, with diagrams. Written for the owner and for anyone '
   'being brought in — a designer, an investor, a first engineer. Every number in it is measured.'),
- ('architecture/.../ROUND-4-FINDINGS.html', 'live', 'Round 4 decision sheet',
+ ('architecture/.../ROUND-4-FINDINGS.html', 'record', 'Round 4 decision sheet',
   'The security findings as a clickable sheet: plain-language explanation, numbered options, one '
-  'recommended, a box for questions, and a Copy-my-reply button. This is the artifact the owner '
-  'actually used to decide; the decisions taken from it are all applied.'),
+  'recommended, a box for questions, and a Copy-my-reply button. The artifact the owner actually used '
+  'to decide, and every decision taken from it is applied — so it is a dated record of that round, '
+  'alongside ROUND-4-REPORT.md. Its blank is tools/probe/report-template.html.'),
 
  # ── the PRD and its normative companions ─────────────────────────────────────
  ('prds/.../prd.md', 'live', 'The PRD — v4.1, final',
-  'What Inflozo is: 130 functional requirements, 9 non-functional, 34 categories, 484 designs, the '
-  'binding build order and the epic sequence. Never read whole — §4 build order, §5 FRs, §6 NFRs, '
-  '§7 architecture, §8 epics, appendices after that.'),
+  'What Inflozo is: every functional and non-functional requirement, the binding build order and the '
+  'epic sequence. Since the 2026-08-31 merge it states no library count of its own — Appendix I is '
+  'generated from the design export. Never read whole: §4 build order, §5 FRs, §6 NFRs, §7 '
+  'architecture, §8 epics, appendices after that.'),
  ('prds/.../addendum.md', 'live', 'Normative for mechanism',
   'Two mechanisms the PRD body states too loosely to build from: AD1 local-first persistence (the '
   'op-log, the revision comparison) and AD2 the edit-lock protocol. Outranks the PRD body on both.'),
  ('prds/.../sections-inventory.md', 'live', 'Normative for scope',
-  'The 484 designs: 34 category declarations, per-category counts, which 70 are free, and the '
-  'two-layer schema each design specification slots into. Every count in the project derives from '
-  'here rather than being restated.'),
+  'The library: one declaration per category, its roster, its `Content:` / `Controls:` / `Data:` '
+  'union — the storage contract park-and-restore runs on — and the two-layer schema each design '
+  'specification slots into. Appendix A\'s totals, every roster and every union line are GENERATED '
+  'from the design export by tools/inventory-gen.py and gated by --check, so the file cannot drift '
+  'from what was drawn. Two [Free] per category, by rule (R-17).'),
  ('prds/.../appendix-b1-template-contexts.md', 'live', 'Ghost template contexts',
   'Which Ghost helpers and variables are available inside which template, recorded per context. The '
   'reference the binding vocabulary is built against.'),
@@ -121,23 +126,24 @@ DOCS = [
  ('prds/.../research-contested-variants.md', 'live', 'Research · contested designs',
   'Designs whose feasibility was disputed, resolved one at a time.'),
  ('prds/.../research-section-js-libraries.md', 'live', 'Research · behaviour modules',
-  'What the 31 behaviour modules need, and what can be done without JavaScript at all.'),
+  'The behaviour-module registry — §2.1 is the list AND the count, never a number written elsewhere. Each row carries its no-JS degradation, whether it is edit-safe, and the designs that declare it (re-derived from the export 2026-08-31). §3 and §4 are the analysis that produced it, left as the record. Also: what needs no JavaScript at all.'),
 
  # ── process ──────────────────────────────────────────────────────────────────
  ('build-sequence.md', 'live', 'The build sequence',
   'The six steps from finished PRD to first story, what each needs from the owner, and a runnable '
-  'prompt for each. Steps 1–3 are complete; step 4 is current and is two prompts — the review, then '
-  'the Ghost Build Room. One step-2 prompt contains an instruction later proven FALSE, flagged in '
+  'prompt for each. Steps 1–4 and the inventory merge are COMPLETE; step 5 (journeys and flows) is '
+  'the critical path. One step-2 prompt contains an instruction later proven FALSE, flagged in '
   'place rather than deleted.'),
  ('design/claude-design-prompt.md', 'record', 'Design prompt 1 — run',
   'Produced the 27 interface mockups.'),
- ('design/claude-design-prompt-2.md', 'live', 'Design prompt 2 — outstanding',
-  'Responsive archetypes, ~25 missing surfaces, the paywall editor. Small, and it is what unblocks '
-  'the journeys-and-flows step.'),
- ('design/claude-design-prompt-3-library.md', 'live', 'Design prompt 3 — the critical path',
-  'Run once per category, 34 times, producing that category\'s designs AND their full '
-  'specifications in one pass. The longest pole in the project; nothing downstream can start '
-  'without it.'),
+ ('design/claude-design-prompt-2.md', 'record', 'Design prompt 2 — run',
+  'Produced the responsive archetypes, the missing app surfaces and the paywall editor. Run and '
+  'exported (S1–S14, M1–M9, verified 2026-08-21), which is what unblocked step 5.'),
+ ('design/claude-design-prompt-3-library.md', 'record', 'Design prompt 3 — run',
+  'Run once per category, producing that category\'s designs AND their full specifications in one '
+  'pass. Complete 2026-08-25; the export is now the authority on what it produced, and the specs have '
+  'been patched twice since — the controls pass, then the design patch pass. It states the library '
+  'size as it stood when written.'),
  ('design/derived-fields-A1-A12.md', 'retired', 'Derived fields — A1 through A12',
   'SUPERSEDED WHOLESALE at the 2026-08-27 inventory merge (ruling R-16). It derived four missing '
   'fields for the first 12 exported categories by reading the export\'s prose; all 33 live '
@@ -172,11 +178,12 @@ DOCS = [
   '41 probe families, 1,078 owner-flag rows (the Ghost Build Room agenda), the PRD amendments by FR. '
   'Its findings array is reconcile-designs.findings.json beside it.'),
  ('prds/.../reconcile-designs-decisions.md', 'live', 'Ghost Build Room rulings',
-  'Step 4b (2026-08-27): the owner\'s rulings on everything 4a could not settle by reading. Every '
-  'ruling names the documents that must move, so the merge works from this file. Four approved '
-  'decisions are superseded here (D3 native search, D17 accent seeding, D26 gap names, D27 in half) '
-  'and four probe families were removed from the 41 — two closed by execution against T1/T3 during '
-  'the session, two deleted by the search ruling. Its §E is the remaining probe list.'),
+  'Step 4b (2026-08-27, extended 2026-08-31): the owner\'s rulings on everything 4a could not settle '
+  'by reading, each naming the documents that must move. §A the room\'s rulings · §A2 the design '
+  'patch pass · §A3 the §F asks, all now ruled · §A4 §37.7 re-verified for step 5 · §B FOUR APPROVED '
+  'DECISIONS SUPERSEDED (D3 native search, D17 accent seeding, D26 gap names, D27 in half) — read it '
+  'before trusting any D-number · §C the Ghost facts executed that night · §E the remaining probe '
+  'list. R-30 to R-38 have not propagated yet.'),
  ('prds/.../encode-propagation-map.md', 'record', 'Encode propagation map',
   'Where each requirement change had to land. The origin of "propagate, never localise".'),
  ('prds/.../encode-report-batch1.md', 'record', 'Encode report', 'Batch record.'),
@@ -222,20 +229,25 @@ DOCS = [
   'picking up the project cold.'),
  ('planning-artifacts/INDEX.html', 'live', 'Document index (for humans)',
   'The same index, browsable and grouped by status.'),
- ('planning-artifacts/CATEGORY-PROMPTS.html', 'live', 'Category prompts — 34 copy buttons',
-  'One paste-ready Claude Design prompt per category. PATCH prompts fix a category already designed '
-  '(specification only, no frames touched, designs named individually). BUILD prompts are fully '
-  'self-contained — the master brief plus that category. Generated, so the brief inside them cannot '
-  'drift from the prompt file.'),
+ ('planning-artifacts/CATEGORY-PROMPTS.html', 'live', 'Category prompts, one per category',
+  'The prompts that BUILT the library, kept for a re-run of a single category. Every category has '
+  'been designed, so nothing here is outstanding work; A23 is marked deleted and has no copy button. '
+  'Generated by tools/category-prompts.py, so the master brief inside them cannot drift from the '
+  'prompt file. The design work has moved on twice since — the controls pass '
+  '(CONTROL-PROMPTS.html) and the design patch pass (DESIGN-PATCH-PROMPTS.html).'),
  ('planning-artifacts/CONTROL-PROMPTS.html', 'live', 'Controls-reconciliation prompts',
-  'The controls audit of the full 34-category export against the PRD and Ghost\'s data surface: one '
-  'primitives session (P0) plus one patch prompt per category, the 39 recorded decisions (all ruled '
-  'by the owner 2026-08-24), and the architect carry-forwards. Hand-authored source of record — no generator; the '
-  'category BUILD prompts remain in CATEGORY-PROMPTS.html.'),
+  'The controls audit of the whole export against the PRD and Ghost\'s data surface: one primitives '
+  'session (P0) plus one patch prompt per category, the 39 recorded decisions D1-D39 (all ruled by '
+  'the owner 2026-08-24), and the architect carry-forwards. The pass itself has RUN (2026-08-25); '
+  'what keeps the file live is that it is the home of the D-numbers cited across the project, and '
+  'four have since been REVERSED and are marked in place — D3, D17, D26 and D27-in-half. '
+  'Hand-authored, no generator.'),
  ('tools/category-prompts.py', 'tool', 'Category prompt generator',
-  'Extracts the master brief and the 34-row category table from the prompt file, reads which '
-  'categories exist in the design export, and emits one prompt per category. Asserts it parsed every '
-  'table row — the first version silently matched 10 of 34 because the notes column is optional.'),
+  'Extracts the master brief and the category table from the prompt file, reads which categories '
+  'exist in the design export, and emits one prompt per category. Asserts it parsed EVERY table row '
+  'rather than a count — the first version silently matched a third of them because the notes column '
+  'is optional, and a later version asserted `len(names) == 31` over the module registry and duly '
+  'broke when the registry moved. Both are derived now.'),
  ('planning-artifacts/HANDOVER.md', 'live', 'Handover for a fresh session',
   'Everything a new chat needs to continue without reading the previous conversation: where the '
   'project stands, the immediate task, the standing rules, and how the owner wants to work. Update '
@@ -255,15 +267,19 @@ DOCS = [
  ('tools/design-patch-prompts.py', 'tool', 'Per-category design patch prompts',
   'Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS.html', 'live', 'Design patch prompts, per category',
-  'The owner-facing page for the design patch pass: 34 prompts with copy buttons and browser-stored progress ticks. Run P0 first (the Remove-button and number-picker rulings originate there and every category inherits them), then A1 (it absorbs the deleted Search category). Verify each returned export with tools/verify-design-pass.py.'),
- ('tools/derive-control-lines.py', 'tool', 'Draft the Controls: union — INCOMPLETE',
+  'The owner-facing page for the design patch pass — one prompt per category plus P0, with copy '
+  'buttons and browser-stored progress ticks. THE PASS RAN on 2026-08-31 and '
+  'tools/verify-design-pass.py confirms it: every structural check passes. Kept live because it is '
+  'generated and gated, and because re-patching one category is a copy-button away. Rosters DERIVE '
+  'from the export, so the design numbers in it cannot drift.'),
+ ('tools/derive-control-lines.py', 'tool', 'Derive the Controls: union',
   'Attempts each category\'s Controls: line and does NOT succeed: the specs declare controls in at least four shapes (a per-design `Control | Values` table, a prose line with names before colons, another with names before brackets, and typed enum rows), the granularity differs by an order of magnitude between them — 53 names for one category, 3 for another — and eight categories carry nothing readable at all. Kept because it MEASURES the gap and names the eight, and because the fix is cheap: if every spec carried the per-design Control|Values table A1-A3 already use, this becomes reliable. Do not land its output as-is.'),
  ('tools/derive-module-reach.py', 'tool', 'Which designs declare which script',
   'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
  ('tools/verify-design-pass.py', 'tool', 'Did the design pass apply the rulings?',
-  'One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. --extract dumps the per-category fields and modules for the two deferred derivations, marking every spec the parser cannot read rather than reporting an empty list as success.'),
+  'One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. It also GATES the hand edits made to the export on 2026-08-31, which a Claude Design re-export would otherwise silently overwrite: no S or M screen prints a library total, and P0 declares the per-prop mark allowlist. Both had teeth on their first run — they found four screens the manual pass had missed. --extract dumps the per-category fields and modules, marking every spec the parser cannot read rather than reporting an empty list as success.'),
  ('tools/export-roster.py', 'tool', 'The library roster, from the export',
   'Reads the design export and emits every live category and design as JSON — number, name, '
   'structural tuple, declared modules, one-line descriptor. Refuses to emit when a spec table and '
@@ -286,11 +302,13 @@ DOCS = [
 ]
 
 GROUPS = [
- ('design/claude-design-export/', 'live', 'Design library export — all 34 categories',
-  'Claude Design\'s export: the zip (authoritative) plus the owner\'s extraction in Inflozo/ — 34 '
-  'per-category spec files, the design frames, the S1-S13 app screens and M1-M9 pages, and the '
-  'owner\'s A1-A3 controls-audit notes. Categories 13+ carry all ten spec fields natively; the '
-  'controls-reconciliation pass over all 34 is CONTROL-PROMPTS.html.'),
+ ('design/claude-design-export/', 'live', 'Design library export — the library itself',
+  'Claude Design\'s export, and THE AUTHORITY on what the library contains: the zip plus the '
+  'owner\'s extraction in Inflozo/ — one spec file per category, the design frames, the S1-S14 app '
+  'screens, the M1-M9 pages and P0 Editor Primitives. Every count in the project derives from here '
+  '(tools/export-roster.py). Deleted designs are recorded in export-roster.py with their reason, '
+  'never by deleting a file. It carries hand edits made 2026-08-31 that a re-export would overwrite; '
+  'tools/verify-design-pass.py gates them.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '
   'Design artifacts are non-normative — where one disagrees with the PRD, the PRD wins.'),

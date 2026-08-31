@@ -31,29 +31,38 @@ STEPS = [
   'limit of what is reachable without a Ghost(Pro) site.',
   'Proof the rich-text model works end to end, and executed results for the whole register.', None),
  ('s3', '3', 'Design prompts 2 and 3', 'done',
-  'All 34 categories designed and exported, then patched by the controls-reconciliation pass '
-  '(P0 primitives + 34 patches; 39 decisions, all ruled). Every spec ends with its own '
-  'Reconciliation notes — step 4\'s third input.',
+  'Every category designed and exported, then patched by the controls-reconciliation pass '
+  '(P0 primitives plus one patch per category; 39 decisions, all ruled — four later reversed). '
+  'Every spec ends with its own Reconciliation notes — step 4\'s third input.',
   'The archetype system and the app screens (prompt 2); every category\'s designs AND their '
   'specifications (prompt 3).', None),
  ('s4', '4', 'Reconcile designs against the PRD, the architecture and Ghost', 'done',
-  'Both halves ran 2026-08-27. 4a reviewed all 34 categories, P0 and the S/M screens (1,086 findings, '
-  '41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: 29 rulings, '
+  'Both halves ran 2026-08-27. 4a reviewed every category spec, P0 and the S/M screens (1,086 '
+  'findings, 41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: '
   'all 66 ghost-infeasible findings and all five decision-collisions closed, FOUR approved decisions '
   'reversed (D3, D17, D26, D27 in half), and four probe families removed — two closed by execution '
-  'against T1/T3 during the session, two deleted by the native-search ruling. Read '
-  'reconcile-designs-decisions.md \u00a7B before trusting any D-number anywhere in this project.',
-  'prds/.../reconcile-designs.md and reconcile-designs-decisions.md \u2014 29 rulings, each naming '
-  'the documents that must move. Its propagation ledger records that the architecture, the evidence '
-  'file and the register already carry them.', None),
+  'against T1/T3 during the session, two deleted by the native-search ruling. Nine more rulings '
+  '(R-30 \u2026 R-38) were taken on 2026-08-31. Read reconcile-designs-decisions.md \u00a7B before '
+  'trusting any D-number anywhere in this project.',
+  'prds/.../reconcile-designs.md and reconcile-designs-decisions.md \u2014 every ruling naming the '
+  'documents that must move. Its ledger records what has landed; R-30 \u2026 R-38 have not yet, and '
+  'are owed before E4 and E9 open.', None),
+ ('smerge', '4\u00bd', 'The inventory merge', 'done',
+  'The specs merged into sections-inventory.md and the inventory is now GENERATED from the design '
+  'export and gated, so it cannot drift again. A23 Search deleted whole; the design patch pass run '
+  'over every category and verified by tools/verify-design-pass.py; both deferred derivations '
+  '(the per-category Content/Controls/Data unions, and research \u00a77\u2019s design lists) '
+  'complete; derived-fields-A1-A12.md retired.',
+  'An inventory the build can open, that no longer restates a count anywhere.', None),
  ('s5', '5', 'Journeys and flows', 'next',
-  'Fully unblocked — 4a has reported on the S-screens. Its \u00a737.7 lists the editor surfaces with '
-  'no frame, the flows drawn on wrong semantics, and the journeys that hold; that is this step\'s '
-  'input. Runs alongside the inventory merge.',
+  'THE CRITICAL PATH, and blocked by nothing. Its input is \u00a737.7 of reconcile-designs.md — the '
+  'editor surfaces with no frame, the flows drawn on wrong semantics, and the journeys that hold — '
+  're-verified against the current export on 2026-08-31 and still standing (see \u00a7A4 of the '
+  'decisions file for the delta; two of its items are now fixed).',
   'Four journeys and eight flows, authored rather than verified.', None),
  ('s6', '6', 'Epics and stories', 'later',
   'Expands section 8 into stories. It does not re-plan anything.',
-  'The story breakdown.', 'the inventory merge, and step 5'),
+  'The story breakdown.', 'step 5'),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
@@ -80,23 +89,23 @@ PROMPTS = [
 ]
 
 ACTIONS = [
- ('now', 'Run VERIFY item 47 before the inventory merge',
-  'A /bmad-build probe against ghost6 and ghost5: how many {{#get}} queries one template can make '
-  'before Ghost gives up. It is the one number the Ghost Build Room left unmeasured, and it fixes '
-  'the hand-pick cap (ruling R-20).'),
- ('now', 'The inventory merge — the critical path',
-  'Specs into sections-inventory.md, its per-design rosters superseded wholesale in 24+ categories, '
-  'derived-fields superseded, every count re-derived from the export, and the PRD amendments landed. '
-  'Driven by reconcile-designs-decisions.md, whose every ruling names the documents that must move. '
-  'Three traps it flags: FR-G7\'s search exception is WITHDRAWN not landed, Appendix C does NOT move '
-  'on gap names, and FR-K needs NO video asset type.'),
- ('soon', 'Step 5 — journeys and flows',
-  'Fully unblocked. 4a\'s \u00a737.7 lists the editor surfaces with no frame and the flows drawn on '
-  'wrong semantics — that is this step\'s input. Runs alongside the merge.'),
- ('soon', 'The rulings the room did NOT reach',
-  'Nine asks still have no owner and are owed before E4/E9 open — pack tokens, the FR-H2 delta set, '
-  'the dependency vocabulary, AD-27\'s row shapes and five smaller ones. Listed in \u00a7F of '
-  'reconcile-designs-decisions.md.'),
+ ('now', 'Step 5 — journeys and flows',
+  'THE CRITICAL PATH. /bmad-ux authors the four journeys and eight flows from the PRD and prompt 2\'s '
+  'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
+  'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
+  'standing. It needs almost nothing from you.'),
+ ('soon', 'Propagate the 2026-08-31 rulings — R-30 to R-38',
+  'The nine asks the Ghost Build Room did not reach ARE NOW RULED (\u00a7A2 and \u00a7A3 of '
+  'reconcile-designs-decisions.md): pack tokens computed where derivable, disabled controls greyed '
+  'with the reason, no dark-mode switch on a pinned scheme, nothing fetched from a video provider, '
+  'empty feeds show their designed state, one Post Content section per layout, and a per-width '
+  'module declaration. What is left is landing them in the PRD and the spine — each ruling names its '
+  'own targets. Owed before E4 and E9 open; blocks neither step 5 nor step 6.'),
+ ('soon', 'Three probes still open',
+  'reconcile-designs-decisions.md \u00a7E: E-2 (feature_image_caption\'s stored shape), E-3 '
+  '(@member prefill under cacheMembersContent) and E-4 (<details name> under the Baseline linter). '
+  'E-1 ran and refuted its own premise \u2014 there is no per-template {{#get}} budget, so the '
+  'hand-pick cap was withdrawn: no cap, the panel warns past 25.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

@@ -2,7 +2,7 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
-updated: 2026-08-27 (fifth pass) — steps 1, 2, 3 and 4 COMPLETE; the inventory merge and step 5 are what remain. All 34 categories, the P0 editor primitives and the controls-reconciliation pass are on disk; step 4 ran as a two-part run (the review, then the Ghost Build Room) and both halves are done — the Ghost Build Room's 29 rulings are in prds/.../reconcile-designs-decisions.md and reversed four of the controls pass's decisions (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
+updated: 2026-08-31 (sixth pass) — steps 1, 2, 3 and 4 COMPLETE, and the inventory merge is complete apart from the propagation of the 2026-08-31 rulings. STEP 5 IS THE CRITICAL PATH. The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
 covers: the six steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
@@ -17,25 +17,30 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 
 ## Where things stand
 
-> **Refreshed 2026-08-27.** Steps 1, 2, **3** and **4 (both halves)** are COMPLETE. Do not provision
-> droplets (they exist), do not run the step-2 prompts (done, and one is WRONG — see the ⚠️ in
-> step 2), do not run any category prompt (all 34 categories are designed, patched and exported),
-> and **do not re-run step 4** — 4a wrote `prds/…/reconcile-designs.md` and 4b wrote
-> `prds/…/reconcile-designs-decisions.md` (29 rulings) on 2026-08-27.
-> **The critical path is now the inventory merge, driven by that decisions file**, with **register
-> item 47** (the per-template `{{#get}}` abort threshold) run against T1/T3 before it. Step 5 is
-> unblocked and can run alongside.
+> **Refreshed 2026-08-31.** Steps 1, 2, **3** and **4 (both halves)** are COMPLETE, **and so is the
+> inventory merge**. Do not provision droplets (they exist), do not run the step-2 prompts (done, and
+> one is WRONG — see the ⚠️ in step 2), do not run any category prompt (every category is designed,
+> patched and exported), do not re-run the design patch pass (it ran 2026-08-31), and **do not re-run
+> step 4** — 4a wrote `prds/…/reconcile-designs.md` and 4b wrote
+> `prds/…/reconcile-designs-decisions.md` on 2026-08-27, extended 2026-08-31.
+> **Register item 47 is CLOSED by execution** and refuted its own premise; there is no per-template
+> `{{#get}}` budget, so **R-20's cap was withdrawn — no hard cap, the panel warns past 25.**
+> **The critical path is now STEP 5 — journeys and flows (`/bmad-ux`).** The one thing still owed
+> from step 4 is the propagation of the nine rulings taken on 2026-08-31 (**R-30 … R-38**, in §A2 and
+> §A3 of the decisions file); each names its own targets and none of them blocks step 5.
 > **Read `reconcile-designs-decisions.md` §B before trusting any D-number anywhere in this project:**
 > D3, D17 and D26 are reversed, and D27 is reversed in half.
+> **Counts:** this file states none. `python3 tools/inventory-gen.py --check` prints the library,
+> `python3 tools/derive-module-reach.py` the behaviour registry.
 
 | | |
 |---|---|
-| `prd.md` v4.1 | ✅ **final** — 130 FRs, 34 categories, 484 designs, 70 `[Free]` |
+| `prd.md` v4.1 | ✅ **final** — every count in it now derives from the design export rather than being written down (standing rule 3); `tools/inventory-gen.py --check` is the gate |
 | Normative companions | ✅ all present, precedence order stated in the PRD preamble |
 | Design prompt 1 | ✅ run — 27 mockups in `design/mockups/` |
 | Design prompt 2 | ✅ **run and exported** — the S1–S13 editor screens and M1–M9 pages are in the design export (verified 2026-08-21), joined by **S14 Editor Cards** on 2026-08-25 |
-| Design prompt 3 | ✅ **COMPLETE — all 34 categories**, each with its own `<ID> <Name> - Spec.md` carrying all ten fields, in `design/claude-design-export/` (the zip is authoritative; `Inflozo/` is its extraction). **The export is the count**: it carries one design more than the PRD's inventory — A31 has ten, accepted by the owner (decision D11 of the controls pass); the inventory re-derives at the merge |
-| **Controls reconciliation** | ✅ **run — `CONTROL-PROMPTS.html`.** The owner's A1–A3 control audit was extended to every category; the P0 editor-primitives session and all 34 patch prompts ran in Claude Design (2026-08-24/25). Every spec now ends with a **Reconciliation notes** section listing the conflicts that patch hit — many marked *flag to the owner* — and the 39 decisions the pass recorded are **all ruled** (2026-08-24). Those notes are step 4's third input |
+| Design prompt 3 | ✅ **COMPLETE — every category**, each with its own `<ID> <Name> - Spec.md` carrying all ten fields, in `design/claude-design-export/` (the zip is authoritative; `Inflozo/` is its extraction). **The export is the count**, and since the merge the inventory is *generated* from it (`tools/export-roster.py` → `tools/inventory-gen.py`), so it can no longer drift |
+| **Controls reconciliation** | ✅ **run — `CONTROL-PROMPTS.html`.** The owner's A1–A3 control audit was extended to every category; the P0 editor-primitives session and one patch prompt per category ran in Claude Design (2026-08-24/25). Every spec now ends with a **Reconciliation notes** section listing the conflicts that patch hit — many marked *flag to the owner* — and the 39 decisions the pass recorded are **all ruled** (2026-08-24) — **but read `reconcile-designs-decisions.md` §B first: D3, D17 and D26 were later reversed and D27 half-reversed.** Those notes were step 4's third input |
 | **Architecture — step 1** | ✅ **DONE.** `architecture-Inflozo-2026-08-19/` — the invariants (AD-1 upward, and the file is the count), full schema + RLS, and **four stress-test rounds plus a reliability round** whose findings are applied. `ARCHITECTURE-SPINE.md` is the artifact; `MEASUREMENTS.md` is the executed evidence, and it has grown every round since |
 | **T1 / T3 droplets** | ✅ **PROVISIONED** — `ghost6.inflozo.com` (Ghost 6.58.0) is **T1**, `ghost5.inflozo.com` (Ghost 5.130.6) is **T3**. Both seeded, both credentialed in `tools/probe/.env`, both used by rounds 3 and 4 |
 | **E0(b) platform spike — step 2** | ✅ **DONE to the limit of what is reachable.** The register has grown every round and every item executable without a Ghost(Pro) site is closed **by execution against both real Ghosts** — **the file is the count, not a number written here** (standing rule 3). What remains is blocked by choice, not by effort: items 1–2 (⛔ Ghost(Pro), needs T4), 16–17 (E4 tooling, belongs to that epic), 35–36 (deferred by owner decision in round 4). **Item 34 was closed by execution on 2026-08-21** — Round 4's only SUSPECTED security finding, refuted |
@@ -44,9 +49,11 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | **Reliability** | ✅ **NFR-4's restore drill run for the first time — and the backup did not work.** Two silent defects, both fixed and written up as `RESTORE-RUNBOOK.md`. Deliberate failures were also run against a real Ghost: four behaved, one did not (register 39) |
 | **Documentation gate** | ✅ **`tools/doc-audit.py`** — three propagation audits were run by hand and every one found something, always in the most recently added thing. Now a script with the harness's contract: **it exits non-zero on drift.** Run `--check` at the end of every round and before any commit that adds a document (AD-36b) |
 | **For a human** | ✅ `ARCHITECTURE-IN-PLAIN-ENGLISH.html` — the whole system without jargon, 12 sections and 7 diagrams. The document to hand a designer, an investor or a first engineer |
-| **Step 4a — the review** | ✅ **DONE 2026-08-27** — `prds/…/reconcile-designs.md`: all 34 category specs, P0 and the S/M screens reconciled. 1,086 findings, 41 probe families, a 1,078-row owner-flag register, and the PRD amendments rolled up by FR. Machine-readable findings beside it as `reconcile-designs.findings.json`. It is a `record` — never edit it |
-| **Step 4b — the Ghost Build Room** | ✅ **DONE 2026-08-27** — `prds/…/reconcile-designs-decisions.md`: **29 rulings**, each naming the documents that must move. All 66 ghost-infeasible findings and all five decision-collisions closed. **Four probe families left the register** — 2 and 31 closed by execution against T1/T3 during the session, 8 and 9 deleted by the native-search ruling, and 1 reduced to its budget half (now register item 47). **Four approved decisions superseded: D3, D17, D26, D27-in-half.** Tier-1/Tier-2 propagation landed the same day (`MEASUREMENTS.md` §29, `VERIFY-AT-BUILD.md` 47–51, `CONTROL-PROMPTS.html`, the spine); **the inventory merge is what remains** |
-| Journeys & flows | ⬜ not started — **step 5**, and **no longer blocked**: prompt 2 is exported and 4a has reported on the S-screens (§37.7 lists the editor surfaces with no frame and the flows drawn on wrong semantics — that is step 5's input) |
+| **Step 4a — the review** | ✅ **DONE 2026-08-27** — `prds/…/reconcile-designs.md`: every category spec as it then stood, P0 and the S/M screens reconciled. 1,086 findings, 41 probe families, a 1,078-row owner-flag register, and the PRD amendments rolled up by FR. Machine-readable findings beside it as `reconcile-designs.findings.json`. It is a `record` — never edit it |
+| **Step 4b — the Ghost Build Room** | ✅ **DONE 2026-08-27, extended 2026-08-31** — `prds/…/reconcile-designs-decisions.md`: the rulings, each naming the documents that must move (§A from the room; §A2–§A3 from the design patch pass and the §F asks; §A4 the re-verification of step 5's work list). All 66 ghost-infeasible findings and all five decision-collisions closed. **Four probe families left the register** — 2 and 31 closed by execution against T1/T3 during the session, 8 and 9 deleted by the native-search ruling, and 1 reduced to its budget half (now register item 47). **Four approved decisions superseded: D3, D17, D26, D27-in-half.** Tier-1/Tier-2 propagation landed the same day (`MEASUREMENTS.md` §29, `VERIFY-AT-BUILD.md` 47–51, `CONTROL-PROMPTS.html`, the spine); **the inventory merge has since landed too** |
+| **Design patch pass** | ✅ **RUN 2026-08-31** — one prompt per category (`DESIGN-PATCH-PROMPTS.html`, generated by `tools/design-patch-prompts.py`), applying the step-4b rulings to the specs themselves. Verified by `python3 tools/verify-design-pass.py`: every structural check passes. It raised 28 questions; two reached the owner and are ruled as **R-30** and **R-31** |
+| **The inventory merge** | ✅ **DONE.** The inventory is generated from the export and gated; A23 Search is deleted; every per-category `Content:` / `Controls:` / `Data:` union and both of research §7's design-list columns are re-derived from the export; `derived-fields-A1-A12.md` is retired. What is **not** done is the propagation of **R-30 … R-38** — see below |
+| Journeys & flows | 🔵 **NEXT — step 5**, and unblocked: prompt 2 is exported and 4a has reported on the S-screens (§37.7 lists the editor surfaces with no frame and the flows drawn on wrong semantics — that is step 5's input) |
 | Stories | ⬜ not started — **step 6** |
 
 ## The BMAD skill for each step
@@ -88,7 +95,7 @@ These were each learned expensively. They are not style preferences.
 
 Steps 1 and 2 run **in parallel with the owner's design work (step 3)**, and that parallelism is the point. The FR-D4 mark-emission spike is the one result that could still invalidate the design investment: if text-plus-mark-ranges does not work end to end, FR-D4's model changes and what a design can express with inline text changes with it. **That answer is wanted while prompt 3 is on category three, not category thirty.**
 
-**That race has been won, and the design work is finished.** Steps 1 and 2 landed before prompt 3 started; prompt 3 ran across all 34 categories; and the controls-reconciliation pass then patched every one of them against the PRD's control vocabulary and Ghost's verified data surface. **The critical path is now step 4**: the designs exist — what does not yet exist is the proof that each can be built on Ghost as specified, and the rulings on everything the design pass could not settle by itself.
+**That race has been won, and the design work is finished.** Steps 1 and 2 landed before prompt 3 started; prompt 3 ran across every category; and the controls-reconciliation pass then patched every one of them against the PRD's control vocabulary and Ghost's verified data surface. **The critical path is now step 4**: the designs exist — what does not yet exist is the proof that each can be built on Ghost as specified, and the rulings on everything the design pass could not settle by itself.
 
 ```
 ✅ Step 1 /bmad-architecture ──► ✅ Step 2 /bmad-build (2 spikes) ──┐
@@ -343,9 +350,9 @@ This project has been damaged four times by an unverified platform claim enterin
 | The export | `design/claude-design-export/Inflozo.zip` — authoritative; `Inflozo/` beside it is the owner's extraction. **The export is the count** of everything below |
 | Prompt 3 — the library | One `<ID> <Name> - Spec.md` per category, A1–A34, each design carrying all ten spec fields; the frames as `<ID>-<n> <Name>.dc.html`, plus a `-0 Category Proof` frame per category (tokenisation proof, stress frame, roster) |
 | Prompt 2 — the app | `S1 Sign In` … `S13 Suggestions` and `M1 Home` … `M9 404`, plus **`S14 Editor Cards`** (added by the controls pass — FR-Q7's surface, the owner's own ask) |
-| **The controls-reconciliation pass** | Not in the original plan, and it changed every spec. The owner audited A1–A3's sidebar controls and found systemic gaps; a full review extended that to all 34 categories against the PRD's control vocabulary and Ghost's verified data surface. Its prompts are `CONTROL-PROMPTS.html` — a **P0 · Editor primitives** session (`P0-1` … `P0-6` frames + `P0 Editor Primitives - Spec.md`: inline toolbar, icon slot + picker, item-list controls, member-aware actions, "Populate from…" panel, editor state switcher) and 34 patch prompts — **all run.** It recorded 39 decisions, **all ruled by the owner on 2026-08-24** (Tabler icons · prefix navigation JavaScript-required · third-party search allowed, MiniSearch vendored inside `search-overlay` · A31's ten designs accepted · visitor-clock dates deferred, and the rest) and a list of carry-forwards for the PRD and the architect |
+| **The controls-reconciliation pass** | Not in the original plan, and it changed every spec. The owner audited A1–A3's sidebar controls and found systemic gaps; a full review extended that to every category against the PRD's control vocabulary and Ghost's verified data surface. Its prompts are `CONTROL-PROMPTS.html` — a **P0 · Editor primitives** session (`P0-1` … `P0-6` frames + `P0 Editor Primitives - Spec.md`: inline toolbar, icon slot + picker, item-list controls, member-aware actions, "Populate from…" panel, editor state switcher) and one patch prompt per category — **all run.** It recorded 39 decisions, **all ruled by the owner on 2026-08-24** (Tabler icons · prefix navigation JavaScript-required · ~~third-party search allowed, MiniSearch vendored inside `search-overlay`~~ **D3 REVERSED 2026-08-27 — Ghost's native search only, ruling R-24** · A31's ten designs accepted · visitor-clock dates deferred, and the rest) and a list of carry-forwards for the PRD and the architect |
 | **Every spec's `Reconciliation notes`** | The patched specs end with a numbered list of every conflict the patch hit against what the category had already ruled, and how it was resolved — several lines per category are explicitly *flag to the owner* or *ARCHITECT:*. **These are step 4's third input**, alongside the PRD and the architecture |
-| What is NOT done yet | The merge of the specs into `sections-inventory.md` (the file the build reads) — deliberately **after** step 4, so the merge lands reconciled specs rather than specs that step 4 then moves. `derived-fields-A1-A12.md` is superseded wholesale at that merge (standing item) |
+| ~~What is NOT done yet~~ | ✅ **The merge has since happened.** The specs merged into `sections-inventory.md` after step 4, as planned; the inventory is now *generated* from the export and gated by `doc-audit --check`, and `derived-fields-A1-A12.md` was superseded wholesale and retired |
 
 ### What the outputs were required to contain — and now do
 
@@ -356,7 +363,7 @@ Prompt 3's sessions are **design and specification in one pass** — §4 makes t
 Two of those are newly load-bearing and easy to omit:
 
 - The **structural descriptor tuple** — archetype · containment · ground · item-count class · media placement · emphasis mechanism (six slots since 2026-08-21; the closed sets live in `tools/tuple-check.py`). FR-G5's uniqueness assertion runs over the *tuple*, not the English line, and it must stay unique within its category **after** the per-design control lists are written, since controls no longer distinguish designs.
-- The **no-JS degradation statement** for any design declaring one of FR-G7's 31 behaviour modules. It is an acceptance criterion, not a note.
+- The **no-JS degradation statement** for any design declaring one of FR-G7's behaviour modules (the registry in `research-section-js-libraries.md` §2.1 is the list and the count). It is an acceptance criterion, not a note.
 
 Specifications live in the export as `<ID> <Name> - Spec.md` (the design project could not write into the repo's folder, and says so at the head of each file). They merge into `sections-inventory.md` — which already carries the schema and the two-layer (category union + per-design) structure they slot into — **after step 4**, once reconciled.
 
@@ -366,8 +373,9 @@ Specifications live in the export as `<ID> <Name> - Spec.md` (the design project
 
 > **Both halves are done. Do not re-run either prompt.** 4a produced
 > `prds/prd-Inflozo-2026-08-17/reconcile-designs.md` (+ `.findings.json`); 4b produced
-> `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`, **29 rulings**, which is the file the
-> inventory merge works from. The prompts below are kept as the record of how the step was run.
+> `prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` — the rulings, which is the file the
+> inventory merge worked from and which grew again on 2026-08-31 (§A2–§A4). The prompts below are
+> kept as the record of how the step was run.
 
 **Produces:** a reconciliation report (what contradicts, what is missing, what cannot be built on Ghost, what the architecture must now own), then a **decisions file** from the Ghost Build Room ruling on everything the report could not settle by reading — and, if the room asks for it, an execution list for a probe run against the two real Ghosts.
 **Needs from the owner:** the export on disk (✅), and **the owner in the room for 4b** — the room presents each unsettled item as a numbered decision with one option marked (RECOMMENDED), and waits.
@@ -558,19 +566,20 @@ House rules for tonight:
     file in tools/doc-audit.py, and run `python3 tools/doc-audit.py --check`.
 ```
 
-### After step 4 — the inventory merge · 🟡 **BEGUN 2026-08-27, normative half landed**
+### After step 4 — the inventory merge · ✅ **DONE 2026-08-31**
 
-The specs merge into `sections-inventory.md` — the file step 6's category stories open against.
+The specs merged into `sections-inventory.md` — the file step 6's category stories open against.
 **The per-ruling status is the ledger in `prds/…/reconcile-designs-decisions.md`, immediately under
 its propagation table.** That is the honest list; this is the summary.
 
-**Probe first, and it is done.** Register item **47** ran against T1/T3 before anything was edited
-(`tools/probe/run-verify-47.py`) — and it **refuted its own premise**: there is no per-template
-`{{#get}}` budget. Ghost races *each* get against a 5000 ms timeout, identically on both majors, and
-150 gets on one template resolved in full. `MEASUREMENTS.md` **§30**; item 47 closed, item **52**
-added for the Ghost 6 query dedup. **R-20's cap stands at twelve on a latency budget** rather than an
-abort threshold — the register anticipated only the downward correction, so raising it above twelve
-would be a **new owner decision** and was deliberately not taken.
+**The probe ran first, and it refuted its own premise.** Register item **47** ran against T1/T3
+before anything was edited (`tools/probe/run-verify-47.py`): there is **no per-template `{{#get}}`
+budget.** Ghost races *each* get against a 5000 ms timeout, identically on both majors, and 150 gets
+on one template resolved in full. `MEASUREMENTS.md` **§30**; item 47 closed, item **52** added for
+the Ghost 6 query dedup. The owner then took the **upward** decision the same day, which the register
+row had not anticipated: **R-20's provisional cap of twelve is withdrawn — there is no hard cap, and
+the panel warns past 25**, with the cost stated per page rather than per section. `prd.md` FR-H2
+carries the new rule.
 
 **What landed.**
 
@@ -581,23 +590,34 @@ would be a **new owner decision** and was deliberately not taken.
 - **A23 Search is deleted** (R-24, as the owner tightened it on 2026-08-27), and with it
   `A1-9 Search-Forward` and `A4-15 Search`. The three deletions live in one table in `export-roster.py`
   with their reasons, never by deleting export files — the export stays the record of what was drawn.
-  `CATEGORY-PROMPTS.html` marks A23 deleted and gives it no copy button.
+  The deleted numbers leave **permanent holes**; renumbering would break every cross-reference.
 - **Every restated count in `prd.md` is derived or gone** (standing rule 3), including FR-G1's
   long-standing internal disagreement with itself.
 - `tools/tuple-check.py` reads the **merged library** rather than `derived-fields-A1-A12.md`, gates
   every live design, and is mutation-tested red on both a forced collision and an out-of-vocabulary
   slot. `derived-fields-A1-A12.md` is **retired**.
-- Roughly twenty rulings have their normative half in — the ✅ column of that ledger.
+- **The design patch pass ran (2026-08-31)** — one prompt per category from
+  `DESIGN-PATCH-PROMPTS.html` — so the category specs themselves now carry the rulings.
+  `python3 tools/verify-design-pass.py` checks that, one check per ruling, and every structural
+  check passes. Six prose scans are flagged `LOOK` by design: they cannot tell a violation from a
+  spec recording that it *removed* the thing, so a human reads those six.
+- **Both deferred derivations are done.** Every category's `Content:` / `Controls:` / `Data:` union
+  lines in `sections-inventory.md` are re-derived from the export (`tools/derive-content-lines.py`,
+  `tools/derive-control-lines.py`), and research §7's two design-list columns are re-derived by
+  `tools/derive-module-reach.py` — which counts a module only where a design's **own** declaration
+  names it, so a name appearing in category prose is not a declaration.
+- **`confetti` is deleted from the registry** — no design declared it (owner's ruling 2026-08-31),
+  alongside `search-overlay`, `search-expand` and `command-palette`.
 
-**What has not landed.** The **34 category specs** are untouched. `sections-inventory.md`'s
-per-category **`Content:` / `Controls:` / `Data:` union lines** are still pre-merge, and so are
-`research-section-js-libraries.md` §7's **two design-list columns**. Both were deliberately *not*
-machine-derived: the export declares fields and modules in five different prose shapes, and a union
-assembled by regex put `aria-live` in a `contentSchema` and gave every A1 design an `accordion`. **A
-wrong union is worse than a stale one** — it is the storage contract FR-D17's preservation gate runs
-on. They need the same careful pass the rosters got, category by category.
+**What has NOT landed, and is the one thing step 4 still owes.** The nine rulings taken on
+**2026-08-31 — R-30 … R-38** — have not reached the normative documents. Each names its own targets
+in §A2 and §A3 of the decisions file: `Appendix C` and FR-H2 (R-30's carve-out, R-33's disabled-control
+rule), FR-E1 / `Appendix D` / AD-30 (R-32's computed-versus-authored pack tokens), FR-D7 / FR-Q5
+(R-34), AD-10 / AD-23 / FR-K (R-35's no-provider-fetch rule), FR-H4 / FR-H2 (R-36's empty feed),
+FR-I1 / FR-D5 (R-37's one-Post-Content rule) and FR-G7 (R-38's per-width declaration). **None of them
+blocks step 5**; all of them are owed before **E4** and **E9** open.
 
-**Step 5 (`/bmad-ux`) is not blocked by any of that** — see below.
+**Step 5 (`/bmad-ux`) is the critical path and is blocked by nothing** — see below.
 
 ---
 
@@ -614,10 +634,10 @@ The PRD preamble delegates these explicitly. Keep this pass separate from step 4
 Re-examined 2026-08-20, and it holds for the two flows added since. Nothing in the four journeys or
 the eight flows is a *section* design: they
 are the product's own chrome — connecting a site, the snapshot gate, the edit-lock choreography, the
-routes-upload card. **None of them depends on the 484 designs prompt 3 produces.** What they do touch
+routes-upload card. **None of them depends on the designs prompt 3 produces.** What they do touch
 is prompt 2's territory — the ~25 missing surfaces and the paywall editor.
 
-So the real dependency is: **step 5 waits on prompt 2 (small), not on prompt 3 (34 sessions).** If
+So the real dependency is: **step 5 waits on prompt 2 (small), not on prompt 3 (one session per category).** If
 prompt 2 lands early, this step can run months before the library is finished, and there is an
 argument it should run *first*: design artifacts are non-normative and the PRD wins, so a flow
 authored from the PRD is a better input to prompt 2 than the reverse. Raised as an option, not a
@@ -765,9 +785,10 @@ Two readiness conditions are specific to this project and are not the usual ones
 | ~~Before step 2~~ | ✅ **DONE** — T1 and T3 are provisioned, seeded and credentialed |
 | ~~During step 1~~ | ✅ **DONE** — repo shape, Supabase org structure, the measured compile budget, and an owning epic for every register item |
 | ~~The live Supabase project~~ | ✅ **DONE 2026-08-20** — reset and re-applied in the dashboard; every assertion passes, hosted and container agree exactly |
-| ~~Design prompt 3~~ | ✅ **DONE 2026-08-25** — all 34 categories designed, patched by the controls-reconciliation pass, and exported |
+| ~~Design prompt 3~~ | ✅ **DONE 2026-08-25** — every category designed, patched by the controls-reconciliation pass, and exported; patched again by the design patch pass 2026-08-31 |
 | ~~Design prompt 2~~ | ✅ **DONE** — exported (S1–S14, M1–M9) |
-| **① Now — step 4b needs you in the room** | Run step 4a (it needs nothing from you), then **sit in the Ghost Build Room for 4b**: every item the review could not settle by reading comes to you as a numbered decision with one option marked (RECOMMENDED). Nothing downstream — the inventory merge, step 6's category stories — can open until those rulings exist |
+| ~~Step 4b — you in the room~~ | ✅ **DONE 2026-08-27**, and extended on 2026-08-31 when the design patch pass and the §F asks came back to you (R-30 … R-38) |
+| **① Now — step 5 needs almost nothing from you** | `/bmad-ux` authors the four journeys and eight flows from the PRD and prompt 2's screens. It comes to you only where a flow needs a decision the PRD never made |
 | **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
 | ⛔ **Before the Live project takes real customer data** | **Put Live on the Supabase Pro plan** *(register 42)*. The **Free plan has NO automatic backups at all** — that gap, not the point-in-time question, is the real cliff, and AD-26 provisions Live as a **fresh project** at go-live, so this is a step someone must perform rather than inherit. The gate is: Pro active, daily backups visible in the dashboard, **and one real restore performed** using `RESTORE-RUNBOOK.md` — a backup nobody has restored from is a hypothesis, which is exactly how the first drill found two defects |

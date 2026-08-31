@@ -20,6 +20,11 @@ compiles the design into a Ghost theme and deploys it to the customer's own Ghos
 
 Each was learned expensively. They are not style preferences.
 
+> **On numbering.** `build-sequence.md` carries its own seven-item list in a different order, and
+> **every "standing rule N" citation in the repo and in `tools/` uses that list's numbering** — there,
+> "standing rule 3" is *counts are derived* and "standing rule 4" is *a finding must reach an owning
+> document*. When you cite a rule, cite its words, not its number.
+
 1. **A claim about an external platform is a hypothesis until executed or read in its source.** Five
    confident claims about Ghost entered this project as normative text and were later proven false.
    **Cite or execute. Never assert.** Two real Ghost servers exist for this: **T1**
@@ -52,6 +57,10 @@ failure**, so a first failure right after a commit is normal (the hook retries o
 **Hardcoded counts in tooling have broken twice** — `category-prompts.py`'s `assert len(names) == 31`
 and the build board's "36 invariants". Derive, never assert membership or totals.
 
+**One more thing the gate cannot see:** a ruling in
+`prds/.../reconcile-designs-decisions.md` that has not reached the documents it names. That file's own
+propagation ledger is the record of what has landed, and it is a human tick, not a check.
+
 ## Git workflow
 
 **Work directly on `main`. There are no feature branches and no pull-request review**, so the gate is
@@ -73,10 +82,27 @@ instruction**: give the steps and the copy-ready text, and keep the reasoning br
 Where a decision is genuinely his, present it and **wait** — do not default it. Where it is a routine
 judgement call, make it and say so in one line.
 
+## Never write a count down — derive it
+
+Every count in this project has gone stale at least once, and hardcoded counts in tooling have broken
+twice (`category-prompts.py`'s `assert len(names) == 31`, and the build board's "36 invariants").
+There is a command for each:
+
+```bash
+python3 tools/inventory-gen.py --check   # categories · designs · [Free], from the design export
+python3 tools/derive-module-reach.py     # the behaviour registry, and which designs declare what
+python3 tools/export-roster.py           # the library as JSON, straight from the export
+python3 tools/verify-design-pass.py      # one check per ruling, run against the export
+```
+
+Where a document needs to express scale, word it so it cannot go stale — "every design", "two per
+category" — or derive it at generation time.
+
 ## Verify the ground before trusting it
 
 ```bash
 python3 tools/doc-audit.py --check                       # documentation gate
+python3 tools/verify-design-pass.py                      # the rulings are in the export
 cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
 ```
 

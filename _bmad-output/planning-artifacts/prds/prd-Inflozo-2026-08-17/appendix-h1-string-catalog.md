@@ -322,7 +322,7 @@ Header, announcement bar and footer chrome (A1–A3). The nav *items* are `@site
 
 ### 3.12 `a11y.*` — 7 keys
 
-Screen-reader-only strings with no visible counterpart. Load-bearing for NFR-5 (axe-core, WCAG 2.1 AA on all 484 designs) — an untranslated skip link fails the same rule in every language.
+Screen-reader-only strings with no visible counterpart. Load-bearing for NFR-5 (axe-core, WCAG 2.1 AA on every design in the library) — an untranslated skip link fails the same rule in every language.
 
 | Key | English default | |
 |---|---|---|
@@ -370,7 +370,7 @@ Present in the catalog, absent from the Translations surface, not overridable on
 
 Listed in the Translations surface: **148** (total minus the 3 locked). `comments.placeholder` is listed but marked canvas-only.
 
-**The JS-marked set is derived from FR-G7's 31 behaviour modules, not from a fixed number.** It was previously written against the ten modules `prd.md` FR-J4 used to name, which left four modules with visitor-facing text and nowhere to put it — `countdown`'s unit labels, `toc`'s heading (built client-side from `{{content}}`, so it cannot come through `{{t}}`), `video-facade`'s poster label and `shuffle`'s refresh control. V6 asserts that no bundled module contains a visitor-facing literal, so those gaps were not cosmetic: each was a module that could not satisfy V6. **The rule, not the count, is normative:** every module that writes visitor-facing text at runtime has its strings here and marked JS, and re-deriving is part of adding a module.
+**The JS-marked set is derived from FR-G7's behaviour-module registry, not from a fixed number.** It was previously written against the ten modules `prd.md` FR-J4 used to name, which left four modules with visitor-facing text and nowhere to put it — `countdown`'s unit labels, `toc`'s heading (built client-side from `{{content}}`, so it cannot come through `{{t}}`), `video-facade`'s poster label and `shuffle`'s refresh control. V6 asserts that no bundled module contains a visitor-facing literal, so those gaps were not cosmetic: each was a module that could not satisfy V6. **The rule, not the count, is normative:** every module that writes visitor-facing text at runtime has its strings here and marked JS, and re-deriving is part of adding a module.
 
 ---
 

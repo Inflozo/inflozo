@@ -1,7 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (the merge acts on this file; tick each propagation as it lands)
+status: live (the merge acted on this file; §A2–§A4 were added 2026-08-31 and are the part still to propagate)
 created: 2026-08-27
+updated: 2026-08-31 (design patch pass rulings, the §F asks ruled, §37.7 re-verified)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -30,8 +31,19 @@ ruling below contradicts an approved decision D1–D39, §B records the supersed
 ## Propagation ledger — what has already landed
 
 Standing rule 4: a ruling is not done until it reaches an owning document. **Tiers 1 and 2 landed on
-2026-08-27, the same day as the session.** Tier 3 — the inventory merge — is what remains, and §A is
-written to drive it.
+2026-08-27, the same day as the session; Tier 3 — the inventory merge — completed on 2026-08-31.**
+
+> **STATE OF THIS LEDGER, 2026-08-31.** The ⬜ marks in the right-hand column below were written on
+> 2026-08-27, when the category specs had not been touched. **They are superseded.** The design patch
+> pass ran on 2026-08-31 and applied the rulings to the specs themselves; what actually landed there
+> is no longer a tick-list in prose but a **runnable check** — `python3 tools/verify-design-pass.py`,
+> one check per ruling, run against the export, with every structural check passing and six prose
+> scans deliberately flagged `LOOK` for a human. Read that command's output, not this column.
+> The left-hand (normative-documents) column is still accurate.
+>
+> **What is genuinely still open is §A2 and §A3 — rulings R-30 … R-38, taken on 2026-08-31.** None of
+> them has reached a normative document yet. Each names its own targets under its ruling. They are
+> owed before **E4** and **E9** open and they block neither step 5 nor step 6.
 
 | Landed | Document | What went in |
 |---|---|---|
@@ -43,7 +55,7 @@ written to drive it.
 | ✅ | `tools/category-prompts.py` · `CATEGORY-PROMPTS.html` | `module_registry()` **derived the count instead of asserting `== 31`** — the hardcoded-class-membership failure `doc-audit.py`'s own header records finding twice, which duly broke on this change. It now parses §7's three columns and asserts the invariant that matters (every §2.1 module has a no-JS line, and no orphan lines exist). All 34 prompts regenerated |
 | ✅ | `build-sequence.md` · `HANDOVER.md` · `INDEX.*` · `tools/doc-audit.py` | Step 4 marked complete both halves, the reversals flagged where D-numbers are quoted, this file catalogued. `python3 tools/doc-audit.py --check` **passes** |
 | ⚠️ | **R-24 was tightened by the owner on 2026-08-27 AFTER the merge session began** | A23 is **deleted entirely**, not reduced to two or three openers; search becomes an A1 control (Icon · Button · Bar) and the category count goes 34 → 33. A merge session started before this correction is working from the superseded text — re-read §A R-24. |
-| 🟡 | **`prd.md`, its companions, `sections-inventory.md`, the 34 specs** | **Tier 3 — the inventory merge. Begun 2026-08-27; the normative half has landed, the specs have not.** Per-ruling status in the table below |
+| ✅ | **`prd.md`, its companions, `sections-inventory.md`, the category specs** | **Tier 3 — the inventory merge. COMPLETE 2026-08-31.** The inventory is generated from the export and gated; the specs were patched by the design patch pass and are checked by `tools/verify-design-pass.py`; both deferred derivations are done. What Tier 3 does **not** cover is §A2/§A3's rulings R-30 … R-38, taken after it |
 
 ### Tier 3, ruling by ruling
 
@@ -54,7 +66,7 @@ written to drive it.
 on a latency budget** (≈ 10 ms per pick) rather than on an abort threshold. Item 47 anticipated only the
 downward correction; the owner took the upward decision the same day — **no cap, warn past 25**.)
 
-| Ruling | Normative documents | The 34 specs |
+| Ruling | Normative documents | The specs — **2026-08-27 snapshot, superseded** ⬆ |
 |---|---|---|
 | **R-1** counting / arithmetic | ✅ §7.3 rows 2, 3, 5, 7 re-pointed and **row 8 struck** — a group heading is the `group-headings` module, not a compiler construct | ⬜ |
 | **R-2** initials | ⬜ | ⬜ |
@@ -114,21 +126,26 @@ not made again. **`typewriter`, `confetti` and `shuffle` are NOT yet re-homed** 
 belongs with the spec pass. If deleting `command-palette` is not what the owner intended, it is one row
 to restore.
 
-**Still open in Tier 3, stated so it is not mistaken for done:**
+**Tier 3, closed 2026-08-31.** Each of the four items listed here on 2026-08-27 as still open is now
+done, and how it was closed matters more than that it was:
 
-- **The 34 category specs.** Not edited. Every ⬜ in the right-hand column above.
-- **The per-category `Content:` / `Controls:` / `Data:` unions in `sections-inventory.md`.** The rosters
-  are regenerated and gated; the three union lines under each heading are still the pre-merge ones and
-  still carry pre-merge `#N` references. They were **not** machine-derived because the export declares
-  fields in five different prose shapes and a union assembled by regex put `aria-live` and `required` in
-  it — and a wrong `contentSchema` is worse than a stale one, since it is the storage contract
-  park-and-restore runs on (FR-D17's preservation gate fails on a field with nowhere to live).
-- **`research-section-js-libraries.md` §7's "Designs requiring it" and "Trigger in the inventory"
-  columns.** Same reason: deriving them from the specs' Behaviour prose over-matched badly — every A1
-  design picked up `accordion` and `mode-toggle` from sentences that merely *mention* them. The
-  edit-safe column and the module list itself landed in Tier 2 and are correct; only the two design-list
-  columns are stale.
-- **R-2, R-10, R-12 and R-29's normative halves**, and the **FR that R-29 needs drafted (R11)**.
+- **The category specs.** Patched by the design patch pass (`DESIGN-PATCH-PROMPTS.html`, one prompt
+  per category), and the result is *checked* rather than asserted — `tools/verify-design-pass.py`.
+- **The per-category `Content:` / `Controls:` / `Data:` unions in `sections-inventory.md`.** Derived
+  from the export by `tools/derive-content-lines.py` and `tools/derive-control-lines.py`. The first
+  attempt was **refused** rather than landed — the specs declared controls in four incompatible shapes
+  and eight categories carried nothing readable — and the refusal is kept in
+  `derive-control-lines.py`'s docstring, because it measures the gap that had to be closed first.
+- **`research-section-js-libraries.md` §7's two design-list columns.** Re-derived by
+  `tools/derive-module-reach.py`, which counts a module **only** where a design's own declaration
+  names it. A name in category prose is not a declaration — that is what stops every A1 design
+  claiming `accordion` by association. A17, A18 and A19 declared only in prose until a corrective
+  Claude Design pass gave all of their designs the per-design declaration on 2026-08-31.
+- **R-2, R-10, R-12 and R-29's normative halves, and R-29's undrafted FR.** Carried forward — they now
+  sit alongside R-30 … R-38 as the propagation still owed before E4/E9.
+
+**Still open, and it is the whole of what step 4 still owes:** the propagation of **R-30 … R-38**
+(§A2, §A3) into the PRD, `Appendix C`, `Appendix D` and the spine.
 
 **Two things the gate cannot tell you**, so they are stated here. First, `doc-audit.py --check`
 verifies the catalogue and the generated artifacts — **it does not verify propagation**, and it passed
@@ -822,7 +839,18 @@ design", "Sections | The free set | All". The internal design commentary that al
 (the index meta line, the responsive-system notes, three A-frames) is included: a number there is not
 an `Appendix H` breach but it was wrong — 468, not 485 — and would be wrong again after the next
 change. One grammar break the substitution introduced ("Every design **are** available") was caught
-on read-back and fixed. **The original finding, for the record:** §37.7 recorded that the screens print a
+on read-back and fixed.
+
+> **AMENDED 2026-08-31 (documentation pass) — the substitution missed four, and the miss is the
+> point.** The pass searched for `485 designs` and `70 Free`; it did not search for
+> **`485 designed sections`**, which is what `M1 Home` (twice in prose, twice in a stat card) and
+> `M4 Gallery` actually said, nor for the index meta line's `34 CATEGORIES · 485 DESIGNS · 34 SPECS`.
+> Standing rule 7 exactly: **a propagation list cannot audit itself.** All four are now count-agnostic
+> ("Hundreds of designed sections", "EVERY CATEGORY DRAWN AND SPECIFIED"), and — the durable half —
+> **both of this section's fixes are now GATED rather than remembered.**
+> `python3 tools/verify-design-pass.py` carries two new checks: *no S or M screen prints a library
+> total*, and *P0 declares the per-prop mark allowlist*. A Claude Design re-export that overwrites
+> either hand edit now turns the check red instead of passing silently. **The original finding, for the record:** §37.7 recorded that the screens print a
 design total while the PRD said 484. **Fifteen places across the S and M screens print "485
 designs".** The library is now **33 categories · 468 designs · 66 [Free]** after the Search deletion
 and the two design cuts. The gap was one; it is now seventeen. `Appendix H` already forbids a design
@@ -934,13 +962,14 @@ Per standing rule 3 no figure is restated here; each is stated as the rule that 
   **−`search-expand`** (claimed by no design). `typewriter`, `confetti` and `shuffle` are dropped or
   re-homed; every row's design list is re-derived from the export. `member-form` gains the OTC branch
   (D36) and the expired-redirect branch (A30). FR-G7's "31 modules" and FR-G8's "all 31" become the
-  derived count.
+  derived count. ✅ **Done** — and `confetti` was deleted too on 2026-08-31, no design having
+  declared it.
 - **Multi-module sections** — FR-G7(2) gains one sentence: **a design may declare N modules; the
   compiler emits the union and each `§7` line is restated** (A1, A4, A14, A15, A22). **R8 closes.**
 - **Probe families** — 41 less families 2, 8, 9 and 31; family 1 reduced to its budget half.
-- **`tools/tuple-check.py`** reads `derived-fields-A1-A12.md` (186 designs) and cannot see the native
-  tuples that now outrank them. Extend it to read the specs or the merged inventory — `doc-audit.py`
-  currently runs the old one.
+- ~~**`tools/tuple-check.py`** reads `derived-fields-A1-A12.md` (186 designs) and cannot see the
+  native tuples that now outrank them.~~ ✅ **Done.** It reads the export through
+  `tools/export-roster.py` and gates every live design; `derived-fields-A1-A12.md` is retired.
 
 ---
 
@@ -967,6 +996,12 @@ are not lost.
 ---
 
 ## F · What this session did not reach
+
+> **SUPERSEDED 2026-08-31 — read `§A3` first.** This is the 2026-08-27 session's own record of what it
+> ran out of time for, and it is kept as that record. **All nine asks below have since been ruled:**
+> seven by the owner as **R-32 … R-38**, and three as architecture (R18's AD-27 row shapes, R24's CSS
+> emission order, R13's remainder). Nothing in the list below is still an open question; what remains
+> is landing those rulings in the documents they name.
 
 Ruled tonight: the 66 ghost-infeasible findings in full, the five decision collisions, and the
 library-wide rulings that collapse the 1,078-row register. **Not** ruled, and owed before E4/E9 open:

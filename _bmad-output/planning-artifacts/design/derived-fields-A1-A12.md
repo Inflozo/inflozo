@@ -1,8 +1,17 @@
 ---
 title: Derived fields — categories A1–A12
+status: RETIRED 2026-08-27 — superseded wholesale by the inventory merge (ruling R-16)
 created: 2026-08-21
+retired: 2026-08-27
 purpose: the four per-design fields missing from the first 12 exported categories, derived from the export's own text
 ---
+
+> **RETIRED 2026-08-27. Do not build from this file.** It is superseded wholesale by the inventory
+> merge (ruling R-16, `prds/.../reconcile-designs-decisions.md`): every live category now carries
+> these four fields **natively** in the design export, so the tuples derived here by reading prose
+> are both partial and outranked. `tools/tuple-check.py` reads the export through
+> `tools/export-roster.py` instead, and gates **every** live design rather than the 186 covered here.
+> Kept for provenance — it is the record of how the gap was closed before the export could answer.
 
 # Derived fields — A1 Headers through A12 About and Team
 
