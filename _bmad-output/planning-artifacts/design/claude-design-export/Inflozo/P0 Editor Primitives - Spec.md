@@ -22,11 +22,29 @@ The floating toolbar over any selection in any inline-editable text prop, **head
 
 | # | Action | Key | Disabled when |
 |---|---|---|---|
-| 1 | Bold | ⌘B | never |
-| 2 | Italic | ⌘I | never |
-| 3 | Underline | ⌘U | never |
-| 4 | Link | ⌘K | never |
+| 1 | Bold | ⌘B | never — but absent where the field does not permit it |
+| 2 | Italic | ⌘I | never — but absent where the field does not permit it |
+| 3 | Underline | ⌘U | never — but absent where the field does not permit it |
+| 4 | Link | ⌘K | never — but absent where the field does not permit it |
 | 5 | Remove link | — | the selection carries no link (35 % opacity) |
+
+**Not every field permits every mark, and the toolbar says so** ⚑ *(the per-prop mark allowlist —
+AD-4 carries the rule, this is how the editor shows it)*. The default set for a text field is the
+four above: **bold, italic, underline, link**. A field may **narrow** that set, and its own category
+spec declares the narrowing; a field may never gain a mark AD-4 does not define, except where the
+PRD records a delta.
+
+- **A mark a field does not permit is not drawn in its toolbar at all** — not greyed. Greying is for
+  a mark that exists here and is unavailable right now (Remove link with nothing linked); absence is
+  for a mark this field never has. An editor should not learn a button and then find it dead.
+- **The toolbar therefore varies in width by field**, which is why its buttons are a fixed order:
+  a field permitting only bold and link draws two buttons in the same order as a field permitting
+  four, so the shapes stay recognisable.
+- **Two narrowings are on record today**, both from the reconciliation and both stated in their own
+  specs: **Testimonials' quote fields permit NO marks** — a pull quote is typographic, and emphasis
+  inside one fights the design that carries it — and **FAQ's answer fields add `code`**, which is a
+  PRD delta recorded in that category's settlement 3 rather than smoothed over.
+- **Where a spec says nothing, the default four apply.** Silence is not a narrowing.
 
 No font, no size, no colour — those belong to the Style Pack and the section. Bold on a heading renders
 the pack's heavier heading weight, never faux-bold. An active mark shows as a pressed chip

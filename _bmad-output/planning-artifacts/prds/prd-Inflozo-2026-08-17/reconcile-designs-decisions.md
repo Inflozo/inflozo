@@ -815,7 +815,14 @@ snapshot. `reconcile-designs.md` is a `record` and is not edited; this is the de
 verified against git, not assumed — so every finding about a missing editor surface, a flow drawn on
 the wrong mechanism, and the four journeys stands exactly as written.
 
-**One finding is now WORSE and its number has moved twice.** §37.7 recorded that the screens print a
+**FIXED 2026-08-31 — the printed design totals.** Every library count is out of the screens and the
+marketing pages: 15 instances of "485 designs" and 3 of "70 Free designs", plus a plan-table row
+reading `Sections | 70 Free | All 485`, are now count-agnostic — "Ship every design", "Browse every
+design", "Sections | The free set | All". The internal design commentary that also carried the figure
+(the index meta line, the responsive-system notes, three A-frames) is included: a number there is not
+an `Appendix H` breach but it was wrong — 468, not 485 — and would be wrong again after the next
+change. One grammar break the substitution introduced ("Every design **are** available") was caught
+on read-back and fixed. **The original finding, for the record:** §37.7 recorded that the screens print a
 design total while the PRD said 484. **Fifteen places across the S and M screens print "485
 designs".** The library is now **33 categories · 468 designs · 66 [Free]** after the Search deletion
 and the two design cuts. The gap was one; it is now seventeen. `Appendix H` already forbids a design
@@ -830,7 +837,7 @@ the number — which would only go stale again.
 | P0·5 has no authors / tags / tiers branch | ✅ present: "The Ghost-sourced list (posts, tags, authors, tiers) is **not** this: no Add, no Remove, no drag" |
 | P0·6 cannot list a design's states without a `states[]` declaration | ✅ addressed — P0 now carries the state vocabulary |
 | P0·2's per-slot colour is an AD-3 breach | ✅ moot — no per-slot colour survives anywhere in P0 |
-| **P0·1 needs a per-prop mark allowlist** (A8 quotes permit none, A9 answers permit `code`) | ⬜ **STANDS.** P0 says a field may allow marks; nothing says WHICH marks WHICH field allows |
+| P0·1 needs a per-prop mark allowlist (A8 quotes permit none, A9 answers permit `code`) | ✅ **FIXED 2026-08-31.** P0·1 now states the default set (bold · italic · underline · link), that a field may NARROW it and its own spec declares the narrowing, and that a mark a field does not permit is **absent from the toolbar, not greyed** — greying means "exists here, unavailable now", absence means "this field never has it". Both known narrowings are named. AD-4 already carried the rule; what was missing was how the editor shows it |
 
 **Also verified and clean:** the hand-pick cap reversal (register item 47) reached the specs before
 they were written — no spec carries the withdrawn "twelve", and P0 states the rule correctly, warning

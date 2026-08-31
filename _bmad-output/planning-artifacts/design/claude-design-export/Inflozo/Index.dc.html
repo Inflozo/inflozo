@@ -198,7 +198,7 @@ const FAMILIES = [
 ];
 
 const FOUNDATIONS = [
-  ['R Responsive System', 'Fifteen structural archetypes, and the collapse rule each one owns. Drawn once so 485 designs need not be.'],
+  ['R Responsive System', 'Fifteen structural archetypes, and the collapse rule each one owns. Drawn once so the library need not be.'],
   ['Calibration Set', 'The aesthetic reference for the packs: identical structure, only tokens change. Not a per-variant spec.'],
   ['Editor Sidebar Kit', 'Every control type allowed in the 280–320 px sidebar, named values first, colour from the pack.'],
   ['B Missing Surfaces', 'Twenty-five surfaces the specification assumed and nothing drew, ordered by how often a user meets them.'],
@@ -253,7 +253,7 @@ class Component extends DCLogic {
             cats: cats.map(c => this.card(c))
           };
         })
-      : [{ title: 'Categories · A1 – A34', meta: '34 categories · 485 designs · 34 proofs · 34 specs', cats: CATS.map(c => this.card(c)) }];
+      : [{ title: 'Categories · A1 – A34', meta: 'every category · every design · 34 proofs · 34 specs', cats: CATS.map(c => this.card(c)) }];
 
     const showSide = this.props.showProduct ?? true;
     return {
