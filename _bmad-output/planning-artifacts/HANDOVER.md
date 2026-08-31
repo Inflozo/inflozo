@@ -51,6 +51,15 @@ delta is §A4 of `reconcile-designs-decisions.md` (`reconcile-designs.md` is a `
 edited). Two of §37.7's items are now fixed: the design totals printed on the marketing screens, and
 P0's per-prop mark allowlist.
 
+**The design export is starting material, not a reference** *(owner, 2026-08-31)*. The Claude Design
+work is the largest investment in this project, and step 5 is the first step that could quietly throw
+it away. Three frames in `design/claude-design-export/Inflozo/` **are** the design system —
+`Calibration Set` (tokens, type, spacing, colour roles), `Editor Sidebar Kit` (every control and
+state) and `R Responsive System` (the archetypes). **"Design artifacts are non-normative" is scoped to
+behaviour, not to look:** the PRD decides what a surface does, the export decides what it is built
+from. A surface with no frame is **extrapolated from the nearest one that has** — same components,
+same tokens — and drawn in the same Claude Design project, never invented in prose beside it.
+
 **Step 4 owes nothing normative any more.** R-30 … R-38 were propagated on 2026-08-31 — the ledger is
 in `reconcile-designs-decisions.md` under §A3, one row per ruling. `Appendix D` gained a new §D.0 (every
 pack token marked computed or authored), AD-10 gained the refusal to fetch from a video provider, AD-23

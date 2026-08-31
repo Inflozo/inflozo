@@ -84,7 +84,14 @@ These were each learned expensively. They are not style preferences.
 3. **Counts are derived, not restated.** Every count in this project has gone stale at least once. Prefer "as many gates as there are categories" to a literal number whose source lives elsewhere.
 4. **A finding is not done until it reaches an owning document** *(AD-36b, added 2026-08-21)*. `MEASUREMENTS.md` is where a finding is **proved**, never where it **lives** — it must also reach an invariant in the spine, a row in the register, or a comment beside the code it governs. Three audits found the same failure and **each time it was in the most recently added thing**, because a big finding gets a long write-up that feels like the work is finished. Enforced, not remembered: `python3 tools/doc-audit.py --check` exits non-zero on drift. **Never edit a document marked `record` in `INDEX.md`** — correcting its figures falsifies the history this project relies on to know which claims were tested when.
 5. **Flag, do not guess.** If two approved decisions contradict, or an instruction cannot be followed without inventing a decision the owner never made, **stop and ask**. Guessing has hurt this project before.
-6. **Precedence, highest first** (stated in full in the PRD preamble): the two `verify-mechanical-*.md` files → the research companions (on any Ghost fact) → the normative companions → `prd.md` → `addendum.md` → `spike-compiler/`. **Design artifacts are non-normative and never override the PRD.**
+6. **Precedence, highest first** (stated in full in the PRD preamble): the two `verify-mechanical-*.md` files → the research companions (on any Ghost fact) → the normative companions → `prd.md` → `addendum.md` → `spike-compiler/`. **Design artifacts are non-normative and never override the PRD** — **on behaviour.** The scope
+   matters and was nearly read too wide (owner, 2026-08-31): the PRD decides *what must happen* — states,
+   requirements, copy obligations. The **design export decides what it looks like**: which components a
+   surface is built from, its tokens, spacing, density and tone. A large deliberate design investment
+   lives in `design/claude-design-export/Inflozo/`, and "non-normative" has never licensed inventing a
+   second interface vocabulary beside it. **Extend the export; do not restart it.** Where a surface has
+   no frame, extrapolate from the nearest one that does — same components, same tokens — and write a
+   Claude Design prompt so it is drawn *in the same project*, rather than described in prose and lost.
 7. **Log every meaningful step to the memlog:**
    ```bash
    cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
@@ -650,6 +657,28 @@ argument it should run *first*: design artifacts are non-normative and the PRD w
 authored from the PRD is a better input to prompt 2 than the reverse. Raised as an option, not a
 change — the sequencing above is still the safe default.
 
+### ⓘ The design export is the starting material, not a reference to consult *(owner, 2026-08-31)*
+
+The largest single investment in this project so far is the Claude Design work, and step 5 is the
+first step that could quietly throw it away — by specifying flows in prose that imply an interface
+nobody drew. It must not. **Three frames in `design/claude-design-export/Inflozo/` are the design
+system**: `Calibration Set` (tokens, type scale, spacing, colour roles), `Editor Sidebar Kit` (every
+control, panel, badge and state) and `R Responsive System` (the archetypes and their collapse rules).
+`claude-design-prompt-2.md` §0.1 restates the same system in words and is a `record` you can read.
+
+**The scope of "design artifacts are non-normative" is behaviour, not look** — see standing rule 6.
+The PRD decides what a flow does; the export decides what it is built from.
+
+**A surface with no frame is extrapolated, never invented.** Name the nearest frame that exists, state
+what changes, reuse its components and tokens verbatim — and write a short Claude Design prompt so the
+frame is drawn **in the same project** and inherits the same system. A new visual treatment described
+in prose and left there is the failure this note exists to prevent. Every specified surface names the
+frame it derives from, which is what makes "we reused the design" checkable rather than hoped for.
+
+**§37.7's frameless list is dated 2026-08-27 — verify each against the export before extrapolating.**
+A keyword scan over the frames is inconclusive: several of those words appear on screens that are
+about something else. Report any that turn out to be drawn already.
+
 ### ⚠️ TWO NEW FLOWS to author, decided after this document's flow list was written
 
 The six flows named below are no longer the whole set. Two more were decided by the owner on
@@ -714,17 +743,66 @@ miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PER
 journey has two endings and the declined one must still ship a site; and G1's under-ten-minutes
 target excludes the token step, which is what makes it reachable.
 
-Existing design surfaces: design/mockups/ (27 from prompt 1) and the design export at
-design/claude-design-export/Inflozo/ — the S1–S14 editor screens and M1–M9 pages (prompt 2's
-output) plus the P0 editor primitives. If step 4a's report exists
-(prds/prd-Inflozo-2026-08-17/reconcile-designs.md), read it first: its 37.7 names the screens
-that must move, and it IS your work list. It was written 2026-08-27, before the design patch
-pass, so read the delta beside it: section A4 of reconcile-designs-decisions.md, which
-re-verified 37.7 against the current export on 2026-08-31. Everything about missing editor
-surfaces, flows drawn on the wrong mechanism and the four journeys STILL STANDS; two items are
-already fixed (the design totals printed on the marketing screens, and P0's mark allowlist).
-reconcile-designs.md is a record and is never edited — the delta is why A4 exists.
-Design artifacts are non-normative; the PRD wins on any conflict.
+THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A large,
+deliberate design investment already exists at
+design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
+
+  Three frames ARE the design system — read them before you write a word:
+    Calibration Set.dc.html      the tokens, type scale, spacing and colour roles
+    Editor Sidebar Kit.dc.html   every sidebar control, panel, badge and state
+    R Responsive System.dc.html  the responsive archetypes and their collapse rules
+  The drawn surfaces:
+    S1 Sign In … S14 Editor Cards   the app
+    M1 Home … M9 404                the marketing site
+    B Missing Surfaces.dc.html      prompt 2's ~23 additional surfaces, B1-B25
+    C Post Body, P0-1 … P0-6        the post body and the editor primitives
+  design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
+  system in words — personality, colour tokens, the component rules. Read it as the brief.
+
+TWO AUTHORITIES, AND THEY DO NOT OVERLAP. The PRD wins on BEHAVIOUR — what a flow does, its
+states, its requirements, its copy obligations under Appendix H. The EXPORT wins on VISUAL
+LANGUAGE — which components a surface is built from, its tokens, spacing, density and tone.
+"Design artifacts are non-normative" has always meant the PRD decides what must happen; it has
+never meant a flow may invent a new interface vocabulary. Where a flow needs behaviour the
+drawn screens do not show, keep the components and change what they do.
+
+NEVER INVENT A SCREEN IN PROSE. For every surface a journey or flow touches, do one of two
+things and say which:
+  (a) POINT AT AN EXISTING FRAME by filename, and specify the flow in its terms.
+  (b) EXTRAPOLATE — name the nearest existing frame, state what it is being adapted from and
+      what changes, reuse its components and tokens verbatim, and write a short, self-contained
+      CLAUDE DESIGN PROMPT so the frame can be drawn IN THE SAME PROJECT and inherit the same
+      system. Collect those prompts in one appendix at the end. Do not describe a new visual
+      treatment in prose and leave it there.
+EVERY specified surface names the frame it derives from. That is what makes "we reused the
+design" checkable later instead of hoped for.
+
+SURFACES REPORTED AS HAVING NO FRAME (reconcile-designs.md 37.7, written 2026-08-27). VERIFY
+EACH against the export before extrapolating — a keyword scan is inconclusive and several of
+these words appear on screens that are about something else:
+  the Paywall editor (FR-H6) · the backup gate consent checklist (BACKUP-GATE.md) · the drift
+  report (FR-J16) · the credit toggle (FR-J15) · FR-D21's page-2 preview · FR-D6's
+  auto-generated marker and the membership/Private canvases · FR-D7's project mode and "Clear
+  dark overrides" · the New project sheet (FR-B2) · the downgrade / over-limit sheet (FR-L3) ·
+  FR-J10's first-deploy name confirm · FR-J8's partial-success state · FR-I1's
+  empty-custom-template warning · FR-D22's preview subject · the main-feed marker and reassign ·
+  the Staff Access Token step AND ITS DECLINE PATH (FR-C1 — journey J1's core) · history pinning
+Report any you find already drawn; 37.7 is a dated report, not a live inventory.
+
+DRAWN, BUT ON THE WRONG MECHANISM — keep the visual treatment, re-specify the semantics:
+  B19's template-binding checklist uses page-{slug}.hbs, which FR-I1 forbids
+  B12's snapshot fires on every deploy and counts against history; FR-J13 says first upload, exempt
+  B16's routes card blames integration-key permissions; FR-I4 says the Staff token
+
+Your work list is reconcile-designs.md section 37.7, written 2026-08-27 — read section A4 of
+reconcile-designs-decisions.md beside it, which re-verified 37.7 against the current export on
+2026-08-31. Everything about missing editor surfaces, flows drawn on wrong semantics and the
+four journeys STILL STANDS; two items are already fixed (the design totals printed on the
+marketing screens, and P0's mark allowlist). reconcile-designs.md is a record and is never
+edited — the delta is why A4 exists.
+
+design/mockups/ is prompt 1's output and is SUPERSEDED for visual reference; prompt 2's export
+is later and wins. Consult the mockups only for intent, never for components.
 
 Appendix H is the voice canon and governs every string you write.
 ```

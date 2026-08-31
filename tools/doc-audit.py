@@ -311,7 +311,7 @@ GROUPS = [
   'tools/verify-design-pass.py gates them.'),
  ('design/mockups/', 'record', 'Interface mockups (27)',
   'Design prompt 1\'s output: marketing pages, editor, dashboard, deploy, routes, style packs. '
-  'Design artifacts are non-normative — where one disagrees with the PRD, the PRD wins.'),
+  'Design artifacts are non-normative ON BEHAVIOUR — where one disagrees with the PRD, the PRD wins. That has never meant the visual language is up for grabs: the design export is the component reference, and these 27 are SUPERSEDED by it for anything visual (prompt 2 wins over prompt 1). Consult them for intent, not for components.'),
  ('prds/prd-Inflozo-2026-08-17/review-', 'record', 'PRD review passes',
   'Adversarial, consistency, buildability, Ghost-truth, WYSIWYG and theme-quality reviews across '
   'two stress rounds. Each found real defects; their fixes are in the PRD.'),

@@ -598,17 +598,66 @@ miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PER
 journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
 target excludes the token step, which is what makes it reachable.
 
-Existing design surfaces: design/mockups/ (27 from prompt 1) and the design export at
-design/claude-design-export/Inflozo/ — the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s
-output) plus the P0 editor primitives. If step 4a&#x27;s report exists
-(prds/prd-Inflozo-2026-08-17/reconcile-designs.md), read it first: its 37.7 names the screens
-that must move, and it IS your work list. It was written 2026-08-27, before the design patch
-pass, so read the delta beside it: section A4 of reconcile-designs-decisions.md, which
-re-verified 37.7 against the current export on 2026-08-31. Everything about missing editor
-surfaces, flows drawn on the wrong mechanism and the four journeys STILL STANDS; two items are
-already fixed (the design totals printed on the marketing screens, and P0&#x27;s mark allowlist).
-reconcile-designs.md is a record and is never edited — the delta is why A4 exists.
-Design artifacts are non-normative; the PRD wins on any conflict.
+THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A large,
+deliberate design investment already exists at
+design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
+
+  Three frames ARE the design system — read them before you write a word:
+    Calibration Set.dc.html      the tokens, type scale, spacing and colour roles
+    Editor Sidebar Kit.dc.html   every sidebar control, panel, badge and state
+    R Responsive System.dc.html  the responsive archetypes and their collapse rules
+  The drawn surfaces:
+    S1 Sign In … S14 Editor Cards   the app
+    M1 Home … M9 404                the marketing site
+    B Missing Surfaces.dc.html      prompt 2&#x27;s ~23 additional surfaces, B1-B25
+    C Post Body, P0-1 … P0-6        the post body and the editor primitives
+  design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
+  system in words — personality, colour tokens, the component rules. Read it as the brief.
+
+TWO AUTHORITIES, AND THEY DO NOT OVERLAP. The PRD wins on BEHAVIOUR — what a flow does, its
+states, its requirements, its copy obligations under Appendix H. The EXPORT wins on VISUAL
+LANGUAGE — which components a surface is built from, its tokens, spacing, density and tone.
+&quot;Design artifacts are non-normative&quot; has always meant the PRD decides what must happen; it has
+never meant a flow may invent a new interface vocabulary. Where a flow needs behaviour the
+drawn screens do not show, keep the components and change what they do.
+
+NEVER INVENT A SCREEN IN PROSE. For every surface a journey or flow touches, do one of two
+things and say which:
+  (a) POINT AT AN EXISTING FRAME by filename, and specify the flow in its terms.
+  (b) EXTRAPOLATE — name the nearest existing frame, state what it is being adapted from and
+      what changes, reuse its components and tokens verbatim, and write a short, self-contained
+      CLAUDE DESIGN PROMPT so the frame can be drawn IN THE SAME PROJECT and inherit the same
+      system. Collect those prompts in one appendix at the end. Do not describe a new visual
+      treatment in prose and leave it there.
+EVERY specified surface names the frame it derives from. That is what makes &quot;we reused the
+design&quot; checkable later instead of hoped for.
+
+SURFACES REPORTED AS HAVING NO FRAME (reconcile-designs.md 37.7, written 2026-08-27). VERIFY
+EACH against the export before extrapolating — a keyword scan is inconclusive and several of
+these words appear on screens that are about something else:
+  the Paywall editor (FR-H6) · the backup gate consent checklist (BACKUP-GATE.md) · the drift
+  report (FR-J16) · the credit toggle (FR-J15) · FR-D21&#x27;s page-2 preview · FR-D6&#x27;s
+  auto-generated marker and the membership/Private canvases · FR-D7&#x27;s project mode and &quot;Clear
+  dark overrides&quot; · the New project sheet (FR-B2) · the downgrade / over-limit sheet (FR-L3) ·
+  FR-J10&#x27;s first-deploy name confirm · FR-J8&#x27;s partial-success state · FR-I1&#x27;s
+  empty-custom-template warning · FR-D22&#x27;s preview subject · the main-feed marker and reassign ·
+  the Staff Access Token step AND ITS DECLINE PATH (FR-C1 — journey J1&#x27;s core) · history pinning
+Report any you find already drawn; 37.7 is a dated report, not a live inventory.
+
+DRAWN, BUT ON THE WRONG MECHANISM — keep the visual treatment, re-specify the semantics:
+  B19&#x27;s template-binding checklist uses page-{slug}.hbs, which FR-I1 forbids
+  B12&#x27;s snapshot fires on every deploy and counts against history; FR-J13 says first upload, exempt
+  B16&#x27;s routes card blames integration-key permissions; FR-I4 says the Staff token
+
+Your work list is reconcile-designs.md section 37.7, written 2026-08-27 — read section A4 of
+reconcile-designs-decisions.md beside it, which re-verified 37.7 against the current export on
+2026-08-31. Everything about missing editor surfaces, flows drawn on wrong semantics and the
+four journeys STILL STANDS; two items are already fixed (the design totals printed on the
+marketing screens, and P0&#x27;s mark allowlist). reconcile-designs.md is a record and is never
+edited — the delta is why A4 exists.
+
+design/mockups/ is prompt 1&#x27;s output and is SUPERSEDED for visual reference; prompt 2&#x27;s export
+is later and wins. Consult the mockups only for intent, never for components.
 
 Appendix H is the voice canon and governs every string you write.">Copy prompt</button></div><pre>/bmad-ux
 
@@ -637,17 +686,66 @@ miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PER
 journey has two endings and the declined one must still ship a site; and G1&#x27;s under-ten-minutes
 target excludes the token step, which is what makes it reachable.
 
-Existing design surfaces: design/mockups/ (27 from prompt 1) and the design export at
-design/claude-design-export/Inflozo/ — the S1–S14 editor screens and M1–M9 pages (prompt 2&#x27;s
-output) plus the P0 editor primitives. If step 4a&#x27;s report exists
-(prds/prd-Inflozo-2026-08-17/reconcile-designs.md), read it first: its 37.7 names the screens
-that must move, and it IS your work list. It was written 2026-08-27, before the design patch
-pass, so read the delta beside it: section A4 of reconcile-designs-decisions.md, which
-re-verified 37.7 against the current export on 2026-08-31. Everything about missing editor
-surfaces, flows drawn on the wrong mechanism and the four journeys STILL STANDS; two items are
-already fixed (the design totals printed on the marketing screens, and P0&#x27;s mark allowlist).
-reconcile-designs.md is a record and is never edited — the delta is why A4 exists.
-Design artifacts are non-normative; the PRD wins on any conflict.
+THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A large,
+deliberate design investment already exists at
+design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
+
+  Three frames ARE the design system — read them before you write a word:
+    Calibration Set.dc.html      the tokens, type scale, spacing and colour roles
+    Editor Sidebar Kit.dc.html   every sidebar control, panel, badge and state
+    R Responsive System.dc.html  the responsive archetypes and their collapse rules
+  The drawn surfaces:
+    S1 Sign In … S14 Editor Cards   the app
+    M1 Home … M9 404                the marketing site
+    B Missing Surfaces.dc.html      prompt 2&#x27;s ~23 additional surfaces, B1-B25
+    C Post Body, P0-1 … P0-6        the post body and the editor primitives
+  design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
+  system in words — personality, colour tokens, the component rules. Read it as the brief.
+
+TWO AUTHORITIES, AND THEY DO NOT OVERLAP. The PRD wins on BEHAVIOUR — what a flow does, its
+states, its requirements, its copy obligations under Appendix H. The EXPORT wins on VISUAL
+LANGUAGE — which components a surface is built from, its tokens, spacing, density and tone.
+&quot;Design artifacts are non-normative&quot; has always meant the PRD decides what must happen; it has
+never meant a flow may invent a new interface vocabulary. Where a flow needs behaviour the
+drawn screens do not show, keep the components and change what they do.
+
+NEVER INVENT A SCREEN IN PROSE. For every surface a journey or flow touches, do one of two
+things and say which:
+  (a) POINT AT AN EXISTING FRAME by filename, and specify the flow in its terms.
+  (b) EXTRAPOLATE — name the nearest existing frame, state what it is being adapted from and
+      what changes, reuse its components and tokens verbatim, and write a short, self-contained
+      CLAUDE DESIGN PROMPT so the frame can be drawn IN THE SAME PROJECT and inherit the same
+      system. Collect those prompts in one appendix at the end. Do not describe a new visual
+      treatment in prose and leave it there.
+EVERY specified surface names the frame it derives from. That is what makes &quot;we reused the
+design&quot; checkable later instead of hoped for.
+
+SURFACES REPORTED AS HAVING NO FRAME (reconcile-designs.md 37.7, written 2026-08-27). VERIFY
+EACH against the export before extrapolating — a keyword scan is inconclusive and several of
+these words appear on screens that are about something else:
+  the Paywall editor (FR-H6) · the backup gate consent checklist (BACKUP-GATE.md) · the drift
+  report (FR-J16) · the credit toggle (FR-J15) · FR-D21&#x27;s page-2 preview · FR-D6&#x27;s
+  auto-generated marker and the membership/Private canvases · FR-D7&#x27;s project mode and &quot;Clear
+  dark overrides&quot; · the New project sheet (FR-B2) · the downgrade / over-limit sheet (FR-L3) ·
+  FR-J10&#x27;s first-deploy name confirm · FR-J8&#x27;s partial-success state · FR-I1&#x27;s
+  empty-custom-template warning · FR-D22&#x27;s preview subject · the main-feed marker and reassign ·
+  the Staff Access Token step AND ITS DECLINE PATH (FR-C1 — journey J1&#x27;s core) · history pinning
+Report any you find already drawn; 37.7 is a dated report, not a live inventory.
+
+DRAWN, BUT ON THE WRONG MECHANISM — keep the visual treatment, re-specify the semantics:
+  B19&#x27;s template-binding checklist uses page-{slug}.hbs, which FR-I1 forbids
+  B12&#x27;s snapshot fires on every deploy and counts against history; FR-J13 says first upload, exempt
+  B16&#x27;s routes card blames integration-key permissions; FR-I4 says the Staff token
+
+Your work list is reconcile-designs.md section 37.7, written 2026-08-27 — read section A4 of
+reconcile-designs-decisions.md beside it, which re-verified 37.7 against the current export on
+2026-08-31. Everything about missing editor surfaces, flows drawn on wrong semantics and the
+four journeys STILL STANDS; two items are already fixed (the design totals printed on the
+marketing screens, and P0&#x27;s mark allowlist). reconcile-designs.md is a record and is never
+edited — the delta is why A4 exists.
+
+design/mockups/ is prompt 1&#x27;s output and is SUPERSEDED for visual reference; prompt 2&#x27;s export
+is later and wins. Consult the mockups only for intent, never for components.
 
 Appendix H is the voice canon and governs every string you write.</pre></div>
 </section><section class="step later" id="s6">
