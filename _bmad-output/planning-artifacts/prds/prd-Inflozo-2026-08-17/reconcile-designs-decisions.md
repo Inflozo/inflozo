@@ -168,9 +168,24 @@ work list for that prompt.
 **Also fixed in the same pass:** `prd.md` cited `research-contested-designs.md` three times; the file is
 `research-contested-variants.md`.
 
-**Still owed after this, and unchanged:** **R-2** (initials), **R-10** (the thirteen corrections) and
-**R-29** (share destinations — `Appendix B`, and **R11's FR still needs drafting**). None was in the
-2026-08-31 ruling set; each still needs its normative half.
+### R-2, R-10 and R-29 — the carried-forward three, landed 2026-08-31
+
+| Ruling | Normative documents — ✅ landed | The specs — ⬜ design work |
+|---|---|---|
+| **R-2** the avatar with no photograph | ✅ **FR-H8** gains the avatar as its one designed substitute, with the reason the two forms differ: `{{split}}` is Ghost ≥ 6.5 and a **gscan error below**, so two initials are unreachable for Ghost-sourced data. Authored lists bake two at compile; Ghost authors get one letter in pure CSS | ⬜ A12, A17, A24, A1-6, P0·5 |
+| **R-10** thirteen corrections | ✅ **#13 → FR-Q1** (every "posts per page" links to Inflozo's Theme Settings, never Ghost Admin, which has no such setting). ✅ **#8 → `appendix-h1` §3.9**, and it needed executing first — see below. ~~#1~~ and ~~#7~~ are **withdrawn**, both refuted | ⬜ #2–#6, #9–#12 are per-category corrections |
+| **R-29** share destinations | ✅ **FR-Q10 is written — this is the FR "R11" has been waiting for.** One ordered site-wide list, stored as one row on the project doc (**AD-27**), emitted as real `<a href>` URLs that work with JS off. ✅ **`Appendix B`** gains `share` as a *Ghost fact and not a destination*: absent on Ghost 5, where the link opens the **sign-in** modal, and an unstylable shadow-DOM iframe where it exists | ⬜ A24-14, A25, A26-9 |
+
+**R-10 #8 was not transcribed — it was executed, and the document it corrects had the reason backwards.**
+The ledger said *strike `%` from `comments.count_*`*; `appendix-h1` §3.9 said keep `%` **because the
+helpers substitute it**. The claim underneath belonged to probe family 30, never run. It was run
+(`MEASUREMENTS.md` §32, register **56**): `{{comment_count}}` substitutes **nothing** server-side — it
+emits a `<script>` with data attributes, and Ghost's client script **prepends** the count, so `"% comment"`
+renders the literal **`1 % comment`**. **R-10 #8 is right and the appendix's reason was wrong.** Its first
+control failed and refused to report a result, which is how the real shape was found at all. Scope kept
+honest: `{{plural}}` is a different helper, was not tested, and is not tarred with it.
+
+**Nothing from the merge is now owed a normative half.** What remains of every ruling is design work.
 
 **Two things the gate cannot tell you**, so they are stated here. First, `doc-audit.py --check`
 verifies the catalogue and the generated artifacts — **it does not verify propagation**, and it passed

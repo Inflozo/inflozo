@@ -6,7 +6,7 @@ updated: 2026-08-31
 
 # Document index
 
-**87 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**88 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -91,6 +91,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Register probe · E-2 captions](tools/probe/run-verify-e2.py)**<br>`tools/probe/run-verify-e2.py` | feature_image_caption: its stored shape, {{ }} versus {{{ }}}, and gscan on the triple stash. Carries TWO controls because the answer turns on a non-difference: a plain-text caption must render identically both ways, and the same theme must produce an identical gscan rule set with and without the triple stash. Found the field is a SafeString on both majors — so R-10 #7's carve-out is withdrawn — and that Ghost 6 sanitises it at render while Ghost 5 emits a <script> straight into the page. Restores the previous theme and deletes its own posts. |
 | **[Register probe · item 13](tools/probe/run-verify-13.py)**<br>`tools/probe/run-verify-13.py` | Docs-versus-code conflicts. |
 | **[Register probe · item 47](tools/probe/run-verify-47.py)**<br>`tools/probe/run-verify-47.py` | The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost. |
+| **[Register probe · the comment count](tools/probe/run-verify-comment-count.py)**<br>`tools/probe/run-verify-comment-count.py` | Whether {{comment_count}} substitutes a placeholder, and what it renders with JS off. Its FIRST control failed and that was the finding: the helper substitutes nothing server-side, so the probe could not tell `%` from {count} and refused to report a result. Re-shaped around the real contract — the count is PREPENDED client-side — which makes "% comment" render as "1 % comment". Confirms R-10 #8 and falsifies the reason appendix-h1 gave for the opposite. |
 | **[Register probes](tools/probe/run-verify-all.py)**<br>`tools/probe/run-verify-all.py` | Executes register items against real Ghosts. |
 | **[Storage sanitizer probe](tools/probe/run-f8-storage.py)**<br>`tools/probe/run-f8-storage.py` | Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes. |
 | **[Supabase reset](tools/probe/RESET-supabase.sql)**<br>`tools/probe/RESET-supabase.sql` | Clears the probe project for a clean schema apply. Deletes storage files through the dashboard first, because a SQL cascade removes the row and leaves the bytes billed. |

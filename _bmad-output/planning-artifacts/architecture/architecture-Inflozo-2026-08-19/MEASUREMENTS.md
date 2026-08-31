@@ -2473,3 +2473,63 @@ open-ended risk. Register item **55**.
 **This entry expires when the pin moves.** `details-name` reaches Widely on 2027-03-03, and a
 `widelyAvailableOnDate` at or beyond that date makes the Tier-2 entry unnecessary — recompute rather
 than assume (`prd.md` §7.6 verify item 17).
+
+---
+
+## 32. `{{comment_count}}` substitutes nothing — R-10 #8 is right, and `appendix-h1`'s reason was wrong · 2026-08-31
+
+    python3 tools/probe/run-verify-comment-count.py
+
+**Why this ran.** R-10 #8 said *"strike `%` from `comments.count_*`"*. `appendix-h1` §3.9 said the
+opposite **and gave a reason**: *"`comments.count_one` / `count_many` use `%` rather than `{count}`
+because Ghost's `{{plural}}` / `{{comment_count}}` helpers substitute `%` themselves."* One of the two
+had to be wrong, and the claim under R-10 #8 belongs to probe family 30, which had never been run.
+Applying either on argument would have been the failure standing rule 1 exists to prevent.
+
+**The first run's control FAILED, and that was the finding.** It asked "does exactly one of `%` and
+`{count}` get substituted?" Neither does. `{{comment_count}}` performs **no server-side substitution at
+all** — it emits a `<script>` carrying `data-ghost-comment-count-*` attributes and **no text and no
+number**. Both placeholders reach the attribute verbatim. The probe refused to report a result, which
+is the control working exactly as intended.
+
+**Server side, both majors** (`<div>` markers stripped for width):
+
+| Template | Emitted |
+|---|---|
+| `{{comment_count}}` | `<script data-ghost-comment-count="<id>" …-singular="comment" …-plural="comments" …-tag="span" …-autowrap="true">` |
+| `{{comment_count singular="% comment" …}}` | same, with `…-singular="% comment"` — **verbatim** |
+| `{{comment_count singular="{count} comment" …}}` | same, with `…-singular="{count} comment"` — **verbatim** |
+
+**Client side.** `core/frontend/public/comment-counts.min.js`, and its source
+`core/frontend/src/comment-counts/comment-counts.js` — **identical on 6.58.0 and 5.130.6**:
+
+```js
+let text = e.dataset.ghostCommentCountEmpty;
+if (count === 1) { text = e.dataset.ghostCommentCountSingular
+                        ? `${count} ${e.dataset.ghostCommentCountSingular}` : count; }
+if (count  >  1) { text = e.dataset.ghostCommentCountPlural
+                        ? `${count} ${e.dataset.ghostCommentCountPlural}`   : count; }
+```
+
+**It replaces nothing. It PREPENDS the count and a space.** The script then creates an element of
+`…-tag` (default `span`), sets its `textContent`, inserts it after itself and removes itself.
+
+**Three findings.**
+
+1. **`%` is a visible defect, so R-10 #8 is CONFIRMED** — but not for the reason it gave. A value of
+   `"% comment"` renders **`1 % comment`** on the page. The correct catalog value is the **bare noun**:
+   `comments.count_one` = `comment`, `comments.count_many` = `comments`. No placeholder, no number.
+2. **`appendix-h1` §3.9's stated reason is FALSE for `{{comment_count}}`** and is corrected there.
+   **Scope note:** `{{plural}}` is a *different helper* and was **not** tested here — it may well
+   substitute `%`. The appendix's sentence bundled the two; only the `{{comment_count}}` half is
+   disproved, and the correction says so rather than tarring both.
+3. **With JavaScript off there is no count and no word — there is nothing.** The `<script>` renders
+   invisibly and no element is ever inserted. Not "0 comments", not an empty string in a styled box:
+   the element does not exist. Every A28 design's no-JS line must say that, and any design that reads
+   the count aloud needs its `aria-label` fallback on the surrounding element rather than on the count
+   (R-10 #8's other two clauses, both confirmed). `{{comments}}` itself does render server-side —
+   544 characters on both hosts — so the widget and its count degrade differently.
+
+**Control:** the bare `{{comment_count}}` call emits its own default singular/plural attributes, distinct
+from the hash-param cases — proving the attributes reflect the arguments rather than being fixed, which
+is what makes "passed through verbatim" a measurement. Passed on both hosts. Register item **56**.

@@ -262,11 +262,13 @@ A11 galleries and the lightbox (`lightbox toggle` control). The lightbox is enti
 
 ### 3.9 `comments.*` — 10 keys
 
+> **With JavaScript off, a comment count renders NOTHING** — not a zero, not an empty box: the `<script>` is invisible and no element is ever inserted (§32). Every A28 design's no-JS line says so, and a design that needs the count announced puts its `aria-label` on the surrounding element, never on the count. `{{comments}}` itself *does* render server-side, so the widget and its count degrade differently.
+
 A28 wrappers around Ghost's native `{{comments}}`. Ghost's comments UI is an injected members script — **everything the script renders is Ghost's** (S8). The catalog covers only the wrapper chrome Inflozo emits around it.
 
 Ghost's `{{comment_count}}` takes `empty` / `singular` / `plural` hash params, so those three strings are theme-supplied and must come from the catalog as sub-expressions: `{{comment_count empty=(t "comments.count_none") singular=(t "comments.count_one") plural=(t "comments.count_many")}}`. The same `(t "...")` sub-expression form applies to `{{plural}}` anywhere it appears.
 
-`comments.count_one` / `count_many` use `%` rather than `{count}` because Ghost's `{{plural}}`/`{{comment_count}}` helpers substitute `%` themselves — this is the one place the S3 placeholder syntax does not apply, and it is dictated by Ghost.
+**CORRECTED 2026-08-31 by execution — `comments.count_one` / `count_many` carry NO placeholder at all** (ruling R-10 #8, `MEASUREMENTS.md` §32, `tools/probe/run-verify-comment-count.py`, control passed on both majors). The previous text here said they use `%` "because Ghost's `{{plural}}`/`{{comment_count}}` helpers substitute `%` themselves". **For `{{comment_count}}` that is false.** The helper substitutes nothing: it emits a `<script>` carrying `data-ghost-comment-count-*` attributes and no text, and `comment-counts.min.js` — identical on 5.130.6 and 6.58.0 — **prepends** the number with a space (`` `${count} ${singular}` ``) and replaces no placeholder. A value of `% comment` therefore renders the literal **`1 % comment`** on the page. The correct value is the **bare noun**. *(Scope: `{{plural}}` is a different helper and was not tested; it may well substitute `%`. Only the `{{comment_count}}` half of the old claim is disproved.)* **`count_none` is different and is used verbatim** — the client script assigns the `empty` string with no number prepended — so it keeps its full sentence.
 
 `comments.placeholder` is **canvas-only**: it is the FR-H5 shim's stand-in for `{{comments}}`, which cannot run in the canvas iframe. It is keyed here so the string has one home, but it is never written into a locale file and never reaches a visitor.
 
@@ -274,8 +276,8 @@ Ghost's `{{comment_count}}` takes `empty` / `singular` / `plural` hash params, s
 |---|---|---|
 | `comments.heading` | Comments | prop |
 | `comments.count_none` | No comments yet | |
-| `comments.count_one` | % comment | |
-| `comments.count_many` | % comments | |
+| `comments.count_one` | comment | the count is **prepended by Ghost's script** — never write a number or a placeholder here |
+| `comments.count_many` | comments | as above |
 | `comments.show` | Show comments | |
 | `comments.show_count` | Show comments ({count}) | JS |
 | `comments.hide` | Hide comments | JS |

@@ -225,6 +225,12 @@ DOCS = [
   'and without the triple stash. Found the field is a SafeString on both majors — so R-10 #7\'s '
   'carve-out is withdrawn — and that Ghost 6 sanitises it at render while Ghost 5 emits a <script> '
   'straight into the page. Restores the previous theme and deletes its own posts.'),
+ ('tools/probe/run-verify-comment-count.py', 'tool', 'Register probe · the comment count',
+  'Whether {{comment_count}} substitutes a placeholder, and what it renders with JS off. Its FIRST '
+  'control failed and that was the finding: the helper substitutes nothing server-side, so the probe '
+  'could not tell `%` from {count} and refused to report a result. Re-shaped around the real '
+  'contract — the count is PREPENDED client-side — which makes "% comment" render as "1 % comment". '
+  'Confirms R-10 #8 and falsifies the reason appendix-h1 gave for the opposite.'),
  ('tools/probe/run-f8-storage.py', 'tool', 'Storage sanitizer probe',
   'Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes.'),
  ('tools/probe/run-verify-ghostpro.py', 'tool', 'Ghost(Pro) probe',

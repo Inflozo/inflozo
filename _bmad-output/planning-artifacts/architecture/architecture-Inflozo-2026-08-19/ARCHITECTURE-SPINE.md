@@ -5,7 +5,7 @@ type: architecture-spine
 purpose: build-substrate
 altitude: initiative
 paradigm: 'Functional core / imperative shell — the core shared verbatim between browser and server'
-scope: 'Inflozo v1 in whole: the 130 FRs and 9 NFRs of prd.md v4.0, across epics E0–E15'
+scope: 'Inflozo v1 in whole: every FR and NFR of prd.md, across epics E0–E15'
 status: final
 created: '2026-08-19'
 updated: '2026-08-19'
