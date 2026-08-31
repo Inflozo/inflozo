@@ -51,11 +51,19 @@ delta is §A4 of `reconcile-designs-decisions.md` (`reconcile-designs.md` is a `
 edited). Two of §37.7's items are now fixed: the design totals printed on the marketing screens, and
 P0's per-prop mark allowlist.
 
-**The one thing step 4 still owes** — and it does not block step 5 — is the propagation of the nine
-rulings taken on 2026-08-31, **R-30 … R-38**, in §A2 and §A3 of `reconcile-designs-decisions.md`.
-Each names its own targets: `Appendix C` and FR-H2 (R-30, R-33), FR-E1 / `Appendix D` / AD-30 (R-32),
-FR-D7 / FR-Q5 (R-34), AD-10 / AD-23 / FR-K (R-35), FR-H4 (R-36), FR-I1 / FR-D5 (R-37), FR-G7 (R-38).
-They are owed **before E4 and E9 open**.
+**Step 4 owes nothing normative any more.** R-30 … R-38 were propagated on 2026-08-31 — the ledger is
+in `reconcile-designs-decisions.md` under §A3, one row per ruling. `Appendix D` gained a new §D.0 (every
+pack token marked computed or authored), AD-10 gained the refusal to fetch from a video provider, AD-23
+the corollary that a fact nobody fetches needs no fixture, and AD-27 the five doc-schema row shapes.
+
+**What is left of step 4 is DESIGN work, not repo work** — the spec half of those rulings, which changes
+drawn frames and belongs in a Claude Design patch prompt: A12 (R-30) · A24-13 (R-31) · P0, A5, A14, A17,
+A18, A19 (R-33) · A1, A28 (R-34) · A15 (R-35) · A22, A13, A34 (R-36) · A25 (R-37) · A2, A3, A13 (R-38) ·
+P0·3 (R-12). Owed before **E4** and **E9** open; blocks neither step 5 nor step 6.
+
+**Three rulings still have no normative half at all** and were not in the 2026-08-31 set: **R-2**
+(initials), **R-10** (the thirteen corrections) and **R-29** (share destinations — `Appendix B`, and
+**R11's FR still needs drafting**).
 
 ## What has already landed, so it is not redone
 

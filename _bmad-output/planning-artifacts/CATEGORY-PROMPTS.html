@@ -171,7 +171,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -241,7 +241,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,357 characters)</summary><pre>This is a follow-up on A1 · Headers &amp; Navigation, which you have already designed.
+  <details><summary>Show the prompt (11,952 characters)</summary><pre>This is a follow-up on A1 · Headers &amp; Navigation, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -326,7 +326,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -484,7 +484,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -554,7 +554,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,075 characters)</summary><pre>This is a follow-up on A2 · Announcement Bars, which you have already designed.
+  <details><summary>Show the prompt (11,670 characters)</summary><pre>This is a follow-up on A2 · Announcement Bars, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -639,7 +639,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -798,7 +798,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -868,7 +868,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,098 characters)</summary><pre>This is a follow-up on A3 · Footers, which you have already designed.
+  <details><summary>Show the prompt (11,693 characters)</summary><pre>This is a follow-up on A3 · Footers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -954,7 +954,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1114,7 +1114,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1184,7 +1184,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,091 characters)</summary><pre>This is a follow-up on A4 · Heroes, which you have already designed.
+  <details><summary>Show the prompt (11,686 characters)</summary><pre>This is a follow-up on A4 · Heroes, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1271,7 +1271,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1430,7 +1430,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1500,7 +1500,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,087 characters)</summary><pre>This is a follow-up on A5 · Features, which you have already designed.
+  <details><summary>Show the prompt (11,682 characters)</summary><pre>This is a follow-up on A5 · Features, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1586,7 +1586,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1744,7 +1744,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -1814,7 +1814,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,046 characters)</summary><pre>This is a follow-up on A6 · CTA Banners, which you have already designed.
+  <details><summary>Show the prompt (11,641 characters)</summary><pre>This is a follow-up on A6 · CTA Banners, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -1899,7 +1899,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2057,7 +2057,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2115,7 +2115,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,103 characters)</summary><pre>This is a follow-up on A7 · Pricing &amp; Tiers, which you have already designed.
+  <details><summary>Show the prompt (10,698 characters)</summary><pre>This is a follow-up on A7 · Pricing &amp; Tiers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2200,7 +2200,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2346,7 +2346,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2416,7 +2416,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,076 characters)</summary><pre>This is a follow-up on A8 · Testimonials, which you have already designed.
+  <details><summary>Show the prompt (11,671 characters)</summary><pre>This is a follow-up on A8 · Testimonials, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2501,7 +2501,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2659,7 +2659,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2729,7 +2729,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,042 characters)</summary><pre>This is a follow-up on A9 · FAQ, which you have already designed.
+  <details><summary>Show the prompt (11,637 characters)</summary><pre>This is a follow-up on A9 · FAQ, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -2814,7 +2814,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -2972,7 +2972,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3042,7 +3042,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,054 characters)</summary><pre>This is a follow-up on A10 · Stats &amp; Numbers, which you have already designed.
+  <details><summary>Show the prompt (11,649 characters)</summary><pre>This is a follow-up on A10 · Stats &amp; Numbers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -3127,7 +3127,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3285,7 +3285,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3355,7 +3355,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,031 characters)</summary><pre>This is a follow-up on A11 · Logo Walls, which you have already designed.
+  <details><summary>Show the prompt (11,626 characters)</summary><pre>This is a follow-up on A11 · Logo Walls, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -3440,7 +3440,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3598,7 +3598,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3668,7 +3668,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,077 characters)</summary><pre>This is a follow-up on A12 · About &amp; Team, which you have already designed.
+  <details><summary>Show the prompt (11,672 characters)</summary><pre>This is a follow-up on A12 · About &amp; Team, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -3753,7 +3753,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3914,7 +3914,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -3972,7 +3972,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,121 characters)</summary><pre>This is a follow-up on A17 · Post Grids, which you have already designed.
+  <details><summary>Show the prompt (10,716 characters)</summary><pre>This is a follow-up on A17 · Post Grids, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -4060,7 +4060,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4206,7 +4206,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4264,7 +4264,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,068 characters)</summary><pre>This is a follow-up on A18 · Post Lists, which you have already designed.
+  <details><summary>Show the prompt (10,663 characters)</summary><pre>This is a follow-up on A18 · Post Lists, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -4349,7 +4349,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4495,7 +4495,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4565,7 +4565,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,087 characters)</summary><pre>This is a follow-up on A13 · Process / How It Works, which you have already designed.
+  <details><summary>Show the prompt (11,682 characters)</summary><pre>This is a follow-up on A13 · Process / How It Works, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -4650,7 +4650,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4808,7 +4808,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -4866,7 +4866,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,075 characters)</summary><pre>This is a follow-up on A19 · Featured &amp; Spotlight, which you have already designed.
+  <details><summary>Show the prompt (10,670 characters)</summary><pre>This is a follow-up on A19 · Featured &amp; Spotlight, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -4951,7 +4951,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5092,7 +5092,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5162,7 +5162,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,234 characters)</summary><pre>This is a follow-up on A34 · Pagination Styles, which you have already designed.
+  <details><summary>Show the prompt (11,829 characters)</summary><pre>This is a follow-up on A34 · Pagination Styles, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -5242,7 +5242,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5401,7 +5401,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5471,7 +5471,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,337 characters)</summary><pre>This is a follow-up on A24 · Post Headers, which you have already designed.
+  <details><summary>Show the prompt (11,932 characters)</summary><pre>This is a follow-up on A24 · Post Headers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -5557,7 +5557,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5712,7 +5712,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -5782,7 +5782,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,291 characters)</summary><pre>This is a follow-up on A25 · Post Content Layouts, which you have already designed.
+  <details><summary>Show the prompt (11,886 characters)</summary><pre>This is a follow-up on A25 · Post Content Layouts, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -5864,7 +5864,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6022,7 +6022,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6080,7 +6080,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,071 characters)</summary><pre>This is a follow-up on A26 · Post Footers, which you have already designed.
+  <details><summary>Show the prompt (10,666 characters)</summary><pre>This is a follow-up on A26 · Post Footers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -6165,7 +6165,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6308,7 +6308,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6366,7 +6366,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,018 characters)</summary><pre>This is a follow-up on A27 · Related Posts, which you have already designed.
+  <details><summary>Show the prompt (10,613 characters)</summary><pre>This is a follow-up on A27 · Related Posts, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -6448,7 +6448,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6589,7 +6589,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6659,7 +6659,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,223 characters)</summary><pre>This is a follow-up on A28 · Comments, which you have already designed.
+  <details><summary>Show the prompt (11,818 characters)</summary><pre>This is a follow-up on A28 · Comments, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -6739,7 +6739,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6897,7 +6897,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -6955,7 +6955,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,058 characters)</summary><pre>This is a follow-up on A20 · Tag Collections, which you have already designed.
+  <details><summary>Show the prompt (10,653 characters)</summary><pre>This is a follow-up on A20 · Tag Collections, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -7040,7 +7040,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7185,7 +7185,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7255,7 +7255,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,297 characters)</summary><pre>This is a follow-up on A29 · Archive Headers, which you have already designed.
+  <details><summary>Show the prompt (11,892 characters)</summary><pre>This is a follow-up on A29 · Archive Headers, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -7339,7 +7339,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7497,7 +7497,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7555,7 +7555,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,067 characters)</summary><pre>This is a follow-up on A21 · Author Showcases, which you have already designed.
+  <details><summary>Show the prompt (10,662 characters)</summary><pre>This is a follow-up on A21 · Author Showcases, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -7640,7 +7640,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7787,7 +7787,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -7845,7 +7845,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,129 characters)</summary><pre>This is a follow-up on A22 · Newsletter / Subscribe, which you have already designed.
+  <details><summary>Show the prompt (10,724 characters)</summary><pre>This is a follow-up on A22 · Newsletter / Subscribe, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -7931,7 +7931,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8077,7 +8077,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8147,7 +8147,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,055 characters)</summary><pre>This is a follow-up on A16 · Contact, which you have already designed.
+  <details><summary>Show the prompt (11,650 characters)</summary><pre>This is a follow-up on A16 · Contact, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -8232,7 +8232,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8390,7 +8390,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8460,7 +8460,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,075 characters)</summary><pre>This is a follow-up on A14 · Galleries, which you have already designed.
+  <details><summary>Show the prompt (11,670 characters)</summary><pre>This is a follow-up on A14 · Galleries, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -8545,7 +8545,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8703,7 +8703,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -8773,7 +8773,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,084 characters)</summary><pre>This is a follow-up on A15 · Video &amp; Embeds, which you have already designed.
+  <details><summary>Show the prompt (11,679 characters)</summary><pre>This is a follow-up on A15 · Video &amp; Embeds, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -8858,7 +8858,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9014,7 +9014,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9072,7 +9072,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,024 characters)</summary><pre>This is a follow-up on A30 · Members Pages, which you have already designed.
+  <details><summary>Show the prompt (10,619 characters)</summary><pre>This is a follow-up on A30 · Members Pages, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -9155,7 +9155,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9298,7 +9298,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9356,7 +9356,7 @@ Design controls apply to every item at once, never to one item — a control wri
 onto the section and the stylesheet reads it, so per-item styling is not expressible.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (10,015 characters)</summary><pre>This is a follow-up on A32 · Paywall / Content CTA, which you have already designed.
+  <details><summary>Show the prompt (10,610 characters)</summary><pre>This is a follow-up on A32 · Paywall / Content CTA, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -9438,7 +9438,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9579,7 +9579,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9649,7 +9649,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,236 characters)</summary><pre>This is a follow-up on A31 · Error &amp; Utility, which you have already designed.
+  <details><summary>Show the prompt (11,831 characters)</summary><pre>This is a follow-up on A31 · Error &amp; Utility, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -9729,7 +9729,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9878,7 +9878,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |
@@ -9948,7 +9948,7 @@ State for each design: which fields inside an item are editable, which are optio
 empty, and what the item looks like when an optional field is empty.">Copy prompt</button>
   </div>
   <p class="cnote">Done — this category is designed and its export verified. The patch prompt exists only for a re-run; you do not need to run it.</p>
-  <details><summary>Show the prompt (11,174 characters)</summary><pre>This is a follow-up on A33 · Koenig Card Treatments, which you have already designed.
+  <details><summary>Show the prompt (11,769 characters)</summary><pre>This is a follow-up on A33 · Koenig Card Treatments, which you have already designed.
 
 The written specs are complete except for four fields that the earlier brief did not ask for. Do not
 redesign anything and do not change any frame — this is a specification-only pass.
@@ -10024,7 +10024,7 @@ if the registry says it degrades, it degrades.**
 |---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. |
+| `header-scroll` | **Two consumers, two states.** A1&#x27;s headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13&#x27;s sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design&#x27;s does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. |
 | `countdown` | The static deadline renders as a `&lt;time datetime&gt;` element (&quot;Ends 3 September 2026&quot;); no ticking digits. |

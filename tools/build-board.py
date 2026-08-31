@@ -94,13 +94,14 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('soon', 'Propagate the 2026-08-31 rulings — R-30 to R-38',
-  'The nine asks the Ghost Build Room did not reach ARE NOW RULED (\u00a7A2 and \u00a7A3 of '
-  'reconcile-designs-decisions.md): pack tokens computed where derivable, disabled controls greyed '
-  'with the reason, no dark-mode switch on a pinned scheme, nothing fetched from a video provider, '
-  'empty feeds show their designed state, one Post Content section per layout, and a per-width '
-  'module declaration. What is left is landing them in the PRD and the spine — each ruling names its '
-  'own targets. Owed before E4 and E9 open; blocks neither step 5 nor step 6.'),
+ ('soon', 'One design patch pass — the spec half of R-30 to R-38',
+  'The nine rulings you took on 2026-08-31 are IN the PRD and the spine already. What is left changes '
+  'drawn frames, so it is a Claude Design prompt rather than a repo edit: A12, A24, P0, A5, A14, A17, '
+  'A18, A19, A1, A28, A15, A22, A13, A34, A25, A2, A3. Owed before E4 and E9 open; blocks neither '
+  'step 5 nor step 6.'),
+ ('soon', 'Three rulings with no normative half yet',
+  'R-2 (initials), R-10 (the thirteen corrections) and R-29 (share destinations \u2014 Appendix B, and '
+  'R11 still needs its FR drafted). Carried forward from the merge; not part of the 2026-08-31 set.'),
  ('soon', 'Three probes still open',
   'reconcile-designs-decisions.md \u00a7E: E-2 (feature_image_caption\'s stored shape), E-3 '
   '(@member prefill under cacheMembersContent) and E-4 (<details name> under the Baseline linter). '

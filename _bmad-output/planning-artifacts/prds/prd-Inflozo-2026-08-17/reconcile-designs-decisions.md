@@ -144,8 +144,33 @@ done, and how it was closed matters more than that it was:
 - **R-2, R-10, R-12 and R-29's normative halves, and R-29's undrafted FR.** Carried forward — they now
   sit alongside R-30 … R-38 as the propagation still owed before E4/E9.
 
-**Still open, and it is the whole of what step 4 still owes:** the propagation of **R-30 … R-38**
-(§A2, §A3) into the PRD, `Appendix C`, `Appendix D` and the spine.
+### R-30 … R-38 · propagation ledger *(the owner ruled on 2026-08-31 that this lands before step 5)*
+
+The **normative half is DONE**. The **spec half is design work** — it changes drawn frames and spec
+text, so it belongs in a Claude Design patch prompt, not in a repo edit — and it is listed below as the
+work list for that prompt.
+
+| Ruling | Normative documents — ✅ landed 2026-08-31 | The specs — ⬜ owed, design work |
+|---|---|---|
+| **R-30** count per row is a named set | ✅ `Appendix C` Stepper row gains the carve-out (a count that selects between DRAWN LAYOUTS is a Named Select); FR-H2 restates it | ⬜ A12 |
+| **R-31** the reading bar renders nothing | ✅ research `§7` `header-scroll` now carries **both** consumers — A1 resting, A24-13 nothing and no reserved space | ⬜ A24 design 13's No-JS line |
+| **R-32** computed vs authored pack tokens | ✅ FR-E1 opens on the rule; **`Appendix D` §D.0 is new** — a row per token marked computed or authored, two authored beyond the palette; AD-30 gains the rule and the reason | — |
+| **R-33** a disabled control is greyed with its reason | ✅ FR-F7 (the dependency is schema-declared, so sidebar, validator and compiler read one source); FR-F3; `Appendix C` | ⬜ P0, A5, A14, A17, A18, A19 |
+| **R-34** no visitor mode switch under a pinned scheme | ✅ FR-D7, FR-Q5 (`color_scheme` is the single source; `{{comments mode=…}}` derives), AD-30 | ⬜ A1, A28 |
+| **R-35** nothing fetches from a video provider | ✅ **AD-10** gains it as a fourth declined outbound call; **AD-23** records that a fact nobody fetches needs no fixture; FR-K1; §E strikes family 36's oEmbed half | ⬜ A15 — state that title/description/poster are required, not fetched |
+| **R-36** an empty feed shows its designed state | ✅ FR-H4 (never back-filled); FR-H2's `fallback` value set is the designed state alone | ⬜ A22, A13, A34 — the thin three |
+| **R-37** one Post Content section per layout | ✅ FR-I1; FR-D5 (a second class of singleton, refused **at placement** with the reason) | ⬜ A25 |
+| **R-38** a design may declare its script's width | ✅ FR-G7 (the declaration may carry a width; the no-JS line must describe **both** sides of it); research `§7` | ⬜ A2, A3, A13 |
+| **R18** AD-27 row shapes *(architecture)* | ✅ AD-27 — five states, one row each in `doc-schema.ts`, never a side table | — |
+| **R24** CSS emission order *(architecture)* | ✅ `prd.md` §8's post-body trio — `cards.css` first, then per-design; **A33 owns the card interiors, A25 owns the column they sit in** | — |
+| **R-12** Remove never greys *(carried forward)* | ✅ `Appendix C` — it was the reference case R-33's new paragraph cited, and the PRD had never defined it | ⬜ P0·3 |
+
+**Also fixed in the same pass:** `prd.md` cited `research-contested-designs.md` three times; the file is
+`research-contested-variants.md`.
+
+**Still owed after this, and unchanged:** **R-2** (initials), **R-10** (the thirteen corrections) and
+**R-29** (share destinations — `Appendix B`, and **R11's FR still needs drafting**). None was in the
+2026-08-31 ruling set; each still needs its normative half.
 
 **Two things the gate cannot tell you**, so they are stated here. First, `doc-audit.py --check`
 verifies the catalogue and the generated artifacts — **it does not verify propagation**, and it passed
@@ -989,7 +1014,9 @@ row names. The full per-category probe text stays in `reconcile-designs.md` §(a
 | E-4 | `<details name>` under `stylelint-plugin-use-baseline` at the pin (family 38) | **R-15** — the Tier-2 entry's wording |
 
 **Unchanged and still open:** families 3–7, 10–30, 32–37, 39–41 as written in `reconcile-designs.md`,
-with families **2, 8, 9 and 31 struck** and family **1** reduced to E-1. Families 38–41 are not Ghost
+with families **2, 8, 9 and 31 struck**, family **1** reduced to E-1, and **family 36's oEmbed half
+CANCELLED** (ruling R-35, 2026-08-31 — nothing fetches from a provider, so there is no CORS question
+left to test; the CSS-budget half of that family is a separate register item and stands). Families 38–41 are not Ghost
 probes (Baseline tooling, browsers and AT, font files, the app's own keys) and stay listed so they
 are not lost.
 

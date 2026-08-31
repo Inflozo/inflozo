@@ -25,9 +25,9 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 > `prds/…/reconcile-designs-decisions.md` on 2026-08-27, extended 2026-08-31.
 > **Register item 47 is CLOSED by execution** and refuted its own premise; there is no per-template
 > `{{#get}}` budget, so **R-20's cap was withdrawn — no hard cap, the panel warns past 25.**
-> **The critical path is now STEP 5 — journeys and flows (`/bmad-ux`).** The one thing still owed
-> from step 4 is the propagation of the nine rulings taken on 2026-08-31 (**R-30 … R-38**, in §A2 and
-> §A3 of the decisions file); each names its own targets and none of them blocks step 5.
+> **The critical path is now STEP 5 — journeys and flows (`/bmad-ux`).** R-30 … R-38 were propagated
+> on 2026-08-31 and step 4 owes nothing normative; what is left of it is one Claude Design patch pass
+> over the specs those rulings name, which blocks neither step 5 nor step 6.
 > **Read `reconcile-designs-decisions.md` §B before trusting any D-number anywhere in this project:**
 > D3, D17 and D26 are reversed, and D27 is reversed in half.
 > **Counts:** this file states none. `python3 tools/inventory-gen.py --check` prints the library,
@@ -609,13 +609,20 @@ carries the new rule.
 - **`confetti` is deleted from the registry** — no design declared it (owner's ruling 2026-08-31),
   alongside `search-overlay`, `search-expand` and `command-palette`.
 
-**What has NOT landed, and is the one thing step 4 still owes.** The nine rulings taken on
-**2026-08-31 — R-30 … R-38** — have not reached the normative documents. Each names its own targets
-in §A2 and §A3 of the decisions file: `Appendix C` and FR-H2 (R-30's carve-out, R-33's disabled-control
-rule), FR-E1 / `Appendix D` / AD-30 (R-32's computed-versus-authored pack tokens), FR-D7 / FR-Q5
-(R-34), AD-10 / AD-23 / FR-K (R-35's no-provider-fetch rule), FR-H4 / FR-H2 (R-36's empty feed),
-FR-I1 / FR-D5 (R-37's one-Post-Content rule) and FR-G7 (R-38's per-width declaration). **None of them
-blocks step 5**; all of them are owed before **E4** and **E9** open.
+- **R-30 … R-38 are propagated (2026-08-31).** The nine rulings taken after the merge reached their
+  normative homes the same week the owner took them, and the per-ruling ledger is in §A3 of the
+  decisions file. `Appendix D` gained a new **§D.0** — every pack token marked *computed* or *authored*,
+  with exactly two authored beyond the palette; **AD-10** gained the refusal to fetch from any video
+  provider; **AD-23** the corollary that a fact nobody fetches needs no fixture; **AD-27** the five
+  doc-schema row shapes; and `Appendix C` finally defines **R-12's** never-greying Remove button, which
+  had been cited for weeks without being written down.
+
+**What has NOT landed is DESIGN work, not repo work.** The spec half of those rulings changes drawn
+frames and spec text, so it belongs in a Claude Design patch prompt rather than an edit here: A12 (R-30)
+· A24-13 (R-31) · P0, A5, A14, A17, A18, A19 (R-33) · A1, A28 (R-34) · A15 (R-35) · A22, A13, A34 (R-36)
+· A25 (R-37) · A2, A3, A13 (R-38) · P0·3 (R-12). Owed before **E4** and **E9** open; blocks neither step
+5 nor step 6. **Three rulings still have no normative half at all** — **R-2**, **R-10** and **R-29**,
+the last of which also needs **R11's FR drafted**.
 
 **Step 5 (`/bmad-ux`) is the critical path and is blocked by nothing** — see below.
 

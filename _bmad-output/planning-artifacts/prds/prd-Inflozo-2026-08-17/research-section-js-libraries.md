@@ -564,6 +564,13 @@ Add a fourth, human check: **bumping `widelyAvailableOnDate` requires a render-m
 
 One line each. This is the acceptance criterion for the module's no-JS state.
 
+**A design may declare the width below which its script runs** (ruling R-38, 2026-08-31) — *"collapses
+into sections under 768"*. Where it does, the no-JS line must describe the state on **both sides of that
+width**, not just one, because a module that is inert above its breakpoint has a no-JS state and a
+JS-enabled state that are identical there and different below it. Three designs need it today —
+**A2-15**, **A13-15** and **A3's footer accordions** — and the shape recurs. FR-G7 carries the rule; the
+declaration lives with the module declaration, not in this table.
+
 **Amended 2026-08-27 by the Ghost Build Room** (`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`):
 
 - **The `Edit-safe` column is new, and it is the table FR-D20 has always cited.** `edit-safe` occurred
@@ -580,14 +587,16 @@ One line each. This is the acceptance criterion for the module's no-JS state.
   affordance is now a plain element carrying `data-ghost-search`, which needs no module at all.
 - **`nav-transform`** (D2), **`contact-form`** (D28) and **`group-headings`** (ruling R-1) are added.
 - **`member-form`'s sentence was false** and is rewritten — proved by execution, `MEASUREMENTS.md` §29a.
-- **Orphans, pending the merge:** `confetti`, `shuffle` and `typewriter` are claimed by no export design
-  (`reconcile-designs.md` §37.3). Marked here; dropped or re-homed when the inventory is re-derived.
+- **Orphans, resolved 2026-08-31.** `shuffle` and `typewriter` **are** claimed — `tools/derive-module-reach.py`
+  finds three and five declaring designs respectively — and `confetti` is not, so it is **deleted**
+  (owner's ruling), joining `search-overlay`, `search-expand` and `command-palette`. Every remaining row
+  in §2.1 is claimed by at least one design.
 
 | Module | With JavaScript disabled | Edit-safe |
 |---|---|---|
 | `core` | Never runs; the `.js-enabled` class is never set, so all JS-conditional CSS stays in its no-JS branch. | **yes** — sets a class and nothing else |
 | `nav-drawer` | Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown. | **no** — the drawer overlays the canvas and the hamburger swallows clicks |
-| `header-scroll` | Header renders in its resting state — `position: sticky` still works, only the shrink/solidify transition is absent. | **no** — hides and reveals the header under the cursor as the canvas scrolls |
+| `header-scroll` | **Two consumers, two states.** A1's headers render in their resting state — `position: sticky` still works, only the shrink/solidify transition is absent. **A24-13's sticky reading bar renders NOTHING** (ruling R-31): no bar and **no reserved space**, so the header scrolls away exactly as every other Post Header design's does. It cannot be built without a script — a browser can only pin an element inside its containing box, and the header it belongs to has left the viewport by then (R-3) — and of the three shapes offered, a persistent title bar costs every no-JS visitor 56 px of phone screen for a feature they are not getting, while a bar drawn but not following reads as broken rather than as a choice. | **no** — hides and reveals the header under the cursor as the canvas scrolls |
 | ~~`command-palette`~~ **DELETED (R-24)** | — | — |
 | `dismiss` | The bar renders and stays; the close button is hidden rather than rendered inert. | **no** — a dismissed bar leaves the canvas and cannot be edited back |
 | `rotator` | The first message renders statically; the others are not emitted into the visible flow. | **no** — the message the editor is typing into rotates away |
