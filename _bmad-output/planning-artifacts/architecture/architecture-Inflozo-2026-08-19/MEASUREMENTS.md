@@ -2533,3 +2533,42 @@ if (count  >  1) { text = e.dataset.ghostCommentCountPlural
 **Control:** the bare `{{comment_count}}` call emits its own default singular/plural attributes, distinct
 from the hash-param cases — proving the attributes reflect the arguments rather than being fixed, which
 is what makes "passed through verbatim" a measurement. Passed on both hosts. Register item **56**.
+
+---
+
+## 33. Ghost Admin's backup paths DO differ between the majors — register 41 · 2026-08-31
+
+`BACKUP-GATE.md` hard-codes an Admin menu path per backup option, read from Ghost's documentation on
+2026-08-21. Register item 41 suspected at least one is wrong for one major. **It is worse than one
+path: on Ghost 6 the whole branch the paths name does not exist.**
+
+Read from the built admin bundle on each server — `core/built/admin/assets` — not from documentation.
+
+| | T3 · Ghost 5.130.6 | T1 · Ghost 6.58.0 |
+|---|---|---|
+| `Advanced` label present | **yes** | **no** |
+| `Labs` label present | **yes** | **no route** — `labs` survives only as a settings *key*, a JSON blob read by feature flags |
+| `Import/Export` label present | **yes** | **no** |
+| `Export` label present | **yes** | replaced — see below |
+| Settings routes | Advanced → Labs, Import/Export | **`settings/migration`**, and there is **no `settings/advanced` and no `settings/labs`** |
+
+Ghost 6's full settings route list, read from the bundle: `about · access · analytics · api · design ·
+emails · integrations · memberemails · members · **migration** · newsletters · recommendations ·
+routes · staff · stripe · stripe-connect · theme · verifications`.
+
+**And the export UI is behind a feature flag on Ghost 6.** The bundle carries a lab flag
+`selfServeArchives`, described in its own text as *"Replaces the individual export buttons with a
+single **Export data** flow for downloading a full site archive"* — so on Ghost 6 what a customer sees
+depends on a flag Inflozo does not control and cannot read from a theme.
+
+**Verdict.** `BACKUP-GATE.md`'s paths are **correct for Ghost 5 and wrong for Ghost 6**, and the fix is
+not to write a second hard-coded path: the Ghost 6 surface is itself flag-dependent, so any path we
+bake in is wrong for some customers on the day we ship it. The gate **links to Ghost's own help for
+the connected site's major** and describes what the customer is looking for rather than the clicks to
+reach it.
+
+**Scope of this evidence, stated so it is not over-read.** This is the built admin **bundle** — the
+routes and labels the app ships. It is not a click-through of a live admin, so the exact Ghost 6 label
+chain a customer sees is **not** established here; what is established is that the Ghost 5 chain does
+not exist on Ghost 6. Capturing the real Ghost 6 wording is E15's job against a live admin.
+Register item **41**.

@@ -7,6 +7,23 @@ supersedes: the open half of register item 38 — Inflozo does not back up custo
 
 # The backup gate
 
+> **THE MENU PATHS BELOW ARE GHOST 5's, AND GHOST 6 DOES NOT HAVE THEM** *(executed 2026-08-31 against
+> both servers — `MEASUREMENTS.md` §33, register 41)*. Read from each server's built admin bundle:
+> Ghost 5.130.6 carries `Advanced`, `Labs`, `Import/Export` and `Export`. **Ghost 6.58.0 carries none
+> of them** — there is no `settings/advanced` route and no `settings/labs` route; Ghost 6 has
+> `settings/migration`, and its export UI sits behind a lab flag (`selfServeArchives`) whose own
+> description says it *"replaces the individual export buttons with a single Export data flow"*.
+>
+> **So the gate must not hard-code a path for either major.** The Ghost 6 surface is flag-dependent,
+> which means a path baked in today is wrong for some customers immediately — and it would drift again
+> at the next release, which is how this item arose. **E3 builds the gate to link to Ghost's own help
+> for the connected site's version, and to describe what the customer is looking for rather than the
+> clicks to reach it.** The paths below are kept as the Ghost 5 reference and as the record of what was
+> documented on 2026-08-21; they are not the specification for the gate's copy.
+>
+> The one fact that must survive whatever the menu looks like: **Ghost's JSON content export does not
+> include images**, and Ghost(Pro) customers cannot bulk-download theirs at all.
+
 **Owner decision, 2026-08-21: Inflozo is not a backup tool and does not undertake to be one.**
 It does not copy, keep or restore the customer's Ghost data. Instead, before Inflozo changes anything
 on a connected site, the customer is **blocked** until they confirm they hold their own backup, and
