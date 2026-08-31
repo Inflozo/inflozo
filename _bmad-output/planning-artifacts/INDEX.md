@@ -6,7 +6,7 @@ updated: 2026-08-31
 
 # Document index
 
-**84 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**85 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -100,6 +100,7 @@ points at a file that is gone, or if this file is out of date.
 | **[The library roster, from the export](tools/export-roster.py)**<br>`tools/export-roster.py` | Reads the design export and emits every live category and design as JSON — number, name, structural tuple, declared modules, one-line descriptor. Refuses to emit when a spec table and its drawn frame disagree about a name, so a hand-edit to one that misses the other cannot pass silently. The step-4b deletions (R-24) are applied here, once, with their reason, rather than by deleting export files. sections-inventory.md and tuple-check.py both read this. |
 | **[The stress fixture](tools/stress/build.js)**<br>`tools/stress/build.js` | Builds a deliberately heavy 70-section theme and prints the compile budget. The measurement behind AD-11. |
 | **[This gate](tools/doc-audit.py)**<br>`tools/doc-audit.py` | Generates the index and checks documentation propagation. Exits non-zero on drift. |
+| **[Which designs declare which script](tools/derive-module-reach.py)**<br>`tools/derive-module-reach.py` | Re-derives research §2.1's "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design's OWN declaration names it: the per-design Behaviour-module line, or the roster table's Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at. |
 | **CSP probe app** *(1 files)*<br>`tools/probe/csp/` | The minimal Next app behind the CSP measurement. |
 
 
