@@ -187,6 +187,32 @@ honest: `{{plural}}` is a different helper, was not tested, and is not tarred wi
 
 **Nothing from the merge is now owed a normative half.** What remains of every ruling is design work.
 
+### The six `LOOK` prose scans, triaged 2026-08-31 — two were real
+
+`tools/verify-design-pass.py` flags six scans it cannot judge, because they cannot tell a violation
+from a spec **recording that it removed the thing**. All six were read. **Four are exactly that
+false positive, and are correct as they stand:**
+
+| Scan | What it flagged | Verdict |
+|---|---|---|
+| R-1 computed counts | A26 `"+4 more"`, A29 `"and 2 others"` | ✅ both are the spec stating the phrase was **removed** — A26 records `"+4 more" is now "+ more"` |
+| R-14 gap ladder | A14 / A15 `Tight · Even · Airy` | ✅ both are the spec recording the **rename to Tight · Normal · Loose**, values unchanged |
+| R-9 A15 upload | `Source: Upload`, `ambient loop` | ✅ struck through in place — *"that branch is deleted in the design patch pass"* |
+| R-4 phantom fields | A30 / A8 `member since` | ✅ A30 records it **deleted**; A8 reads no Ghost field at all, so its "member since" is a sentence the site typed |
+
+**Two were real and are now on the pass-two work list:**
+
+- **A12 · R-8.** Its responsive note says the section *"draws as **1 Grid**"* when the cards are not
+  wider than the content width — **naming another design**. A14 was made to stop doing exactly this
+  ("1 Grid stops calling itself the arrangement six other designs resolve to at 390"). Describe the
+  result, not a design: *"draws as a plain grid, with no arrows, no fades and no scroll container."*
+- **A33 · R-6.** The spec **never mentions `kg-toggle-card`** — not once. Nothing is *wrong* in it
+  (no `<details>` survives), it is **silent**: for the one category whose whole job is styling
+  Ghost's own card markup, a builder cannot tell what they are styling. Ghost emits
+  `div.kg-toggle-card` containing an `h4` and a `button`, and the spec must say so.
+
+A33 was not in pass two's list before this triage. It is now.
+
 **Two things the gate cannot tell you**, so they are stated here. First, `doc-audit.py --check`
 verifies the catalogue and the generated artifacts — **it does not verify propagation**, and it passed
 while FR-G7 still said 31 modules. Second, the edit-safe values in research §7 are the **architect's

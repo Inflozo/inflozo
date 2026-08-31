@@ -81,6 +81,34 @@ FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
    the count itself. The comments WIDGET does render without JavaScript; only its count does
    not, so the two degrade differently and a single no-JS sentence cannot cover both."""
 
+KEEP_IT = """SOME OF THIS LIBRARY WAS EDITED IN THE REPOSITORY, NOT IN CLAUDE DESIGN. LEAVE
+THOSE EDITS ALONE — they are deliberate, they are the current truth, and re-exporting over them
+would undo work that was done for a reason.
+
+WHAT WAS CHANGED OUTSIDE CLAUDE DESIGN, and must stay changed:
+
+1. EVERY PRINTED DESIGN TOTAL WAS REMOVED FROM THE MARKETING AND APP SCREENS. Copy that used to
+   read "485 designs", "485 designed sections" or "70 Free designs" now reads "Ship every
+   design", "Browse every design", "Hundreds of designed sections", "The free set". This was
+   done in the repository across the Index frames, M1 Home, M2 Features, M4 Gallery, M5 Pricing,
+   S2 Onboarding, S12 Billing, B Missing Surfaces, R Responsive System and three A-frames
+   (A18-9, A18-11, A29-10).
+   DO NOT put a number back. Not the old one, not a corrected one. The library changes size
+   whenever a design is added or cut, so any number in product copy is wrong within a month —
+   which is exactly what happened to the last one. If you touch any of that copy, keep it
+   count-agnostic. There is an automated check that fails the build if a number reappears.
+
+2. P0's PER-PROP MARK ALLOWLIST WAS WRITTEN IN THE REPOSITORY. The section stating the default
+   inline marks (bold, italic, underline, link), that a field may NARROW that set, and that a
+   mark a field does not permit is ABSENT from the toolbar rather than greyed — that text is
+   current and correct. Do not rewrite it, do not soften "absent" to "disabled", and do not
+   drop it. There is an automated check for this one too.
+
+IF YOU ARE UNSURE whether something you are looking at was changed here or in Claude Design:
+leave it. Say in your Patch notes that you left it and why. A thing left alone can be fixed in
+one message; a deliberate edit silently reverted is found months later, if at all."""
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # The per-category work lists. Authored — these are rulings, not derivations.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -128,7 +156,12 @@ WORK2 = {
   editor choose a width nobody has looked at.
   Note that "how many people to show" is a separate control and stays a number picker.
 - THE AVATAR RULE, across all fourteen Empty lines: TWO initials, because a team list is typed
-  by the user.""",
+  by the user.
+- ONE DESIGN MUST NOT NAME ANOTHER. The responsive note currently says the section "draws as
+  1 Grid" when the cards are not wider than the content width. Describe the RESULT, not another
+  design: "draws as a plain grid, with no arrows, no fades and no scroll container". A14 already
+  made this change for the same reason — a design that turns into a named design is the thing
+  the library rules out, and the phrasing is how it creeps back.""",
 
  'A13': """- A13-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS, with both sides of it
   described in the no-JS line.
@@ -198,6 +231,14 @@ WORK2 = {
   them; a "%" or "{count}" in that string renders literally on the page. Note the widget itself
   DOES render without JavaScript, so its no-JS sentence is not the count's.""",
 
+ 'A33': """- NAME THE GHOST MARKUP THIS CATEGORY STYLES. The specification never once mentions
+  `kg-toggle-card`, and for a category whose entire job is styling Ghost's own card markup that
+  is a hole: a builder cannot tell what they are styling. Ghost emits the toggle card as
+  `div.kg-toggle-card` containing an `h4` and a `button` — NOT a `<details>` / `<summary>` pair.
+  State that in the specification and make sure every toggle treatment is drawn against it.
+  Inside a post's body we own the stylesheet and nothing else: not the markup, not the ARIA
+  attributes, not the text. Nothing here may assume markup we would have to emit.""",
+
  'A34': """- THE EMPTY STATE IS THIN HERE AND NEEDS WRITING: a feed with nothing in it shows its
   designed "nothing here yet" state.
 - "POSTS PER PAGE" POINTS AT INFLOZO'S OWN THEME SETTINGS, NEVER AT GHOST'S ADMIN. Ghost has
@@ -207,7 +248,7 @@ WORK2 = {
 }
 
 ORDER = ['P0', 'A1', 'A2', 'A3', 'A5', 'A12', 'A13', 'A14', 'A15', 'A17',
-         'A18', 'A19', 'A22', 'A24', 'A25', 'A26', 'A28', 'A34']
+         'A18', 'A19', 'A22', 'A24', 'A25', 'A26', 'A28', 'A33', 'A34']
 
 
 def build_prompt(cat, title, designs, holes):
@@ -235,6 +276,8 @@ DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change onl
 list names. Where a change touches a drawn frame, change that frame; where it touches only the
 written specification, change only that.
 
+{KEEP_IT}
+
 {dp1.FACTS}
 
 {PART_A2}
@@ -242,6 +285,12 @@ written specification, change only that.
 {FINDINGS}
 
 {scope}{hole_note}
+
+ONE HOUSEKEEPING JOB WHILE YOU ARE IN THIS SPECIFICATION. Its "Open questions" section still
+lists items that were since answered, and they are indistinguishable from ones that were not.
+For each: if it has been settled anywhere in the document, strike it through and write who
+settled it. If it is genuinely still open, leave it and mark it OPEN FOR THE OWNER on its own
+line. Do not answer one yourself. A list where everything looks open is a list nobody reads.
 
 THE WORK LIST FOR {cat}:
 
