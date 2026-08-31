@@ -805,6 +805,41 @@ the state at BOTH sides of it.
 
 ---
 
+## A4 · §37.7 re-verified for step 5, 2026-08-31
+
+`reconcile-designs.md` §37.7 is step 5's work list, and it was written on 2026-08-27 — **before** the
+design patch pass. Re-checked so `/bmad-ux` starts from what is true now rather than a stale
+snapshot. `reconcile-designs.md` is a `record` and is not edited; this is the delta.
+
+**Unchanged, and still the work list.** The S, B and M screens were not touched by the design pass —
+verified against git, not assumed — so every finding about a missing editor surface, a flow drawn on
+the wrong mechanism, and the four journeys stands exactly as written.
+
+**One finding is now WORSE and its number has moved twice.** §37.7 recorded that the screens print a
+design total while the PRD said 484. **Fifteen places across the S and M screens print "485
+designs".** The library is now **33 categories · 468 designs · 66 [Free]** after the Search deletion
+and the two design cuts. The gap was one; it is now seventeen. `Appendix H` already forbids a design
+total in product copy, so the fix is to make the marketing copy count-agnostic rather than to correct
+the number — which would only go stale again.
+
+**Four of the five P0 findings are resolved by the design pass; one stands.**
+
+| §37.7's P0 finding | Now |
+|---|---|
+| P0·3's Ghost-list card never restated on A19, A20, A24, A31 | ✅ all four carry it — 6 to 12 references each to the no-Add, read-only Ghost-bound list |
+| P0·5 has no authors / tags / tiers branch | ✅ present: "The Ghost-sourced list (posts, tags, authors, tiers) is **not** this: no Add, no Remove, no drag" |
+| P0·6 cannot list a design's states without a `states[]` declaration | ✅ addressed — P0 now carries the state vocabulary |
+| P0·2's per-slot colour is an AD-3 breach | ✅ moot — no per-slot colour survives anywhere in P0 |
+| **P0·1 needs a per-prop mark allowlist** (A8 quotes permit none, A9 answers permit `code`) | ⬜ **STANDS.** P0 says a field may allow marks; nothing says WHICH marks WHICH field allows |
+
+**Also verified and clean:** the hand-pick cap reversal (register item 47) reached the specs before
+they were written — no spec carries the withdrawn "twelve", and P0 states the rule correctly, warning
+past 25 with the cost stated per page rather than per section. Three specs matched a search for the
+stale figure and all three are false positives, one of them memorably: A19's "12 Picks" is a design
+name.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
