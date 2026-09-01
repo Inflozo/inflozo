@@ -81,36 +81,24 @@ FINDING 2 · A COMMENT COUNT RENDERS NOTHING AT ALL WITHOUT JAVASCRIPT.
    the count itself. The comments WIDGET does render without JavaScript; only its count does
    not, so the two degrade differently and a single no-JS sentence cannot cover both."""
 
-KEEP_IT = """SOME OF THIS LIBRARY WAS EDITED IN THE REPOSITORY, NOT IN CLAUDE DESIGN. LEAVE
-THOSE EDITS ALONE — they are deliberate, they are the current truth, and re-exporting over them
-would undo work that was done for a reason.
+KEEP_IT = """TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository's copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
 
-WHAT WAS CHANGED OUTSIDE CLAUDE DESIGN, and must stay changed:
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to "fix" what looks missing:
 
-1. EVERY PRINTED DESIGN TOTAL WAS REMOVED FROM THE MARKETING AND APP SCREENS. Copy that used to
-   read "485 designs", "485 designed sections" or "70 Free designs" now reads "Ship every
-   design", "Browse every design", "Hundreds of designed sections", "The free set". This was
-   done in the repository across the Index frames, M1 Home, M2 Features, M4 Gallery, M5 Pricing,
-   S2 Onboarding, S12 Billing, B Missing Surfaces, R Responsive System and three A-frames
-   (A18-9, A18-11, A29-10).
-   DO NOT put a number back. Not the old one, not a corrected one. The library changes size
-   whenever a design is added or cut, so any number in product copy is wrong within a month —
-   which is exactly what happened to the last one. If you touch any of that copy, keep it
-   count-agnostic. There is an automated check that fails the build if a number reappears.
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads "Ship every design", "Browse
+   every design", "Hundreds of designed sections", "the free set" — never a number.
+2. P0's SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
 
-2. P0's PER-PROP MARK ALLOWLIST WAS WRITTEN IN THE REPOSITORY. The section stating the default
-   inline marks (bold, italic, underline, link), that a field may NARROW that set, and that a
-   mark a field does not permit is ABSENT from the toolbar rather than greyed — that text is
-   current and correct. Do not rewrite it, do not soften "absent" to "disabled", and do not
-   drop it. There is an automated check for this one too.
-
-YOU DO NOT NEED TO PRESERVE EITHER OF THOSE TWO EDITS, AND YOU CANNOT. This was asked of the
-2026-08-31 pass and the request was impossible: your project copy has never held that text, so a
-re-export replaces the repository's copy with one that lacks it. The sessions behaved correctly and
-said so, and the text was lost anyway. It is now re-applied by a script in the repository after
-every export (`tools/reapply-export-edits.py`) and checked independently. **So: do not re-author
-that copy, do not put a design total back, and do not worry if you cannot find the allowlist text —
-it is not yours to carry.**
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale "485" and a
+freshly computed "466", and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
 
 IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
 why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
@@ -170,9 +158,10 @@ WORK2 = {
   ** THE FIRST RUN OF THIS PROMPT DELETED DESIGN 12 ENTIRELY — the frame AND its roster row. That
   was wrong. Design 12 must EXIST when you are finished. **
   What to do, precisely:
-    KEEP  `A9-12 Filter.dc.html` as a frame. If it is missing, draw it back from the design's
-          entry in this specification — same layout, same rows, same name "Filter".
-    KEEP  design 12's row in the roster table, with the number 12 and the name Filter.
+    DRAW  `A9-12 Filter.dc.html` back. It is gone from the export — the roster above marks it
+          MISSING AND MUST BE RESTORED — so redraw it from this specification's own entry for
+          design 12: same layout, same rows, same name "Filter", minus the strip below.
+    ADD   design 12's row back to the roster table, with the number 12 and the name Filter.
     KEEP  the design's number. Nothing renumbers.
     REMOVE only the filter STRIP — the control — from the frame, and its control row and its
           no-JS line from the specification.
@@ -294,6 +283,15 @@ WORK2 = {
   mentions it.""",
 }
 
+# Designs a previous pass CUT that the rulings say should exist. The roster derives from the
+# export, so a wrongly-cut design vanishes from it — and a work list that says "keep design 12"
+# above a roster that omits 12 is a contradiction the session is right to stop on. These are
+# printed back into the roster, marked, so the instruction and the roster agree.
+RESTORE = {
+    'A9': [(12, 'Filter', 'cut by the first run of this pass; the ruling removed its CONTROL, '
+                          'not the design')],
+}
+
 ORDER = ['P0', 'A1', 'A2', 'A3', 'A5', 'A9', 'A12', 'A13', 'A14', 'A15', 'A17',
          'A18', 'A19', 'A22', 'A24', 'A25', 'A26', 'A28', 'A33', 'A34']
 
@@ -304,8 +302,15 @@ def build_prompt(cat, title, designs, holes):
                  "every category's side panel draws from. Change them here once and every category\n"
                  "inherits it, which is why this runs first.")
     else:
-        roster = '\n'.join(f'  {d["n"]:>2}. {d["name"]}' for d in designs)
-        scope = f"THIS CATEGORY — {cat} {title}, {len(designs)} designs:\n\n{roster}"
+        rows = {d['n']: (d['name'], '') for d in designs}
+        for n, name, why in RESTORE.get(cat, []):
+            rows[n] = (name, f'   <-- MISSING FROM THE EXPORT AND MUST BE RESTORED ({why})')
+        roster = '\n'.join(f'  {n:>2}. {rows[n][0]}{rows[n][1]}' for n in sorted(rows))
+        n_restore = len([n for n, _, _ in RESTORE.get(cat, []) if n not in
+                         {d['n'] for d in designs}])
+        tally = (f'{len(designs)} designs drawn, plus {n_restore} to restore'
+                 if n_restore else f'{len(designs)} designs')
+        scope = f"THIS CATEGORY — {cat} {title}, {tally}:\n\n{roster}"
     hole_note = ''
     if holes:
         hole_note = ('\n\nNUMBERING GAP IN THIS CATEGORY: ' +
