@@ -4,13 +4,101 @@ Drawn 24 August 2026 · Paper pack, S4 editor chrome. This pass designs the repe
 controls-reconciliation audit **once**, as shared editor primitives. Every category patch that follows
 reuses them **by name** and never redesigns them.
 
-Frames: `P0-1 Inline Text Toolbar` · `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` ·
-`P0-4 Member Action Editor` · `P0-5 Populate From Panel` · `P0-6 Editor State Switcher` ·
-`S14 Editor Cards` (all `.dc.html`).
+Frames: `P0-0 Greyed Control Pattern` · `P0-1 Inline Text Toolbar` · `P0-2 Icon Slot and Picker` ·
+`P0-3 Item List Controls` · `P0-4 Member Action Editor` · `P0-5 Populate From Panel` ·
+`P0-6 Editor State Switcher` · `S14 Editor Cards` (all `.dc.html`).
 
 Everything here is drawn from A1's established components verbatim (primary button, icon button,
 dropdown panel, segmented control, toggle) and the S4 chrome (top-bar pills, sidebar groups, selection
 ring, section badge). Where this file and a drawn frame disagree, the frame is wrong and this file wins.
+
+---
+
+## P0·0 · The greyed-control pattern
+
+Drawn once here. Every category points at this frame instead of inventing a treatment, and supplies only
+its own sentence. **The numbering of P0·1–P0·8 is untouched** — this section is added ahead of them, and
+no existing number moved.
+
+**A control switched off by another is greyed, with the reason beside it.** Never hidden, and never left
+accepting a value it will not honour. A control that vanishes teaches nothing — the user cannot tell a
+rule from a bug — and one that silently ignores you is worse.
+
+**The greyed state.** Label and values go placeholder-grey; field fills and borders go to the disabled
+pair; the cursor is `not-allowed`; the control is not focusable for editing. **The value in force stays
+legible** — a greyed segmented control keeps its pill on the value that actually renders, a greyed toggle
+shows the state in force rather than the state the user last chose ⚑, a greyed stepper shows the number
+that will render. Nothing is removed from the row, and the row does not move.
+
+**A single value switched off inside a control that stays live takes the same greyed treatment** —
+placeholder-grey `#A8A29A`, `cursor: not-allowed`, not selectable — while the rest of the control
+behaves normally and the pill sits on the value in force. **Owner-ruled, 31 August 2026: one grey, one
+meaning.** A lighter second grey meaning "one value unavailable" as against "whole control off" was
+refused, on the ground that the difference cannot be explained in a sentence. Categories that had drawn
+a disabled value at another value correct it to this one.
+
+**Where the sentence sits.** Directly under the control it explains, inside that control's own row group,
+at panel body size in the muted role. **Not a tooltip, not a help icon, not a footnote at the foot of the
+panel.** One sentence, present tense, naming the control that switched it off — "Not available while the
+media uses the accent colour." The panel grows by the height of the sentence, which is why the sentence
+is one line or two and never a paragraph.
+
+**The shapes it covers.** Select · segmented · toggle · swatch row · stepper. All five grey the same way
+and are drawn together on the frame, so a category never has to derive one.
+
+**Where the reason lives, owner-ruled 1 September 2026.** **It ships in this shared control
+definition, not per category as each one is patched** — every category will need it, and the
+per-category route produces eight variants of one field. **Every greyed row carries a reason string
+on the control, written per design** — a greyed state, a struck value, that string and a named
+fallback, as one mechanism the build provides once. **It is the same mechanism a locked row already
+needed**, and it is now owed by every greyed row rather than only by a locked one: A19 alone has ten
+cases across nine designs plus two on every design in the category. **The alternatives he refused:**
+a fixed library of standard reasons — the sentences are per design and would flatten into
+uselessness — and leaving each panel to write its own, which is how a greyed row ends up with no
+explanation and a rule reads as a bug.
+
+**Accessibility.** A greyed control is announced with its value and its reason as one string ("Overlay
+tint, Soft dark, unavailable — not available while the media uses the accent colour"). The reason is
+text in the panel, so it is reachable by reading order as well as by focus.
+
+**The one exception, and it is different in kind.** A control **this project can never offer** is not
+drawn at all, and the panel says why in one note where the control would have been. The test is
+permanence: a control another control switched off comes back when that control changes, so it waits in
+place, greyed; a control that never comes back would be a permanently grey row, which is furniture the
+user learns to ignore. **The visitor dark-mode switch under a pinned colour scheme is the only current
+case.** A category that believes it has a second one puts it to the owner rather than drawing it.
+
+**What this pattern does not reach.** Three things, all owner-ruled.
+
+1. **A mode, as against a switched-off control.** A control that belongs to a mode the user is not in is
+   **absent**; a control that belongs to this mode but is currently unavailable is **greyed with its
+   reason**. Greying a control that has no meaning in the current mode is its own confusion. The absent
+   cases in this library are: P0·5's filter block under Source = Static, ~~P0·5's Count and Order under
+   Filter = Hand-picked (the picked list *is* the count and the order)~~ **— moved to the greyed side
+   by the owner on 1 September 2026, see below —** P0·2's Recent row when nothing
+   has been picked yet, and the Add / Remove / drag controls on a Ghost-sourced list in P0·3. A category
+   that thinks it has a new absent case states which side of this line it falls on, in words, in its own
+   spec. **⚑ Amended by the owner, 1 September 2026 — P0·5's Count and Order at Hand-picked are greyed
+   with the reason at the control, not absent.** A18 and A19 have shipped the greyed form since their
+   reconciliation passes, and **both readings passed the test above**: the two rows belong to the
+   Hand-picked mode as much as they are switched off inside it. He took the greyed one because
+   **they are rows a user expects to find** — unlike the picker, which exists only once you are in
+   that mode. **One panel changes rather than two shipped categories**, and no A18 or A19 frame
+   redraws. The picker itself is settled the other way: it is a mode, and this pattern does not reach
+   it.
+2. **The inline text toolbar (P0·1).** A mark a field does not permit is **absent** from the toolbar,
+   not greyed. A floating toolbar over a text selection has no room for a sentence, and the mark never
+   returns for that field — the same permanence test the never-offered exception uses. The per-prop mark
+   allowlist as written stands; this rule carries the carve-out rather than the allowlist carrying an
+   apology.
+3. **The Remove button (P0·3).** Remove is switched off by nothing — its floor is a rule about content
+   the user owns — so it stays fully clickable and answers **after** the click. A control switched off by
+   another control is answered **before** the click, because the user cannot act on it at all. Both
+   answers are a sentence in the panel; neither is a tooltip.
+
+**Flagged ⚑** — the pattern and its exception are the owner's; mine: the exact greyed palette pair, the
+five shapes drawn together, the in-force-value rule on toggles and segmented controls, the announcement
+string.
 
 ---
 
@@ -22,10 +110,10 @@ The floating toolbar over any selection in any inline-editable text prop, **head
 
 | # | Action | Key | Disabled when |
 |---|---|---|---|
-| 1 | Bold | ⌘B | never — but absent where the field does not permit it |
-| 2 | Italic | ⌘I | never — but absent where the field does not permit it |
-| 3 | Underline | ⌘U | never — but absent where the field does not permit it |
-| 4 | Link | ⌘K | never — but absent where the field does not permit it |
+| 1 | Bold | ⌘B | never |
+| 2 | Italic | ⌘I | never |
+| 3 | Underline | ⌘U | never |
+| 4 | Link | ⌘K | never |
 | 5 | Remove link | — | the selection carries no link (35 % opacity) |
 
 **Not every field permits every mark, and the toolbar says so** ⚑ *(the per-prop mark allowlist —
@@ -45,6 +133,11 @@ PRD records a delta.
   inside one fights the design that carries it — and **FAQ's answer fields add `code`**, which is a
   PRD delta recorded in that category's settlement 3 rather than smoothed over.
 - **Where a spec says nothing, the default four apply.** Silence is not a narrowing.
+
+> **This block is maintained in the repository, not in Claude Design** — it is re-applied by
+> `tools/reapply-export-edits.py` after every export and gated by `tools/verify-design-pass.py`.
+> A Claude Design session cannot preserve it, because its project copy has never held it.
+
 
 No font, no size, no colour — those belong to the Style Pack and the section. Bold on a heading renders
 the pack's heavier heading weight, never faux-bold. An active mark shows as a pressed chip
@@ -144,8 +237,13 @@ at 390.
 | Remove | empties the slot back to its dashed state |
 
 **Button icons.** When any button is selected, its popover offers an optional icon **Before / After**
-the label. Slot rules apply; button icons are always Small and inherit the label colour — the Size and
-Colour rows are hidden for them ⚑. 8 px gap to the label; the A1·1 button otherwise unchanged.
+the label. Slot rules apply; button icons are always Small and inherit the label colour. **The Size and
+Colour rows are drawn greyed with their reason beside them** — "Button icons are always small, so they
+sit on the label's line." / "A button icon takes the label's colour." — per the greyed-control pattern
+(P0·0). **Owner-ruled this pass:** they were previously hidden; they are controls this popover genuinely
+has and this context overrides, which is exactly the case the pattern was written for. The greyed value
+shown is the one in force: Small, and the label's colour. 8 px gap to the label; the A1·1 button
+otherwise unchanged.
 
 **Social glyphs — exactly nine.** The Social group holds the nine platforms **Ghost keeps a field
 for**: Facebook · X · LinkedIn · Bluesky · Threads · Mastodon · TikTok · YouTube · Instagram. A tenth
@@ -202,7 +300,9 @@ gallery images, testimonials…). Renders in the sidebar's **Content** group.
   and fully active**. Clicking it answers with the floor and the reason in one sentence, as text under
   the list, in the category's own words — "A ticker needs at least 2 messages. Edit this one instead,
   or add a third and then remove it." / "A pricing table needs at least two tiers." It is **never
-  dimmed, never hidden, never a disabled menu item**, and the sentence clears on the next edit. The
+  dimmed, never hidden, never a disabled menu item**, and the sentence clears on the next edit. **The
+  greyed-control pattern (P0·0) does not reach this control** — that pattern is for a control another
+  control switched off, and Remove is switched off by nothing. The
   previously drawn disabled-Remove treatment is withdrawn here and in every category panel that draws
   a list.
 - Selecting a row selects the item on canvas and vice versa (selection ring both places).
@@ -289,26 +389,81 @@ collapsed three-line summary, the visibility-excluded collapse, the 40 % ghost +
 
 ---
 
+## P0·4a · The Actions control — one toggle per action
+
+**Settled by the owner, 31 August 2026, and split library-wide as a scheduled job.** This was the one
+compound control left standing after the Headers pass wrote *one toggle per thing* (P0·8, rule 12): it is
+shared by every category that carries an action, so it could not be re-cut category by category without
+the same control behaving differently in different panels. The owner chose the library-wide split.
+
+**The rule.** Wherever a section offers more than one action, the panel carries a **labelled Actions
+group holding one On · Off toggle per action** — never a menu of the combinations someone happened to
+draw. Each toggle opens its own **P0·4 member-aware card** (Show · Label · Link per audience). **All
+toggles off is the old "None" value**; there is no separate None.
+
+**What it replaces, and the mapping.** Every old value set maps onto switch positions with nothing
+gained or lost in what renders:
+
+| Old value set | Where | Becomes |
+|---|---|---|
+| None · Sign in · Subscribe · Sign in + Subscribe | A1, seven designs | **Sign in** · **Subscribe** |
+| Button · Link · Button + link · None | A2·11 | **Button** · **Link** |
+| Both · Primary · None | A4, fourteen designs | **Primary action** · **Secondary action** |
+| None · Primary | A4·7 | **Primary action** alone — one toggle, and the group says why |
+| Both · Primary | A6, eleven designs | **Secondary action** alone — the primary is always drawn |
+| Button · Button and email field (· Text link) | A32·1, A32·6 | the form axis stays a control; **Email field** becomes a toggle |
+
+**Three consequences, each already covered by an existing rule rather than a new mechanism.**
+
+1. **A constant is not a toggle.** Where an action is always drawn — A6's primary, A32·6's button — the
+   group **states the constant and offers no switch** (P0·8, rule 12's own words). A6's group therefore
+   holds one toggle, not two, and A32·6's form row disappeared because splitting the field out left it
+   with a single value.
+2. **A combination nobody drew is greyed, not invented.** A4's old list never offered a secondary
+   without a primary, so **Secondary greys with its reason while Primary is off** — "a secondary action
+   needs a primary beside it" — under the greyed-control pattern (P0·0). A1's two actions were each
+   drawn alone and stay independent, with no dependency between them.
+3. **A group with a floor keeps its last toggle on**, refusing to switch it off with the reason shown,
+   in the words of the rule that the Remove button never greys out. No A-category group has hit that
+   floor yet; the rule stands for the ones that will.
+
+**What does not become a toggle.** A single-axis choice is still one control: a **form**
+(Action: Button · Text link), a **placement** (Actions: At each row · One for the section · None,
+A1·11's Pinned to the foot · Under the nav), an **alignment**, a **treatment**. The test is unchanged —
+"A + B" in a value name is two things; a list of settings for one thing is one control.
+
+**Flagged ⚑** — the ruling and the schedule are the owner's. Mine: the group's drawn shape (the labelled
+mono heading over the switches, matching the split groups the Headers pass already drew), the wording of
+each group's constant and dependency sentences, and the decision to grey rather than draw A4's
+undrawn primary-off-secondary-on combination.
+
+---
+
 ## P0·5 · "Populate from…" data panel
 
 One shared panel — the sidebar **Data** group's entire body — for every section that can draw content
 from the user's Ghost site instead of authored content.
 
 **Source** — segmented: **Static (authored) · From posts.** Static: the filter block is absent, not
-disabled; the Content group shows the P0·3 authored list. From posts reveals:
+disabled — a mode the user is not in, which P0·0 keeps absent rather than greyed; the Content group shows
+the P0·3 authored list. From posts reveals:
 
 | Control | Values |
 |---|---|
 | Filter | Latest · Featured · By tag · By author · Hand-picked (select, A1 dropdown panel) |
 | — By tag | tag select below the filter: live-searched, tag name + post count. Single pick |
 | — By author | author select: avatar + name + post count. Single pick — multi-author feeds belong to routes ⚑ |
-| — Hand-picked | search-and-pick post list: drag reorders, × unpicks; **Count and Order hide** — the picked list is the count and the order. **No maximum**: past 25 picks the count turns warning-toned and a sentence names the cost — every pick adds a database query, **on every page this section appears on**, not once per section; three sections of this size means 75 database queries and about three-quarters of a second added to every visitor's load. The warning names those figures. The warning **names the measured figures**: three hand-picked sections at 25 each is **75 database queries, about three-quarters of a second** added to every visitor's page load. Nothing is blocked. An unpublished pick drops out server-side; its row stays with an "Unpublished" note |
+| — Hand-picked | search-and-pick post list: drag reorders, × unpicks; **Count and Order grey with the reason at the control** ⚑ *amended 1 September 2026 — they used to hide; A18 and A19 have shipped them greyed* — the picked list is the count and the order. **No maximum**: past 25 picks the count turns warning-toned and a sentence names the cost — every pick adds a database query, **on every page this section appears on**, not once per section; three sections of this size means 75 database queries and about three-quarters of a second added to every visitor's load. The warning names those figures. The warning **names the measured figures**: three hand-picked sections at 25 each is **75 database queries, about three-quarters of a second** added to every visitor's page load. Nothing is blocked. An unpublished pick drops out server-side; its row stays with an "Unpublished" note |
 | Count | stepper, 1–{design max}, **hard cap 100** |
 | Order | Newest · Oldest |
 | Meta toggles | chips, per-design: only the fields this design can place — from date · author · excerpt · reading time · tag chip |
 
 **Constraints (library-wide, stated once).**
 - The **Count stepper** caps at 100. **Hand-picked has no maximum** — it warns past 25, and the warning names the measured cost per page: 75 queries and roughly three-quarters of a second for three sections of 25 (above).
+- **When nothing matches — Hide the section · Show the latest post. Owner-ruled 1 September 2026:
+  this belongs to the panel, not to a category.** A19 drew it first as a fifth query field, and every
+  category that asks Ghost for posts has the same zero-item question. It ships here; categories draw
+  it and stop owning it.
 - **No relative-date filters** — "this month" is route vocabulary (routes.yaml), not section vocabulary.
 - **A secondary feed renders nothing at zero items — heading and container together.** An empty
   "More essays" band is a defect the panel prevents by construction. The editor shows the zero state
@@ -319,8 +474,17 @@ disabled; the Content group shows the P0·3 authored list. From posts reveals:
 **Accessibility.** The revealed filter block is announced as it appears; selects are comboboxes;
 the hand-picked list follows P0·3's keyboard-reorder pattern.
 
-**Flagged ⚑** — the control vocabulary and constraints are the brief's; mine: hand-picked hiding
-Count/Order, the single-pick rulings, the unpublished-row note.
+**Initials, drawn here for the whole library.** Wherever this panel or its section shows a person, a
+person with no photograph shows initials, and **the two forms are not interchangeable**: **two letters**
+where the user typed the name ("Jane Doe" → JD), **one letter** where Ghost supplied it ("Jane Doe" → J).
+This is not a style choice — Ghost's template language cannot split a name on the versions this library
+supports, so two initials are unreachable for anything Ghost supplies: authors, staff, members. Both
+forms are drawn side by side and labelled on the frame so no category has to guess which it is looking
+at. Same circle, same ground, same type; only the letter count differs. A person with a photograph never
+shows initials, and no fallback ever shows a silhouette glyph. The library-wide statement is P0·8, rule 4.
+
+**Flagged ⚑** — the control vocabulary and constraints are the brief's; mine: hand-picked greying
+Count/Order (the owner amended this from hiding on 1 September 2026), the single-pick rulings, the unpublished-row note.
 
 ---
 
@@ -432,7 +596,11 @@ ruling.
    disabled with its ratio shown, never silently allowed (the A2 rule, restated as library-wide).
 4. **Avatars with no photograph (Part A·A1).** A list the user types themselves keeps **two initials**
    ("JD"). An author pulled from Ghost shows **one letter** ("J") — Ghost gives a theme no way to
-   produce two initials from a name.
+   produce two initials from a name. **The two forms are not interchangeable and are never mixed inside
+   one component**: a team grid of typed people is JD throughout, an author row of Ghost people is J
+   throughout, and a section that can switch source switches form with it, whole. A typed name of one
+   word ("Madonna") yields one letter; that is the string, not the rule. A person with a photograph never
+   shows initials, and no fallback ever shows a silhouette glyph. Both forms are drawn in P0·5.
 5. **Scale labels (Part A·A3).** A slider's **title** says what it affects; its three values reuse the
    standard words. "Card padding: Compact · Comfortable · Spacious" is correct. No new three-word
    vocabulary per slider.
@@ -482,9 +650,28 @@ ruling.
    names one thing with several settings: a **form**, a **width**, a **placement**, a **ladder**, a
    **ground**, a **treatment**, a **behaviour state**. Whatever a design always draws states itself in
    the panel and takes no switch. A group with a **floor keeps its last toggle on**, refusing to switch
-   off with the reason shown, in rule 2's words. **Not applied to the shared Actions control**
-   (None · Sign in · Subscribe · Sign in + Subscribe) ⚑ — it is compound and library-wide, so it is
-   put to the owner as an open question in the Headers spec rather than re-cut here.
+   off with the reason shown, in rule 2's words. **Now applied to the shared Actions control too** (formerly None · Sign in · Subscribe · Sign in + Subscribe) — it was held back as compound and library-wide, the owner scheduled the split on 31 August 2026, and it is done. The canonical definition, the value mapping and the three consequences are **P0·4a**; the designs touched are in the migration record.
+13. **A control switched off by another is greyed, with the reason beside it (new this pass).** Greyed,
+   never hidden, and never left accepting a value it will not honour; the reason is a short sentence at
+   the control, not a tooltip. The pattern, its five shapes and its accessibility string are **P0·0** —
+   categories cite that frame and supply only their own sentence. **Three carve-outs, all owner-ruled
+   and all stated in P0·0:** a control belonging to a **mode** the user is not in is absent, not greyed;
+   the **inline text toolbar** omits a mark a field does not permit rather than greying it; and the
+   **Remove button** never greys (rule below). **One exception of a different kind:** a control this
+   project can *never* offer is not drawn at all and the panel says why — the visitor dark-mode switch
+   under a pinned colour scheme is the only current case.
+14. **The Remove button never greys out.** Unchanged, and restated here because it is the reference case
+   rule 13 points at. Remove stays visible and fully clickable at a list's floor, and clicking it
+   produces the floor and the reason as one sentence under the list (P0·3).
+15. **A count that picks between drawn layouts is a named set, not a number picker (new this pass).**
+   The test is whether every value has a frame somebody has actually looked at. "How many items to show"
+   stays a number picker (A5, P0·3). "Which of three drawn arrangements" is three named values. Neither
+   is ever converted into the other.
+16. **A design may declare the width below which its script runs (new this pass).** Written in the
+   design's own words as a width — "collapses into sections under 768". Where a design declares one, its
+   **no-JavaScript line must describe the state on both sides of that width**, not only the narrow one.
+   The primitives themselves declare no modules (rule 11), so no P0 frame declares a width; the rule is
+   recorded here because every category inherits this list.
 
 ---
 
@@ -494,6 +681,9 @@ For the category patches to cite by name.
 
 | Component | What it is | First established |
 |---|---|---|
+| Greyed control | a control another control switched off: greyed, the value in force still legible, the reason as a sentence under it | P0·0 |
+| Never-offered note | the single note that sits where a control this project can never offer would have been | P0·0 |
+| Initials avatar | two letters for a name the user typed, one letter for a name Ghost supplied; never mixed in one component | P0·5 |
 | Inline text toolbar | 5-action floating toolbar over any text selection; docks at 390 | P0·1 |
 | Link popover | Ghost-aware link picker: pages/posts/tags/authors live-searched, Portal chips, URL/email, new-tab + rel toggles | P0·1 |
 | Plain-text lock pill | the pill naming a Ghost binding where the toolbar would sit | P0·1 |
@@ -560,7 +750,65 @@ Toolbar` · `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` · `P0-4 Me
 | Three modules created in the same pass were missing from the list | `nav-transform`, `contact-form` and `group-headings` **added**. |
 | The two free designs | Still **not applicable to P0** — these are editor controls, not placeable designs, so there is no roster and no free pair. The two design categories patched alongside this one (Headers and Heroes) each had their pair put to the owner and decided. |
 
+### Patch pass two — 31 August 2026
+
+Frames updated: **`P0-0 Greyed Control Pattern` (new)** · `P0-3 Item List Controls` ·
+`P0-5 Populate From Panel`. Every change carries the **name** of the rule that required it.
+
+| Rule | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | **New frame and new spec section, P0·0.** Resting state, greyed state, and where the sentence sits, drawn once; the five control shapes (select, segmented, toggle, swatch row, stepper) greyed together; the value in force stays legible; the reason is text under the control, never a tooltip. The **one exception** — a control this project can never offer is not drawn at all and the panel says why, the visitor dark-mode switch under a pinned colour scheme being the only current case — is drawn beside it. Recorded library-wide as P0·8 rule 13. Categories cite the frame and supply only their own sentence. |
+| The Remove button never greys out | **Restated in the item-list controls (P0·3).** Never greys, never hides; at the minimum it stays fully clickable and the click produces the floor and the reason as one line of text under the list. The *remove at minimum* frame gains the restatement and an explicit boundary: the greyed-control pattern does **not** reach this control, because Remove is switched off by nothing. Recorded as P0·8 rule 14. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **New frame in P0·5** drawing both, labelled: **two letters** for a list the user typed ("Jane Doe" → JD), **one letter** for a person Ghost supplied ("Jane Doe" → J), with the reason on the frame — Ghost's template language cannot split a name on the supported versions. Rule 4 in P0·8 extended with "never mixed inside one component" and the photograph/silhouette floor. |
+| A count that picks between drawn layouts is a named set, not a number picker | Recorded as P0·8 rule 15 with its test — every value must have a frame somebody has looked at. **No frame changes here:** P0·3's stepper already governs *how many items*, and arrangement controls already keep their named values. The rule is written down so categories stop converting one into the other in either direction. |
+| A design may declare the width below which its script runs | Recorded as P0·8 rule 16, including the requirement that a design declaring a width describes its no-JavaScript state on **both** sides of it. **No frame changes here** — the primitives are editor software and declare no modules (rule 11), so no P0 design declares a width. |
+| The feature-image caption renders differently on the two Ghost versions (tested 2026-08-31) | **No P0 change, recorded so the silence is not read as an omission.** No primitive renders a feature-image caption; the finding belongs to the categories that draw one. |
+| A comment count renders nothing at all without JavaScript (tested 2026-08-31) | **No P0 change, same reason.** No primitive reads a comment count. P0·4's no-JavaScript notice covers **forms**, which it already says in those words, and it is not extended to cover counts. |
+| Printed design totals | **Untouched.** No P0 frame or spec line carries a design total, and none was added. |
+| P0's per-prop mark allowlist | **Left alone.** The section stating the default inline marks, that a field may narrow the set, and that a mark a field does not permit is **absent** from the toolbar rather than greyed **is not present in this project's copy of the spec** — it was written in the repository. It has not been re-authored or paraphrased here. Its interaction with the new greyed-control rule was put to the owner and **ruled the same day**: the toolbar is a named carve-out in P0·0, and the allowlist text stands unchanged. |
+
+### Re-run check — 31 August 2026 (patch pass two, second issue of the instructions)
+
+The pass-two instructions were issued a second time. Every item on the work list was checked against the
+current files and found **already applied** by the first issue, recorded above. Nothing was redrawn and no
+copy was re-authored. What the check produced:
+
+| Rule | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | **One frame label corrected on `P0-0`.** The shapes panel was headed "THE FOUR CONTROL SHAPES · SELECT · SEGMENTED · TOGGLE · SWATCH ROW" while the specification says five shapes are drawn together and the frame in fact draws all five — the select greyed in the resting/greyed pair above, the other four in the panel below. The heading now reads five and names where the select sits. No control, colour, sentence or layout changed. |
+| A control switched off by another is greyed, with the reason beside it | Frames `P0-0`, `P0-3` (*remove at minimum*) and `P0-5` (*initials fallback*) re-read in full. All three carry the drawn states, the sentences and the boundary notes the pass asked for. Left untouched. |
+| The Remove button never greys out | Restatement present in `P0-3` and in P0·8 rule 14, including the explicit boundary that the greyed-control pattern does not reach it. Left untouched. |
+| Avatars with no photograph show initials | Both forms drawn and labelled in `P0-5`, with the reason on the frame. Left untouched. |
+| Printed design totals | No total appears in any P0 frame or in this file, and none was added. The count-agnostic copy written in the repository was not touched. |
+| P0's per-prop mark allowlist | **Left alone, again.** The allowlist text is not in this project's copy of the specification — it was written in the repository. It has not been re-authored, paraphrased or softened, and "absent" was not changed to "disabled". Its carve-out in P0·0 and rule 13 is unchanged. |
+| The feature-image caption renders differently on the two Ghost versions | No P0 change. No primitive renders a feature-image caption. |
+| A comment count renders nothing at all without JavaScript | No P0 change. No primitive reads a comment count; P0·4's notice covers forms and was not extended. |
+| A count that picks between drawn layouts is a named set | Recorded as rule 15 already; no frame change, in either direction. |
+| A design may declare the width below which its script runs | Recorded as rule 16 already; the primitives declare no modules, so no P0 design declares a width. |
+
+**OPEN QUESTION raised by this re-run.** The instructions' output item 4 requires confirming that the
+"**[Free] designs:**" line is present and names two designs that exist. **This contradicts a ruling already
+in this file** — the owner settled on 31 August 2026 that P0 is exempt, because it holds shared editor
+controls and no placeable designs, and closed open question 9 with "this does not need raising again in a
+later pass." Applying the instruction would mean inventing two design names that do not exist. **Not
+chosen either way and not invented.** The exemption stands as written until the owner rules otherwise.
+**OPEN FOR THE OWNER**
+
+### Owner's rulings on this pass's open questions — 31 August 2026
+
+The three questions this pass raised were put to the owner and answered before it closed. Recorded here
+with what changed.
+
+| Question | Ruling | What changed |
+|---|---|---|
+| Five places already remove a control instead of greying it | **Split them.** A control belonging to a **mode** the user is not in stays absent; a control this context **overrides** greys with its reason. Four of the five are mode changes and stand: P0·5's filter block under Static, P0·5's Count and Order under Hand-picked, P0·2's empty Recent row, and the missing Add / Remove / drag on a Ghost-sourced list. | **P0·2's button icons change.** The Size and Colour rows are no longer hidden — they are **greyed with their reasons beside them** ("Button icons are always small, so they sit on the label's line." / "A button icon takes the label's colour."), with the value in force still shown. Frame `P0-2` gains the drawn popover; the spec's button-icon paragraph is rewritten; the mode/override distinction is written into P0·0 and rule 13. |
+| The mark allowlist says "absent", the pattern says "greyed" | **Name it an exception.** A floating toolbar has no room for a sentence and the mark never returns for that field — the same permanence test the never-offered exception uses. | The **inline text toolbar** is a named carve-out in P0·0 and in rule 13. The repository's allowlist text is untouched, unsoftened and not re-authored. |
+| P0 has no roster and no free pair | **Confirmed exempt.** The requirement does not apply to primitive categories. | Stated once in the Confirmations below so it stops being re-raised each pass. Open question 9 is closed; no "[Free] designs:" line was invented. |
+
 ### Open questions
+
+Settled items are struck through with the name of whoever settled them. Anything still genuinely open
+carries **OPEN FOR THE OWNER** on its own line.
 
 1. ~~A5 and arrangement controls.~~ **Confirmed by the owner:** A5 covers *how many items* only.
    **Columns and per-row controls keep their named segmented values** in every category.
@@ -572,19 +820,73 @@ Toolbar` · `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` · `P0-4 Me
 3. ~~The per-page cost figures.~~ **Closed:** the measured figures arrived and are now named in the
    warning — three sections of 25 is 75 queries, about three-quarters of a second per visitor page
    load. The per-page framing is unchanged; the figures sit inside it.
-4. **A8 versus §7.8 of the master brief. Ruled by the owner this pass: strike §7.8.** The
+4. ~~A8 versus §7.8 of the master brief.~~ **Settled by the owner: strike §7.8.** The
    session-brief files in this project already carry the rule and do **not** carry §7.8's permission,
    so the strike is needed only in the owner's own master brief, which is not a file here. Replacement
    wording, to paste in §7.8's place: *"A placed design is the design that renders. It may reflow, hide,
    scroll or collapse to fit any width; it may never be served as a different design. A design that
    cannot hold together at 390 is redrawn with its own narrow arrangement, or cut."* The four permitted
    moves and the redraw-or-cut rule are now stated in P0·8, rule 8.
-   **Still outstanding elsewhere:** hand-off language remains drawn in already-finished categories —
-   A6·13, A8·14, A9·4, A19·7 and A29's build files each name a design they hand off to. Those are
-   their own categories' patches; they are recorded here so the list is not lost.
-5. **A2's floor sentences.** Each category supplies its own, and **one clause only** (owner's ruling):
-   "A pricing table needs at least two tiers." · "A bar needs at least one message." No floor sentence
-   points the user at another control. Two are drawn here as examples; the rest arrive with their
-   categories.
+   **Still outstanding elsewhere** ⚑ *re-checked 1 September 2026*: **A9·4, A19·7 and A29·5 are clear** —
+   each now draws its own state and its file names the hand-off only in its patch note. **Two build files still
+   draw the old language:** `A6-13 Overlap` (§7·8's hand-off named as a live mechanism) and `A8-14 Slim Line`
+   (a states caption reading "past the ceiling · the design hands off to 1 Single"). **Two designs still hand off
+   in substance, not just in wording:** `A22-6 Image Split` (no image → 5 Panel) and `A22-7 Cover` (no image →
+   4 Contrast Band), which A22's own patch notes record as left as found. Those four are their own categories'
+   patches; they are recorded here so the list is not lost.
+5. ~~A2's floor sentences.~~ **Settled by the owner:** each category supplies its own, and **one clause
+   only**: "A pricing table needs at least two tiers." · "A bar needs at least one message." No floor
+   sentence points the user at another control. Two are drawn here as examples; the rest arrive with
+   their categories.
+6. ~~Five places in this library already remove a control instead of greying it.~~ **Settled by the owner,
+   31 August 2026: split them.** A control belonging to a **mode** the user is not in stays absent; a
+   control this context **overrides** greys with its reason. The four mode cases stood as drawn — P0·5's
+   filter block under Source = Static, P0·5's Count and Order under Filter = Hand-picked, P0·2's empty
+   Recent row, and the absent Add / Remove / drag on a Ghost-sourced list — **until 1 September 2026,
+   when the owner moved Count and Order to the greyed side, leaving three.** **P0·2's button-icon Size and
+   Colour rows are now greyed with their reasons**, not hidden. The distinction is written into P0·0 and
+   rule 13.
+7. ~~The per-prop mark allowlist says "absent"; the new pattern says "greyed, never hidden".~~ **Settled
+   by the owner, 31 August 2026: the inline text toolbar is a named exception.** A floating toolbar has
+   no room for a sentence and the mark never returns for that field. The repository's allowlist text is
+   unchanged and was not re-authored; the carve-out is carried by P0·0 and rule 13.
+8. ~~**The shared Actions control** is the one compound value not split under "one toggle per thing".~~ **Settled by the owner, 31 August 2026: split it library-wide as a scheduled job**, and the job is done in the same pass — **P0·4a** carries the definition and the mapping, and the migration record lists all 36 designs, their 36 control tables and their 36 redrawn panels.
+   **OPEN FOR THE OWNER**
+9. ~~This category has no roster and no free pair.~~ **Settled by the owner, 31 August 2026: P0 is exempt.**
+   The roster and "[Free] designs:" requirements apply to design categories, not to primitive categories
+   — P0 is the set of shared editor controls, not placeable designs. Stated in the Confirmations below so
+   it is not raised again; no line was invented.
+
+10. **The re-issued instructions require a "[Free] designs:" line here; this file records the owner's
+   exemption for P0.** The two cannot both hold, and inventing two design names to satisfy the line is
+   the one thing neither permits. Left as it stands, unchanged, pending a word from the owner.
+   **OPEN FOR THE OWNER**
+
+### Confirmations
+
+- **Design numbering is unchanged.** This category's numbers are **P0·1 · P0·2 · P0·3 · P0·4 · P0·5 ·
+  P0·6 · P0·7 (S14) · P0·8**, exactly as before. This pass **adds P0·0**, ahead of them; nothing was
+  renumbered, renamed or removed. Frame files: `P0-0 Greyed Control Pattern` (new) · `P0-1` · `P0-2` ·
+  `P0-3` · `P0-4` · `P0-5` · `P0-6`.
+- **There is no "[Free] designs:" line, and P0 is exempt from the requirement.** Settled by the owner,
+  31 August 2026: the roster and free-pair requirements apply to **design categories**, not to primitive
+  categories. P0 is the set of shared editor controls every category's panel draws from — there are no
+  placeable designs here to mark, and any line would name designs that do not exist. **This does not need
+  raising again in a later pass.** Every design category still marks its own two.
 
 — End of specification —
+
+
+---
+
+### Patch pass — the Actions split, 31 August 2026
+
+| Rule | Change |
+|---|---|
+| One toggle per thing — no compound values | **New section P0·4a.** The shared Actions control is split into a labelled group of one On · Off toggle per action, each opening its own P0·4 member-aware card; all off is the old None. P0·4a carries the rule, the full old-to-new value mapping for all five affected categories, and the three consequences — a constant is stated not switched, an undrawn combination is greyed not invented, and a group with a floor keeps its last toggle on. **No P0 frame changed:** P0·4's card is the same card, reached from a toggle instead of from a value. |
+| One toggle per thing — no compound values | **Rule 12 amended** — its "not applied to the shared Actions control" carve-out is withdrawn and now points at P0·4a. **Open item 8 is struck through and closed**, naming the owner and the date. |
+| A design may offer fewer choices on a shared control, and must say why | Unaffected, and worth stating: the split does not let a category rename the group or its toggles. A category may hold **fewer** toggles where it has fewer actions — A6 one, A4·7 one — and must say why in the group, which both do. |
+
+**Numbering unchanged.** P0·0 · P0·1 · P0·2 · P0·3 · P0·4 · **P0·4a (new)** · P0·5 · P0·6 · P0·7 (S14) · P0·8. Nothing was renumbered; the new section takes a letter rather than a number so no existing reference moves.
+
+**There is no "[Free] designs:" line, and P0 remains exempt** by the owner's earlier ruling.

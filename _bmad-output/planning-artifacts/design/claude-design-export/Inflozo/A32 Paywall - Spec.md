@@ -366,7 +366,8 @@ Only 7 Tiers draws a repeated item, and the item is Ghost's, not the user's.
    |---|---|
    | Fade | None · Short 96 · Standard 160 · Deep 240 |
    | Blur the last block | Off · On |
-   | Action | Button · Button and email field · Text link |
+   | Action | Button · Text link |
+   | Email field | On · Off — split out of the old "Button and email field" value (a form and a field were two things in one list). Greyed with its reason on the upgrade gate, which must not ask for an address Ghost already has |
    | Included list | Show · Hide |
    | Included list items | the P0·3 item controls |
    | Eyebrow | Show · Hide |
@@ -390,7 +391,7 @@ Only 7 Tiers draws a repeated item, and the item is Ghost's, not the user's.
    identically with JavaScript off** ⚑ — server-rendered HTML, a gradient, `:last-child` selectors — **and
    the action is dead**, because it opens Ghost's Portal and Portal is JavaScript ⚑. **The button does not
    render at all where the connected site cannot take it** ⚑ — self-signup off, or no payment provider
-   connected — and then the gate is its words and the sign-in line. **At Button and email field it declares
+   connected — and then the gate is its words and the sign-in line. **At Email field = On it declares
    `member-form`** ⚑. **No-JS:** Ghost's signup endpoint refuses a plain form submission, so **the form is
    replaced by P0·4's no-JavaScript notice at the form row's own height** ⚑ — *"Signing up needs JavaScript
    — turn it on to subscribe."*, plain text and not an alert, no field and no button, the legal line kept
@@ -636,7 +637,7 @@ minus one property is not a design.
    | Action side | Right · Left |
    | Included list | Numbered rows · Ticks · Hide |
    | Included list items | the P0·3 item controls |
-   | Action | Button · Button and email field |
+   | Email field | On · Off — split out of the old "Button and email field" value. This design's action is always a button, so with the field split out the form axis had one value left: the Action row is gone and its constant is stated in the panel |
    | Fade | None · Short 96 · Standard 160 · Deep 240 |
    | Eyebrow | Show · Hide |
    | Sign-in link | Show · Hide |
@@ -654,7 +655,7 @@ minus one property is not a design.
    heading has a default ⚑.
 9. **Behaviour module.** **At Action = Button, none; `core` assumed — the section is drawn identically
    with JavaScript off and its action is dead** ⚑, Portal being JavaScript, and **the button does not render
-   at all where the connected site cannot take it** ⚑. **At Button and email field it declares
+   at all where the connected site cannot take it** ⚑. **At Email field = On it declares
    `member-form`** ⚑. **No-JS:** the form is replaced by **P0·4's no-JavaScript notice at the form row's own
    height** ⚑ — *"Signing up needs JavaScript — turn it on to subscribe."*, no field and no button, the legal
    line kept beneath — because Ghost's signup endpoint refuses a plain form submission. **The sent, error and
@@ -1124,12 +1125,12 @@ shared no-JS line — so a rebuild cannot revert this pass.
 
 | # | Design | Behaviour declared | Without JavaScript |
 |---|---|---|---|
-| 1 | Fade | `core` · `member-form` at Button and email field | The section is drawn identically — server-rendered gate, a gradient for the fade. **The button opens nothing.** At Button and email field **the notice replaces the form**. |
+| 1 | Fade | `core` · `member-form` at Email field = On | The section is drawn identically — server-rendered gate, a gradient for the fade. **The button opens nothing.** At Email field = On **the notice replaces the form**. |
 | 2 | Card | `core` | Card, shadow, overlap and fade identical. **The button opens nothing.** |
 | 3 | Panel | `core` | The plane and its included row identical. **The button opens nothing.** |
 | 4 | Contrast Band | `core` | The band, its derived colours and its bleed identical — **the design's whole argument survives**. **The button opens nothing.** |
 | 5 | Boxed | `core` | Box, rules and inset identical. **The button opens nothing.** |
-| 6 | Split Pitch | `core` · `member-form` at Button and email field | Both columns, the numbered rows and the stack order identical. At Button and email field **the notice replaces the form**; the button opens nothing. |
+| 6 | Split Pitch | `core` · `member-form` at Email field = On | Both columns, the numbered rows and the stack order identical. At Email field = On **the notice replaces the form**; the button opens nothing. |
 | 7 | Tiers | `price-toggle` | **Both monthly and yearly prices render side by side, each labelled**, each with its own Portal link — no toggle control shown. Cards, prices, descriptions and the marked tier are server-rendered. **The card buttons open nothing.** |
 | 8 | Ledger | `core` | Rows, ordinals, hairlines and row density identical. **The action opens nothing.** |
 | 9 | Big Type | `core` | The display heading and its measure identical. **The action opens nothing.** |
@@ -1229,3 +1230,16 @@ and no question in this category is open.**
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** twelve designs, numbered **1–12**.
+
+
+---
+
+## Patch notes — the Actions split, 31 August 2026
+
+Frames updated: `A32-1 Fade` and `A32-6 Split Pitch` — the two designs whose Action control hid a field decision inside a form. Nothing renumbered, renamed or redesigned.
+
+| Rule (by name) | Change |
+|---|---|
+| One toggle per thing — no compound values | **"Button and email field" was two things in one value.** A form (button or text link) and a field (present or absent) were sharing a list. Split: the **Action** row keeps the form axis, and **Email field: On · Off** becomes its own toggle in the Actions group. Canonical definition: **P0·4a**. |
+| One toggle per thing — no compound values | **A32·6's Action row is gone, and its constant is stated.** Its list was *Button · Button and email field*, so with the field split out the form axis had a single value left. A one-value control is a constant, and the rule says a constant is stated in the panel rather than offered as a switch. |
+| A control switched off by another is greyed, with the reason beside it | **The upgrade gate greys the field with its reason** — Ghost already has the address — which is what this specification already said in words on every gate and now says at the control. |

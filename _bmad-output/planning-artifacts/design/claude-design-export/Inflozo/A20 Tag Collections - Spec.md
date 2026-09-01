@@ -213,7 +213,7 @@ copies, so **a renamed tag renames itself here and a deleted tag drops out silen
 is drawn order**, which is why *Order* disables; the list is the count, which is why *Show* disables.
 A23's tag-chips repeater is the exact precedent. Per design: **10 Lead and Rest leads with the first
 reference** ⚑ — the featured-tag picker that design refused, arriving as a source rather than as a
-second control — **12 Panel still hands off to 1 Chips below four references** ⚑, and **7 Index keeps
+second control — **12 Panel draws its own box below four references** ⚑ *amended 29 August 2026 — the hand-off to 1 Chips is deleted and the panel advises it instead*, and **7 Index keeps
 A–Z even here** ⚑.
 
 **The degradation, which this spec was silent about.** ⚑ **`tagSource` = This post's tags on a route

@@ -25,6 +25,25 @@ adds no trigger attribute and reads no new field.** The one real failure is **Gh
 all**, which happens when memberships, recommendations and donations are all switched off, and which no
 form of the link can fix. **Ruled by the owner on 29 August 2026; question 2 is closed.** **Nothing was renumbered.**
 
+**Pass two — 1 September 2026 (this document's current state).** Two jobs and one refusal to choose.
+**A page layout may carry exactly one post content section, and the editor refuses a second** — at placement,
+with the reason shown, because two would print the article twice — **and the refusal is drawn** on `A25-0` in
+the three places a placement can start, with each design frame carrying its own picker state. **The five
+library rules this pass adds were applied across the category:** the greyed-with-a-reason pattern was
+re-checked design by design (Vertical spacing inert in all twelve, Background role locked in two, 8 Index
+Top's Index columns greyed at Ruled), and the avatar, Remove-button, named-set and declared-width rules
+have **no subject** here, each said so in place rather than left silent. **Neither Ghost finding of
+31 August reaches A25** — no design reads a feature-image caption or a comment count — though **whether
+Ghost 6 strips marks from body captions inside `{{content}}` was not tested**, and that is recorded as a
+finding rather than assumed. **The one work-list item that contradicted the category was put to the owner and answered the same day:**
+the ruling that **the share rail uses the site-wide share list** is **not applied** — **the owner kept
+Ghost's window**, so every share affordance stays one `<a href="#/share">`, the destinations, their order and
+the copy confirmation stay Ghost's, and finding 9 is now the whole of the item: A24·14 and A26·9 should adopt
+the same line. **The second question this pass raised was answered with it:** **a control the post's own
+content cannot honour is greyed too**, with the same sentence at the control — applied in eleven of the twelve
+designs and drawn on `A25-0`. **Nothing was renumbered, no control was added, removed or renamed, and no measure, type size,
+colour pack or spacing step moved.**
+
 **[Free] designs:** 2 Plain · 5 Full Bleed
 
 *(Shortlisted in this pass — 2 Plain, 11 Ruled, 1 Measured, 8 Index Top, 3 Sheet — recommended as
@@ -213,6 +232,36 @@ Every design obeys these unless its own entry says otherwise.
   the modal does, and it announces its own result. **No-JS:** the anchor always renders; Ghost's
   modal is Ghost's own client-side flow, so with JavaScript off the link opens nothing — a platform
   limitation the theme cannot fill, and one no registry module is involved in either way.
+- **One post content section per page layout, refused at placement.** ⚑ A layout may carry **exactly
+  one** A25 section, and **the editor refuses a second where the placement starts** — greyed in the section
+  picker with the reason at the group, refused as a drop indicator on the canvas, and marked ONE ONLY on the
+  layers row — **never accepted and warned about afterwards**. Two would print the article twice on the live
+  page, and there is no reason to want that, so nothing is lost by making it impossible. **Switching the one
+  section between the twelve designs is untouched:** the refusal is on adding, never on choosing. Drawn in
+  full on `A25-0` and per design on each frame.
+- **The five library rules of this pass, in one place.** **A control switched off by another is greyed with
+  its reason** — already the category's pattern, re-checked design by design, with **Vertical spacing inert
+  in all twelve**, **Background role locked in 3 Sheet and 4 Contrast Band**, and **8 Index Top's Index
+  columns greyed at Index style Ruled**; nothing in A25 is hidden by another control and no control accepts a
+  value it will not honour. **Avatars with no photograph** has **no subject** — A25 renders no person.
+  **The Remove button never greys out** has **no subject** — no authored repeating list anywhere here.
+  **A count that picks between drawn layouts is a named set** — no row converted; 8's Index columns counts
+  lanes, not items, and stays a named set. **A design may declare the width below which its script runs** —
+  **none does**, every script in the category runs at every width, and the no-JavaScript lines are stated on
+  **both sides** of the 1,200 furniture threshold, which is CSS rather than a boundary a script honours.
+- **A control the post's own content cannot honour is greyed too, with the same sentence at the control.** ⚑
+  **The owner's ruling of 1 September 2026**, and an extension of the greyed-with-a-reason rule rather than a
+  second pattern: where **the article** is the reason a value cannot be honoured, the values stay drawn and
+  struck rather than disappearing, the row never accepts a value it will not honour, and **the reason is the
+  short sentence each panel already drew at that state**. **Under three headings:** 1 Measured's and 4 Contrast
+  Band's Table of contents values, 7 Sticky Index's Index position, Index style and Share rail's *With the
+  index*, 8 Index Top's Index columns and Index style. **No headings:** the Anchor links row in 1, 2, 6, 10 and
+  12; 6 Hanging Heads' Heading column and Levels that hang; 12 Numbered's Numbering and Number position;
+  11 Ruled's *Between sections* value. **No pictures:** 3 Sheet's Media in the sheet, 5 Full Bleed's Breakout,
+  Caption and Space around media. **Neither caption nor quote:** 10 Marginalia's Margin column and What moves
+  out. **9 Share Rail is the one design with no case** — one mark, drawn wherever there is an article. **On an
+  empty body every row greys** with the section's own line. **The rule reaches nothing else:** no measure, type
+  scale, drop cap, rhythm or share mark depends on what the post contains.
 - **Editing.** Every visible authored text is inline-editable on canvas with the shared **P0·1**
   toolbar — bold · italic · underline · link, the link popover carrying **Open in new tab** and rel
   **nofollow · noreferrer · sponsored**. **The three authored labels all edit inline**: `indexLabel`,
@@ -398,6 +447,8 @@ platform names and the copy confirmation.
 - **Reconciled.** **The trio becomes a quartet** — Paragraph rhythm joins it, so this design can set indented paragraphs and keep its index; seven controls. **The universal trio is drawn outside the list**, with Vertical spacing **inert** and its reason shown. **Sharing then became Ghost's native share modal** ⚑ — one `<a href="#/share">` in place of the tower, A24·14's setting no longer read, `copiedLabel`, `post.url` and `post.title` out of the field list, and the `share` module no longer declared. The two authored labels edit inline.
 - **Flagged ⚑** — the 1,200 collapse; the measure never moving; the mark at the inner edge of its margin; the three-heading minimum with an empty margin rather than a placeholder; the index after the article in the DOM; `scroll-margin-top` at 96 for A24·13; one module where the design once declared two; the paywall cut truncating the index; the drop cap holding at 390; heading ids from Ghost's slugs; the dark body under the heading's ratio.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Two rows, both on the post's headings.** **Table of contents' Left and Right grey on a post with fewer than three headings** — "This post has two headings. The index needs three." — with Off selected, and **Anchor links greys on a post with no headings**. Share rail is untouched; the margin does not move either way. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **Two cases, neither a disablement.** Vertical spacing **inert** with its reason; the index and the rail cannot claim the same margin, and at Table of contents Right with Share rail Rail **the mark sits under the index behind a hairline** rather than either control being switched off. *A design may declare the width below which its script runs*: **No width declared.** `toc` and the anchor script run at every width; **both sides of 1,200 read the same unscripted** — no index above it, no disclosure below it, no ⌗ anywhere. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
+
 ---
 
 ### A25·2 — Plain
@@ -429,6 +480,8 @@ platform names and the copy confirmation.
 - **Repeating items.** **None, authored or derived** ⚑.
 - **Reconciled.** **Paragraph rhythm is no longer this design's own** ⚑ — the pass promoted it into the shared quartet, so four of this panel's five rows are the category's and **the design's argument now rests on the count slot rather than on a control**. The universal trio is drawn outside the list, Vertical spacing **inert** with its reason; Background role matters more here than anywhere else in A25, because the ground is the only furniture this design has.
 - **Flagged ⚑** — the empty margin as the design; the drop cap suppressed when the first block is not a paragraph; Indented's 1.6 em and its suppression after headings, images and callouts; Drop cap and Indented resolving in the drop cap's favour; five controls; no authored fields; `::first-letter`; this design being the fallback the index designs land on.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **One row.** **Anchor links greys on a post with no headings**; the other four stay live on any post. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own.** Five independent rows; Vertical spacing **inert** with its reason. *A design may declare the width below which its script runs*: **No width declared.** The anchor script runs at every width; on both sides no ⌗ renders and the measure does not move. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
 
 ---
 
@@ -463,6 +516,8 @@ platform names and the copy confirmation.
 - **Repeating items.** None authored. Selecting the section gives `shareLabel`. The sheet is not separately selectable.
 - **Reconciled.** Paragraph rhythm joins the quartet; seven controls. The universal trio sits outside the list with **Background role locked to Surface** — the sheet *is* the surface — and Vertical spacing **inert**; **Sheet inset keeps its own name** because it is padding inside an object rather than the space above the section, and Top divider is drawn above the sheet on the page ground. **Sharing then became Ghost's native share modal** ⚑ — the row is one `<a href="#/share">`, `copiedLabel`, `post.url` and `post.title` leave the field list, and the design declares no module at all.
 - **Flagged ⚑** — the largest use of A19·3's card; the inset measured to the sheet's edge and symmetrical; captions returning to the measure; the 690 measure at 834; the sheet leaving below 767; no sheet when the body is empty; the sheet closing above the cut; overruling the Cards module; the hairline running behind the image in dark; the sheet omitted in print.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **One row.** **Media in the sheet greys on a post with no pictures**; the sheet, its inset and the share row are unaffected. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **One lock by the design, drawn.** Background role **locked to Surface** with its reason; the sheet leaving below 767 is a width, not a control. Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No subject — no module.** The sheet, its inset and its media rules are CSS at every width. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
 
 ---
 
@@ -499,6 +554,8 @@ platform names and the copy confirmation.
 - **Reconciled.** **Share rail: Off · Under is added** ⚑, on **the derived on-band surface A26·4 worked out for its subscribe field** — 6% of the band's text, hairline at 18% — so this category's recorded refusal ("no share control until the packs supply an on-contrast surface token") is **withdrawn**: one category refusing what a later one solved is an inconsistency users meet the first time they put a band above a footer. Paragraph rhythm joins the quartet: eight controls, the largest panel in A25 and still under the cap. Background role **locked to Contrast**, Vertical spacing **inert**, Band padding keeping its own name. **The native-share pass then made the row one mark** ⚑ — Ghost's modal carries the platforms — which is why a band can afford a share control at all: one derived circle rather than four.
 - **Flagged ⚑** — colours derived from the two contrast tokens; muted at 70%, hairlines at 18%; the accent lifting per band; the derived 6% share surface under one mark; the band never collapsing; inset padding dropping to 32 at 390; the stripe placeholder not inverting in dark; no band when the body is empty; the band omitted in print.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **One row.** **Table of contents' Left greys on a post with fewer than three headings**, with Off selected; the band and its padding are unaffected. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **One lock and one narrowed row, both drawn.** Background role **locked to Contrast**; **Table of contents offers Off · Left only** and the absent Right value carries its reason. Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared.** `toc` runs at every width and the in-band disclosure is CSS; unscripted, both sides lose the index and keep the band whole. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
+
 ---
 
 ### A25·5 — Full Bleed
@@ -532,6 +589,8 @@ platform names and the copy confirmation.
 - **Repeating items.** None authored. Breakout, Caption and Space each write one value onto the section; there is no per-image control.
 - **Reconciled.** **Breakout gains Follow the card widths and takes it as the default** ⚑ — Ghost's Koenig cards carry a per-image width and the author has already chosen, so the honest default is to obey it. **This is the category's real Ghost hookup**, and it softens finding 2: at the default **the section no longer overrules the Cards module at all**, and the section-versus-Cards disagreement arises only when a user asks for it by name. Paragraph rhythm joins the quartet; the universal trio sits outside the list with Vertical spacing **inert** and Space around media keeping its own name.
 - **Flagged ⚑** — Narrow as the default measure; Follow the card widths as the default breakout; no radius on full-bleed media at any pack; the space ladder not moving with Type scale; the measure held at 834; Caption In the margin resolving to Under; callouts and bookmarks never breaking out; the hand-off to 2 Plain; `lightbox` only where the original is larger than the viewport; alt never falling back to the caption; images printing at the measure.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Three rows, and this design is the rule's clearest case.** **Breakout, Caption and Space around media all grey on a post with no pictures** — "This design is for posts with pictures." — the panel's own sentence, now beside the controls it disables. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own, and one value resolved by a width.** **Caption In the margin resolves to Under below 1,200** — said at the control, because a width resolving a value is not a control switching one off. Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared, and this is where one was considered.** `lightbox` binds at every width, since a picture at 390 can still be smaller than its original; unscripted on both sides, the picture is the picture. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
 
 ---
 
@@ -567,6 +626,8 @@ platform names and the copy confirmation.
 - **Reconciled.** **Paragraph rhythm joins the quartet** — indented paragraphs under a hanging heading is the pairing this design was missing; seven controls. The universal trio outside the list, Vertical spacing **inert** with its reason, and **Top divider drawn at the measure so it never crosses the heading column** ⚑.
 - **Flagged ⚑** — top alignment as the premise; the column changing where it begins and not where it ends; H3 hanging in `text-muted` and keeping it through the collapse; anchors under rather than beside the heading; H4 and deeper never hanging; no index control in a design whose margin is spent; the dark-weight finding at reading scale; the collapse destination being each heading's own section; headings returning to the measure in print.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Three rows.** **Heading column, Levels that hang and Anchor links all grey on a post with no headings**; nothing is reserved for the column either way. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own.** Heading column and Levels that hang are independent; Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared.** The anchor script runs at every width; the hanging column is CSS grid on both sides of 1,200. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
+
 ---
 
 ### A25·7 — Sticky Index
@@ -600,6 +661,8 @@ platform names and the copy confirmation.
 - **Repeating items.** One, derived: the index. Index style writes one value onto the whole list.
 - **Reconciled.** Paragraph rhythm joins the quartet; seven controls. The universal trio outside the list, Vertical spacing **inert**, and the held column's hairline **derived from Background role** rather than fixed ⚑. **Sharing then became Ghost's native share modal** ⚑ — the buttons that travelled on the index are one `<a href="#/share">`, the module count falls from three to two, and `copiedLabel`, `post.url` and `post.title` leave the field list. The two authored labels edit inline, and **P0·6's Simulate scroll is named as the editor state for the hold and the current entry** — which no panel had said, and this is the one A25 design that needs it.
 - **Flagged ⚑** — the hold at 96 tied to `scroll-margin-top`; the current entry being the last heading past the hold line; the index scrolling inside itself and never truncating; left alignment at both positions; `sticky` rather than `fixed` and no hold under 560; two modules with `toc` governing, where the design once declared three; `aria-current="location"`; the index stopping at the cut; the disclosure closing when an entry is followed; no index in print.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Three rows, and this is the case that raised the question.** **Share rail's *With the index* greys on a post with fewer than three headings** while Off and Under stay live, and **Index position and Index style grey with it**. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **One inert row, and one question this pass does not answer.** Vertical spacing **inert**. **Share rail's With the index value needs an index**, and at fewer than three headings there is not one — **whether a content condition greys a control the way another control does is asked as an open question** rather than decided here. *A design may declare the width below which its script runs*: **No width declared, and this design comes closest.** The column holds at 96 above 1,200 and stops holding below it, which is CSS; `scroll-spy` runs wherever `toc` built a list. Unscripted on both sides there is no index to mark, held or collapsed. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
 
 ---
 
@@ -637,6 +700,8 @@ platform names and the copy confirmation.
 - **Reconciled.** **`indexNote` and `indexLabel` edit inline on canvas** ⚑ — the two strings a reader meets before the first line are edited where they are read rather than in a sidebar field — with `shareLabel`, the share link's own text, beside them. Paragraph rhythm joins the quartet; seven controls. The universal trio outside the list, Vertical spacing **inert**, and **Top divider Line resolving into the index's own upper hairline rather than drawing a second** ⚑. **Sharing then became Ghost's native share modal** ⚑: the row is one `<a href="#/share">`, and `copiedLabel`, `post.url` and `post.title` leave the field list. The section count and reading time stay Ghost's and are not editable.
 - **Flagged ⚑** — the index inside the measure; reading time repeated from A24's meta; the index holding at 15 px against the type scale; Ruled forcing One column; columns forced to One below 767; never a disclosure; twelve entries drawn whole; the section count alone on a page template; no hairlines when empty; two hairlines rather than one in dark; the index printing.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Two rows.** **Index columns and Index style grey on a post with fewer than three headings**; the share row is untouched. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **One case, drawn.** **At Index style Ruled, Index columns' Two and Three are greyed with the reason beside them** and One stays — ruled entries take the full measure. Nothing is hidden and the row never accepts a value it will not honour. Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared.** Columns are forced to One below 767 by CSS; `toc` runs at every width, and unscripted on both sides there is no index, no hairlines, no count and no reading-time line. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
+
 ---
 
 ### A25·9 — Share Rail
@@ -670,6 +735,8 @@ platform names and the copy confirmation.
 - **Repeating items.** **None at all after this pass** ⚑ — the design that came closest to a repeating item in A25 no longer has one: one mark, no list, no count. Selecting the section gives `shareLabel`, and nothing else.
 - **Reconciled.** The controls pass re-based the destinations on A24·14's site-wide setting and corrected the page rule; **the native-share pass then took the destinations out of the theme altogether** ⚑, and this is where that costs and buys the most. The tower of two to four platform buttons becomes **one mark linking to `#/share`**; **Links is deleted** (six controls, the only panel in A25 to lose one), Rail labels becomes **Share style** Icon · Icon and label, the rotated 11 px label goes, and the count slot falls from `few` to `one`. `copiedLabel`, `post.url` and `post.title` leave the field list and **the `share` module is no longer declared**. **A24·14's setting, adopted earlier in the same pass, is superseded by the platform** — recorded as a finding rather than reversed in silence.
 - **Flagged ⚑** — the rail static rather than sticky; the rotated label withdrawn with the destinations; the empty opposite margin as the design; the mark going to the foot on collapse; 44 px boxes below 767; the count slot at `one`; the rail drawing on pages as well as posts, the old no-URL rule withdrawn; `copiedLabel` deleted with the copy confirmation; Ghost's modal opening nothing with JavaScript off; no mark in print.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **No subject.** One mark, drawn wherever there is an article: no row here depends on what the post contains. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own.** Rail position and Share style are independent; Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No subject — no module** and no theme script of any kind. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **NOT APPLIED — the owner kept Ghost's window on 1 September 2026.** One `<a href="#/share">`, and Ghost's modal keeps the destinations, their order, their names and the copy confirmation; no list, count, order, `copiedLabel`, `post.url` read or `share` module returns, and nothing here changed in either direction.
 
 ---
 
@@ -705,6 +772,8 @@ platform names and the copy confirmation.
 - **Reconciled.** **Paragraph rhythm joins the quartet** — indented paragraphs beside margin notes is a real pairing this design could not have; seven controls. The universal trio outside the list, Vertical spacing **inert** with its reason, and **the note column taking the same ground as the measure at every Background role** ⚑ — a tinted margin would turn the author's captions into a sidebar.
 - **Flagged ⚑** — CSS grid placement rather than a marginalia card; the note clipped to its own row with a 2 px scrollbar and a three-line minimum; right-aligned captions at Margin column Left; the quote's accent rule moving from left to top; captions holding at 13 px; notes clipped to their rows and scrolling inside them, labelled and keyboard-reachable; a caption-less figure leaving an empty cell; Ghost having no footnote or aside primitive; notes returning to the flow in print.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Three rows.** **Margin column and What moves out grey on a post with neither a caption nor a quote**, and **Anchor links greys on a post with no headings**. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own.** Margin column and What moves out are independent; Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared.** The anchor script runs at every width; the notes, the clip and the 2 px scroller are CSS, and the scroller exists only above 1,200 where the notes are in the margin. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
+
 ---
 
 ### A25·11 — Ruled
@@ -738,6 +807,8 @@ platform names and the copy confirmation.
 - **Repeating items.** None authored. Rules, Frame and Inset each write one value onto the section.
 - **Reconciled.** Paragraph rhythm joins the quartet; seven controls. The universal trio outside the list, Vertical spacing **inert**, **Inset keeping its own name** because it is the box's padding rather than the space above the section, and **Top divider drawn above the box rather than inside it** ⚑ — the box's own top border is not that row. **The box takes no fill at any Background role** ⚑, which is exactly what separates it from 3 Sheet's card.
 - **Flagged ⚑** — the box hugging the measure; rules always the full inner width; suppression above the five self-edged cards and above the first block; the 674 measure at 834 and 310 at 390; the box kept at 390; Rules only dropping the horizontal inset; no `<hr>` inserted; the author's divider still announced; no box when empty; the box printing.
+
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **One value rather than a row.** **Rules' *Between sections* greys on a post with no headings** — no section breaks to rule — while Every block stays live. **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own, and one effect narrowed by another row with its reason at the control.** **At Frame Rules only there is no box, so Inset keeps its vertical effect and drops its horizontal one** — said at the control rather than the row being switched off. Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No subject — no module.** Pixel-identical at every width and every setting. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
 
 ---
 
@@ -773,6 +844,8 @@ platform names and the copy confirmation.
 - **Reconciled.** Paragraph rhythm joins the quartet; seven controls. The universal trio outside the list, Vertical spacing **inert**, and the numerals keeping `text-muted` at every Background role. **This is the design the category now recommends for a site that must work with JavaScript off** ⚑ — CSS counters need no script where the four indexes lose theirs — and finding 6 is corrected to say so.
 - **Flagged ⚑** — CSS counters rather than a script or authored numbers; the 72 px column and 32 px gutter; zero padding and right alignment; numerals in the mono face and in `text-muted`, never accent; 00.1 for an orphan H3; the margin resolving to Above below 1,200; 11 px decimals at 390; the counter recomputed across a paywall cut; numerals not copying with a heading; numerals printing.
 
+**Patched · pass two, 1 September 2026.** *A page layout carries exactly one post content section*: **applied and drawn** — a second is refused at placement with the reason shown, greyed in the picker and refused as a drop; switching this section to another A25 design is not a second placement. *A control the post's own content cannot honour is greyed too, with the same sentence*: **Three rows.** **Numbering, Number position and Anchor links all grey on a post with no headings** — "This post has no headings. There is nothing to number." **On an empty body every row greys** with the section's own line. *A control switched off by another is greyed, with the reason beside it*: **No case of its own.** Numbering and Number position are independent; Vertical spacing **inert**. *A design may declare the width below which its script runs*: **No width declared.** Number position In the margin resolves to Above the heading below 1,200, which is CSS; the numerals survive unscripted on both sides and the anchor does not. *Avatars with no photograph* and *The Remove button never greys out*: **no subject** — no person and no authored list in this design. *The share rail uses the site-wide share list*: **no subject** — this design draws no share affordance at any setting; the category's answer of 1 September 2026 is to keep Ghost's window.
+
 ---
 
 ## 2 · Component inventory
@@ -790,7 +863,7 @@ Every reusable component this category established or reused, cumulative.
 | Measure and page margin | content 1,296 on 72; 754 on 40; 350 on 20 | A17 |
 | On-contrast derivation | every colour in a band derived from two `contrast` tokens | A17·7 |
 | Surface card | radius token, md shadow in light, hairline in dark | A19·3 |
-| Missing-image vocabulary | Reflow · Plate · Hand off | A19 |
+| Missing-image vocabulary | Reflow · Plate · Ground ⚑ *corrected 1 September 2026 — A19 deleted Hand off and Ground replaced it; A24 adds Hide* | A19 |
 | Padding ladder | Compact 64 · Comfortable 96 · Spacious 132, named never numeric | A24 |
 | ~~Links control~~ | Two · Three · Four — **retired in A25 by Ghost's native share modal** ⚑ | A24·14 |
 | ~~Copied confirmation~~ | accent fill + label for 1.6 s — **gone from A25: Ghost's modal announces its own** ⚑ | A24·14 |
@@ -1060,7 +1133,12 @@ the category's version of the same panel above the settlements.
 
 ### Open questions
 
-**QUESTION 1 — Which two designs a free site gets — ANSWERED: 2 Plain · 5 Full Bleed**
+**Housekeeping, 1 September 2026.** All three questions below were settled before this pass and were reading
+as open. Each is now **struck through with who settled it** and kept for the record; **nothing on this list is
+open.** The two questions this pass raises are in **Patch notes — pass two**, each marked **OPEN FOR THE
+OWNER** on its own line, and neither is answered here.
+
+~~**QUESTION 1 — Which two designs a free site gets**~~ — **SETTLED by the owner, 29 August 2026: 2 Plain · 5 Full Bleed.**
 
 Every category gives two of its designs away, and which two is the owner's call. Of these twelve, the
 plainest that would not look unfinished on a real site are **2 Plain** (the article on its measure and
@@ -1087,7 +1165,7 @@ the quietest design in the category and the one that does the most with an autho
 Recorded ⚑: 5 Full Bleed is the only A25 design that depends on pictures, so a free site with none sees
 the measure alone at Narrow and has one design in practice rather than two.
 
-**QUESTION 2 — What exactly the share link should say — ANSWERED: exactly what Ghost documents**
+~~**QUESTION 2 — What exactly the share link should say**~~ — **SETTLED by the owner, 29 August 2026: exactly what Ghost documents — `<a href="#/share">`.** *Reopened in effect by this pass's share-list ruling, which is recorded as a conflict rather than as an answer; see Patch notes — pass two.*
 
 Ghost opens its share window when a reader clicks a link pointing at its share route. Your first test
 showed a bare `#/share` doing nothing, and Ghost's own documentation shows exactly that bare form.
@@ -1123,7 +1201,7 @@ address, adds no trigger attribute and reads no field for sharing. **The ruling 
 recorded as withdrawn on its own evidence** ⚑ rather than quietly dropped, and **A24·14 and A26·9 should
 follow the same one line** when they retire their theme-side share lists.
 
-**QUESTION 3 — A very long caption in the margin — ANSWERED: clipped to its row, with a scrollbar**
+~~**QUESTION 3 — A very long caption in the margin**~~ — **SETTLED by the owner, 29 August 2026: clipped to its row, with a scrollbar, a three-line minimum and a keyboard-reachable scroller.**
 
 10 Marginalia puts figure captions in a 240 px column beside their picture. The old rule sent a caption
 over 140 characters back under the picture, and a stylesheet cannot count characters, so it is deleted and
@@ -1148,6 +1226,21 @@ never given fewer than three lines** ⚑, so a short block does not leave a one-
 scroller is a labelled, keyboard-reachable region** ⚑, because scrollable content a keyboard cannot reach
 is unusable to a reader without a mouse. Below 1,200 the notes return to the flow as they already did, so
 **the scroller only ever exists at desktop widths** ⚑.
+
+**Raised by pass two, 1 September 2026 — two items, ~~open~~ both ANSWERED by the owner the same day.**
+
+~~**OPEN FOR THE OWNER — the share rail's destinations: Ghost's modal or the site-wide list?**~~ — **SETTLED by the owner, 1 September 2026: keep Ghost's window.** The site-wide-list ruling is not applied to A25; nothing changed on any frame; finding 9 stands for A24·14 and A26·9.
+The work list rules that the share rail uses the site-wide share list in the order the site set. The
+category's current state, ruled on 29 August 2026, is one `<a href="#/share">` with Ghost's own modal owning
+the destinations, their order, their names and the copy confirmation, and A24·14's setting expressly not read
+here. **Both cannot be true**, and the choice decides whether six designs get back a destination list, a
+count, an order, `copiedLabel`, a `post.url` read and the `share` module. **Answered: keep Ghost's window**, so nothing was changed at all.
+
+~~**OPEN FOR THE OWNER — does a content condition grey a control the way another control does?**~~ — **SETTLED by the owner, 1 September 2026: yes, greyed with the same sentence at the control.** Applied in eleven of the twelve designs, drawn on `A25-0`, and stated in the shared floor and on every panel.
+7 Sticky Index's Share rail offers *With the index*, and at fewer than three headings there is no index to
+travel on. The greyed-with-a-reason rule names controls switching controls; it does not say whether the
+editor should grey a value because of what the post contains. **The same question decides 1 Measured's
+Table of contents on a post with two headings.** **Answered: it greys, with the same sentence** — the same treatment, because the user's position is identical either way. The rule is now in the shared floor with its twenty rows named.
 
 **No registry addition was invented.** A25 declares `toc`, `scroll-spy` and `lightbox` — all existing
 entries — and the heading anchor is marked **ARCHITECT: registry addition** with **no module name coined**.
@@ -1189,3 +1282,116 @@ entries — and the heading anchor is marked **ARCHITECT: registry addition** wi
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** twelve designs, numbered **1–12**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change carries the **name** of the rule or the platform fact that required it. Rules are named, never
+numbered. **Frames updated — all thirteen:** `A25-0 Category Proof` and `A25-1` … `A25-12`, each gaining a
+dated **pass two** section. Nothing else on any frame was opened.
+
+### This pass's own ruling
+
+| What changed | Why, and where |
+|---|---|
+| **A page layout carries exactly one post content section, and the editor refuses a second at placement.** Two would print the article twice on the live page, so the refusal happens **where the placement starts, with the reason shown as a sentence at the control** — never accepted and warned about afterwards. **Drawn in full on `A25-0`** in the three places a placement can begin: **the section picker**, where the post-content group is greyed rather than hidden and carries "This page layout already has a post content section. Two would print the article twice." at the group; **the layers panel**, where Add stays live for the other categories and the existing row carries a ONE ONLY chip; and **a drag onto the canvas**, where the usual insertion line is replaced by the refusal and releasing does nothing at all, so there is no state to undo. **Each design frame carries its own picker state** beside its pass-two table. **Switching the one section between the twelve designs is untouched** — the refusal is on adding, never on choosing — and no control, value, measure or drawn arrangement changed anywhere. | *(A page layout carries exactly one post content section.)* |
+
+### The library-wide rules
+
+| Rule | What it did here |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Already the category's pattern; re-checked design by design and no row changed.** **Vertical spacing is drawn inert in all twelve** with its reason — the space above the article is C Post Body's. **Background role is locked in two**, 3 Sheet to Surface and 4 Contrast Band to Contrast, each with the reason shown. **8 Index Top greys Index columns' Two and Three at Index style Ruled** and keeps One. **4 Contrast Band's Table of contents offers Off · Left only** and the absent Right value carries its reason. **Nothing in A25 is hidden by another control, and no control accepts a value it will not honour.** The rule's one exception — a control the project can never offer, drawn not at all — **has no subject here.** **One case could not be settled without inventing a rule** and is asked as an open question: 7 Sticky Index's *With the index* on a post with fewer than three headings, where the condition is the content rather than another control. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject in twelve designs.** A25 renders no person: no author, no member, no `profile_image` read anywhere. Neither the two-initial form nor Ghost's one letter has anything to draw. |
+| **The Remove button never greys out** | **No subject.** Nothing in A25 is an authored repeating list — the index is derived from the author's headings, the numerals are CSS counters, the notes are the author's own captions — so there is no repeater, no Add, no Remove and no floor to defend. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row converted, in either direction, and A25 draws no number picker at all.** **8 Index Top's Index columns (One · Two · Three) is the one row that could be mistaken for a count**: it counts lanes rather than items, every value has a drawn frame, and it stays a named set. |
+| **A design may declare the width below which its script runs** | **No design declares one, and none was invented.** `toc`, `scroll-spy`, `lightbox` and the heading anchor all run at every width; **the 1,200 furniture threshold is CSS, not a boundary a script honours.** The no-JavaScript lines are stated **on both sides** of it all the same — no index above 1,200 and no disclosure below it in 1, 4, 7 and 8; the picture at its drawn width at every width in 5; the numerals surviving at every width in 12. |
+| **The share rail uses the site-wide share list, in the order the site set** | **NOT APPLIED — recorded as a conflict.** See below. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12.** No gap created or closed, no number reused, nothing renumbered, renamed or deleted. |
+
+### The conflict, and the two answers that closed it
+
+**THE SHARE RAIL'S DESTINATIONS — the work list against a closed ruling.** The work list ruled that **the
+share rail uses the site-wide share list, in the order the site set**, so every sharing surface offers the
+same destinations in the same order. **This category's state contradicted it**, and not by oversight: the
+native-share pass of 25 August took the destinations out of the theme, and **the owner's ruling of 29 August
+closed question 2** — one `<a href="#/share">`, Ghost's own modal supplying the platforms, their order, their
+names and the copy confirmation, A24·14's setting expressly not read here, and `copiedLabel`, `post.url`,
+`post.title` and the `share` module all deleted. Applying the new ruling would have reinstated a
+destination list, a count, an order, a copy confirmation, a `post.url` read and a module in six designs, taken
+9 Share Rail's count slot from `one` back to `few` and the field list from seven back to ten. **Nothing was
+changed; the conflict was listed and put to the owner in plain words.**
+
+**ANSWERED by the owner, 1 September 2026: keep Ghost's window.** The site-wide-list ruling **is not applied
+to A25**. Every share affordance stays one `<a href="#/share">`; no list, count, order, `copiedLabel`,
+`post.url` read or `share` module returns; **no frame changed in either direction**, and the seven-field list
+is untouched. **Finding 9 is now the whole of the item:** A24·14 and A26·9 still draw platform links and still
+read that setting, and until they adopt the same one line one theme offers two share experiences on one page.
+
+**A CONTROL THE POST'S OWN CONTENT CANNOT HONOUR — ANSWERED the same day: it greys, with the same sentence.**
+The greyed-with-a-reason rule names controls switching controls; it did not say what to do when **the article**
+is the reason a value cannot be honoured — 7 Sticky Index's *With the index* on a post with two headings being
+the case that raised it. **The owner ruled it the same treatment**, so the values stay drawn and struck rather
+than disappearing, the row never accepts a value it will not honour, and **the reason is the short sentence
+each panel already drew at that state**. **Applied in eleven of the twelve designs, twenty rows in all**, drawn
+on `A25-0` beside the three refusal states and named per design on every frame. **9 Share Rail is the one
+design with no case.** **On an empty body every row greys** with the section's own line. **The rule reaches
+nothing else** — no measure, type scale, drop cap, rhythm or share mark depends on what the post contains —
+and **no control was added, removed or renamed to carry it**.
+
+### The two Ghost findings of 31 August
+
+**Neither reaches this category, and one leaves a finding.** **The feature-image caption's version
+difference is A24's** — A25 reads no feature-image caption, and no caption treatment in the category depends
+on italics or bold either way. **Whether Ghost 6 also strips `<em>` and `<strong>` from body captions
+inside `{{content}}` was not tested**, and 10 Marginalia puts exactly those captions in a margin: recorded
+as **a finding for the architect** rather than assumed in either direction, and no design's specification
+promises marks in a caption. **The comment count is A28's**: nothing in A25 reads one, so no accessible name
+had to move.
+
+### Unchanged by this pass
+
+Every arrangement, every measure, every type size, every colour pack, every spacing step, the four
+settlements, all twelve tuples, all twelve control lists and counts, the seven-field list, the module
+declarations, the tokenisation proof, the fixture inventory, the stress frame, the free-design choice, and
+**every design number**. **Left deliberately alone, and now confirmed so by the owner:** the share affordances and every sentence
+about them. **What is new in the category is one rule, not one control:** a content condition greys a control
+with its reason, which changes when twenty existing rows are available and never what any of them does.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12** — twelve designs, no gap
+  created or closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and names
+  **2 Plain** and **5 Full Bleed** — both of which exist in this category's roster of twelve. The owner's
+  own choice, confirmed 29 August 2026 and untouched by this pass.
+
+---
+
+## Patch notes — the native-share ruling, 1 September 2026
+
+**The owner's ruling:** native Ghost Share only, everywhere; on an older Ghost the share components grey
+out and show **Copy link and Email** alone, with no other social sharing.
+
+**This category chose that mechanism already.** A25's share affordance and **A25·9 Share Rail** open
+Ghost's own panel at `#/share` and read no destination list, so **the ruling confirms this category
+rather than reversing it** — and the earlier finding that "one theme, two share experiences" had to be
+resolved is now resolved **in A25's favour**: it is A24·14, A26 and the site setting that change.
+
+**What the ruling adds here, and it is not drawn yet.** **The older-Ghost fallback.** On a site the app
+reports as older Ghost, Ghost's panel does not exist and the same link opens the sign-in box, so **the
+rail draws Copy link and Email and nothing else**, in the space the trigger occupied, and **the editor
+greys the rail's share row with the reason beside it**. **Which of the two draws comes from a
+capability flag the app sets when the site is connected** ⚑ — a theme cannot ask Ghost its version.
+**Neither state is drawn on `A25-9` yet**; the frame carries a dated **native-share ruling** panel
+saying so.
+
+**What does not change.** The rail, its width, its position, its 38-in-44 targets and its collapse.
+**A26·9 Share Row still wins a route** — where a footer share block is placed, this rail resolves to
+Off. **No destination list existed here to remove.**
+
+**No JavaScript: Email alone.** Ghost's panel needs a script and so does Copy link, so unscripted the
+rail draws **one `mailto:` link**. The older line — "the rail is a set of ordinary links and works
+unscripted" — **was true before the panel became the mechanism and is withdrawn**.
+
+**Design numbering unchanged.** Nothing renumbered, nothing deleted.

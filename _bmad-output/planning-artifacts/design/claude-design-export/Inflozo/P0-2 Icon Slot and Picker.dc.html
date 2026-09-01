@@ -185,7 +185,44 @@
       <span style="height:42px;display:inline-flex;align-items:center;gap:8px;border:1px solid #EBE5DB;color:#232019;font-size:14px;font-weight:600;padding:0 20px;border-radius:8px">Browse the archive<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#232019" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><polyline points="13 5 20 12 13 19"></polyline></svg></span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">ICON AFTER · TEXT · SMALL</span>
     </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">BUTTON ICONS: WHEN ANY BUTTON IS SELECTED, ITS POPOVER OFFERS AN OPTIONAL ICON, BEFORE / AFTER THE LABEL · SLOT RULES APPLY UNCHANGED · BUTTON ICONS ARE ALWAYS SMALL AND INHERIT THE LABEL COLOUR — THE POPOVER'S SIZE AND COLOUR ROWS ARE HIDDEN FOR THEM ⚑ · 8 PX GAP TO THE LABEL, THE A1·1 BUTTON OTHERWISE UNCHANGED</span>
+    <div style="width:228px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:10px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:11px;font-weight:500;color:#6E6A64">Icon</span>
+        <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:500;color:#6E6A64;cursor:pointer">None</span>
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Before</span>
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:500;color:#6E6A64;cursor:pointer">After</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
+        <span style="font-size:12.5px;font-weight:500;flex:1">mail</span>
+        <span style="font-size:11.5px;font-weight:500;color:#E84B34">Swap</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:11px;font-weight:500;color:#A8A29A">Size</span>
+        <div style="display:flex;background:#F2EFEA;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:600;background:#FBF9F6;color:#A8A29A">Small</span>
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:500;color:#C9C2B8">Medium</span>
+          <span style="flex:1;text-align:center;padding:3px 0;border-radius:20px;font-size:11px;font-weight:500;color:#C9C2B8">Large</span>
+        </div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.45">Button icons are always small, so they sit on the label's line.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:11px;font-weight:500;color:#A8A29A">Colour</span>
+        <div style="display:flex;gap:8px">
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#DAD4CA;cursor:not-allowed"></span><span style="font-size:9px;color:#C9C2B8">Text</span></div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#E2DCD3;cursor:not-allowed"></span><span style="font-size:9px;color:#C9C2B8">Muted</span></div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#EADCD3;cursor:not-allowed"></span><span style="font-size:9px;color:#C9C2B8">Accent</span></div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#F4F1EC;box-shadow:inset 0 0 0 1px rgba(28,27,26,.08);cursor:not-allowed"></span><span style="font-size:9px;color:#C9C2B8">On-accent</span></div>
+        </div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.45">A button icon takes the label's colour.</span>
+      </div>
+      <div style="height:1px;background:#E7E2DB"></div>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#C2381F;cursor:pointer;padding:0 2px 2px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"></path></svg>Remove</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">BUTTON ICONS: WHEN ANY BUTTON IS SELECTED, ITS POPOVER OFFERS AN OPTIONAL ICON, BEFORE / AFTER THE LABEL · SLOT RULES APPLY UNCHANGED · BUTTON ICONS ARE ALWAYS SMALL AND INHERIT THE LABEL COLOUR · 8 PX GAP TO THE LABEL, THE A1·1 BUTTON OTHERWISE UNCHANGED</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">CHANGED THIS PASS, OWNER-RULED: SIZE AND COLOUR ARE NO LONGER HIDDEN FOR BUTTON ICONS — THEY ARE <strong style="font-weight:600">GREYED WITH THEIR REASON BESIDE THEM</strong>, PER P0·0 · THEY ARE CONTROLS THIS POPOVER GENUINELY HAS AND THIS CONTEXT OVERRIDES, WHICH IS THE CASE THE PATTERN WAS WRITTEN FOR · THE GREYED VALUE SHOWN IS THE ONE IN FORCE: SMALL, AND THE LABEL'S COLOUR</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">Four things and nothing else</strong>: swap, Size (Small · Medium · Large), Colour role (Text · Muted · Accent · On-accent), Remove. On-accent exists for icons sitting on accent or contrast fills and is contrast-checked per pack; a role failing AA on its ground is disabled with its ratio shown, per the library rule. Remove empties the slot back to its dashed state.</p>

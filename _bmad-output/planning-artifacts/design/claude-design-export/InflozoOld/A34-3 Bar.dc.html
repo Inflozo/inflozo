@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 3 OF 10 · PAPER PACK · FOUR CONTROLS · PATCHED 29 AUGUST 2026 · THE CATEGORY'S SURFACE GROUND, AND THE ONLY DESIGN WITH THREE ZONES</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Bar</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">A full-width strip of <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> between two hairlines, holding three things at once: where you are on the left, the page links in the middle, the next page on the right. <strong style="font-weight:600">It is the only design that can show all three without crowding</strong>, because the band gives it a horizontal to hang them on.</p>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty"><strong style="font-weight:600">The band is not a card.</strong> No radius, no shadow, no inset by default — the same distinction A19·13 drew: a card would make the pager an object sitting on the page, and this is meant to read as the floor the feed ends on. <strong style="font-weight:600">4 Pill is the design where the pager is an object</strong>, and it is a pill rather than a bar for exactly that reason.</p>
+</section>
+
+<section style="padding:0 56px 24px">
+  <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:9px;max-width:1000px;font-size:13px;line-height:1.65;color:#3A3835">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">PATCH PASS · 29 AUGUST 2026 · WHAT CHANGED IN THIS DESIGN</span>
+    <span><strong style="font-weight:600">The Numbers control is deleted — four controls now, not five.</strong> Its All pages value cannot be built: a theme cannot loop over a range of numbers, so one link per page is not available at any archive size. <strong style="font-weight:600">The seven-slot window survives because every number in it is handed over by the route</strong> — 1, the page either side, and the last — <strong style="font-weight:600">so the scrolling middle zone goes too</strong>, having existed only to cope with All pages.</span>
+    <span><strong style="font-weight:600">Post range leaves the Pager block, so Position line reads Off · Page count.</strong> A range needs a page number multiplied by a page size. The two zone captions and the primary frame now read “Page 2 of 11”, and the tablet rule that resolved a range into a count is gone with the value it resolved.</span>
+    <span><strong style="font-weight:600">The outer zones stay 260.</strong> No spacing changed in this pass; only the reason for the number did. They hold the longest label the translation catalog can produce rather than the longest range the archive could.</span>
+    <span><strong style="font-weight:600">Posts per page is INFLOZO's setting, not Ghost's.</strong> Ghost's admin has no posts-per-page control, so the read-only row points at the theme's own settings.</span>
+  </div>
+</section>
+
+<section data-screen-label="A34-3 desktop light" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · page 2 of 11 · Layout Three zones, Height Comfortable 72, Edge Full bleed, Rules Both · Attachment Joined · Position line Page count · the feed's Vertical spacing Comfortable</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="padding:0 72px">
+        <div style="display:flex;gap:24px">
+          <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Why the new tram line stops four hundred metres short of the hospital</span><span style="font-size:13px;color:#6B6459">Daniel Reith · 9 March 2026</span></div>
+          <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Rosa Ferreira on drawing machines that do not exist yet</span><span style="font-size:13px;color:#6B6459">Priya Raghunathan · 5 March 2026</span></div>
+          <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Six months of rain, measured by one gardener</span><span style="font-size:13px;color:#6B6459">Naomi Alder · 26 February 2026</span></div>
+        </div>
+        <div style="height:48px;display:flex;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A79E8F">48 · ATTACHMENT JOINED · THE BAND BREAKS THE PAGE MARGIN BELOW THIS LINE</span></div>
+      </div>
+      <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 72px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums;width:260px">Page 2 of 11</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">1</span>
+          <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;font-variant-numeric:tabular-nums;border-bottom:2px solid #D96C3F">2</span>
+          <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">3</span>
+          <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+          <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">11</span>
+        </div>
+        <div style="width:260px;display:flex;justify-content:flex-end"><span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older posts<span style="font-size:19px;line-height:1">→</span></span></div>
+      </div>
+      <div style="height:96px;display:flex;align-items:flex-end;padding:0 72px 6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A79E8F">96 · PADDING COMFORTABLE · OUTSIDE THE BAND</span></div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1200px"><strong style="font-weight:600">The band leaves the page margin and the contents do not.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> runs to the viewport's edges; the three zones sit on the same 72 px margin the feed above uses, so the numerals line up with the first and last columns of the grid. <strong style="font-weight:600">A18·7 and A17·7 established that a band's contents keep the page margin</strong> and this is that rule with a hairline instead of an inversion.<br><strong style="font-weight:600">The outer zones are a fixed 260 px, not <code style="font-family:'JetBrains Mono',monospace;font-size:12px">1fr</code></strong> ⚑ — with flexible zones the numeral cluster drifts off centre as the position line and the direction label change width — “Page 1 of 11” against “Page 11 of 11”, and a translated “Older posts” that runs half as long again. Fixed outer zones keep the middle at the true centre of the band on every page of the archive, and the cluster is the thing a reader aims at.<br><strong style="font-weight:600">72 px of band on a 96 px padding is the proportion to hold.</strong> The strip has to read as thinner than the space beneath it or it becomes a footer; at Height Spacious 96 with Padding Compact 64 it does, which the panel flags as the one combination to avoid.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:700px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE THREE LAYOUTS · AND EDGE INSET · drawn at 700 crop, band contents at full size</div>
+      <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:56px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:center;gap:8px">
+            <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">1</span>
+            <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">2</span>
+            <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">3</span>
+            <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+            <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">11</span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">LAYOUT NUMBERS CENTRED · HEIGHT COMPACT 56 · POSITION LINE AND DIRECTION BOTH DROPPED — 1 NUMBERS ON A BAND, AND THE VALUE THAT COMES CLOSEST TO ANOTHER DESIGN</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019"><span style="font-size:19px;line-height:1">←</span>Newer posts</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">1</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">2</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">3</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">11</span>
+            </div>
+            <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older posts<span style="font-size:19px;line-height:1">→</span></span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">LAYOUT DIRECTION AT THE ENDS · THE POSITION LINE LEAVES THE BAND AND IS NOT DRAWN ELSEWHERE ⚑ — STATED IN THE PANEL, WHICH IS WHY THIS VALUE IS NOT THE DEFAULT</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="padding:0 20px">
+            <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Page 2 of 11</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">1</span>
+                <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">2</span>
+                <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">3</span>
+                <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+                <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">11</span>
+              </div>
+              <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older<span style="font-size:19px;line-height:1">→</span></span>
+            </div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#A2765A">⚑ EDGE INSET TO THE CONTENT WIDTH · THE BAND STOPS AT 1,296 AND STILL TAKES NO RADIUS AND NO SHADOW · THE ZONES' OWN PADDING BECOMES 24, NOT 72</span>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+        <span><strong style="font-weight:600">Edge Inset is the value that has to justify itself hardest.</strong> A 1,296 px surface strip with square corners between two hairlines is a legitimate thing on a page with margins either side, and it is one radius token away from being 4 Pill's container. <strong style="font-weight:600">It stays square deliberately</strong> ⚑: the pack's radius belongs to cards, buttons and images, and a pager that borrows it stops being furniture.</span>
+        <span><strong style="font-weight:600">Layout Direction at the ends loses the position line and A34 does not put it back.</strong> This is the design's own version of the honesty question: three zones can hold everything, two zones cannot, and the panel names what is missing rather than shrinking the numerals to fit a fourth thing in.</span>
+        <span><strong style="font-weight:600">Rules Top only is for a band that ends the page</strong> — with a footer directly beneath it, the lower hairline and the footer's own upper edge make a double line at 2 px, which is the one place A34 draws a heavier line than the token allows and the reason the value exists.</span>
+      </div>
+    </div>
+
+    <div style="width:560px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE ENDS OF THE ARCHIVE · AND THE TWO-PAGE FEED · drawn at 560 crop</div>
+      <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Page 1 of 11</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">1</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">2</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">11</span>
+            </div>
+            <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older<span style="font-size:19px;line-height:1">→</span></span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">FIRST PAGE · THREE ZONES · NOTHING IS RESERVED BECAUSE NOTHING WAS THERE — THE NEWER LINK ONLY EXISTS AT LAYOUT DIRECTION AT THE ENDS</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Page 11 of 11</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">1</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">10</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">11</span>
+            </div>
+            <span style="display:flex;align-items:center;gap:10px;font-size:15px;color:#C4BEB3">Older<span style="font-size:19px;line-height:1">→</span></span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#A2765A">⚑ LAST PAGE · AT THE ENDS DIMMED · AND THE ZONE STAYS 260 SO THE CLUSTER NEVER DRIFTS — SIZED FOR THE LONGEST LABEL THE CATALOG CAN HOLD, NOT FOR THE ARCHIVE</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:72px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums">Posts 1–12 of 19</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;border-bottom:2px solid #D96C3F">1</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459">2</span>
+            </div>
+            <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older<span style="font-size:19px;line-height:1">→</span></span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">THE TWO-PAGE FEED · TRANSPORT TAG · TWO NUMERALS IN A 1,296 BAND IS 96 PX OF CONTENT IN A 72 PX STRIP — THE DESIGN'S WEAKEST CASE, AND THE PANEL NAMES 10 SLIM</span>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+        <span><strong style="font-weight:600">The band is the same height on every page of the archive</strong>, which is the point of a band and the reason this design does not blink between pages. Only the numerals inside it change, and tabular figures keep even those from moving.</span>
+        <span><strong style="font-weight:600">Two pages in a full-bleed band is 7% ink and 93% surface.</strong> It is not broken, it is just wasteful, and the panel says so with a named alternative rather than disabling anything.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<sc-if value="{{ showControls }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-3 controls" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE CONTROL PANEL · FOUR CONTROLS · HEIGHT IS THE BAND; THE SPACE BELOW IS THE FEED'S</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:15px;box-sizing:border-box">
+      <div style="display:flex;flex-direction:column;gap:7px;border-bottom:1px solid #E7E2DB;padding-bottom:14px">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:9px 10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8A857C;letter-spacing:.06em">SECTION · MAIN FEED · A17·1 THREE UP</span>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Background role</span>
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Vertical spacing</span>
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Top divider</span>
+          </div>
+          <span style="font-size:10.5px;color:#6E6A64;line-height:1.45">The feed's three universal controls. <strong style="font-weight:600;color:#3A3835">The pager inherits all three and has none of its own</strong> — it is not a section anyone places, drags or shuffles.</span>
+        </div>
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Pagination style</span>
+        <div style="height:38px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 11px"><span style="font-size:13px;font-weight:600">Bar</span><span style="font-size:10px;color:#8A857C">3 / 10 ▾</span></div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.5">A surface strip holding position, pages and direction.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Layout</span><div style="height:36px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 11px"><span style="font-size:12.5px">Three zones</span><span style="font-size:10px;color:#8A857C">▾</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Three zones · Numbers centred · Direction at the ends</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Height</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Spacious</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">56 · 72 · 96. Keep the band shorter than the padding below it.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Edge</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Full bleed</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Inset</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Inset stops the band at the content width. Still no radius.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px"><span style="font-size:10.5px;color:#8A857C">Page window</span><span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">Seven slots</strong> — first, the page either side of this one, and the last. The middle zone is sized for that row and never grows.</span><span style="font-size:11px;color:#6E6A64;line-height:1.5">Not a choice: a theme cannot count through a range of pages, so one link per page cannot be drawn — and a band has no second row to wrap into.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Rules</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Both</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Top only</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Top only when a footer follows immediately.</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #E7E2DB;padding-top:12px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Pager</span>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Attachment</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Joined</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Labels</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Newer and older</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">At the ends</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Dimmed</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Position line</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Post range</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
+          <span style="font-size:10.5px;color:#8A857C">Pager wording</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5">Five strings, site-wide, one set per language.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">Edit in Translations →</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
+          <span style="font-size:10.5px;color:#8A857C">Posts per page</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. INFLOZO's theme setting; Ghost has no such control.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">INFLOZO → Theme settings → Posts per page →</span>
+        </div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.5"><strong style="font-weight:600;color:#3A3835">Dimmed is this design's default</strong> ⚑, against Hidden everywhere else: a zone in a band cannot be reserved invisibly, it is just an empty third of a strip.</span>
+      </div>
+    </div>
+    <div style="width:948px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">WHAT THIS PANEL SETTLES</span>
+      <span><strong style="font-weight:600">A block field's default can differ per design, and this is the first place it does.</strong> ⚑ At the ends is Hidden in eight designs and <strong style="font-weight:600">Dimmed in this one and in 8 Contrast Band</strong>, because both have a ground: an empty slot on the page ground is invisible, an empty slot in a band is a gap in the band. <strong style="font-weight:600">The rule: a design may set a block field's default and must say why in the panel; it may not remove the other value.</strong></span>
+      <span><strong style="font-weight:600">Height and Padding are two different measurements and the panel keeps them apart.</strong> Height is the band; Padding is the page under it. This is the only A34 design with both, and the reason 8 Contrast Band has both too — a design with a ground needs to size the ground and the space around it separately.</span>
+      <span><strong style="font-weight:600">Numbers is gone, and a band is the design that loses least by it.</strong> A theme cannot count through a range of pages, so a row of one link per page cannot be built at any archive size — <strong style="font-weight:600">and inside a fixed-height band it had nowhere to go anyway</strong>: it scrolled sideways, which was the worst target in the category. <strong style="font-weight:600">The middle zone now holds the seven-slot window and nothing else</strong>, and its width is settled rather than variable, which is what the fixed 260 outer zones were always for.</span>
+      <span><strong style="font-weight:600">Four controls; three were cut.</strong> An Alignment control — the zones are the alignment. A “Show the total posts” toggle — that is the block's Position line with a different name.</span>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showResponsive }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-3 responsive" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · MOBILE 390 IN BOTH ITS STATES · THREE ZONES BECOME TWO, THEN THE BAND KEEPS ITS EDGES</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A2765A">TABLET 834 · ⚑ THREE ZONES BECOME TWO · THE POSITION LINE MOVES UNDER THE NUMERALS AND THE DIRECTION LINK KEEPS THE RIGHT</span>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;overflow:hidden">
+        <div style="height:32px"></div>
+        <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:88px;box-sizing:border-box;padding:0 40px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">1</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#232019;font-variant-numeric:tabular-nums;border-bottom:2px solid #D96C3F">2</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">3</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#C4BEB3">&hellip;</span>
+              <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B6459;font-variant-numeric:tabular-nums">11</span>
+            </div>
+            <span style="font-size:13px;color:#6B6459;font-variant-numeric:tabular-nums;padding-left:4px">Page 2 of 11</span>
+          </div>
+          <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#232019">Older posts<span style="font-size:19px;line-height:1">→</span></span>
+        </div>
+        <div style="height:80px"></div>
+      </div>
+      <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:834px"><strong style="font-weight:600">Three zones do not survive 754 px and the band grows rather than shrinking its contents.</strong> The position line goes under the numerals as a two-line left zone, <strong style="font-weight:600">the band's height steps 72 → 88 to hold it</strong>, and the direction link keeps the right edge. Nothing is dropped and nothing gets smaller — the one departure from a bar's usual collapse, which is to shed its outer zones.</p>
+    </div>
+
+    <div style="display:flex;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A2765A">MOBILE 390 · DEFAULT · ⚑ THE NUMERALS LEAVE, AS IN 1 NUMBERS · THE BAND STAYS FULL BLEED AND THE ZONES KEEP THE 20 PX MARGIN</span>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;overflow:hidden">
+          <div style="height:24px"></div>
+          <div style="background:#FFFFFF;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;height:64px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#232019;border:1px solid #EBE5DB;border-radius:8px">←</span>
+            <span style="font-size:15px;font-weight:600;color:#232019;font-variant-numeric:tabular-nums">Page 2 of 11</span>
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#232019;border:1px solid #EBE5DB;border-radius:8px">→</span>
+          </div>
+          <div style="height:64px"></div>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">Below 767 this is 1 Numbers' mobile row inside a band</strong>, and A34 accepts the convergence rather than inventing a difference: at 350 px there is one good arrangement for a pager and both designs use it. <strong style="font-weight:600">What still separates them at this width is the ground</strong> — the band, its two hairlines, and its full-bleed edges. Height steps to 64, the chevrons are A1·14's outlined 44 px buttons, and the position line sets at 15/600 between them, which is the width it was always going to have to live in.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">MOBILE 390 · SECOND STATE · THE 137-PAGE STRESS ROUTE · THE BAND IS THE SAME BAND</span>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;overflow:hidden">
+          <div style="height:24px"></div>
+          <div style="height:64px;background:#FBF9F5;border-top:1px solid #EBE5DB;border-bottom:1px solid #EBE5DB;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-sizing:border-box">
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#232019;border:1px solid #EBE5DB;border-radius:8px">←</span>
+            <span style="font-size:15px;font-weight:600;color:#232019;font-variant-numeric:tabular-nums">Page 68 of 137</span>
+            <span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#232019;border:1px solid #EBE5DB;border-radius:8px">→</span>
+          </div>
+          <div style="height:64px"></div>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">1,644 posts over 137 pages, and the band does not notice.</strong> The numerals left at 767 as they always did, the page count took their place, and there is no longer a setting that asks the middle zone to hold 137 links. <strong style="font-weight:600">The scrolling middle zone is gone with it</strong> — it existed only to cope with All pages, and a strip that scrolls sideways was the worst target in the category.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showDark }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-3 dark" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:12px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · a surface band on a dark ground with two hairlines — one step of lift, and whether the hairlines are still needed</div>
+  <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+    <div style="padding:0 72px">
+      <div style="display:flex;gap:24px">
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Why the new tram line stops four hundred metres short of the hospital</span><span style="font-size:13px;color:#A79E8F">Daniel Reith · 9 March 2026</span></div>
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Rosa Ferreira on drawing machines that do not exist yet</span><span style="font-size:13px;color:#A79E8F">Priya Raghunathan · 5 March 2026</span></div>
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Six months of rain, measured by one gardener</span><span style="font-size:13px;color:#A79E8F">Naomi Alder · 26 February 2026</span></div>
+      </div>
+      <div style="height:48px"></div>
+    </div>
+    <div style="background:#211D17;border-top:1px solid #332E27;border-bottom:1px solid #332E27;height:72px;box-sizing:border-box;padding:0 72px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:#A79E8F;font-variant-numeric:tabular-nums;width:260px">Page 2 of 11</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#A79E8F;font-variant-numeric:tabular-nums">1</span>
+        <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#F2EDE4;font-variant-numeric:tabular-nums;border-bottom:2px solid #E0805A">2</span>
+        <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#A79E8F;font-variant-numeric:tabular-nums">3</span>
+        <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#4E4740">&hellip;</span>
+        <span style="min-width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#A79E8F;font-variant-numeric:tabular-nums">11</span>
+      </div>
+      <div style="width:260px;display:flex;justify-content:flex-end"><span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#F2EDE4">Older posts<span style="font-size:19px;line-height:1">→</span></span></div>
+    </div>
+    <div style="height:96px"></div>
+  </div>
+  <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:1200px"><strong style="font-weight:600">The hairlines stay, and in dark they are the thing doing the work.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#211D17</code> on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#171511</code> is one step, and A19·13 found one step sufficient for a 600 px band; <strong style="font-weight:600">a 72 px band is the opposite case</strong> — a strip that thin needs its edges declared, and without the hairlines it reads as a rendering artefact rather than a surface. Dropping them was tried and is why Rules has no “None” value ⚑.<br><strong style="font-weight:600">Nothing else is re-tuned.</strong> The numerals, the current-page underline, the ellipsis's derived <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#4E4740</code> and the direction link are 1 Numbers' values unchanged, because they sit on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> here and on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">background</code> there — <strong style="font-weight:600">one step apart, and one step does not change a contrast decision</strong>. Muted on surface measures 5.1:1 against 5.4:1 on the ground.</p>
+</section>
+</sc-if>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-3 spec" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE WRITTEN SPEC · ALL TEN FIELDS</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:634px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span><strong style="font-weight:600">1 · Descriptor.</strong> A full-bleed <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> strip between two hairlines, 72 px tall, holding the position line, the windowed page links and the older-posts link in three zones on the feed's own page margin. <strong style="font-weight:600">The only A34 design that shows all three at once.</strong></span>
+      <span><strong style="font-weight:600">2 · Structural descriptor.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">bar · none · surface · variable · none · full-width strip</code><br><span style="color:#6B6459">Containment is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">none</code> and the ground is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code>: the band is the section's ground, not a box the section sits in. 4 Pill is the same contents in a <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pill</code> on the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">page</code>; 8 Contrast Band is the same strip on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">contrast</code>; 10 Slim is a bar with no ground at all.</span></span>
+      <span><strong style="font-weight:600">3 · Archetype.</strong> bar. <strong style="font-weight:600">One departure.</strong> A bar's ladder sheds its outer zones as it narrows; this one <strong style="font-weight:600">grows instead — 72 → 88 at 834</strong> to stack the position line under the numerals. </span>
+      <span><strong style="font-weight:600">4 · Responsive rule.</strong> <strong style="font-weight:600">1440</strong> full-bleed band 72 tall, contents on the 72 px page margin, outer zones fixed 260, numerals centred on the band, 96 beneath. <strong style="font-weight:600">1080</strong> unchanged, zones 220. <strong style="font-weight:600">834</strong> <strong style="font-weight:600">band 88, two zones</strong> — numerals with the position line beneath them on the left, direction link right; page margin 40; padding 80. <strong style="font-weight:600">≤ 767</strong> band 64, <strong style="font-weight:600">page links dropped</strong>, 44 px outlined chevrons at the margins with the page count between them, band stays full bleed, padding 64. <strong style="font-weight:600">Edge Inset at ≤ 767</strong> becomes full bleed too — a 350 px band with margins either side is a card without a radius.</span>
+      <span><strong style="font-weight:600">5 · Content fields.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">navLabel</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">newerLabel</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">olderLabel</code> — all optional text as elsewhere. <strong style="font-weight:600">Read-only:</strong> the six <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pagination</code> values. <strong style="font-weight:600">In the union, unread:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">moreLabel</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">endLabel</code>. <strong style="font-weight:600">This design authors nothing the others do not</strong> — the band is a control's value, not content.</span>
+      <span><strong style="font-weight:600">6 · Controls.</strong> <strong style="font-weight:600">Layout</strong> Three zones · Numbers centred · Direction at the ends. <strong style="font-weight:600">Height</strong> Compact 56 · Comfortable 72 · Spacious 96. <strong style="font-weight:600">Edge</strong> Full bleed · Inset. <strong style="font-weight:600">Rules</strong> Both · Top only. Four, then the block's four fields — Position line now Off · Page count — and its two doors, <strong style="font-weight:600">with At the ends defaulting to Dimmed here</strong> ⚑. <strong style="font-weight:600">Cut:</strong> Alignment, and a totals toggle that duplicated the block.</span>
+    </div>
+    <div style="width:634px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span><strong style="font-weight:600">7 · Data.</strong> The route's <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pagination</code> object; destinations <code style="font-family:'JetBrains Mono',monospace;font-size:12px">/page/N/</code>. <strong style="font-weight:600">0 → no section. 1 page → does not render</strong>, and the band goes with it, as A19·13's band does at zero. <strong style="font-weight:600">2 pages → the design's weakest case</strong> — two numerals and a link in a 1,296 px strip; the panel names 10 Slim. <strong style="font-weight:600">Many → as drawn</strong>; the band's height never changes with the archive and the outer zones are sized for the longest line the catalog can produce, not for the archive's depth.</span>
+      <span><strong style="font-weight:600">8 · Empty state.</strong> <strong style="font-weight:600">One page → nothing renders</strong>; greyed outline and cause in the editor. <strong style="font-weight:600">At the first and last page the absent direction link dims rather than hiding</strong> — this design's default, because an empty zone in a band is visible whether or not anything is in it. At Layout Three zones on page 1 <strong style="font-weight:600">there is nothing to dim</strong>, since the left zone holds the position line and the newer link only exists at Direction at the ends; that asymmetry is the design's, stated rather than smoothed ⚑. Position line Off leaves the left zone empty and the numerals stay centred on the band, not on the remaining space.</span>
+      <span><strong style="font-weight:600">9 · Behaviour module.</strong> <strong style="font-weight:600">None; <code style="font-family:'JetBrains Mono',monospace;font-size:12px">core</code> assumed. No-JS: pixel-identical</strong>, including the scrolling middle zone, which is native <code style="font-family:'JetBrains Mono',monospace;font-size:12px">overflow-x</code>. Edit-safe. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">marquee</code> was considered and refused: a pager that moves on its own is unusable, and the module's own no-JS branch is exactly the static scrollable strip this design already has.</span>
+      <span><strong style="font-weight:600">10 · Accessibility.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;nav aria-label="Pagination"&gt;</code> with the page links in an <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;ol&gt;</code>; no heading. <strong style="font-weight:600">DOM order is position line → page links → direction link</strong>, matching the visual order left to right at 1440 and top to bottom at 834, so the reading order never contradicts the layout ⚑. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-current="page"</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">rel="prev"/"next"</code>, ellipsis <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-hidden</code>. <strong style="font-weight:600">Focus rings on the first and last numerals in a scrolling zone are inset to −4 px</strong>, A17·18's rule, because a ring at +4 is clipped by the band's overflow. Targets 44; the band's 56 px Compact height still holds a 44 px target with 6 px either side. Muted on surface 5.1:1, current page 12.6:1. Print: the band prints as a hairline rule with the position line, links absent.</span>
+      <span><strong style="font-weight:600">Flagged ⚑</strong> — fixed 260 px outer zones rather than <code style="font-family:'JetBrains Mono',monospace;font-size:12px">1fr</code>; Edge Inset staying square against the pack's radius token; the band growing to 88 at 834 instead of shedding a zone; At the ends defaulting to Dimmed, and the rule that a design may set a block default and must say why; the missing newer link at Three zones on page 1; Rules having no None value.</span>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showControls&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showResponsive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showControls: this.props.showControls ?? true,
+      showResponsive: this.props.showResponsive ?? true,
+      showDark: this.props.showDark ?? true,
+      showSpec: this.props.showSpec ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

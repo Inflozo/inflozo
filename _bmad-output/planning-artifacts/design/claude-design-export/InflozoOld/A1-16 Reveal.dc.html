@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A1 HEADERS &amp; NAVIGATION · DESIGN 16 OF 15 · PAPER PACK</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Reveal</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">Rail's bar, gone while the reader is going down the page and back the moment they start coming up. It gives long posts the full viewport without asking the reader to scroll to the top for the navigation — the closest thing in A1 to no header at all. Three states, and the design is really the rules that move between them.</p>
+</section>
+
+<section data-screen-label="A1-16 desktop resting" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · at the top of the page</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="height:76px;display:flex;align-items:center;gap:36px;padding:0 72px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-0.01em;color:#232019">Orbit Weekly</span></div>
+        <div style="display:flex;align-items:center;gap:26px">
+          <span style="font-size:15px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:15px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span>
+          <span style="font-size:15px;color:#6B6459">Interviews</span>
+          <span style="font-size:15px;color:#6B6459">Archive</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <span style="width:38px;height:38px;border-radius:8px;border:1px solid #EBE5DB;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;color:#6B6459">⌕</span>
+          <span style="font-size:14px;color:#6B6459">Sign in</span>
+          <span style="padding:9px 17px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:14px;font-weight:600">Subscribe</span>
+        </div>
+      </div>
+      <div style="padding:52px 72px 60px;display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#D96C3F;text-transform:uppercase">Issue 47 · Essays</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019;max-width:760px">The slow return of the personal homepage</h2>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:#6B6459;max-width:560px">Why writers are leaving the feed — and coming home to a page of their own.</p>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1440px">At the top of the page the header is ordinary: in flow, on the page ground, hairline under. It only becomes a floating object once it has been away and come back, which is what makes the returned state read as a response to the reader rather than a permanent fixture.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · hidden · scrolled 900px, going down</div>
+      <div style="width:700px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="padding:28px 44px 36px;display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-family:Georgia,serif;font-size:19px;line-height:1.6;color:#232019">…the personal page never disappeared; it went quiet, and quiet is not the same as gone. What changed was where the default lived: for fifteen years the answer to “where do you write?” was the name of a company.</p>
+          <p style="margin:0;font-family:Georgia,serif;font-size:19px;line-height:1.6;color:#232019">The writers coming back are not nostalgic. They want the archive to outlive the platform, and they have noticed that a page of their own is the only version of that which has ever worked.</p>
+          <div style="margin-top:6px;padding:12px 14px;border:1px dashed #DCD3C6;border-radius:8px;display:flex;align-items:center;gap:10px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;letter-spacing:0.06em">NO HEADER</span>
+            <span style="font-size:12.5px;line-height:1.5;color:#6B6459">The bar is off-screen and the viewport is entirely the post. Annotation only — nothing renders here.</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:700px">Hiding starts after 200 px of downward scroll and takes 160 ms. The header stays in the DOM and in the tab order while hidden, so it is reachable by keyboard even when it cannot be seen — tabbing to it brings it back.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">BEHAVIOUR · returned · scrolled 900px, coming up</div>
+      <div style="width:700px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="padding:12px 24px 0">
+          <div style="height:58px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);display:flex;align-items:center;gap:20px;padding:0 16px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <span style="font-size:14px;color:#232019;font-weight:500">Essays</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span>
+              <span style="font-size:14px;color:#6B6459">Interviews</span>
+              <span style="font-size:14px;color:#6B6459">Archive</span>
+            </div>
+            <span style="margin-left:auto;padding:7px 14px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span>
+          </div>
+        </div>
+        <div style="padding:22px 44px 32px;display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-family:Georgia,serif;font-size:19px;line-height:1.6;color:#232019">…the archive to outlive the platform, and they have noticed that a page of their own is the only version of that which has ever worked.</p>
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#6B6459">Returned, the bar is a floating panel: 58 px, on surface, inset 12 px from the top and 24 from the sides, with the md shadow. Search and the ghost action stay behind — four nav items and one action are what a reader coming back up the page needs.</p>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:700px">Returning takes one upward gesture of any distance, so the header is never more than a flick away. It leaves again only on a downward scroll of 200 px, which stops it flickering on the small corrections people make while reading.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:9px;border:1px dashed #DED7CB;border-radius:8px;padding:10px;box-sizing:border-box">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;letter-spacing:0.06em">UNIVERSAL · OUTSIDE THIS LIST</span>
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span><span style="font-size:11.5px;color:#232019">Background <span style="font-size:9px;color:#6E6A64">▾</span></span></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Vertical spacing <span style="font-weight:400">— bar height</span></span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Top divider</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">None</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Line</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Fade</span></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;gap:4px;padding:6px;box-sizing:border-box"><span style="width:8px;height:8px;border-radius:2px;background:#C9C2B6"></span><span style="width:16px;height:3px;background:#DED7CB"></span><span style="margin-left:auto;width:12px;height:6px;border-radius:2px;background:#DED7CB"></span></div>
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:flex-start;justify-content:center;padding:6px;box-sizing:border-box"><span style="width:48px;height:12px;border-radius:6px;border:1.5px solid #DED7CB"></span></div>
+          <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;flex-direction:column;align-items:center;padding:5px;gap:4px;box-sizing:border-box"><span style="width:44px;height:9px;border-radius:2px;background:#FF5941;opacity:.5"></span><span style="width:44px;height:2px;background:#EFEAE2"></span><span style="width:44px;height:2px;background:#EFEAE2"></span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#6E6A64">↑</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Hides after</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Immediately</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Short scroll</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Long scroll</span></div></div>
+        <span style="font-size:10.5px;color:#6E6A64;line-height:1.45">Short scroll is 200 px of downward movement</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Returned ground</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Contrast</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Page</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Returned shape</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Inset panel</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Full-width bar</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:#6E6A64">IN THE RETURNED PANEL</span><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Wordmark</span><span style="width:34px;height:20px;border-radius:24px;background:#DED7CB;display:flex;align-items:center;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Subscribe</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Sign in</span><span style="width:34px;height:20px;border-radius:24px;background:#DED7CB;display:flex;align-items:center;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div><span style="font-size:10.5px;color:#6E6A64;line-height:1.45">One toggle per item, never a menu of combinations. The nav is always in the returned panel — it is why the panel comes back.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#6E6A64">Search<span style="font-family:'JetBrains Mono',monospace;font-size:9px;border:1px solid #E7E2DB;border-radius:4px;padding:0 4px;color:#6E6A64">ALL HEADERS</span></span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:5px 4px;border-radius:24px;color:#6E6A64">Off</span><span style="flex:1;text-align:center;font-size:11px;padding:5px 4px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Icon</span><span style="flex:1;text-align:center;font-size:11px;padding:5px 4px;border-radius:24px;color:#6E6A64">Button</span><span style="flex:1;text-align:center;font-size:11px;padding:5px 4px;border-radius:24px;color:#6E6A64">Bar</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">All three forms do one thing: open Ghost's own search. We draw the trigger; Ghost draws everything after the click.</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Fit to width</span><span style="width:34px;height:20px;border-radius:24px;background:#FF5941;display:flex;align-items:center;justify-content:flex-end;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#A8A29A">Nav items before More</span><div style="display:flex;align-items:center;border:1px solid #EFEAE2;border-radius:8px;overflow:hidden;background:#FFFFFF"><span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:#C9C2B8;border-right:1px solid #EFEAE2">−</span><span style="width:28px;text-align:center;font-size:12.5px;font-weight:600;color:#A8A29A">4</span><span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:#C9C2B8;border-left:1px solid #EFEAE2">+</span></div></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Fit to width measures the bar, so a fixed number cannot also be in force. This bar holds four before More.</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Dark mode toggle</span><span style="width:34px;height:20px;border-radius:24px;background:#DED7CB;display:flex;align-items:center;padding:2px;box-sizing:border-box"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.12)"></span></span></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border-top:1px solid #E7E2DB;padding-top:10px">9 controls · universal trio and the standing Search control outside the list · no On-scroll control: the scroll behaviour is the design</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">STATES · hover and focus · and the state machine</div>
+      <div style="width:620px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:22px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">THREE STATES · one transition each</span>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;width:64px;flex-shrink:0">AT TOP</span><span style="flex:1;height:34px;border:1px solid #EBE5DB;border-radius:8px;background:#FBF9F5;display:flex;align-items:center;padding:0 10px;font-size:12px;color:#6B6459">in flow · page ground · hairline under</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;width:64px;flex-shrink:0">HIDDEN</span><span style="flex:1;height:34px;border:1px dashed #DCD3C6;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:12px;color:#6B6459">off-screen · still in the DOM and the tab order</span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;width:64px;flex-shrink:0">RETURNED</span><span style="flex:1;height:34px;border:1px solid #EBE5DB;border-radius:8px;background:#FFFFFF;box-shadow:0 4px 16px rgba(28,27,26,.08);display:flex;align-items:center;padding:0 10px;font-size:12px;color:#232019">floating panel · surface · md shadow · 58 px</span></div>
+          </div>
+          <span style="font-size:12.5px;line-height:1.5;color:#6B6459">Down 200 px hides it. Any upward scroll returns it. Reaching the top restores the in-flow state, which is the only transition that changes the page’s layout rather than sliding an overlay.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;border-top:1px solid #EBE5DB;padding-top:16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">NAV ITEM AND ACTION · Rail’s states in both grounds</span>
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:12px 14px">
+            <span style="font-size:14px;color:#6B6459">Interviews</span>
+            <span style="font-size:14px;color:#232019">Interviews</span>
+            <span style="font-size:14px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span>
+            <span style="font-size:14px;color:#232019;padding:3px 6px;border-radius:6px;box-shadow:0 0 0 2px #D96C3F">Archive</span>
+            <span style="padding:7px 14px;border-radius:8px;background:#C55E33;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span>
+          </div>
+          <span style="font-size:12.5px;line-height:1.5;color:#6B6459">Unchanged from Rail, at 14 px in the returned panel because the panel is 58 px rather than 76. On the Contrast setting the focus ring switches to the pack’s lightest surface, as in A1·10.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #EBE5DB;padding-top:16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">REDUCED MOTION</span>
+          <span style="font-size:12.5px;line-height:1.5;color:#6B6459">The slide is dropped and the panel appears and disappears instantly. The thresholds are unchanged: the behaviour is the design, and removing it would leave a reader on a long post with no navigation at all.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1040 · returned panel</div>
+      <div style="width:1040px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+        <div style="padding:12px 24px 0">
+          <div style="height:58px;background:#211D17;border:1px solid #332E27;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.26);display:flex;align-items:center;gap:22px;padding:0 16px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:9px"><span style="width:22px;height:22px;border-radius:6px;background:#E0805A;color:#1A120C;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#F2EDE4">Orbit Weekly</span></div>
+            <div style="display:flex;align-items:center;gap:18px">
+              <span style="font-size:14px;color:#F2EDE4;font-weight:500;padding-bottom:2px;border-bottom:2px solid #E0805A">Essays</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#A79E8F">Sections<span style="font-size:9px">▾</span></span>
+              <span style="font-size:14px;color:#A79E8F">Interviews</span>
+              <span style="font-size:14px;color:#A79E8F">Archive</span>
+            </div>
+            <span style="margin-left:auto;padding:7px 14px;border-radius:8px;background:#E0805A;color:#1A120C;font-size:13px;font-weight:600">Subscribe</span>
+          </div>
+        </div>
+        <div style="padding:26px 40px 44px;display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-family:Georgia,serif;font-size:19px;line-height:1.6;color:#F2EDE4;max-width:620px">The writers coming back are not nostalgic. They want the archive to outlive the platform.</p>
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#A79E8F;max-width:560px">In dark mode the returned panel lifts to surface #211D17 with a deepened shadow, the same construction as A1·5’s pill. The in-flow state at the top of the page keeps the page ground and its hairline.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · returned panel · narrowing only</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="padding:12px 20px 0">
+          <div style="height:58px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);display:flex;align-items:center;gap:18px;padding:0 14px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <span style="font-size:14px;color:#232019;font-weight:500;padding-bottom:2px;border-bottom:2px solid #D96C3F">Essays</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#6B6459">Sections<span style="font-size:9px">▾</span></span>
+              <span style="font-size:14px;color:#6B6459">Interviews</span>
+              <span style="font-size:14px;color:#6B6459">Archive</span>
+            </div>
+            <span style="margin-left:auto;padding:7px 14px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Subscribe</span>
+          </div>
+        </div>
+        <div style="padding:24px 40px 36px;display:flex;flex-direction:column;gap:10px">
+          <p style="margin:0;font-family:Georgia,serif;font-size:18px;line-height:1.6;color:#232019;max-width:560px">…a page of their own is the only version of that which has ever worked.</p>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px">Narrowing only, drawn for completeness: the panel’s side inset goes 24 → 20, gaps 20 → 16, and the panel keeps its 58 px height, all four nav items and Subscribe. The at-top state at this width is Rail’s bar with its search button and both actions, as in the primary frame.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · returned panel / drawer open</div>
+      <div style="display:flex;gap:16px">
+        <div style="width:390px;height:500px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+          <div style="padding:10px 12px 0">
+            <div style="height:56px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);display:flex;align-items:center;gap:8px;padding:0 8px 0 14px;box-sizing:border-box">
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+                <span style="padding:8px 12px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:13px;font-weight:600">Join</span>
+                <span style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><span style="width:19px;height:1.5px;background:#232019"></span><span style="width:19px;height:1.5px;background:#232019"></span></span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:22px 20px;display:flex;flex-direction:column;gap:12px">
+            <p style="margin:0;font-family:Georgia,serif;font-size:18px;line-height:1.6;color:#232019">…the personal page never disappeared; it went quiet, and quiet is not the same as gone.</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#6B6459">The returned panel is where this design earns its place on a phone: a reader two thousand words into a post gets the navigation back with one short upward swipe.</p>
+            <div style="height:100px;border-radius:8px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px)"></div>
+          </div>
+        </div>
+        <div style="width:390px;height:500px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column">
+          <div style="height:64px;flex-shrink:0;display:flex;align-items:center;padding:0 12px 0 20px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+            <span style="margin-left:auto;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#232019">×</span>
+          </div>
+          <div style="flex:1;padding:14px 20px 0;display:flex;flex-direction:column;box-sizing:border-box">
+            <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#232019;padding:10px 0">Essays</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0"><span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#232019">Sections</span><span style="font-size:12px;color:#6B6459">▾</span></div>
+            <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#232019;padding:10px 0">Interviews</span>
+            <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#232019;padding:10px 0">Archive</span>
+            <div style="display:flex;align-items:center;gap:9px;border:1px solid #EBE5DB;border-radius:8px;padding:10px 12px;margin-top:12px"><span style="font-size:18px;line-height:1;color:#6B6459">⌕</span><span style="font-size:14px;color:#6B6459">Search Orbit Weekly</span></div>
+          </div>
+          <div style="flex-shrink:0;border-top:1px solid #EBE5DB;padding:12px 20px 16px;display:flex;flex-direction:column;gap:8px">
+            <span style="text-align:center;padding:13px;border-radius:8px;background:#D96C3F;color:#FFFFFF;font-size:15px;font-weight:600">Subscribe</span>
+            <span style="text-align:center;padding:13px;border-radius:8px;border:1px solid #EBE5DB;font-size:15px;font-weight:500;color:#232019">Sign in</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:796px">At 390 the panel is 56 px inset 10/12 and carries the wordmark, the short CTA and the drawer toggle; the nav is in the drawer as everywhere else. The drawer itself never hides — once it is open the reveal behaviour is suspended, so scrolling a long nav list cannot dismiss the header underneath it.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">ACCESSIBILITY · a header that is sometimes not there</div>
+      <div style="width:600px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px">
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">1</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Hidden is not removed.</strong> The header stays in the DOM, in the accessibility tree and in the tab order while off-screen; tabbing into it returns it. Nothing is <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">display:none</code> and nothing is <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">aria-hidden</code> — a keyboard user must never lose the navigation because a mouse user scrolled.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">2</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Reduced motion keeps the behaviour.</strong> The slide is dropped, the thresholds stay. Suppressing the reveal entirely would leave a reader mid-post with no header at all, which is a worse outcome than an instant change.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">3</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Anchors and the panel.</strong> The returned panel is 58 px plus a 12 px inset, so in-page anchor targets get 70 px of scroll padding. A heading reached from a table of contents is never left underneath it.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">4</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">The drawer suspends it.</strong> While the drawer is open the reveal rules stop, the page behind is inert, and Escape closes the drawer and returns focus to the toggle. Otherwise scrolling inside the drawer could dismiss the bar that owns it.</span></div>
+        <div style="display:flex;gap:10px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#6B6459;color:#FFFFFF;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">5</span><span style="font-size:13px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">Skip link is unaffected.</strong> It stays the first focus stop on the page whichever state the header is in, and focusing it does not trigger a return — it goes straight to the content.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+  <div style="width:1440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A1·16 REVEAL · full text in “A1 Headers — Spec.md”</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Content fields</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Shared A1 list, no additions. 4 nav items shown, items 5+ fold to More, children two deep. The returned panel always carries the nav; three toggles decide what joins it — Wordmark, Subscribe, Sign in (§0·9).</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Data</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Identical to Rail — no data of its own. Empty nav → the panel carries the wordmark and the action; the reveal behaviour is unchanged, since a returning reader may still want the CTA. On pages shorter than two viewports the header never hides, because there is no scroll for it to respond to.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Responsive · behaviour · a11y</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835">At top: Rail’s bar, in flow, 76 px, search and both actions. Hidden: after 200 px of downward scroll, 160 ms. Returned: 58 px floating panel on surface, inset 12/24, md shadow, nav + Subscribe. 1023–768 insets 12/20, gaps 16. ≤ 767 panel 56 px inset 10/12, wordmark + short CTA + toggle. <strong style="font-weight:600">a11y:</strong> hidden is never removed from the tree or the tab order; reduced motion drops the slide but keeps the thresholds; 70 px scroll padding for anchors; the drawer suspends the behaviour.</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid #EFEAE2;padding-top:14px;display:flex;gap:22px">
+      <span style="font-size:12.5px;line-height:1.6;color:#3A3835;flex:1"><strong style="font-weight:600">Flagged.</strong> The 200 px threshold, the three named distances, the 58 px panel height, the 12/24 insets, dropping search and the ghost action from the returned state, and suspending the behaviour while the drawer is open are mine.</span>
+      <span style="font-size:12.5px;line-height:1.6;color:#3A3835;flex:1"><strong style="font-weight:600">Category note.</strong> This design and A1·11 are the two that behave differently by width rather than only looking different. Both are their own designs at every width: hand-off is retired (Part A·A8), so each states what it hides rather than what it becomes.</span>
+    </div>
+  </div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showSpec: this.props.showSpec ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

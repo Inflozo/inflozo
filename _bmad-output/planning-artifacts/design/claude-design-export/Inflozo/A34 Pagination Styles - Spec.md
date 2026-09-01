@@ -1,8 +1,10 @@
 # A34 Pagination Styles — written specification
 
-10 designs · Paper pack · drawn 23 August 2026 · controls reconciled 25 August 2026 · **design patch pass 29 August 2026**
+10 designs · Paper pack · drawn 23 August 2026 · controls reconciled 25 August 2026 · design patch pass 29 August 2026 · **patch pass two 1 September 2026**
 
-**Design patch pass — 29 August 2026 (this document's current state).** Three rulings landed on this category and two of them deleted drawn content. **A theme's templates cannot count through a range of numbers**, so **Numbers All pages is deleted** from 1, 3 and 4 — and the seven-slot window survives precisely because every number in it is handed over by the route rather than worked out. **They cannot multiply either**, so **Post range leaves the Pager block** and Position line reads Off · Page count in all ten; 5 Counter, 8 Contrast Band, 10 Slim and 3 Bar each lost drawn content to that. **Ghost's admin has no posts-per-page field**, so the read-only door in every panel now points at INFLOZO's own theme settings. Three more values went the same way — 5 Counter's **Numerals Padded**, 9 Cards' **Content Direction, page and count**, and 7 Endless's **Stop after Never**, whose row of fixed buttons became a number picker. **Nothing was renumbered.**
+**Patch pass two — 1 September 2026 (this document's current state).** Two jobs and one piece of housekeeping. **The empty state is written**, the case it was missing being a feed with nothing in it: a route with no posts still renders, the feed draws its own designed "nothing here yet" state, and **the pager draws nothing at all beneath it** in all ten designs — with the editor naming that cause in a sentence of its own, different from the one-page notice because the fix is different. The copy belongs to the feed, so **A34 gains no thirteenth catalog string**. **Posts per page is confirmed as INFLOZO's own theme setting** in all ten panels, and the two sentences in this document that still sent a reader to Ghost's admin are struck through rather than quietly rewritten. **The Open questions list is marked up**: settled items struck with the name of whoever settled them, and the one ownerless item — a 137-page archive with no route a pager can offer — **put to the owner and settled by him the same day: accept it.** Nothing in A34 is left open. Two stale leftovers went with it — 9 Cards' optional count in its Data line, and 5 Counter's editor state drawn at "01 / 01" after Numerals Padded was deleted. **Nothing was renumbered, no arrangement changed and no control gained or lost a value.**
+
+**Design patch pass — 29 August 2026.** Three rulings landed on this category and two of them deleted drawn content. **A theme's templates cannot count through a range of numbers**, so **Numbers All pages is deleted** from 1, 3 and 4 — and the seven-slot window survives precisely because every number in it is handed over by the route rather than worked out. **They cannot multiply either**, so **Post range leaves the Pager block** and Position line reads Off · Page count in all ten; 5 Counter, 8 Contrast Band, 10 Slim and 3 Bar each lost drawn content to that. **Ghost's admin has no posts-per-page field**, so the read-only door in every panel now points at INFLOZO's own theme settings. Three more values went the same way — 5 Counter's **Numerals Padded**, 9 Cards' **Content Direction, page and count**, and 7 Endless's **Stop after Never**, whose row of fixed buttons became a number picker. **Nothing was renumbered.**
 
 **[Free] designs:** 2 Prev and Next · 9 Cards
 
@@ -160,6 +162,15 @@ Every design obeys these unless its own entry says otherwise.
 - **Below 767, six designs drop their page links** and the position line takes their job between two
   44 px chevrons. **Every element that leaves has a stated destination.** Nothing is exempt: the one
   setting that was, Numbers All pages, is deleted.
+- **An empty feed draws the feed's own state and no pager, in all ten.** A route with no posts still
+  renders: **the feed above shows its designed "nothing here yet" state** — A17's design and A17's
+  copy — and **A34 draws nothing beneath it**: no row, no band, no pill, no button, and nothing
+  hidden in the markup either, there being no page to link to. It is the one-page rule reached by the
+  same reasoning: a pager over nothing to page through says there is more when there is not. **In the
+  editor the outline is greyed with its own cause** — "This feed has no posts, so there is nothing to
+  page through." — a different sentence from the one-page notice, because it has a different fix.
+  **The state's copy is the feed's**, so the category adds no catalog string for it, and **it is drawn
+  once, on `A34-0`**, because the outcome does not vary across the ten.
 - **Print: links absent, position line kept**, in all ten. **5 Counter prints as itself**, worded, at
   22 pt with the site title; **8 Contrast Band prints its own numerals on white**, the band dropped (A17·7); **7 Endless
   prints nothing.**
@@ -290,11 +301,11 @@ it.
    spacing under a second name; and **Numbers**, deleted in the patch pass — its All pages value
    cannot be built and its other value is the design itself.
 7. **Data.** Ghost's `pagination` object on any paginated route. Destinations `/page/N/`, page 1 at the
-   route root and **never `/page/1/`** ⚑. **0 → no route, no section. 1 page → does not render**
+   route root and **never `/page/1/`** ⚑. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render**
    whatever the item count. **Many → the window bounds the row at seven slots however deep the
    archive**, and needs no arithmetic to do it: 1, `.prev`, `.page`, `.next`, `.pages`. Two pages →
    two numerals, no ellipsis.
-8. **Empty.** **One page → nothing on the site**; in the editor the outline greyed plus "This archive
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — no row, no chevrons and no position line, and nothing hidden in the markup either. The editor greys the outline with "This feed has no posts, so there is nothing to page through." **One page → nothing on the site**; in the editor the outline greyed plus "This archive
    has one page, so the pager will not appear on the site." **First page: the newer slot is Hidden by
    default and keeps its width**; at Dimmed it is a `<span>` at the muted-border step, **never an
    `<a>` and never a disabled `<button>`**. Last page mirrors it. No label authored → the block's
@@ -343,12 +354,12 @@ it.
    Off is disabled and shown disabled, which after the patch pass leaves Page count as the field's
    only value here.** **Cut: a page-numbers toggle**, which would have made this design 1 Numbers.
 7. **Data.** `pagination.prev`/`.next` for destinations, `.page`/`.pages` for the sublabels and
-   centre. **0 → nothing. 1 page → does not render. 2 pages → the design's best case.** **Many →
+   centre. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render. 2 pages → the design's best case.** **Many →
    unchanged, and the reader still moves one page at a time**, which the panel names with 1 Numbers
    as the alternative. **The sublabel is not arithmetic and never was:** `pagination.prev` and `.next` are page numbers the
    route hands over, which is why this line survived a pass that deleted every value a template had
    to work out.
-8. **Empty.** One page → nothing; greyed outline and cause in the editor. **First page, Hidden: the
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — neither link, neither sublabel, no position line and no hairline. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing; greyed outline and cause in the editor. **First page, Hidden: the
    slot keeps its width above 767 and is removed below it. Dimmed: label and chevron to the
    muted-border step and the sublabel becomes "No older posts" / "No newer posts"** — the only dimmed
    slot in A34 that says why, a `<span>` throughout. Sublabel Off shortens the row by 19 px.
@@ -399,11 +410,11 @@ it.
    genuinely different ladder — and keeps its own name.** **At the ends defaults to Dimmed** ⚑.
    **Cut:** Alignment (the zones are the alignment) and a totals toggle (the block's Position
    line).
-7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, band included.**
+7. **Data.** The route's `pagination`. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render, band included.**
    **2 pages → the design's weakest case** (two numerals and a link in a 1,296 strip); the panel
    names 10 Slim. **Many → as drawn**; the band's height never changes with the archive and the outer
    zones are sized for the longest label the catalog can hold rather than for the archive's depth.
-8. **Empty.** One page → nothing. **At the ends dims rather than hides** — an empty zone in a band is
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — the band goes with it — an empty strip under an empty feed is two statements of nothing. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing. **At the ends dims rather than hides** — an empty zone in a band is
    visible whether or not anything is in it. **At Layout Three zones on page 1 there is nothing to
    dim**, since the left zone holds the position line and the newer link exists only at Direction at
    the ends; that asymmetry is stated rather than smoothed ⚑. Position line Off leaves the left zone
@@ -450,10 +461,10 @@ it.
 
    Four, **Numbers** having been deleted in the patch pass. **Labels locked; At the ends defaults
    to Dimmed.** **Cut: Sticky** — 7 Endless owns pinned things.
-7. **Data.** The route's `pagination`. **0 → nothing. 1 page → does not render, pill included.**
+7. **Data.** The route's `pagination`. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render, pill included.**
    **2 pages → the best case at 172 px wide**, the one place it beats 3 Bar. **Many → the pill grows
    with the window to a 340 px ceiling and stops**, and nothing can push it past that any more.
-8. **Empty.** One page → nothing. **At the ends Dimmed by default** — a pill missing a chevron at one
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — the pill included; a container with nothing in it is furniture. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing. **At the ends Dimmed by default** — a pill missing a chevron at one
    end is a lopsided shape; the glyph stays as a `<span>` at the muted-border step. **At Hidden the
    pill contracts by 44 px and stays centred**, the one case where this design's own geometry changes
    at an archive end, allowed because a contents-width object disturbs no layout. Contents Position
@@ -500,10 +511,10 @@ it.
 
    Five. **Labels locked; Position line fixed Off — the counter is the position line; At the ends
    defaults to Dimmed.**
-7. **Data.** `.page` and `.pages` for the counter, `.prev`/`.next` for the arrows. Nothing else is read: the range this design used to carry beneath it needed `.limit` and `.total` multiplied, which a template cannot do. **0 → nothing. 1 page → does not render** — the rule bites hardest here, "1 / 1"
+7. **Data.** `.page` and `.pages` for the counter, `.prev`/`.next` for the arrows. Nothing else is read: the range this design used to carry beneath it needed `.limit` and `.total` multiplied, which a template cannot do. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render** — the rule bites hardest here, "1 / 1"
    at 52 px being a striking way to say nothing. **2 pages → "1 / 2", no adjustment needed.**
    **Many → the numerals grow by a glyph at 100 pages and the group re-centres**; the tabular figures hold the group's width, which is what the deleted padding was for.
-8. **Empty.** One page → nothing on the site; **in the editor the counter greyed at "1 / 1" with the
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — no counter, no arrows and no rule — the display moment has no position to state. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing on the site; **in the editor the counter greyed at "1 / 1" with the
    cause beneath** — the clearest editor state in the category, because the reason is legible in the
    design. **At the ends Dimmed: the spent arrow keeps its box and both its glyph and its border dim
    — the only place A34 dims two tokens at once** ⚑. At Hidden the counter shifts 70 px off centre
@@ -551,13 +562,13 @@ it.
    links.** **No Batch** ⚑. **Cut: auto-load on scroll** (that is 7 Endless) and a position-memory
    toggle (needs storage the theme does not have).
 7. **Data.** First page server-rendered; each press fetches the next `/page/N/` against the same query
-   and appends. **Designed for 24–144 posts across two to eleven presses.** **0 → nothing. 1 page →
+   and appends. **Designed for 24–144 posts across two to eleven presses.** **0 posts → the feed's own empty state, and no pager at all. 1 page →
    no button**; at Progress Count line the count alone renders, "12 of 12 posts"; at Off nothing.
    **Many → the button walks the whole archive**, unlike A18·15's, which stopped at Show — **because
    A34 has no Show** ⚑, and a pager that stops halfway through a route is a dead end. **The batch is
    always `posts_per_page`**, so the button and the numbered links in the same markup can never
    disagree.
-8. **Empty.** **Nothing left to load → the button is replaced by `endLabel` in the button's own
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — no button, no count line, no meter and no hidden numbered links. The editor greys the outline with "This feed has no posts, so there is nothing to page through." **Nothing left to load → the button is replaced by `endLabel` in the button's own
    position at the button's own height**, so the page does not jump (A17·16's rule verbatim); the
    meter fills and stays. **It does not grey out and remain.** **A failed fetch returns the button to
    rest and adds "Those posts didn't load. Try again."** ⚑ — A34's addition, since neither A17 nor
@@ -571,6 +582,8 @@ it.
    and the archive stays crawlable. **The button, count and meter are absent in that branch, not
    inert.** **Edit-safe: the module does not run while editing.** Reduced motion: the loading dots
    hold still and the label carries the state; the meter changes width without a transition.
+   **This design declares no width below which its script runs** — `load-more` runs at every width —
+   so the no-JS branch above describes 1440 and 390 alike.
 10. **A11y.** `<nav aria-label="Pagination">` holding a real `<button>` plus the hidden `<ol>`.
     **A visually-hidden `aria-live="polite"` region announces the count and not the titles**; **focus
     moves to the first new post's link** (A18·15). `aria-busy` on the feed while loading; the button
@@ -616,10 +629,10 @@ it.
    Vertical spacing. **Cut:** a threshold slider, a resume toggle.
 7. **Data.** First page server-rendered; the sentinel fetches `/page/N/` against the route's query and
    appends. **Designed for archives of 48 posts and up** — below four pages the stop never fires and
-   the design is 6 Load More with extra machinery, which the panel says. **0 → nothing. 1 page →
+   the design is 6 Load More with extra machinery, which the panel says. **0 posts → the feed's own empty state, and no pager at all. 1 page →
    nothing renders, not even the pill.** **2 pages → one automatic load and then the end**; the count
    is clamped to the total. **Many → four automatic pages by default, then the button, then Ghost's own pages behind it.**
-8. **Empty.** One page → nothing. **Archive exhausted → the pill unpins and is replaced in the flow by
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — no pill, no sentinel, no fetch and no revealed button. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing. **Archive exhausted → the pill unpins and is replaced in the flow by
    `endLabel`**, so the reader gets an ending rather than a pill that stops changing. **A failed fetch
    shows the stop's button with "Those posts didn't load. Try again."** **In the editor the module does
    not run at all** — the resting frame is the feed with the pill at its server-known count.
@@ -627,6 +640,8 @@ it.
    render (FR-G4, explicitly)."** Those links are in the markup on every render, visually hidden, as
    in 6 Load More; pill, sentinel and revealed button are absent in that branch. **Edit-safe.**
    Reduced motion: no smooth scroll on Back to top, no fade on the pill, static loading dots.
+   **This design declares no width below which its script runs** — `infinite-scroll` runs at every
+   width — so the no-JS branch above describes 1440 and 390 alike.
    **A17 and A18 refused this module and A34 declares it** — the difference being that those sections
    own a Show value and this one owns no query ⚑.
 10. **A11y.** `<nav aria-label="Pagination">` holding the hidden `<ol>`, a real `<button>` **visually
@@ -674,10 +689,10 @@ it.
    in the pack's `contrast` colour whatever the feed's Background role is, and the panel says so**
    ⚑. **Attachment defaults to Separate and At the ends to Dimmed.** **Cut:** an Edge control, and
    a Numbers pair — which could not have been built in any case.
-7. **Data.** The route's `pagination`. **0 → nothing. 1 page → nothing renders, band included** — an
+7. **Data.** The route's `pagination`. **0 posts → the feed's own empty state, and no pager at all. 1 page → nothing renders, band included** — an
    empty inverted band is a stripe across a page for no reason. **2 pages → weaker than 3 Bar's**;
    the panel names 2 Prev and Next. **Many → unchanged.** **The position line carries one value at every band height** — "Page 11 of 11" — the second half of the pair having been a range of posts, deleted in the patch pass ⚑.
-8. **Empty.** One page → nothing. In the editor: the band at 30% opacity with the cause **beneath it,
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — band and all — an inverted stripe over an empty feed is the loudest way to say nothing. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing. In the editor: the band at 30% opacity with the cause **beneath it,
    not inside it — an editor notice on a contrast band would need a fourth derived colour** ⚑. **At
    the ends Dimmed** uses the derived 60% muted; at Contents Numbers and position **there is no
    direction link to dim**, so the archive's ends change only the numerals.
@@ -729,11 +744,11 @@ it.
 
    Four. **Height is the card's, not the section's.** **Position line defaults to Off.** **Cut:** a
    shadow option, an image slot.
-7. **Data.** `.prev`/`.next` for the destinations, `.page` for their numbers, `.limit`/`.total` for the
-   optional count. **0 → nothing. 1 page → nothing renders. 2 pages → one card on every page**, the
+7. **Data.** `.prev`/`.next` for the destinations and `.page` for their numbers, and nothing else — **the
+   optional count was a multiplication and is deleted.** **0 posts → the feed's own empty state, and no pager at all. 1 page → nothing renders. 2 pages → one card on every page**, the
    design at its simplest and, at Content Direction only, its best. **Many → two cards on every
    interior page.** **The count line was arithmetic — `limit`, or `total − (pages−1)·limit` on the last page — and is deleted for exactly that reason** ⚑; it was never a lookahead either.
-8. **Empty.** One page → nothing. **First and last page at Hidden: the absent card is removed and the
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — neither card and no eyebrow. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing. **First and last page at Hidden: the absent card is removed and the
    survivor takes the full measure (Full width) or holds its column (Half width)** — the one A34
    design that re-lays out at an archive end, stated as the deliberate exception it is. **At Dimmed
    both cards stay**, the spent one a step down in fill, border and text, its page replaced by "No
@@ -787,10 +802,10 @@ it.
    Four. **The panel advises the feed's Vertical spacing at Compact** ⚑ — it is the only design
    that wants it, and it no longer owns a value to set. **Cut: a Numbers pair**, which would have
    made this 1 Numbers at Separator None.
-7. **Data.** `.prev`/`.next` for the links, `.page` and `.pages` for the position line. **0 → nothing. 1 page → does not render.** **2 pages → the design's best case in the
+7. **Data.** `.prev`/`.next` for the links, `.page` and `.pages` for the position line. **0 posts → the feed's own empty state, and no pager at all. 1 page → does not render.** **2 pages → the design's best case in the
    category**: at two pages every other A34 design is overbuilt. **Many → unchanged, and unchanged is
    the point** — a hundred-page archive draws the identical row.
-8. **Empty.** One page → nothing; greyed row and cause in the editor. **At the ends Dimmed by
+8. **Empty.** **An empty feed → the feed's own "nothing here yet" state and no pager at all** ⚑ — the row, both hairlines and the position line all go. The editor greys the outline with "This feed has no posts, so there is nothing to page through." One page → nothing; greyed row and cause in the editor. **At the ends Dimmed by
    default** — hiding one of two words either side of a vertical rule leaves a rule dividing one thing
    from nothing — the spent link a `<span>` at the muted-border step, keeping its glyph. **At Hidden
    the rule goes with the link.** Contents Direction only removes the position line and **the row is
@@ -908,8 +923,8 @@ the section's own panel holds controls and read-only lines only.
 8. **A 137-page archive is not a pagination problem, and the library no longer has an answer to it.**
    No A34 design reaches page 68 in one action; the jump-to-page field was cut, and the window cannot
    be widened — one link per page cannot be built. **The Search category was deleted and its number
-   retired**, so there is nothing to point a reader or a picker at. **Open finding, and the only one
-   in A34 with no owner.**
+   retired**, so there is nothing to point a reader or a picker at. **Closed by the owner on 1 September 2026: accepted as a stated
+   limit.** The category draws no answer to it, says so, and stops there.
 9. **A26 Post Footers reuses 9 Cards' card** for its previous-post / next-post pair, with the post
    title where the page number sits. Adopted in this pass and carried to the A26 patch; the finding
    is now a requirement rather than a suggestion.
@@ -933,6 +948,11 @@ the section's own panel holds controls and read-only lines only.
     the next page less than the last — to decide whether an ellipsis appears. **Comparison is not
     arithmetic and the theme layer has it**; recorded here because the window's whole viability rests
     on the distinction.
+16. **Ghost's `pagination` object was never read on a route with no posts.** Whether it reports one
+    page or none on an empty feed is untested, and the two Ghost servers tested on 31 August were not
+    asked. **It changes nothing that is drawn** — the pager renders nothing under either value, which
+    is why the empty state could be written without waiting on it — but the template should be
+    confirmed against a real empty route before it ships.
 
 ---
 
@@ -942,7 +962,9 @@ the section's own panel holds controls and read-only lines only.
 stating the eight moves. **A34-1 … A34-10, all ten control-panel frames** — the panel now opens with
 the feed's section box (Background role · Vertical spacing · Top divider, marked inherited) and the
 **Pagination style** select; the per-design **Padding** row is gone; **Pager wording** and **Posts
-per page** read-only rows are added, the second linking to Ghost Admin. **A34-2 Prev and Next** — the
+per page** read-only rows are added, the second linking to ~~Ghost Admin~~ **INFLOZO's own theme
+settings** — corrected in the 29 August pass, Ghost's admin having no such field, and re-confirmed on
+1 September 2026. **A34-2 Prev and Next** — the
 panel states that Link size changes the typeface. **A34-6 Load More** — the jump row redrawn at the
 category's 38/44 box, and the failure line, "Loading" and `endLabel` marked as catalog strings.
 **A34-9 Cards** — the A26 reuse recorded on the frame. **No section frame's arrangement changed
@@ -983,8 +1005,9 @@ untouched.
    items" finding: no text field, no icon slot, no repeater, nothing inline-editable. Category-wide
    item 5 is followed literally — no icon slots, no repeaters and no inline-editable pager text were
    added, and none remain.
-9. **`posts_per_page` ends at a door.** The Pager block's read-only line links to Ghost Admin →
-   Settings → Posts per page. The field is still not editable in the section, but the hunt for it
+9. **`posts_per_page` ends at a door.** ~~The Pager block's read-only line links to Ghost Admin →
+   Settings → Posts per page.~~ **Struck 1 September 2026:** it links to INFLOZO → Theme settings →
+   Posts per page; Ghost's admin has no posts-per-page field at all. The field is still not editable in the section, but the hunt for it
    finishes somewhere.
 10. **6 Load More's jump row is raised to 38/44**, overruling the flagged "the one sub-44 target in
     A34" and the A11y line that shipped it at 26 px. The **Shown below** value stays: the
@@ -1066,17 +1089,29 @@ design frames carries a dated **patch pass** panel at the top stating what chang
 
 ### Open questions
 
-**Both questions this pass raised have been answered by the owner, and nothing is left open.**
+**Marked up 1 September 2026.** Settled items are struck through with the name of whoever settled
+them; anything genuinely still open is labelled on its own line. **Nothing here was answered by that
+pass on its own authority.**
 
-1. **Which two designs a free site gets** — **answered: 2 Prev and Next · 9 Cards.** Recorded at the
-   head of this document and badged on the roster in `A34-0`.
-2. **What sits under 5 Counter's numerals now that the post range cannot be drawn** — **answered:
-   nothing.** The counter is the whole design: it states the position at 52 px, and a second line
-   beneath it would either repeat that or describe the archive instead of the reader's place in it.
-   Position line stays fixed Off there, and no value was added to a shared field.
-   **Nothing else in this pass required a decision nobody had made.**
-3. **No registry addition was needed.** A34 still declares exactly `load-more` and `infinite-scroll`,
-   both existing entries, and **no module name was coined anywhere in this category.**
+1. ~~**Which two designs a free site gets.**~~ **Settled by the owner, 29 August 2026: 2 Prev and
+   Next · 9 Cards.** Recorded at the head of this document and badged on the roster in `A34-0`.
+2. ~~**What sits under 5 Counter's numerals now that the post range cannot be drawn.**~~ **Settled by
+   the owner, 29 August 2026: nothing.** The counter is the whole design: it states the position at
+   52 px, and a second line beneath it would either repeat that or describe the archive instead of
+   the reader's place in it. Position line stays fixed Off there, and no value was added to a shared
+   field.
+3. ~~**Whether this category needs a registry addition.**~~ **Settled by the specification itself, 29
+   August 2026: no.** A34 declares exactly `load-more` and `infinite-scroll`, both existing entries,
+   and no module name was coined anywhere in this category. Listed here because it was listed as a
+   question; it was never one for the owner.
+4. ~~**A 137-page archive has no route a pager can offer, and nothing to point a reader at.**~~
+   **Settled by the owner, 1 September 2026: accept it.** Deep archives are walked, not jumped. No
+   design reaches page 68 in one action; the jump-to-page field stays cut; the window cannot be
+   widened, because one link per page cannot be built; and no surface is reinstated to carry the
+   case. **The cost is stated rather than solved: a 137-page archive has a floor nobody reaches**,
+   and the stress frame in `A34-0` draws exactly that — the same seven slots at page 68 as at page 2.
+   A pager that admits its limit is better than a control that only works with JavaScript in the one
+   category where everything else works without it. **Nothing is left open in A34.**
 
 ### What this pass supersedes in the earlier notes
 
@@ -1109,3 +1144,75 @@ design frames carries a dated **patch pass** panel at the top stating what chang
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** ten designs, numbered **1–10**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered. Where a ruling could not be applied without inventing a decision it is written
+here as an **open question** rather than answered.
+
+**Frames changed — all eleven:** `A34-0 Category Proof` and `A34-1` … `A34-10`. Each of the ten
+design frames carries a dated **patch pass two** panel above its 29 August one; `A34-0` carries the
+pass's own section and **the category's one new drawing, the empty feed in both its states.**
+
+### This category's own work
+
+| What changed | Why, and where |
+|---|---|
+| **The empty state is written, and the case it was missing is an empty feed.** A route with no posts still renders. **The feed above draws its own designed "nothing here yet" state** — A17's design, A17's copy — and **A34 draws nothing beneath it in all ten designs**: no row, no band, no pill, no button, and nothing hidden in the markup either, there being no page to link to. It is the one-page rule reached by the same reasoning. **The category adds no thirteenth catalog string**, the state's words belonging to the feed. Written into the shared floor, into all ten §8 entries, and **drawn once on `A34-0`** because the outcome does not vary. | *(The work list: a feed with nothing in it shows its designed "nothing here yet" state.)* |
+| **The editor's notice is a second sentence, not the one-page one.** At zero posts the pager's outline is greyed with **"This feed has no posts, so there is nothing to page through."**; at one page it keeps **"This archive has one page, so the pager will not appear on the site."** Two causes with two fixes — publish a post, or accept a short archive — so one line cannot serve both. **Neither state is hidden**, and neither spends a vertical spacing step: with nothing rendered there is nothing to space. | *(A control switched off by another is greyed, with the reason beside it — the same shape, applied to a whole design.)* |
+| **The zero row in every design's Data entry is corrected.** Nine read "0 → nothing" and 1 Numbers read "0 items → the route is empty and has no pagination; the section does not render", which is wrong: **an empty route renders.** All ten now read "0 posts → the feed's own empty state, and no pager at all." | *(The work list, and the same platform fact.)* |
+| **Posts per page: confirmed, not changed, and the two stale sentences are struck.** All ten panels already state **INFLOZO's own theme setting** and link there. **Ghost's admin has no posts-per-page field**, so the two places in this document that still named Ghost Admin — the Reconciliation notes' frame summary and reconciliation note 9 — are **struck through with the correction beside them**, rather than rewritten as though they had always been right. `A34-0` carries the same strike. | *(Some fields we drew do not exist.)* |
+| **Two stale leftovers from the last pass are deleted.** **9 Cards' Data entry** still read `.limit`/`.total` "for the optional count" after that count was deleted as a multiplication; the clause is gone. **5 Counter's frame** still drew its editor state greyed at "01 / 01" after Numerals Padded was deleted; it draws **"1 / 1"**, the tabular figures holding the group's width without the zero. **6 Load More's frame** still flagged "the 26 px jump-row targets" after the row was raised to the category's 38/44 box; the flag now records the raised row. | *(The templates cannot count, add or remember.)* |
+| **The Open questions list is marked up.** Items 1, 2 and 3 are struck through with **who settled them** — the owner on 29 August for the first two, the specification itself for the third. **Item 4 was raised as OPEN FOR THE OWNER** — a 137-page archive has no route a pager can offer, the Search category finding 8 named having been deleted — **and the owner settled it the same day: accept it.** Deep archives are walked, not jumped; the limit is stated, not solved. **Nothing in A34 is open.** | *(The housekeeping job.)* |
+
+### The five rules this pass adds
+
+| Rule | What it did here |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Re-checked on all ten; nothing changed.** Every constrained control in A34 is already drawn, greyed, with a short sentence at the control rather than a tooltip: 2 Prev and Next's Position line Off ("without numbers, the position line is the only thing that says where you are"), 4 Pill's Labels locked to Glyphs only, 5 Counter's inert Position line, 6 Load More's three inert block fields, 7 Endless's Back to top at Status Off, 8 Contrast Band's accent underline **with its measured 2.31:1 beside it**, 9 Cards' Single card ("Applies when At the ends is Hidden"). **Nothing in A34 is hidden by a dependency and nothing accepts a value it will not honour.** The rule's one exception — a control the project can never offer, drawn nowhere with the panel saying why — **has no subject here**: A34 has no colour scheme, no dark-mode switch and no member state. |
+| **Avatars with no photograph** | **No subject.** A34 renders no person: no author, no member, no initials, no `profile_image` in ten designs. Unchanged from the last pass. |
+| **The remove button never greys out** | **No subject.** A34 authors nothing — no repeater, no Add, no Remove, no minimum. Unchanged from the last pass. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No subject, and one confirmation.** 7 Endless's **Stop after** counts pages before the stop; it does not pick between drawn arrangements, so it stays **a number picker, 2 to 8, default 4**, capped with its reason drawn. Nothing else in A34 is a count: the page links belong to the route and the two directional links are fixed at two by every design that has them. |
+| **A design may declare the width below which its script runs** | **No design in A34 declares one.** `load-more` and `infinite-scroll` both run at every width, so **each no-JavaScript line describes 1440 and 390 alike** — stated now in 6 Load More's and 7 Endless's Module entries and under the no-JS table, where it was previously only implied. |
+
+### The two Ghost findings of 31 August
+
+| Finding | Subject in A34 |
+|---|---|
+| **The feature-image caption renders differently on Ghost 5 and Ghost 6** | **None.** No design in this category reads a picture or a caption; the media slot is `none` in all ten tuples. The Ghost 6 removal of `<em>` and `<strong>` cannot reach anything A34 draws. |
+| **A comment count renders nothing at all without JavaScript** | **None.** A34 reads no comment count. The nearest thing is 6 Load More's and 7 Endless's "24 of 132 posts", and it differs in the way that matters: **it is the module's own line, absent in the no-JS branch rather than empty**, and its accessible label sits on the live region, not on a number. Both designs' no-JS lines have said so since they were drawn and are unchanged. |
+
+### The no-JavaScript line, per design
+
+**Unchanged from the last pass in all ten**, and now with the width statement the fifth rule asks for:
+**no A34 design declares a width below which its script runs**, so every line below holds at 1440,
+at 834 and at 390 alike. 1, 2, 3, 4, 5, 8, 9 and 10 are **pixel-identical without JavaScript** —
+every element is an `<a>`, a `<span>` or a paragraph. **6 Load More**: Ghost's numbered `/page/2/`
+links render instead, in the markup on every render, `.visually-hidden` at Page links Hidden and
+never `display:none`; button, count and meter are absent in that branch, not inert. **7 Endless**:
+the same window renders; pill, sentinel and focus-revealed button are absent, not inert. **And on an
+empty feed the branch does not arise:** nothing renders with or without JavaScript.
+
+### Left alone deliberately
+
+- **No design total appears anywhere in this category**, and none was added. A34's numbers — 132
+  posts, 12 a page, 11 pages, 19 posts on the Transport tag, 1,644 over 137 pages — are the invented
+  sample archive a pager is drawn against, not a count of designs in the library, so the
+  count-agnostic rule has no subject here.
+- **P0's per-prop mark allowlist is not in this document** and was not touched.
+- **`M5 Pricing` still shows "70 Free" in its comparison table.** That is outside this category and
+  may be either a repository edit or a stale copy; **it was left alone and is reported here** rather
+  than changed on a guess.
+- **Reconciliation note 9 and the frame summary keep their original wording**, struck through with
+  the correction beside them, so the record of what was once specified survives.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10** — ten designs, no gap
+  created or closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+  names **2 Prev and Next** and **9 Cards** — both of which exist in this category's roster, at
+  numbers 2 and 9. It is the owner's own choice, confirmed 29 August 2026 and untouched by this pass.

@@ -49,7 +49,7 @@ Every placeable section carries **Background role**, **Vertical spacing** (Compa
 
 ### 0·3 · Actions, defined precisely
 
-The **Actions** control's values name the slots, not fixed strings: **None · Sign in · Subscribe · Sign in + Subscribe**. The value "Subscribe" renders the authored `ctaLabel`/`ctaUrl` button — a custom CTA ("Hire Me") is therefore real on every design, with "Subscribe" → Portal `signup` only the shipped default.
+**Actions is a labelled group of one toggle per action** — **Sign in: On · Off** and **Subscribe: On · Off** — not a menu of the combinations someone happened to draw. Split library-wide on **31 August 2026** (owner's ruling; the canonical definition is P0·4a and every design touched is listed in the migration record). The old four-value list *None · Sign in · Subscribe · Sign in + Subscribe* maps exactly: **both off is None**, and each of the other three is a pair of switch positions. What renders is unchanged; only how the editor reaches it. The toggles name the slots, not fixed strings: **Subscribe** renders the authored `ctaLabel`/`ctaUrl` button — a custom CTA ("Hire Me") is therefore real on every design, with "Subscribe" → Portal `signup` only the shipped default.
 
 **Sign in** and **Subscribe/CTA** each carry the **P0·4 member-aware editor** — one compact sub-editor per action, never twelve top-level controls. Per state (Logged out · Free member · Paid member): Show · Label · Link (Link Picker, Portal actions first). Shipped defaults for A1: logged out — "Sign in" → `signin`, "Subscribe" → `signup`; free and paid members — the Sign in slot becomes "Account" → Portal `account`; the Subscribe slot's Show is **off** for both member states (the free-member upgrade ask → `account/plans` exists in the editor but ships off in A1). Show = off removes the action for that audience server-side; siblings shift per each design's empty rule. Members disabled in Ghost → each card collapses to one plain Label + Link editor with the reason shown.
 
@@ -66,11 +66,11 @@ The **Actions** control's values name the slots, not fixed strings: **None · Si
   - **The control is named "Search" on every design** — no "Search in pill", "Search in band", "Search in rail" or "Search at the top": a universal control may not be renamed per design (Part A·A6). Where search previously sat inside a compound value it leaves that value: **A1·2's Right cluster** and **A1·14's Icons** (on A1·14 the glyph still draws in the cluster when the control is at Icon).
   - **The link picker also gains "Ghost search" as a destination** (P0·1, SITE group), so any existing button or link in any category can open search with no new control and no new design.
   - **No JavaScript:** the trigger renders and the click does nothing, because Ghost's search is Ghost's own script ⚑. **No design binds Ctrl-K** (Part B·B5) — Ghost already binds it on every site.
-- **"Dark mode toggle: On · Off"** is a control on **all 15 designs**, drawn by the registry **`mode-toggle`** module and **offered only when the project ships both modes** (otherwise the row is absent, not disabled). Placement when On: the standard 38 px icon button beside the search affordance in the bar's utility cluster, plus a switch row in the drawer, the two kept in sync. Local exceptions: A1·14 draws it in its icon cluster, as its own toggle in that labelled group (§0·9); A1·8's toggle no longer lives in the strip (see §8). **JS off:** "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden."
+- **"Dark mode toggle: On · Off"** is a control on **all 15 designs**, drawn by the registry **`mode-toggle`** module and **offered only when the project ships both modes** (otherwise the row is absent, not disabled). **It is also not offered at all when the site's colour scheme is pinned** — if the owner has chosen Light or Dark rather than Auto, the visitor switch is **not drawn**, not drawn greyed, and the panel says why in one sentence: *the site's colour scheme is pinned, and a visitor switch would override the owner's choice*. This is A1's one instance of the exception to *a control switched off by another is greyed, with the reason beside it* — a control the project can never offer under a given setting is not drawn at all, and the reason stands in its place. **Every control panel frame is drawn in both states**: the switch present under Auto, the reason in its place under a pin. Placement when On: the standard 38 px icon button beside the search affordance in the bar's utility cluster, plus a switch row in the drawer, the two kept in sync. Local exceptions: A1·14 draws it in its icon cluster, as its own toggle in that labelled group (§0·9); A1·8's toggle no longer lives in the strip (see §8). **JS off:** "`prefers-color-scheme` still drives Auto mode entirely in CSS (FR-E4); only the manual override control is hidden."
 
 ### 0·4a · What the patch pass changed category-wide
 
-- **Avatars (Part A·A1).** Where a header renders a person from Ghost — A1·6's and A1·7's post references — an author with no photograph shows **one letter**, not two. Two initials survive only in lists the user types themselves, of which A1 has none. A1·14's member avatar was already removed by earlier ruling.
+- **Avatars (Part A·A1, restated this pass as *avatars with no photograph show initials, and the two forms are not interchangeable*).** Where a header renders a person from Ghost — A1·6's and A1·7's post references — an author with no photograph shows **one letter**, not two. Two initials survive only in lists the user types themselves, of which A1 has none. A1·14's member avatar was already removed by earlier ruling. **The frames were still drawing two letters and were corrected in this pass:** A1·6's featured-post byline and A1·7's BY AUTHORS rows and featured-post byline, in every state they appear in, now show one letter.
 - **Lists with a floor (Part A·A2).** Any authored list in an A1 panel — a dropdown's children, A1·8's strip links — keeps **Remove visible and active at its minimum**; the click answers with the floor in this category's words: **"A dropdown needs at least one child. Remove the parent instead, or point it at a page."**
 - **Counts (Part A·A5).** "Nav items before More" is a **stepper**, capped per design with the cap's reason stated; "Fit to width" is a separate toggle (§0·6). No count in this category is a row of fixed buttons.
 - **Universals (Part A·A6).** The three universal controls may narrow with a stated reason — A1·4's Background role is locked, and says why — and may never be renamed or extended. The colour swatch row is **Base**. **A1 offers no "Inherit" value anywhere**, and none was drawn.
@@ -113,7 +113,7 @@ Every string a visitor can read is either an **editable field with a default** o
 
 ### 0·8 · Social links
 
-Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` **binds to Ghost's social accounts**: **Facebook and X only on Ghost 5.x; all nine platforms on ≥ 6.36** — the sidebar rows are version-gated and absent on the older data surface, not disabled. Each glyph is a **P0·2 icon slot** (defaults from the Icon Picker's Social/Brands group, swappable); rows follow Ghost's field order (§20 — no reorder handles). Authored extras beyond Ghost's fields remain, as P0·3 authored rows.
+Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` **binds to Ghost's social accounts**: **Facebook and X only below Ghost 6.38.0; all nine platforms from 6.38.0** (released 13 May 2026, announced 4 June 2026) — the sidebar rows are version-gated and absent on the older data surface, not disabled. Each glyph is a **P0·2 icon slot** (defaults from the Icon Picker's Social/Brands group, swappable); rows follow Ghost's field order (§20 — no reorder handles). Authored extras beyond Ghost's fields remain, as P0·3 authored rows.
 
 ### 0·9 · One toggle per thing — no compound values
 
@@ -124,7 +124,21 @@ Wherever social glyphs render (A1·8's strip, A1·14's cluster), `socialLinks` *
 - **What is always drawn is not a toggle.** A split group states its constant in the panel: the strip's links, the returned panel's nav, the icon cluster's search glyph (which the standing Search control owns) are always there and get no switch.
 - **A group with a floor keeps the last toggle on**, refusing to switch it off with the reason shown, in the words of the rule that the Remove button never greys out: "the menu button needs its icon or its label". Never dimmed, never hidden.
 - **Toggles are drawn as a labelled group** — the group name above the switches — so a split control still reads as one decision with parts, and the panel does not turn into an undifferentiated list of switches.
-- **Shared controls are not re-cut here.** The **Actions** control ("None · Sign in · Subscribe · Sign in + Subscribe") is a compound value and belongs to the shared editor controls every category uses, so splitting it changes all 33. **A1·2's local "Right cluster" is renamed to the shared Actions control** — which the rule against renaming a shared control already required — and whether Actions itself becomes two toggles is **open question 4** ⚑.
+- **Shared controls are re-cut here too, as of 31 August 2026.** The **Actions** control was the one compound value left standing — it belongs to the shared editor controls every category uses, so splitting it was a library-wide job rather than a header edit, which is why it was held back. **The owner scheduled it and it is done:** Actions is now a labelled group of one toggle per action wherever it appears (§0·3 for A1's naming, **P0·4a** for the canonical definition, the migration record for every design touched). **A1·2's local "Right cluster" is renamed to the shared Actions control** — which the rule against renaming a shared control already required — and now carries the split like the rest.
+
+### 0·10 · The rules this pass adds, and where A1 answers them
+
+Written by name, and applying whether or not the work list repeated them.
+
+| Rule | A1's answer |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | Already this category's shape: the universal Vertical spacing row disabled on A1·11 with its reason, Background role locked with its reason on A1·4, A1·10 and A1·12, the "Nav items before More" stepper disabled with its reason while Fit to width is on. **The rule's one exception is drawn this pass:** the visitor dark-mode switch under a pinned colour scheme is not drawn at all, and the panel carries the reason in its place (§0·4). |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | A1 contains no list of people the user types, so **every face in this category is Ghost's and shows one letter**. Applied to the frames this pass — A1·6 and A1·7 (§0·4a). |
+| The Remove button never greys out | Unchanged. Authored lists keep Remove visible and fully clickable at their floor, and the click produces the floor and the reason as one sentence under the list: "A dropdown needs at least one child. Remove the parent instead, or point it at a page." |
+| A count that picks between drawn layouts is a named set, not a number picker | Checked design by design, and nothing converts either way. "Nav items before More" stays a **stepper** — every value is the same drawn bar with the fold at a different point. The named sets stay named: A1·11's **Collapses to Menu** (Early 1400 · Standard 1200 · Late 1024) and A1·7's **Columns**, each value of which has a drawn frame. |
+| A design may declare the width below which its script runs | **A1·11 is the only A1 design that declares one** — it collapses to Menu under 1200, moved by its own control to 1400 or 1024 — and its no-JavaScript line describes the state on both sides of that width (§11). The ≤ 767 drawer in the other fourteen is the category breakpoint, not a declared script width. |
+
+**The two Ghost findings of 2026-08-31 do not reach this category.** A1 renders no feature-image caption, so the divergence between the two supported Ghost versions over `<em>` and `<strong>` in a caption has nothing to act on here. A1 renders no comment count, so the finding that a count renders nothing at all without JavaScript changes no no-JS line in this specification. Both are recorded so neither omission reads as a miss.
 
 **Shared components established here, reused verbatim for the rest of the library.**
 
@@ -196,10 +210,10 @@ Logo left, nav inline beside it, actions right, hairline under. The library's ba
 |---|---|
 | On scroll | Static · Sticky · Shrink |
 | Nav position | Beside logo · Centre · Right |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
 | Divider under | Hairline · Shadow · None |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -237,10 +251,10 @@ Wordmark centred, nav divided around it, utilities right. Same components, one a
 |---|---|
 | Wordmark size | Small · Medium · Large |
 | Split | Even · Weight left · Weight right (fallback when no `\|` marker) |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (the shared control; each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | On scroll | Static · Re-form left · Hide |
 | Hairline under | On · Off |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **The local "Right cluster" is gone** (Part B·B1 and Part A·A6, with §0·9): search left it for the standing category control, and what remained was the shared **Actions** control wearing a local name — so it is now called Actions, with the shared values. The two new cluster values put `signInLabel` on the desktop bar at last — before this pass it silently lived in the drawer even on desktop.
 
@@ -282,7 +296,7 @@ Masthead row (date · wordmark + tagline · actions) over a ruled nav row. The n
 | Date | Show · Hide |
 | Date shown | Site timezone (default) · Custom date (Date Picker) |
 | Reading progress | On · Off (post and page templates only; disabled elsewhere with the reason shown) |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -320,13 +334,19 @@ Rail's arrangement with no ground of its own, sitting on the first section's ima
 |---|---|
 | Scrim | None · Subtle · Strong |
 | Header colour on image | Light · Dark · Match pack |
-| On scroll | Stay transparent · Solidify to surface · Solidify to contrast |
+| On scroll | Static · Sticky |
+| Solidify to | Surface · Contrast |
+| Stay transparent | On · Off (greyed while On scroll is Sticky, with the reason beside it) |
 | Drawer | Full screen · Sheet |
 | Actions in bar | On · Off (moves both to the drawer) |
 | Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
+
+**Sticky and Stay transparent cannot both be on** (owner's ruling, 31 August 2026). The transparency is contrast-checked against the hero image beneath the bar; pinned to the top the bar carries that transparency over ordinary page content, where nothing was checked and the text can become unreadable. So **On scroll = Sticky greys out Stay transparent, with the reason beside it** — the greyed-control treatment of P0·0, no new mechanism — and the greyed toggle shows the state in force, Off. Under **Static** the bar leaves with the hero and the toggle is live. **The panel draws both states.**
+
+The control shape this needed: **On scroll** previously carried the pin and the solidified ground in one value list (*Stay transparent · Solidify to surface · Solidify to contrast*), so the two things the ruling separates were two values of one control and neither could grey the other. On scroll is now the pin alone (**Static · Sticky**), the ground it takes is **Solidify to** (Surface · Contrast — the same two drawn states, renamed only by dropping the repeated verb, which §0·9 allows as a ground), and **Stay transparent** is its own toggle, which is what the ruling names. No drawn state was added or removed; the design's frames are unchanged. Ten controls, at the ceiling.
 
 Background role is **locked** here, with the reason shown: transparent over the hero is this design.
 
@@ -363,9 +383,9 @@ A capsule on `surface`, inset from three sides, with the page ground visible aro
 | Pill width | Narrow · Page gutter · Edge to edge |
 | On scroll | Static · Stick · Stick and narrow |
 | Lift | Flat · Subtle · Lifted |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role sets the page ground around the capsule; the capsule stays `surface` — that is the design.
 
@@ -408,7 +428,7 @@ No nav in the bar at any width: wordmark, labelled Menu button, search, one acti
 | Show date | On · Off (on the featured post) |
 | Show excerpt | On · Off (on the featured post) |
 | Subscribe in bar | On · Off |
-| Dark mode toggle | On · Off (a switch row above the takeover's secondary links) |
+| Dark mode toggle | On · Off (a switch row above the takeover's secondary links; offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4) — at **Icon** it is the 38 px icon button beside Subscribe and Menu.
 
@@ -450,7 +470,7 @@ Rail's bar with a full-width panel behind it: children in columns with descripti
 | Panel opens on | Click only · Hover and click |
 | On scroll | Static · Sticky · Shrink |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -510,7 +530,7 @@ A 38 px utility strip above the main bar: secondary links, social, an optional e
 | Nav position | Beside logo · Centre · Right |
 | On scroll | Static · Main bar sticks · Whole header sticks |
 | Divider under | Hairline · Shadow · None |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -557,7 +577,7 @@ Rail's arrangement on the `contrast` token. The structure is settled; the design
 | Primary action | Surface fill · Outline · Accent |
 | On scroll | Static · Sticky · Shrink |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 | Background role (universal) | Contrast (locked — the contrast band is this design) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). Background role is **locked**, with the reason shown: the contrast band is this design.
@@ -590,6 +610,8 @@ A fixed 240 px column at the left: logo top, nav as rows, actions pinned to the 
 
 **Behaviour module.** `accordion` (the side panels — and, with Children open = Below the parent, the in-place expansion: open sideways or expand beneath, close on Escape, on leaving both, and on scroll) · `nav-drawer` (**the collapsed column below the threshold: open and close, focus trap, scroll lock, ✕ / scrim / Escape**) · `mode-toggle`. No `header-scroll` — a fixed rail does not answer scroll — and the threshold itself is a media query, not a module. Edit-safe. **JS off:** the rail is CSS layout and is unaffected; column, rows and pinned foot actions all hold above the threshold. **Below it the Menu button cannot open the column, so the rows render in the bar's place as a plain stacked list under the logo** — the same no-JS answer the whole category gives. "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all." — panels open natively but no longer close on scroll, so a panel can lose its anchor while the page moves beside it; that is the one real loss here, and Below-the-parent expansion avoids it entirely. "Nav renders as a plain always-visible link list below the logo (CSS-only stacked layout); no hamburger is shown."
 
+**Declared script width.** This design **collapses to Menu under 1200** — the "Collapses to Menu" control moves the width to 1400 or 1024, and the sidebar states the one in force at the previewed width. The no-JavaScript line above describes **both sides** of it: above the width the rail is CSS layout and renders complete, with column, rows and pinned foot actions intact; below it the Menu button cannot open the column, so the rows render in the bar's place as a plain stacked list under the logo.
+
 **Content fields.** Shared list. Highest cap in the category: **7 nav items** shown, items 8+ fold to a More row, because a fixed column has vertical room a bar does not.
 
 **Controls.**
@@ -602,7 +624,7 @@ A fixed 240 px column at the left: logo top, nav as rows, actions pinned to the 
 | Row icons | On · Off — when On, a P0·2 icon slot before each menu item (Icon Picker; empty slots render nothing on the live site) |
 | Children open | Separate panel (as drawn) · Below the parent |
 | Becomes a top bar | Early 1400 · Standard 1200 · Late 1024 |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -647,15 +669,17 @@ A hairline box aligned to the content column, so the nav's left edge is the head
 | Control | Values |
 |---|---|
 | Box width | Content column · Page gutter · Narrow |
-| Box treatment | Hairline · Filled · Both |
+| Box treatment | Hairline · Filled · Both (Hairline greyed while On scroll is Hide, with the reason beside it) |
 | Nav position | Beside logo · Centre · Right |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | On scroll | Static · Stick and fill · Hide |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 | Background role (universal) | Background (locked — the box sits on the page ground; its fill is the Box treatment control) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No radius control — the box takes the pack token exactly, which is what distinguishes it from A1·5. Background role is **locked**, with the reason shown: the box sits on the page ground; its fill is the Box treatment control.
+
+**Pinned and see-through cannot both be on** (owner's ruling, extended to this design 31 August 2026). The same hazard A1·4 has, reached by a different route: at rest the box is transparent with a hairline, and *Hide* pins it and returns it over ordinary page content with nothing behind the text. *Stick and fill* already answers this in its own name — it fills as it pins — and *Static* never pins. So the ruling lands on one value: **while On scroll is Hide, Box treatment = Hairline is greyed with the reason beside the control**, and **Both** is what renders, which keeps the drawn hairline and adds the fill under it. Filled and Both stay available throughout, so the control itself is never greyed — only the one value that would leave text unbacked. **The panel draws both states.** This is the same hazard the design's no-JS line already names, now closed on the scripted path too.
 
 **Data.** Identical to Rail. Empty nav → the box holds logo and actions and keeps its width, which comes from the content column, not its contents.
 
@@ -690,12 +714,12 @@ Logo left, actions right, nav centred between them in a three-column grid.
 | Control | Values |
 |---|---|
 | Centring | True centre · Optical · Space between |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | Nav spacing | Tight 20 · Normal 30 · Loose 40 |
 | On scroll | Static · Sticky · Shrink |
 | Divider under | Hairline · Shadow · None |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it (Part A·A5) |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -736,9 +760,9 @@ Rail's bar with a bare-icon cluster at the right: search, RSS, dark mode, beside
 | Control | Values |
 |---|---|
 | RSS icon | On · Off (a toggle in the labelled cluster group, §0·9) |
-| Dark mode toggle | On · Off (a toggle in the same cluster group; offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (a toggle in the same cluster group; offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel — the cluster then draws search and RSS only) |
 | Icon style | Bare · Outlined · Filled |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe (each slot a P0·4 card) |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | Nav position | Beside logo · Centre · Right |
 | On scroll | Static · Sticky · Shrink |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
@@ -779,10 +803,10 @@ The wordmark at 64 px with the nav small and low beside it. Suits a home page or
 | Logo | Wordmark only (default) · Image (Small 40 · Medium 56) |
 | Nav placement | Low right · Below · Top right |
 | Tagline | On · Off |
-| Actions | None · Sign in · Subscribe · Sign in + Subscribe |
+| Actions (group) | **Sign in: On · Off** · **Subscribe: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None |
 | On scroll | Static · Collapse to bar · Hide |
 | Nav items before More | **stepper 3–6** (this design holds four before More, reason stated), with **Fit to width** as its own toggle above it |
-| Dark mode toggle | On · Off |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4).
 
@@ -827,7 +851,7 @@ Rail's bar, hidden while the reader goes down the page and back on any upward sc
 | Subscribe in returned panel | On · Off (same group) |
 | Sign in in returned panel | On · Off (same group) |
 | Nav items before More | **stepper 3–6**, with **Fit to width** as its own toggle above it |
-| Dark mode toggle | On · Off (offered only when the project ships both modes) |
+| Dark mode toggle | On · Off (offered only when the project ships both modes; not drawn at all when the site's colour scheme is pinned, with the reason in the panel) |
 
 **Search (Off · Icon · Button · Bar) is the standing category control and sits outside this list** (§0·4). No On-scroll control — the scroll behaviour is the design.
 
@@ -1010,7 +1034,7 @@ Conflicts between this patch and what the category had already ruled, one line e
 19. **"Preview" controls: none existed in A1** — verified against every panel; nothing to remove, rule recorded.
 20. ~~the old search boolean, default off, stood category-wide~~ — **superseded by Part B·B1**: the field is now `searchTrigger` (Off · Icon · Button · Bar), default **Icon**, standing on all fifteen.
 21. **The seven designs whose responsive or empty-state text referenced search without offering it** (3, 4, 6, 7, 8, 12, 13) now carry the control; their drawn search affordances were already the shared component, so only panels changed except A1·6 (§21 head).
-22. **Social rows are version-gated** (Facebook/X on Ghost 5.x; nine platforms ≥ 6.36) — the old "Ghost's social fields" line under-specified this; rows absent, not disabled, on the older surface.
+22. **Social rows are version-gated** (Facebook/X below Ghost 6.38.0; nine platforms from 6.38.0) — the old "Ghost's social fields" line under-specified this; rows absent, not disabled, on the older surface. **Corrected from "≥ 6.36" on 31 August 2026** — see Open questions 3.
 
 ## 22 · Patch notes — design patch pass
 
@@ -1057,16 +1081,16 @@ No new decision was taken here except the one raised as open question 4. Frames 
 
 ### Open questions
 
-1. ~~Where "Auto" lives under A5.~~ **Confirmed by the owner:** it stays a separate **"Fit to width"** toggle above the stepper, and the stepper is disabled with its reason while the toggle is on.
-2. ~~The Bar trigger's honesty.~~ **Confirmed by the owner:** it stays **field-shaped**. It carries no caret and no typing placeholder, and clicking anywhere in it opens Ghost's search.
-3. **Social version gate — with the owner.** §0·8 and item 22 state Facebook/X on Ghost 5.x and nine platforms from 6.36; P0·2 states the seven arrived for staff profiles in 5.118 and for the site in Ghost 6. **The owner is checking both test servers**; until the figure comes back, A21 should not be run against either claim, and both documents keep their current wording so the disagreement stays visible.
-4. ~~The icon cluster on the header called Icon Utilities.~~ **Settled by the owner:** split it into one toggle per icon, and do the same to every compound control in the category — written up as §0·9 above. The question that ruling raises next:
+Settled items are struck through with the name of whoever settled them; anything genuinely still open is marked on its own line. Nothing here is answered by me.
 
-5. **Should the Sign in / Subscribe control become two switches as well?**
-   Every header has one control called Actions with four choices: none, sign in, subscribe, or both. By the new rule that is a compound choice and would become two switches — "Sign in" and "Subscribe" — but this control is not the header's own: it is one of the shared controls every one of the 33 categories uses, and it carries the per-audience editor (what a logged-out visitor sees, what a member sees). Changing it changes every category.
-   1. **Split it, and treat that as a library-wide change to be scheduled. (RECOMMENDED)** Consistent with the rule you just set — an editor never has to find "both" in a list. It costs a pass over every category's panels and the shared controls document, so it should be done deliberately rather than category by category. The editor would see two switches, each opening its own per-audience card.
-   2. **Leave Actions as it is, as a named exception.** Nothing else moves and the headers ship now; the cost is one visible inconsistency — the panel has switches for icons and a menu for buttons — and the exception will be asked about again in every later category.
-   3. **Split it in the headers only, for now.** Fastest to see, but the same control would then behave differently in different categories, which is the sort of thing that is expensive to unpick later. Not recommended.
+1. ~~Where "Auto" lives under A5.~~ **Settled by the owner (correction pass, 28 August 2026):** it stays a separate **"Fit to width"** toggle above the stepper, and the stepper is disabled with its reason while the toggle is on.
+2. ~~The Bar trigger's honesty.~~ **Settled by the owner (correction pass, 28 August 2026):** it stays **field-shaped**. It carries no caret and no typing placeholder, and clicking anywhere in it opens Ghost's search.
+3. ~~Social version gate.~~ **Settled 31 August 2026, against Ghost's own release notes — and it was never a disagreement.** The two documents were describing **two different field sets**, which is why nobody could settle it by looking at one server. Ghost keeps the same nine platforms twice over: **each staff profile's own accounts**, where the seven beyond Facebook and X arrived in **5.118.0** (announced 28 April 2025, with the `{{social_url}}` helper) — P0·2's figure, and correct for author surfaces — and **the site's own accounts**, which arrived in **6.38.0** (released 13 May 2026, announced 4 June 2026), together with the `{{#social_accounts}}` block helper themes render them with. **A1 reads the site's set**, so the gate here is 6.38.0. **§0·8 and item 22 said "≥ 6.36" and are corrected.** A21 reads the staff set and takes 5.118.0. P0·2 had already recorded this and left a note that A1 should be corrected when it next ran; the correction was simply never carried across, which is why the item sat here reading as open.
+4. ~~The icon cluster on the header called Icon Utilities.~~ **Settled by the owner (pass one):** split it into one toggle per icon, and do the same to every compound control in the category — written up as §0·9 above. The question that ruling raises next:
+
+5. ~~Should the Sign in / Subscribe control become two switches as well?~~ **Settled by the owner, 31 August 2026: option 1 — split it library-wide as a scheduled job, and the job was run in the same pass.** Actions is now a labelled group of one On · Off toggle per action, each opening its own P0·4 member-aware card; all toggles off is the old None. The canonical definition is **P0·4a**; §0·3 carries A1's naming; the migration record lists every design and frame touched across A1, A2, A4, A6 and A32. Nothing about what renders changed — only how the editor reaches it.
+
+   **OPEN FOR THE OWNER.**
 
 — End of specification —
 
@@ -1081,3 +1105,96 @@ No new decision was taken here except the one raised as open question 4. Frames 
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–8 and 10–16** — 9 stays retired.
+
+
+---
+
+## Patch notes — pass two, 31 August 2026
+
+Frames updated: all fifteen control panels (`A1-1`, `A1-2`, `A1-3`, `A1-4`, `A1-5`, `A1-6`, `A1-7`, `A1-8`, `A1-10`, `A1-11`, `A1-12`, `A1-13`, `A1-14`, `A1-15`, `A1-16`) and the person-bearing surfaces of `A1-6` and `A1-7`. No frame was redesigned, renamed or renumbered; no control was added, removed or reworded beyond what is listed here.
+
+| Rule (by name) | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it — **its one exception** | **No visitor dark-mode switch when the site's colour scheme is pinned.** Under a pin the control is **not drawn at all** — not drawn greyed — and the panel carries the reason in its place: *the site's colour scheme is pinned, and a visitor switch would override the owner's choice*. Every one of the fifteen control panels now draws **both states**: the switch present under Auto, the reason in its place under a pin. Written into §0·4, and into every design's Controls table as part of the Dark mode toggle row's values. |
+| A control switched off by another is greyed, with the reason beside it | The consequence stated once, not per design: the switch and **the drawer's switch row are the same control**, so under a pin neither renders. On A1·14 the cluster then draws search and RSS only, which its panel says. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **A1·6's featured-post byline now shows one letter** where it drew two. The same defect was live on **A1·7** — the BY AUTHORS rows and the featured-post byline, in the desktop, tablet, mobile and dark frames — and was corrected too: the rule is category-wide this pass, §0·4a has said "one letter" for A1·6 and A1·7 since the previous pass, and the frames were the only thing still disagreeing with it. No other A1 frame renders a person. |
+| The Remove button never greys out | Nothing changed. Restated in §0·10 as the reference case, with this category's floor sentence unaltered. |
+| A count that picks between drawn layouts is a named set, not a number picker | Checked design by design; nothing converted in either direction. "Nav items before More" stays a stepper (every value is the same drawn bar, folded at a different point); A1·11's **Collapses to Menu** and A1·7's **Columns** stay named sets. Recorded in §0·10. |
+| A design may declare the width below which its script runs | **A1·11 declares one** — collapses to Menu under 1200 — and §11 now says so in those words and reads **both sides** of the width: above it the rail is CSS layout and holds complete; below it the Menu button cannot open the column, so the rows render as a plain stacked list under the logo. No other A1 design declares a script width; the ≤ 767 drawer is the category breakpoint. |
+| The two Ghost findings of 2026-08-31 | Neither reaches A1: the category renders no feature-image caption and no comment count. Recorded in §0·10 so the omissions are not read as misses. |
+| Housekeeping — the Open questions list | Items 1, 2 and 4 are struck through and now name **who** settled them and when. Items **3 (the social version gate)** and **5 (whether the shared Actions control becomes two switches)** are genuinely open and each carries **OPEN FOR THE OWNER** on its own line. Neither is answered here. |
+
+**Left alone, deliberately.** The specification's own statements of how many designs this category holds — "fifteen designs, 1–8 and 10–16" — are numbering, not product copy, and no marketing or app screen belongs to A1, so nothing count-bearing was touched here. If the count-agnostic rule is meant to reach a category specification's own roster line as well, say so and it is one edit.
+
+**OPEN QUESTION — the pinned-scheme sentence's route to the setting.** The panel now states why the switch is absent. It does not say where the pin is set, and whether it should carry a link to that setting is a decision I would have to invent: a route out of the section panel into the site's colour-scheme setting is a pattern this library has not established anywhere else. Drawn without one for now.
+
+**Design numbering unchanged:** fifteen designs, numbered **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired.
+
+**`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4, and both designs exist: `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.
+
+
+---
+
+## Patch notes — pass two, second issue: A1·4 Overlay, 31 August 2026
+
+The first issue of these instructions carried three work-list items. Two — *no visitor dark-mode switch under a pinned colour scheme* and *the avatar rule reaching the person-bearing headers* — were applied in the entry above and are untouched here. The third was stopped on and put to the owner as a conflict; this entry records its resolution.
+
+Frames updated: `A1-4 Overlay` (control panel only). No other frame, in this category or any other, was opened. Nothing was renumbered, renamed or redesigned; no drawn state was added or removed.
+
+| Rule (by name) | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | **Sticky and Stay transparent cannot both be on** (owner's ruling). On A1·4, **On scroll = Sticky greys out Stay transparent**, the reason beside it as a sentence: *not available while the header is sticky — the transparency is contrast-checked against the hero, and stuck to the top the bar keeps it over ordinary page content, where nothing was checked.* The greyed toggle shows the state in force, Off (P0·0). Under **Static** the toggle is live. **Both states are drawn on the panel**, in the shape the dark-mode block on the same panel already uses. |
+| A control switched off by another is greyed, with the reason beside it | **The control shape the ruling required.** A1·4's **On scroll** carried the pin and the solidified ground in one value list — *Stay transparent · Solidify to surface · Solidify to contrast* — so the two settings the ruling separates were two values of one control: already mutually exclusive, with nothing for one to grey, and no Static value at all, which made the ruling unapplicable as written. **Resolved by the owner, 31 August 2026: add Static.** On scroll is now the pin alone (**Static · Sticky**); the ground the pinned bar takes is **Solidify to** (Surface · Contrast — the same two drawn states, the repeated verb dropped, which §0·9 permits for a ground); **Stay transparent** is its own toggle, which is the control the ruling names. Ten controls, at §0·1's ceiling. |
+| One toggle per thing — no compound values | Recorded rather than newly applied: the split above is the same rule §0·9 ran across the category last pass, reaching a value list that was missed because it did not use a "+". |
+
+**Left alone, deliberately.**
+
+- **A1·4's no-JavaScript line is unchanged and still says what it said.** With JS off, Solidify never fires and `position: sticky` still works, so a pinned transparent bar can outlive its hero by that route as well. That is the registry's degradation, already flagged on this design as a finding for the architect, and the owner's ruling is about the control combination, not about the no-JS path. Narrowing the no-JS sentence would be answering a question nobody asked.
+- **No other design's On scroll was touched.** *Static · Sticky · Shrink* elsewhere in the category is a different control on a design with a ground of its own; nothing there is transparent and the ruling has nothing to act on.
+- **The count-agnostic copy and P0's mark allowlist** were not opened.
+
+**OPEN QUESTION — whether "Solidify to" should be named at all.** Dropping the verb from the two values leaves a control whose name a builder reads before its values ("Solidify to: Surface"). The alternative is keeping *Solidify to surface · Solidify to contrast* as the values of a control named something else, which needs a name this library has not established. Drawn the short way; one edit either direction.
+
+~~**OPEN QUESTION — whether Static should reach the other transparent design.**~~ **Answered by the owner, 31 August 2026: yes, it reaches A1·12.** Applied in the entry below.
+
+**Design numbering unchanged:** fifteen designs, numbered **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired.
+
+**`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4, and both designs exist: `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.
+
+
+---
+
+## Patch notes — pass two, third issue: A1·12 and the social version gate, 31 August 2026
+
+Frames updated: `A1-12 Boxed` (control panel only). No other frame was opened; nothing renumbered, renamed or redesigned.
+
+| Rule (by name) | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | **The Sticky / Stay-transparent ruling reaches A1·12 Boxed** (owner, 31 August 2026). Same hazard as A1·4 by a different route: the box is transparent with a hairline at rest, and *Hide* pins it and returns it over ordinary page content with nothing behind the text. *Stick and fill* answers it in its own name; *Static* never pins. So **while On scroll is Hide, the Hairline value of Box treatment is greyed with the reason beside the control**, and **Both** is the value in force (P0·0). The control is not greyed as a whole — Filled and Both are safe and stay live. Both states are drawn. |
+| A control switched off by another is greyed, with the reason beside it | **Decision recorded, one edit to overturn:** the greyed value falls to **Both**, not Filled, because Both keeps the hairline the design is named for and adds the fill under it. Filled would silently drop a drawn element. |
+| Ghost's data surface is stated by version | **The social version gate is settled and A1 is corrected.** §0·8 and §21 item 22 said "Facebook and X on Ghost 5.x; all nine from ≥ 6.36". The site's nine social-account fields arrived in **Ghost 6.38.0** (released 13 May 2026, announced 4 June 2026), with the `{{#social_accounts}}` block helper themes render them with. Both lines now read 6.38.0. |
+| Housekeeping — the Open questions list | **Item 3 is struck through and closed.** It was never a disagreement: P0·2's **5.118.0** figure is the **staff-profile** field set and A1's is the **site's** — the same nine platforms, kept twice, arriving at different versions. A1 reads the site's, A21 reads the staff set. P0·2 had recorded this and left a note that A1 should be corrected when it next ran; the correction was never carried across, which is the only reason the item still read as open. **Item 5 remains OPEN FOR THE OWNER.** |
+
+**Left alone, deliberately.** A1·12's no-JavaScript line already named this hazard for the unscripted path ("the no-JS-safe setting is Box treatment = Filled or Both") and is unchanged — the ruling closes the scripted path, and the two sentences now agree without either being rewritten. P0·2's own text is correct as written and was not touched.
+
+**Design numbering unchanged:** fifteen designs, numbered **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired.
+
+**`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4, and both designs exist: `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.
+
+
+---
+
+## Patch notes — the Actions split, 31 August 2026
+
+Frames updated: `A1-1 Rail`, `A1-2 Split Rail`, `A1-5 Floating Pill`, `A1-12 Boxed`, `A1-13 Centre Nav`, `A1-14 Icon Utilities`, `A1-15 Big Type` — the seven designs that carry the shared Actions control. Nothing renumbered, renamed or redesigned.
+
+| Rule (by name) | Change |
+|---|---|
+| One toggle per thing — no compound values | **The shared Actions control is split, library-wide.** Open question 5 is closed: the owner chose the scheduled library-wide split over a headers-only one or a named exception. On A1 the control becomes a labelled group of **Sign in: On · Off** and **Subscribe: On · Off**, each opening its own P0·4 member-aware card; **both off is the old None**. §0·3 rewritten, §0·9's "shared controls are not re-cut here" bullet rewritten, the seven Controls tables updated, the seven panels redrawn. Canonical definition: **P0·4a**. |
+| One toggle per thing — no compound values | **Two frames were also carrying a stale value.** `A1-13 Centre Nav` and `A1-15 Big Type` drew the Actions value as *"Search + Sign in + Subscribe"*. Search left that value when it became the standing category control (§0·4) and the panels had never been updated; the split removed the stale compound with the rest of it. No control gained or lost a choice by this — Search's own row was already drawn on both panels. |
+| A control switched off by another is greyed, with the reason beside it | **Not invoked on A1.** Sign in and Subscribe were each a drawn value on their own, so the two toggles are independent and neither greys the other. The dependency the split does create elsewhere — A4's secondary needing a primary — is that category's, and is recorded there. |
+
+
+**Design numbering unchanged:** fifteen designs, numbered **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired.
+
+**`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4, and both designs exist: `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A4 HEROES · DESIGN 8 OF 17 · PAPER PACK · HEADER MODE: BELOW</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Card</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">The hero as a panel inset from the page's edges, with the page ground visible around it. A3·12's card at the top of the page rather than the bottom, and the same rules where they still apply: the card is the section, the inset is padding on its wrapper, and the card is never clickable as a whole. What it settles for A4 is the top inset — the gap between the header and the card — and the fall-back 18 Overlap Card lands on.</p>
+</section>
+
+<section data-screen-label="A4-8 desktop light" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · inset Comfortable 40, card padding Comfortable 64, ground Surface, headline Large 60</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+      <div style="height:76px;padding:0 72px;display:flex;align-items:center;gap:32px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+        <div style="display:flex;gap:26px;font-size:15px;color:#6B6459"><span>Essays</span><span>Interviews</span><span>Field Notes</span><span>Archive</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px"><span style="font-size:14px;color:#6B6459">Sign in</span><span style="background:#D96C3F;color:#FBF9F5;font-size:14px;font-weight:600;padding:9px 17px;border-radius:8px">Subscribe</span></div>
+      </div>
+      <div style="padding:24px 40px 40px;box-sizing:border-box">
+        <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Issue 48</span>
+          <h2 style="margin:16px 0 0;font-family:Georgia,serif;font-weight:700;font-size:60px;line-height:1.06;letter-spacing:-0.02em;color:#232019;max-width:720px;text-wrap:pretty">The personal page never disappeared. It went quiet.</h2>
+          <p style="margin:20px 0 0;font-size:19px;line-height:1.55;color:#6B6459;max-width:560px;text-wrap:pretty">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+          <div style="margin-top:32px;display:flex;align-items:center;gap:12px">
+            <span style="background:#D96C3F;color:#FBF9F5;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px">Subscribe</span>
+            <span style="background:#FBF9F5;border:1px solid #EBE5DB;color:#232019;font-size:15px;font-weight:600;padding:12px 21px;border-radius:8px">Browse the archive</span>
+          </div>
+          <span style="margin-top:14px;font-size:13px;color:#6B6459">Free every Thursday. Unsubscribe in one click.</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">Two spacings, and they are different on purpose: <strong style="font-weight:600">the top inset is fixed at 24 px and does not follow the Inset control</strong>, because a card that touches the header reads as a taller header, and a card 72 px below it reads as having been forgotten. The other three sides take the control's value. Depth is the pack radius, one hairline and the warm <code style="font-family:'JetBrains Mono',monospace;font-size:12px">md</code> shadow — the same trio A3·12 uses, and the card is the only place in A4 where a shadow appears at all. The secondary button drops to the page ground so it steps away from the card's surface. <strong style="font-weight:600">Flagged as mine:</strong> the fixed 24 px top inset.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">INSET · the three named values · drawn at 640 crop, sides to scale</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="width:640px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:11px 7px 7px;box-sizing:border-box"><div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:24px;box-sizing:border-box"><span style="font-family:Georgia,serif;font-size:24px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019">The personal page never disappeared.</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ SNUG 16 · reads as a raised band, not an object</span>
+        <div style="width:640px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:11px 18px 18px;box-sizing:border-box"><div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:24px;box-sizing:border-box"><span style="font-family:Georgia,serif;font-size:24px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019">The personal page never disappeared.</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ COMFORTABLE 40 · the default</span>
+        <div style="width:640px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:11px 32px 32px;box-sizing:border-box"><div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:24px;box-sizing:border-box"><span style="font-family:Georgia,serif;font-size:24px;font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:#232019">The personal page never disappeared.</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ WIDE 72 · the card's left edge meets the page's own 72 px text margin</span>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:640px">Drawn at 44% so three fit one card; the top inset is at scale too, which is why it barely reads — that is the point of it being 24 px rather than a value. The radius stays the pack's token at every inset: the card never becomes a pill and never squares off, exactly as A3·12. <strong style="font-weight:600">Flagged as mine:</strong> the three values, carried from A3·12 unchanged so a site using both reads one shape.</p>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">CARD GROUND · Contrast · drawn at 640 crop</div>
+      <div style="width:640px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:11px 18px 18px;box-sizing:border-box"><div style="background:#232019;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:28px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;gap:12px">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(251,249,245,.72)">Issue 48</span>
+        <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#FBF9F5">The personal page never disappeared. It went quiet.</span>
+        <span style="font-size:15px;line-height:1.55;color:rgba(251,249,245,.72);max-width:420px">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</span>
+        <div style="display:flex;gap:10px;margin-top:4px"><span style="background:#FBF9F5;color:#232019;font-size:14px;font-weight:600;padding:11px 18px;border-radius:8px">Subscribe</span><span style="border:1px solid rgba(251,249,245,.28);color:#FBF9F5;font-size:14px;font-weight:600;padding:10px 17px;border-radius:8px">Browse the archive</span></div>
+      </div></div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:640px">On Contrast the hairline goes — the ground change is the edge, so a border would be a second edge — and the shadow stays, because a dark object on a light page still casts one. Carried values follow A3·5: full strength headline, 72% eyebrow and sub, 28% on the secondary's border, and the primary action takes the pack's lightest surface rather than accent. Background and Surface are not offered: a card on the page's own ground with no shadow is not a card, and Surface is the default.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">STATES · hover, focus-visible, pressed · and what the card itself does</div>
+      <div style="width:560px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:22px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center"><span style="background:#C25E34;color:#FBF9F5;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px">Subscribe</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">hover · accent darkened one step</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="background:#D96C3F;color:#FBF9F5;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #D96C3F">Subscribe</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">focus · the ring's offset takes the card's surface, not the page's</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="background:#F4F0E8;border:1px solid #E2DBCE;color:#232019;font-size:15px;font-weight:600;padding:12px 21px;border-radius:8px">Browse the archive</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">secondary hover</span></div>
+        <div style="border-top:1px solid #EBE5DB;padding-top:14px;display:flex;flex-direction:column;gap:8px">
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:16px;box-sizing:border-box;display:flex;align-items:center;gap:10px"><span style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#232019">The card at rest</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;margin-left:auto">no hover, no lift, not focusable</span></div>
+          <span style="font-size:12.5px;line-height:1.6;color:#3A3835">The card has <strong style="font-weight:600">no interactive state of any kind</strong>. It does not lift on hover, it is not a link, it takes no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">tabindex</code>, and its shadow never changes. A hero-sized panel that responds to the pointer is a trap — the shape invites the click and there is nowhere for it to go — and A3·12 refused it at the foot of the page for the same reason.</span>
+        </div>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DATA · the card's floor, and what it does not do</div>
+      <div style="width:560px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:28px;box-sizing:border-box"><span style="font-family:Georgia,serif;font-size:28px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019">The personal page never disappeared. It went quiet.</span></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">↑ THE FLOOR · headline alone, Actions None, no note · the card keeps its full width and its padding</span>
+        <span style="font-size:12.5px;line-height:1.6;color:#3A3835"><strong style="font-weight:600">It does not shrink to fit.</strong> A card that narrows to its content reads as a broken component in a wide page — A3·12's rule, and the reason this design has no width control. Nothing is pulled from Ghost, so there is no data state to draw: the card's only variable is how much the user wrote.</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · the shadow is dropped</div>
+    <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box">
+      <div style="height:76px;padding:0 72px;display:flex;align-items:center;gap:32px;border-bottom:1px solid #332E27;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#E0805A;color:#171511;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#F2EDE4">Orbit Weekly</span></div>
+        <div style="display:flex;gap:26px;font-size:15px;color:#A79E8F"><span>Essays</span><span>Interviews</span><span>Field Notes</span><span>Archive</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px"><span style="font-size:14px;color:#A79E8F">Sign in</span><span style="background:#E0805A;color:#171511;font-size:14px;font-weight:600;padding:9px 17px;border-radius:8px">Subscribe</span></div>
+      </div>
+      <div style="padding:24px 40px 40px;box-sizing:border-box">
+        <div style="background:#211D17;border:1px solid #332E27;border-radius:8px;padding:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#A79E8F">Issue 48</span>
+          <h2 style="margin:16px 0 0;font-family:Georgia,serif;font-weight:700;font-size:60px;line-height:1.06;letter-spacing:-0.019em;color:#F2EDE4;max-width:720px;text-wrap:pretty">The personal page never disappeared. It went quiet.</h2>
+          <p style="margin:20px 0 0;font-size:19px;line-height:1.55;color:#A79E8F;max-width:560px;text-wrap:pretty">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+          <div style="margin-top:32px;display:flex;align-items:center;gap:12px">
+            <span style="background:#E0805A;color:#171511;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px">Subscribe</span>
+            <span style="background:#171511;border:1px solid #332E27;color:#F2EDE4;font-size:15px;font-weight:600;padding:12px 21px;border-radius:8px">Browse the archive</span>
+          </div>
+          <span style="margin-top:14px;font-size:13px;color:#A79E8F">Free every Thursday. Unsubscribe in one click.</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px">In dark the shadow is dropped and the raised surface plus the hairline carry the card — A3·12's rule, and the reason the hairline is drawn at every setting rather than only where it is needed. Under forced colours the same hairline is the only thing left, and it is enough. The card is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#211D17</code> on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#171511</code>: 1.3:1 against the page, decorative, and nothing is communicated by the edge alone.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · inset and padding step together</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="height:64px;padding:0 40px;display:flex;align-items:center;gap:24px;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="display:flex;gap:22px;font-size:15px;color:#6B6459"><span>Essays</span><span>Interviews</span><span>More</span></div>
+          <div style="margin-left:auto"><span style="background:#D96C3F;color:#FBF9F5;font-size:14px;font-weight:600;padding:9px 17px;border-radius:8px">Subscribe</span></div>
+        </div>
+        <div style="padding:20px 16px 16px;box-sizing:border-box">
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:44px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start">
+            <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Issue 48</span>
+            <h3 style="margin:14px 0 0;font-family:Georgia,serif;font-weight:700;font-size:48px;line-height:1.06;letter-spacing:-0.02em;color:#232019;text-wrap:pretty">The personal page never disappeared. It went quiet.</h3>
+            <p style="margin:16px 0 0;font-size:18px;line-height:1.55;color:#6B6459;max-width:520px;text-wrap:pretty">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+            <div style="margin-top:26px;display:flex;align-items:center;gap:12px">
+              <span style="background:#D96C3F;color:#FBF9F5;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px">Subscribe</span>
+              <span style="background:#FBF9F5;border:1px solid #EBE5DB;color:#232019;font-size:15px;font-weight:600;padding:12px 21px;border-radius:8px">Browse the archive</span>
+            </div>
+            <span style="margin-top:14px;font-size:13px;color:#6B6459">Free every Thursday. Unsubscribe in one click.</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px">Below 1080 the inset steps one value down — Comfortable 40 → Snug 16 — and the card's padding goes 64 → 44 with it, so the ratio of frame to content holds rather than the frame swallowing the card. That paired step is A3·12's, reused. The top inset goes 24 → 20 as the header goes 76 → 64. Headline 48, sub 18.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · Card at 390: Keep the card</div>
+      <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="height:60px;padding:0 20px;display:flex;align-items:center;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></div>
+        </div>
+        <div style="padding:16px 12px 12px;box-sizing:border-box">
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:20px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start">
+            <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Issue 48</span>
+            <h3 style="margin:14px 0 0;font-family:Georgia,serif;font-weight:700;font-size:34px;line-height:1.08;letter-spacing:-0.02em;color:#232019;text-wrap:pretty">The personal page never disappeared. It went quiet.</h3>
+            <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#6B6459;text-wrap:pretty">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+            <div style="margin-top:24px;display:flex;gap:8px;width:100%">
+              <span style="background:#D96C3F;color:#FBF9F5;font-size:16px;font-weight:600;padding:14px 16px;border-radius:8px;text-align:center">Subscribe</span>
+              <span style="background:#FBF9F5;border:1px solid #EBE5DB;color:#232019;font-size:16px;font-weight:600;padding:13px 15px;border-radius:8px;text-align:center">Browse the archive</span>
+            </div>
+            <span style="margin-top:12px;font-size:13px;color:#6B6459">Free every Thursday. Unsubscribe in one click.</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">Inset 12, card padding 20 — 32 px from the phone's edge to the first word, within a pixel of every other design in the category, which is the whole trick of A3·12's mobile inset and the reason it is reused rather than re-picked. The shadow and the radius stay, so the card is still an object.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · Card at 390: Full bleed</div>
+      <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box">
+        <div style="height:60px;padding:0 20px;display:flex;align-items:center;border-bottom:1px solid #EBE5DB;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:7px;background:#D96C3F;color:#FBF9F5;font-family:Georgia,serif;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#232019">Orbit Weekly</span></div>
+          <div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><span style="width:20px;height:1.5px;background:#232019"></span><span style="width:20px;height:1.5px;background:#232019"></span></div>
+        </div>
+        <div style="background:#FFFFFF;border-bottom:1px solid #EBE5DB;padding:32px 20px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Issue 48</span>
+          <h3 style="margin:14px 0 0;font-family:Georgia,serif;font-weight:700;font-size:34px;line-height:1.08;letter-spacing:-0.02em;color:#232019;text-wrap:pretty">The personal page never disappeared. It went quiet.</h3>
+          <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:#6B6459;text-wrap:pretty">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
+          <div style="margin-top:24px;display:flex;gap:8px;width:100%">
+            <span style="background:#D96C3F;color:#FBF9F5;font-size:16px;font-weight:600;padding:14px 16px;border-radius:8px;text-align:center">Subscribe</span>
+            <span style="background:#FBF9F5;border:1px solid #EBE5DB;color:#232019;font-size:16px;font-weight:600;padding:13px 15px;border-radius:8px;text-align:center">Browse the archive</span>
+          </div>
+          <span style="margin-top:12px;font-size:13px;color:#6B6459">Free every Thursday. Unsubscribe in one click.</span>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px">The second value: radius, shadow and inset all go, the card becomes a band on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code>, and a hairline appears at its bottom edge so the band still ends somewhere. Padding 32/20. This is the setting for a site whose next section is also a card — two inset panels stacked on a phone is a lot of frame for 390 px.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">ACCESSIBILITY · annotated · drawn at 700 crop</div>
+      <div style="width:700px;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:14px 18px 18px;box-sizing:border-box">
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:28px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;position:relative">
+            <span style="position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">the card is the section</span><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">1</span></span>
+            <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Issue 48</span>
+            <span style="margin-top:12px;font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.06;letter-spacing:-0.02em;color:#232019;max-width:480px">The personal page never disappeared. It went quiet.</span>
+            <div style="margin-top:20px;display:flex;align-items:center;gap:6px"><span style="background:#D96C3F;color:#FBF9F5;font-size:14px;font-weight:600;padding:11px 18px;border-radius:8px;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #D96C3F">Subscribe</span><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">2</span></div>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:9px;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">hairline drawn at every setting · the only thing forced colours leaves</span></div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.6;color:#3A3835">
+          <span><strong style="font-weight:600">1</strong> · <strong style="font-weight:600">The card is the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;section&gt;</code></strong> and the inset is padding on its wrapper, not a second element with a role. It has no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">role</code>, no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">tabindex</code>, no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-label</code>, and no click handler — a card shape invites a whole-panel link and the answer is no, at the top of the page as at the foot of it.</span>
+          <span><strong style="font-weight:600">2</strong> · Focus rings sit on the card's own surface, so the ring's 2 px offset is white here rather than the page's background — the ring reads at the same strength on both grounds because the offset takes whatever it sits on. On the Contrast card the ring is the pack's lightest surface, never accent.</span>
+          <span><strong style="font-weight:600">3</strong> · The hairline is drawn at every setting, including where the shadow already separates the card, because under forced colours the shadow disappears and the hairline is the whole edge. Same reason as A3·12, same rule.</span>
+          <span><strong style="font-weight:600">Contrast</strong> · headline on the card 12.6:1 light and 11.4:1 dark · sub and note 5.1:1 / 6.1:1 · the card's edge against the page 1.4:1 light and 1.3:1 dark, decorative both times. On the Contrast card: headline 13.9:1, carried sub 7.6:1.</span>
+          <span><strong style="font-weight:600">Zoom</strong> · the card grows with its content and the inset holds, so at 200% the frame is proportionally thinner and nothing is clipped. There is no fixed height anywhere in the design.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-sizing:border-box"><span style="width:26px;height:4px;border-radius:2px;background:#DED8CC"></span><span style="width:18px;height:3px;border-radius:2px;background:#EFE9DE"></span><span style="width:14px;height:5px;border-radius:2px;background:#D96C3F"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 5px;box-sizing:border-box"><span style="width:100%;height:1px;background:#DED8CC"></span><span style="width:34px;height:7px;border-radius:2px;background:#DED8CC"></span><span style="width:100%;height:1px;background:#DED8CC"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#F1EDE6;box-shadow:0 0 0 2px #FF5941;display:flex;align-items:center;justify-content:center;padding:5px;box-sizing:border-box"><span style="width:100%;height:100%;background:#FFFFFF;border:1px solid #E2DBCE;border-radius:4px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 5px;box-sizing:border-box"><span style="width:22px;height:3px;border-radius:2px;background:#DED8CC"></span><span style="width:12px;height:3px;border-radius:2px;background:#D96C3F"></span></span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card padding</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">48 · 64 · 88 inside the card — one step above A3·12's 32 · 48 · 64, because a hero's card carries a headline. Flagged.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Inset</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Snug</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Wide</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">16 · 40 · 72 at the sides and foot. The gap under the header is always 24.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card ground</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Contrast</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Alignment</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Centred</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Left</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Headline size</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Medium</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Large</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Display</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Actions</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Both</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Primary</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">None</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card at 390</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Keep the card</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Full bleed</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Member visibility</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Everyone</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Logged out</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Free</span><span style="flex:1;text-align:center;font-size:10.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Paid</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Who sees the whole section. A single action’s audience is P0·4’s member-aware editor.</span></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:10px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">UNIVERSAL · every placeable section · outside the design's list</span><div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Background</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Surface</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Contrast</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">The ground behind the card. The card’s own ground is its control above.</span></div><div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Vertical spacing</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:4px;padding:2px 6px">INSET · LOCKED</span></div><span style="font-size:11px;line-height:1.5;color:#6E6A64">Card padding measures inside the card and Inset around it — a third ladder would fight both.</span></div><div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Top divider</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">None</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Line</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Fade</span></div></div></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border-top:1px solid #E7E2DB;padding-top:10px">8 controls + the universal trio · Alignment is new · Vertical spacing locked: Inset and Card padding are this design’s spacing</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+  <div style="width:1440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A4·8 CARD · full text in “A4 Heroes — Spec.md” · category rules in A4-0</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Content fields</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><code style="font-family:'JetBrains Mono',monospace;font-size:12px">eyebrow</code> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">headline</code> (req) · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">sub</code> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">primaryAction</code> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">secondaryAction</code> · <code style="font-family:'JetBrains Mono',monospace;font-size:12px">note</code>. Identical to 1 Centred's list — the difference between the two designs is entirely the panel. Every picture, video, form, quote and proof field is kept and not drawn.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Controls · depth · data</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><strong style="font-weight:600">Reconciled this pass:</strong> <strong style="font-weight:600">Alignment: Centred · Left</strong> is new — A6’s card designs carry it and no left-aligned sibling exists in A4 for the user to reach for. Card padding and Inset keep their names as genuinely distinct ladders; the universal Vertical spacing is locked with the reason shown, and Background role governs the ground behind the card. Member visibility added; text inline-editable; actions via the Link Picker with optional icons.<br>Card padding: Compact 48 · Comfortable 64 · Spacious 88. Inset: Snug 16 · Comfortable 40 · Wide 72 (sides and foot; the top is always 24). Card ground: Surface · Contrast. Headline size: Medium 48 · Large 60 · Display 76. Actions: Both · Primary only · None. Card at 390: Keep the card · Full bleed.<br><strong style="font-weight:600">Depth:</strong> pack radius at every inset, one hairline always drawn, warm <code style="font-family:'JetBrains Mono',monospace;font-size:12px">md</code> shadow in light and dropped in dark. No hover, no lift, no shadow change, ever.<br><strong style="font-weight:600">Data:</strong> nothing from Ghost.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:600">Responsive · empty · a11y · flagged</span>
+        <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><strong style="font-weight:600">Responsive:</strong> 1440–1081 inset and padding at their named values, top inset 24. 1080–768 the inset steps one value down and the padding goes 64 → 44 with it; top inset 20; headline 48, sub 18. ≤ 767 inset 12 and padding 20 — 32 px from the phone's edge to the first word — or, at Full bleed, radius, shadow and inset go, the band sits on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> with padding 32/20 and a hairline at its bottom edge.<br><strong style="font-weight:600">Empty:</strong> each element takes its gap; the card keeps its full width and padding and <strong style="font-weight:600">never shrinks to fit</strong>. Floor is the headline alone in a full-width card. No headline → the section does not render.<br><strong style="font-weight:600">a11y:</strong> the card is the section, the inset is wrapper padding, no role and no tabindex, never clickable as a whole; focus-ring offsets take the card's own ground; the hairline is drawn at every setting for forced colours.<br><strong style="font-weight:600">Flagged as mine:</strong> the fixed 24 px top inset and its 20 px step, refusing Background as a card ground, the paired inset-and-padding step at 1080, and the ring-offset rule. The three inset values, the mobile 12 px inset, the Card at 390 control and the dropped shadow in dark are A3·12's, reused unchanged.</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showSpec: this.props.showSpec ?? true };
+  }
+}
+
+</script>
+</body>
+</html>

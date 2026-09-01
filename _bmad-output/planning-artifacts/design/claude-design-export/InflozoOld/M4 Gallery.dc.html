@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#1C1B1A; text-decoration:none; }
+  a:hover { color:#FF5941; }
+  input::placeholder { color:#A8A29A; }
+</style>
+<script src="./interactions.js"></script>
+</helmet>
+<section style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+  <!-- M4a: category page (Heroes) -->
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M4a · gallery — category page "Ghost Hero Sections" · 1440</div>
+      <div data-screen-label="M4a Gallery Heroes" style="width:1440px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:72px;display:flex;align-items:center;gap:28px;padding:0 64px;border-bottom:1px solid #E7E2DB">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:23px;letter-spacing:-0.02em">Inflozo</span>
+          <div style="display:flex;gap:24px;font-size:14px;font-weight:500;color:#6E6A64;margin-left:24px">
+            <a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#1C1B1A;font-weight:600">Sections</a><a href="#" style="color:#6E6A64">Pricing</a><a href="#" style="color:#6E6A64">Docs</a>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <a href="#" style="font-size:14px;font-weight:500;color:#6E6A64;padding:8px 12px">Sign in</a>
+            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Start free</button>
+          </div>
+        </div>
+        <div style="flex:1;display:flex">
+          <div style="width:250px;border-right:1px solid #E7E2DB;padding:28px 20px;display:flex;flex-direction:column;gap:16px;flex-shrink:0">
+            <a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>All categories</a>
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 12px 8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#A8A29A">34 CATEGORIES<span>485</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Headers<span style="font-family:'JetBrains Mono',monospace;font-size:11px">18</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Announcement Bars<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:600;background:#FFEDE8;color:#C2381F">Heroes<span style="font-family:'JetBrains Mono',monospace;font-size:11px">28</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Post Grids<span style="font-family:'JetBrains Mono',monospace;font-size:11px">22</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Featured Posts<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Post Lists<span style="font-family:'JetBrains Mono',monospace;font-size:11px">16</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Archive Feeds<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Tag Pages<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Author Pages<span style="font-family:'JetBrains Mono',monospace;font-size:11px">11</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Post Headers<span style="font-family:'JetBrains Mono',monospace;font-size:11px">18</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Post Content<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Post Footers<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Related Posts<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Comments<span style="font-family:'JetBrains Mono',monospace;font-size:11px">8</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Newsletter Signup<span style="font-family:'JetBrains Mono',monospace;font-size:11px">22</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Membership Tiers<span style="font-family:'JetBrains Mono',monospace;font-size:11px">16</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Paywalls<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Account & Portal<span style="font-family:'JetBrains Mono',monospace;font-size:11px">10</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">About<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Team<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Testimonials<span style="font-family:'JetBrains Mono',monospace;font-size:11px">18</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Logos & Press<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Stats<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Features<span style="font-family:'JetBrains Mono',monospace;font-size:11px">20</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">FAQ<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Contact<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Pricing Tables<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">CTA Bands<span style="font-family:'JetBrains Mono',monospace;font-size:11px">18</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Galleries<span style="font-family:'JetBrains Mono',monospace;font-size:11px">14</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Video & Audio<span style="font-family:'JetBrains Mono',monospace;font-size:11px">12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Search<span style="font-family:'JetBrains Mono',monospace;font-size:11px">10</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Footers<span style="font-family:'JetBrains Mono',monospace;font-size:11px">20</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Legal<span style="font-family:'JetBrains Mono',monospace;font-size:11px">8</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">404 &amp; Empty<span style="font-family:'JetBrains Mono',monospace;font-size:11px">6</span></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 12px 0;border-top:1px solid #E7E2DB">
+              <span style="font-size:13px;font-weight:500;color:#6E6A64">Free only</span>
+              <div style="width:36px;height:20px;border-radius:10px;background:#E7E2DB;position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0;padding:28px 40px 40px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;gap:7px;flex:1;min-width:280px">
+                <span style="font-size:12px;color:#6E6A64">Sections <span style="color:#C9C2B8">/</span> Heroes</span>
+                <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-0.02em">Ghost hero sections</h1>
+                <span style="font-size:14px;color:#6E6A64;line-height:1.55;max-width:520px">28 hero designs, previewed with a real publication. Play with all 485 on the canvas, ship the Free designs — or go Pro.</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="display:flex;align-items:center;gap:8px;height:38px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;background:#FFFFFF;width:200px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+                  <span style="font-size:13px;color:#A8A29A">Search heroes…</span>
+                </div>
+                <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
+                  <span style="padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Light</span>
+                  <span style="padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Dark</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="display:flex;gap:14px;align-items:center"><div style="flex:1.1;display:flex;flex-direction:column;gap:7px"><span style="font-size:8.5px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ORBIT WEEKLY</span><span style="font-family:Georgia,serif;font-size:17px;line-height:1.2;color:#232019">The slow return of the personal homepage</span><span style="font-size:9.5px;color:#6B6459">MAYA CHEN · AUG 14 · 9 MIN</span></div><div style="flex:1;height:104px;border-radius:8px;background:repeating-linear-gradient(45deg,#E7E9E2 0 9px,#DDE0D6 9px 18px)"></div></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Split Editorial</span>
+                  <span style="font-size:10.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Free</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="height:100%;border-radius:8px;background:#1C1916;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:16px"><span style="font-size:8.5px;font-weight:600;letter-spacing:0.12em;color:#E0805A">FIELD NOTES</span><span style="font-family:Georgia,serif;font-size:17px;line-height:1.2;color:#F0EAE0">Notes from a quieter internet</span></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Full-bleed Cover</span>
+                  <span style="font-size:10.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Free</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center"><span style="font-size:8.5px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ORBIT WEEKLY</span><span style="font-family:Georgia,serif;font-size:19px;line-height:1.15;color:#232019">Essays for the unhurried web</span><span style="font-size:9px;color:#6B6459">EVERY SUNDAY · FREE</span><span style="background:#D96C3F;color:#FFF;font-size:9.5px;font-weight:600;padding:5px 13px;border-radius:6px;margin-top:2px">Subscribe</span></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Centred Manifesto</span>
+                  <span style="font-size:10.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Free</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:6px;height:100%"><div style="grid-row:span 2;border-radius:8px;background:repeating-linear-gradient(45deg,#E7E9E2 0 9px,#DDE0D6 9px 18px);display:flex;align-items:flex-end;padding:10px"><span style="font-family:Georgia,serif;font-size:13px;line-height:1.2;color:#232019">What we lost when blogrolls died</span></div><div style="border-radius:8px;background:#EFECE7"></div><div style="border-radius:8px;background:#E4DED4"></div></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Collage Grid</span>
+                  <span style="font-size:10.5px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">✦ Pro</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:8.5px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ORBIT WEEKLY</span><span style="font-family:Georgia,serif;font-size:16px;line-height:1.2;color:#232019">Four years of Sunday essays</span><div style="display:flex;gap:16px;margin-top:2px"><div style="display:flex;flex-direction:column"><span style="font-family:Georgia,serif;font-size:20px;color:#232019">208</span><span style="font-size:9px;color:#6B6459;letter-spacing:0.06em">ISSUES</span></div><div style="display:flex;flex-direction:column"><span style="font-family:Georgia,serif;font-size:20px;color:#232019">11k</span><span style="font-size:9px;color:#6B6459;letter-spacing:0.06em">READERS</span></div><div style="display:flex;flex-direction:column"><span style="font-family:Georgia,serif;font-size:20px;color:#232019">0</span><span style="font-size:9px;color:#6B6459;letter-spacing:0.06em">ADS</span></div></div></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Stats Punch</span>
+                  <span style="font-size:10.5px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">✦ Pro</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="background:#FBF9F5;border-bottom:1px solid #E7E2DB;height:186px;display:flex;flex-direction:column;justify-content:center;padding:20px"><div style="display:flex;flex-direction:column;gap:10px;height:100%"><div style="flex:1;display:flex;flex-direction:column;gap:7px;justify-content:center"><span style="font-size:8.5px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ORBIT WEEKLY</span><span style="font-family:Georgia,serif;font-size:17px;line-height:1.2;color:#232019">Orbit Weekly, issue by issue</span></div><div style="border-top:1px solid #EBE5DB;padding-top:9px;display:flex;gap:10px;font-size:9px;color:#6B6459;white-space:nowrap;overflow:hidden">ISSUE 47 · THE SLOW WEB<span>·</span>ISSUE 46 · BLOGROLLS<span>·</span>ISSUE 45 · RSS AGAIN</div></div></div>
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Ticker Base</span>
+                  <span style="font-size:10.5px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">✦ Pro</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open ↗</span>
+                </div>
+              </div>
+            </div>
+            <button style="align-self:center;height:42px;padding:0 24px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2">Show 22 more</button>
+          </div>
+        </div>
+      <div style="padding:64px 120px 0;display:flex;flex-direction:column;gap:48px;overflow:hidden">
+        <div style="display:flex;gap:64px">
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1.4">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</span>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.55;max-width:260px">The visual builder for Ghost. Building a beautiful site should feel like play.</span>
+            <a href="#" style="font-size:13px;font-weight:500;color:#C2381F;margin-top:6px">Changelog — built with Inflozo on Ghost ↗</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Product</span><a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">Sections</a><a href="#" style="color:#6E6A64">Pricing</a><a href="#" style="color:#6E6A64">Suggestions</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Learn</span><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#6E6A64">Docs</a><a href="#" style="color:#6E6A64">Connect your site</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Company</span><a href="#" style="color:#6E6A64">Contact</a><a href="#" style="color:#6E6A64">Terms</a><a href="#" style="color:#6E6A64">Privacy</a></div>
+        </div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:230px;letter-spacing:-0.04em;color:#EFECE7;line-height:.72;text-align:center;user-select:none;margin-bottom:-8px">Inflozo</div>
+      </div>
+      </div>
+    </div>
+
+    <!-- M4c: mobile -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M4 · mobile — category page · 390</div>
+      <div data-screen-label="M4 mobile" style="width:390px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:60px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid #E7E2DB">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <button style="height:38px;padding:0 16px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer">Start free</button>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+          </div>
+        </div>
+        <div style="padding:28px 20px 40px;display:flex;flex-direction:column;gap:16px">
+          <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;letter-spacing:-0.02em">Ghost Hero Sections</h1>
+          <span style="font-size:14px;color:#6E6A64;line-height:1.55">18 hero designs for Ghost themes — every one ready to wear your Style Pack.</span>
+          <div style="display:flex;align-items:center;gap:8px;height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;background:#FFFFFF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+            <span style="font-size:14px;color:#A8A29A">Search heroes…</span>
+          </div>
+          <div style="display:flex;gap:7px;overflow:hidden">
+            <span style="font-size:12px;font-weight:600;background:#1C1B1A;color:#F7F5F2;border-radius:24px;padding:6px 13px;white-space:nowrap">Heroes · 18</span>
+            <span style="font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:6px 13px;background:#FFFFFF;white-space:nowrap">Post Grids · 14</span>
+            <span style="font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:6px 13px;background:#FFFFFF;white-space:nowrap">Pricing · 12</span>
+            <span style="font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:6px 13px;background:#FFFFFF;white-space:nowrap">Pay…</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+              <div style="padding:18px;background:#FBF9F5;display:flex;gap:10px;align-items:center;border-bottom:1px solid #E7E2DB">
+                <div style="flex:1.2;display:flex;flex-direction:column;gap:5px"><span style="font-size:8px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ISSUE 47</span><span style="font-family:Georgia,serif;font-size:15px;line-height:1.15;color:#232019">The slow return of the personal homepage</span></div>
+                <div style="flex:1;aspect-ratio:4/3;border-radius:5px;background:repeating-linear-gradient(45deg,#EDE4D8 0 8px,#E5DACB 8px 16px)"></div>
+              </div>
+              <div style="display:flex;align-items:center;padding:11px 14px;gap:8px"><span style="font-size:13px;font-weight:600">Split Editorial</span><span style="font-size:10px;font-weight:600;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">Free</span><a href="#" style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open →</a></div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+              <div style="height:130px;position:relative;background:repeating-linear-gradient(45deg,#4A443C 0 10px,#3E3931 10px 20px);border-bottom:1px solid #E7E2DB">
+                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(20,18,15,.75),rgba(20,18,15,.05))"></div>
+                <div style="position:absolute;left:16px;bottom:12px;font-family:Georgia,serif;font-size:15px;color:#FBF9F5">Notes from a quieter internet</div>
+              </div>
+              <div style="display:flex;align-items:center;padding:11px 14px;gap:8px"><span style="font-size:13px;font-weight:600">Full-bleed Cover</span><span style="font-size:10px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:1px 8px">✦ Pro</span><a href="#" style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open →</a></div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+              <div style="padding:22px 18px;background:#FBF9F5;border-bottom:1px solid #E7E2DB;text-align:center"><span style="font-family:Georgia,serif;font-size:18px;line-height:1.2;color:#232019">The web is a <span style="border-bottom:2px solid #D96C3F">garden</span>, not a feed.</span></div>
+              <div style="display:flex;align-items:center;padding:11px 14px;gap:8px"><span style="font-size:13px;font-weight:600">Big Serif Statement</span><span style="font-size:10px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:1px 8px">✦ Pro</span><a href="#" style="margin-left:auto;font-size:12px;font-weight:600;color:#C2381F">Open →</a></div>
+            </div>
+          </div>
+          <button style="height:44px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer">Show 15 more</button>
+        </div>
+        <div style="padding:44px 24px 0;display:flex;flex-direction:column;gap:26px;overflow:hidden;border-top:1px solid #E7E2DB">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</span>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.55">The visual builder for Ghost.</span>
+            <a href="#" style="font-size:13px;font-weight:500;color:#C2381F">Changelog — built with Inflozo on Ghost ↗</a>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 16px">
+            <div style="display:flex;flex-direction:column;gap:9px"><span style="font-size:11px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Product</span><a href="#" style="color:#6E6A64;font-size:13px">Features</a><a href="#" style="color:#6E6A64;font-size:13px">Sections</a><a href="#" style="color:#6E6A64;font-size:13px">Pricing</a></div>
+            <div style="display:flex;flex-direction:column;gap:9px"><span style="font-size:11px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Learn</span><a href="#" style="color:#6E6A64;font-size:13px">How it works</a><a href="#" style="color:#6E6A64;font-size:13px">Docs</a></div>
+          </div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:82px;letter-spacing:-0.04em;color:#EFECE7;line-height:.72;text-align:center;user-select:none;margin-bottom:-5px">Inflozo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- M4b: gallery landing -->
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M4b · gallery landing — all categories · 1440</div>
+    <div data-screen-label="M4b Gallery landing" style="width:1440px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:72px;display:flex;align-items:center;gap:28px;padding:0 64px;border-bottom:1px solid #E7E2DB">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:23px;letter-spacing:-0.02em">Inflozo</span>
+        <div style="display:flex;gap:24px;font-size:14px;font-weight:500;color:#6E6A64;margin-left:24px">
+          <a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#1C1B1A;font-weight:600">Sections</a><a href="#" style="color:#6E6A64">Pricing</a><a href="#" style="color:#6E6A64">Docs</a>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+          <a href="#" style="font-size:14px;font-weight:500;color:#6E6A64;padding:8px 12px">Sign in</a>
+          <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Start free</button>
+        </div>
+      </div>
+      <div style="padding:64px 120px 90px;display:flex;flex-direction:column;gap:36px">
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:720px">
+          <span style="font-size:13px;font-weight:600;color:#C2381F;text-transform:uppercase;letter-spacing:0.08em">The section gallery</span>
+          <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:52px;letter-spacing:-0.03em;line-height:1.05">Every Ghost section, browsable.</h1>
+          <span style="font-size:16px;color:#6E6A64;line-height:1.55">Hundreds of designed sections for Ghost themes, organized by what they do. Open any of them in Inflozo and it's yours.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;position:relative">
+              <div style="position:absolute;left:0;top:8px;width:62%;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px;transform:rotate(-2deg)"><div style="height:5px;width:70%;background:#232019;border-radius:1px"></div><div style="height:3px;width:50%;background:#C9C2B8;border-radius:1px"></div><div style="height:20px;background:repeating-linear-gradient(45deg,#EDE4D8 0 6px,#E5DACB 6px 12px);border-radius:3px"></div></div>
+              <div style="position:absolute;right:0;top:0;width:58%;background:#3E3931;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px;justify-content:flex-end;height:84px;transform:rotate(2deg);box-shadow:0 4px 16px rgba(28,27,26,.14)"><div style="height:5px;width:75%;background:#FBF9F5;border-radius:1px"></div><div style="height:8px;width:34%;background:#D96C3F;border-radius:2px"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Heroes</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">18</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:12px;display:flex;gap:8px"><div style="flex:1.3;display:flex;flex-direction:column;gap:4px"><div style="height:34px;background:repeating-linear-gradient(45deg,#E7E9E2 0 6px,#DDE0D6 6px 12px);border-radius:3px"></div><div style="height:5px;width:80%;background:#232019;border-radius:1px"></div><div style="height:3px;width:55%;background:#C9C2B8;border-radius:1px"></div></div><div style="flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center"><div style="height:3px;background:#C9C2B8;border-radius:1px"></div><div style="height:3px;background:#C9C2B8;border-radius:1px"></div><div style="height:3px;width:70%;background:#C9C2B8;border-radius:1px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Post Grids</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">14</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;gap:7px;align-items:flex-end;justify-content:center"><div style="width:52px;height:56px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:5px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px"><span style="font-family:Georgia,serif;font-size:11px">$5</span><div style="height:2px;width:70%;background:#EBE5DB"></div><div style="height:2px;width:60%;background:#EBE5DB"></div></div><div style="width:56px;height:70px;background:#FFFFFF;border:1.5px solid #D96C3F;border-radius:5px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px"><span style="font-family:Georgia,serif;font-size:12px">$12</span><div style="height:2px;width:70%;background:#EBE5DB"></div><div style="height:2px;width:60%;background:#EBE5DB"></div><div style="height:8px;width:80%;background:#D96C3F;border-radius:2px;margin-top:2px"></div></div><div style="width:52px;height:56px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:5px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px"><span style="font-family:Georgia,serif;font-size:11px">$50</span><div style="height:2px;width:70%;background:#EBE5DB"></div><div style="height:2px;width:60%;background:#EBE5DB"></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Pricing</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">12</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:4px;justify-content:center"><div style="height:4px;width:90%;background:#E5DFD4;border-radius:1px"></div><div style="height:4px;width:84%;background:#E5DFD4;border-radius:1px;opacity:.6"></div><div style="height:4px;width:88%;background:#E5DFD4;border-radius:1px;opacity:.3"></div><div style="margin-top:4px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:6px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 16px rgba(28,27,26,.08)"><div style="height:4px;width:55%;background:#232019;border-radius:1px"></div><div style="display:flex;gap:4px"><div style="width:38px;height:10px;background:#D96C3F;border-radius:3px"></div><div style="width:38px;height:10px;border:1px solid #DDD5C7;border-radius:3px"></div></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Paywalls</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">6</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;gap:10px;align-items:center"><div style="flex:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;gap:4px;align-items:center"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg><div style="height:3px;flex:1;background:#C9C2B8;border-radius:1px"></div></div><div style="display:flex;gap:4px;align-items:center"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg><div style="height:3px;flex:1;background:#C9C2B8;border-radius:1px"></div></div><div style="display:flex;gap:4px;align-items:center"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg><div style="height:3px;flex:1;background:#C9C2B8;border-radius:1px"></div></div></div><div style="flex:1;display:flex;gap:4px"><div style="flex:1;height:22px;border:1px solid #DDD5C7;border-radius:4px"></div><div style="width:34px;height:22px;background:#D96C3F;border-radius:4px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Newsletters</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">12</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;gap:8px">
+              <div style="flex:1;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:5px;padding:8px;display:flex;flex-direction:column;gap:4px"><span style="font-family:Georgia,serif;font-style:italic;font-size:9px;color:#232019">"Looks like I hired a studio."</span><div style="display:flex;gap:3px;align-items:center;margin-top:auto"><span style="width:10px;height:10px;border-radius:50%;background:#2F4A3E"></span><div style="height:2px;width:60%;background:#C9C2B8"></div></div></div>
+              <div style="flex:1;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:5px;padding:8px;display:flex;flex-direction:column;gap:4px"><span style="font-family:Georgia,serif;font-style:italic;font-size:9px;color:#232019">"Shipped in an afternoon."</span><div style="display:flex;gap:3px;align-items:center;margin-top:auto"><span style="width:10px;height:10px;border-radius:50%;background:#4E7FFF"></span><div style="height:2px;width:60%;background:#C9C2B8"></div></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Testimonials</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">10</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:6px;justify-content:center"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #EBE5DB;padding-bottom:6px"><div style="height:4px;width:60%;background:#232019;border-radius:1px"></div><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8A8378" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg></div><div style="height:3px;width:85%;background:#E5DFD4;border-radius:1px"></div><div style="height:3px;width:70%;background:#E5DFD4;border-radius:1px"></div><div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #EBE5DB;padding-top:6px"><div style="height:4px;width:50%;background:#232019;border-radius:1px"></div><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8A8378" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">FAQs</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">8</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:14px;display:flex;gap:12px;align-items:center;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-family:Georgia,serif;font-size:19px;color:#232019">4,200</span><div style="height:2px;width:30px;background:#C9C2B8"></div></div><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-family:Georgia,serif;font-size:19px;color:#D96C3F">47</span><div style="height:2px;width:30px;background:#C9C2B8"></div></div><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-family:Georgia,serif;font-size:19px;color:#232019">9 yrs</span><div style="height:2px;width:30px;background:#C9C2B8"></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Stats</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">8</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.10);transform:translateY(-2px)">
+            <div style="height:110px;background:#232019;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px;justify-content:center"><div style="height:5px;width:40%;background:#F4EEE4;border-radius:1px"></div><div style="display:flex;gap:12px"><div style="display:flex;flex-direction:column;gap:3px"><div style="height:2.5px;width:26px;background:#5B564C"></div><div style="height:2.5px;width:20px;background:#5B564C"></div><div style="height:2.5px;width:24px;background:#5B564C"></div></div><div style="display:flex;flex-direction:column;gap:3px"><div style="height:2.5px;width:26px;background:#5B564C"></div><div style="height:2.5px;width:20px;background:#5B564C"></div></div><div style="display:flex;flex-direction:column;gap:3px"><div style="height:2.5px;width:26px;background:#5B564C"></div><div style="height:2.5px;width:20px;background:#5B564C"></div></div></div><div style="display:flex;gap:5px;align-items:center"><div style="flex:1;height:14px;border:1px solid #4A443C;border-radius:3px"></div><div style="width:40px;height:14px;background:#D96C3F;border-radius:3px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px">Footers</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">10</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
+          </div>
+        </div>
+      </div>
+<div style="padding:64px 120px 0;display:flex;flex-direction:column;gap:48px;overflow:hidden">
+        <div style="display:flex;gap:64px">
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1.4">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</span>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.55;max-width:260px">The visual builder for Ghost. Building a beautiful site should feel like play.</span>
+            <a href="#" style="font-size:13px;font-weight:500;color:#C2381F;margin-top:6px">Changelog — built with Inflozo on Ghost ↗</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Product</span><a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">Sections</a><a href="#" style="color:#6E6A64">Pricing</a><a href="#" style="color:#6E6A64">Suggestions</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Learn</span><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#6E6A64">Docs</a><a href="#" style="color:#6E6A64">Connect your site</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Company</span><a href="#" style="color:#6E6A64">Contact</a><a href="#" style="color:#6E6A64">Terms</a><a href="#" style="color:#6E6A64">Privacy</a></div>
+        </div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:230px;letter-spacing:-0.04em;color:#EFECE7;line-height:.72;text-align:center;user-select:none;margin-bottom:-8px">Inflozo</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

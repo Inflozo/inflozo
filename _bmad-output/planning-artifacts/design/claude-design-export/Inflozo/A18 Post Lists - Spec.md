@@ -24,6 +24,21 @@ on every page** (Ghost cannot continue a count across pages) and **"load more" i
 print rule no longer names another design, and 15 Load More's Batch size is a number rather than two
 fixed buttons. **Nothing was renumbered.**
 
+**Pass two — 1 September 2026 (this document's current state).** One job, and one piece of
+housekeeping. **The disabled-control pattern** was applied wherever one control switches another
+off: the universal **Order** row now states its reason at **Source: Hand-picked**, and six
+per-design cases across **1 Rows, 5 Grouped, 8 Row Cards, 14 Index and 15 Load More** are drawn
+greyed with the reason at the control and a named fallback. The four **locks** — 7 Contrast Band's
+Background role and Top divider, 15 Load More's Source and Pagination style — are restated as
+drawn, greyed and explained rather than hidden, and 12 Panel's missing **Boxed** stays *absent*
+rather than disabled, because no control can turn it on. **Every fallback is the value the design
+already resolved to; no control was added, removed or renamed, no value or default changed, no
+design renumbered, and no layout, type scale, colour pack or spacing step moved.** One case could
+could not be applied without inventing a decision — 10 Lead and List's Meta at Followers: Slim lines
+— **and the owner settled it on 1 September 2026: slim followers carry no meta.** That row is
+*narrowed* rather than switched off, since the lead still reads it, and carries its reason at the
+control. The **Open questions** housekeeping is recorded in **Patch notes — pass two** at the end.
+
 **[Free] designs:** 1 Rows · 3 Slim
 
 *(Shortlisted, recommended and **confirmed by the owner on 28 August 2026**.)*
@@ -158,8 +173,9 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   Name, date and reading time. **A17's fifth value, With photograph, does not cross into A18** ⚑:
   `profile_image` is read by no design here, and a 24 px circle beside a hung date or a thumbnail is
   a second identifying object in one row. **12 Panel's fixed meta is withdrawn** and takes the enum.
-- **Order is a rule, never a sequence:** Newest first · Oldest first, **disabled at Hand-picked**,
-  where the drag order is the order. **⚑ 14 Index adds a third value, Title A–Z**, server-side
+- **Order is a rule, never a sequence:** Newest first · Oldest first, **greyed at Hand-picked with
+  the reason at the control** ⚑ pass two — "not available while posts are hand-picked: your drag
+  order is the order" — where the drag order is the order. **⚑ 14 Index adds a third value, Title A–Z**, server-side
   `title asc`. **`shuffle` is declared nowhere** ⚑; three designs depend on a date order, and both
   date values are one.
 - **Responsive floor.** **Nine designs hang something at the right edge at 1440 and all nine drop it
@@ -203,6 +219,39 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   has nothing to attach to** ⚑ — A18 authors no image, and a thumbnail's focal point belongs to the
   post, in Ghost. **Rule 11's optional button icon reaches one design**, 15 Load More.
 
+### The disabled-control pattern
+
+**A control switched off by another is greyed, with the reason beside it** — P0's treatment, applied
+without exception in this category: the row is drawn, the switched-off value is struck through, the
+reason is one short sentence at the control rather than a tooltip, and **no row is ever left
+accepting a value it will not honour**. **Nothing in A18 is hidden by another control** except the
+main feed's own pair, which the Data group hides because **P0·5** does — recorded as a conflict in
+Patch notes — pass two rather than resolved here. **⚑ Amended 1 September 2026, the owner's ruling
+given in A19: a control revealed when its Source is pressed is a mode, not a hidden control, and
+P0·0's carve-out covers it — so that half is closed.** **The narrower half was settled the same day: Count
+and Order are greyed, and P0·5 changes to match A18 and A19** rather than the two categories
+redrawing — they are rows a user expects to find, unlike the picker. **A18 is unchanged**; its Order
+row already greys with the reason at the control, which is now the primitive's own behaviour. **The rule's one exception is claimed nowhere in
+A18**: no control in this category is one the project can never offer, so nothing is left undrawn.
+
+| Where | What greys, and the reason at the control |
+|---|---|
+| **Fourteen designs** | **Order**, at Source: Hand-picked — "not available while posts are hand-picked: your drag order is the order." **15 Load More cannot reach the case**: its Source is locked, so Hand-picked is unreachable there. |
+| **1 Rows** | **Meta position**, at Meta None — there is no meta to place. The stored value returns when Meta is set. |
+| **5 Grouped** | **"Everything else" label**, at Group by Month, Year and Nothing — only a tag group can be missing; and **Heading position**, at Group by Nothing — there are no headings to position. Both were conditional and one was hidden. |
+| **8 Row Cards** | **Thumbnail shape**, at Thumbnail Off — no picture to shape and no plate to follow it. |
+| **14 Index** | **Title size: Medium**, at Columns Four — 19 px in a 306 px column is three lines for most titles. Falls to **Small**. |
+| **15 Load More** | **Count**, which the design does not read at all — the route's pagination is the total; and **Thumbnail shape**, at Thumbnail Off. |
+| **10 Lead and List** *(narrowed, not switched off)* | **Meta**, at Followers: Slim lines — **slim followers carry no meta** (the owner, 1 September 2026). The row stays live because it still sets the lead's, and carries the sentence at the control: "slim followers carry no meta — this sets the lead's." |
+
+**Locks are the rule's neighbouring case and are drawn, never hidden:** 7 Contrast Band at
+Background role Contrast and Top divider None, 15 Load More at Source This route's posts and at
+A34's Pagination style Load more, and every design's Count bounds. **A lock by the design is not a
+switch by another control**, and both are drawn with a reason. **12 Panel's Rule has no Boxed and
+that is an absence, not a disablement** — no control can turn the value on, so it belongs to the
+design's vocabulary. **2 Thumb Rows needs no greying**: its Thumbnail ladder has no Off, so the
+shape always has a picture to shape.
+
 ### The content
 
 **Fifteen invented posts (Orbit Weekly)** — A17's twelve unchanged and in their original positions,
@@ -236,7 +285,7 @@ controls, **not counted toward the brief's control budget** ⚑:
 | `filterValue` | ref opt | a tag or an author; read at By tag / By author |
 | `postRefs` | ref[] opt | read at Hand-picked; the Ghost post picker's references, **drag order = drawn order** |
 | `count` | int req | **a stepper, 1–100**, with per-design minimum, maximum and step |
-| `order` | enum req | Newest first · Oldest first; **Title A–Z at 14 Index**; disabled at Hand-picked |
+| `order` | enum req | Newest first · Oldest first; **Title A–Z at 14 Index**; **greyed at Hand-picked**, with the reason at the control — "your drag order is the order" |
 | `paginationStyle` | enum opt | main feed only: Numbered · Newer and older · Load more · None (A34's) |
 | `emptyHeading` `emptyBody` | text opt | main feed only; authored, with defaults |
 
@@ -285,7 +334,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Row density | Compact · Comfortable · Spacious |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
-   | Meta position | Right column · Under title |
+   | Meta position | Right column · Under title; **greyed at Meta None** — there is no meta to place — with the reason at the control; the stored value returns when Meta is set |
    | Tag | Show · Hide |
    | "View all" link | Matches the query · Custom |
    | Background role (universal) | Background · Surface · Contrast |
@@ -466,8 +515,8 @@ date-order note.
    | Control | Values |
    |---|---|
    | Group by | Month · Year · Tag · Nothing |
-   | Heading position | Above · Left |
-   | "Everything else" label | `otherGroupLabel`, shown at Group by Tag |
+   | Heading position | Above · Left; **greyed at Group by Nothing** — no headings to position — with the reason at the control |
+   | "Everything else" label | `otherGroupLabel`; live at Group by Tag, **greyed at Month, Year and Nothing** — only a tag group can be missing — with the reason at the control and the authored string kept |
    | Rule | Off · Between rows · Boxed |
    | Row density | Compact · Comfortable · Spacious |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -616,7 +665,7 @@ ruling is withdrawn and replaced by that. *Data:* the Data group, a 1–25 stepp
    |---|---|
    | Card | Surface · Ground |
    | Thumbnail | Off · Small · Medium |
-   | Thumbnail shape | **Landscape · Square** |
+   | Thumbnail shape | **Landscape · Square**; **greyed at Thumbnail Off** — no picture to shape and no plate to follow it — with the reason at the control |
    | Row density | Compact · Comfortable · Spacious (card padding 16 · 24 · 32) |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -717,8 +766,8 @@ rule.
    | Lead layout | Image above · Image beside |
    | Lead image | Wide · Landscape |
    | Followers | Rows · Slim lines |
+   | Meta | None · Date only · Name and date · Name, date and reading time; **at Followers Slim lines the followers carry no meta and the row sets the lead's alone**, with that sentence at the control |
    | Rule | Off · Between rows · Boxed |
-   | Meta | None · Date only · Name and date · Name, date and reading time |
    | Tag | Show · Hide |
    | "View all" link | Matches the query · Custom |
    | Background role (universal) | Background · Surface · Contrast |
@@ -726,7 +775,10 @@ rule.
    | Top divider (universal) | None · Line · Fade |
 
    **No Row density** (Followers already sets the row's shape); **no followers-count control** (it
-   is Count minus one).
+   is Count minus one). **⚑ Settled by the owner, 1 September 2026: at Followers Slim lines a
+   follower carries its title and nothing else** — 3 Slim's arrangement, which the value borrows —
+   **and Meta sets the lead's alone**. The row is *narrowed* rather than switched off, so it stays
+   live and states the narrowing at the control instead of greying: the lead still reads it.
 7. **Data.** Designed for 5 and 10; correct at 2–15, and to 25 at Followers Slim lines — **the
    stepper's minimum is 2 and its maximum follows Followers**. **The count line splits its number** —
    "5 drawn — 1 lead, 4 followers." 1 → the lead alone, no rules; the panel suggests a featured
@@ -741,7 +793,8 @@ rule.
     opposite choice to 5 Grouped's and right for the same reason.
 
 **Reconciled.** *Controls, seven:* **Tag** — one value governing the lead's eyebrow and the
-followers' alike — and the **"View all" link** join the five; Padding retired. *Data:* the Data
+followers' alike — and the **"View all" link** join the five; Padding retired. **Pass two:** Meta
+narrowed at Followers Slim lines, with the reason at the control. *Data:* the Data
 group, a 2–15 stepper (25 at Slim lines), `excerpt` on the lead.
 
 ---
@@ -916,7 +969,7 @@ row carrying the date-order note.
    |---|---|
    | Columns | Two · Three · Four |
    | Detail | Title only · Title and date · Title and tag |
-   | Title size | Small · Medium (**Medium unavailable at Columns Four, reason shown** — the only disabled value in A18) |
+   | Title size | Small · ~~Medium~~ — **Medium is greyed at Columns Four**, with the reason at the control ("19 px in a 306 px column is three lines for most titles"); **falls to Small** and returns at Columns Two and Three |
    | Rule | Off · Between rows · Boxed |
    | Row density | Compact · Comfortable · Spacious (12 · 16 · 24) |
    | "View all" link | Matches the query · Custom |
@@ -970,21 +1023,26 @@ without coining a module.
    | Button | Outline · Solid · Text |
    | Button label | `buttonLabel`, ≤ 24 ch, with an optional icon |
    | Thumbnail | Off · Small · Medium |
-   | Thumbnail shape | **Landscape · Square** |
+   | Thumbnail shape | **Landscape · Square**; **greyed at Thumbnail Off** — no picture to shape — with the reason at the control |
    | Rule | Off · Between rows · Boxed |
    | Row density | Compact · Comfortable · Spacious |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | Tag | Show · Hide |
    | "View all" link | Matches the query · Custom |
+   | Count (data) | **greyed** — not read by this design; the route's pagination is the total and Batch size is the page the button walks |
+   | Source (data) | **This route's posts (locked)**, the other five values greyed beside it, with the reason drawn |
+   | Pagination style (data) | **Load more (locked)**, with the reason drawn |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
 
-   **Eleven.** **Row density and Excerpt are restored** ⚑ — their removal was 4–7-norm arithmetic,
+   **Eleven**, plus the three data rows this design locks or greys and the universal trio. **Row density and Excerpt are restored** ⚑ — their removal was 4–7-norm arithmetic,
    and every sibling has them.
 7. **Data.** **⚑ Amended: the design is main-feed-only and `count` is not read at all.** Its
-   Source is locked at This route's posts with the reason drawn, the other five values greyed, and
+   Source is locked at This route's posts with the reason drawn, the other five values greyed;
+   **the Count stepper is drawn greyed with that reason at the control rather than left live** ⚑
+   pass two; and
    **Ghost's route pagination is the total** while Batch size is the page the button walks. The old
    reinterpretation of `count` as a reachable total is withdrawn, which closes the category's
    first open finding. **One page's worth or fewer → no button is drawn** and the count line reads "All 5 posts
@@ -1112,32 +1170,45 @@ query is what the user owns.
 
 ### Still open
 
-1. **Closed by the post lists patch.** 15 Load More no longer reinterprets `count`: the design is
+*Marked item by item, 1 September 2026 — housekeeping only. A settled item is struck through with
+who settled it; a live one carries **OPEN FOR THE OWNER** on its own line. **Nothing was answered
+here.***
+
+1. ~~15 Load More reinterprets `count`.~~ **Settled by the post lists patch, 28 August 2026.** 15 Load More no longer reinterprets `count`: the design is
    main-feed-only, the route's pagination is the total, and `count` is not read there. **The field
    means the same thing in all fifteen designs.** What replaces it is a smaller question, below:
    Batch size is the route's page size, and only the theme can write that number.
 2. **A control name is not a field.** `rowDensity` carries five different value sets across A18,
    `thumbSize` three, and now `order` carries three values in one design and two in fourteen. This
    generalises A17's "one image field or three?".
+   **OPEN FOR THE OWNER**
 3. **A pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.** Five designs across the two
    categories derive one independently. **The strongest finding, restated.**
+   **OPEN FOR THE OWNER**
 4. **Tabular figures are a pack requirement**, needed by A17·10 and A18·11 and statable nowhere.
+   **OPEN FOR THE OWNER**
 5. **The post card's DOM order now has four exceptions** — A17·9, A18·4, A18·9, A18·13 — and they
    should be written into the card rather than left in four design specs.
+   **OPEN FOR THE OWNER**
 6. **The card's "never truncated" promise has one exception**, A18·3, and the same applies.
+   **OPEN FOR THE OWNER**
 7. **No module covers a client-side sort** (A17·10, A18·4) — the same gap, named twice, and
    deliberately not closed by 14 Index's server-side value.
+   **OPEN FOR THE OWNER**
 8. **Two designs are measurably weaker in dark** — 8 Row Cards and 12 Panel — because the shadow is
    dropped and Paper's surface step is modest. A pack-level dark elevation would fix both.
+   **OPEN FOR THE OWNER**
 9. **The main feed needs to be *designated*.** "This route's posts on a paginated template" is a
    template fact, not a section setting; the builder has to tell the section which it is, or the
    empty state and the pagination select cannot be shown conditionally. **A17's finding, unchanged
    and now load-bearing in two categories.**
+   **OPEN FOR THE OWNER**
 10. **`postRefs` needs an ordering contract in the schema.** Drag order is drawn order in the
     editor; the template must be handed the references *in that order* rather than re-sorting them
     by `published_at`. Ghost's `#get` helper does not preserve an arbitrary order for free — and
     **11 Numbered draws an ordinal over whatever order it is handed**, so a silent re-sort would
     renumber the list.
+    **OPEN FOR THE OWNER**
 
 ---
 
@@ -1288,25 +1359,34 @@ as a locked value with the reason beside it.
 
 ### Open questions for the architect — where a ruling could not be applied without inventing a decision
 
-1. **Settled by the owner, 28 August 2026: Batch size is the theme's `posts_per_page`.** It lives
+*Marked item by item, 1 September 2026. Nothing here was answered in the housekeeping.*
+
+1. ~~Batch size, and who owns the number.~~ **Settled by the owner, 28 August 2026: Batch size is
+   the theme's `posts_per_page`.** It lives
    in the theme's `package.json`, Ghost's admin has no such setting, and **it is site-wide rather
    than per section** — one number for every paginated list. The control stays a number picker and
    **the row discloses that changing it changes every paginated list on the site**. What remains for
-   the architect is mechanical: a section control writing a theme-package value needs a path.
+   the architect is mechanical: a section control writing a theme-package value needs a path — *a
+   remainder for the architect, not a question for the owner.*
 2. **`group-headings` has no written contract.** The registry names the module; it does not say
    whether the module may re-level a heading. This pass assumed it inserts each group heading as an
    `<h3>` and steps the titles it groups to `<h4>`, because that is the only arrangement whose
    outline is correct both with the script and without it. If the module may not touch heading
    levels, the flat state is still correct and the grouped state announces two `<h3>` peers.
-3. **Column counts: layout or item count?** 3 Slim's Columns and 14 Index's Columns are drawn
+   **OPEN FOR THE OWNER**
+3. ~~Column counts: layout or item count?~~ **Settled by *a count that picks between drawn layouts
+   is a named set, not a number picker*, pass two, 1 September 2026** — the rule's test is whether
+   every value has a frame somebody has actually looked at, and both rows pass it, so both stay
+   named sets and neither is converted. *(The library-wide phrasing, below, is the architect's.)* 3 Slim's Columns and 14 Index's Columns are drawn
    widths, so the number-picker rule was read as not applying. The same reading was recorded in the
    About and Team category and is still unresolved across the library; it should be settled once,
-   not per category.
+   not per category — which the rule has now done for A18 and A17 alike.
 4. **Carried forward, unchanged by this pass:** the pack-level `on-contrast` / `on-accent`
    derivation (five independent derivations now), tabular figures as a pack requirement, the post
    card's four DOM-order exceptions, the single truncation exception, the missing client-side sort,
    dark elevation for 8 Row Cards and 12 Panel, the main feed needing to be *designated*, and
    `postRefs` needing an ordering contract.
+   **OPEN FOR THE OWNER**
 
 ### Module declarations added — 31 August 2026
 
@@ -1368,7 +1448,9 @@ gap created or closed, no number reused, nothing added, removed or renumbered.
 3. **Batch size is the theme's `posts_per_page`**, in `package.json`, site-wide, and not a Ghost
    admin setting. Recorded on the frame, in design 15's entry and in the architect's list above.
 
-**No questions remain open in this category.**
+**No questions remained open in this category on 28 August 2026.** *Pass two raises one — 10 Lead
+and List's Meta at Followers: Slim lines — and marks the architect's lists item by item. See
+Patch notes — pass two, where the owner's 1 September answer closes it.*
 
 ---
 
@@ -1383,3 +1465,129 @@ gap created or closed, no number reused, nothing added, removed or renumbered.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change carries the **name** of the rule that required it. Rules are named and never numbered.
+**Frames updated:** all fifteen design frames (`A18-1` … `A18-15`) and the proof frame `A18-0`, each
+gaining a **PASS TWO PATCH** block naming, for that design, what changed and the rule behind it;
+**`A18-0`, `A18-1`, `A18-5`, `A18-7`, `A18-8`, `A18-12`, `A18-14` and `A18-15` also gain the greyed
+rows drawn** in P0's treatment, and every frame draws the universal **Order** row greyed at
+Hand-picked except `A18-15`, which cannot reach the case. **Nothing was renumbered, renamed,
+redrawn or deleted; no control was added or removed; no value changed; no default changed; no
+layout, type scale, colour pack or spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **Order greys at Source: Hand-picked in fourteen designs** — *a control switched off by another is
+   greyed, with the reason beside it*. The row was already switched off and the document already said
+   so; what was missing is the half of the rule that matters in use — the sentence at the control
+   ("not available while posts are hand-picked: your drag order is the order") and a row that is
+   greyed rather than left accepting a value the query will not honour. **The fifteenth, 15 Load
+   More, cannot reach the case**: its Source is locked at This route's posts, so Hand-picked is
+   unreachable there, and the frame says so rather than drawing a case that cannot occur.
+2. **One row is narrowed rather than greyed, on the owner's ruling** — *a control switched off by
+   another is greyed, with the reason beside it*, read at its edge. **10 Lead and List** at
+   **Followers: Slim lines**: slim followers carry no meta, so the Meta row governs the lead alone.
+   Greying the whole row would switch off a setting the lead still honours, so the row stays live and
+   states the narrowing at the control — what the rule forbids is a row silently accepting a value
+   nothing draws, and the sentence is what removes that.
+3. **Six per-design switches are now drawn greyed with their reason** — *a control switched off by
+   another is greyed, with the reason beside it*. **1 Rows** greys **Meta position** at Meta None,
+   where there is nothing to place. **5 Grouped** greys the **"Everything else" label** at Group by
+   Month, Year and Nothing — only a tag group can be missing — and **Heading position** at Group by
+   Nothing, where there are no headings; the label was previously *hidden* at those values, which the
+   rule forbids. **8 Row Cards** and **15 Load More** grey **Thumbnail shape** at Thumbnail Off,
+   where there is no picture to shape and no tag plate to follow it. **14 Index** greys **Title size:
+   Medium** at Columns Four — the category's long-standing single disabled value, written as
+   "unavailable" and resolving itself silently, now struck through with the sentence at the control
+   and a stated fall to **Small**. **15 Load More** greys **Count**, which it does not read at all.
+   **Every fallback is the value the design already resolved to; no new value, no new control, no
+   changed default**, and where nothing needs to fall — a stored thumbnail shape, a stored meta
+   position — the stored value is kept and returns with the control that switched it off.
+4. **The locked rows are restated as drawn, not hidden** — *a control switched off by another is
+   greyed, with the reason beside it*, its neighbouring case. 7 Contrast Band at Background role
+   Contrast and at Top divider None; 15 Load More at Source This route's posts and at A34's
+   Pagination style Load more; every design's Count bounds. **A lock by the design is not a switch by
+   another control**, and both are drawn with a reason. Nothing about them changed.
+5. **12 Panel's missing Boxed stays absent rather than disabled.** No control can turn the value on,
+   so it is a gap in the design's vocabulary rather than a dependency, and the rule does not reach it.
+   The frame says so beside the drawn Rule row. **2 Thumb Rows needs no greying at all**: its
+   Thumbnail ladder has no Off, so the shape always has a picture to shape.
+6. **No two-initial avatar, and no one-letter avatar either** — *avatars with no photograph show
+   initials, and the two forms are not interchangeable*. **No subject in A18**: `profile_image` is
+   read by no design, A17's fifth Meta value does not cross into this category, and no initials block
+   exists anywhere in the fifteen. Restated on every frame so the absence stays a decision; if a
+   design ever draws a Ghost byline it gets **one letter, never two**.
+7. **Neither module declares a width** — *a design may declare the width below which its script runs*.
+   `group-headings` and `load-more` both run at every width, and both no-JavaScript lines already
+   read at every width. **Nothing was declared, because declaring one would be a decision rather than
+   a record.**
+8. **No count was converted in either direction** — *a count that picks between drawn layouts is a
+   named set, not a number picker*. Count and Batch size count posts; 3 Slim's and 14 Index's
+   **Columns** stay named sets, every value a drawn width with a frame behind it. This closes the
+   category's standing "layout or item count?" question for A18.
+9. **Open questions marked item by item** — housekeeping. Two items were settled elsewhere in this
+   document or by a rule in this pass and are struck through with who settled them; every live item
+   carries **OPEN FOR THE OWNER** on its own line. **Nothing was answered in the housekeeping**, and
+   28 August's "no questions remain open" line is dated rather than deleted.
+10. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### Rules and facts checked, design by design
+
+| Rule or fact (by name) | Where it lands in A18 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **The pass's whole subject.** Every case is listed in **The disabled-control pattern** in the category layer: the universal Order row, six per-design switches across five designs, one narrowing, four locks and one absent value. **The rule's one exception is claimed nowhere in A18** — no control here is one the project can never offer, so nothing is left undrawn. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A18 draws no person and reads no `profile_image`; neither initial form appears in the fifteen, and neither may be introduced without the rule coming with it. |
+| **The Remove button never greys out** | **No subject, and nothing to fix.** A18 authors no list: no Add creates a post, no Remove deletes one. The post picker at Hand-picked has an ✕ on every row, no floor, and removing the last reference empties the set — the section then does not render on the site and is outlined in the editor. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Count (1–100 with per-design bounds) and 15 Load More's Batch size (3–25) count posts; 3 Slim's and 14 Index's Columns are drawn widths and stay named. The category's one conversion — Batch size, from Five · Ten to a stepper — was made on 28 August and meets the rule's test. |
+| **A design may declare the width below which its script runs** | **Neither module does.** Two modules, both running at every width, both no-JavaScript lines reading at every width. |
+| **Ghost's templates cannot count, add, or remember** | **Unchanged by this pass, and re-checked.** 5 Grouped's headings are the module's, 11 Numbered restarts at 01 on every page, 15 Load More walks the route's pagination. The greying added here is editor state — the panel knowing another control's value — not a template counting. |
+| **CSS cannot see content** | **Re-checked, nothing withdrawn.** Excerpts still clamp by line without reading their length, 3 Slim still truncates with the full string in the DOM, and no greyed row is decided by content. |
+| **Some fields we drew do not exist** | **Unchanged.** A18 reads `title`, `url`, `published_at`, `primary_tag`, `primary_author.name`, `excerpt`, `feature_image` and `reading_time`; nothing this pass touched adds a field. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A18.** These are placeable sections whose markup this project owns; a post's body is A25's and A33's surface. |
+| **The feature-image caption renders differently on the two Ghost versions** | **No subject, and worth one line for a builder.** The four designs that draw a picture read `feature_image` and `feature_image_alt` and never a caption; the paragraph under a title is `excerpt`. Ghost 6 drops `<em>` and `<strong>` from a caption while keeping links and `<b>`, Ghost 5 keeps everything, and **the difference cannot reach this category** — no design may start reading a caption without inheriting it. |
+| **A comment count renders nothing at all without JavaScript** | **No subject.** A18 reads no comment count, ships no comment noun in its translation catalogue and puts no accessible label on a number. |
+| **The two free designs are the owner's choice** | **Unchanged: 1 Rows and 3 Slim**, confirmed 28 August 2026, both present in the roster of fifteen. |
+
+### The conflict this pass will not choose
+
+**A control switched off by another is greyed and never hidden. A18's Data group hides the main
+feed's pair — Pagination style and the empty-state heading and body — at every Source except This
+route's posts, and it hides them because P0·5 does.** The hiding is caused by another control, so the
+rule reaches it; it cannot be greyed without redesigning P0·5, which this pass is instructed not to
+do. **Listed here rather than resolved**, and no A18 panel was changed on account of it. A17 records
+the identical conflict.
+
+### The one open question this pass raised — and the owner's answer
+
+1. ~~10 Lead and List, at Followers: Slim lines — does Meta govern the follower rows?~~ **Settled by
+   the owner, 1 September 2026: Meta is off for slim followers.** A follower line carries its title
+   and nothing else, which is 3 Slim's arrangement and the reason the value exists. **The row is
+   narrowed rather than switched off** — it still sets the lead's meta, so it stays live and carries
+   the sentence at the control ("slim followers carry no meta — this sets the lead's") rather than
+   greying, which would take the lead's meta with it. Applied to `A18-10`, to the design's control
+   table and to the disabled-control pattern. **No value changed and no control was added.**
+   **No question remains open in A18.**
+
+### Left alone deliberately
+
+**Two things were edited outside this environment and are untouched here.** **No printed design total
+was reintroduced** anywhere in this document or on any A18 frame — nothing in the category quotes a
+library size, and the count-agnostic copy stands. **P0's per-prop mark allowlist is not rewritten,
+softened or dropped**: the default inline marks, a field's right to narrow that set, and a disallowed
+mark being **absent** from the toolbar rather than greyed, all stand as written. **Two things were
+left because they may be deliberate:** the conflict already recorded at 5 Grouped — that the Tag
+Show · Hide list names eleven designs and not this one — is untouched, since closing it would give
+the design two controls that both hide the tag; and 9 Big Type's advisory Count maximum stays
+advisory, as the category ruled. Both remain where they were, in **Conflicts recorded rather than
+resolved**.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The "[Free] designs:" line is present** at the head of this document, on its own line, and
+   names **1 Rows** and **3 Slim** — both of which exist in this category's roster of fifteen.

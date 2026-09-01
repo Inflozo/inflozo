@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A34 PAGINATION STYLES · DESIGN 9 OF 10 · PAPER PACK · FOUR CONTROLS · PATCHED 29 AUGUST 2026 · THE ONLY DESIGN WHOSE ITEMS ARE OBJECTS, AND THE ONLY ONE THAT CHANGES ITS OWN LAYOUT AT AN ARCHIVE END</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Cards</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">The two destinations as two cards, 636 each on A17's own gutter, each carrying a direction eyebrow and the page it goes to. <strong style="font-weight:600">2 Prev and Next puts the same two links on the page as text; this makes them things you press.</strong></p>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">It costs the most vertical space of any A34 design and buys the largest targets: <strong style="font-weight:600">two 636 × 112 surfaces are the easiest pager in the category to hit</strong>, on a phone or with a trackpad. <strong style="font-weight:600">It also spends no new geometry</strong> — the cell width, the gutter, the radius and the card's own hairline are A17's, and the eyebrow is A1's.</p>
+</section>
+
+<section style="padding:0 56px 24px">
+  <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:9px;max-width:1000px;font-size:13px;line-height:1.65;color:#3A3835">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">PATCH PASS · 29 AUGUST 2026 · WHAT CHANGED IN THIS DESIGN</span>
+    <span><strong style="font-weight:600">Content loses its third value: Direction only · Direction and page.</strong> The count line — “12 posts” under the page number — needed <code style="font-family:'JetBrains Mono',monospace;font-size:12px">total − (pages−1)·limit</code> on the last page, and a theme's templates cannot multiply. The card's two remaining lines are an eyebrow and a page number, both read straight from the route.</span>
+    <span><strong style="font-weight:600">Card geometry, hover, focus, the mirror, the stacked gap and the survivor-takes-the-measure rule are all untouched.</strong> Four controls, as before.</span>
+    <span><strong style="font-weight:600">Post range leaves the Pager block, so Position line reads Off · Page count</strong> — and Off stays this design's default, because the cards already name both destinations.</span>
+    <span><strong style="font-weight:600">Posts per page is INFLOZO's setting, not Ghost's.</strong> Ghost's admin has no posts-per-page control, so the read-only row points at the theme's own settings.</span>
+
+    <span><strong style="font-weight:600">This is one of the category's two free designs</strong> — the owner's choice, ruled 29 August 2026, alongside 2 Prev and Next. Both draw no page numbers and neither needs a script, so a free site gets a pager that works everywhere.</span>
+  </div>
+</section>
+
+<section data-screen-label="A34-9 desktop light" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · page 2 of 11 · Card style Filled with a hairline, Content Direction and page, Single card Full width, Height Comfortable 112, Padding Comfortable · Attachment Joined · Position line Off</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:0 72px">
+      <div style="display:flex;gap:24px">
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Why the new tram line stops four hundred metres short of the hospital</span><span style="font-size:13px;color:#6B6459">Daniel Reith · 9 March 2026</span></div>
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Rosa Ferreira on drawing machines that do not exist yet</span><span style="font-size:13px;color:#6B6459">Priya Raghunathan · 5 March 2026</span></div>
+        <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#232019">Six months of rain, measured by one gardener</span><span style="font-size:13px;color:#6B6459">Naomi Alder · 26 February 2026</span></div>
+      </div>
+      <div style="height:48px;display:flex;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A79E8F">48 · ATTACHMENT JOINED · THE CARDS SIT ON THE GRID'S OWN COLUMNS, WHICH IS WHY THIS DESIGN LOOKS BUILT-IN UNDER A17·1</span></div>
+      <div style="display:flex;gap:24px">
+        <div style="width:636px;height:112px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 28px;display:flex;align-items:center;gap:18px">
+          <span style="font-size:22px;line-height:1;color:#232019">←</span>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span>
+            <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 1</span>
+          </div>
+        </div>
+        <div style="width:636px;height:112px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 28px;display:flex;align-items:center;justify-content:flex-end;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+            <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span>
+            <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 3</span>
+          </div>
+          <span style="font-size:22px;line-height:1;color:#232019">→</span>
+        </div>
+      </div>
+      <div style="height:96px;display:flex;align-items:flex-end;padding-bottom:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A79E8F">96 · PADDING COMFORTABLE</span></div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1200px"><strong style="font-weight:600">Two 636 px cells on a 24 px gutter is A17's Two division, unchanged</strong>, so the cards align with the grid above them whatever it is set to — three columns, four or six, the two cards always start and end where the feed's content does. <strong style="font-weight:600">That alignment is the design's whole argument</strong> and the reason it is worth spending 112 px of height on.<br><strong style="font-weight:600">Each card mirrors the other rather than repeating it.</strong> The newer card reads glyph → text left to right, the older card text → glyph, and its text is right-aligned; <strong style="font-weight:600">the two arrows are therefore at the outer edges of the pair</strong>, as they are in 2 Prev and Next at Chevrons At the outer edge. It is the same composition at a different scale, which is what makes them two designs rather than one.<br><strong style="font-weight:600">The eyebrow is A1's, at 13 px uppercase tracked <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.08em</code> in muted</strong> — the design system's eyebrow, spent here on a direction rather than a section name ⚑, which is the only liberty this design takes with an inherited component. <strong style="font-weight:600">“Page 3” beneath it is the heading font at 20</strong>, matching 2 Prev and Next's label size exactly so a user switching between the two designs sees the same type at a different weight of container.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:700px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE FIRST PAGE · BOTH SINGLE-CARD VALUES · AND CONTENT AT ITS FULLEST · drawn at 700 crop, cards at 47% width</div>
+      <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="width:100%;height:96px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;justify-content:flex-end;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+              <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span>
+              <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 2</span>
+            </div>
+            <span style="font-size:22px;line-height:1;color:#232019">→</span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#A2765A">⚑ FIRST PAGE · SINGLE CARD FULL WIDTH · THE SURVIVING CARD TAKES THE WHOLE 1,296 AND KEEPS ITS RIGHT-HAND ALIGNMENT · THE ONLY PLACE IN A34 WHERE A DESIGN'S LAYOUT CHANGES BECAUSE OF WHERE THE READER IS</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;gap:16px">
+            <div style="flex:1;height:96px"></div>
+            <div style="flex:1;height:96px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;justify-content:flex-end;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 2</span>
+              </div>
+              <span style="font-size:22px;line-height:1;color:#232019">→</span>
+            </div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">SINGLE CARD HALF WIDTH · THE CARD STAYS IN ITS OWN COLUMN AND THE OTHER HALF IS EMPTY GROUND · THE HONEST VALUE, AND THE ONE THAT LOOKS LIKE SOMETHING FAILED TO LOAD</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;gap:16px">
+            <div style="flex:1;height:112px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;gap:16px">
+              <span style="font-size:22px;line-height:1;color:#232019">←</span>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 1</span>
+              </div>
+            </div>
+            <div style="flex:1;height:112px;background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;justify-content:flex-end;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 3</span>
+              </div>
+              <span style="font-size:22px;line-height:1;color:#232019">→</span>
+            </div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">⚑ CARD STYLE HAIRLINE · CONTENT DIRECTION AND PAGE · THE THIRD LINE WAS THE DESTINATION'S POST COUNT AND IS DELETED IN THIS PASS — IT NEEDED A MULTIPLICATION NO TEMPLATE CAN PERFORM</span>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+        <span><strong style="font-weight:600">Single card Full width is the default and it breaks a rule the rest of A34 keeps.</strong> ⚑ Eight designs hold their geometry at the archive's ends — reserved slots, dimmed glyphs, nothing moving. <strong style="font-weight:600">This one re-lays itself out</strong>, because a 636 px card beside 636 px of nothing is the worst frame in the category and “reserve the space” is not an answer when the space is a visible object's worth of ground. <strong style="font-weight:600">Half width is offered for anyone who disagrees</strong>, and the panel states the trade in one line.</span>
+        <span><strong style="font-weight:600">The count line is deleted, and 2 Prev and Next's sublabel is not.</strong> The sublabel is a page number the route hands over; the count was <code style="font-family:'JetBrains Mono',monospace;font-size:12px">limit</code>, or the remainder on the last page — a multiplication, and a template cannot multiply. <strong style="font-weight:600">So Content loses its third value and the card loses its third line</strong>, which was always the line that claimed to know something about the next page. The finding stands: a real date range would need a lookahead query Ghost does not give a pager.</span>
+        <span><strong style="font-weight:600">Card style Hairline uses the page ground inside the card</strong>, so the card is a bordered region rather than a raised one; Filled uses <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code>. <strong style="font-weight:600">Neither takes a shadow at rest</strong> — a shadow here would make two pagers look like two posts.</span>
+      </div>
+    </div>
+
+    <div style="width:560px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">HOVER AND FOCUS · AND THE TWO-PAGE FEED · drawn at 560 crop</div>
+      <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;gap:14px">
+            <div style="flex:1;height:96px;background:#F4F0E8;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;gap:14px">
+              <span style="font-size:22px;line-height:1;color:#232019">←</span>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:#D96C3F">Page 1</span>
+              </div>
+            </div>
+            <div style="flex:1;height:96px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:flex-end;gap:14px;outline:2px solid #D96C3F;outline-offset:4px">
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 3</span>
+              </div>
+              <span style="font-size:22px;line-height:1;color:#232019">→</span>
+            </div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#A2765A">⚑ LEFT: HOVER · THE WHOLE CARD GOES TO THE PACK'S HOVER SURFACE AND THE PAGE LABEL TAKES A17'S ACCENT UNDERLINE — TWO SIGNALS, WHICH IS ONE MORE THAN ANY OTHER A34 DESIGN AND IS EARNED BY THE CARD BEING A SURFACE · RIGHT: FOCUS · A6'S RING ON THE CARD AT 4 PX</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;gap:14px">
+            <div style="flex:1;height:88px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;gap:14px">
+              <span style="font-size:22px;line-height:1;color:#232019">←</span>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019">Page 1</span>
+              </div>
+            </div>
+            <div style="flex:1;height:88px;background:#F7F5F1;border:1px solid #F2EEE7;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:flex-end;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#C4BEB3">Older posts</span>
+                <span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#C4BEB3">No older posts</span>
+              </div>
+              <span style="font-size:22px;line-height:1;color:#C4BEB3">→</span>
+            </div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">THE TWO-PAGE FEED, LAST PAGE · AT THE ENDS DIMMED · HEIGHT COMPACT 88 · THE DIMMED CARD KEEPS ITS FILL AT ONE STEP DOWN AND ITS LABEL BECOMES “NO OLDER POSTS”, AS 2 PREV AND NEXT'S SUBLABEL DOES</span>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+        <span><strong style="font-weight:600">Dimmed and Full width are alternatives, not a sequence.</strong> ⚑ At Dimmed the pair stays two cards and one goes quiet; at Hidden the survivor grows or holds its column. <strong style="font-weight:600">A dimmed card is the better answer on a two-page feed</strong>, where the reader flips between exactly two states and a layout that changes each time is disorienting — which the panel says, naming the case.</span>
+        <span><strong style="font-weight:600">A26 Post Footers is not drawn yet, and when it is, this card is the component it should reuse.</strong> A “previous post / next post” pair at the foot of an article is this design with a title instead of a page number. <strong style="font-weight:600">Recorded as a finding so the two do not get designed twice</strong>, and named here rather than in A26 because this is where the geometry was settled.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<sc-if value="{{ showControls }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-9 controls" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE CONTROL PANEL · FOUR CONTROLS · THE ONLY A34 PANEL WITH A CONTROL ABOUT WHAT HAPPENS AT AN ARCHIVE END</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:15px;box-sizing:border-box">
+      <div style="display:flex;flex-direction:column;gap:7px;border-bottom:1px solid #E7E2DB;padding-bottom:14px">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:9px 10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8A857C;letter-spacing:.06em">SECTION · MAIN FEED · A17·1 THREE UP</span>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Background role</span>
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Vertical spacing</span>
+            <span style="font-size:10px;color:#8A857C;background:#F2EFEA;border-radius:4px;padding:3px 6px">Top divider</span>
+          </div>
+          <span style="font-size:10.5px;color:#6E6A64;line-height:1.45">The feed's three universal controls. <strong style="font-weight:600;color:#3A3835">The pager inherits all three and has none of its own</strong> — it is not a section anyone places, drags or shuffles.</span>
+        </div>
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Pagination style</span>
+        <div style="height:38px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 11px"><span style="font-size:13px;font-weight:600">Cards</span><span style="font-size:10px;color:#8A857C">9 / 10 ▾</span></div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.5">Two large cards, one each way. The biggest targets in the set.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Card style</span><div style="height:36px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 11px"><span style="font-size:12.5px">Filled with a hairline</span><span style="font-size:10px;color:#8A857C">▾</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Hairline · Filled · Filled with a hairline</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Content</span><div style="height:36px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 11px"><span style="font-size:12.5px">Direction and page</span><span style="font-size:10px;color:#8A857C">▾</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Direction only · Direction and page — the count value was deleted in the patch pass</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Single card</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Full width</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Half width</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">At the first and last page. Only applies when At the ends is Hidden.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Height</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11.5px;padding:6px;border-radius:24px;color:#6E6A64">Spacious</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">88 · 112 · 144. Spacious at Content Direction only is mostly air.</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #E7E2DB;padding-top:12px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Pager</span>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Attachment</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Joined</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Labels</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Newer and older</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">At the ends</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Hidden</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10.5px;color:#8A857C">Position line</span><div style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px">Off</span><span style="font-size:10px;color:#8A857C">▾</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
+          <span style="font-size:10.5px;color:#8A857C">Pager wording</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5">Five strings, site-wide, one set per language.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">Edit in Translations →</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:9px 10px">
+          <span style="font-size:10.5px;color:#8A857C">Posts per page</span>
+          <span style="font-size:11px;color:#3A3835;line-height:1.5"><strong style="font-weight:600">12</strong> — 132 posts, 11 pages. INFLOZO's theme setting; Ghost has no such control.</span>
+          <span style="font-size:11px;color:#A2612F;line-height:1.5;text-decoration:underline">INFLOZO → Theme settings → Posts per page →</span>
+        </div>
+        <span style="font-size:11px;color:#6E6A64;line-height:1.5"><strong style="font-weight:600;color:#3A3835">Off is the default here</strong> ⚑ — the cards already name both destinations, and a line under them repeating the page number is a third statement of the same fact.</span>
+      </div>
+    </div>
+    <div style="width:948px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">WHAT THIS PANEL SETTLES</span>
+      <span><strong style="font-weight:600">A26 Post Footers reuses this card rather than drawing a second one.</strong> Adopted, not merely noted: a previous-post / next-post pair <strong style="font-weight:600">is this card with the destination's title where the page number sits</strong> — same 636 × 112 geometry, same eyebrow, same three Card styles, same whole-card <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;a&gt;</code>. <strong style="font-weight:600">Carried to the A26 patch as a requirement</strong>, with the two differences named there: the eyebrow reads a post relation rather than a page direction, and the title is Ghost-owned, so it is never inline-editable.</span>
+      <span><strong style="font-weight:600">A design control may depend on a block field, and this is the one place it does.</strong> ⚑ Single card only means anything when At the ends is Hidden; at Dimmed it is drawn greyed with the line “Applies when At the ends is Hidden”. <strong style="font-weight:600">The dependency runs design-control-depends-on-block-field and never the reverse</strong> — a design may read the block, never write it — which keeps the block's four fields meaning the same thing in all ten designs.</span>
+      <span><strong style="font-weight:600">This is the only A34 design whose layout changes with the reader's position, and the control exists so a publisher can refuse that.</strong> The rest of the category treats a moving layout as a defect; here the alternative is 636 px of empty ground next to a card, which is worse. <strong style="font-weight:600">Naming the exception is the point of having a control for it.</strong></span>
+      <span><strong style="font-weight:600">Content Direction only is the value to use on a two-page feed and the panel says so.</strong> “Newer posts” and “Older posts” alone, at the eyebrow's size promoted to the heading font — <strong style="font-weight:600">the card's type collapses to one line rather than leaving the second empty</strong>, which is the only case where the card's internal composition changes rather than its content thinning.</span>
+      <span><strong style="font-weight:600">Four controls. Cut: a shadow option</strong> — two shadowed cards under a feed read as two more posts — <strong style="font-weight:600">and an image slot</strong>, which is where the next-post card of a post footer will start and is not a pager's business.</span>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showResponsive }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-9 responsive" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · MOBILE 390 IN BOTH ITS STATES · A SPLIT BECOMES A STACK AND THE MIRROR IS ABANDONED</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">TABLET 834 · TWO CARDS AT 365 ON A 24 GUTTER — A17'S OWN TWO-COLUMN DIVISION AT THIS WIDTH · HEIGHT 112 HOLDS</span>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;padding:0 40px">
+        <div style="height:32px"></div>
+        <div style="display:flex;gap:24px">
+          <div style="width:365px;height:112px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;gap:14px">
+            <span style="font-size:22px;line-height:1;color:#232019">←</span>
+            <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span><span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 1</span></div>
+          </div>
+          <div style="width:365px;height:112px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:flex-end;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span><span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 3</span></div>
+            <span style="font-size:22px;line-height:1;color:#232019">→</span>
+          </div>
+        </div>
+        <div style="height:80px"></div>
+      </div>
+      <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:834px"><strong style="font-weight:600">Two cards survive 834 because A17's grid does.</strong> The cells are 365 at this width — A17's Two division, not a computed half — the gutter holds at 24, the height holds at 112, and the inner padding comes 28 → 20. <strong style="font-weight:600">Nothing about the composition changes</strong>, which is what a split archetype is supposed to do at its second width.</p>
+    </div>
+
+    <div style="display:flex;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A2765A">MOBILE 390 · DEFAULT · ⚑ TWO STACKED CARDS AT 88 WITH A 12 GAP · BOTH ARROWS LEFT, AS IN 2 PREV AND NEXT</span>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;padding:0 20px">
+          <div style="height:24px"></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="height:88px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 18px;display:flex;align-items:center;gap:14px">
+              <span style="font-size:22px;line-height:1;color:#232019">←</span>
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Newer posts</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 1</span></div>
+            </div>
+            <div style="height:88px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 18px;display:flex;align-items:center;gap:14px">
+              <span style="font-size:22px;line-height:1;color:#232019">→</span>
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 3</span></div>
+            </div>
+          </div>
+          <div style="height:64px"></div>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">The mirror is abandoned and both cards read left to right.</strong> ⚑ Stacked, a right-aligned card under a left-aligned one is two compositions; the arrow direction alone carries the difference, and it is the same decision 2 Prev and Next makes at this width for the same reason. <strong style="font-weight:600">The gap is 12, not 24</strong> — two cards 24 apart at 350 px read as two separate sections.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">MOBILE 390 · SECOND STATE · FIRST PAGE, SINGLE CARD FULL WIDTH · ONE CARD, NO GAP, NO HOLE</span>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);box-sizing:border-box;padding:0 20px">
+          <div style="height:24px"></div>
+          <div style="height:88px;background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;box-sizing:border-box;padding:0 18px;display:flex;align-items:center;gap:14px">
+            <span style="font-size:22px;line-height:1;color:#232019">→</span>
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Older posts</span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.2;color:#232019;font-variant-numeric:tabular-nums">Page 2</span></div>
+          </div>
+          <div style="height:64px"></div>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">Below 767 Full width and Half width are the same thing</strong>, because the card is already the full measure — so the control has no effect at this width and the panel does not pretend otherwise. <strong style="font-weight:600">One 350 × 88 card is the best single-card frame in A34</strong>: it is a target the size of a thumb's reach, and it is the arrangement the design is really for.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showDark }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-9 dark" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:12px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · two surfaces on a dark ground, and whether the hairline is still doing anything</div>
+  <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box;padding:0 72px">
+    <div style="display:flex;gap:24px">
+      <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Why the new tram line stops four hundred metres short of the hospital</span><span style="font-size:13px;color:#A79E8F">Daniel Reith · 9 March 2026</span></div>
+      <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Rosa Ferreira on drawing machines that do not exist yet</span><span style="font-size:13px;color:#A79E8F">Priya Raghunathan · 5 March 2026</span></div>
+      <div style="width:416px;display:flex;flex-direction:column;gap:9px"><div style="height:52px;background:repeating-linear-gradient(45deg,#3A342B 0 10px,#332E26 10px 20px);border-radius:0 0 8px 8px"></div><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;line-height:1.25;color:#F2EDE4">Six months of rain, measured by one gardener</span><span style="font-size:13px;color:#A79E8F">Naomi Alder · 26 February 2026</span></div>
+    </div>
+    <div style="height:48px"></div>
+    <div style="display:flex;gap:24px">
+      <div style="width:636px;height:112px;background:#211D17;border:1px solid #332E27;border-radius:8px;box-sizing:border-box;padding:0 28px;display:flex;align-items:center;gap:18px">
+        <span style="font-size:22px;line-height:1;color:#F2EDE4">←</span>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#A79E8F">Newer posts</span><span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#F2EDE4;font-variant-numeric:tabular-nums">Page 1</span></div>
+      </div>
+      <div style="width:636px;height:112px;background:#211D17;border:1px solid #332E27;border-radius:8px;box-sizing:border-box;padding:0 28px;display:flex;align-items:center;justify-content:flex-end;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#A79E8F">Older posts</span><span style="font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1.2;color:#F2EDE4;font-variant-numeric:tabular-nums">Page 3</span></div>
+        <span style="font-size:22px;line-height:1;color:#F2EDE4">→</span>
+      </div>
+    </div>
+    <div style="height:96px"></div>
+  </div>
+  <p style="margin:0;font-size:12.5px;line-height:1.6;color:#6B6459;max-width:1200px"><strong style="font-weight:600">The hairline earns its place in dark and barely earns it in light.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#211D17</code> on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#171511</code> is a one-step lift over 636 × 112 — <strong style="font-weight:600">a large area, which by A19·13's finding needs less separation</strong> — but the card has corners and a corner needs a line to be a corner. <strong style="font-weight:600">Card style Filled without a hairline is drawn and it is the value to avoid in dark</strong>, which the panel says at that value rather than removing it.<br><strong style="font-weight:600">Hover in dark goes to <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#2C2721</code></strong>, the derived hover-surface step 4 Pill and 7 Endless also use — <strong style="font-weight:600">three designs in this category now depend on a token the packs do not record</strong> ⚑, which is the strongest form the finding has taken: it is no longer one design's convenience. <strong style="font-weight:600">The accent underline on the page label holds at 5.9:1</strong> and is the only saturated pixel in the frame, as it is in light.</p>
+</section>
+</sc-if>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="A34-9 spec" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE WRITTEN SPEC · ALL TEN FIELDS</div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:634px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span><strong style="font-weight:600">1 · Descriptor.</strong> Two mirrored surface cards at A17's 636 px cell width, 112 px tall, each carrying a 13 px direction eyebrow over the destination's page number at 20 px in the heading font, with the arrows at the pair's outer edges. <strong style="font-weight:600">The category's largest targets and its only contained items.</strong></span>
+      <span><strong style="font-weight:600">2 · Structural descriptor.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">split · none · page · few · none · two half-width cards</code><br><span style="color:#6B6459">Containment is <code style="font-family:'JetBrains Mono',monospace;font-size:12px">none</code> and that is the slot most likely to be misread here — <strong style="font-weight:600">the cards are the items' geometry, not the section's</strong>, and the section itself sits on nothing. The category's only <code style="font-family:'JetBrains Mono',monospace;font-size:12px">split</code>; it shares ground, count and media with 2 Prev and Next and separates on archetype.</span></span>
+      <span><strong style="font-weight:600">3 · Archetype.</strong> split. <strong style="font-weight:600">Two departures.</strong> Below 767 it stacks and <strong style="font-weight:600">abandons the mirror</strong> — both cards read left to right. And at an archive end, <strong style="font-weight:600">at Single card Full width, the surviving card takes the whole measure</strong>: the one A34 design whose layout depends on the reader's position.</span>
+      <span><strong style="font-weight:600">4 · Responsive rule.</strong> <strong style="font-weight:600">1440</strong> two 636 cards on a 24 gutter, 112 tall, inner padding 28, arrow 22 at the outer edges, eyebrow 13, page 20. <strong style="font-weight:600">1080</strong> two 456 cards, inner padding 24. <strong style="font-weight:600">834</strong> two 365 cards — A17's Two division at that width — inner padding 20, height and type unchanged, padding 80. <strong style="font-weight:600">≤ 767</strong> stacked, full measure, 88 tall, <strong style="font-weight:600">12 px gap rather than 24</strong>, both arrows left, page 19, <strong style="font-weight:600">Single card has no effect</strong>, padding 64.</span>
+      <span><strong style="font-weight:600">5 · Content fields.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">navLabel</code> (text, optional, default “Pagination”); <code style="font-family:'JetBrains Mono',monospace;font-size:12px">newerLabel</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:12px">olderLabel</code> (text, optional, 24 chars) — <strong style="font-weight:600">drawn as the eyebrow, which is the one place in A34 the two labels are set in uppercase</strong>, so a label longer than about 20 characters wraps and the panel says so. <strong style="font-weight:600">Read-only:</strong> the six <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pagination</code> values; The count line that read <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.limit</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.total</code> is gone, so neither is read here any more. <strong style="font-weight:600">In the union, unread:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">moreLabel</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">endLabel</code>.</span>
+      <span><strong style="font-weight:600">6 · Controls.</strong> <strong style="font-weight:600">Card style</strong> Hairline · Filled · Filled with a hairline. <strong style="font-weight:600">Content</strong> Direction only · Direction and page — <strong style="font-weight:600">the third value, Direction, page and count, is deleted</strong> ⚑, its count needing a multiplication no template can perform. <strong style="font-weight:600">Single card</strong> Full width · Half width — <strong style="font-weight:600">greyed with its reason when At the ends is Dimmed</strong> ⚑. <strong style="font-weight:600">Height</strong> Compact 88 · Comfortable 112 · Spacious 144. Four, then the block's four fields and its two doors — <strong style="font-weight:600">Position line defaulting to Off.</strong> <strong style="font-weight:600">Cut:</strong> a shadow option, an image slot.</span>
+    </div>
+    <div style="width:634px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span><strong style="font-weight:600">7 · Data.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">pagination.prev</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.next</code> for the two destinations, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.page</code> for their numbers, and nothing else — the optional count line is deleted in this pass. <strong style="font-weight:600">0 → no section. 1 page → nothing renders.</strong> <strong style="font-weight:600">2 pages → one card on every page of the archive</strong>, which is the design at its simplest and, at Content Direction only, its best. <strong style="font-weight:600">Many → unchanged; two cards on every interior page.</strong> <strong style="font-weight:600">The count line was arithmetic — <code style="font-family:'JetBrains Mono',monospace;font-size:12px">limit</code>, or <code style="font-family:'JetBrains Mono',monospace;font-size:12px">total − (pages−1)·limit</code> on the last page — and is deleted for that reason</strong>, a template being unable to multiply; it was never a lookahead: no titles, no images, no dates from the next page ⚑.</span>
+      <span><strong style="font-weight:600">8 · Empty state.</strong> <strong style="font-weight:600">One page → nothing renders.</strong> <strong style="font-weight:600">First and last page, At the ends Hidden: the absent card is removed and the survivor takes the full measure at Full width or holds its column at Half width</strong> — the one A34 design that re-lays out at an archive end, stated as the deliberate exception it is. <strong style="font-weight:600">At Dimmed both cards stay</strong>, the spent one at one step down in fill, border and text, its page number replaced by “No older posts” / “No newer posts”, and <strong style="font-weight:600">it is a <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;div&gt;</code>, not an <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;a&gt;</code></strong>. Content Direction only → the card's composition collapses to one centred line rather than leaving the second row empty.</span>
+      <span><strong style="font-weight:600">9 · Behaviour module.</strong> <strong style="font-weight:600">None; <code style="font-family:'JetBrains Mono',monospace;font-size:12px">core</code> assumed. No-JS: pixel-identical.</strong> Edit-safe. Two anchors and their contents; <strong style="font-weight:600">the whole card is inside the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;a&gt;</code></strong>, as A17's post card is, so there is no nested-link problem and no JavaScript making a card clickable.</span>
+      <span><strong style="font-weight:600">10 · Accessibility.</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;nav aria-label="Pagination"&gt;</code>, no heading, two links, DOM order newer then older at every width. <strong style="font-weight:600">Each card's accessible name is its eyebrow plus its page — “Newer posts, page 1”</strong> — with the count, when drawn, inside the same name. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">rel="prev"/"next"</code>; arrows <code style="font-family:'JetBrains Mono',monospace;font-size:12px">aria-hidden</code>. <strong style="font-weight:600">The target is the whole card, 636 × 112 or 350 × 88</strong> — the largest in A34 by an order of magnitude. Focus is A6's ring on the card at a 4 px offset; <strong style="font-weight:600">hover spends two signals, the hover-surface fill and the page label's accent underline</strong> ⚑, which is one more than any other design in the category and is earned by the card being a surface rather than a line of text. Eyebrow 5.4:1, page label 13.1:1. Print: cards absent, and with Position line Off by default <strong style="font-weight:600">this design can print nothing at all</strong> — the panel's line for that is “Set Position line to Page count if this archive is printed.”</span>
+      <span><strong style="font-weight:600">Flagged ⚑</strong> — A1's eyebrow spent on a direction; the survivor card taking the full measure, the category's only position-dependent layout; Single card depending on a block field; the mirror abandoned below 767 and the 12 px stacked gap; the count line deleted as arithmetic, with the lookahead it stood in for still named as a finding; two hover signals; uppercase labels wrapping past 20 characters; Card style Filled without a hairline named as the value to avoid in dark; the derived <code style="font-family:'JetBrains Mono',monospace;font-size:12px">#2C2721</code> hover step, now depended on by three A34 designs; A26 Post Footers named as the place this card should be reused.</span>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showControls&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showResponsive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showControls: this.props.showControls ?? true,
+      showResponsive: this.props.showResponsive ?? true,
+      showDark: this.props.showDark ?? true,
+      showSpec: this.props.showSpec ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -108,7 +108,7 @@ The whole set centred on a 720 px measure with no picture. The category's floor:
 |---|---|
 | Measure | Narrow 620 · Medium 720 · Wide 860 (less if the window is narrower) |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Note under the actions | Show · Hide |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
@@ -161,7 +161,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 | Text block width | Half 620 · Two-thirds 780 (the right side stays empty either way) |
 | Headline size | Medium 48 · Large 60 · Display 76 |
 | Below the sub | Note · Proof row · Nothing |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -202,7 +202,7 @@ Text on seven columns, one picture on five, both on the page's own ground. The d
 | Picture side | Right · Left (on a phone the picture is always under the text) |
 | Picture | Flush · Framed inset (a mount for photographs with pale edges) |
 | Headline size | Medium 48 · Large 60 · Display 76 (Display offered but not advised beside a picture) |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -246,7 +246,7 @@ One 16:9 photograph edge to edge with the set over it, anchored to the lower thi
 | Over the picture | Everything · Headline and actions · Headline only |
 | Scrim | Subtle · Standard · Strong |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Locked — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured from the picture's bottom edge) |
@@ -291,7 +291,7 @@ The set centred above a wide band of picture, with a caption under it.
 | Band width | Full bleed · Page margin (always full bleed on a phone) |
 | Headline size | Medium 48 · Large 60 · Display 76 |
 | Caption under the band | Show · Hide |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured above the set) |
@@ -334,7 +334,7 @@ The headline set large enough to be the page, flush left across the whole measur
 | Headline scale | Display 76 · Huge 96 · Fill width (measured, between 64 and 160; always Fill width on a phone) |
 | Sub under the rule | Show · Hide |
 | Rule under the headline | Show · Hide |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -376,7 +376,7 @@ The publication's nameplate at the top of its own front page: the site's name se
 | Issue line source | Typed · Latest post date |
 | Standfirst source | Authored · Site description |
 | Sub under the standfirst | Show · Hide |
-| Actions | None · Primary (a masthead usually carries none, and there is no second action on this design) |
+| Actions (group) | **Primary action: On · Off** — ships **off**: a masthead usually carries none. There is no second action on this design, so the group holds one toggle and says so |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -421,7 +421,7 @@ The hero as a surface panel inset from the page's edges, page ground visible aro
 | Card ground | Surface · Contrast |
 | Alignment | Centred · Left |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Card at 390 | Keep the card · Full bleed |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast (the ground behind the card; the card's own ground keeps its control) |
@@ -467,7 +467,7 @@ The whole hero on the inverted ground. Ground is not a control here: it is the d
 | Primary action | Surface fill · Outline · Accent (Accent disabled with its ratio shown in any pack where it fails — 3.1:1 in Paper) |
 | Below the sub | Note · Nothing |
 | Alignment | Centred · Left |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Contrast (locked — the inverted ground is the design, and on any other role this is 1 Centred) |
 | Vertical spacing (universal) | Compact 44 · Comfortable 64 · Spacious 88 |
@@ -511,7 +511,7 @@ A 16:9 poster with a labelled play control at its centre and the set in the lowe
 | Show how long it runs | Show · Hide |
 | Over the poster | Everything · Headline and play · Play only |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Locked — the poster is the ground; with neither poster nor image the section draws its own flat contrast panel |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured from the poster's bottom edge) |
@@ -602,7 +602,7 @@ Text on a 620 px measure at the left margin with the picture running off the rig
 | Picture height | Short 420 · Medium 520 · Tall 620 |
 | Bleed | Off the edge · To the margin (off the edge needs a picture 2000 px or wider) |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -646,7 +646,7 @@ Universal: Background role — new; this design previously had no ground control
 | Show tag | On · Off |
 | Show date | On · Off |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -694,7 +694,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 | Text position | Bottom left · Centred |
 | Scroll cue | Show · Hide |
 | Headline size | Medium 48 · Large 60 · Display 76 |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Locked — the picture is the ground behind a window-height set; the empty state keeps the height and swaps in the flat contrast panel |
 | Vertical spacing (universal) | Compact 56 · Comfortable 88 · Spacious 120 (from the foot, above the cue) |
@@ -743,7 +743,7 @@ Somebody else's sentence in the display position, with the publication's own hea
 | Quote size | Medium 36 · Large 46 · Display 60 |
 | Attribution | With portrait · Name and role · Name only |
 | Alignment | Centred · Left |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -844,7 +844,7 @@ A wide picture with the text on a surface card pulled up over its bottom edge, t
 | Overlap | Small 48 · Medium 96 · Large 144 (how far the card is pulled up onto the picture) |
 | Headline size | Medium 48 · Large 60 · ~~Display 76~~ (disabled — 76 px on a 660 px card leaves under 8 characters a line) |
 | Overlap on a phone | On · Off |
-| Actions | Both · Primary · None |
+| Actions (group) | **Primary action: On · Off** · **Secondary action: On · Off** — one toggle per action, each its own P0·4 card; both off is the old None. Secondary greys with its reason while Primary is off — a secondary action needs a primary beside it |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast (the ground under the card and past the picture) |
 | Vertical spacing (universal) | Locked — the overlap is this design's spacing, as the missing padding control always said; reason shown |
@@ -1070,3 +1070,16 @@ Each of the ten rules was read against each of the seventeen. Only the designs w
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** seventeen designs, numbered **1–14 and 16–18** — 15 stays retired.
+
+
+---
+
+## Patch notes — the Actions split, 31 August 2026
+
+Frames updated: `A4-1 Centred`, `A4-2 Flush Left`, `A4-3 Split`, `A4-4 Full Bleed`, `A4-5 Image Under`, `A4-6 Big Type`, `A4-7 Masthead`, `A4-8 Card`, `A4-9 Contrast Band`, `A4-10 Video Poster`, `A4-12 Offset Image`, `A4-13 Latest Post`, `A4-14 Full Height`, `A4-16 Pull Quote`, `A4-18 Overlap Card` — fifteen panels. Nothing renumbered, renamed or redesigned.
+
+| Rule (by name) | Change |
+|---|---|
+| One toggle per thing — no compound values | **Actions becomes a labelled group of one toggle per action:** **Primary action: On · Off** and **Secondary action: On · Off**, each opening its own P0·4 member-aware card. The old *Both · Primary · None* maps exactly — **Both** is both on, **Primary** is the primary alone, **None** is both off — and "Both" was the compound value the rule names. Canonical definition: **P0·4a**. |
+| A control switched off by another is greyed, with the reason beside it | **The combination the old list never offered is greyed, not invented.** *Both · Primary · None* had no secondary-without-primary value, so no frame was ever drawn for it. **Secondary action greys with its reason while Primary action is off** — "a secondary action needs a primary beside it" — under the greyed-control pattern (P0·0). Nothing new was drawn to fill a state nobody had looked at. |
+| One toggle per thing — no compound values | **A4·7 Masthead holds one toggle, and the group says why.** Its old list was *None · Primary* — one action, one decision, no compound — so the split leaves a single **Primary action** toggle, shipping **off** because a masthead usually carries none. The group states that there is no second action on this design rather than drawing a switch for one. |

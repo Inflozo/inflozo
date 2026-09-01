@@ -1,15 +1,30 @@
 # A15 Video and Embeds — written specification
 
 15 designs · Paper pack · drawn 23 August 2026 · controls-reconciliation patch 24 August 2026 ·
-**design patch pass 29 August 2026**
+design patch pass 29 August 2026 · **design patch pass two 1 September 2026**
 
-**Design patch pass — 29 August 2026 (this document's current state).** Three rulings landed on this
+**Design patch pass two — 1 September 2026 (this document's current state).** One ruling landed on this
+category and it deletes a promise rather than a drawing. **Nothing in A15 is ever fetched from YouTube,
+Vimeo or any other provider** — not by our server, not by the editor's browser, at any point — so
+**`title`, `description` and `poster` are required fields the customer fills in**, the panel asks for
+them in words, and **every affordance that implied a lookup is deleted**: the editor-side seeding of the
+title and the duration on paste, and the "Use provider thumbnail" action. The **24 August narrowing of
+settlement 3** — "never fetched by the reader" — **is withdrawn, and the rule reads as first written:
+never the provider's own thumbnail.** Five library rules are recorded by name in **The five rules of
+this pass** below, and **the two Ghost server findings of 31 August 2026 land nowhere in A15**, recorded
+there with the reason. The **Open questions** list is triaged: all four questions are settled and struck
+through with the name of whoever settled them — **the fourth, what a required field does when it is
+still blank, was settled by the owner on 1 September 2026: the panel asks firmly and the section still
+publishes**.
+**Nothing was renumbered, no frame was redesigned, and no measure, type size or colour moved.**
+
+**Design patch pass — 29 August 2026.** Three rulings landed on this
 category and all three deleted drawn content. **There is nowhere to upload to** — Ghost's public
 interface has no media library a theme can read, Inflozo is not permitted to put files on a customer's
 Ghost, and Inflozo's own asset system handles images only — so **the Upload source is deleted from all
 fifteen designs**, **the ambient-loop background-video option and the whole Playback row go with it**,
-and **nothing reads a duration off a file**: the duration is typed by the author again, seeded from the
-provider on paste where the provider supplies one. **Embeds are unaffected**: YouTube, Vimeo and the
+and **nothing reads a duration off a file**: the duration is typed by the author again. **Embeds are
+unaffected**: YouTube, Vimeo and the
 audio providers keep every design, every facade, every click-to-load notice and their refusal to
 autoplay, and **a pasted Ghost media URL still works** — it is first-party and renders the native
 player. Three library rules also landed: **Gap is renamed Tight · Normal · Loose** in 7 Grid and 8 Lead
@@ -40,8 +55,10 @@ branch of the category that was never specified — ~~the uploaded file~~, **del
 patch pass of 29 August 2026**. The category-wide list is on
 `A15-0 Category Proof` and the frame-by-frame list is in **Reconciliation notes** at the foot.
 
-**One fact of the category is amended and stands** ⚑: **settlement 3's "never the provider's thumbnail"
-is narrowed to "never fetched by the reader"** — the editor may fetch one on paste and re-host it.
+**The one amendment this category carried is withdrawn** ⚑: ~~settlement 3's "never the provider's
+thumbnail" is narrowed to "never fetched by the reader" — the editor may fetch one on paste and re-host
+it~~. **Nothing is fetched from a provider at any point**, so the rule reads as first written — **never
+the provider's own thumbnail** — withdrawn in the design patch pass two of 1 September 2026.
 ~~The **Source: Upload** branch is now specified and is first-party~~ — **that branch is deleted in the
 design patch pass of 29 August 2026**, and what survives of it is the pasted Ghost media URL, which is
 first-party for the same reason and has no facade, no notice and a typed duration. Everything the
@@ -90,7 +107,7 @@ and tab semantics**; **A18·2's thumb row**; **A9·15's ledger row**; **A26·3 a
 and their call that a full-width fill is a ground rather than a containment**; **A16·1's 1,080
 collapse**; **A9·8's disabled-value convention**; **A6's focus ring** with **A17·18's inset rule**;
 **A2·1 and A16·9's bar**; **A3's repeater**, now the **P0·3 item list**; **A1's eyebrow, striped
-plate and active-item underline**; and **A4·10's `videoDuration` field**, typed by hand and seeded where a provider supplies one.
+plate and active-item underline**; and **A4·10's `videoDuration` field**, typed by hand.
 **A15 adds thirteen components** — they are listed on the proof frame.
 
 ### The four settlements (§8 of the brief)
@@ -119,11 +136,12 @@ audio player has no aspect.
 **3 · A consent or click-to-load placeholder.** **Every third-party embed is click-to-load and there
 is no value that turns it off** ⚑. **A first-party file — a media URL on the site's own Ghost — has neither notice nor facade** ⚑ — there is
 no third party to warn about. **The poster is the author's image, and if there is none it is the
-plate** ⚑. **Amended, 24 Aug 2026** ⚑: the rule was "never the provider's own thumbnail"; it is now
-**"never fetched by the reader"**. The editor may fetch one on paste — **"Use provider thumbnail"
-downloads the image and re-hosts it as the poster** — after which it is served first-party like any
-other upload. **The privacy goal is the reader's browser, not the editor's**, and the facade still
-prevents every third-party request a reader would otherwise make. **The notice is drawn on the frame
+plate** ⚑. ~~**Amended, 24 Aug 2026**: the rule was "never the provider's own thumbnail"; it is now
+"never fetched by the reader". The editor may fetch one on paste — "Use provider thumbnail" downloads
+the image and re-hosts it as the poster.~~ **Withdrawn, 1 Sep 2026** ⚑: **nothing is ever fetched from a
+provider — not by our server, not by the editor's browser, at any point** — so the rule stands as first
+written, **never the provider's own thumbnail**, and **the poster is a required field the customer fills
+in**. The facade still prevents every third-party request a reader would otherwise make. **The notice is drawn on the frame
 at the moment the reader acts** ⚑; **12 Embed Card moves it above the frame and has no Off value** ⚑.
 
 **4 · Caption, credit and transcript.** **Three fields, three jobs** ⚑: `description` is the film's
@@ -182,6 +200,52 @@ Every design obeys these unless its own entry says otherwise.
   Band's band itself does not print** — its head, film, meta line and URL print on white (A17·7); **9 Carousel prints its slides stacked** in authored
   order; **15 Tabs prints every panel stacked with its label** ⚑.
 
+### The five rules of this pass, and where they land in A15
+
+Recorded by **name**, never by number, and each one says what it did here.
+
+- **A control switched off by another is greyed, with the reason beside it.** A15 already works this
+  way and nothing changed: **Background role is locked in 4 Contrast Band, 5 Full Bleed and 6 Cover**,
+  **5 Full Bleed disables two Aspect values**, **11 Chapters and 6 Cover lock their Plays row**, and in
+  every case **the reason is a short sentence in the row itself, never a tooltip** ⚑. **No A15 control
+  is hidden by another control's value, and none accepts a value it will not honour.** The rule's one
+  exception — a control this project can never offer is not drawn at all and the panel says why — has
+  **two subjects here**: the deleted **Playback** row, whose absence is explained in its place, and
+  **the deleted lookup affordances**, whose absence the Data group now states in words ⚑.
+- **Avatars with no photograph show initials, and the two forms are not interchangeable.** **No
+  subject.** A15 renders no person and draws no initials — the credit is a string, and no design reads
+  an author or a member.
+- **The Remove button never greys out.** **Two subjects, both already compliant:** `videos[]` in all
+  fifteen and `chapters[]` in 11 Chapters. ✕ is never disabled, never dimmed, never hidden; removal may
+  empty either list; at 0 films the section does not render and the editor draws one paste field. It is
+  **Add** that stops, at 24, with the reason shown.
+- **A count that picks between drawn layouts is a named set, not a number picker.** **Nothing
+  converted.** **Items 1–24 stays a number** — it counts things, not layouts. **Everything that picks
+  between drawn arrangements is already named**: 7 Grid's and 8 Lead and Grid's **Gap (Tight · Normal ·
+  Loose)**, 7's **Columns**, 8's **Lead size**, 9 Carousel's **Peek**, 10 Playlist's **Queue height
+  (Four rows · Six rows · All)**, 13 Thumb Rows' **Thumb size**. Every value in each of those has a
+  frame somebody has looked at.
+- **A design may declare the width below which its script runs.** **No A15 design declares one** ⚑ —
+  `video-facade`, `carousel` and `tabs` run at every width in all fifteen — so **each no-JavaScript
+  line describes one state, and that is complete rather than partial**. The one width-conditional
+  behaviour in the category is **the theatre's 390 fallback**, which is settlement 1 and a layout rule
+  rather than a script boundary: **14 Slim Bar is the exception and opens the theatre at every width**.
+
+### The two Ghost server findings of 31 August 2026
+
+Both were tested against real servers, both change what a specification may promise, and **neither
+lands in A15** — recorded here so the absence is a decision rather than an omission.
+
+- **The feature-image caption renders differently on the two Ghost versions** — Ghost 6 removes `<em>`
+  and `<strong>` from a caption, Ghost 5 keeps them. **No subject in A15** ⚑: **A15 reads nothing from
+  Ghost but `@site.title`**, and every line it draws — including `description`, the field a builder
+  might mistake for a caption — is an authored section field rendered by our own template, where the
+  P0·1 marks behave identically on both versions. **A24 Post Headers and A33 own the Ghost-rendered
+  caption**, and the finding belongs to them.
+- **A comment count renders nothing at all without JavaScript.** **No subject in A15** ⚑: no design in
+  the category draws a comment count, a comment word or a comments widget. **A28 Comments owns both**,
+  and A15's no-JavaScript lines make no claim about either.
+
 ### The roster
 
 | # | Design | What it is | Tuple | Ctl | Module |
@@ -207,7 +271,7 @@ merge's only input: **1 Player · 12 Embed Card**, the owner's own choice, confi
 
 **Ctl counts the design's own controls only.** Every one of the fifteen also carries the **universal
 trio** (Background role · Vertical spacing · Top divider) and the **Data group** (Source,
-with the seeding and provider statements), and 11 Chapters carries **two item blocks**. The PRD's
+with the required-fields and provider statements), and 11 Chapters carries **two item blocks**. The PRD's
 ceiling is ~15 visible controls per design; **A15's widest panel is six** ⚑. **Quick Controls are
 three per design** and named on each panel's footer.
 
@@ -243,10 +307,10 @@ its neighbours by number ⚑.
 | `transcriptLabel` | text | opt | 20 ch | all but 6, 14 | **New this pass** ⚑ — default "Transcript" |
 | `videos[]` | list 1–24 | **req** | 24 ⚑ | all fifteen | The repeating unit; authored, never queried |
 | ↳ `url` | url | **req** | — | all fifteen | **A pasted URL** ⚑ — a provider embed, or a media file already hosted on the site's own Ghost; the provider is derived from the URL. **No upload** ⚑ |
-| ↳ `title` | text | opt | 70 ch | all fifteen | Names the anchor; **seeded from the provider on paste** ⚑ |
-| ↳ `description` | text | opt | 160 ch | 1, 5, 13, 15 | **Drawn only in 13 and 15**; stored everywhere ⚑ |
-| ↳ `poster` | image | opt | — | all fifteen | Carries **Image focus** (Centre · Top · Bottom) ⚑; may be the re-hosted provider thumbnail |
-| ↳ `duration` | text | opt | 8 ch | all fifteen | **Typed by the author** ⚑, seeded from the provider on paste where the provider supplies one. **Nothing reads it off a file** ⚑ |
+| ↳ `title` | text | **req** ⚑ | 70 ch | all fifteen | Names the anchor; **typed by the customer, never fetched from a provider** ⚑. Required asks, never blocks ⚑ |
+| ↳ `description` | text | **req** ⚑ | 160 ch | 1, 5, 13, 15 | **Required at the item**, drawn only in 13 and 15; stored everywhere ⚑. Required asks, never blocks ⚑ |
+| ↳ `poster` | image | **req** ⚑ | — | all fifteen | Carries **Image focus** (Centre · Top · Bottom) ⚑; **the customer's own image, never a provider thumbnail** ⚑. Required asks, never blocks ⚑ |
+| ↳ `duration` | text | opt | 8 ch | all fifteen | **Typed by the author** ⚑. **Nothing reads it off a file and nothing is fetched from a provider** ⚑ |
 | ↳ `start` | text | opt | 8 ch | all fifteen | **New this pass** ⚑ — appended to the watch-page href and to the loaded player |
 | ↳ `transcriptUrl` | url | opt | — | all fifteen | Settlement 4 — a link, never a panel ⚑ |
 | ↳ `tabLabel` | text | opt | 26 ch | 15 | Drawn at Tab labels: Custom only ⚑ |
@@ -258,8 +322,8 @@ its neighbours by number ⚑.
 nothing read from Ghost but the site title.** Switching between any two of the fifteen preserves
 everything the author typed. **The one real cost is the 70-character title limit** ⚑ — 13 Thumb Rows
 would carry 120 and is held to 70 so switching to 7 Grid never truncates a cell. **The second cost —
-the typed duration — stands** ⚑: nothing can read a duration off a file and a provider does not always
-supply one, so **10 Playlist's running total is absent when any film has none**, exactly as first drawn.
+the typed duration — stands** ⚑: nothing can read a duration off a file and nothing is fetched from a
+provider, so **10 Playlist's running total is absent when any film has none**, exactly as first drawn.
 
 **Control-written values** (thirty-seven per-design, none of them per-item): `width` · `aspect` ·
 `alignment` · `meta` · `plays` · `mediaSide` · `columns` · `action` · `head` · `bandEdges` ·
@@ -302,7 +366,9 @@ default** ⚑; **the play control is not an icon slot**.
 **The videos block is the P0·3 item list** ⚑: **add arrives with content · remove is never disabled ·
 drag reorders · per-item content only**. **Add is one paste field** ⚑ — a provider URL, or a
 media URL already on the site's own Ghost — and the new film **lands last**, **carrying its URL as its
-title until the author types one or the seeding fills it** ⚑; never a blank shell. **Remove is never
+title until the author types one** ⚑; never a blank shell. **The panel then asks for the title, the
+description and the poster, which are required fields** ⚑ — there is no lookup to fill them and no
+affordance that implies one. **Remove is never
 disabled** ⚑ — **changed in this pass**: the old rule disabled it at one film, which contradicted the
 category's own zero state (a paste field at 0). **Removal may empty the list**; **at 0 the section
 does not render on the published page** ⚑ and the editor draws that one paste field. **Drag reorders,
@@ -321,7 +387,13 @@ Grid, **and the lead is item 1, chosen by reordering** ⚑.
 href and to the loaded player**: the mechanics 11 Chapters already uses for a chapter row. "Start at
 1:32" is the commonest per-film ask in the category and it needed no new module.
 
-**Empty optional fields.** No title → the sidebar row shows the URL, the cell is its
+**Missing fields.** **`title`, `description` and `poster` are required, and the panel asks for them in
+words** ⚑. **Required means the panel marks the empty field and says what is missing — "A title is
+required" beside it — and the section still publishes** ⚑ (the owner's ruling, 1 September 2026).
+**Nothing is blocked, no publish is refused, and the field is never greyed**: an editor with fifty films
+in an archive can still ship a change to one of them. So the states below are the render's defence where
+a required field is nonetheless blank — an image deleted from the library, or content authored before
+the requirement — and **every one of them is drawn exactly as before**. No title → the sidebar row shows the URL, the cell is its
 poster and meta alone, and **the anchor's accessible name falls back to "Film on {provider}"** ⚑
 (**10 Playlist draws the URL instead** ⚑, because a queue row with no name cannot be chosen). No
 poster → the plate, naming the provider. No duration → no pill and the meta row closes up. No
@@ -344,10 +416,13 @@ count is the length of the authored list; `@site.title` is the only Ghost value.
 - **Playback is deleted** ⚑ — ~~Click to play · Ambient loop~~ — with the upload source: the ambient loop
   had no source of files, and the struck values in **14 Slim Bar** and at **12 Embed Card's Audio bar**
   go with the row. **Nothing autoplays anywhere in A15.**
-- **Editor-side seeding on paste** ⚑: the editor fetches the **oEmbed title once**, and the **duration
-  where the provider supplies one**, and seeds those fields; **"Use provider thumbnail" downloads the
-  image and re-hosts it as the poster**. **Nothing reads a duration off a file** ⚑, so where no provider
-  duration arrives the author types it. Both fields stay editable and a typed value wins.
+- **Nothing is fetched from a provider** ⚑ — **not by our server, not by the editor's browser, at any
+  point**. ~~The editor fetches the oEmbed title once, and the duration where the provider supplies one,
+  and seeds those fields; "Use provider thumbnail" downloads the image and re-hosts it as the poster.~~
+  **Both affordances are deleted, 1 Sep 2026.** **`title`, `description` and `poster` are required
+  fields the customer fills in**, the duration is typed, and **no panel in A15 draws a spinner, a "fetch
+  details" button or any other affordance that implies a lookup** ⚑. **The only thing derived from the
+  URL is the provider's name**, read from the address itself.
 - **Recognised providers, named** ⚑ — video: **YouTube · Vimeo**. Audio, for 12 Embed Card:
   **Soundcloud · Spotify · Apple Podcasts · Bandcamp · Mixcloud**. **An unrecognised URL takes 12
   Embed Card's link-out fallback in all fifteen designs** ⚑: the frame is drawn, the label reads the
@@ -403,9 +478,10 @@ poster opens a player), `reveal` (decoration on a frame the reader is already lo
    350 × 197, play 44 ⚑, heading 28, spacing 64, theatre falls back to in-frame ⚑. **The aspect is the
    same at all three widths** ⚑.
 5. **Content fields.** `eyebrow` ≤ 24 · `heading` ≤ 60 · `blurb` ≤ 200 · `credit` ≤ 60 ·
-   `transcriptLabel` ≤ 20 · `videos[]` 1–24, **this design drawing item 1**. Inside an item: URL or
-   file (req), title ≤ 70, description ≤ 160, poster with its Image focus, duration ≤ 8, `start` ≤ 8,
-   transcript link — everything but the URL optional ⚑.
+   `transcriptLabel` ≤ 20 · `videos[]` 1–24, **this design drawing item 1**. Inside an item: **URL (req),
+   title ≤ 70 (req), description ≤ 160 (req), poster with its Image focus (req)** ⚑, duration ≤ 8,
+   `start` ≤ 8, transcript link — **the last three optional, and the four required fields are typed by
+   the customer** ⚑.
 6. **Controls.**
 
    | Control | Values |
@@ -440,8 +516,8 @@ poster opens a player), `reveal` (decoration on a frame the reader is already lo
     `alt=""` because the anchor is already named** ⚑. Ring 3 px outside the frame. Meta 5.4:1 / 5.6:1.
     In the theatre: `<dialog>`, focus trapped, Escape returns focus ⚑. **A native player's controls are
     the browser's and are not restyled** ⚑.
-    **Flagged ⚑** click-to-load with no opt-out on an embed · no embed autoplay anywhere · the poster
-    never fetched by the reader · the play control never the accent · the theatre's 390 fallback.
+    **Flagged ⚑** click-to-load with no opt-out on an embed · no embed autoplay anywhere · **the poster
+    never fetched at all** ⚑ · the play control never the accent · the theatre's 390 fallback.
 
 **The theatre** (drawn on this design, referenced by number everywhere else): a `<dialog>`; focus
 trapped, Tab cycling close · player · transcript; **Escape closes it and returns focus to the frame
@@ -816,8 +892,8 @@ and counter are catalog strings.
 7. **Data.** **1** → the queue is not drawn and the player keeps the plane on its own; **it is still
    10 Playlist** ⚑ and the panel names 3 Panel as the better arrangement. **2** → a queue of one other
    film. **many** → the queue scrolls inside the plane at Four and Six rows ⚑. **The running total is
-   the sum of the durations and is absent if any film has none** ⚑ — durations are typed, and seeded
-   from the provider on paste where the provider supplies one. **Designed for 3–12** ⚑.
+   the sum of the durations and is absent if any film has none** ⚑ — durations are typed, and **nothing is
+   fetched from a provider** ⚑. **Designed for 3–12** ⚑.
 8. **Empty state.** **A row with no title shows its URL** ⚑ — the one place in A15 a URL is drawn on the
    page. No poster → the plate at 96 × 54, **too small for text and drawn plain** ⚑.
 9. **Behaviour module.** `tabs` **and** `video-facade` ⚑. **tabs, edit-safe: yes** — A9·5's call: first
@@ -1102,7 +1178,7 @@ stands.
 
 - `A15-0 Category Proof` — a **controls-reconciliation** section above the settlements (four tiles: the
   universal trio and the retired Padding row · the upload branch and its Playback row · editor-side
-  seeding and what settlement 3 protects · items, strings and the two flags); the items tile's "at one
+  seeding and what settlement 3 protects (**that tile is deleted, 1 Sep 2026**) · items, strings and the two flags); the items tile's "at one
   film Remove is disabled" struck through with its replacement; the items caption now names the P0·3
   list.
 - `A15-1 Player` · `A15-2 Split` · `A15-3 Panel` · `A15-4 Contrast Band` · `A15-5 Full Bleed` ·
@@ -1112,7 +1188,8 @@ stands.
   **universal trio** drawn outside the list (Background role **locked in 4, 5 and 6** with the reason in
   the row; **Vertical spacing new on 6**); the videos block redrawn as the **P0·3** item list with the
   per-item field line, **Image focus**, the **`start`** timecode and **Remove never disabled**; new
-  **EDITING**, **BEHAVIOUR** and **DATA** groups (Source · Playback, the seeding statement, the provider
+  **EDITING**, **BEHAVIOUR** and **DATA** groups (Source · Playback, the seeding statement — **both deleted since**, the
+  first on 29 Aug and the second on 1 Sep 2026 — the provider
   list, the Member-Visibility note); the **ARCHITECT** flags drawn — `tabs` registry ruling on 10 and 15,
   registry addition on 11 and 12, and the ambient-loop reduced-motion addition on all fifteen; the
   footer control count and Quick Controls restated; the panel's settles tile carrying a **Controls
@@ -1124,7 +1201,7 @@ stands.
   library's wording (A13·1, A5·2, A4·10). Each card states the category's common patch — Padding
   retired into Vertical spacing and the trio outside the list, the P0·3 videos block with Remove never
   disabled, Image focus and `start`, the two media sources with the upload's native player and its
-  Playback row, oEmbed seeding on paste, and Member Visibility's absence — then **that design's own
+  Playback row, ~~oEmbed seeding on paste~~ (**deleted 1 Sep 2026**), and Member Visibility's absence — then **that design's own
   delta**: the locked Background roles on 4, 5 and 6 and Vertical spacing's arrival on 6; the authored
   `playLabel`, `watchLabel` and `openLabel` on 2, 14 and 12; 7's "Film on {provider}"; 11's second item
   block and seek addition; 12's provider list; the struck Ambient values on 12 and 14; and the `tabs`
@@ -1150,11 +1227,13 @@ state drawn, it is a frame this pass did not draw.
    Ambient is offered, **muted, looped, `playsinline`**, with the poster standing in under reduced
    motion. **No hover preview was reinstated** and no embed gained an autoplay value.
 3. **Settlement 3's "never the provider's own thumbnail" versus "Use provider thumbnail".** Narrowed to
-   **"never fetched by the reader"**. The editor fetches once and re-hosts; the served poster is
-   first-party. The facade's purpose — the reader's browser — is untouched.
+   ~~**"never fetched by the reader"**. The editor fetches once and re-hosts; the served poster is
+   first-party.~~ **Withdrawn 1 Sep 2026: nothing is fetched from a provider at any point, and the poster
+   is a required field the customer fills in.**
 4. **"The duration is typed by the author" (A4·10's field, carried verbatim) versus seeding.** Seeding
-   wins and the field stays. It is **seeded on paste, read from the file on an upload, and editable
-   either way**. 10 Playlist's stated caveat is amended rather than deleted: the total is still absent
+   wins and the field stays. ~~It is seeded on paste, read from the file on an upload, and editable
+   either way.~~ **Both readings are withdrawn — the file read on 29 Aug and the seeding on 1 Sep 2026;
+   the duration is typed.** 10 Playlist's stated caveat is amended rather than deleted: the total is still absent
    if any film has none.
 5. **"At one film Remove is disabled with the reason shown" versus Remove never disabled.** The library
    rule wins. The old rule contradicted A15's own zero state — a paste field at 0 — and defended the
@@ -1216,7 +1295,7 @@ no measure moved, no type size changed and no colour changed.**
 |---|---|
 | **The Upload source is deleted from all fifteen designs.** The Source row is no longer a two-value control: it is a **read-only, derived** row reading *A pasted URL*, and the panel says in plain words why there is no second value. Every mention of a file picker, of Ghost's media library and of "Add also takes a file" is rewritten: **Add is one paste field**. What survives is **a pasted media URL that already lives on the customer's own Ghost** — first-party, so it keeps the native `<video controls playsinline preload="none" poster>` with no facade and no notice, exactly as the 24 August pass drew it. | *(There is nowhere to upload to: Ghost's public interface has no media library a theme can read, Inflozo is not permitted to put files on a customer's Ghost, and Inflozo's own asset system handles images only.)* |
 | **The ambient loop goes with it, and the whole Playback row with the loop.** *Click to play · Ambient loop* is deleted from every panel; the **struck** Ambient values on **12 Embed Card** (Audio bar) and **14 Slim Bar** go with the row they were struck in; **6 Cover's loop under the warm wash** is deleted and the poster is what sits under the wash; **9 Carousel's rule pausing a loop when its slide leaves view** is deleted, while *advancing the track destroys a loaded player* stands. **Nothing autoplays anywhere in A15 again**, which is settlement 1 as first written. | *(The ambient loop had no source of files.)* |
-| **Nothing reads a duration off a file.** `duration` ≤ 8 is **typed by the author** again — A4·10's field, carried — and seeded from the provider on paste **where the provider supplies one**. The claim that the field is "no longer typed by hand" is withdrawn wherever it appears, and **10 Playlist's caveat stands as first drawn**: the running total is absent when any film has none. | *(Nothing can read the duration of a video file.)* |
+| **Nothing reads a duration off a file.** `duration` ≤ 8 is **typed by the author** again — A4·10's field, carried — and ~~seeded from the provider on paste where the provider supplies one~~ (**that seeding is deleted on 1 September 2026: nothing is fetched from a provider**). The claim that the field is "no longer typed by hand" is withdrawn wherever it appears, and **10 Playlist's caveat stands as first drawn**: the running total is absent when any film has none. | *(Nothing can read the duration of a video file.)* |
 | **The registry addition the loop needed is withdrawn.** Finding 3 — gating a muted loop on `prefers-reduced-motion` — is marked withdrawn rather than deleted, so **findings 4 and 5 keep their numbers**. **Two registry gaps stand:** seeking a loaded player (11 Chapters) and a facade for a non-video embed (12 Embed Card). **No module name was coined in either.** | *(If a design needs behaviour no module covers, mark it and never invent a name.)* |
 | **Embeds are unaffected, and that is a check rather than an omission.** YouTube, Vimeo, Soundcloud, Spotify, Apple Podcasts, Bandcamp and Mixcloud keep every design, every facade, every click-to-load notice, the reserved aspect box and the blanket refusal to autoplay. The unrecognised-URL link-out is still the fallback in all fifteen. | *(Embeds are unaffected.)* |
 
@@ -1275,7 +1354,12 @@ unchanged by this pass.
 
 ### Open questions
 
-**QUESTION 1 — Which two designs a free site gets — ANSWERED: 1 Player · 12 Embed Card**
+**Triaged, 1 September 2026.** Every question below that has been settled anywhere in this document is
+**struck through with the name of whoever settled it**; anything genuinely open would be marked **OPEN
+FOR THE OWNER** on its own line. **All four are settled, and nothing in this list is open.**
+
+**~~QUESTION 1 — Which two designs a free site gets~~ — SETTLED BY THE OWNER, 29 August 2026:
+1 Player · 12 Embed Card** (option 1, the recommendation).
 
 Every category gives two of its designs away, and which two is your call. The five plainest here — the ones a
 real site could ship without looking unfinished — are **1 Player** (one film, centred, under a small head),
@@ -1301,7 +1385,8 @@ film per ruled row, small picture at the left).
    and its film always opens in the overlay player.
    A visitor sees one line: a 96 × 54 thumbnail, "Night crossing to Trafaria", "12:40", and a Watch button.
 
-**QUESTION 2 — The total running time above the Playlist's queue — ANSWERED: kept as drawn**
+**~~QUESTION 2 — The total running time above the Playlist's queue~~ — SETTLED BY THE OWNER,
+29 August 2026: kept as drawn** (option 1) — the total appears only when every film has a time.
 
 The Playlist design prints a total — "6 films · 1 h 12 m" — above its list. It can only add up times the author
 typed, because **nothing can read how long a film is**: a video file cannot be measured, and of the two video
@@ -1321,7 +1406,9 @@ each time by hand, and if one is missing the total cannot be right.
    the one piece of information that tells a reader what they are committing to.
    A visitor sees "6 films".
 
-**QUESTION 3 — How much of the Playlist's queue is visible — ANSWERED: the three named heights stay**
+**~~QUESTION 3 — How much of the Playlist's queue is visible~~ — SETTLED BY THE OWNER, 29 August 2026:
+the three named heights stay** (option 1), and the *count that picks between drawn layouts* rule was
+re-checked against it in this pass and left alone.
 
 The Playlist offers **Four rows · Six rows · All** — how tall the scrolling list beside the player is. One
 library rule says that anything counting items should be a number picker rather than a row of fixed buttons.
@@ -1342,6 +1429,32 @@ not be meant to reach it.
    and the design's own balance — player beside a short list — goes with it.
    The editor sees no row; a visitor scrolls the page instead of the queue.
 
+**~~QUESTION 4 — What a required field does when it is still blank~~ — SETTLED BY THE OWNER,
+1 September 2026: the panel asks firmly and the section still publishes** (option 1).
+
+This pass makes the film's **title, description and poster required fields the customer fills in**, and
+nothing is ever fetched to fill them. The specification also draws, and has always drawn, what the
+section renders when one of them is missing: no title → the accessible name falls back to "Film on
+{provider}"; no poster → the striped plate naming the provider; no description → the row closes up.
+Both statements can be true at once, but only if somebody decides what "required" costs the editor —
+and that decision is not in any ruling, so it is not made here.
+
+1. **Required means the panel marks the field and the section still renders. (CHOSEN)**
+   The drawn fallback states stay reachable, old content keeps working, and a customer is never blocked
+   mid-edit. Costs: "required" then means "asked for firmly", which is weaker than the word implies.
+   The editor sees the empty field outlined with "A title is required" beside it, and the film renders
+   with its plate.
+2. **Required means the section refuses to publish until all three are filled.**
+   The word means what it says, and no reader ever sees a plate or an unnamed film. Costs: a customer
+   with fifty films in an archive cannot publish an edit to any of them until every item is complete,
+   and the drawn empty states become unreachable except for content that predates the rule.
+   The editor sees the publish action refused with the incomplete items listed.
+3. **Required at the item that a design draws, optional at the ones it does not.**
+   Only asks for what the reader will see — `description` is drawn in two of fifteen designs, so
+   requiring it everywhere asks for typing nobody reads. Costs: switching design can turn a complete
+   item into an incomplete one, which is the exact failure the shared field list exists to prevent.
+   The editor sees different required marks on the same item in two designs.
+
 ---
 
 ## Patch notes — declarations standardised, 31 August 2026
@@ -1353,3 +1466,75 @@ not be meant to reach it.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+---
+
+## Patch notes — design patch pass two, 1 September 2026
+
+Every change carries the **name** of the rule or the platform fact that required it. Rules are named,
+never numbered. Where a ruling could not be applied without inventing a decision, it is written as an
+**OPEN QUESTION** here and in **Open questions** above rather than guessed.
+
+**Frames changed — all sixteen:** `A15-0 Category Proof` and `A15-1` … `A15-15`. Each carries a dated
+**design patch pass two** panel saying what changed on it and why. **No layout was redesigned, no measure
+moved, no type size changed, no colour changed, and no control's values changed.**
+
+### This category's own ruling
+
+| What changed | Why |
+|---|---|
+| **The title, the description and the poster are required fields the customer fills in.** The shared field list now marks all three **req**; 1 Player's content-field line reads *URL (req), title (req), description (req), poster (req)*; the item list's caption says the panel **asks for them in words**; and the "Empty optional fields" heading is now **Missing fields**, with the drawn fallback states kept verbatim as the render's defence where one is nonetheless blank. | *(Nothing is ever fetched from YouTube, Vimeo or any other provider — not by our server, not by the editor's browser, at any point, so there is nothing but the customer to fill them.)* |
+| **Editor-side seeding on paste is deleted.** The bullet claiming the editor fetches the oEmbed title once, and the duration where the provider supplies one, is struck through and replaced with **Nothing is fetched from a provider**. Every repetition is struck or rewritten: the head-of-document summary, the shared floor, the field list's `title` and `duration` rows, the item-list paragraph, 10 Playlist's running-total caveat, and the three historical references in **Reconciliation notes**. | *(Nothing is fetched, at any point.)* |
+| **"Use provider thumbnail" is deleted, and settlement 3's 24 August narrowing is withdrawn.** The rule reads as first written — **never the provider's own thumbnail** — and the narrowing to "never fetched by the reader" is struck through wherever it appears, including in the 29 August patch notes. 1 Player's flag line now reads **the poster never fetched at all**. | *(Nothing is fetched, at any point — so the reader/editor distinction the narrowing rested on has nothing left to distinguish.)* |
+| **No panel draws a lookup affordance.** Checked on all sixteen frames: **no spinner, no "fetch details" button, no "Use provider thumbnail" action and no provider-status row** is drawn anywhere in A15, and the Data group now says so in words. The only thing derived from a URL is **the provider's name**, read from the address itself. | *(Delete any affordance that implies a lookup.)* |
+| **The typed duration is unchanged and restated.** `duration` ≤ 8 is typed by the author, and **10 Playlist's total is absent when any film has none** — the caveat as first drawn. | *(Nothing can read the duration of a video file, and nothing is fetched from a provider.)* |
+
+### The library-wide rules
+
+| Rule | What it did here |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Nothing changed; three subjects re-checked and left alone.** Background role's locks on 4, 5 and 6; 5 Full Bleed's two disabled Aspect values; 11 Chapters' and 6 Cover's locked Plays rows — each with its reason as a short sentence in the row, never a tooltip, and none hidden. The rule's exception — a control this project can never offer is not drawn and the panel says why — has **two subjects**: the **Playback** row deleted on 29 August, and **the lookup affordances deleted in this pass**, whose absence the Data group now states. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A15 renders no person and draws no initials; the credit line is a string and no design reads an author or a member. |
+| **The Remove button never greys out** | **Two subjects, both already compliant and unchanged:** `videos[]` in all fifteen and `chapters[]` in 11 Chapters. **Add** is the control that stops, at 24, with the reason shown. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **Nothing converted, in either direction.** Items **1–24 stays a number**. Gap (Tight · Normal · Loose) on 7 and 8, 7's Columns, 8's Lead size, 9's Peek, 10's Queue height, 13's Thumb size are already named sets, and every value of each has a drawn frame. |
+| **A design may declare the width below which its script runs** | **No design declares one** — `video-facade`, `carousel` and `tabs` run at every width — so **each no-JavaScript line describes one state and is complete**. The theatre's 390 fallback is settlement 1, a layout rule rather than a script boundary; **14 Slim Bar opens the theatre at every width**. |
+| **The feature-image caption differs between Ghost 5 and Ghost 6** | **No subject.** A15 reads nothing from Ghost but `@site.title`; `description` is an authored section field drawn by our own template, where the P0·1 marks behave identically on both versions. The finding belongs to the categories that draw Ghost's own caption. |
+| **A comment count renders nothing without JavaScript** | **No subject.** No design in A15 draws a comment count, a comment word or a comments widget, and no no-JavaScript line makes a claim about either. **A28 Comments** owns both. |
+| **No printed design total** | **No subject in this specification, and nothing added.** A15's counts are roster facts — fifteen designs, 1–24 items — not product copy; **no marketing or app screen was touched in this pass.** |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15.** Nothing renumbered, no number reused, nothing deleted, no gap created or closed. |
+
+### Left alone deliberately
+
+- **The per-design no-JavaScript table of 29 August is unchanged.** No design declares a script width,
+  and this pass changed nothing a script does, so no line needed a second state.
+- **P0's per-prop mark allowlist is not touched.** The default inline marks, a field's right to narrow
+  the set, and a mark a field does not permit being **absent** from the toolbar rather than greyed, are
+  current and correct as written in the repository. A15 repeats none of that text and rewrote none of it.
+- **The design-total copy in the marketing and app screens is not touched**, and no count was
+  reintroduced anywhere.
+- **Anything I could not attribute is left standing.** Where a sentence in this document could have been
+  edited either here or in the repository — the roster's `[FREE]` badges, the `**[Free] designs:**`
+  line's exact shape, and the 31 August declarations-standardised entry's wording — **it is left exactly
+  as found** and named here instead. Leaving it costs one message; reverting a deliberate edit silently
+  costs months.
+
+### The question this pass opened, and the owner's answer
+
+**Required, and what a blank required field costs the editor.** The ruling made the three fields
+required and said the panel must ask for them; the specification also draws — and has always drawn —
+what the section renders when one is missing. Whether "required" blocks publishing was a decision no
+ruling contained, so it was asked rather than guessed, as **QUESTION 4** with three costed options.
+**Settled by the owner on 1 September 2026: the panel marks the empty field and says what is missing,
+and the section still publishes** (option 1). So **required asks firmly and never blocks** ⚑ — no
+publish is refused, no field is greyed, old content keeps working, and **the drawn fallback states stay
+the render's defence** rather than becoming dead code. Recorded in **Missing fields**, in the shared
+field list's three `req` rows, and on all sixteen frames. **Nothing in Open questions is now open.**
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** — fifteen
+  designs, nothing renumbered, no number reused, nothing deleted, no gap created or closed.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+  required shape, and names **1 Player** and **12 Embed Card** — both of which exist in this category's
+  roster (numbers 1 and 12 of fifteen). It is the owner's own choice, confirmed on 29 August 2026, and
+  **this pass did not change it**.

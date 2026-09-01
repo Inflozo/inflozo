@@ -115,7 +115,7 @@ The ask centred on the page's own ground: eyebrow, title, sub, one action, a not
 | Control | Values |
 |---|---|
 | Title size | Medium 34 · Large 40 · Display 48 |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Secondary style | Ghost text · Text link (unavailable at Actions Primary) |
 | Below the actions | Note · Nothing |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
@@ -161,7 +161,7 @@ The ask centred on the page's own ground: eyebrow, title, sub, one action, a not
 |---|---|
 | Title size | Medium 34 · Large 40 · Display 48 |
 | Measure | **Narrow 520 · Medium 620 · Wide 720** |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface (Contrast unavailable — a band supplies its own edge and a divider above it would draw a second one) |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -209,7 +209,7 @@ The words on the left of one row and the actions on the right of it. The shortes
 |---|---|
 | Title size | Medium 34 · Large 40 · **~~Display 48~~ unavailable** — a 48 px line beside a 46 px button makes the button a caption |
 | Division | **Text-weighted 780/440 · Even halves 632/632** (gutter 76 fixed at both) |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Actions alignment | **Centred on the text · Top of the row** (the title's cap height, a 3 px lift, A5·2's rule) |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast (defaulting Surface) |
@@ -256,7 +256,7 @@ The banner on one `surface` card, inset from the page margin, page ground visibl
 | Inset | **Snug 16 · Comfortable 40 · Wide 72** inside the page margin (A4·8's values unchanged) |
 | Card treatment | **Hairline · Tinted · Raised** (A5·4's, with its dark substitution: Raised is a hairline and no shadow in dark, and the editor says so rather than hiding the value) |
 | Title size | Medium 34 · Large 40 · Display 48 |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Alignment | Centred · Left (the measure is 620 inside the card and the card's right stays empty) |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background (locked — page ground on all four edges is the identity, and the surface card needs a ground one step away) |
@@ -302,7 +302,7 @@ The whole banner on the inverted ground. Ground is not a control here: it is the
 | Band edges | **Full bleed · Page margin** (the latter taking the pack radius and 56 px of inner padding, 40 at 834; **always full bleed at ≤ 767**) |
 | Title size | Medium 34 · Large 40 · Display 48 |
 | Action style | **Carried colour fill · ~~Accent fill~~ (disabled at 3.2:1** in every pack) |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Alignment | Centred · Left |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Contrast (locked — the band is the design; the carried fill, hover, muted line and ring re-derive from it) |
@@ -398,7 +398,7 @@ The ask over a photograph that fills the section. The third of §8's grounds, an
 | Band edges | Full bleed · Page margin (pack radius, **no inner padding**; always full bleed at ≤ 767) |
 | Text position | **Centred · Bottom left** |
 | Title size | Medium 34 · Large 40 · Display 48 |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Note | Show · Hide |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Content source (data) | Authored · From a post |
@@ -449,7 +449,7 @@ A photograph on one half and the ask on the other, with no scrim between them. T
 | Picture side | **Right · Left** (grid placement, never a source reorder; A5·9's rule) |
 | Picture treatment | **Flush to the edge · Framed inset** (A4·3's mount unchanged: 14 px of surface, one hairline, the picture at half the pack radius, costing 28 px of width; **on a surface ground the mount takes `background`**) |
 | Title size | Medium 34 · Large 40 · **~~Display 48~~ unavailable** |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Content source (data) | Authored · From a post (as 7) |
 | Background role (universal) | Background · Surface (Contrast unavailable — a photograph beside an inverted half is two grounds arguing) |
@@ -497,7 +497,7 @@ The ask set large enough to be the section, flush left across the whole content 
 | Title scale | **Display 76 · Huge 96** |
 | Rule under the title | **Show · Hide** (the gap 40 → 28 at Hide, A5·6's logic; it sits mid-section and is not a divider, so it keeps its name) |
 | Sub under the rule | **Show · Hide** (where **the actions keep the right end of the line**) |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (**Compact advised at Huge** — the type is already the space) |
@@ -601,7 +601,7 @@ The ask with up to three short lines saying what comes with it. Where A6 borrows
 | Reasons position | **Beside the text · Under the actions** |
 | Mark | **Check · Dot · Rule · Custom icon** (Custom opens the P0·2 Icon Picker; section-level, never per reason) |
 | Title size | Medium 34 · Large 40 · Display 48 (**Display 48 unavailable at Beside the text**) |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast (defaulting Surface) |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
@@ -705,7 +705,7 @@ A card that crosses the footer's top edge, so the last ask on the page and the e
 | Inset | Snug 16 · Comfortable 40 · Wide 72 (A4·8's) |
 | Overlap | **Shallow 48 · Standard 88** — absolute rather than proportional, **clamped to 40% of the card's height** (A4·18's ceiling), with Standard behaving as Shallow on a short card and the sidebar saying so |
 | Title size | Medium 34 · Large 40 · Display 48 |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Alignment | Centred · Left |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background (locked, as 4, reason shown) |
@@ -805,7 +805,7 @@ The ask written in the first person and signed by the person making it. The only
 | Portrait | **Circle 64 · Circle 96 · None** (two sizes, both circles, no square and no rounded rectangle) |
 | Portrait position | **Beside the text · Above the text** (the latter centred with the portrait fixed at 64 and **the eyebrow moving under it**, the one place in A6 the eyebrow is not first) |
 | Title size | **Medium 34** (the default here and nowhere else in A6) · Large 40 · **~~Display 48~~ unavailable** — a first-person sentence at 48 px is a slogan with a photograph next to it |
-| Actions | Both · Primary |
+| Actions (group) | **Secondary action: On · Off** — one toggle for the one decision; the primary action is always drawn on a CTA banner, takes no switch, and the group states that constant |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Signer source (data) | Authored · Ghost staff user |
 | Background role (universal) | Background · Surface (Contrast unavailable — a portrait on an inverted band needs a scrim or a border the packs do not define, and a first-person note on a band is a poster) |
@@ -1055,3 +1055,16 @@ Every change below carries the **name** of the rule or the platform fact that re
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+
+---
+
+## Patch notes — the Actions split, 31 August 2026
+
+Frames updated: `A6-1 Centred`, `A6-2 Flush Left`, `A6-3 Split`, `A6-4 Card`, `A6-5 Contrast Band`, `A6-7 Full Bleed Image`, `A6-8 Image Split`, `A6-9 Big Type`, `A6-11 Reasons`, `A6-13 Overlap`, `A6-15 Signature` — eleven panels. Nothing renumbered, renamed or redesigned.
+
+| Rule (by name) | Change |
+|---|---|
+| One toggle per thing — no compound values | **Actions becomes a labelled group holding one toggle: Secondary action: On · Off.** A6's old list was *Both · Primary* — it never offered None, because a banner with no action is a section — so the **primary action is a constant, not a decision**. The rule's own words apply: *what is always drawn is not a toggle; a split group states its constant in the panel*. So the group states the primary and switches only the secondary, and the panel loses a choice that was never really a choice. Canonical definition: **P0·4a**. |
+| One toggle per thing — no compound values | **Each design's own sentence about its secondary is kept verbatim** and now sits under the toggle it describes — where the secondary sits at 1080, what colour it takes over a picture, why a card holding two actions takes no whole-card link. Nothing was rewritten. |
+| One toggle per thing — no compound values | **Not applied to A6·10 Pair.** Its `Actions: Button · Text link` is a **form**, one control for both columns, and a form is a single axis. Left as it is. |

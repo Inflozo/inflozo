@@ -104,9 +104,17 @@ WHAT WAS CHANGED OUTSIDE CLAUDE DESIGN, and must stay changed:
    current and correct. Do not rewrite it, do not soften "absent" to "disabled", and do not
    drop it. There is an automated check for this one too.
 
-IF YOU ARE UNSURE whether something you are looking at was changed here or in Claude Design:
-leave it. Say in your Patch notes that you left it and why. A thing left alone can be fixed in
-one message; a deliberate edit silently reverted is found months later, if at all."""
+YOU DO NOT NEED TO PRESERVE EITHER OF THOSE TWO EDITS, AND YOU CANNOT. This was asked of the
+2026-08-31 pass and the request was impossible: your project copy has never held that text, so a
+re-export replaces the repository's copy with one that lacks it. The sessions behaved correctly and
+said so, and the text was lost anyway. It is now re-applied by a script in the repository after
+every export (`tools/reapply-export-edits.py`) and checked independently. **So: do not re-author
+that copy, do not put a design total back, and do not worry if you cannot find the allowlist text —
+it is not yours to carry.**
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all."""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -158,13 +166,23 @@ WORK2 = {
   that control is GREYED with the sentence "not available while the media uses the accent
   colour" beside it. Draw the pair in both states. Use P0's treatment; do not invent one.""",
 
- 'A9': """- 12 FILTER LOSES ITS FILTER CONTROL (owner's ruling). The design keeps its layout and
-  its rows; the filter strip comes off. The reason is that the filter would sort rows the SITE
-  OWNER typed, and with JavaScript off there is nothing for it to fall back to — the existing
-  filter module degrades by being real links to Ghost pages, and there are no Ghost pages for an
-  FAQ answer somebody wrote in a text box. Redraw the frame without the strip and remove the
-  control from the specification, including its no-JS line.
-  KEEP THE DESIGN AND ITS NUMBER. This is a control coming off, not a design being cut.""",
+ 'A9': """- 12 FILTER LOSES ITS FILTER CONTROL. THE DESIGN ITSELF IS NOT CUT.
+  ** THE FIRST RUN OF THIS PROMPT DELETED DESIGN 12 ENTIRELY — the frame AND its roster row. That
+  was wrong. Design 12 must EXIST when you are finished. **
+  What to do, precisely:
+    KEEP  `A9-12 Filter.dc.html` as a frame. If it is missing, draw it back from the design's
+          entry in this specification — same layout, same rows, same name "Filter".
+    KEEP  design 12's row in the roster table, with the number 12 and the name Filter.
+    KEEP  the design's number. Nothing renumbers.
+    REMOVE only the filter STRIP — the control — from the frame, and its control row and its
+          no-JS line from the specification.
+  The reason the control goes: it would filter rows the SITE OWNER typed, and with JavaScript off
+  it has nothing to fall back to. The existing filter module degrades by being real links to Ghost
+  pages, and there are no Ghost pages for an FAQ answer somebody wrote in a text box. So the
+  control cannot degrade honestly and is removed. The design — a list of questions and answers —
+  degrades perfectly well without it: every row simply shows.
+  A design is cut only where this pass says CUT in capitals, as it does for A2 design 13. It does
+  not say that here.""",
 
  'A12': """- "COUNT PER ROW" KEEPS ITS THREE NAMED VALUES — three, four, five. It is NOT a
   number picker, and this is the one carve-out to the rule that every item count is one. The
@@ -177,11 +195,14 @@ WORK2 = {
   Note that "how many people to show" is a separate control and stays a number picker.
 - THE AVATAR RULE, across all fourteen Empty lines: TWO initials, because a team list is typed
   by the user.
-- ONE DESIGN MUST NOT NAME ANOTHER. The responsive note currently says the section "draws as
-  1 Grid" when the cards are not wider than the content width. Describe the RESULT, not another
-  design: "draws as a plain grid, with no arrows, no fades and no scroll container". A14 already
-  made this change for the same reason — a design that turns into a named design is the thing
-  the library rules out, and the phrasing is how it creeps back.""",
+- ONE DESIGN MUST NOT NAME ANOTHER. ** THE FIRST RUN OF THIS PROMPT DID NOT MAKE THIS CHANGE —
+  the phrase went from three occurrences to four. Search the specification for the exact string
+  "1 Grid" and deal with EVERY hit. **
+  The responsive notes say the section "draws as 1 Grid" when the cards are not wider than the
+  content width. That names another design. Describe the RESULT instead: "draws as a plain grid,
+  with no arrows, no fades and no scroll container." A14 already made exactly this change, for
+  exactly this reason — a design that turns into a named design is the thing the library rules
+  out, and this phrasing is how it creeps back in. Report how many you changed.""",
 
  'A13': """- A13-15 DECLARES THE WIDTH BELOW WHICH ITS SCRIPT RUNS, with both sides of it
   described in the no-JS line.

@@ -25,6 +25,23 @@ The remaining rules had no subject here, and each one is recorded, checked desig
 **Patch notes**. **Nothing was renumbered, no design was deleted, no section frame was redrawn, and
 no visual language, type scale, colour pack or spacing step changed.**
 
+**Design patch pass two — 1 September 2026.** One work-list item, and it reached three places. **The
+disabled-control pattern now covers every case where one gallery control switches another off**: at
+Lightbox: Off, **"In the lightbox only" is greyed with the reason beside it** and Captions falls to
+the design's own under-the-frame value, in the eleven designs that offer the pair — 3 Mosaic and 9
+Full Bleed already resolved it and the other nine were resolving it silently; **9 Full Bleed's
+Gutter: None is greyed while its captions sit under each frame** rather than being forced off None by
+the panel; and **the Lightbox row is greyed at Source: From posts in all fifteen**, where every bound
+frame links to its post and no bound frame ever honoured On. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a
+tablet and declare 768 as the width they retire under, and both no-JavaScript lines read on both
+sides of it** — owner-ruled, 1 September 2026. **13 Contact Sheet greys Captions from titles at Off
+in bound mode**, by the same ruling, so it stores no caption it cannot show. **Nothing was renumbered, renamed, redrawn or
+deleted, no control was added or removed, no value changed, and no type scale, colour pack or spacing
+step moved.** **Both open questions this pass raised were ruled by the owner on 1 September
+2026 and are closed** — 13 Contact Sheet's captions in bound mode and the width the arrows retire
+under — and **one conflict is listed rather than chosen**: a switched-off control is never hidden, and the Data group's hidings come
+from P0·5 and P0·3, which this pass may not redesign.
+
 **[Free] designs:** 1 Grid · 14 Index
 
 *(Shortlisted in this pass — 1 Grid, 14 Index, 12 Captioned Rows, 15 Boxed, 13 Contact Sheet: the
@@ -223,6 +240,38 @@ Crop · Peek · 8 Frame height · Gap · Arrows · 9 Columns · Gutter · Crop �
 width · Followers · 11 Columns · Crop · Caption wash · 12 Image side · Frame width · Crop ·
 13 Columns · Numbering · Gap · 14 Thumb · Row height · Numbering · 15 Columns · Box label · Crop.
 
+### The disabled-control pattern
+
+**A control switched off by another is greyed, with the reason beside it** — P0's treatment, applied
+without exception: the row is drawn, the switched-off value is struck through, the reason is one
+sentence at the control rather than a tooltip, and **no row is ever left accepting a value it will
+not honour**. **Nothing in A14 is hidden by another control** except the two hidings the Data group
+inherits from the shared primitives, which are recorded as a conflict in Patch notes rather than
+changed here.
+
+**Design-level narrowings, drawn greyed since the reconciliation pass** ⚑: **As uploaded** disabled
+in 3 Mosaic, 7 Carousel and 9 Full Bleed · **Crop locked at As uploaded** in 2 Masonry · **Background
+role locked** in 6 Contrast Band and 9 Full Bleed · **Under each** disabled at Gutter: None in 9 ·
+**Lightbox: Off** disabled in 13 Contact Sheet · 13's two Crop values.
+
+**Switched off by another control, and stated as such by this pass** ⚑:
+
+| Where | What greys | The reason drawn at the control |
+|---|---|---|
+| Lightbox: Off — 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15 | Captions' **In the lightbox only** | "Not available while the lightbox is off: the caption would be unreachable." Captions falls to **Under each** — **Under the frame** in 7 — and the value returns with the lightbox |
+| Captions: Under each — 9 Full Bleed | Gutter's **None** | "Not available while captions sit under each frame: there is no space for the line to sit in." Replaces the silent forcing of Gutter off None ⚑ |
+| Source: From posts — all fifteen | the whole **Lightbox** row | "Not available while the gallery is bound to posts: every frame links to its post, which opens instead of the overlay" ⚑ |
+| Source: From posts — 13 Contact Sheet | **Captions from titles**, greyed at **Off** | "Not available in this design while the gallery is bound to posts: nothing is captioned on the page, and a bound frame opens its post rather than the overlay, so a title would be stored and never read." **Owner-ruled, 1 September 2026** ⚑ |
+
+**The fallback is the category's own rule, not a new one** ⚑: **a caption is never unreachable**, the
+rule 3 Mosaic and 9 Full Bleed were already applying. **11 Overlay, 12 Captioned Rows and 14 Index
+have no Captions control**, so nothing there depends on the lightbox. **13 Contact Sheet is the one design where the pattern needed a ruling, and
+it has one** ⚑: its Lightbox row is already forced On because nothing is captioned on the page, and
+bound mode suppresses the overlay on every frame — so **Captions from titles is greyed at Off there**,
+and the design stores no text it cannot show. **Ruled by the owner on 1 September 2026**; the
+alternatives he refused were drawing captions under each square in bound mode, which is a different
+design, and keeping titles nobody can read.
+
 ### Editing
 
 **Every visible authored text is inline-editable on canvas with the shared P0·1 toolbar** — bold ·
@@ -255,7 +304,7 @@ posts** ships on all fifteen panels as the Data group, drawn as **P0·5** with n
 | Filter | Latest · Featured · By tag · By author · Hand-picked | P0·5's five paths; Hand-picked hides Count and Order |
 | Order | Newest · Oldest | P0·5's two |
 | Count | stepper, ceiling = the design's drawn-for range | never above **A14's 48** ⚑ |
-| Captions from titles | On · Off | On writes `caption` ← the post title; Off leaves them empty ⚑ |
+| Captions from titles | On · Off | On writes `caption` ← the post title; Off leaves them empty ⚑. **Greyed at Off in 13 Contact Sheet**, with the reason beside it — **owner-ruled, 1 September 2026** ⚑ |
 
 **Mapping**: `image` ← the post's **feature image** · `caption` ← the post title at Captions from
 titles: On · `alt` ← the image's own alt in Ghost, empty if it has none. **The frame links to its
@@ -439,8 +488,8 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three · Four |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Gap | Tight · Normal · Loose |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -511,8 +560,8 @@ media picker as its Add: the shared controls, named once.
    |---|---|
    | Columns | Two · Three · Four |
    | Gap | Tight · Normal · Loose |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Crop | As uploaded (locked — 1 Grid named) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -580,8 +629,8 @@ media picker as its Add: the shared controls, named once.
    | Lead position | Left · Right |
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
    | Gap | Tight · Normal · Loose |
-   | Captions | In the lightbox only · Under each · Off |
-   | Lightbox | On · Off |
+   | Captions | In the lightbox only · Under each · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -590,7 +639,7 @@ media picker as its Add: the shared controls, named once.
    Vertical spacing *Compact · Comfortable · Spacious* · Top divider *None · Line · Fade* — **the
    images item list (P0·3)** and **the Data group**. **The Padding row is retired into Vertical
    spacing** ⚑, the same three values under the universal name. **Five** own controls. **Quick
-   Controls**: Lead position · Crop · Gap. **At Lightbox: Off, Captions resolves to Under each** ⚑
+   Controls**: Lead position · Crop · Gap. **At Lightbox: Off, "In the lightbox only" is greyed with the reason beside it and Captions falls to Under each** ⚑
    — 9 Full Bleed already resolves the same pair that way, and the rule behind it is the
    category's: **a caption is never unreachable**. "In the lightbox only" with no lightbox would
    make it so. **Editing** · eyebrow, heading, blurb and credit edit inline with the **P0·1**
@@ -643,8 +692,8 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three · Four |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Head | Inside the plane · Above it |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -707,8 +756,8 @@ media picker as its Add: the shared controls, named once.
    | Head column | Left · Right |
    | Columns | Two · Three |
    | Crop | Square · Landscape · Portrait · As uploaded |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -772,8 +821,8 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three · Four |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Gap | Tight · Normal · Loose |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Contrast (locked — the inverted band is this design's whole identity; the row names 1 Grid) |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding, the section's own being 0 at every value) |
    | Top divider (universal) | None · Line · Fade |
@@ -819,13 +868,14 @@ media picker as its Add: the shared controls, named once.
 2. **Structural descriptor.** `carousel · none · page · many · inline · one frame at a time`
    The containment is of time rather than space — A19·15's phrase, and the reason slot two is
    `none`.
-3. **Archetype.** carousel. **One departure** — arrows are dropped below 1,080 rather than moved
-   over
-   the media ⚑, and Controls resolves to Dots.
+3. **Archetype.** carousel. **One departure** — arrows are never moved over the media ⚑. **They are
+   drawn at 1440, 1080 and 834** — **owner-ruled, 1 September 2026: the arrows are not dropped on a
+   laptop or a tablet** ⚑, reversing this design's earlier "dropped below 1,080". **Below 768 Controls
+   resolves to Dots**, where a 302 px track leaves no room for a button beside it.
 4. **Responsive rule.** **1440** 140 · 24 · 968 · 24 · 140; arrows beside the head; dots 24/8 and
    the
    counter under the track; credit at the right. **834** 60 · 20 · 594 · 20 · 60; arrows under the
-   track. **≤ 767** 12 · 12 · 302 · 12 · 12; dots only; credit last. **One-up at every width** ⚑.
+   track. **1080** the 1440 arrangement with the arrows still beside the head — **the controls do not change between 1440 and 834** ⚑, and no separate frame is drawn at that width. **≤ 767** 12 · 12 · 302 · 12 · 12; dots only; credit last. **One-up at every width** ⚑, and **arrows at every width above 768** ⚑.
 5. **Content fields.** The category's five. **Designed for 4–20** ⚑ — the only design that does not
    get taller as the list grows.
 6. **Controls.**
@@ -835,8 +885,8 @@ media picker as its Add: the shared controls, named once.
    | Controls | Dots · Arrows · Dots and arrows |
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
    | Peek | On · Off |
-   | Captions | Under the frame · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under the frame · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under the frame) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -873,13 +923,20 @@ media picker as its Add: the shared controls, named once.
    **No-JS, quoted:** "The slide track is a native horizontally-scrollable `scroll-snap` strip —
    **fully usable**, only dots and arrow buttons are hidden." And: "Each thumbnail is an `<a href>`
    to the full-size image; clicking opens it as a normal page."
+   **This design declares a width: the arrows retire under 768** ⚑ — **owner-ruled, 1 September
+   2026** — so the no-JavaScript state is stated on both sides of it. **At 768 and above** JavaScript
+   off removes the arrows and the dots and nothing else: the track is a native snap strip, one frame
+   at a time, every photograph present and reachable by scroll, drag and Tab, every caption on its
+   reserved line. **Below 768** the arrows are drawn at no script state, so the dots are all that
+   goes and the track is otherwise identical.
 10. **Accessibility.** Heading `h2`. The track is a `<ul>` and **no slide is hidden from the
     accessibility tree at any position** ⚑ (A19·15, verbatim). Dots are `<button>`s reading "Go to
     photograph 3 of 6"; the counter is `aria-hidden`. **Arrow keys move the track only when a track
     element has focus** ⚑. Peeking frames are dimmed but not `aria-hidden` ⚑.
-    **Flagged ⚑** the peek and its 55% · arrows dropped below 1,080 · As uploaded disabled · the
+    **Flagged ⚑** the peek and its 55% · arrows kept at 1440, 1080 and 834, retiring under 768 ⚑ · As uploaded disabled · the
     reserved caption line · no autoplay · two modules declared.
-    **New in this pass ⚑** no autoplay owner-ratified and stated on the frame · Padding retired into
+    **New in this pass ⚑** the arrows kept on laptop and tablet, owner-ruled, and 768 declared as the
+    width · no autoplay owner-ratified and stated on the frame · Padding retired into
     Vertical spacing · the universal trio · the caption at 200 · Image focus · Source: From posts.
 
 ---
@@ -894,9 +951,9 @@ media picker as its Add: the shared controls, named once.
    The only `edge` in A14.
 3. **Archetype.** carousel. **One departure** — it never becomes a stack ⚑, at any width.
 4. **Responsive rule.** **1440** strip padding 96 · 0, left margin 72, height 320, gap 16, arrows at
-   the foot, See-all beside the head. **834** padding 80, left margin 40, height 280, arrows
-   replaced
-   by See-all. **≤ 767** padding 64, left margin 20, height 220, gap 12, no arrows, See-all under
+   the foot, See-all beside the head. **834** padding 80, left margin 40, height 280, **arrows kept at the
+   foot** ⚑ — **owner-ruled, 1 September 2026**, reversing "arrows replaced by See-all" — with See-all
+   under the strip. **≤ 767** padding 64, left margin 20, height 220, gap 12, no arrows, See-all under
    the
    strip. **Right margin 0 at every width** ⚑.
 5. **Content fields.** The category's five plus `moreLabel` ≤ 24 and `moreUrl`, both optional ⚑.
@@ -907,9 +964,9 @@ media picker as its Add: the shared controls, named once.
    |---|---|
    | Frame height | Short 240 · Medium 320 · Tall 420 |
    | Gap | Tight · Normal · Loose |
-   | Captions | Under each · In the lightbox only · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
    | Arrows | On · Off |
-   | Lightbox | On · Off |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the strip's inner padding, the section's own being 0) |
    | Top divider (universal) | None · Line · Fade |
@@ -943,13 +1000,19 @@ media picker as its Add: the shared controls, named once.
    "The
    slide track is a native horizontally-scrollable `scroll-snap` strip — **fully usable**, only dots
    and arrow buttons are hidden." **Snap is `proximity` rather than `mandatory`** ⚑ so a reader can
-   stop between frames.
+   stop between frames. **This design declares a width: the arrows retire under 768** ⚑ —
+   **owner-ruled, 1 September 2026**, which closes the open question this pass raised. **At 768 and
+   above** JavaScript off removes the two arrows and the two edge fades and nothing else: the row is a
+   native proximity-snap strip, keyboard-scrollable, every frame present at its own width. **Below
+   768** the arrows are drawn at no script state and See-all already sits under the strip, so
+   JavaScript off changes nothing a reader can see.
 10. **Accessibility.** Heading `h2`. The row is a `<ul>` with `tabindex="0"` on the scroll container
     so a keyboard can scroll it ⚑, labelled "Photographs, scrollable row". Arrows are `aria-hidden`
     when the row does not overflow ⚑. Caption 5.4:1 on surface.
-    **Flagged ⚑** no right margin · never becomes a column · Frame height as the one size control ·
+    **Flagged ⚑** no right margin · never becomes a column · arrows kept at 1440, 1080 and 834, retiring under 768 ⚑ · Frame height as the one size control ·
     proximity snap · the authored See-all count · two modules.
-    **New in this pass ⚑** Vertical spacing onto the strip, Frame height keeping its name · the
+    **New in this pass ⚑** the arrows kept on laptop and tablet, owner-ruled, and 768 declared as the
+    width · Vertical spacing onto the strip, Frame height keeping its name · the
     See-all icon slot · the caption at 200 · Image focus · Source: From posts.
 
 ---
@@ -978,9 +1041,9 @@ media picker as its Add: the shared controls, named once.
    |---|---|
    | Columns | Three · Four · Six |
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
-   | Gutter | None · Hairline · Even |
-   | Captions | In the lightbox only · Under each · Off (Under each disabled at Gutter: None) |
-   | Lightbox | On · Off |
+   | Gutter | None · Hairline · Even (None greys while Captions is Under each, with the reason beside it) |
+   | Captions | In the lightbox only · Under each · Off (Under each greys at Gutter: None; In the lightbox only greys at Lightbox: Off and Captions falls to Under each — each with the reason beside it) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Locked, with the reason shown in the row — the ground is `transparent` and the frames cover it wall to wall |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (vertical only; side padding is 0 at every value, which is the design) |
    | Top divider (universal) | None · Line · Fade |
@@ -1010,9 +1073,10 @@ media picker as its Add: the shared controls, named once.
    there is no margin around it, so the plate draws its alt text at 15 px rather than 13 ⚑ — the one
    size change in the missing-image vocabulary.
 9. **Behaviour module.** `lightbox`, edit-safe: no ⚑; same quotation as 1 Grid. **At Lightbox: Off
-   the captions have nowhere to go** ⚑ and the panel resolves Captions to Under each, which forces
-   Gutter off None — the only control interaction in A14 that changes two values at once, and it is
-   stated on the panel.
+   the captions have nowhere to go** ⚑ so **"In the lightbox only" is greyed with the reason
+   beside it** and Captions falls to Under each; **Gutter: None then greys with its own reason**
+   rather than being forced off None silently ⚑. What was one panel changing two values at once is
+   now one resolution and one greyed value, each saying at the control what it is doing.
 10. **Accessibility.** Heading `h2`. **With captions in the overlay the accessible name of each
     frame
     is its `alt`** ⚑ — load-bearing here in a way it is not in 1 Grid. **The focus ring is inset by
@@ -1050,8 +1114,8 @@ media picker as its Add: the shared controls, named once.
    | Lead height | Short 480 · Medium 640 · Tall 760 |
    | Lead width | Full bleed · Contained |
    | Followers | Three · Four |
-   | Captions | Under each · Lead only · In the lightbox only |
-   | Lightbox | On · Off |
+   | Captions | Under each · Lead only · In the lightbox only (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Gap | Tight · Normal · Loose (between the followers only) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -1116,7 +1180,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded (As uploaded live) |
    | Gap | Tight · Normal · Loose |
    | Caption wash | Soft · Standard |
-   | Lightbox | On · Off |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1185,7 +1249,7 @@ media picker as its Add: the shared controls, named once.
    | Frame width | Half · Two thirds |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Rules | Between rows · Off |
-   | Lightbox | On · Off |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1254,7 +1318,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape (two values only) |
    | Numbering | On · Off |
    | Gap | Tight 4 · Normal 8 · Loose 16 (a tighter ladder) |
-   | Lightbox | On, with ~~Off~~ disabled and the reason shown |
+   | Lightbox | On, with ~~Off~~ disabled and the reason shown (the row greys again at Source: From posts — see the open question) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding) |
    | Top divider (universal) | None · Line · Fade |
@@ -1285,7 +1349,10 @@ media picker as its Add: the shared controls, named once.
    ← the post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame
    links to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are
    hidden** (P0·3's read-only card); **a post with no feature image is skipped and the panel says
-   how many were** ⚑. Count's ceiling here is **48**, this design's drawn-for range.
+   how many were** ⚑. Count's ceiling here is **48**, this design's drawn-for range. **Captions from
+   titles is greyed at Off in this design, with the reason beside it** ⚑ — **owner-ruled, 1 September
+   2026**: nothing is captioned on the page here and a bound frame opens its post rather than the
+   overlay, so a post title would be stored and never read. The other designs keep the control live.
 8. **Empty state.** **Nothing here can be empty except the head** ⚑. A failed image draws the
    hover-surface plate **with its number still beneath it** ⚑, so the numbering never skips.
 9. **Behaviour module.** `lightbox`, edit-safe: no ⚑; same quotation as 1 Grid. **This is the design
@@ -1332,7 +1399,7 @@ media picker as its Add: the shared controls, named once.
    | Row height | Compact · Comfortable |
    | Rules | Between rows · Ends only |
    | Numbering | On · Off |
-   | Lightbox | On · Off |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1406,8 +1473,8 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three · Four |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Box label | Off · The eyebrow · The eyebrow and the count |
-   | Captions | Under each · In the lightbox only · Off |
-   | Lightbox | On · Off |
+   | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
+   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -1758,10 +1825,34 @@ moved, and no type scale, colour pack or spacing step changed.**
 the free designs, 15 Boxed's count in bound mode, and 9 Full Bleed's Gutter values. They are recorded
 in **The owner's rulings** at the foot of this document.
 
-1. **Carried, unchanged by this pass:** the overlay needs the original file and Ghost guarantees no
-   middle size; `alt` is load-bearing in 9 and 13 and cannot be required; there is no sort module and
-   14 Index is where one would be wanted; a bound gallery is A17 Post Grids without the titles; and
-   the locked-control test in finding 13 is still waiting to be ratified or overruled library-wide.
+**Housekeeping, pass two, 1 September 2026.** The five items carried in one line below are now
+marked one by one, because a list where everything looks open is a list nobody reads. Nothing was
+answered here.
+
+1. ~~The overlay needs the original file and Ghost guarantees no middle size.~~ **Settled inside this
+   document** — settlement 4 of the category layer, drawn in full on `A14-0`: the overlay requests
+   the original file, and the cost is stated rather than avoided. A recorded cost, not a question.
+2. ~~`alt` is load-bearing in 9 and 13 and cannot be required.~~ **Settled by the
+   controls-reconciliation pass of 24 August 2026**, recorded in the shared field list: `alt` stays
+   optional, a frame without one gets `alt=""`, and the editor draws a warning dot on that item.
+3. **There is no sort module, and 14 Index is where one would be wanted.**
+   **OPEN FOR THE OWNER**
+4. **A bound gallery is A17 Post Grids without the titles.** The category layer says A14's grids
+   carry no titles and no links to posts; bound mode gives every frame a link to its post.
+   **OPEN FOR THE OWNER**
+5. **The locked-control test in finding 13 is still waiting to be ratified or overruled
+   library-wide.**
+   **OPEN FOR THE OWNER**
+6. ~~13 Contact Sheet's captions in bound mode have nowhere to go.~~ **Closed by the owner,
+   1 September 2026: Captions from titles is greyed at Off in this design when the gallery is bound
+   to posts**, with the reason beside it. The design stores no text it cannot show, and the two
+   alternatives — captions under each square in bound mode, or unreadable titles — were refused.
+7. ~~8 Filmstrip names no width for its arrows' retirement.~~ **Closed by the owner, 1 September
+   2026: the arrows stay on a laptop and a tablet and retire under 768**, in 8 and in 7 alike, and
+   both no-JavaScript lines now read on both sides of that width.
+8. **The conflict pass two will not choose:** a switched-off control is never hidden, and the Data
+   group hides two sets of controls because P0·5 and P0·3 do — see Patch notes.
+   **OPEN FOR THE OWNER**
 
 ### Confirmations
 
@@ -1795,3 +1886,119 @@ in **The owner's rulings** at the foot of this document.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change carries the **name** of the rule that required it. **Frames updated:** all fifteen
+design frames (`A14-1` … `A14-15`) and the proof frame `A14-0`, each gaining a **PASS TWO PATCH**
+block naming, for that design, what changed and the rule behind it; **`A14-0`, `A14-3` and `A14-9`
+also gain the greyed rows drawn** in P0's treatment. **Nothing was renumbered, renamed, redrawn or
+deleted; no control was added or removed; no value changed; no layout, type scale, colour pack or
+spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **"In the lightbox only" greys at Lightbox: Off in eleven designs** — *a control switched off by
+   another is greyed, with the reason beside it*. 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 15 offer both a
+   Lightbox switch and a caption placement that lives in the overlay. **3 Mosaic and 9 Full Bleed
+   already resolved the pair to Under each; the other nine were resolving it silently**, which is the
+   half of the rule that says a control may not sit accepting a value it will not honour. The value
+   is now drawn struck through with the reason at the control — "Not available while the lightbox is
+   off: the caption would be unreachable" — and Captions falls to **Under each**, or **Under the
+   frame** in 7, which is that design's own value. **No new value, no new control, no changed
+   default.** The fallback is the category's existing rule — *a caption is never unreachable* — not a
+   new decision.
+2. **9 Full Bleed's Gutter: None greys instead of being forced** — *a control switched off by another
+   is greyed, with the reason beside it*. The panel used to change two values at once: at Lightbox:
+   Off it resolved Captions to Under each and then forced Gutter off None. Now the resolution stays
+   and **Gutter: None is greyed with its own sentence** — "Not available while captions sit under each
+   frame: there is no space for the line to sit in." **Under each stays greyed at Gutter: None**, as
+   it was: the pair reads both ways, and each direction says what it is doing.
+3. **The Lightbox row greys at Source: From posts in all fifteen** — *a control switched off by
+   another is greyed, with the reason beside it*. Bound mode already suppressed the overlay on every
+   frame, because an author's link beats the lightbox and a bound frame links to its post; the row
+   nevertheless kept accepting **On**. It is now greyed with the reason beside it, in every panel.
+   **Greyed, not hidden**, and not left accepting a value nothing honours.
+4. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a tablet, and both declare 768** —
+   *a design may declare the width below which its script runs*, **owner-ruled, 1 September 2026**.
+   **This is the one place these two designs changed rather than being restated.** 7's "arrows dropped
+   below 1,080" is withdrawn — it also contradicted 7's own responsive rule, which had arrows under
+   the track at 834 — and 8's "arrows replaced by See-all at 834" is withdrawn with it: **both draw
+   arrows at 1440, 1080 and 834, and retire them under 768**, where a 302 px track and a 220 px strip
+   leave no room for a button. Both no-JavaScript lines now read on both sides of 768. Nothing else
+   moved: no control, no value, no layout, no See-all behaviour — 8 keeps See-all under the strip at
+   834, beside its arrows rather than instead of them.
+5. **13 Contact Sheet greys Captions from titles at Off in bound mode** — *a control switched off by
+   another is greyed, with the reason beside it*, **owner-ruled, 1 September 2026**, closing the open
+   question this pass raised. Nothing is captioned on the page in this design and a bound frame opens
+   its post rather than the overlay, so a post title would be stored and never read. The control is
+   drawn, greyed at Off, with the sentence at the control; **the other fourteen designs keep it
+   live**. Refused: captions under each square in bound mode, which is a different design, and
+   keeping titles nobody can read.
+6. **Open questions marked item by item** — housekeeping. Two items were settled elsewhere in this
+   document and are struck through with who settled them; six are live and each carries **OPEN FOR
+   THE OWNER** on its own line. **Nothing was answered in the housekeeping.**
+7. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### Rules and facts checked, design by design
+
+| Rule or fact (by name) | Where it lands in A14 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **The pass's whole subject.** Every case is listed in **The disabled-control pattern** in the category layer: six narrowings already drawn greyed with their reasons, and the three this pass adds. **The rule's one exception is claimed nowhere in A14** — no control here is one the project can never offer, so nothing is left undrawn. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A14 draws no person and no initials block; `profile_image` is read nowhere. A missing photograph draws the plate carrying its alt text. |
+| **The Remove button never greys out** | **Already satisfied, confirmed on all fifteen.** The images list has no floor; ✕ is on every row, never dimmed, never hidden; removing to one is allowed and so is removing the last. **Add, at the ceiling, is the one disabled control**, with the reason shown. In bound mode the list is P0·3's read-only card and there is no Remove to dim. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, and none should.** Columns, Crop, Gap, Gutter, Frame height, Row height, Thumb, Followers and the rest are named values with a drawn frame behind each; the only stepper in any A14 panel is P0·5's **Count**, which counts items. Nothing was converted in either direction. |
+| **A design may declare the width below which its script runs** | **Two designs declare one, and both read on both sides of it: 7 Carousel and 8 Filmstrip, "the arrows retire under 768"** — owner-ruled, 1 September 2026. The other thirteen run `lightbox` at every width and are pixel-identical with JavaScript off. |
+| **Ghost's templates cannot count, add, or remember** | **Unchanged by this pass, and re-checked.** The row numbers in 12, 13 and 14 are a stylesheet counter; 8's and 13's See-all label is authored in full; **15 Boxed's count draws only at Source: Authored**, by the owner's ruling of 30 August 2026. No arithmetic was introduced. |
+| **CSS cannot see content** | **Re-checked, nothing withdrawn.** The greying added here is editor state, not stylesheet logic: the panel knows the value of another control, which is not a measurement of content. 11 Overlay still clamps at three lines without reading a caption's length. |
+| **Some fields we drew do not exist** | **Unchanged.** Bound mode reads a post's feature image, its title and the image's own alt, and nothing else. `focus` stays theme-side because Ghost stores no focal point. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A14.** These are placeable sections whose markup and words this project owns; Ghost's own gallery card inside a post is A33's surface. |
+| **The feature-image caption renders differently on the two Ghost versions** | **No subject, and worth one line for a builder.** No A14 design draws a feature image's caption: in bound mode the frame takes the post's **feature image**, its **title** as `caption` and the image's own **alt** — none of them the caption field the two Ghost versions disagree about. **The difference cannot reach this category.** |
+| **A comment count renders nothing at all without JavaScript** | **No subject.** A14 reads no comment count, ships no comment noun in its translation catalogue, and puts no accessible label on a number. |
+| **The two free designs are the owner's choice** | **Unchanged: 1 Grid and 14 Index**, ruled on 30 August 2026, both present in the roster. |
+
+### The conflict this pass will not choose
+
+**Rule A says a control switched off by another is greyed and never hidden. A14's Data group hides
+two sets of controls, and it hides them because the shared primitives do.** **P0·5 hides Count and
+Order at Filter: Hand-picked.** **Bound mode hides Add, Remove and Reorder** behind P0·3's read-only
+card. Both hidings are caused by another control, so the rule reaches them; neither can be greyed
+without redesigning P0·5 and P0·3, which this pass is instructed not to do. **Listed here rather than
+resolved**, and no A14 panel was changed on account of it.
+
+### Open questions raised by this pass
+
+**Both were ruled by the owner on 1 September 2026 and are closed.** They are recorded in **The
+owner's rulings** below. One item remains, and it is the conflict rather than a question:
+
+1. **The Data group's hidings**, above — P0·5 and P0·3 hide controls that Rule A would grey.
+   **OPEN FOR THE OWNER.**
+
+### The owner's rulings — 1 September 2026
+
+1. **13 Contact Sheet turns Captions from titles off in bound mode**, greyed with the reason beside
+   it — *a control switched off by another is greyed, with the reason beside it*. The design keeps its
+   uncaptioned sheet and stores nothing a reader cannot reach.
+2. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a tablet, and retire them under
+   768** — *a design may declare the width below which its script runs*. One width for both scrolling
+   designs, and both no-JavaScript lines read on both sides of it.
+
+### Left alone deliberately
+
+**Two things were edited outside this environment and are untouched here.** **No printed design total
+was reintroduced** anywhere in this document or on any A14 frame — nothing in the category quotes a
+library size, and the count-agnostic copy stands. **P0's per-prop mark allowlist is not rewritten,
+softened or dropped**: the default inline marks, a field's right to narrow that set, and a
+disallowed mark being **absent** from the toolbar rather than greyed, all stand as written. **One
+thing was left because it is deliberate**: 9 Full Bleed's **Gutter: None · Hairline · Even** keeps
+the retired word "Even" by the owner's ruling of 30 August 2026, and nothing in this pass touches it.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed. **The only
+   drawn changes in the whole pass are 7's and 8's arrows on laptop and tablet, both owner-ruled.**
+2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Grid**
+   and **14 Index** — both of which exist in this category's roster.

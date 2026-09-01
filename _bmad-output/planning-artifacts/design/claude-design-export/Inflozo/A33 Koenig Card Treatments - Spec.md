@@ -1,7 +1,7 @@
 # A33 Koenig Card Treatments — written specification
 
 6 treatments · Paper pack · drawn 24 August 2026 · controls-reconciliation pass 25 August 2026 ·
-**Koenig card treatments patch pass 28 August 2026**
+**Koenig card treatments patch pass 28 August 2026** · **selector pass 1 September 2026**
 
 This file is the reconciled specification. The pass reused the P0 editor primitives by name and
 redesigned none of them; every conflict it opened with an earlier A33 ruling is recorded, one line
@@ -170,10 +170,99 @@ toward the six**.
 | Row | State | Value and why |
 |---|---|---|
 | Which cards appear | read-only | Whatever the author inserted. **A33 has no item list** ⚑ |
-| Card widths | read-only | The author's, per card — the treatment decides what each resolves to ⚑ |
+| Card widths | read-only | The author's, per card — the treatment decides what each resolves to ⚑. **The classes are `.kg-width-wide` and `.kg-width-full`; regular carries no width class** on an image, gallery or embed figure ⚑ |
 | Bookmark metadata | read-only | Title, description, icon, author, publisher, thumbnail all scraped (C.1) |
 | Gallery rows | read-only | Ghost's own script computes the ratios; **no registry module covers it** ⚑ |
 | Corners | read-only | From the pack's radius token, in every treatment ⚑ |
+
+### The selectors — what A33 actually styles
+
+**A33 ships a stylesheet and nothing else**, so the class name is the deliverable. Until the selector
+pass of 1 September 2026 this specification named the fields to style and never named a single thing
+to select. **The class is now beside every card in the shared field list above**, and the rules below
+carry the rest. **Inside a post's body we own the stylesheet and nothing else** — not the markup, not
+the ARIA attributes, not the text — so nothing here assumes markup A33 would have to emit.
+
+**The width classes, which the Card widths row depends on.** `.kg-width-wide` and `.kg-width-full`
+sit on the card's own element beside its card class — `figure.kg-card.kg-image-card.kg-width-wide`.
+**Those two are the whole of the width contract**, and every treatment's resolution table is written
+against them. **Regular carries no width class** on an image, gallery or embed figure: Ghost's
+documentation states that a normal-width card has no extra class, so the regular rung is the card
+class's own default and never a `.kg-width-regular` selector ⚑. **The signup card is the one
+exception** — Ghost documents `kg-width-regular` on it — so the regular rung cannot be written as one
+rule for both. **Two cards arrive with a width class already set** ⚑: Ghost ships `.kg-header-card`
+with `kg-width-full`, and its own gallery example ships `.kg-gallery-card` with `kg-width-wide`. The
+signup card additionally provides `.kg-content-wide` at full width and `.kg-layout-split` when it
+carries an image.
+
+**State hooks a stylesheet may read.** The toggle card exposes `data-kg-toggle-state="close"` or
+`"open"` on `.kg-toggle-card`; **CSS can read it and only Ghost's script ever writes it**, which is
+the mechanism behind the no-JavaScript line — the attribute stays at `close` and the card renders
+closed. Ghost's own `.kg-audio-hide` and `.kg-video-hide` are the players' script-driven toggles and
+are likewise readable and not writable.
+
+**Where we are not certain, and it is said rather than guessed** ⚑. Verified against Ghost's theme
+documentation: `.kg-card`, `.kg-image-card`/`.kg-image`, `.kg-gallery-card` with
+`.kg-gallery-container`/`.kg-gallery-row`/`.kg-gallery-image`, `.kg-bookmark-card` and its eight
+parts, `.kg-embed-card`, `.kg-callout-card`/`.kg-callout-emoji`/`.kg-callout-text`,
+`.kg-toggle-card`/`.kg-toggle-heading`/`.kg-toggle-heading-text`/`.kg-toggle-card-icon`/`.kg-toggle-content`,
+`.kg-button-card` with `.kg-align-left`/`.kg-align-center` and `a.kg-btn.kg-btn-accent`,
+`.kg-file-card` and its parts, `.kg-audio-card` and its player parts, `.kg-video-card` and its player
+parts, `.kg-header-card` with `kg-size-*` and `kg-style-*`, `.kg-signup-card` and its form parts,
+`.kg-product-card`/`.kg-product-card-container`, `.kg-width-wide` and `.kg-width-full`.
+**Not verified, and therefore flagged**: the call-to-action card's class, drawn as `.kg-cta-card`;
+the email-content card's, drawn as `.kg-email-card` and needed by nothing, since it never renders on
+the web; the eight callout colour variants beyond `.kg-callout-card-accent`, whose pattern is
+`.kg-callout-card-<colour>`; the product card's inner classes below `.kg-product-card-container`; and
+whether Ghost 6's header card keeps the documented class set. **A wrong selector styles nothing and
+fails silently**, which is the worst failure available here, so none of the five carries a rule on its
+own and each is an open question below.
+
+**Two selector traps, named so a builder does not fall into them.** `.kg-file-card-caption` is the
+file card's *description* and not a card caption — the Captions control must not reach it ⚑. And
+`.kg-card` is present on every documented card beside its own class, but **only Space around cards is
+written against it alone**; every other rule selects the specific card class, so a Ghost version that
+omitted it would break one rule rather than all of them ⚑.
+
+**The build fact that decides whether any of this lands.** Ghost injects its own `cards.min.css`
+through `ghost_head` unless the theme's `package.json` excludes that card under `card_assets`. The
+excludable set is audio, blockquote, bookmark, button, callout, file, gallery, header, nft, product,
+toggle, video and signup. **A treatment's rules only take effect for cards on the exclusion list**;
+for the rest, Ghost's default card CSS is still in the cascade. **And `card_assets` excludes a card's
+*assets*, not its stylesheet alone** — Ghost's own wording is "styles and behaviour", and the two
+bundles, `cards.min.css` and `cards.min.js`, come from the same per-card set. **A33 ships no
+JavaScript**, so an exclusion that takes a script with it does not restyle a card, it stops the card
+working ⚑.
+
+**The ruling — the owner, 1 September 2026, after two earlier answers the same day.** **A33 replaces
+Ghost's card CSS for every card it draws — the twelve excludable cards other than `nft` — and the
+theme always re-includes Ghost's own `cards.min.js`, so no behaviour is lost.** One stylesheet owns
+the look, Ghost keeps owning the behaviour, and there is no cascade to fight and no seam between a
+treated card and an untouched one. **`nft` is ignored by the owner's instruction**: A33 draws no NFT
+card, so it is not excluded, not drawn, and carries no open question.
+
+**The ruling is conditional on one test, and the fallback is written rather than left to a builder** ⚑.
+The bundle Ghost serves at `/public/cards.min.js` may be built *from* the theme's `card_assets`
+config, in which case re-including that URL by hand fetches the same filtered file and gains nothing.
+**Check 3 in the developer handoff tests exactly that, and it is the first thing it does.**
+
+- **If the served bundle is the full set** — exclude the twelve and re-include `cards.min.js` from the
+  theme's own template. **This is the preferred outcome and the ruling as stated.** Two build
+  requirements come with it: **the script tag is the theme package's, not A33's** — a treatment cannot
+  reach outside the post body — and **the theme's documentation must name the path**, because it is
+  Ghost's internal asset URL and a Ghost upgrade that moves or re-hashes it would stop the toggle
+  opening with no error anywhere.
+- **If the bundle is filtered by the config** — **exclude the seven static cards** (bookmark, button,
+  callout, file, header, product, blockquote), where nothing depends on a script and A33 already draws
+  every state, and **leave toggle, gallery, audio, video and signup on Ghost's assets**, styling them
+  by a deeper selector instead: `.gh-content .kg-toggle-card` beats `.kg-toggle-card` without removing
+  anything. Excluding any of those five would leave a card that renders and does nothing — the
+  toggle would never open, the gallery's rows would never compute, the players would never play and
+  the signup form would never submit.
+
+**What the ruling does not fix, either way.** The signup, call-to-action and header cards carry the
+author's own **inline** styles, which no selector beats and only `!important` overrides ⚑. That is
+already the recorded reason those three never take 6 Contrast Band, and it is unchanged.
 
 ### The reconciliation floor
 
@@ -227,6 +316,24 @@ What the pass's ground rules resolve to in a category that is a stylesheet, not 
 - **Behaviour:** `accordion` and `core`, unchanged. The pass adds no behaviour, so it coins no module
   name and raises no registry addition.
 
+### The two Ghost findings of 2026-08-31, and where they land here
+
+**The feature-image caption renders differently on the two Ghost versions.** Ghost 6 quietly removes
+`<em>` and `<strong>` from a feature-image caption while keeping links and `<b>`; Ghost 5 keeps
+everything. **A33 renders no feature image**, so the finding has no direct subject here — but it
+touches this category harder than any other, because **A33's credit convention is the caption's
+trailing `<em>` run** ⚑. If the same stripping reaches a *card's* `<figcaption>`, the credit
+disappears on Ghost 6 and the Credit line control governs nothing. **That was not tested and is not
+guessed**: it is an open question below, and until it is answered the specification says plainly that
+the credit convention rests on an `<em>` surviving Ghost's own caption rendering. **The owner asked
+for the test on 1 September 2026**: it needs the same stored caption rendered on a Ghost 5 and a
+Ghost 6 server, which is a build task rather than a design one, and the question stays open until it
+is run.
+
+**A comment count renders nothing at all without JavaScript.** **No A33 design reads a comment
+count** — comments are A28's surface, not a Koenig card — so the finding has no subject in this
+category. Recorded so the omission is not read as a miss.
+
 ### The roster
 
 | # | Treatment | Tuple | Ctl | Modules |
@@ -252,35 +359,62 @@ the other the window's.
 **The module list is identical in all six**, which is the honest answer for a category that is a
 stylesheet: `accordion` for the toggle card, `core` for everything else.
 
+### The five rules of this pass, and what each resolves to here
+
+Named, never numbered, and each carrying its landing in a category that is a stylesheet.
+
+- **A control switched off by another is greyed, with the reason beside it.** **Two cases, both
+  already drawn that way**: 5 Full Bleed's *Caption on a bleed* → Over the image, at the foot, and
+  6 Contrast Band's *Action on the band* → The accent, re-checked. Each stays visible, stays
+  unselectable, and **carries its failing ratio as a short sentence at the control** rather than a
+  tooltip. Nothing was hidden and nothing was left accepting a value it would not honour. **The one
+  exception in the rule — a control this project can never offer is not drawn at all — has no case
+  here**; A33 offers no visitor dark-mode switch.
+- **Avatars with no photograph show initials, and the two forms are not interchangeable.** **No
+  subject.** A33 draws no avatar: the twenty cards have no author field, and the bookmark's icon is a
+  scraped favicon rather than a person.
+- **The Remove button never greys out.** **No subject in the sidebar.** A33's one repeating array is
+  `gallery.images[]`, and its Remove lives on the canvas in Koenig, where it is **Ghost's control and
+  not a theme's** ⚑. Removing the last image deletes the card, which is Ghost's behaviour; A33 states
+  it and does not restyle it.
+- **A count that picks between drawn layouts is a named set, not a number picker.** **Already true
+  everywhere.** Every A33 control is an enum of named steps and the category holds **no number picker
+  at all** — the numerals in *Compact 32 · Comfortable 48 · Spacious 64* are the named step's own
+  label. Nothing was converted in either direction.
+- **A design may declare the width below which its script runs.** **No design declares one, because
+  A33 runs no script of its own** ⚑. Every script inside a post's body is Ghost's or the provider's.
+  The category's width thresholds — no wide column below 1024, space 32 at ≤ 767 — are layout, not
+  script, and the no-JavaScript lines already read at every width.
+
 ### The shared field list
 
 The union every treatment draws from. **Every treatment draws all of it** ⚑ — a treatment cannot
 decline a card the author inserted, so there is no field with nowhere to live and switching treatment
 is always safe.
 
-| Card | Fields | Type | Optional | Limit and note |
-|---|---|---|---|---|
-| Image | `src` · `alt` · `caption` · `width` | file · text · rich text · enum | alt, caption | alt ≤ 125 chars · width is regular · wide · full, authored per card |
-| Gallery | `images[]` · `caption` | file array · rich text | caption | 1–9 images, ordered · Ghost's script computes the row ratios · **Ghost fixes the card's width and a theme may not override it** ⚑ |
-| Bookmark | `url` → `title`, `description`, `icon`, `author`, `publisher`, `thumbnail` · `caption` | url → scraped · rich text | caption, and every scraped field | **the author owns the URL only** ⚑ |
-| Callout | `text` · `emoji` · `colour` | rich text · emoji · enum | emoji | nine colour values, Ghost's own palette ⚑ · text required |
-| Toggle | `heading` · `content` | text · rich text | — | both required · Ghost supplies the chevron and its script · **the markup is a plain container with an `h4` and a `button`, not `details`/`summary`** ⚑ |
-| Button | `label` · `url` · `align` | text · url · enum | — | label ≤ 40 · left or centre · the fill is the site accent |
-| Embed | `url` → `html` · `caption` | url → provider markup · rich text | caption | the markup is the third party's; A33 styles only the frame ⚑ · **Ghost fixes the width and a theme may not override it** ⚑ |
-| Product | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither · **Ghost renders the stars with no text equivalent and a theme cannot add one** ⚑ (a Ghost limitation) |
-| File | `file` · `title` · `description` → `name`, `size` | file · text · rich text → derived | description | name and size come from the upload, read-only |
-| Header | `heading` · `subheading` · `buttonLabel` + `buttonUrl` · `size` · `style` · `backgroundImage` | text · text · text + url · enum · enum · file | subheading, button pair, image | **three sizes × four styles = twelve variants the theme owes** ⚑ (C.1) |
-| Markdown | `md` | rich text | — | **no wrapper class** ⚑ · renders as ordinary headings, lists, links and images |
-| HTML | `html` · `visibility` | author markup · enum | — | public · free members · paid members · **whatever the author pastes wins** ⚑ · **no wrapper element** ⚑ — the Rules control and the Contrast Band have no target here |
-| Divider | position only | — | — | a bare `hr` · weight, width and space are the treatment's; **the optional centred glyph is an icon slot** (P0·2) on the divider card's own panel ⚑ |
-| Email content | `greeting` · `fallback` · `text` | text · text · rich text | greeting, fallback | **never renders on the web** ⚑ · `first_name` placeholder with the author's fallback |
-| Call to action | `text` · `image` · `sponsorLabel` · `buttonLabel` + `buttonUrl` · `background` · `visibility` · `showOn` | rich text · file · text · text + url · enum · enum · enum | image, sponsorLabel, button pair | **renders on the web, in the newsletter, or both** ⚑ · audience is public, free or paid |
-| Public preview | position only | — | — | **no element at all** ⚑ · Ghost leaves only an invisible comment where it cuts the response · A32 renders the gate |
-| GIF | the search and the pick | file | — | renders as an image card and follows those settings |
-| Audio | `file` · `title` · `thumbnail` | file · text · file | thumbnail | **Ghost ships the player and its script** ⚑ · A33 styles the shell and the progress accent |
-| Video | `file` · `poster` · `loop` · `width` | file · file · bool · enum | poster, loop | three widths · Ghost ships the player · A33 styles the play button, scrim and bar |
-| Signup | `heading` · `subheading` · `disclaimer` · `buttonText` · `layout` · `background` · `label` | text · text · text · text · enum · colour or file · text | subheading, disclaimer, background, label | **the author's colours arrive as inline styles** ⚑ · shape and spacing only |
-| Every card | the treatment's own values | site-wide settings | — | space, captions, credit, plane, width resolution — one value each ⚑ |
+| Card | Ghost class | Fields | Type | Optional | Limit and note |
+|---|---|---|---|---|---|
+| Image | `.kg-image-card` | `src` · `alt` · `caption` · `width` | file · text · rich text · enum | alt, caption | alt ≤ 125 chars · width is regular · wide · full, authored per card |
+| Gallery | `.kg-gallery-card` | `images[]` · `caption` | file array · rich text | caption | 1–9 images, ordered · Ghost's script computes the row ratios · **Ghost sets the card's width itself** — its own markup ships `.kg-gallery-card` with `kg-width-wide` — **and A33 leaves it there by ruling, not by inability** ⚑ (owner, 1 September 2026) |
+| Bookmark | `.kg-bookmark-card` | `url` → `title`, `description`, `icon`, `author`, `publisher`, `thumbnail` · `caption` | url → scraped · rich text | caption, and every scraped field | **the author owns the URL only** ⚑ |
+| Callout | `.kg-callout-card` | `text` · `emoji` · `colour` | rich text · emoji · enum | emoji | nine colour values, Ghost's own palette ⚑ · text required |
+| Toggle | `.kg-toggle-card` | `heading` · `content` | text · rich text | — | both required · Ghost supplies the chevron and its script · **the markup is a plain container with an `h4` and a `button`, not `details`/`summary`** ⚑ |
+| Button | `.kg-button-card` | `label` · `url` · `align` | text · url · enum | — | label ≤ 40 · left or centre · the fill is the site accent |
+| Embed | `.kg-embed-card` | `url` → `html` · `caption` | url → provider markup · rich text | caption | the markup is the third party's; A33 styles only the frame ⚑ · **Ghost sets the card's width itself and A33 leaves it there by ruling** ⚑ (owner, 1 September 2026) |
+| Product | `.kg-product-card` | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither · **Ghost renders the stars with no text equivalent and a theme cannot add one** ⚑ (a Ghost limitation) |
+| File | `.kg-file-card` | `file` · `title` · `description` → `name`, `size` | file · text · rich text → derived | description | name and size come from the upload, read-only |
+| Header | `.kg-header-card` | `heading` · `subheading` · `buttonLabel` + `buttonUrl` · `size` · `style` · `backgroundImage` | text · text · text + url · enum · enum · file | subheading, button pair, image | **three sizes × four styles = twelve variants the theme owes** ⚑ (C.1) |
+| Markdown | **none** | `md` | rich text | — | **no wrapper class** ⚑ · renders as ordinary headings, lists, links and images |
+| HTML | **none** | `html` · `visibility` | author markup · enum | — | public · free members · paid members · **whatever the author pastes wins** ⚑ · **no wrapper element** ⚑ — the Rules control and the Contrast Band have no target here |
+| Divider | `hr`, no class | position only | — | — | a bare `hr` · weight, width and space are the treatment's; **the optional centred glyph is an icon slot** (P0·2) on the divider card's own panel ⚑ |
+| Email content | `.kg-email-card` ⚑ unverified | `greeting` · `fallback` · `text` | text · text · rich text | greeting, fallback | **never renders on the web** ⚑ · `first_name` placeholder with the author's fallback |
+| Call to action | `.kg-cta-card` ⚑ unverified | `text` · `image` · `sponsorLabel` · `buttonLabel` + `buttonUrl` · `background` · `visibility` · `showOn` | rich text · file · text · text + url · enum · enum · enum | image, sponsorLabel, button pair | **renders on the web, in the newsletter, or both** ⚑ · audience is public, free or paid |
+| Public preview | **no element** | position only | — | — | **no element at all** ⚑ · Ghost leaves only an invisible comment where it cuts the response · A32 renders the gate |
+| GIF | `.kg-image-card` | the search and the pick | file | — | renders as an image card and follows those settings |
+| Audio | `.kg-audio-card` | `file` · `title` · `thumbnail` | file · text · file | thumbnail | **Ghost ships the player and its script** ⚑ · A33 styles the shell and the progress accent |
+| Video | `.kg-video-card` | `file` · `poster` · `loop` · `width` | file · file · bool · enum | poster, loop | three widths · Ghost ships the player · A33 styles the play button, scrim and bar |
+| Signup | `.kg-signup-card` | `heading` · `subheading` · `disclaimer` · `buttonText` · `layout` · `background` · `label` | text · text · text · text · enum · colour or file · text | subheading, disclaimer, background, label | **the author's colours arrive as inline styles** ⚑ · shape and spacing only |
+| Every card | `.kg-card` + `.kg-width-wide` · `.kg-width-full` | the treatment's own values | site-wide settings | — | space, captions, credit, plane, width resolution — one value each ⚑ |
 
 **Fifty-nine authored fields and eight scraped or derived ones.**
 
@@ -337,9 +471,14 @@ is always safe.
    | Tinted cards | Tinted · Hairline box · None — governs the callout and the call to action |
    | Emoji | Shown · Hidden |
 
+   **Selects.** *Rules* → `.kg-bookmark-card`, `.kg-toggle-card`, `.kg-audio-card`, `.kg-file-card`, `.kg-product-card`, and no others — **the HTML card is not on the list because it has no element** ⚑. *Tinted cards* → `.kg-callout-card` and its colour variant, plus the call-to-action card, whose class is unverified. *Emoji* → `.kg-callout-emoji`, hidden with `display:none` so the text takes the whole plane. *Captions* → `figcaption` inside `.kg-image-card`, `.kg-gallery-card`, `.kg-embed-card` and `.kg-video-card`; *Credit line* → its trailing `em`. *Space around cards* → the adjacent-sibling margin on `.kg-card`. The divider's glyph is a pseudo-element on a bare `hr`.
+
    Then the module's **Callout colours** mapping and the five read-only rows, not counted. **The
    Credit line's help text documents the convention** — "a caption's trailing italic segment
-   renders as the credit" — and the treatment preview draws one example ⚑. **The divider card's
+   renders as the credit" — and the treatment preview draws one example ⚑. **It now also states the
+   cost, in the editor's own terms:** "a caption that ends in italics for any other reason — a film
+   title, a ship's name — will read as a credit." **The owner accepted that on 1 September 2026**
+   rather than dropping the control or waiting on a Ghost credit field. **The divider card's
    panel carries the centred glyph as an icon slot** (P0·2): Icon Picker on click, popover with
    swap · Size Small/Medium/Large · Colour role Text/Muted/Accent · Remove; empty is a dashed 20 px
    slot visible only while the card is selected, and at rest with no icon the divider is a bare
@@ -356,8 +495,10 @@ is always safe.
 9. **Behaviour module.** `accordion` (toggle) and `core`. **Edit-safe:** yes — the resting state is the
    only state. **No-JS:** **the registry's quoted degradation for `accordion` does not hold here** ⚑ —
    Ghost's toggle card is a plain container with a heading and a button, not native disclosure markup,
-   so **with JavaScript off it cannot open**. A33 still declares `accordion` as the nearest module and
-   drops the quote; the mismatch is Finding 5. `core` — "Never runs; the `.js-enabled` class is never
+   so **with JavaScript off it cannot open**. **The mechanism, now that the selectors are written:** the
+   state is `data-kg-toggle-state` on `.kg-toggle-card`, which **CSS reads and only Ghost's script
+   writes**, so the attribute stays at `close` and the closed state is the only state that renders.
+   A33 still declares `accordion` as the nearest module and drops the quote; the mismatch is Finding 5. `core` — "Never runs; the `.js-enabled` class is never
    set, so all JS-conditional CSS stays in its no-JS branch." **Fourteen of the twenty cards are
    identical with JavaScript off.** **Six depend on a script, and every one of those scripts is
    Ghost's or the provider's, not A33's** ⚑ — the toggle's open and close, the gallery's row ratios,
@@ -410,6 +551,8 @@ is always safe.
    | Panel padding | Compact 16 · Comfortable 24 · Spacious 32 |
    | Image in the panel | Inset · To the panel edge |
 
+   **Selects.** *Panel* and *Panel padding* → every `.kg-card` **except `.kg-header-card`**, which already carries a surface, **and the HTML card**, which has no element ⚑. *Image in the panel* → `.kg-image-card .kg-image`; at To the panel edge the padding comes off the figure rather than being added to the image. **The panel is drawn on the card element Ghost already emits** — A33 adds no wrapper, so the panel and the `figure` are one box and the figure/caption pair survives.
+
    Then What Ghost owns.
 7. **Data.** As 1 Plain.
 8. **Empty state.** **The panel keeps its shape and padding whatever is absent** ⚑ — a missing field
@@ -458,6 +601,8 @@ is always safe.
    | Plane width | Measure 720 · Wide 1040 · Content 1296 |
    | Plane | Surface · Tinted · Hairline box |
    | Media on the plane | In measure · On the plane |
+
+   **Selects.** *Plane* and *Plane width* → every `.kg-card` **except the HTML card** ⚑; `.kg-header-card` takes the plane's width rather than the content column. *Media on the plane* → `.kg-image-card`, `.kg-gallery-card`, `.kg-embed-card`, `.kg-video-card`. **The plane is the card element itself with padding**, not a wrapper — the same constraint that decides the HTML card.
 
    Then What Ghost owns.
 7. **Data.** As 1 Plain.
@@ -510,6 +655,8 @@ is always safe.
    | What steps up | Images · **Images and video** (default) — two values, and the reason is Ghost's |
    | Caption alignment | To the measure · To the media |
 
+   **Selects.** *Media steps up* and *What steps up* → `.kg-image-card` (the GIF card renders as one) and `.kg-video-card`; **not `.kg-gallery-card` and not `.kg-embed-card`**, the owner's ruling of 28 August 2026. **The step-up is written as an override of the width classes** — the rule re-points `.kg-width-wide` and `.kg-width-full` on those two card classes and gives the unclassed regular card the wide rung. *Caption alignment* → `figcaption` on the same two.
+
    Then What Ghost owns. **The panel says in one line: "Regular images render at the wide
    column."** ⚑ This is the one treatment that overrules the author's width class, and without the
    line it reads as a bug.
@@ -538,8 +685,10 @@ is always safe.
 1. **Descriptor.** A media card marked full takes the viewport's whole width and drops its corner
    radius; wide takes the content box; regular stays in the measure; the caption returns to the 720
    column beneath. Copy cards are 1 Plain's, unchanged, and **only image, GIF and video may
-   bleed** ⚑ — Ghost fixes the width of a gallery and of an embed and a theme may not override it, so
-   neither can reach the viewport edge.
+   bleed** ⚑ — **Ghost's own script arranges a gallery's rows from the images' ratios, and a wider card would let it
+   re-arrange into rows nobody has drawn** — so neither a gallery nor an embed reaches the viewport
+   edge. **The ruling is A33's, not a limit Ghost imposes** (owner, 1 September 2026): the width class
+   is on the figure and could be reached.
 2. **Structural descriptor.** `media frame · none · page · variable · full-bleed · the viewport-edge bleed`
    Media placement `full-bleed` is the only slot separating this from 4 Wide, and it is the right one:
    **4 Wide reaches the container's edge, this reaches the window's** ⚑.
@@ -561,6 +710,8 @@ is always safe.
    | Full resolves to | Content 1296 · Viewport edge |
    | Bleed applies to | **Images** (default) · Images and video — two values, and the reason is Ghost's |
    | Caption on a bleed | In the measure · Under, full width · Over the image, at the foot (**the last value disabled with its ratio shown where the carried colour fails AA on the scrim**) |
+
+   **Selects.** *Full resolves to* and *Bleed applies to* → `.kg-image-card.kg-width-full` and `.kg-video-card.kg-width-full`. **The bleed is a rule on the width class, not on the card**, which is why a card the author did not mark full never bleeds. *Caption on a bleed* → `figcaption`, held at 720 however wide the figure is. **Galleries and embeds cannot bleed** — the owner's ruling — **even though Ghost's own gallery markup carries `kg-width-wide` and could be reached**, which makes the exclusion a policy rather than a technical bar; recorded as an open question below rather than reopened here ⚑.
 
    Then What Ghost owns.
 7. **Data.** As 1 Plain. **An author who marks no card full sees no bleed at all** ⚑ — regular at
@@ -614,6 +765,8 @@ is always safe.
    | Which cards invert | Callout only · **Every copy card** — two values |
    | Action on the band | The carried colour · The accent, re-checked (**the second value disabled in Paper with 3.4:1 shown**) |
 
+   **Selects.** *Which cards invert* → the seven copy-bearing classes: `.kg-callout-card`, `.kg-toggle-card`, `.kg-bookmark-card`, `.kg-button-card`, `.kg-product-card`, `.kg-file-card`, `.kg-audio-card`. **Never on the list** ⚑: the five photograph cards; `.kg-signup-card`, the call-to-action card and `.kg-header-card`, which carry the author's own inline styles and would need `!important` to beat them; and the HTML card, which has no element. *Action on the band* → `a.kg-btn` inside `.kg-button-card`, the product card's action and `.kg-bookmark-container`.
+
    Then What Ghost owns.
 7. **Data.** As 1 Plain. **A post whose only cards are images renders with no band at all** ⚑ — the
    treatment is invisible, which is correct rather than broken.
@@ -637,6 +790,36 @@ is always safe.
 ## Findings for the architect
 
 Eleven; four added by this pass. In full on the proof frame.
+
+**Housekeeping, 1 September 2026 — read item by item.** **This category has no "Open questions"
+section**, and never had one: what it has is this findings list, so the housekeeping was applied here
+instead, and the fact that the section named in the work list does not exist is recorded rather than
+worked around. Nothing below was answered in the housekeeping.
+
+- ~~**Finding 1 · the callout palette mapping.**~~ **Settled by the patch pass of 28 August 2026** —
+  the mapping is a Cards-module control defaulting to Pack tokens.
+- **Finding 2 · Ghost's gallery script has no registry module.** **OPEN FOR THE OWNER** — the registry
+  still needs either an entry or a statement that the behaviour is Ghost's.
+- **Finding 3 · C.1's per-card "corners".** **OPEN FOR THE OWNER** — A33 answers with the pack's radius
+  token; C.1's matrix and per-card panels are still unamended.
+- ~~**Finding 4 · a treatment and a section both re-resolving the width class.**~~ **Settled by the
+  patch pass of 28 August 2026** — the section wins inside its own ground, the treatment everywhere
+  else, and the precedence is a read-only help line.
+- **Finding 5 · `accordion`'s degradation does not describe Ghost's toggle markup.** **OPEN FOR THE
+  OWNER** — the honest no-JavaScript line is written here, but the registry entry is still wrong.
+- **Finding 6 · A33 has no section, so its tuples describe the card.** Recorded, not a question. No
+  decision outstanding.
+- ~~**Finding 7 · twelve controls to style one callout.**~~ **Settled by the patch pass of
+  28 August 2026** — treatment above, per-card panel below, on S14.
+- ~~**Finding 8 · the HTML card's missing wrapper.**~~ **Settled by the owner, 28 August 2026** — no
+  panel and no plane either; the card renders on the page ground in all six treatments.
+- ~~**Finding 9 · the public-preview cut is a comment, not an element.**~~ **Settled by the patch pass
+  of 28 August 2026** — the marker component is deleted.
+- **Finding 10 · the product rating has no text equivalent.** Recorded as a **Ghost limitation**. No
+  decision available to this project; nothing to open.
+- ~~**Finding 11 · Ghost fixes the width of a gallery and of an embed.**~~ **Settled by the owner,
+  28 August 2026** — they leave 5 Full Bleed's bleed and 4 Wide's step-up alike. *The selector pass
+  has one thing to add to it, as an open question rather than a reopening — see below.*
 
 1. **Ghost's callout palette is nine literal colours and the pack ships seven roles.** ⚑ No mapping
    keeps both. **Closed by the pass**: the mapping is a Cards-module control, site-wide, next to the
@@ -678,10 +861,67 @@ Eleven; four added by this pass. In full on the proof frame.
 10. **Ghost gives the product card's rating no text equivalent.** ⚑ The stars are Ghost's markup and a
     theme cannot add the words. Recorded as a **Ghost limitation** rather than something A33 fixes: a
     screen-reader user hears no rating at all.
-11. **Ghost fixes the width of a gallery and of an embed.** ⚑ A theme may not override it, so **neither
-    can bleed** and 5 Full Bleed's value list drops to two. Whether the same fact removes them from
+11. **Ghost sets the width of a gallery and of an embed, and A33 leaves it there.** ⚑ **Corrected
+    1 September 2026:** the width arrives as a class on the figure and *is* reachable, so this is a
+    ruling rather than a limitation. **The rule is unchanged and the printed reason is now the real
+    one** — Ghost's script computes a gallery's rows from the images' ratios, and a wider card would
+    let it re-arrange into rows nobody has drawn. **Neither can bleed** and 5 Full Bleed's value list
+    stays at two. Whether the same fact removes them from
     4 Wide's step-up list is **closed by the owner, 28 August 2026: it does.** 4 Wide's *What steps up*
     drops to Images · Images and video.
+
+---
+
+## Open questions
+
+**This section is new.** A33 had none before the selector pass; the five items below were raised by
+writing the selectors down. **Three are now settled by the owner and two are commissioned checks with
+their outcomes pre-written, so nothing in this category is waiting on a decision** — questions 2 and 4
+are waiting on a Ghost server, which is a different thing and is named as such.
+
+1. ~~**Which cards does A33 exclude in `card_assets`?**~~ **SETTLED BY THE OWNER, 1 September 2026.
+   Three answers were given the same day and the third is the ruling**; all three are left visible,
+   because a decision that moved twice in a day is one a reader should see move. **(i) All thirteen** —
+   the treatment authoritative everywhere. **(ii) Only the cards A33 customises** — narrower, but it
+   needed an invented boundary and `card_assets` is baked at theme build, so a list derived from what
+   somebody edited cannot be computed there. **(iii) The ruling in force: replace the card CSS for all
+   twelve — `nft` ignored — and always re-include Ghost's own `cards.min.js`**, so A33 owns the look
+   and Ghost keeps the behaviour. **Conditional on one test with its fallback already written** — see
+   *The selectors* and Check 3. Nothing about it is left to a builder's judgement.
+2. **Does Ghost 6's caption stripping reach a card's `<figcaption>`?** The 2026-08-31 test covered the
+   **feature-image** caption, where Ghost 6 removes `<em>` and `<strong>` and Ghost 5 does not.
+   **A33's credit convention is the caption's trailing `<em>` run**, so if the same stripping applies
+   inside a card, the credit disappears on one supported version and the Credit line control governs
+   nothing there. Untested; nothing was changed on the strength of a guess. **The owner asked for the
+   test on 1 September 2026.** It needs the same stored caption rendered on a Ghost 5 and a Ghost 6
+   server — **not something a design pass can run**; whoever holds the staging sites owns it, and the
+   answer decides whether the Credit line control ships.
+   **OPEN — TEST COMMISSIONED, 1 September 2026**
+3. ~~**Is the gallery-and-embed exclusion still the right call now that the class is known?**~~
+   **SETTLED BY THE OWNER, 1 September 2026: the rule is kept and the reason is corrected.** Galleries
+   and embeds still do not step up in 4 Wide and still do not bleed in 5 Full Bleed. **What changed is
+   the sentence printed beside the control**: not "Ghost fixes their width and a theme may not override
+   it" — the width class is on the figure and is reachable — but **"Ghost's script arranges a gallery's
+   rows from the images' ratios, and a wider card would let it re-arrange into rows nobody has
+   drawn."** No frame was redrawn and no value was added.
+4. **Two card classes are unverified and one card is undrawn.** The call-to-action and email-content
+   cards do not appear in Ghost's documented class list, and the frames draw them as `.kg-cta-card`
+   and `.kg-email-card`; the callout's eight non-accent colour variants, the product card's inner
+   classes and Ghost 6's header card are the same shape of uncertainty. Separately, **Ghost documents a
+   `.kg-nft-card` that is not among the twenty this category draws** — a coverage question, not a
+   selector one. Confirming these needs a running server of each supported version, or a read of
+   Ghost's own source — `ghost/core/core/frontend/src/cards/css` names every card class Ghost ships and
+   `koenig` holds the renderers. **The owner asked for both on 1 September 2026**; neither a live server
+   nor github.com is reachable from this design environment, so **the check is commissioned and the
+   answer comes from outside this project**. Nothing was guessed in the meantime.
+   **OPEN — CHECK COMMISSIONED, 1 September 2026**
+5. ~~**Does the credit convention survive being written as a selector?**~~ **SETTLED BY THE OWNER,
+   1 September 2026: the false positive is accepted, and the control says so.** `figcaption
+   em:last-child` also matches an author's ordinary closing emphasis — a caption ending on an
+   italicised film title renders as a credit. **The cost is small and visible** (grey text, second
+   line, no data lost) and the alternative is a Ghost field this project cannot schedule. **The Credit
+   line control's help text now states the rule in the editor's own terms**, so an author meets it
+   before it surprises them.
 
 ---
 
@@ -723,7 +963,7 @@ inv preview deleted| GIF badge | The image card with a 9.5 px mono GIF badge ins
 | Striped image plate | The placeholder with a mono crop caption, one stripe pair per mode | A4 → A19 |
 | Warm scrim | The one scrim over a photograph, contrast-checked; used only by 5 Full Bleed's caption-over value | A20·13 |
 | Focus ring | 2 px accent at a 4 px offset, re-derived to carried on contrast | A6 → A17·7 |
-| Missing-image rule | A missing photograph reflows or hands off; never a grey box | A19 |
+| Missing-image rule | A missing photograph reflows, plates or draws Ground; never a grey box and never a hand-off ⚑ *corrected 1 September 2026* | A19 |
 | Content box and padding ladder | 1,296 on 72 · 754 on 40 · 350 on 20; named values, never numeric in a control | A17 |
 | Article measure and body type | 720 · 754 · 350; body 19/1.7 | A25 |
 | Site bar and footer neighbour | The chrome every frame is drawn inside, at low opacity | A1·1, A3·1 |
@@ -917,3 +1157,206 @@ recorded conflict, with its reason corrected against Ghost's own documentation.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** six treatments, numbered **1–6**.
+
+---
+
+## Patch notes — selector pass, 1 September 2026
+
+Every change this pass made, with the rule **name** or the Ghost fact that required it. **No design
+was renumbered, no frame was redesigned, and no control gained, lost or renamed a value.**
+
+### The category's selectors — the one item on the work list
+
+- **The class name is now beside every card in the shared field list.** A new *Ghost class* column
+  carries `.kg-image-card`, `.kg-gallery-card`, `.kg-bookmark-card`, `.kg-callout-card`,
+  `.kg-toggle-card`, `.kg-button-card`, `.kg-embed-card`, `.kg-product-card`, `.kg-file-card`,
+  `.kg-header-card`, `.kg-audio-card`, `.kg-video-card`, `.kg-signup-card`, and **none** for
+  markdown, HTML and the public-preview cut, and a bare `hr` for the divider. **The GIF card is the
+  image card's class**, which is why it follows every image rule.
+- **A new section, "The selectors — what A33 actually styles",** sits in the category layer: the width
+  classes, the state hooks a stylesheet may read, the two selector traps, and the `card_assets` build
+  fact. **Every treatment's Controls table is followed by a *Selects* line** naming exactly what that
+  treatment's own controls reach.
+- **The width classes the Card widths row depends on are named:** `.kg-width-wide` and
+  `.kg-width-full`, with **regular carrying no width class** on an image, gallery or embed figure and
+  `.kg-width-regular` documented on the **signup card only**. The read-only row itself now says so.
+- **Where we are not certain, the specification says so rather than guessing** — the call-to-action
+  and email-content classes, the eight non-accent callout variants, the product card's inner classes
+  and Ghost 6's header card are each marked unverified and none carries a rule alone. Required by the
+  work list's own instruction that **a wrong selector silently styles nothing**.
+- Required throughout by the standing fact that **inside a blog post's body we own the stylesheet and
+  nothing else** — not the markup, not the ARIA attributes, not the text. **Nothing added here assumes
+  markup A33 would have to emit.**
+
+### The five rules of this pass
+
+- **A control switched off by another is greyed, with the reason beside it** — **two cases, both
+  already drawn that way** (5 Full Bleed's caption-over-the-image, 6 Contrast Band's accent action).
+  Each keeps its failing ratio as a sentence at the control. Nothing was hidden; nothing was left
+  accepting a value it would not honour. **No change was needed and none was made.**
+- **Avatars with no photograph show initials** — **no subject.** A33 draws no avatar.
+- **The Remove button never greys out** — **no subject in the sidebar.** The gallery's Remove is
+  Ghost's, on the canvas.
+- **A count that picks between drawn layouts is a named set, not a number picker** — **already true
+  everywhere**; A33 holds no number picker at all. Nothing converted in either direction.
+- **A design may declare the width below which its script runs** — **no design declares one**, because
+  A33 runs no script of its own. Recorded in the new rules block so the absence is not read as a miss.
+
+### The two Ghost findings of 2026-08-31
+
+- **The feature-image caption.** A33 renders no feature image, so there is no direct subject — but the
+  category's **credit convention is a caption's trailing `<em>` run**, so the finding is written into
+  the specification as a stated version risk and into the frames on the Credit line control.
+  **Whether the stripping reaches a card's `<figcaption>` is untested and is Open question 2, not a
+  decision.**
+- **The comment count.** **No subject** — no A33 design reads one. Recorded so the omission is not
+  read as a miss.
+
+### Housekeeping — the "Open questions" section
+
+- **This category has no "Open questions" section and never had one.** The work list assumes one. The
+  housekeeping was applied to the nearest list that exists, **Findings for the architect**: all eleven
+  are now marked item by item — six struck through with who settled them, **three carrying OPEN FOR
+  THE OWNER on their own line** (findings 2, 3 and 5), and two recorded as facts with no decision
+  outstanding. **Nothing was answered in the housekeeping.**
+- **A new "Open questions" section was then created** for the five questions the selector work raised.
+  Each carries **OPEN FOR THE OWNER** on its own line. None is answered here.
+
+### Frames
+
+- **All six treatment frames gain a *selectors* section** — this treatment's controls and what they
+  select, the width classes with this treatment's own resolution, and the unverified list.
+- **The width-resolution labels now carry the class**: *REGULAR · NO WIDTH CLASS ON THE FIGURE*,
+  *WIDE · .kg-width-wide*, *FULL · .kg-width-full*. The Card widths read-only row names them too.
+- **The category proof gains a *selector list* section** — all twenty cards, their card class, their
+  inner classes and state hooks, and a source column marking each row verified or **UNVERIFIED ⚑**.
+- **Nothing else on any frame was touched**: no card was redrawn, no panel changed a control, no
+  number moved.
+
+### Left alone deliberately, and why
+
+- **`_build/a33*.js` was not run and not edited.** The generators predate the 28 August patch pass —
+  they still build seven findings, a twelve-item inventory, a public-preview marker and a
+  `details`/`summary` toggle. **Re-exporting from them would revert that pass**, so every change above
+  was made in the `.dc.html` files directly. The generators are now stale by two passes and that is
+  recorded rather than fixed.
+- **The proof frame's shared-field-list table predates the 28 August pass on two rows** (the gallery's
+  fixed width, the public-preview row still reading *marker*). It was **left as it is**: correcting it
+  is not on this work list, and the specification's own rule is that where the file and a drawn panel
+  disagree the panel is the authority.
+- **No printed count of the library's designs was added or changed.** The counts this document holds —
+  six treatments, twenty cards, fifty-nine fields — are this category's own roster and inventory, not
+  product copy, and none of them is a total of the library.
+- **P0's per-prop mark allowlist is not referenced or altered here.**
+
+### Confirmations
+
+- **Design numbering is unchanged:** **1 Plain · 2 Card · 3 Panel · 4 Wide · 5 Full Bleed ·
+  6 Contrast Band.** Six treatments, numbers 1–6, no gap opened or closed, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line in the roster, in the required shape,
+  and names two treatments that exist: **1 Plain** and **4 Wide**.
+
+### Developer handoff — the three checks this pass could not run, and what to do with each answer
+
+**These are tasks, not questions.** Each one needs a running Ghost or Ghost's own source, neither of
+which a design pass can reach. **Run the check, then edit this specification and the frames as the
+outcome dictates** — the edits are named per outcome so nobody has to interpret them.
+
+**The standing rules for every one of these edits.** Do not renumber a design. Do not remove a ⚑ flag
+without the evidence that retires it. Keep the **`**[Free] designs:**`** line as it stands. Add a
+dated bullet to **Patch notes** naming the check and what it changed. **If an answer contradicts a
+ruling recorded here, write the conflict down rather than choosing** — that is the house rule this
+whole document is built on.
+
+**CHECK 1 · Does Ghost 6 strip `<em>` from a *card's* caption?** (Open question 2.)
+Store one image card whose caption ends in an italic run — "The fence at Kwajalein. *Ida Brandt for
+Orbit Weekly*" — on a **Ghost 5** site and a **Ghost 6** site, same stored text, same theme. View the
+published post's HTML on both and record whether the `<em>` survives inside the card's
+`<figcaption>`.
+- **If it survives on both:** retire Open question 2 as settled, strike it through with the date and
+  the version pair tested, and delete the version-risk sentence from *The two Ghost findings of
+  2026-08-31*. The Credit line control is unchanged.
+- **If Ghost 6 strips it:** the **Credit line control governs nothing on Ghost 6**. Do not delete the
+  control and do not invent a replacement field. Write the version gate into the control's Values cell
+  in all six Controls tables — the pattern the library already uses for a version-gated row — and add
+  the sentence to each frame's Credit line help text. **Then raise it as a new open question**: whether
+  the credit convention survives as a feature at all, which is the owner's call and not the build's.
+
+**CHECK 2 · Confirm the five unverified selectors, and one card we never drew.** (Open question 4.)
+Read Ghost's own source rather than guessing: **`ghost/core/core/frontend/src/cards/css`** names every
+card class Ghost ships a stylesheet for, and **`koenig`** holds the renderers that emit them. Record
+the Ghost version each answer came from. What is outstanding: the **call-to-action** card's class
+(drawn as `.kg-cta-card`), the **email-content** card's (`.kg-email-card`), the **eight non-accent
+callout colour variants** (pattern `.kg-callout-card-<colour>`), the **product card's inner classes**
+below `.kg-product-card-container`, and whether **Ghost 6's header card** keeps
+`kg-size-*`/`kg-style-*`.
+- **Where a guess is confirmed:** replace *UNVERIFIED ⚑* with *verified, Ghost <version>, <date>* in
+  the proof frame's selector list, and drop the "⚑ unverified" note from that row of the shared field
+  list. Nothing else changes.
+- **Where a guess is wrong:** correct the class in the shared field list, the selector list, the
+  treatment's *Selects* line and the card roll's label on all six frames — **the label is drawn text,
+  so it is six edits, not one** — and add the correction to Patch notes.
+- **`.kg-nft-card`:** Ghost ships it and this category draws no NFT card. **Record which supported
+  versions still emit it** and hand the coverage decision to the owner. Do not draw one.
+
+**CHECK 3 · Does an exclusion take Ghost's card JavaScript with it?** (Open question 1's condition —
+**do this one first**, because the ruling's branch depends on it and nothing else in the handoff does.)
+
+**The test, and it is ten minutes.** On a test site, exclude one script-driven card —
+`"card_assets": {"exclude": ["toggle"]}` — then add Ghost's own bundle back by hand in the theme's
+template: `<script src="/public/cards.min.js"></script>`. Publish a post with a toggle card and
+**click it**.
+- **The toggle opens** → the served bundle is the full set and **the preferred branch is live**:
+  exclude the twelve cards (`nft` ignored) and keep the hand-written script tag. Then do two things
+  the ruling names: **record the exact asset path and its version hash** in the theme's documentation
+  under a heading a buyer will find after a Ghost upgrade, and **confirm the same test on every
+  supported Ghost version**, since the path is Ghost's internal one and is not a public contract.
+- **The toggle does not open** → the bundle is filtered by the config and **the fallback branch is
+  live**: exclude only bookmark, button, callout, file, header, product and blockquote; leave toggle,
+  gallery, audio, video and signup on Ghost's assets and style them with a deeper selector.
+  **Confirm each of the five still works after the theme's CSS lands**, and where a Ghost default
+  cannot be beaten by specificity alone, **report it rather than reaching for `!important`**.
+
+**Either way, write the resulting list into this specification** as a table in *The selectors*, strike
+the branch that lost, and add a dated bullet to Patch notes naming the Ghost versions tested. **Do not
+add or remove a card from the list on judgement** — the two branches are exhaustive and the test picks
+between them.
+
+### Owner's rulings of 1 September 2026, applied
+
+All five open questions were put to the owner the day they were raised.
+
+- **Question 1 · `card_assets`** — three answers the same day, **and the third is the ruling: replace
+  Ghost's card CSS for all twelve excludable cards (`nft` ignored by instruction) and always
+  re-include Ghost's own `cards.min.js`.** A33 owns the look; Ghost keeps the behaviour; there is no
+  seam and no derived list. **Conditional on Check 3's bundle test, whose fallback — seven excluded,
+  five layered — is written out rather than left open**, and **the invented boundary the second answer
+  needed is deleted**, since the test is observable and the branches are exhaustive. Applied in the
+  specification and on all six treatment frames and the proof.
+- **Question 2 · the Ghost 6 caption stripping** — **test it.** Commissioned, not answered here: it
+  needs the same stored caption on a Ghost 5 and a Ghost 6 server, which no design pass can run.
+  Marked **OPEN — TEST COMMISSIONED**.
+- **Question 3 · galleries and embeds** — **keep the rule, correct the reason.** Applied: the exclusion
+  is unchanged in 4 Wide and 5 Full Bleed; the printed reason is now Ghost's row-ratio script rather
+  than a width a theme "may not override". Finding 11, the field list's gallery and embed rows and
+  5 Full Bleed's descriptor were corrected to match. **No frame was redrawn.**
+- **Question 4 · the unverified classes** — **check against a live server and Ghost's own source.**
+  Commissioned. Neither a Ghost server nor github.com is reachable from this environment, so the
+  unverified rows stay marked and nothing was filled in on a guess. Marked **OPEN — CHECK
+  COMMISSIONED**.
+- **Question 5 · the credit false positive** — **accepted.** The Credit line control's help text now
+  states it in the editor's own terms, in the specification and on all six treatment panels.
+
+Required by: the rule that **where a ruling cannot be applied without inventing a decision, it is
+written as an open question rather than guessed** — which is why questions 2 and 4 are recorded as
+commissioned checks rather than closed.
+- **Question 1, second ruling, same day.** Recorded as superseding rather than replacing: the first
+  answer stays visible in Open question 1 with the revision beside it, because a ruling that changed
+  within a day is exactly the kind a reader needs to see twice.
+- **Question 1, third and final ruling, same day.** Applied in full. **The two-branch form is
+  deliberate**: the branch is chosen by a ten-minute observable test rather than by a builder's reading
+  of a specification, which is the only way a conditional ruling can be handed over without becoming an
+  open question again.
+- **Checked and left alone: `C Post Body`.** Its line that Ghost ships CSS for thirteen of the
+  twenty-two cards is still true — the ruling changes what *this theme* excludes, not what Ghost
+  ships — so C.1 was not edited. Recorded so nobody hunts for a change that should not exist.

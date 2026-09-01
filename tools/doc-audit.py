@@ -305,6 +305,15 @@ DOCS = [
   'Re-derives research §2.1\'s "Designs requiring it" and "Trigger in the inventory" columns from the export — they named designs the export superseded (row 2 cited "A1 #11 Sidebar Trigger" when A1 #11 is Side Rail). Counts a module only where a design\'s OWN declaration names it: the per-design Behaviour-module line, or the roster table\'s Module/Declares column. A name appearing in category prose is not a declaration, which is what stops every A1 design claiming accordion by association. A17, A18 and A19 declare only in prose and are reported as gaps rather than guessed at.'),
  ('tools/derive-content-lines.py', 'tool', 'Draft the Content: storage contract',
   'Drafts each category\'s Content: line — the union of every field a design can ask the user to fill in, which is the STORAGE CONTRACT: a field missing from it has nowhere to park when the user switches design, and their words are lost. Per the owner\'s 2026-08-31 ruling it lists only what a user types; Ghost\'s own read values are named in a note instead. Reads the specs\' typed field tables where they exist and their prose Content-fields blocks where they do not. Over-inclusive by design: a spare parking space costs nothing, an omission loses data. A33 is hand-ruled in the file, named rather than silently patched.'),
+ ('tools/reapply-export-edits.py', 'tool', 'Re-apply the repo-side export edits',
+  'Two edits live in the REPO and cannot survive a Claude Design re-export: the count-agnostic '
+  'marketing copy and P0\'s per-prop mark allowlist. The 2026-08-31 pass tried to solve this by '
+  'ASKING Claude Design not to undo them, and the 2026-09-01 re-export proved that impossible — '
+  'the sessions behaved correctly and said so three times, but a project copy cannot preserve text '
+  'it never held. So the edits are re-applied by this script after every export and gated by '
+  'verify-design-pass.py: a remembered step became a runnable one. Explicit string pairs, never a '
+  'regex, because a generic pattern already shipped "Every design ARE available" once; an unhandled '
+  'phrasing is REPORTED and exits non-zero rather than guessed at.'),
  ('tools/verify-design-pass.py', 'tool', 'Did the design pass apply the rulings?',
   'One check per Ghost Build Room ruling, run against the design export: A23 deleted, the numbering holes at A1 #9 and A4 #15 left open, two [Free] per category, no deleted module declared, no render-time hand-off language, no computed byline counts, and so on. Written BEFORE the patched export landed and failing 17 of 18 checks against the pre-patch one, which is how it proves it has teeth. It also GATES the hand edits made to the export on 2026-08-31, which a Claude Design re-export would otherwise silently overwrite: no S or M screen prints a library total, and P0 declares the per-prop mark allowlist. Both had teeth on their first run — they found four screens the manual pass had missed. --extract dumps the per-category fields and modules, marking every spec the parser cannot read rather than reporting an empty list as success.'),
  ('tools/export-roster.py', 'tool', 'The library roster, from the export',
@@ -329,6 +338,12 @@ DOCS = [
 ]
 
 GROUPS = [
+ ('design/claude-design-export/InflozoOld/', 'retired', 'Design export — the 2026-08-31 issue',
+  'The export as it stood BEFORE the pass-two re-export of 2026-09-01, kept by the owner as '
+  'provenance. Superseded wholesale by Inflozo/ beside it — nothing derives from this directory, '
+  'and every tool points at Inflozo/ explicitly. Useful for one thing only: diffing what a pass '
+  'actually changed, which is how A9-12 was found to have been cut when the ruling said keep it. '
+  'Do not build from it, and do not let a tool read it.'),
  ('design/claude-design-export/', 'live', 'Design library export — the library itself',
   'Claude Design\'s export, and THE STARTING MATERIAL FOR EVERY UI OR UX TASK — read the WHOLE '
   'directory, never a subset (CLAUDE.md carries the map). Far more than the screen frames: the design '

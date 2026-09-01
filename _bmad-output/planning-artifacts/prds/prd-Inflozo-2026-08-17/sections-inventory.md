@@ -7,7 +7,7 @@ updated: 2026-08-19
 ## Appendix A — Complete Section Inventory (normative)
 
 <!-- totals -->
-**Totals: 33 categories · 467 designs · 66 [Free] · 439 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
+**Totals: 33 categories · 466 designs · 66 [Free] · 438 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
 <!-- /totals -->
 **[Free] is positional and nothing else.** The first two designs of every category are Free; the two
 historical extras are struck (R-17). **A29 #7's and A31 #10's re-tiers are withdrawn** — A31's private
@@ -148,7 +148,7 @@ Content: message, messageShort, linkLabel, linkUrl, dismissible, audience, dismi
 11. **Toast** — The only design that arrives after the page has settled rather than being present at load, and the only one Escape dismisses from anywhere on the page.
 12. **Takeover** — The only design that carries imagery, and the only one tall enough to be mistaken for a hero.
 14. **Edge** — The only design that is four pixels of furniture until it is pressed, and the only one whose two states differ by more than a control setting.
-15. **Triple** — The only design that shows more than one message at once without moving. Below 768 it draws its first slot alone and hides the other two — it stays itself at every width (Part A·A8).
+15. **Triple** — The only design that shows more than one message at once without moving. Below 768 it draws one slot and cycles its notices through it — it stays itself at every width (Part A·A8).
 <!-- /roster:A2 -->
 
 **A3. Footers (16)** — Site-wide.
@@ -280,7 +280,7 @@ Content: quotes[], image, avatar, sub, eyebrow, note, imageAlt, quote, name, rol
 15. **Overlap** — The only design that puts a quotation over a photograph, and the only one whose geometry reaches into the section below it — the card's overhang reserved out of its own bottom padding so no page needs to know it is there.
 <!-- /roster:A8 -->
 
-**A9. FAQ (15)**
+**A9. FAQ (14)**
 Content: image, imageAlt, groupLabel, items[], group, anchor, id, title, sub, note, eyebrow, groups[], filterPlaceholder, noMatch, question, answer, linkLabel, linkUrl. Controls: Head, Title size, Question size, Marker, Open on load, Open rows, Member visibility, Background role (universal), Vertical spacing (universal), Top divider (universal), Divider, Rows shown, Rules, Columns, Questions shown, Cards, Head column, Foot, Group label, Index column, Index behaviour, Copy links, Band width, Numerals, Numeral position, Division, Image side, Crop, Image focus, Groups shown, Field width, Ask panel, Alignment, Row padding.
 <!-- roster:A9 -->
 1. **Accordion** [Free] — The category's floor accordion — one column of hairline rows with nothing added to it, the only design with no count control and the only one offering Open on load, and the arrangement seven others advise rather than inventing one of their own.
@@ -294,7 +294,6 @@ Content: image, imageAlt, groupLabel, items[], group, anchor, id, title, sub, no
 9. **Numbered** — The only design that numbers its questions — the numerals in the pack's heading font at display scale, so an item's position in the list becomes the first thing a reader sees.
 10. **Image Split** — The only design that reads image — a photograph on one half and the rows on the other, with neither column stretching to meet the other's height.
 11. **Tabs** — The only design that shows one group at a time — and the only one whose resting state withholds its questions as well as its answers.
-12. **Filter** — The only design with an input — a field that narrows twenty-four questions to the few a reader typed for, and the only place in A9 where content leaves the DOM.
 13. **Slim** — The only design with no head at any value — its own padding scale, a 300-character answer ceiling and no lists or code, three or four short questions as a band inside somebody else's page.
 14. **Ask** — The only design that ends in a contact panel — A9's one filled accent button, spending the section's whole accent budget on the reader's own question rather than on an offer.
 15. **Ledger** — The only design that puts the question in a column of its own beside its answer, and the only one where the answer's measure and the row's width are the same number.
@@ -624,7 +623,7 @@ Content: tagsLabel, archiveLabel, archiveUrl, authorLinkLabel, shareLabel, copie
 6. **Slim** [Free] — One 44 px line under the article carrying the tags as a dotted run left and the share links right, on a hairline, with a second line for the destinations. The footer with no author block in it.
 7. **Next and Prev** — The two destinations as tiles running to the viewport edges, each carrying its feature image behind a warm scrim with its kicker, title and byline, mirrored left and right. The category's one picture.
 8. **Tag Row** — The post's tags as the whole footer, at reading size, in 44 px full-height targets under a small label, with one link to the archive. The design for a site whose tags are navigation.
-9. **Share Row** — The share destinations alone on a surface bar at the content width, label left and links right, one 44 px row. The canonical home of the share block, and the reason A25's share affordance resolves to Off.
+9. **Share Row** — A share trigger alone on a surface bar at the content width, label left and the trigger right, one 44 px row — the destinations belong to Ghost's own share panel, which the trigger opens. The canonical home of the share block, and the reason A25's share affordance resolves to Off.
 10. **Big Type** — "More from Rosa Menendez" at display size across the content width, the bio, a 40 px avatar and the socials row beneath it, then share and the destinations. The category's one display moment.
 11. **Portrait** — The author as a 280 px portrait at 4:5 beside four lines of bio, the name at 28, the socials row under the words, tags above and the share row beneath. The category's one photograph of a person.
 12. **Subscribe** — A subscribe prompt on a surface bar under the article — a line, a sentence, one field, one button — with no picture, no benefits, no tiers and no counts — and one ask per member state. The one place A26 asks for an email address.
@@ -754,7 +753,7 @@ Content: none authored in Inflozo — every field this category touches belongs 
 2. **Card** — Every card on a surface panel at the article's measure — hairline, pack radius, warm sm shadow, 24 px padding — with the media inset inside the panel and the caption in the panel with it.
 3. **Panel** — The card's ground runs past the article measure to the wide column — 1,040 at 1440 — with the card's content held at 720 inside it and the media staying in the measure by default.
 4. **Wide** [Free] — An image, a GIF and a video render one rung wider than the width their author gave them — regular at the wide column's 1,040, wide and full at the content box's 1,296 — with the text at the measure and the caption aligned to the media. A gallery and an embed keep the width Ghost fixes for them and do not step up (the owner's ruling of 28 August 2026).
-5. **Full Bleed** — A media card marked full takes the viewport's whole width and drops its corner radius; wide takes the content box; regular stays in the measure; the caption returns to the 720 column beneath. Copy cards are 1 Plain's, unchanged, and only image, GIF and video may bleed — Ghost fixes the width of a gallery and of an embed and a theme may not override it, so neither can reach the viewport edge.
+5. **Full Bleed** — A media card marked full takes the viewport's whole width and drops its corner radius; wide takes the content box; regular stays in the measure; the caption returns to the 720 column beneath. Copy cards are 1 Plain's, unchanged, and only image, GIF and video may bleed — Ghost's own script arranges a gallery's rows from the images' ratios, and a wider card would let it re-arrange into rows nobody has drawn — so neither a gallery nor an embed reaches the viewport edge. The ruling is A33's, not a limit Ghost imposes (owner, 1 September 2026): the width class is on the figure and could be reached.
 6. **Contrast Band** — Seven copy-bearing cards on the pack's inverted contrast colour at the wide column, carrying the carried text; the photograph cards — image, gallery, embed, video, GIF — left on the page ground untouched, and the three cards that carry the post author's own inline colours — signup, call to action, header — left exactly as the author set them, with the band running behind them.
 <!-- /roster:A33 -->
 

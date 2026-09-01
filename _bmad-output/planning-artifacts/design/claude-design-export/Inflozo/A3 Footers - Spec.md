@@ -44,6 +44,7 @@ Frames: `A3-1 Minimal Line` · `A3-2 Columns` · `A3-3 Two-Tier` · `A3-4 Newsle
 - **Avatars (Part A·A1).** A3 renders no person, so neither initial rule applies. A3·9's post rows carry no author avatar.
 - **Search (Part B·B1) and Ctrl-K (Part B·B5).** A3 draws no search affordance; any footer link may point at **Ghost search** through the link picker's new destination. Nothing in A3 bound Ctrl-K.
 - **[Free], two per category (Part A·A7): 1 Minimal Line and 16 Mini Bar** — confirmed by the owner this pass.
+- **The footer accordions declare their width (Part A · a design may declare the width below which its script runs).** The declaration is one sentence in the design's own words — **“collapses into sections under 768”** — and it is written on **A3·2**, **A3·3** and **A3·8**, and on **A3·7** and **A3·14** with the setting that turns their accordion on named inside it (“under 768, at Links: Columns”), because on those two the module is conditional on a control as well as on a width. **Where a design declares a width, its no-JavaScript line reads both sides of it.** Above 768 nothing is collapsed at any column count: the grid, every heading, every link and the legal row are server-rendered, and no A3 design runs anything at that width. Below 768 two to four columns stay an open grid and five to seven are native `<details>` — first group server-open, counts static text, every link reachable and keyboard-operable — so **the only thing lost on either side of the width is the 160 ms height transition**. A3·8's declaration carries no condition: five groups is its floor, so the width alone decides. **The other eleven designs declare no width**, because nothing in them runs at any width.
 
 These apply to all 16 designs and are not repeated per design.
 
@@ -94,7 +95,7 @@ These apply to all 16 designs and are not repeated per design.
 
 **What Add produces — never a blank row.** A new column arrives as heading “More” holding one link, “Archive” → `/archive/`, and lands last. A new link arrives as “New link” → `/`, lands at the foot of its column, and opens its label for typing. **There is no Add for a social account** — accounts come from Ghost, so where the Add would have been the sidebar says “Set in Ghost → Settings → Social accounts” instead of leaving an author looking for a button. An empty shell in a footer publishes as a hole, so nothing is added empty.
 
-**Remove, and the floors.** Remove sits on the row and is undoable. Removing a column's last link removes the column and says so. At a design's minimum the remove action is disabled with its reason shown, never silently.
+**Remove, and the floors.** Remove sits on the row and is undoable. Removing a column's last link removes the column and says so. **At a design's minimum Remove stays visible and fully clickable** (Part A · the remove button never greys out): the click does not remove, and the floor and the reason arrive as one sentence under the list, pointing at no other control. Nothing greys, and nothing is silent.
 
 **Reorder.** Columns read left to right and links read top to bottom, so authored order is drawn order everywhere in A3. Two designs make it consequential rather than merely visible: **A3·6** reads the first authored group as its primary row, and **A3·16** draws the first column's first N links in the pinned bar.
 
@@ -165,13 +166,13 @@ Brand block at the left margin, link columns filling the measure, legal line on 
 
 **Archetype.** grid-of-N
 
-**Behaviour module.** `accordion`, and only at ≤ 767 with five to seven columns authored; two to four stack open and the design declares nothing. Edit-safe — `<details>` is markup, so nothing runs while the section is edited. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute.” First-group-open is that `open` attribute; the counts at the right end are static text; what the module adds is the 160 ms height transition and nothing else. **The accessibility field's `<button aria-expanded aria-controls>` and the module's `<details>`/`<summary>` disagree** — the registry owns module mechanics, so the drawn accordion and the spec card owe a correction. *Finding, and it is A2·14's finding again.*
+**Behaviour module.** `accordion`, and only at ≤ 767 with five to seven columns authored; two to four stack open and the design declares nothing. Edit-safe — `<details>` is markup, so nothing runs while the section is edited. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute.” First-group-open is that `open` attribute; the counts at the right end are static text; what the module adds is the 160 ms height transition and nothing else. **The accessibility field's `<button aria-expanded aria-controls>` and the module's `<details>`/`<summary>` disagree** — the registry owns module mechanics, so the drawn accordion and the spec card owe a correction. *Finding, and it is A2·14's finding again.* **Declared width: “collapses into sections under 768”**, and only at five to seven authored columns — the declaration names the condition as well as the width. **JS off at 768 and above:** nothing is collapsed at any column count; the brand block, every heading, every link, the social row and the legal line are server-rendered, four across at 1440 and two across at 1080, and there is no accordion at that width to lose. **JS off below 768:** two to four columns stay the open two-across grid with links padded to 44 px and still nothing runs; five to seven are native `<details>`, first group server-open, counts static, every link reachable — only the 160 ms height transition is lost.
 
 **Items.** The category's column list at full range; every other design's item rules are stated against this one.
 
 - **Add column** at the end of the list, landing last, which is the right end of the grid. At four the measure is full and a fifth moves the brand block above a four-across wrapping grid — settlement 1's rule, reached by pressing Add rather than by a control. Disabled at seven: “Seven is the most a footer can hold. Consider a second column heading instead.”
 - **Add link** inside a column, landing at its foot. Disabled at eight: “Eight links is the most a column can hold.”
-- **Remove.** A column or a link at a time; links are never moved between columns to fill a gap. Disabled at two columns: “Two is the fewest this design draws — Minimal Line is the design for none.”
+- **Remove.** A column or a link at a time; links are never moved between columns to fill a gap. **At two columns Remove stays active**; the click states the floor under the list: “Two is the fewest this design draws.”
 - **Reorder.** Meaningful in both directions: columns left to right in authored order, links top to bottom within a column. Dragging column five to position two changes the grid rather than the wrap.
 - **Counts.** 2–7 columns, 1–8 links. Designed for three or four, which fill the measure. Two keep the 1fr they would have had at four and leave the right quarter empty on purpose — the editor does not warn. Five to seven re-arrange as the settlement says. **One column** renders on that same 1fr with three-quarters of the measure empty and the sidebar names A3·1.
 - **Zero.** No columns → the column grid is absent and the brand block sits alone above the legal row, still this design (Part A·A8); the repeater shows Add column and a line saying what the footer draws until one exists.
@@ -214,7 +215,7 @@ Links on one ground, a full-bleed legal bar on another. The lockup lives in the 
 
 **Archetype.** stack
 
-**Behaviour module.** `accordion`, on the same condition as A3·2 — ≤ 767 with five to seven columns in the tier. The bar repeats A3·1's composition and adds nothing; the ground pair, the fixed hairline and the 24 px bar padding are CSS. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” Both grounds and both tiers render, so the division a reader sees is the division without JavaScript too. The `<button aria-expanded>` correction A3·2 owes applies here unchanged. *Finding.*
+**Behaviour module.** `accordion`, on the same condition as A3·2 — ≤ 767 with five to seven columns in the tier. The bar repeats A3·1's composition and adds nothing; the ground pair, the fixed hairline and the 24 px bar padding are CSS. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” Both grounds and both tiers render, so the division a reader sees is the division without JavaScript too. The `<button aria-expanded>` correction A3·2 owes applies here unchanged. *Finding.* **Declared width: “collapses into sections under 768” — the tier only.** The bar declares nothing at any width and never has. **JS off at 768 and above:** both grounds and both tiers render whole, the tier's columns open at every count, the bar exactly as drawn. **JS off below 768:** the tier follows A3·2 — two to four open, five to seven as native `<details>` with the first group server-open — and the bar is unchanged; only the 160 ms height transition is lost. The division a reader sees is the same on both sides of the declared width.
 
 **Items.** A3·2's list, and the same repeater: the tier draws the columns and the bar never does.
 
@@ -317,7 +318,7 @@ The whole footer on one contrast ground — brand, columns and legal together, n
 
 - **Add column** as A3·2 up to four, then disabled **with the reason visible** (Part A·A5): twenty-plus links on an inverted band is a wall. The panel **advises** that A3·8 Sitemap suits more — advice, never a switch (Part A·A8).
 - **Add link** as A3·2, 1–8 a column.
-- **Remove.** Disabled at two, as A3·2.
+- **Remove.** Active at every count, as A3·2. At two, the click states the floor under the list: “Two is the fewest this design draws.”
 - **Reorder.** Drawn order, left to right. At 834 an odd third list becomes a wrapping row and keeps its authored position rather than being moved to the end.
 - **Counts.** 2–4 columns, 1–8 links. Designed for three or four; two leaves the right quarter empty as A3·2 does, and the band's padding does not change to compensate.
 - **Zero.** The band holds the brand block and the legal line and keeps its full padding — a band is a band at any content length.
@@ -409,7 +410,7 @@ The site's name set large enough to be the last thing on the page, with links an
 
 **Archetype.** stack
 
-**Behaviour module.** **none at the drawn setting.** Fill width is a CSS clamp on the container — `clamp(72px, …cqw, 200px)` — which is why it survives text zoom and needs no script; the Name scale control's “measured at build” resolves to that clamp rather than to a measurement. *Flagged: reading it as a clamp is this pass's inference, and it is listed as a finding.* At **Links: Columns above** with five to seven authored, the category's ≤ 767 rule applies and the design declares `accordion` — edit-safe, **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” At Links: Row above, the drawn default, and at Off, it declares nothing.
+**Behaviour module.** **none at the drawn setting.** Fill width is a CSS clamp on the container — `clamp(72px, …cqw, 200px)` — which is why it survives text zoom and needs no script; the Name scale control's “measured at build” resolves to that clamp rather than to a measurement. *Flagged: reading it as a clamp is this pass's inference, and it is listed as a finding.* At **Links: Columns above** with five to seven authored, the category's ≤ 767 rule applies and the design declares `accordion` — edit-safe, **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” At Links: Row above, the drawn default, and at Off, it declares nothing. **Declared width: “collapses into sections under 768, at Links: Columns above”** — the setting is named inside the declaration because the module is conditional on it, and at Row above and at Off no width is declared, since nothing runs on either side of one. **JS off at 768 and above:** the name is a CSS clamp, so it still fits and still zooms, and the links draw as an open row or as open columns above it. **JS off below 768:** at Row above the row wraps and nothing runs; at Columns above with five to seven authored the groups are native `<details>`, first server-open, every link reachable, only the 160 ms height transition lost. The name is Fill width at this width whatever the control says — the clamp, not script.
 
 **Items.** The name is Ghost's site title and is not an item. The list is the shared one, read as a row or as columns.
 
@@ -457,13 +458,13 @@ Five to seven columns, every route, at the category's smallest link size. The on
 
 **Archetype.** grid-of-N
 
-**Behaviour module.** `accordion` at ≤ 767, always — five to seven groups is this design's floor, so unlike A3·2 the module is not conditional. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute.” First group open is that attribute; the counts are static text and `aria-hidden`; the three-across tablet rule and both Density values are CSS. The `<button aria-expanded aria-controls>` in the accessibility field disagrees with `<details>`/`<summary>` — the same correction A3·2 owes, and it matters most here because this is the design that is always an accordion on a phone. *Finding.*
+**Behaviour module.** `accordion` at ≤ 767, always — five to seven groups is this design's floor, so unlike A3·2 the module is not conditional. Edit-safe. **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute.” First group open is that attribute; the counts are static text and `aria-hidden`; the three-across tablet rule and both Density values are CSS. The `<button aria-expanded aria-controls>` in the accessibility field disagrees with `<details>`/`<summary>` — the same correction A3·2 owes, and it matters most here because this is the design that is always an accordion on a phone. *Finding.* **Declared width: “collapses into sections under 768”, unconditional** — unlike A3·2 the declaration carries no column-count clause, because five to seven groups is this design's floor and the width alone decides. **JS off at 768 and above:** no accordion exists — five to seven columns across at 1440, three-across in authored order at 1080, every heading and every link open and server-rendered, both Density values CSS. **JS off below 768:** native `<details>` throughout, first group server-open, 48 px rows on hairlines, counts static and `aria-hidden`, links back up to 15 px, Density not applied; every link is reachable and only the 160 ms height transition is lost.
 
 **Items.**
 
 - **Add column** lands last; disabled at seven with settlement 1's wording. This is the design the seven-column cap was written for.
 - **Add link** as A3·2, eight a column.
-- **Remove.** Below five the grid renders at the authored count and the sidebar recommends A3·2 rather than refusing — the opposite direction to A3·5's hard cap, and deliberate: shrinking a sitemap is ordinary, growing a contrast band is not. Disabled at one column.
+- **Remove.** Below five the grid renders at the authored count and the sidebar recommends A3·2 rather than refusing — the opposite direction to A3·5's hard cap, and deliberate: shrinking a sitemap is ordinary, growing a contrast band is not. **At one column Remove stays active**; the click states the floor under the list: “A sitemap needs at least one column.”
 - **Reorder.** Drawn order across the grid and across the 1080 three-across wrap: five give 3 + 2, seven give 3 + 3 + 1, so dragging a column changes which row it lands in as well as its position. At ≤ 767 it is accordion order, first group open.
 - **Counts.** 5–7 designed, 1–7 possible, 1–8 links. **Density is a section value and applies to every column at once**; there is no per-column density, and a design that needed one would be two designs.
 - **Zero.** A group with no links is not drawn and its heading goes with it. No groups at all → the grid is absent and the brand block sits alone above the legal row, still this design (Part A·A8).
@@ -654,7 +655,7 @@ The footer as a panel inset from the page's edges, with the page ground visible 
 
 - **Add column** to four, then disabled with A3·8 named. Five or more is refused here rather than re-arranged: a four-across wrapping grid inside a card is a card with a grid in it.
 - **Add link** as A3·2, 1–8 a column.
-- **Remove.** Disabled at two.
+- **Remove.** Active at every count. At two, the click states the floor under the list: “Two is the fewest this design draws.”
 - **Reorder.** Drawn order, left to right; the inset changes nothing about it.
 - **Counts.** 2–4 columns, 1–8 links. Designed for three — the card's padding is 48 px at Comfortable and three columns is what sits inside it without the gutters tightening.
 - **Zero.** The card holds the brand block and the legal line and keeps its shape, its padding and its inset. **It does not shrink to fit**: a narrow card in a wide page reads as a broken component.
@@ -747,7 +748,7 @@ One full-bleed photograph closing the page, with the site's name over it and the
 
 **Archetype.** media frame
 
-**Behaviour module.** **none at the drawn setting.** Band, crop, scrim gradient and the 34/30/26 px wordmark ladder are CSS; the height is reserved before the image arrives; there is no parallax and no motion at all. **`lightbox` is not declared** — the photograph is decorative and is not a link, and a footer band that opened a full-size image would be inviting a click that goes nowhere. At **Links: Columns** with five to seven authored, the category's ≤ 767 rule applies and the design declares `accordion`, edit-safe, **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” At Links: Row, the drawn default, it declares nothing.
+**Behaviour module.** **none at the drawn setting.** Band, crop, scrim gradient and the 34/30/26 px wordmark ladder are CSS; the height is reserved before the image arrives; there is no parallax and no motion at all. **`lightbox` is not declared** — the photograph is decorative and is not a link, and a footer band that opened a full-size image would be inviting a click that goes nowhere. At **Links: Columns** with five to seven authored, the category's ≤ 767 rule applies and the design declares `accordion`, edit-safe, **JS off:** “Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all.” At Links: Row, the drawn default, it declares nothing. **Declared width: “collapses into sections under 768, at Links: Columns”** — the setting is named inside the declaration because the module is conditional on it, and at Links: Row and at Off no width is declared. **JS off at 768 and above:** band, crop and scrim are CSS, the height is reserved before the image arrives, and the links draw open at either setting. **JS off below 768:** the band floors at 180 px; at Links: Row the link row and the social row take their own rows and nothing runs; at Links: Columns with five to seven authored the groups are native `<details>`, first server-open, every link reachable, only the 160 ms height transition lost.
 
 **Items.** **The image is one field, not a list** — one photograph closes the page, and a second would be a gallery, which is A24's.
 
@@ -1054,6 +1055,10 @@ Frames updated: `A3-0 Category Proof`, `A3-2 Columns`, `A3-4 Newsletter Band`, `
 2. ~~A3·10's imprint gap.~~ **Closed by the owner: left as-is** — the fields exist and the site owner knows their own law; INFLOZO encodes no jurisdiction's rule and adds no panel note. Recorded for the record: Where a footer address is legally required, the field exists but no jurisdiction's rule is encoded, and **Ghost supplies no site address** (Fact 3), so the four contact fields are section content the author types. Unchanged by this pass, restated because Fact 3 makes it sharper: nothing can pre-fill them.
 3. **`nav-transform` still needs to exist** (finding 1, unchanged) — and it is the one place in A3 with a deliberate no-JS loss, which now sits beside A10's notice as the category's second script dependency.
 
+   **OPEN FOR THE OWNER.**
+
+*Housekeeping, 31 August 2026: items 1 and 2 above are struck because they were settled in this document — both by the owner, and the sentence naming him is left where it stands. Item 3 is genuinely still open and is marked so on its own line. Nothing here was answered by this pass.*
+
 ## Patch notes — footer links pass (29 August 2026)
 
 Frames updated: **`A3-0 Category Proof`** (the social settlement, the legal settlement's stale four-link figure, the Ghost-data line, the caps card, and two new cards in the patch-pass column) and **`A3-1 Minimal Line`** (the social DATA caption, the panel's social group, the spec card's Data paragraph). No other frame needed a change: the member rulings were already drawn, and the social ruling changes where the row's content comes from — not its geometry, its glyphs, its accessible names or any drawn state.
@@ -1096,19 +1101,19 @@ Frames updated: **`A3-0 Category Proof`** (the social settlement, the legal sett
 | # | Design | Module | With JavaScript off |
 |---|---|---|---|
 | 1 | Minimal Line | none | Identical — lockup, glyph row, legal line and generated year are all server-rendered. |
-| 2 | Columns | `accordion` (≤ 767, five to seven columns) | Native `<details>` opens and closes with no script; only the 160 ms height transition is lost. |
-| 3 | Two-Tier | `accordion` (same condition) | Both grounds and both tiers render; `<details>` works; the division the reader sees is unchanged. |
+| 2 | Columns | `accordion` (≤ 767, five to seven columns) | **Declares “collapses into sections under 768”. At 768 and above:** nothing is collapsed at any column count — the open grid, every heading and every link are server-rendered. **Below 768:** two to four columns stay the open grid; five to seven are native `<details>`, first group server-open, every link reachable. Only the 160 ms height transition is lost. |
+| 3 | Two-Tier | `accordion` (same condition) | **Declares “collapses into sections under 768” — the tier only. At 768 and above:** both grounds and both tiers render whole with the columns open. **Below 768:** the tier's five-to-seven case is native `<details>`, first group server-open; the bar is unchanged. The division the reader sees is the same on both sides. |
 | 4 | Newsletter Band | `member-form` | **The form is replaced by the notice** — “Signing up needs JavaScript — turn it on to subscribe.” The four working states are Ghost's script and stay as drawn. |
 | 5 | Contrast Band | none | Identical — the cap keeps the collapse at the open grid, so there is no accordion to lose. |
 | 6 | Centred Stack | none | Identical — one order at every width, nothing to collapse. |
-| 7 | Big Type | none at the drawn setting; `accordion` at Columns | The name is a CSS clamp, so it still fits and still zooms; at Columns, `<details>`. |
-| 8 | Sitemap | `accordion` (≤ 767, always) | `<details>` throughout, first group server-open; every link is reachable. |
+| 7 | Big Type | none at the drawn setting; `accordion` at Columns | **Declares “collapses into sections under 768, at Links: Columns above”; at Row above and Off, no width. At 768 and above:** the name is a CSS clamp, so it still fits and still zooms, and the links draw open. **Below 768:** the row wraps at Row above; at Columns above, native `<details>`, first server-open, transition only. |
+| 8 | Sitemap | `accordion` (≤ 767, always) | **Declares “collapses into sections under 768”, unconditional. At 768 and above:** no accordion at all — five to seven columns across at 1440, three-across at 1080, every link open and server-rendered. **Below 768:** native `<details>` throughout, first group server-open, counts static; every link is reachable, transition only. |
 | 9 | Latest Posts | none | Posts, titles, dates and images are server-rendered; only the 1.02 hover is lost. |
 | 10 | Contact Block | none | `mailto:` and `tel:` are hrefs; the block is static text. |
 | 11 | Colophon | none | Prose and credits are server-rendered. **Exception:** Links source *From Ghost secondary nav* is JavaScript-only by the owner's ruling — the flat raw-prefix list is what shows, and that is stated rather than accommodated. |
 | 12 | Card | none | Identical — inset, radius, hairline and the dark-mode shadow drop are CSS. |
 | 13 | Tags | none | Chips, counts, order and the overflow link are server-rendered. |
-| 14 | Image Band | none at the drawn setting; `accordion` at Columns | Band, crop and scrim are CSS; the height is reserved before the image arrives. |
+| 14 | Image Band | none at the drawn setting; `accordion` at Columns | **Declares “collapses into sections under 768, at Links: Columns”; at Links: Row and Off, no width. At 768 and above:** band, crop and scrim are CSS, the height is reserved before the image arrives, links open. **Below 768:** the band floors at 180 px; at Links: Row nothing runs; at Links: Columns, native `<details>`, first server-open, transition only. |
 | 15 | Wrap | none | One wrapping list, separators as CSS content; nothing to collapse. |
 | 16 | Mini Bar | `slide-in-card` | The bar renders **in flow, unpinned, in place** — the released state is the no-script state, and no content is withheld. |
 
@@ -1122,6 +1127,10 @@ Two script dependencies exist in the whole category and both are stated, never h
 ### Open questions
 
 Carried forward, unchanged: **`nav-transform` still needs to exist** (finding 1), and the four earlier findings stand as written.
+
+**OPEN FOR THE OWNER.**
+
+*Housekeeping, 31 August 2026: the three items below are struck because the owner settled them on 29 August 2026, and each names him. `nav-transform` is the only item in this list still open, and it is marked above rather than left to look like the rest.*
 
 **Closed on 29 August 2026 — all three of this pass's questions were answered by the owner and are applied above.**
 
@@ -1144,3 +1153,33 @@ Carried forward, unchanged: **`nav-transform` still needs to exist** (finding 1)
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** sixteen designs, numbered **1–16**.
+
+---
+
+## Patch notes — design patch pass two, 31 August 2026
+
+Frames updated: **`A3-2 Columns`**, **`A3-3 Two-Tier`**, **`A3-7 Big Type`**, **`A3-8 Sitemap`**, **`A3-14 Image Band`** (a DECLARED WIDTH block in each panel, and one sentence in each spec card) and **`A3-0 Category Proof`** (the rule card and its mono line). **No other frame changed**, because no other A3 design runs anything at any width. Nothing was renumbered, no control changed its name or its values, no ground, type size, spacing value or accessibility note was touched, and no roster row moved.
+
+| Rule (by name) | Change |
+|---|---|
+| A design may declare the width below which its script runs | **The five accordion-bearing designs declare one, and all five declare the same width: “collapses into sections under 768”.** A3·2 and A3·3 name the condition as well (five to seven authored columns); **A3·8 names no condition**, because five groups is its floor and the width alone decides; **A3·7 and A3·14 name the setting inside the declaration** — “under 768, at Links: Columns” — and declare no width at their other settings, where nothing runs on either side of one. Each design's no-JavaScript line now **reads both sides**: above 768 nothing is collapsed at any count and the whole grid is server-rendered; below 768 two to four columns stay open and five to seven are native `<details>`, first group server-open, every link reachable. **On both sides, the only loss is the 160 ms height transition.** Written into §0·0, into the Behaviour module field of §2, §3, §7, §8 and §14, and into rows 2, 3, 7, 8 and 14 of the sixteen-row no-JavaScript table. |
+| A control switched off by another is greyed, with the reason beside it | **No subject in this pass, and nothing changed.** A3's controls that another switch turns off are already drawn greyed with the reason at the control: A3·8's **Contrast disabled above four columns** with its ratio-and-reason line, A3·4's **band ground disabling Contrast**, A3·4's field controls disabled with the reason under a site that cannot honour the ask, and A3·5, A3·3 and A3·14's **locked** Background role with its reason shown. None is hidden and none accepts a value it will not honour. The one exception the rule names — a control the project can never offer — has no case in A3: the category draws no visitor dark-mode switch. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **No subject.** A3 renders no person: A3·9's post rows carry no author avatar and no A3 design draws an author, a member or a commenter. Recorded so the silence is not read as a miss. |
+| The remove button never greys out | **Applied the whole way through, on the owner's instruction of 31 August 2026.** §0·0 already stated the rule; the four design sections and the §0 *Remove, and the floors* paragraph that still greyed Remove at a floor are corrected to match it. **§0:** at a minimum Remove stays visible and fully clickable, and the floor and the reason arrive as one sentence under the list. **§2** (two columns), **§5** (two), **§8** (one) and **§12** (two): Remove is active at every count and the click states the floor — “Two is the fewest this design draws.”, “A sitemap needs at least one column.” — each one clause, pointing at no other control. **Add still caps and still greys**: the caps are unaffected, and only Remove is at issue. No frame changed: no A3 panel drew a greyed Remove. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Checked design by design; nothing converted in either direction.** Columns (Auto · Two · Three · Four), A3·8's Columns (Auto · Five · Six · Seven), Band height, Name scale and Density stay **named sets** — every value has a drawn frame. Links per column, legal links, credit rows, chips and **How many posts (2–4)** stay **number pickers**. |
+| The feature-image caption renders differently on the two Ghost versions (tested 2026-08-31) | **No change, recorded so the omission is not read as a miss.** A3 renders no feature image and no caption; A3·9's post rows draw a title, a date and an image, never a caption. |
+| A comment count renders nothing at all without JavaScript (tested 2026-08-31) | **No change, same reason.** No A3 design reads a comment count. The counts A3 does draw — the accordion's “{n} links”, A3·13's tag counts, A3·8's generated-group counts — are server-rendered static text and `aria-hidden`, and none of them is a comment count. |
+| Ghost's templates cannot count, add or remember (Fact 1) | **No new subject.** The accordion counts are the catalog string over a list Ghost can length; nothing in this pass asked a template to add, compare or remember. |
+| Housekeeping — the Open questions lists | Both lists are now readable at a glance. In the design-patch list, items 1 and 2 stay struck and name the owner as the one who settled them, and **item 3, `nav-transform`, is marked OPEN FOR THE OWNER on its own line**. In the footer-links list the three struck items name the owner and the date, and the carried-forward `nav-transform` line is marked **OPEN FOR THE OWNER** the same way. **Nothing was answered by this pass.** |
+
+**Left alone deliberately.** The **printed-count copy** rule has no subject here — this specification prints no total of the library's designs, only its own sixteen, which is the category's roster and not a product-copy count — and nothing was added that could become one. **P0's per-prop mark allowlist** lives in the P0 specification and was not opened. Where a frame or a sentence might have been edited in the repository rather than here, it was left: the five panels gained a new block each and lost nothing, and no existing sentence in any A3 frame was rewritten.
+
+### OPEN QUESTIONS raised by this pass
+
+1. **The work list describes the above-the-width state as “a plain stacked list of links”; every A3 frame draws an open column grid there.** Above 768 these five designs draw a grid — four across at 1440, two across at 1080, three across on A3·8 — not a stacked list, and below 768 at two to four columns they draw an open two-across grid rather than an accordion. **I wrote the no-JavaScript lines from the frames rather than from that phrasing, and changed no drawn layout.** If the intent was that the accordion designs should render a plain stacked list above 768, that is a layout change to five designs and needs saying as one. **OPEN FOR THE OWNER.**
+2. ~~Remove at a floor: §0·0 and five design sections contradicted each other.~~ **Closed by the owner on 31 August 2026:** at the minimum, clicking Remove still registers as a click and says why nothing can be removed. Applied to §0's *Remove, and the floors* paragraph and to §2, §5, §8 and §12; the greyed-at-a-floor wording is gone from the category.
+
+**Confirmations.**
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen designs, no number added, removed, reused or moved.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this category's roster.

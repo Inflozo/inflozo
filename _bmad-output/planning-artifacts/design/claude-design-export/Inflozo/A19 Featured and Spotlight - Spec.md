@@ -17,7 +17,7 @@ inline-editable against Ghost-owned content that is not; and **no invented reade
 left in the category**. What each design gained is in a **Reconciled** paragraph at the foot of its
 entry, and the frame-by-frame list is in **Reconciliation notes** at the end.
 
-**Sixth pass — the design patch pass (this document's current state), 30 August 2026.** The ten
+**Sixth pass — the design patch pass, 30 August 2026.** The ten
 library-wide rules were applied to all fifteen designs and then read back, one rule against every
 design. **Two of them changed something.** *No design ever turns into another design* ended the
 category's hand-off vocabulary: **Hand off is deleted from settlement 3 and Ground replaces it** —
@@ -34,6 +34,31 @@ off — and *Ghost's templates cannot count, add, or remember* named where 12 Pi
 had no subject here, and each is recorded, design by design, in **Patch notes**. **Nothing was
 renumbered, no design was deleted, and no visual language, type scale, colour pack or spacing step
 changed.**
+
+**Seventh pass — pass two (this document's current state), 1 September 2026.** Five rules were added
+library-wide and read against all fifteen designs; **one of them changed something here.**
+*A control switched off by another is greyed, with the reason beside it* is now applied without
+exception: **Order and Count grey at Source: Hand-picked on all fifteen**, and **nine designs carry a
+case of their own** — 2 Full Bleed's Scrim (twice), 3 Card's Surface value, 8 Lead and Two's, 9
+Alternating's and 12 Picks' Divider, 9's Starts, 11 Lead and Rail's Rail detail and Rail heading,
+13 Quote's Author photo, 14 Slim's Detail and 15 Carousel's Navigation. **Two of those nine are
+changes rather than restatements**: 3 Card's Surface value was accepted and silently resolved to
+Outline, and 14 Slim's Detail row was accepted and ignored at Alignment Centred; both are now drawn
+greyed with the reason at the control and the fallback named. **The rule's one exception is claimed
+nowhere in A19**, and **the conflict this pass raised was settled by the owner the same day**: the
+Data group's picker and Tag-or-author field are *a mode the user is not in*, revealed when that
+Source is pressed rather than hidden after being switched off — which is **P0·0**'s own carve-out,
+not a breach of this rule. **The one discrepancy this raised was settled the same day**: P0·5 said Count and Order
+*hide* at Hand-picked where A18 and A19 grey them, and **the owner took the greyed form** — P0·5
+changes, and no frame here redraws. The other
+four rules had no subject to change — *avatars with no photograph* (three designs, one letter,
+unchanged), *the Remove button never greys out* (one list, no floor), *a count that picks between
+drawn layouts is a named set* (Count counts posts and stays a stepper) and *a design may declare the
+width below which its script runs* (no design here declares one) — and neither of the two Ghost
+findings reaches this category: **A19 reads no feature-image caption and no comment count**. The
+**Open questions** housekeeping is in **Patch notes — pass two** at the end. **Nothing was
+renumbered, no control was added or removed, and no value, default, layout, type scale, colour pack
+or spacing step changed.**
 
 **[Free] designs:** 1 Split · 6 Big Type
 
@@ -215,14 +240,70 @@ controls and counted toward no design's total.** Source (Latest posts · By tag 
 **Hand-picked posts** — the Ghost-aware picker, shown at that Source only, taking the P0·3 item
 controls: the picker arrives with a real post rather than a blank Add, remove is never disabled,
 drag reorders, and there is no per-post styling ⚑ · **Count**, the 1–100 stepper with per-design
-bounds, locked rows drawn disabled with their reason · Order (Newest first · Oldest first, disabled
-at Hand-picked) · **When nothing matches (Hide the section · Show the latest post)** ⚑, default
+bounds, locked rows drawn disabled with their reason · **Order (Newest first · Oldest first, greyed at Hand-picked** with the reason at the control —
+"not available while posts are hand-picked: your picked order is the order"**)** · **When nothing matches (Hide the section · Show the latest post)** ⚑, default
 Hide.
 
 **No query Source shows a list at all**, and **no design has a per-post control**: a control writes
 one value onto the section and every post reads it. **A picked post that is no longer published is
 skipped**, and if none survive, *When nothing matches* applies — the same rule the query sources
 use.
+
+### The disabled-control pattern
+
+**A control switched off by another is greyed, with the reason beside it** — P0's treatment, applied
+without exception in this category from 1 September 2026: the row is drawn, the switched-off value is
+struck through, **the reason is one short sentence at the control rather than a tooltip**, the
+fallback named is the value the design already resolved to, and **no row is left accepting a value it
+will not honour**. **Two rows in A19 were doing exactly that and are the pass's only behavioural
+changes**: 3 Card's Surface value and 14 Slim's Detail row.
+
+| Where | What greys, and the reason at the control |
+|---|---|
+| **All fifteen** | **Order** and **Count**, at Source: Hand-picked — "not available while posts are hand-picked: your picked order is the order", and the picked list is the count. |
+| **2 Full Bleed** | **Scrim**, twice: a single value greyed with its measured ratio at a hand-picked picture it fails on, and **the whole row greyed at a post with no picture** ⚑ — Ground draws no scrim, so there is nothing to lift the text off. The stored value returns with the next picture. |
+| **3 Card** | **Card: Surface**, at Background role Surface — a surface plane on a surface ground has no edge. **Changed in this pass**: the value used to be accepted and silently resolved to Outline. |
+| **8 Lead and Two** | **Divider**, at Count 1 — the follower column is absent, so there is nothing to divide. Returns at 2 and 3. |
+| **9 Alternating** | **Divider** and **Starts**, at Count 1 — one band has nothing beneath it and no alternation to start. Returns at 2 and 3. |
+| **11 Lead and Rail** | **Rail detail** and **Rail heading**, at Count 1 — the lead takes the whole 848 and there is no rail. The authored `railLabel` is kept and both rows return at 2. |
+| **12 Picks** | **Divider**, at Count 1 — a rule between a row and nothing is not a separator. |
+| **13 Quote** | **Author photo**, at Attribution Title only — there is no author line to put a photograph on. Returns at Title and author. |
+| **14 Slim** | **Detail**, at Alignment Centred — a centred strip draws nothing at the right edge. **Changed in this pass**: the row used to go on accepting a value the design ignored. |
+| **15 Carousel** | **Navigation**, at Count 1 — one slide is a still spotlight with no track to page, and the module is not declared for that render. |
+
+**Locks are the rule's neighbouring case and are drawn, never hidden:** the nine Count locks at 1 and
+10 Pair's at 2, **7 Overlap's Title size Large** (40 px overflows the card at every combination), and
+the five universal-trio locks — 2 Full Bleed's three, 5 Contrast Band's two, 13 Quote's two and
+14 Slim's two, counted as the floor counts them. **A lock by the design is not a switch by another
+control**, and both are drawn with a reason.
+
+**Four things are deliberately not greyed.** A **width** is not a control: 9 Alternating's Starts and
+11 Lead and Rail's Rail width below 1080, 4 Poster's Alignment below 767, 15 Carousel's Arrows
+resolving to Dots below 1080 — all left exactly as drawn. A **warning** stays a warning where both
+values are honoured: 6 Big Type's Rule Above against Top divider Line genuinely draws two hairlines,
+5 Contrast Band's Portrait at Title Large is tall but legitimate, and 4 Poster's centred three-line
+excerpt is a run the panel advises against. **An arrow disabled at the end of 15 Carousel's track is
+a state of the track**, not a disabled control. And **an absence is not a disablement**: 2 Full
+Bleed's missing Ratio and Tag rows, 12 Picks' missing Ratio and Title size, 13 Quote's missing
+Excerpt and Tag, 3 Card's missing Wide 16:9 and 9 Alternating's missing Portrait 4:5 are narrowings
+of the design's vocabulary, each with its reason already written.
+
+**The rule's one exception is claimed nowhere in A19.** No control here is one the project can never
+offer — there is no visitor dark-mode switch and no pinned colour scheme in the category — so nothing
+is left undrawn with a note in its place.
+
+**Settled by the owner, 1 September 2026 — the picker is a mode, not a hidden control.** The
+**Hand-picked posts** picker and the **Tag or author** field appear when that Source is pressed;
+they are not rows that were switched off and taken away. **P0·0 already draws this line**: a control
+belonging to a mode the user is not in is *absent*, and a control belonging to this mode but
+currently unavailable is *greyed with its reason*. **A19 falls on the second side and the Data group
+on the first**, and there is no conflict between them.
+
+**⚑ Settled by the owner, 1 September 2026 — Count and Order are greyed, and the primitive changes
+to match.** P0·5 said the two rows *hide* at Hand-picked; **A18 and A19 have shipped them greyed with
+the reason at the control**, and he took that reading: they are rows a user expects to find, unlike
+the picker, which exists only once you are in that mode. **Nothing in A19 redraws** — the greyed form
+was already correct — and the amendment is written into **P0·0** and **P0·5**.
 
 ---
 
@@ -274,6 +355,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **nothing hands off to this design any more.** Eleven panels used to name it as a replacement and now name it as advice — "with no picture on this post, 1 Split reads better" — and none of them switches. *Avatars with no photograph*: **the meta circle draws one letter**, where the frames drew two; the author comes from Ghost. Reflow, the locked Count and the six controls are unchanged, and the frame is redrawn only in the avatar.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **two cases, both from the Data group** — Order and Count grey at Source: Hand-picked with the reason at the control, and the Count lock at 1 is a lock, drawn as it already was. **Nothing this design owns switches anything else off.** *Avatars with no photograph*: the circle is drawn here at Meta With photograph and shows **one letter**, unchanged. The other three rules and both Ghost findings have no subject: no module, no typed list, no caption read, no comment count.
+
 ---
 
 ### 2 · Full Bleed
@@ -295,7 +378,7 @@ sidebar order.**
    |---|---|
    | Height | Short · Tall · Full screen |
    | Text position | Lower left · Lower centre · Centre |
-   | Scrim | Soft · Medium · Strong (a value disabled with its measured ratio when it fails on the set image, at Source: Hand-picked alone) |
+   | Scrim | Soft · Medium · Strong; **a value greyed with its measured ratio** when it fails on the set image, at Source: Hand-picked alone, and **the whole row greyed at a post with no picture** ⚑ — Ground draws no scrim and there is nothing to lift the text off; the stored value returns with the next picture |
    | Title size | Small · Medium · Large |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -320,6 +403,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **Hand off is deleted and Ground replaces it.** With no picture the section renders — on the site as well as in the editor — as a flat field of the pack's contrast colour at the set Height with the design's own text where Text position puts it, the scrim not drawn. **The two Switch buttons are gone**, the panel advises 1 Split, and **the fallback can no longer fail**, which retires the one ⚑ in the category that said it could. *CSS cannot see content*: the Scrim measurement is named as the editor's, and it exists at Source: Hand-picked alone.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one control, two cases.** A failing Scrim value is greyed with its measured ratio at Source: Hand-picked alone, as before; and **at a post with no picture the whole Scrim row greys** ⚑, because Ground draws no scrim and there is nothing to lift the text off — the stored value returns with the next picture. The three universal locks are locks, not switches, and keep the reasons they already carry. *A design may declare the width below which its script runs*: no module, nothing to declare.
+
 ---
 
 ### 3 · Card
@@ -339,7 +424,7 @@ sidebar order.**
 
    | Control | Values |
    |---|---|
-   | Card | Surface · Outline |
+   | Card | Surface · Outline; **Surface greyed at Background role Surface** — a surface plane on a surface ground has no edge — with the reason at the control and Outline named as the fallback ⚑ *changed in pass two: the value was accepted and silently resolved* |
    | Ratio | Landscape 3:2 · Square 1:1 · Portrait 4:5 — **no Wide 16:9** |
    | Title size | Small · Medium · Large |
    | Excerpt | Off · One line · Two lines · Three lines |
@@ -363,6 +448,8 @@ sidebar order.**
 **Reconciled.** Padding retired into **Vertical spacing** — it was already labelled “the space around the card”, which is the same ladder. **Tag: Show · Hide** added, and **at Tag Hide with no picture the plate is drawn empty rather than dropped** ⚑, because the card's geometry needs the box. **`linkUrl`** removed; the Data group carries **Hand-picked** (one post) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. At Background role Surface the card takes its outline value, disclosed rather than disabled.
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **nothing here handed off and nothing does now.** With no picture the plate holds the card's geometry, at Tag Hide it is drawn empty, and the Outline-in-dark note stays advice at a control. Every other rule was already satisfied and the design is unchanged; the frame gains only the patch block.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **the Surface value greys at Background role Surface**, where it was previously accepted and silently resolved to Outline and merely disclosed. The reason sits at the control — a surface plane on a surface ground has no edge — and Outline is named as the fallback, which is the value the design already resolved to. **No control was added, removed or renamed and no default changed.**
 
 ---
 
@@ -407,6 +494,8 @@ sidebar order.**
 **Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, governing the tag half of the middle-dot eyebrow, the section's own word surviving alone at Hide; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when it has no picture) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus is named as the post's** — a 4:5 crop is the most destructive in the category and the focal point is set in Ghost.
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the hand-off to 1 Split is deleted and this design reflows** — the crop is dropped and the narrow centred column draws the type at its set Width. The plate is still refused at 560 × 700, for the reason it always was. *Avatars with no photograph*: **one letter, not two**. The Switch buttons are gone and the panel advises.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** Width, Ratio, Alignment, Excerpt, Meta and Tag are independent; Order and Count grey at Hand-picked; the Count lock at 1 is drawn. **Alignment's no effect below 767 is a width, not a control**, and is left as drawn. *Avatars with no photograph*: **one letter**, unchanged.
 
 ---
 
@@ -453,6 +542,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the print line is reworded.** The band prints its own arrangement on white with the ground dropped, rather than "printing as 1 Split" — the same sheet of paper, described honestly. **Settlement 3's vocabulary list said this design reflows; its own field 8 and its drawn panel have always plated**, and the panel is this file's authority, so the list is corrected to Plate. *A design may offer fewer choices on a shared control, and must say why*: the Contrast lock, the missing With photograph value and the four Ratio values all carry their reasons already.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** The Contrast lock and the Top divider None lock are locks — the rule's neighbouring case, drawn with their reasons — and **Portrait 4:5 at Title Large stays a warning**, because the design honours both values and the result is tall rather than wrong. A control that is obeyed is never disabled.
+
 ---
 
 ### 6 · Big Type
@@ -496,6 +587,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **seven panels used to point here and now advise here**, and nothing this design draws changed. Its fallback still cannot fail — the one design in A19 of which that is true — which is why it is on the free shortlist and the recommended pair. Rule by rule, nothing else had a subject: no picture, no list, no member ask, no form, no slider, no gap ladder.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own, and one case deliberately not made.** Rule Above meeting the universal Top divider Line genuinely draws two hairlines, so both values are honoured and **the panel warns rather than greying either row** — the asymmetry with 14 Slim, which locks Top divider at None, is deliberate and already recorded.
+
 ---
 
 ### 7 · Overlap
@@ -517,7 +610,7 @@ sidebar order.**
    |---|---|
    | Card position | Lower left · Lower right · Centred |
    | Image width | Content · Full bleed |
-   | Title size | Small · Medium · ~~Large~~ (disabled — 40 px overflows the card) |
+   | Title size | Small · Medium · ~~Large~~ — **greyed with its reason at the control**: 40 px overflows the card at every Card position and every Image width. A lock by the design, not a switch by another control |
    | Excerpt | Off · One line · Two lines · Three lines, **drawn one line shorter** |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | Tag | Show · Hide |
@@ -539,6 +632,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **Ground replaces the hand-off to 3 Card.** The picture's box becomes a flat field of the contrast colour and the card overlaps it by 64 px exactly as always, so **the overlap — which is the design — survives a post with no picture**. The Switch buttons are gone, the panel advises 3 Card, and the fallback can no longer fail.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no switch, one lock.** Title size Large is disabled by the design at every Card position and every Image width rather than by another row, and it is drawn greyed with its reason at the control — a lock, which is the rule's neighbouring case, not a disablement.
+
 ---
 
 ### 8 · Lead and Two
@@ -559,7 +654,7 @@ sidebar order.**
    | Control | Values |
    |---|---|
    | Lead ratio | Landscape 3:2 · Square 1:1 · Wide 16:9 |
-   | Divider | Off · Between followers · Column rule |
+   | Divider | Off · Between followers · Column rule; **greyed at Count 1** — the follower column is absent, so there is nothing to divide — with the reason at the control; the stored value returns at 2 and 3 |
    | Title size | Small · Medium · Large, **lead only** |
    | Excerpt | Off · One line · Two lines · Three lines, **lead only** |
    | Meta | None · Date only · Name and date · Name, date and reading time, **all three posts together** |
@@ -582,6 +677,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: at one post it draws **its own 848 lead with the follower column absent**, and the sentence that made that "1 Split's arrangement" is deleted. The 834 step is rewritten in its own terms — the lead's picture above the lead's text, the followers on **A18·4's dated-row measurement** — a component reused rather than a design borrowed. The untagged-followers note reads "like a rail" instead of naming one.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **Divider greys at Count 1**, where the design draws its own 848 lead and no follower column, with the reason at the control and the stored value returning at 2 and 3. **Column rule falling back to Between followers at 834 is a width**, not a switch, and stays as drawn.
+
 ---
 
 ### 9 · Alternating
@@ -602,8 +699,8 @@ sidebar order.**
    | Control | Values |
    |---|---|
    | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
-   | Starts | Picture left · Picture right |
-   | Divider | Off · Between bands |
+   | Starts | Picture left · Picture right; **greyed at Count 1** — a single band has no alternation to start — and already greyed below 1080 with "No effect below 1080", which is a width rather than a control |
+   | Divider | Off · Between bands; **greyed at Count 1** — one band has nothing beneath it — with the reason at the control |
    | Excerpt | Off · One line · Two lines · Three lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | Tag | Show · Hide, every band together |
@@ -632,6 +729,8 @@ sidebar order.**
 **Reconciled.** Padding retired into **Vertical spacing**, the 96 between bands still unexposed; **Tag: Show · Hide** added, every band together; **`linkUrl`** removed; **Count is the stepper at min 1 · max 3** in place of the 2 · 3 enum; **Hand-picked takes up to three and gives the stack a running order** ⚑ — “no hand-ordering exists on `featured`” was true of the query and is no longer true of the section. The Oldest-first advisory is deleted; the excerpt binds **`excerpt`**.
 
 **Patched · design patch pass, 30 August 2026.** *A design may offer fewer choices on a shared control, and must say why*: **the two silent absences now carry their reasons.** No Title size, because two or three bands of 40 px titles down one page is three headlines competing for it, and 28 makes a band read as a follower; no Portrait 4:5, because at 672 wide a 4:5 crop is 840 px tall, taller than the text beside it, and the band stops being a band. *No design ever turns into another design*: at one post it draws one full-size band and the panel advises.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **two cases, both at Count 1** — Divider has nothing to divide and Starts has no alternation to start, so both grey with the reason at the control and both return at 2 and 3. **Starts was already greyed below 1080**; that one is a width and this one is a control, and the two now read alike.
 
 ---
 
@@ -681,6 +780,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *Item counts are a number picker*: **the locked Count row is drawn greyed at 2 with its reason visible**, which is what the rule's second half asks for and what this design already did — the advisory line beneath is reworded to name the design that reads better rather than "the design to switch to". *No design ever turns into another design*: at one post the left cell is drawn and the right half is page.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** The Count stepper locked at 2 is **the category's reference lock** — drawn, greyed, labelled "fixed by this design", with a better-suited design advised beneath — and a lock by the design is not a switch by another control. The hairline at 834 whatever Divider says is a width.
+
 ---
 
 ### 11 · Lead and Rail
@@ -702,8 +803,8 @@ sidebar order.**
    |---|---|
    | Ratio | Wide 16:9 · Landscape 3:2 · Square 1:1 |
    | Rail width | Narrow · Standard |
-   | Rail detail | Title only · Title and date · Title, date and tag |
-   | Rail heading | Hidden · Shown (**new in this pass**, drawing the authored `railLabel` above the rail at eyebrow size) |
+   | Rail detail | Title only · Title and date · Title, date and tag; **greyed at Count 1** — there is no rail at one post — with the reason at the control |
+   | Rail heading | Hidden · Shown (**new in the reconciliation pass**, drawing the authored `railLabel` above the rail at eyebrow size); **greyed at Count 1** — a heading over an absent rail — the authored `railLabel` kept and the row returning at 2 |
    | Excerpt | Off · One line · Two lines · Three lines, lead only |
    | Meta | None · Date only · Name and date · Name, date and reading time, lead only |
    | Tag | Show · Hide — **the lead's eyebrow alone** |
@@ -728,6 +829,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: the 834 rail is written as **A18·4's dated-row measurement**, a component, not another design. *A design may offer fewer choices on a shared control, and must say why*: the missing Tag row is **the one narrowing in A19 with no reason attached** — Rail detail governs the rail's tags and **the lead's own tag eyebrow still has no way off**. **Closed by the owner on 30 August 2026: this design takes the twelfth Tag row, governing the lead alone**, with Rail detail still governing the rail — so a site can carry topics in the rail and none on the lead. Seven controls of its own, and **the category's last unreasoned narrowing is gone.**
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **two cases, both at Count 1** — Rail detail and Rail heading grey because there is no rail at one post; the authored `railLabel` is kept and both rows return at 2. **Rail width's greying below 1080 is a width**, not a control, and is unchanged. The Tag row stays live at every Rail detail value.
+
 ---
 
 ### 12 · Picks
@@ -749,7 +852,7 @@ sidebar order.**
    |---|---|
    | Numeral size | Small · Medium · Large (28/40/56 in a 64/96/128 column) |
    | Row density | Compact · Comfortable · Spacious — the space inside a row, kept distinct from the universal Vertical spacing |
-   | Divider | Off · Between picks |
+   | Divider | Off · Between picks; **greyed at Count 1** — a rule between a row and nothing is not a separator |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | Tag | Show · Hide |
@@ -775,6 +878,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *Ghost's templates cannot count, add, or remember*: **the zero-padded ordinal is named as a CSS counter at `decimal-leading-zero`** — nothing adds 01, the list numbers itself in the stylesheet, and the numeral cannot disagree with the row it sits on. *No design ever turns into another design*: at one pick it is one row numbered 01 and the panel advises 6 Big Type or 14 Slim. The ordinals-are-a-ranking line at Hand-picked is unchanged.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **Divider greys at Count 1** — a rule between a row and nothing is not a separator — with the reason at the control and the stored value returning at 2. Numeral size and Row density are live at every count, and no control touches the CSS counter.
+
 ---
 
 ### 13 · Quote
@@ -798,7 +903,7 @@ sidebar order.**
    | Quote mark | Off · Glyph · Rule |
    | Alignment | Left · Centred |
    | Attribution | Title only · Title and author · Title, author and date |
-   | Author photo | Hidden · Shown |
+   | Author photo | Hidden · Shown; **greyed at Attribution Title only** — there is no author line to put a photograph on — with the reason at the control; the stored value returns at Title and author |
    | Count | **Greyed and locked at 1** |
    | Background role (universal) | **Locked at Surface**, with its reason |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious — the band's own padding |
@@ -824,6 +929,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the hand-off to 6 Big Type is deleted and the design draws its own thin state** — the band, its ground and its padding stay, the quote mark and the quote are not drawn, the title takes the display size, and the editor-only notice **advises** 6 Big Type instead of naming it as a replacement. `custom_excerpt` is now the design's designed state rather than a requirement a query cannot guarantee. *Avatars with no photograph*: **one letter**.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **Author photo greys at Attribution Title only**, where no author line is drawn, with the reason at the control and the stored value returning at Title and author. The two universal locks and the Count lock at 1 are locks, drawn with their reasons. *Avatars with no photograph*: **one letter**, unchanged — and the control above decides whether the circle exists at all.
+
 ---
 
 ### 14 · Slim
@@ -845,7 +952,7 @@ sidebar order.**
    |---|---|
    | Density | Compact 48 · Comfortable 64 · Spacious 80 — **the strip's height, and now only that** |
    | Label | Off · Eyebrow · Post tag |
-   | Detail | Title only · Title and date · Title and reading time |
+   | Detail | Title only · Title and date · Title and reading time; **greyed at Alignment Centred** — a centred strip draws nothing at the right edge — with the reason at the control ⚑ *changed in pass two: the row used to accept a value the design ignored* |
    | Alignment | Left · Centred (Centred does not draw the detail) |
    | Rule | Off · Above · Above and below — the strip's own hairline |
    | Trailing | Off · Arrow |
@@ -872,6 +979,8 @@ sidebar order.**
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: below 767 it becomes **its own two-line block**, which is this design and not another one, so the sentence saying so is unchanged and no hand-off existed to delete. *Slider labels* and *gap names*: Density titles the strip's height and reuses the standard words, Vertical spacing keeps the shared ladder's names, and there is no gap control here to rename. Nothing else had a subject.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **Detail greys at Alignment Centred.** The value used to be accepted while the design quietly drew nothing at the right edge; the row is now greyed with the reason at the control and returns at Alignment Left. **The arrow dropping below 767 is a width**, not a switch, and the Top divider None lock keeps the reason it already carries.
+
 ---
 
 ### 15 · Carousel
@@ -892,7 +1001,7 @@ sidebar order.**
    | Control | Values |
    |---|---|
    | Ratio | Landscape 3:2 · Wide 16:9 · Square 1:1 |
-   | Navigation | Dots · Arrows · Dots and arrows |
+   | Navigation | Dots · Arrows · Dots and arrows; **greyed at Count 1** — one slide is a still spotlight with no track to page, and the module is not declared for that render |
    | Title size | Small 28 · Medium 34 · Large 40 |
    | Excerpt | Off · One line · Two lines · Three lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -918,6 +1027,8 @@ sidebar order.**
 **Reconciled.** Padding retired into **Vertical spacing**, the dot row's 24 px still inside it and not a control; **Tag: Show · Hide** added, every slide together; **`linkUrl`** removed; **Count is the stepper at min 1 · max 8** — eight is where the dot row stops being a position and starts being a scrollbar — with 1 still drawing a still spotlight and not declaring the module. **Hand-picked takes up to five in picked order and is the slide order**, the first pick at rest, which is the running order a carousel obviously needs. **The three invented button labels become translation-catalog strings.** **Autoplay, Interval and Loop stay refused, owner-ratified**, reasons unchanged on the frame. The excerpt binds **`excerpt`**; the arrows stay A1·14 icon buttons whose glyph is the design's, so rule 11's Icon Picker does not reach them.
 
 **Patched · design patch pass, 30 August 2026.** *Ghost's templates cannot count, add, or remember*: **the dot label's two numbers are named** — the position is the loop's own counter, the total is written onto the track by the editor, and the template adds nothing up. *No design ever turns into another design*: **at one post the dots and the arrows are hidden and the design draws itself**, which is the rule's own example, and Navigation Arrows resolving to Dots below 1080 is a control value rather than a design. Autoplay, Interval and Loop stay refused, owner-ratified.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **Navigation greys at Count 1**, where there is nothing to page through and the module is not declared for that render; it returns at 2. **Arrows resolving to Dots below 1080 is a value resolving at a width**, and an arrow disabled at each end of the track is a state of the track rather than a disabled control. *A design may declare the width below which its script runs*: **this design declares none** — `carousel` runs at every width, and its JavaScript-off line already describes every width.
 
 ---
 
@@ -983,8 +1094,8 @@ on an A19 section** — every picture is a post's.
 **The query — seven, in the Data group.** `source` enum req (Latest posts · By tag · By author ·
 **Featured only**, A19's default · This route's posts · **Hand-picked** ⚑ new) · `filterValue` ref
 opt · **`pickedPosts` ref[] opt, 1–5, order significant** ⚑ new · **`count` int req, the 1–100
-stepper with per-design bounds** ⚑ · `order` enum req (Newest first · Oldest first, disabled at
-Hand-picked) · **`fallback` enum req (Hide the section · Show the latest post)** ⚑, default Hide.
+stepper with per-design bounds** ⚑ · `order` enum req (Newest first · Oldest first, **greyed at Hand-picked**, with the reason at the
+control) · **`fallback` enum req (Hide the section · Show the latest post)** ⚑, default Hide.
 
 **Read from each post — ten, three optional.** `title` req · `url` req · `published_at` req ·
 `reading_time` req · `feature_image` + `feature_image_alt` opt · `primary_tag` opt ·
@@ -1018,12 +1129,21 @@ no excerpt, and it loses nothing: the field was always there and the new design 
 **Five of the twelve are closed by this pass and are kept here with their answers**, because a
 finding that vanishes looks like a finding nobody read.
 
+**Housekeeping, 1 September 2026.** This list mixed items that had since been answered with items
+that had not, and the two were indistinguishable. **Every item settled somewhere in this document is
+now struck through with the name of whoever settled it; every item genuinely still open carries
+OPEN FOR THE OWNER on its own line.** Nothing was answered in this pass that had not already been
+answered elsewhere in the document.
+
 1. **Closed — `count` is one stepper, not a third enum.** A17 needed 3 · 6 · 9 · 12, A18 5 · 10 · 15
    · 25 and A19 1 · 2 · 3 · 5. **The field is a 1–100 integer with per-design min, max and step**,
    and the bounds are the truth. **What the build still owes: somewhere to declare per-design
    bounds on a shared field**, plus the lock and its reason string.
-2. **Open — `fallback` belongs to the Data group, not to A19.** Every category that queries Ghost
-   has the same zero-item question; A19 is simply the first where the answer is visible.
+2. ~~**Open — `fallback` belongs to the Data group, not to A19.**~~ **Settled by the owner,
+   1 September 2026: it moves to the Data group, and P0·5 now carries it.** Every category that
+   queries Ghost has the same zero-item question; A19 was simply the first where the answer was
+   visible. **A19 keeps drawing the field and stops owning it. What the build owes: removing the
+   copy from every category that drew its own.**
 3. **Closed — the head's link pair was not a pair, so `linkUrl` is deleted.** `linkLabel` labels
    the post's own link and stays. A category-wide deletion of a field the schema still carries for
    A17 and A18: **the union is per category, and this is the proof.**
@@ -1033,41 +1153,66 @@ finding that vanishes looks like a finding nobody read.
    **The rule this establishes: a reader-visible string that names content is authored; one that
    names a control is translated.** The build needs both mechanisms.
 5. **Closed — Ghost cannot rank featured posts, so the section can.** `pickedPosts` is an ordered
-   reference list, and 12 Picks' ordinals are an honest editorial ranking at that Source. **What the
-   build still owes: a resolution rule for a picked post that is unpublished or deleted** — the spec
-   says skip it and fall through to *When nothing matches*, and that must be one rule, not fifteen.
-6. **Open — a pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.** Restated from A17
-   and A18; 5 Contrast Band derives them independently for the third time, and now derives them at
-   four ratios rather than one.
+   reference list, and 12 Picks' ordinals are an honest editorial ranking at that Source.
+   ~~What the build still owes: a resolution rule for a picked post that is unpublished or
+   deleted~~ — **settled in this document, in the Data group's own paragraph: a picked post that is
+   no longer published is skipped, and if none survive, *When nothing matches* applies, the same
+   rule the query sources use. One rule, written once.**
+6. ~~**Open — a pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.**~~ **Settled by the
+   owner, 1 September 2026: the pack takes all three.** Restated from A17 and A18; 5 Contrast Band
+   derived them independently for the third time, at four ratios rather than one. **What the build
+   owes: confirming the pack's values against what 5 Contrast Band draws at each of the four**, or
+   dark bands shift.
 7. **Closed by the design patch pass — there is no “this design cannot render this post”.** All
    fifteen render. 2 Full Bleed and 7 Overlap draw **Ground**, 4 Poster reflows, 13 Quote draws its own
    thin state, and every panel advises where it used to hand off. **What the build still owes: an
    editor-only advisory slot on a section** — one line that can name a missing field and a
    better-suited design without offering to change anything — plus the Hand-picked picker's warning,
    which is the same message arriving earlier.
-8. **Open — 14 Slim's Rule exists because of a pack risk, not a design choice.** A pack-level
-   “surface needs a hairline against background” flag would remove a control from the section. **The
-   universal Top divider makes this worse, not better**: the two are locked apart on that design to
-   stop a site drawing two hairlines 1 px apart.
-9. **Open — `carousel` is edit-safe: no.** The editor shows only the resting slide. The host may
-   want a preview-play affordance for module-bearing sections generally; **no Preview control belongs
-   in a sidebar**, which is why none was added.
-10. **Open, narrowed — two 14 Slim bars on one page.** At a query Source they still draw the same
-    post and nothing warns. **Hand-picked lets a site give each bar its own piece**, which is the
-    practical fix; the editor still has no cross-section awareness of queries.
-11. **Open — print rules live per design and nowhere central.** 5 Contrast Band prints as 1 Split,
-    15 Carousel prints its slides stacked. Three categories in, this should be a field.
+8. ~~**Open — 14 Slim's Rule exists because of a pack risk, not a design choice.**~~ **Settled by the
+   owner, 1 September 2026: 14 Slim keeps its Rule control.** A pack-level “surface needs a hairline
+   against background” flag would remove it, but **removing a control on the strength of a pack flag
+   that does not exist yet is worse than one extra row.** The lock against the universal Top divider
+   stands as drawn.
+9. ~~**Open — `carousel` is edit-safe: no.**~~ **Settled by the owner, 1 September 2026: no Preview
+   control in a sidebar, and `carousel` stays edit-safe: no.** The editor shows only the resting
+   slide, which is not a fault. **A preview-play affordance for module-bearing sections is the
+   host's question, later** — not a section's control, and not this category's to add.
+10. ~~**Open, narrowed — two 14 Slim bars on one page.**~~ **Settled by the owner, 1 September 2026:
+    they stay unwarned.** At a query Source two bars can still draw the same post. **Hand-picked
+    lets a site give each bar its own piece**, which is the practical fix; **cross-section awareness
+    of queries is a large build for a rare mistake**, and it is not bought for this.
+11. **Open — print rules live per design and nowhere central.** ~~5 Contrast Band prints as
+    1 Split~~ — **corrected by the design patch pass, 30 August 2026: it prints its own arrangement
+    on white with the band's ground dropped, because no design ever turns into another design.**
+    15 Carousel prints its slides stacked. **Settled by the owner, 1 September 2026: print becomes a
+    proper field when a fourth case appears.** Two designs is not enough plumbing to justify, and the
+    two both state their own behaviour in their own entries.
 12. **Open, and larger after this pass — per-design field names are a consequence of the designs.**
-    `padding` is written by nothing now; `tag` is written by eleven designs and `railHeading` by one;
-    `perView` was anticipated and is still unwritten. **The per-design field list should be generated
-    from the designs rather than declared ahead of them.**
+    `padding` is written by nothing now; ~~`tag` is written by eleven designs~~ — **twelve, since
+    the owner ruled 11 Lead and Rail's Tag row in on 30 August 2026** — and `railHeading` by one;
+    `perView` was anticipated and is still unwritten. ~~**The per-design field list should be generated
+    from the designs rather than declared ahead of them.**~~ **Settled by the owner, 1 September
+    2026: generated from the designs.** It has drifted twice already, in both directions. **What the
+    build owes: the generated list will disagree with the written one somewhere — that is the point,
+    and it earns a cleanup pass.**
 13. **New — cross-field dependencies need a vocabulary.** Order is disabled at Hand-picked; the
     picker's ceiling is Count's maximum; Count is disabled at Hand-picked because the list is the
     count; Scrim disables a failing value against a measured image. **Four different kinds of
-    dependency in one category, all drawn by hand.**
+    dependency in one category, all drawn by hand.** ~~How a disabled dependency should look~~ —
+    **settled by the pass-two rule *a control switched off by another is greyed, with the reason
+    beside it*, 1 September 2026: greyed, never hidden, the reason a sentence at the control, the
+    fallback named.** **How the schema declares one is still unanswered, and the count is now ten
+    cases across nine designs plus two on every design in the category. OPEN FOR THE OWNER** — the
+    only item on this list that is. The *display* is settled twice over: greyed with a reason at the
+    control, and **the mechanism ships in P0·0's shared control definition** (the owner, 1 September
+    2026), so what remains is the schema's declaration of the dependency itself, not its appearance.
 14. **New — the universal trio needs a lock with a reason string.** Five locks in A19, each drawn
     with the sentence that explains it. **A lock without a reason reads as a bug**, and the reason is
-    per design, so it cannot live in the trio's own definition.
+    per design, so it cannot live in the trio's own definition. Pass two widened it — the same string is
+    owed by every greyed row, not only by a locked one — and ~~it was open~~ **settled by the owner,
+    1 September 2026: one mechanism, shipping in P0·0's shared control definition rather than written
+    per category.** A greyed state, a struck value, a reason field on the control, a named fallback.
 
 ---
 
@@ -1256,7 +1401,7 @@ pack or spacing step changed.**
 | **Slider labels** | **No subject to fix.** A19 draws no slider. Every scale row already names what it affects and reuses the standard words — **Vertical spacing**, **12 Picks' Row density** and **14 Slim's Density** all read Compact · Comfortable · Spacious; **4 Poster's Width** and **11 Lead and Rail's Rail width** read Narrow · Medium · Wide and Narrow · Standard. No invented three-word vocabulary anywhere in the category. |
 | **Gap names are "Tight · Normal · Loose"** | **No subject.** A19 exposes no gap control at any width: the 100 px between 1 Split's columns, the 24 px gutters, the 96 px between 9 Alternating's bands and the 64 px overlap on 7 Overlap are all fixed values in the arrangement. Nothing to rename, and no Tight/Even/Airy or Tight/Standard/Wide survives anywhere. |
 | **Item counts are a number picker** | **Already done, and re-checked on all fifteen.** Count is the shared **1–100 stepper with per-design bounds**, not an enum: locked at 1 on nine designs and at 2 on 10 Pair, min 1 · max 3 on 8 and 9, max 8 on 11 and 15, max 10 on 12. **Every locked row is drawn greyed with its reason visible** and the design that reads better named beneath — advice, not a switch. No row of fixed count buttons is left in the category. |
-| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen. **The swatch row is Base; there is no "Inherit" value anywhere in A19** and none was removed, because none existed. No design renames a shared control or adds a choice to one. Every narrowing already carried its reason except the two on 9 Alternating, which are in **What changed** above: 3 Card's missing Wide 16:9, 2 Full Bleed's absent Ratio and Tag rows, 4 Poster's absent Title size, 5 Contrast Band's Contrast lock and missing With photograph value, 7 Overlap's disabled Large, 12 Picks' absent Ratio and Title size, 13 Quote's absent Excerpt and Tag rows, 14 Slim's absent Tag row, and the five universal-trio locks. **The one narrowing still without a reason is 11 Lead and Rail's absent Tag row — the open question below.** |
+| **A design may offer fewer choices on a shared control, and must say why** | Re-checked on all fifteen. **The swatch row is Base; there is no "Inherit" value anywhere in A19** and none was removed, because none existed. No design renames a shared control or adds a choice to one. Every narrowing already carried its reason except the two on 9 Alternating, which are in **What changed** above: 3 Card's missing Wide 16:9, 2 Full Bleed's absent Ratio and Tag rows, 4 Poster's absent Title size, 5 Contrast Band's Contrast lock and missing With photograph value, 7 Overlap's disabled Large, 12 Picks' absent Ratio and Title size, 13 Quote's absent Excerpt and Tag rows, 14 Slim's absent Tag row, and the five universal-trio locks. ~~**The one narrowing still without a reason is 11 Lead and Rail's absent Tag row.**~~ **Settled by the owner on 30 August 2026: the twelfth Tag row was ruled in, governing the lead alone. No unreasoned narrowing is left in the category.** |
 | **Member buttons are conditional, and Ghost's sign-up pop-up needs JavaScript** | **No subject, and it is worth stating why.** **Every action in A19 is a link to a post.** There is no Sign up, no Subscribe, no paid-tier button and no Portal deep link in fifteen designs, so nothing renders conditionally on self-signup or a payment provider, and nothing opens Ghost's pop-up. Member visibility is offered nowhere either: a spotlight that hides itself from a logged-out reader is A32's paywall wearing a section's clothes. |
 | **The no-JavaScript notice** | **No subject, and no promise to withdraw.** A19 holds **no subscribe field and no sign-in field** in fifteen designs, so there is nothing for the notice to replace, and no sentence in this document ever said a reader could subscribe without JavaScript. The per-design JavaScript-off line stands and is unchanged: **fourteen designs are pixel-identical**, and 15 Carousel is a native `scroll-snap` strip minus its dots and arrows, quoted from the registry. |
 | **Ghost's templates cannot count, add, or remember** | Two subjects, both in **What changed**. Everything else was already clean: **the count line ("5 posts are featured. 3 drawn.") is editor-only text and never reaches a reader**; 9 Alternating's alternation is `:nth-child(even)` with `row-reverse`, not a computed index; 8's missing rule at two followers is `:last-child`; 11's lead-then-rail split is the loop's own first item. **No design shows a total, a saving, a "and 2 others", or a heading that appears only when a value changes.** |
@@ -1285,7 +1430,21 @@ pack or spacing step changed.**
    **Ground now spends the contrast colour a fourth way**, as a field behind nothing. Print rules
    still live per design. **The twelfth Tag row adds nothing new to the build**: it is the row eleven
    designs already carry. **What Ground adds to the build's list: one token used as a picture's
-   substitute, at the picture's exact box, in two designs.**
+   substitute, at the picture's exact box, in two designs.** **OPEN FOR THE OWNER — and after
+   1 September 2026 this is the only item in the category that is, alongside finding 13's schema
+   half.**
+
+2. ~~**Added by pass two — a reason string on every greyed row, not only on a locked one.**~~
+   **Settled by the owner, 1 September 2026: one mechanism — a greyed state, a struck value, a reason
+   field on the control and a named fallback — shipping in P0·0's shared control definition**, not
+   written per category as each is patched. Ten cases across nine designs here, plus Order and Count
+   on all fifteen, each carrying a sentence written per design.
+
+3. ~~**Added by pass two — the Data group hides where this category greys.**~~ **Settled by the
+   owner, 1 September 2026, in two parts.** The picker and the Tag-or-author field are **a mode**,
+   revealed when that Source is pressed — P0·0's own carve-out, and this rule does not reach them.
+   **Count and Order are greyed**, and **P0·5 changes to match A18 and A19** rather than the two
+   categories redrawing. **Nothing is left open here.**
 
 ### Module declarations added — 31 August 2026
 
@@ -1344,3 +1503,166 @@ gap created or closed, no number reused, nothing added, removed or renumbered.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are
+named, never numbered.
+
+**Frames changed — sixteen, and every one of them.** All fifteen design frames and `A19-0 Category
+Proof` gain a **PASS TWO PATCH** section: on a design frame, the greyed control drawn at its real
+size with the reason beneath it, the universal Order-and-Count card, and a rule-by-rule grid saying
+what each of the five rules and each of the two Ghost findings did to that design; on the proof, the
+**disabled-control map** for the whole category and the same grid read category-wide. **No
+arrangement moved, no control was added, removed or renamed, no value or default changed, and no
+type scale, colour pack or spacing step changed.**
+
+### What changed, and the rule that required it
+
+1. **The disabled-control pattern is applied without exception** — *a control switched off by another
+   is greyed, with the reason beside it*. The row is drawn, the switched-off value is struck through,
+   the reason is one short sentence at the control rather than a tooltip, and the fallback named is
+   the value the design already resolved to. **Order and Count grey at Source: Hand-picked on all
+   fifteen**; **nine designs carry a case of their own** — 2 Full Bleed's Scrim (twice), 3 Card's
+   Surface value, 8 Lead and Two's Divider, 9 Alternating's Divider and Starts, 11 Lead and Rail's
+   Rail detail and Rail heading, 12 Picks' Divider, 13 Quote's Author photo, 14 Slim's Detail,
+   15 Carousel's Navigation. The full map is in **The disabled-control pattern** above.
+2. **Two rows were accepting a value the design would not honour, and both are fixed** — same rule.
+   **3 Card's Surface** was accepted at Background role Surface and silently resolved to Outline,
+   disclosed in the panel; **14 Slim's Detail** went on accepting a value at Alignment Centred while
+   the design drew nothing at the right edge. Both now grey with the reason at the control. **These
+   are the pass's only behavioural changes in A19.**
+3. **One new greyed row is invented and flagged** ⚑ — same rule. **2 Full Bleed's Scrim greys
+   entirely at a post with no picture**, because Ground draws no scrim and there is nothing to lift
+   the text off; the stored value returns with the next picture. The existing per-value greying at a
+   failing hand-picked image is unchanged.
+4. **Locks are restated as the rule's neighbouring case, not converted into it** — same rule. The
+   nine Count locks at 1 and 10 Pair's at 2, 7 Overlap's Title size Large, and the five universal-trio
+   locks are **drawn greyed with a reason, never hidden**. A lock by the design is not a switch by
+   another control.
+5. **Four things were deliberately left ungreyed, and each is named** — same rule. A **width** is not
+   a control (9's Starts and 11's Rail width below 1080, 4 Poster's Alignment below 767,
+   15 Carousel's Arrows resolving to Dots below 1080); a **warning** stays a warning where both
+   values are honoured (6 Big Type's two hairlines, 5 Contrast Band's Portrait at Title Large,
+   4 Poster's centred three-line excerpt); **an arrow disabled at the end of a track is a state of
+   the track**; and **an absence is not a disablement**.
+6. **The rule's one exception is claimed nowhere** — same rule. No control in A19 is one the project
+   can never offer; there is no visitor dark-mode switch and no pinned colour scheme here, so nothing
+   is left undrawn.
+7. **No change** — *avatars with no photograph show initials, and the two forms are not
+   interchangeable*. Three designs draw the circle — 1 Split, 4 Poster, 13 Quote — and each shows
+   **one letter**, settled in the design patch pass. **A19 has no list the site types itself**, so
+   the two-initial form has no subject in the category at all.
+8. **No change, one sentence confirmed** — *the Remove button never greys out*. The Hand-picked post
+   picker is A19's only repeating list, remove is live on every row, and **there is no minimum to
+   defend**: removing the last pick empties the set and *When nothing matches* applies.
+9. **No conversion, in either direction** — *a count that picks between drawn layouts is a named set,
+   not a number picker*. A19's Count counts posts, so it stays the shared 1–100 stepper with
+   per-design bounds; every other row in the category is already a named set with a drawn frame
+   behind each value.
+10. **No design declares one** — *a design may declare the width below which its script runs*.
+    Fourteen designs carry no module. **15 Carousel's `carousel` runs at every width** — the track is
+    a native `scroll-snap` strip at 390 as much as at 1440 — so there is no width to declare and its
+    JavaScript-off line already describes every width.
+11. **Neither Ghost finding reaches this category, and both are recorded rather than skipped.**
+    *The feature-image caption renders differently on the two Ghost versions*: **A19 reads
+    `feature_image` and `feature_image_alt` and never a caption** — the paragraph under a title is
+    `excerpt` — so a builder who adds one should know that Ghost 6 drops `<em>` and `<strong>` from a
+    caption while keeping links and `<b>`, and Ghost 5 keeps both. *A comment count renders nothing at
+    all without JavaScript*: **A19 reads no count, ships no comment noun and labels no number**;
+    A28 owns that surface.
+12. **The Open questions housekeeping is done** — the pass's own instruction. Every item in **Findings
+    for the architect** that had since been settled is struck through with who settled it — the
+    unpublished-pick rule (settled in this document's Data group paragraph), 5 Contrast Band's print
+    line (the design patch pass, 30 August 2026), the eleven-versus-twelve Tag count and the "one
+    narrowing still without a reason" line (the owner, 30 August 2026), the Preview-control half of
+    finding 9, and the display half of finding 13 (this pass's own rule). **Every genuinely open item
+    carries OPEN FOR THE OWNER on its own line** — **two of them after the owner's rulings of the
+    same day**: finding 13's schema half and the Ground token, and no others. Nothing was answered in
+    the housekeeping itself that had not already been answered somewhere in the document.
+13. **The owner's eleven rulings closed nearly all of it, the same day** — recorded in **The owner's
+    rulings** below. Seven items on **Findings for the architect** that this pass had left marked
+    OPEN FOR THE OWNER were answered by him and are now struck through with his ruling: `fallback` to
+    the Data group, the three pack colour values, 14 Slim's Rule kept, no Preview control in a
+    sidebar, two Slim bars left unwarned, print a field at a fourth case, and the per-design field
+    list generated. Findings 13 and 14 are struck on their display half — the reason-string mechanism
+    ships in P0·0's shared control definition — and **finding 13's schema half is the one thing left
+    open on that list**, with the Ground token in the closing questions beside it. **Two items, not
+    seven, and each says which.**
+14. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The owner's rulings — 1 September 2026
+
+Nine questions were put to him the day this pass landed. **Eight are answers to standing findings and
+change no drawing; one closes the conflict this pass raised.**
+
+1. **The picker is a mode, not a hidden control** — *a control switched off by another is greyed,
+   with the reason beside it*. The Hand-picked posts picker and the Tag-or-author field are revealed
+   when that Source is pressed; they are not rows that were switched off and taken away, so **P0·0's
+   mode carve-out covers them and this rule does not reach them**. The conflict this pass recorded is
+   closed. **The narrower discrepancy below is not**, and he did not rule on it.
+2. **Every greyed row carries a reason string, written per design** — same rule. The build gets one
+   mechanism: a greyed state, a struck value, **a reason field on the control** and a named fallback.
+   The alternatives he refused: a fixed library of standard reasons (the sentences are per design and
+   would flatten into uselessness) and leaving each panel to write its own (which is how a greyed row
+   ends up with no explanation, and a rule reads as a bug).
+3. **`fallback` — *When nothing matches* — moves to the Data group**, where every querying category
+   needs it. A19 keeps drawing it; it stops being A19's field. Filing, not design.
+4. **The pack takes `on-contrast`, `on-contrast-accent` and `on-accent`.** 5 Contrast Band has
+   derived them independently three times and Ground now spends the contrast colour a fourth way.
+5. **14 Slim keeps its Rule control.** Removing a control on the strength of a pack flag that does not
+   exist yet is worse than one extra row.
+6. **No Preview control in a sidebar.** A play affordance for module-bearing sections is the host's
+   question, later; `carousel` stays edit-safe: no.
+7. **Two 14 Slim bars on one page stay unwarned.** Hand-picked is the practical fix; cross-section
+   awareness of queries is a large build for a rare mistake.
+8. **Print becomes a field when a fourth case appears.** Two designs is not enough plumbing to justify.
+9. **The per-design field list is generated from the designs**, not declared ahead of them. It has
+   drifted twice already — `perView` written by nothing, `tag` counted at eleven when it was twelve.
+
+**None of these changes a frame in A19.** Rulings 3, 4 and 9 are build-side; 5, 6, 7 and 8 confirm
+what is already drawn; 1 and 2 are recorded above and in **The disabled-control pattern**.
+
+### The two P0 amendments this pass produced
+
+**Both the owner's, both 1 September 2026, and neither redraws an A19 frame.**
+
+- **Count and Order are greyed at Hand-picked, and P0·5 changes to match A18 and A19.** The primitive
+  listed the two rows as absent; both readings passed P0·0's test, and he took the greyed one because
+  **they are rows a user expects to find** — unlike the picker, which exists only once you are in
+  that mode. One panel changes rather than two shipped categories, and **P0·0's absent list drops
+  from four cases to three**.
+- **The reason string ships in P0·0's shared control definition**, not per category as each is
+  patched. Every category will need it, and the per-category route produces eight variants of one
+  field.
+
+### Left alone deliberately
+
+**Two things in this category were changed outside Claude Design and are untouched here.** The
+count-agnostic product copy — nothing in this pass writes a number of designs into any marketing or
+app string, and none was reintroduced — and **P0's per-prop mark allowlist**, whose wording about
+marks being *absent* rather than greyed is P0's text and is not restated, softened or contradicted by
+anything above. **A19's own rule is different in scope and does not touch it**: a mark a field does
+not permit is absent from the toolbar; a *control switched off by another control* is greyed with its
+reason. Where a sentence in this document might have been edited in the repository rather than here —
+the roster's phrasing, the free-designs line, the module table — **it was left as found**.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Split** and **6 Big Type** — both of which exist in this category's roster. Unchanged
+   from the owner's ruling of 30 August 2026.
+
+3. **The owner's eleven rulings of 1 September 2026 are recorded above**, each against the finding it
+   answers. **All eleven change no drawing in A19**; two amend **P0** — Count and Order greyed in
+   P0·5, the reason string shipped in P0·0. **Two open questions are left in this category, both named**: how the schema declares a
+   cross-field dependency (finding 13's schema half — its display is settled) and Ground's picture-
+   substitute token. Every other item on **Findings for the architect** is struck through with who
+   settled it.
+
+— End of pass two —

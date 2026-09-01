@@ -20,6 +20,8 @@ Every rule below is stated once here and once on the design's own frames and spe
 
 **Fourth pass — the design patch pass (this document's current state), 30 August 2026.** The ten library-wide rules were applied to the category and read back against every design in it, together with the four platform facts the pass rests on. **Two rules changed something drawn or promised, and eight were already satisfied.** The rule that **no design ever turns into another design** deleted five sentences — 3 Four Up "is 1 Three Up" at three items, 7 Alternating Media "is 6 Rows" with no pictures, 8 Media Top "is 4 Cards" with no pictures, 12 Tabs offering the switch to 4 Cards at one item, and the shared floor's promise that crossing a floor "offers the switch" — and the designs now hide what does not apply while the panel advises. The rule that **the Remove button never greys out** reached exactly one place, **14 Scroller's Remove at five cards**, which is no longer disabled. Beyond the rules, four platform facts cost this category five measurements and one promise: **11 Checklist's two columns are CSS column balance rather than a computed row count**, **15 Index's numerals are the loop's own one-based counter with a fixed twelve-value lookup over it**, **5 Split Head's sticky head is no longer withdrawn by a measured 240 px**, **9 Bento's large picture is no longer dropped below a derived 120 px**, **12 Tabs' fall-back tab clips by its own width rather than counting characters**, and **14 Scroller's five-card floor is not enforced against a bound feed**. **Nothing was renumbered, no design was deleted, and no module name was coined.** Every change is listed with the name of the rule that required it in **Patch notes** at the end.
 
+**Fifth pass — design patch pass two (this document's current state), 31 August 2026.** Five further rules and two findings from real Ghost servers were read against all sixteen, and **the pass ended by removing a rule rather than drawing one**. *A control switched off by another is greyed, with the reason beside it* reached exactly one place in A5 — **1 Three Up**, where Media: Icon in accent disabled Below the set's Action value on the accent budget. Drawn in P0·0's treatment and put to the owner, **it was withdrawn: the accent budget advises and does not enforce** (31 August 2026). Nothing in A5 is switched off by another control now, so **the category holds no worked example of the greying rule** and the pattern stays drawn once in P0·0. One P0 ruling came out of the same message and A5 follows it: **a single value switched off inside a live control greys at placeholder-grey `#A8A29A`**, which corrects 1 Three Up's Item link: Whole item. *The Remove button never greys out* is unchanged; *avatars with no photograph* lands nowhere, A5 drawing no person in sixteen designs; *a count that picks between drawn layouts is a named set* is satisfied as written, A5 having no Count row and How many being a genuine number; *a design may declare the width below which its script runs* is declared by nothing here, both behavioural designs running at every width. Both findings — the feature-image caption that Ghost 6 strips and Ghost 5 keeps, and the comment count that renders nothing without JavaScript — **apply nowhere in A5 and are recorded so they stay that way**. **Nothing was renumbered, no design was deleted, no arrangement moved and no module name was coined.**
+
 **[Free] designs:** 1 Three Up · 6 Rows
 
 *The owner's ruling, 30 August 2026 — not a recommendation. Two different shapes, both photograph-proof: a three-column grid across the page and a hairline-divided list down it. The shortlist he chose from was 1 Three Up, 4 Cards, 6 Rows, 11 Checklist and 15 Index.*
@@ -125,14 +127,18 @@ A centred head over three bare items on the page's own ground. The category's fl
 |---|---|
 | Media | Icon · Icon in a tint · Icon in accent · None |
 | Head alignment | Centred · Left |
-| Below the set | Action · Note · Nothing |
-| Item link | None · Text link |
+| Below the set | Action · Note · Nothing (available at every Media value; at Icon in accent the panel states the accent is already spent) |
+| Item link | None · Text link · ~~Whole item~~ (unavailable — an item with no edge has nothing for a hover to change; 4 Cards has it) |
 | Member visibility | Everyone · Logged out · Free members · Paid members |
 | Background role (universal) | Background · Surface · Contrast (the old Ground row, all three values — Contrast is still the band without 10's own controls) |
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 |
 | Top divider (universal) | None · Line · Fade (default None) |
 
-**Picture is not offered.** A photograph needs an edge to sit against and these items have none — a picture on the page ground with text under it is 8 Media Top without its card. **Icon in accent disables the Action value** of Below the set, with the reason shown: six accent squares and an accent button is the accent spent seven times.
+**Picture is not offered.** A photograph needs an edge to sit against and these items have none — a picture on the page ground with text under it is 8 Media Top without its card. **Icon in accent no longer disables anything — the owner's ruling, 31 August 2026.** The design used to switch Below the set's **Action** value off at Media: Icon in accent, on the argument that six accent squares and an accent button is the accent spent seven times. **The disablement is withdrawn.** Nothing technical ever prevented the pairing: the rule was the category's accent budget enforced in the editor, and the owner ruled that the budget advises rather than enforces. Both controls are now live at every combination, and the Media control carries one sentence — *“Icon in accent spends the accent once per item. The Action below stays available — the panel says the accent is already spent, and the site decides.”* **Both states are still drawn** on `A5-1 Three Up.dc.html`, tinted icons with an accent action beside accent icons with an accent action, so the cost is looked at rather than argued. **§0's accent budget stands as written** — spent once or twice — and is read as guidance a site may exceed. *Flagged: reading §0 as guidance rather than rewriting it is mine, and is for the owner if he wants the sentence changed.*
+
+**What is still switched off here, and it is not a budget.** **Item link: Whole item** stays unavailable — an item with no edge has nothing for a hover to change, which is structural — and it is drawn at **P0·0's placeholder-grey `#A8A29A`**, corrected this pass from `#C4BDB2` under the owner's ruling that **a single value switched off inside a live control takes the same grey as a whole switched-off control**. That rule is P0·0's and is written there; A5 states nothing of its own about it.
+
+**Consequence for the library.** A5 was asked to be the worked example of the greying rule and, its one case having been withdrawn, **it no longer holds one**. The pattern remains drawn once in P0·0, and a category that genuinely switches one control off with another should carry the example instead.
 
 **The grid.** Three 410 px columns on a 1296 px content width, 32/40 gaps, the head 780 / 620 px and centred, 64 px above the set and 56 px below it. A short last row keeps its column width and stays left-aligned; fewer than three items divides the row by the item count. **The items stay left-aligned at both head alignments** — centring six short paragraphs in three narrow columns leaves the body copy two ragged edges.
 
@@ -142,7 +148,7 @@ A centred head over three bare items on the page's own ground. The category's fl
 
 **a11y.** The floor, as §0. Icons `aria-hidden` at every treatment, including Icon in accent where they are the most conspicuous thing in the section. Zoom: at 200% text the three columns become one and the 40 px container does not grow.
 
-**Flagged.** The 410 px item and the 64/56 px separations, the action's return to A1·1's metrics, the four Media values, refusing Picture, disabling the action at Icon in accent, the items' independence from the head's alignment, the 1080 breakpoint, the 28/24 px mobile gaps, and the container's dark-mode step to `#2B2620` on a surface ground.
+**Flagged.** The 410 px item and the 64/56 px separations, the action's return to A1·1's metrics, the four Media values, refusing Picture, advising rather than disabling the action at Icon in accent, the items' independence from the head's alignment, the 1080 breakpoint, the 28/24 px mobile gaps, and the container's dark-mode step to `#2B2620` on a surface ground.
 
 ---
 
@@ -665,7 +671,7 @@ Two columns of one-line items with a small mark at the left. The design settleme
 
 **The list.** Two columns on a 1000 px measure with a 64 px gutter, filled **down the first column then the second** (**CSS column balance** — a template cannot count its own items and neither can CSS, so the two columns are balanced rather than divided by a computed row count) so visual order and DOM order agree; an odd count puts the extra entry at the foot of the first column. Entry 17 px in the **body font at 500**, still an `<h3>`. Mark 16 px with a 14 px gap and a 3 px optical lift. The hairline at Rules Show runs to the end of its own column, never across both.
 
-**The accent.** Check and Dot spend the accent once per entry — a stated departure from §2's twice, on the argument that at Check the mark is the only thing making eight lines a list of things included. **A check is a claim;** Dot is for a list that is only a list, and Rule uses no accent at all.
+**The accent.** Check and Dot spend the accent once per entry — a stated departure from §2's twice, on the argument that at Check the mark is the only thing making eight lines a list of things included. **A check is a claim;** Dot is for a list that is only a list, and Rule uses no accent at all. **The marks do not switch the section action off and never did** — *the owner's ruling, 31 August 2026*: a 16 px tick reads as punctuation where a filled accent square reads as a block of colour, so the marks are exempt from the budget's arithmetic and **Below the set: Action stays available at every value of Mark**.
 
 **Responsive.** Two columns at every width, gutter 64 / 40 / 20, entry 17 / 17 / 16, mark 16 / 16 / 14. At ≤ 767 the phone control decides: Keep two columns needs short entries and lets the site **write a shorter set for the phone — the only per-width content in A5**; One column keeps the desktop wording at 350 px.
 
@@ -1141,6 +1147,8 @@ Nothing was renamed and no value was added to a shared row. The rows below are t
 | 15 | Index | identical — the numerals are in the HTML like any other text |
 | 16 | Panel | identical — the plane, the inset and the dividers are CSS |
 
+**No design in A5 declares a width below which its script runs**, so no line above needs a second side. The two designs that run a script run it at every width: 12 Tabs is a tab row at 1440 and a sideways-scrolling tab row on a phone and never becomes an accordion, and 14 Scroller's rail is the one arrangement in A5 that does not change at any width. The other fourteen have no script to declare a width for.
+
 **Member asks:** the eleven designs that draw the section action carry the conditional-render note and, where the action opens Ghost's own sign-up pop-up, the line **with JavaScript off, nothing happens**. The five that do not draw the field carry neither.
 
 ## Behaviour declared, design by design — unchanged
@@ -1181,8 +1189,12 @@ Every change below carries the **name** of the rule or the platform fact that re
 
 ### Open questions for the architect — both unchanged
 
+*Housekeeping, 31 August 2026: this list was read item by item against everything settled since it was written. **Neither has been settled anywhere in this document**, so nothing is struck through and both carry their own line below. Neither is answered here.*
+
 1. **12 Tabs is announced twice with JavaScript off.** The registry's degradation precedes each stacked panel with its tab label as a heading; each panel already contains an h3 that repeats that label deliberately. Either the module's heading is suppressed where a panel carries one, or this design's h3 repeat is dropped in the no-JavaScript branch. **ARCHITECT: registry ruling.** No module name was coined.
+**OPEN FOR THE OWNER**
 2. **14 Scroller's rule has no registry sentence.** `carousel`'s degradation names dots and arrow buttons; this design refuses dots and offers a 3 px static rule instead. Read here as an indicator and hidden with the arrows. Either the registry's sentence gains the rule, or the rule is specified as a CSS-only element that survives. **ARCHITECT: registry ruling.**
+**OPEN FOR THE OWNER**
 
 ### The owner's rulings — 30 August 2026
 
@@ -1203,3 +1215,41 @@ Every change below carries the **name** of the rule or the platform fact that re
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** sixteen designs, numbered **1–16**.
+
+---
+
+## Patch notes — design patch pass two, 31 August 2026
+
+Every change carries the **name** of the rule or the finding that required it. Rules are named, never numbered.
+
+**Frames changed — five.** `A5-1 Three Up`: the drawn section **Icon in accent, and the Action beside it** — the pair in both states, both controls live — the Media control's sentence, the Item link row's grey corrected to `#A8A29A`, and a patch card carrying the three rulings. `A5-11 Checklist`: the marks-are-exempt sentence on its accent paragraph. `A5-0 Category Proof`: a **PATCH PASS TWO** card. Outside A5, the owner's grey ruling is written into `P0-0 Greyed Control Pattern` and the P0 specification. **No section frame was redrawn, no arrangement moved, no type scale, colour pack or spacing step changed, and no other design's panel was touched.**
+
+### What changed, and the rule that required it
+
+1. **1 Three Up's Icon-in-accent disablement was drawn, put to the owner, and withdrawn** — *a control switched off by another is greyed, with the reason beside it*. The rule had been written in words on 1 since the previous pass and had never been drawn, so it was drawn in P0·0's treatment: the Action value placeholder-grey, cursor `not-allowed`, the row in its place, the pill on the value in force, the sentence “Not available while the media uses the accent colour.” under the control. **The owner then removed the underlying rule on 31 August 2026** — the accent budget advises, it does not enforce — so the greying came out. What stands in its place: **both controls live at every combination on 1, 2 Two Up, 4 Cards and 6 Rows**, the Media control carrying one sentence saying the accent is already spent, and **both states still drawn** on `A5-1 Three Up` so the cost is visible. **A5 therefore holds no worked example of the greying rule**; P0·0 remains its one drawing. *Flagged: §0's accent-budget sentence is kept verbatim and read as guidance a site may exceed, rather than rewritten.*
+2. **The Remove button never greys out — unchanged, and now the reference case** — *the Remove button never greys out*. 14 Scroller's Remove at five cards stopped being disabled in the previous pass and is the category's only case; the other fifteen never dimmed it. Nothing in this pass touched a Remove. The two rules are the same shape seen from two sides: a floor about content the user owns is explained after the click, a control another control switched off before it.
+3. **Avatars land nowhere and are recorded again** — *avatars with no photograph show initials, and the two forms are not interchangeable*. A5 draws no person in sixteen designs: no author, no member, no initials plate, and nothing Ghost supplies a name to. Neither the two-initial form nor the one-letter form applies. Applied nowhere, recorded so a future person-shaped item in A5 does not pick a form by eye.
+4. **Nothing was converted between a picker and a named set** — *a count that picks between drawn layouts is a named set, not a number picker*. **A5 draws no Count row at all**; the count is the length of the item list and every maximum sits on Add. **How many** on 8 Media Top, 13 Spotlight and 14 Scroller stays a number picker, 1 to 9, default six, because it says how many posts to show rather than which arrangement to draw. The rows that do choose between drawn arrangements are already named sets and stay so: 15 Index's **Numeral** and **Arrangement**, 11 Checklist's **Mark** and **On a phone**, 14 Scroller's **Card width**, 4 Cards' **Card treatment**, 6 Rows' **Rules**.
+5. **No design declares a width below which its script runs** — *a design may declare the width below which its script runs*. Fourteen designs run no script. 12 Tabs runs `tabs` at every width — a tab row at 1440, a sideways-scrolling tab row on a phone, and **never an accordion** — and 14 Scroller runs `carousel` on a rail whose arrangement is identical at every width. **No no-JavaScript line in the table above gains a second side**, and one sentence was added under the table saying so.
+6. **The feature-image caption finding applies nowhere, and is written down so it stays that way** — *finding 1, tested on real Ghost servers, 31 August 2026*. Six designs draw pictures — 7, 8, 9, 12, 13, 14 — and none draws a caption: the fields are `itemImage` and `itemImageAlt`, and the three that bind to posts take the feature image without its caption. **Any caption field added to A5 later must say that Ghost 6 removes `em` and `strong` from a caption while keeping links and `b`, and that Ghost 5 keeps everything** — so a caption design that leans on italics gets them on one supported version and not the other.
+7. **The comment-count finding applies nowhere, with one consequence recorded** — *finding 2, tested on real Ghost servers, 31 August 2026*. No design in A5 reads a comment count; A28 Comments owns every shape that does. The consequence worth writing down: `itemMeta` on 6 Rows, 15 Index and 16 Panel is **authored plain text**, so a site typing “12 comments” there has typed a number nothing will ever update — the same rule as “Members only” in a meta being plain text and not a state.
+8. **The Open questions list was read item by item** — *housekeeping*. Both entries were checked against everything settled since they were written; **neither has been settled anywhere in this document**, so nothing is struck through, and each now carries **OPEN FOR THE OWNER** on its own line. Neither was answered here.
+9. **Nothing was renumbered and no design was deleted.** Sixteen designs, 1 to 16, no gaps, no number reused. No module name was coined, no module was renamed, no control was renamed, and **no control lost a value**: the one disablement the pass drew was withdrawn before it stood.
+
+### The owner's rulings — 31 August 2026
+
+All three questions this pass raised were put to him and answered in one message. **Nothing in this category is left open to him**; the two registry questions above remain the architect's.
+
+1. **The accent budget advises and does not enforce** — asked whether 2 Two Up, 4 Cards and 6 Rows should carry 1 Three Up's disablement, he **removed the disablement instead**. All four designs offer **Media: Icon in accent** beside a **Below the set: Action** without a greying; each panel states that the accent is already spent on the icons and the site decides. The reasoning he accepted: nothing technical prevents the pairing, the rule was a taste rule enforced in the editor, and a rule that only one of four identical designs carried was worse than no rule. **10 Contrast Band is untouched** — its accent action is disabled on a measured 3.2:1, which is an accessibility fact and not a budget.
+2. **One grey, one meaning — P0·0 states it, at `#A8A29A`.** A single value switched off inside a control that stays live takes the same placeholder-grey as a whole switched-off control, with `cursor: not-allowed`, the rest of the control behaving normally. A lighter second grey for “one value unavailable” was refused because the difference cannot be explained in a sentence. The rule is written into **P0·0's frame and the P0 specification**; A5's one case, **1 Three Up's Item link: Whole item**, is corrected from `#C4BDB2` to `#A8A29A` and A5 states nothing of its own about it.
+3. **11 Checklist's marks are exempt, and the design's text now says so.** A 16 px tick reads as punctuation where a filled accent square reads as a block of colour, so the per-entry marks do not count against the section action and **Below the set: Action stays available at every value of Mark**. Written into §11 and onto the frame's accent paragraph rather than left to be inferred.
+
+### Confirmations
+
+**Design numbering is unchanged:** A5 runs **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — sixteen designs, no gaps, nothing renumbered, nothing deleted, no number reused.
+
+**The `**[Free] designs:**` line is present** at the head of this document, written once, and names **1 Three Up** and **6 Rows** — both of which exist in the roster of sixteen above.
+
+### Left alone deliberately
+
+**Two things were changed outside this project and were not touched.** No count of designs was written into any copy in this pass — nothing in A5 carries one, and none was added. **P0's per-prop mark allowlist was not rewritten**: A5 cites the P0·1 toolbar by name and never restates what marks a field permits, so there was nothing here to soften or drop. Where this pass was unsure whether a line came from the repository or from this project, the line was left as found.

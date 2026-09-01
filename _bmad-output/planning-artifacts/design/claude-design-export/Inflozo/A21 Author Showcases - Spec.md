@@ -1250,7 +1250,7 @@ Cumulative. Reused components are listed with the category that set them.
 | Content box and padding ladder | 1,296 on 72 · 754 on 40 · 350 on 20; 64 · 96 · 132 | A17 |
 | On-contrast derivation | Every colour in a band from two `contrast` tokens | A17·7 |
 | Surface card | Radius token, md shadow in light, hairline in dark | A19·3 |
-| Missing-image vocabulary | Reflow · Plate · Hand off | A19 |
+| Missing-image vocabulary | Reflow · Plate · Ground ⚑ *corrected 1 September 2026 — A19 deleted Hand off and Ground replaced it; A24 adds Hide* | A19 |
 | Index line | Name 15–17 and count 13 tabular over a hairline | A20·7 |
 | Warm scrim | Warm dark gradient, strongest at the foot, fading through 34%; white over it | A20·13 |
 | Hand-picked reference list | 1–12 references to Ghost objects with the P0·3 item controls | A20 |

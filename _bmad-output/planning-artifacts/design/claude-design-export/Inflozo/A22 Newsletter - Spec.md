@@ -1,7 +1,8 @@
 # A22 Newsletter / Subscribe — written specification
 
 16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation patch, 25 August 2026** ·
-**newsletter patch, 28 August 2026**
+**newsletter patch, 28 August 2026** · **declarations standardised, 31 August 2026** ·
+**pass two, 1 September 2026**
 
 The frames are `A22-0 Category Proof.dc.html` and `A22-1` … `A22-16`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -37,6 +38,24 @@ where a newsletter's `visibility` is `paid`, and 10 Choice's tick-to-swap Portal
 static members link. Every subscribe ask also carries its two conditional lines: it does not render where
 the connected site cannot support it, and a button that opens Ghost's own sign-up pop-up does nothing with
 JavaScript off. **Nothing was renumbered.**
+
+**Pass two (this document's current state), 1 September 2026.** Five rules were added library-wide and read
+against all sixteen designs; **three of them changed something here.** *A control switched off by another is
+greyed, with the reason beside it* found **five rows that went on accepting a value the design would not
+honour** — 3 Split's Field at *Wide head*, 9 Slim Bar's custom label at *Label: Newsletter name*, 10 Choice's
+Members badge and 15 Two Up's Card meta on a site with no paid letter, and 16 Quote's heading at *Quote size:
+Large* — and each is now drawn greyed with its reason at the control and its fallback named. The work list's
+own item, *a feed with nothing in it shows its designed empty state*, is written into **12 Issue Preview**,
+which reverses two of that design's rulings: the rows, label and rule used to go absent together, and the
+explanation used to sit in the editor only. **It is never hidden and never back-filled with whatever is
+newest** ⚑, and two further rows grey there because of it — Archive link and the Data group's *When nothing
+matches*. *The Remove button never greys out* and *a count that picks between drawn layouts is a named set*
+found their subjects already compliant; *avatars with no photograph show initials* has **no subject at all**
+— A22 renders no person; *a design may declare the width below which its script runs* found **no design
+declaring one**. **Neither Ghost finding of 31 August reaches this category**: no design reads a
+feature-image caption and none reads a comment count. The **Open questions** housekeeping is in
+**Patch notes — pass two** at the end. **Nothing was renumbered, no control was added, removed or renamed,
+and no value, default, layout, type scale, colour pack or spacing step changed.**
 
 **[Free] designs:** 1 Inline Row · 13 Boxed
 
@@ -386,7 +405,8 @@ machine-checkable.
   **No Add and no Remove** ⚑ except at *Hand-picked*, where the picked list is a list of references
   with P0·3's controls (drag to reorder, ✕ never disabled, Add pre-filled with the next newest post)
   and **Count and Order disable, the list being both**. Three, four or six by the panel's Count.
-  **0** → rule, label and rows absent, the ask standing alone as 1 Inline Row ⚑. **1** → one row at
+  **0** → **the designed empty state** ⚑ *(pass two)*: the label and the rule hold and two fixed lines stand
+  where the rows were — never hidden, and never back-filled with the newest posts. **1** → one row at
   the grid's left, no stretch. **many** → wraps. Fields shown: `title` and `published_at` always,
   `feature_image` and `reading_time` when present, `visibility` in the Members badge; **a post with
   no feature image draws as Thumbnails: Hide for that row alone** ⚑.
@@ -516,6 +536,8 @@ swatch — the member-count line under the note — and the footer strip reads *
 Editing: the head, button label and note inline with P0·1, the note now taking the link mark; the
 five state strings through P0·6; the button taking a P0·2 icon.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is the category's reference drawing** — Heading size: **Display** greyed at Field width: Wide, struck, with the reason at the control and Large named as the fallback. Drawn this way since the reconciliation patch, so **the rule changed nothing here**, and the other four rows are independent of one another. No other rule of the pass has a subject: this design renders no person, owns no list, counts nothing, declares no script width and reads neither a caption nor a comment count.
+
 ---
 
 ### 2 · Card
@@ -565,6 +587,8 @@ while **Card padding kept its name**, being a different ladder. Background role 
 is an inset object on the page ground and the plane is the Card control, not the role. Source group,
 form contract, editing and the footer strip as category-wide.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** The five rows are independent; the only cross-row behaviour is **dark forcing Flat**, which is a mode honoured in light and already disclosed in the row, not one control switching another off. Nothing else in the pass has a subject here.
+
 ---
 
 ### 3 · Split
@@ -583,7 +607,7 @@ form contract, editing and the footer strip as category-wide.
    |---|---|
    | Split | Even · Wide head · Wide form (620·580, 720·480, 520·680 **on a fixed 96 px gutter**) |
    | Form side | Right · Left |
-   | Field | In a row · Stacked (**Stacked forced at Wide head**) |
+   | Field | In a row · Stacked; **In a row is greyed at Split: Wide head** — a 720 px head leaves 480 for the form and the row will not hold — with the reason at the control and Stacked named as the fallback ⚑ *(changed in pass two: the row used to accept the value)* |
    | Heading size | Regular · Large (**no Display value**) |
    | Below the field | Note · Nothing |
    | Social proof | Off · Member count |
@@ -609,6 +633,8 @@ form contract, editing and the footer strip as category-wide.
 **Reconciled.** Six of its own — **Social proof** ⚑ new, sitting under the note in the form column,
 not under the head. **Padding retired into Vertical spacing.** Background role moves the ground
 behind **both** columns, never one ⚑. Source group, form contract, editing, footer strip.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is a change.** *Stacked forced at Wide head* left the Field row going on accepting **In a row** while the design drew Stacked; the value is now struck with the reason at the control and Stacked named as the fallback ⚑. **Heading size' absent Display value stays a narrowing with its reason**, not a switch.
 
 ---
 
@@ -661,6 +687,8 @@ both exist. **Band padding keeps its name**; **Vertical spacing resolves 0 at Fu
 ladder returns at Page margin; **Top divider disables at Full bleed** — there is no ground above the
 band to draw it on. Source group, form contract, editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one switch and two locks, all three drawn.** Top divider's **Line** and **Fade** grey at *Band edges: Full bleed*, with the reason at the control. **Background role's Contrast lock and Vertical spacing resolving 0** stay locks — the rule's neighbouring case, greyed with a reason rather than hidden.
+
 ---
 
 ### 5 · Panel
@@ -709,6 +737,8 @@ the raised plane is this design's ground and its identity, and *Plane: Raised ·
 treatment, not its role. **Padding retired into Vertical spacing** (around the plane). Source group,
 form contract, editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** One lock — Background role at Surface, greyed with its reason — and no row accepting a value this design ignores. The plane's fixed internal padding is **an absence, not a disablement**, and is left as it was.
+
 ---
 
 ### 6 · Image Split
@@ -732,7 +762,7 @@ form contract, editing, footer strip.
    | Picture treatment | Bleed · Inset |
    | Image focus | Centre · Top · Bottom |
    | Plane | Raised · Flat |
-   | Field | Stacked · In a row (**In a row disabled at Wide picture**) |
+   | Field | Stacked · In a row; **In a row is greyed at Split: Wide picture** — the words take 388 and the row will not hold — with the reason at the control and Stacked named as the fallback |
    | Social proof | Off · Member count |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -763,6 +793,8 @@ and it is never a hidden field, so it is in the panel *and* in the Image Picker 
 picture bleeds into, three of its edges being the plane's own. **Padding retired into Vertical
 spacing.** Source group, form contract, editing (the alt edits in the Image Picker), footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, already drawn and now reasoned at the control** — Field: **In a row** greys at *Split: Wide picture*. **Picture side being ignored below 767 is a width, not a control**, and stays ungreyed. **The hand-off to 5 Panel is untouched** — no rule in this pass names hand-offs, and a deliberate sentence reverted silently is worse than one left standing.
+
 ---
 
 ### 7 · Cover
@@ -783,7 +815,7 @@ spacing.** Source group, form contract, editing (the alt edits in the Image Pick
    | Control | Values |
    |---|---|
    | Height | Short · Standard · Tall (**a minimum, not a crop**) |
-   | Scrim | Light · Medium · Strong (**Light disabled against light images**, checked on the bottom third) |
+   | Scrim | Light · Medium · Strong; **Light is greyed against a light picture**, measured on the bottom third where the form sits, with Medium named as the lightest value that passes. **The measurement runs in the editor when the picture is chosen, not on the site** ⚑ *(stated in pass two — CSS cannot see content)* |
    | Image focus | Centre · Top · Bottom |
    | Content position | Centre · Bottom |
    | Field width | Narrow 320 · Medium 400 · Wide 480 |
@@ -819,6 +851,8 @@ real defect) and **Social proof** ⚑ new. **Background role is locked at Image*
 shown: with no image the section hands off to 4, which is the same ask on a role. **Vertical spacing
 resolves 0 at Full bleed**, **Top divider disables there**, and **Height stays the band's own floor**.
 Source group, form contract, editing, footer strip.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **two cases.** Scrim: **Light** greys against a light picture, measured on the bottom third where the form sits — and **the measurement runs in the editor when the picture is chosen, not on the site** ⚑, because CSS cannot see content. **Top divider** greys at *Full bleed*, as on 4. **The hand-off to 4 is untouched**, for the reason given on 6.
 
 ---
 
@@ -869,6 +903,8 @@ at Contrast the display line becomes 4's band with display type on it. **The fra
 strip reads "Built with Inflozo"** ⚑ — it read "Published with Ghost", and FR-J15 applies to
 low-opacity page chrome exactly as it does to a masthead. Source group, form contract, editing.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own, and one deliberately not made.** **Vertical spacing: Compact at Huge stays an advisory** — both values are honoured, so a warning is the honest shape and greying would refuse a legitimate choice. *Eyebrow hidden by default at Huge* is a default, not a switch.
+
 ---
 
 ### 9 · Slim Bar
@@ -893,7 +929,7 @@ low-opacity page chrome exactly as it does to a masthead. Source group, form con
    | Strip padding | Compact 16 · Comfortable 24 · Spacious 36 (**inside the strip**) |
    | Rules | Above and below · Below only · None (**None raises the padding**) |
    | Field width | Narrow 320 · Medium 400 (**no Wide value**) |
-   | Label | Newsletter name · Custom |
+   | Label | Newsletter name · Custom. **The custom-label text row is greyed at Newsletter name** — the strip draws the letter's own name from Ghost — with the authored text kept and *Custom* named as the way to reach it ⚑ *(changed in pass two)* |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -923,6 +959,8 @@ and Top divider are locked** ⚑: Strip padding is the spacing ladder and *Rules
 — the patch names 1–8, 13 and 16, and 93 px has no line to spare. Source group, form contract,
 editing (the newsletter's own name says "Edit in Ghost"), footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is a change.** The **custom-label text row greys at *Label: Newsletter name***, where authored text was stored and never drawn, with the reason at the control, the text kept, and *Custom* named as the way to reach it ⚑. **The absent Wide field value and the two locked universal rows** stay a narrowing and two locks, each with its reason drawn.
+
 ---
 
 ### 10 · Choice
@@ -943,7 +981,7 @@ editing (the newsletter's own name says "Edit in Ghost"), footer strip.
    |---|---|
    | Plane | Raised · Flat |
    | Row detail | Name and description · Name only |
-   | Members badge | Off · On |
+   | Members badge | Off · On; **greyed where no newsletter on the site's `visibility` is `paid`** — the badge would have nothing to draw — and it returns with the first paid letter ⚑ *(changed in pass two)* |
    | Pre-ticked | All · The first · None (**None enabled in this pass**) |
    | Dividers | Hairline · None |
    | Field width | Narrow 320 · Medium 400 · Wide 480 |
@@ -995,6 +1033,8 @@ locked at Surface** ⚑ — the plane is the ground; the rows are what separate 
 **Padding retired into Vertical spacing.** **Two frames redrawn**: the members-only row now carries
 the badge, and the states frame gained a ticked-paid-letter state. Source group, form contract,
 editing (names, descriptions and visibility say "Edit in Ghost"), footer strip.
+
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is a change.** **Members badge: On greys where no newsletter on the site is `paid`** ⚑ — since the badge became paid-only the value rendered nothing at all — and a newsletter's visibility is a site-level fact, so the row can be read before the page is drawn. **Pre-ticked: None stays enabled** and **Background role stays locked at Surface**, both with their reasons visible. *A feed with nothing in it shows its designed empty state*: **no subject** — Ghost ships every site one newsletter and it cannot be deleted, so the list is never empty.
 
 ---
 
@@ -1049,6 +1089,8 @@ spacing.** **One frame redrawn**: a *Reason marks: Icons* example, three lines w
 the third left empty to show what an empty slot draws. **Social proof is not offered** ⚑ — the
 reasons are this design's proof. Source group, form contract, editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own, and one deliberately not made** — the per-line icon slots appear at *Reason marks: Icons* and nowhere else, and **a mode's own controls were never switched off**, so they are revealed rather than greyed and the reason is said once at Reason marks. *The Remove button never greys out*: **the category's one subject, and it was already compliant** — ✕ is live on every row, and at one line it produces the floor and the reason as one sentence under the list. *A feed with nothing in it shows its designed empty state*: **not a feed** — the reasons are authored and the floor is one line.
+
 ---
 
 ### 12 · Issue Preview
@@ -1070,8 +1112,8 @@ reasons are this design's proof. Source group, form contract, editing, footer st
    | Issue layout | Across · Listed |
    | Thumbnails | Show · Hide |
    | Issue meta | Date · Date and reading time · Off |
-   | Members badge | Off · On |
-   | Archive link | Show · Hide |
+   | Members badge | Off · On. **Not greyed on an all-public site** ⚑ — this badge reads a *post's* visibility, which changes request by request, where 10 Choice's reads a site-level fact *(stated in pass two)* |
+   | Archive link | Show · Hide; **greyed while the feed is empty** — there is nothing in the archive to link to — returning with the first issue ⚑ *(new in pass two)* |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1086,14 +1128,31 @@ reasons are this design's proof. Source group, form contract, editing, footer st
    its letters can say which posts they are, and **Hand-picked curates the three best issues** with
    P0·3's row controls, Count and Order disabling there. **P0·5's meta chips are not drawn twice** ⚑
    — this design's *Issue meta* enum is the meta control. Drafts, scheduled posts and pages are
-   excluded; **members-only posts are included and now badged** ⚑. **0** → rule, label and rows
-   absent, the ask standing alone as 1 Inline Row ⚑. **1** → one row at the grid's left, no stretch ⚑.
+   excluded; **members-only posts are included and now badged** ⚑. **0** → **the designed empty state** ⚑
+   *(written in pass two, reversing "rule, label and rows absent")*: the label and the rule hold, two fixed
+   lines stand where the rows were at one row's height, and **the feed is never back-filled with the newest
+   posts** — the Data group's *When nothing matches* greys its back-fill value here ⚑.
+   **1** → one row at the grid's left, no stretch ⚑.
    **many** → wraps at four and six. **Members off** → the issues stay and the field becomes the
    button-as-link ⚑.
 8. **Empty.** A post with no feature image → **that row draws as Thumbnails: Hide** ⚑ and the rows
-   around it are unchanged. **No placeholder row, no empty thumbnail, no "no issues yet" chip** ⚑.
-   A tag with no posts → the rows, the label and the rule are absent together ⚑, and the Data group
-   says so in the editor rather than the canvas drawing an empty band.
+   around it are unchanged. **No placeholder row and no empty thumbnail** ⚑ — a row stands for a post
+   that exists. **A feed with nothing in it draws its designed empty state** ⚑ *(written in pass two,
+   and it reverses two rulings in this entry)*: the **label and the rule hold**, and where the rows were
+   there is one line reading **"No issues yet"** at 20 px in the heading face and one beneath it reading
+   **"The first letter will appear here once it has gone out."** at 15 px muted, the pair occupying
+   **one row's height** — 96 px at 1440, the listed row's own height at 834 and 390 — so a page that had
+   three issues and now has none does not jump. **It is never hidden**, on the site as much as on canvas:
+   a reader can tell an empty archive from a broken page, and an editor can see the section they placed.
+   **It is never back-filled with whatever is newest** ⚑ — the Data group's *When nothing matches* greys
+   its back-fill value here, because a "recent issues" list quietly showing the three newest posts is a
+   lie about what went out. **The archive link is not drawn while the feed is empty** and its row greys
+   with that reason ⚑. **Both lines are fixed strings in the translation catalogue** ⚑ — no new content
+   field and no new control; whether a publication may author them is an **open question**, not a
+   decision made here. **What is withdrawn:** the old text made the rows, the label and the rule *absent
+   together* and put the explanation in the editor's Data group rather than on the page, and it refused a
+   "no issues yet" chip. **That refusal survives in its own scope** — no chip beside populated rows — and
+   is withdrawn for the empty feed.
 9. **Module.** `member-form`. The issue rows are server-rendered links; there is no `load-more` and no
    `infinite-scroll` here — the archive link is a real page.
    **No-JS** ⚑ — the form is replaced by **P0·4's notice** at the form row's own height, no field and no
@@ -1118,6 +1177,8 @@ into Vertical spacing.** **One frame redrawn**: the members-only issue's meta li
 **Members**. **This badge is on a post, not a newsletter** ⚑ *(newsletter patch)*: a post's `visibility`
 does have a `public` value, so "not public" is a real gate here and the condition is unchanged — only
 10 Choice's newsletter badge was wrong, and the two are no longer described as one rule. Source group, form contract, editing (post content says "Edit in Ghost"), footer strip.
+
+**Patched · pass two, 1 September 2026.** *A feed with nothing in it shows its designed empty state*: **written here, and it reverses two of this entry's rulings** — §7's absent rule, label and rows, and §8's editor-only notice. The label and the rule hold, two fixed lines stand at one row's height, the state renders on the site as much as on canvas, and **the feed is never back-filled with the newest posts** ⚑. *A control switched off by another is greyed, with the reason beside it*: **two new greyed rows follow from it** — **Archive link** while the feed is empty, and the Data group's ***When nothing matches*** on its back-fill value ⚑ — while **Source: Static** keeps the greying it always had. **The Members badge is deliberately not greyed** ⚑: it badges posts, whose visibility changes request by request. *A count that picks between drawn layouts is a named set, not a number picker*: **Count is left exactly as drawn** and the reading is recorded as **open for the owner** rather than settled here. **Two things were not invented**: the empty state's strings are fixed and translated rather than authored, and Count is not converted in either direction.
 
 ---
 
@@ -1165,6 +1226,8 @@ while **Box padding kept its name**. Background role stays free: the box is an e
 its own, so the role is the page behind it — and a filled box is 2 Card. Source group, form contract,
 editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no case of its own.** No lock, no narrowing and no row accepting a value this design ignores — and the hairline still thickens at no value.
+
 ---
 
 ### 14 · Slide-in Card
@@ -1189,7 +1252,7 @@ editing, footer strip.
    | Card width | Narrow 320 · Medium 380 · Wide 440 |
    | Card | Raised · Flat |
    | Blurb | Show · Hide |
-   | Once dismissed | Not again this session · Not again for thirty days |
+   | Once dismissed | Not again this session · Not again for thirty days. **Both are kept and both are stored in a first-party cookie** ⚑ *(the owner's ruling, 1 September 2026)* — thirty days as a cookie with a thirty-day expiry, the session value as a **session cookie** that dies with the browser. **One name, one flag, no personal data and no third party**, and because a cookie is sent with the request the section reads it **server-side**: a dismissed card is **not rendered at all** ⚑ |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1228,6 +1291,8 @@ the only design in A22 where the whole trio is locked**, and it is recorded in t
 notes rather than passed off as ordinary. **Social proof is not offered** ⚑ — a 168 px card spends
 its lines on the ask. Source group (Member visibility included), form contract, editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **no switch, three locks, and two width resolutions left ungreyed.** The **whole universal trio is locked** with its reason drawn, which is the rule's neighbouring case rather than the rule itself. **Corner and Card width: Wide resolve at ≤ 767 and are not greyed** — a width is not a control. *A design may declare the width below which its script runs*: **the one design in A22 that could, and it does not** — `slide-in-card` runs at 390 as at 1440, the card narrowing to 342 and staying in its corner, so there is no boundary to name and **its no-JavaScript line already describes both ends**: the card renders statically at the page foot, in the flow, with P0·4's notice where the form would be.
+
 ---
 
 ### 15 · Two Up
@@ -1252,7 +1317,7 @@ its lines on the ask. Source group (Member visibility included), form contract, 
    | Cards across | Two · Three · Auto |
    | Card padding | Compact 24 · Comfortable 32 · Spacious 44 |
    | Card | Raised · Flat |
-   | Card meta | Show · Hide (**generated, never typed**) |
+   | Card meta | Show · Hide (**generated, never typed**); **Show is greyed where no newsletter on the site's `visibility` is `paid`** — since the cadence half was deleted the line is one word drawn only on a paid letter, so it had nothing to draw ⚑ *(changed in pass two)* |
    | Description | Show · Hide |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -1292,6 +1357,8 @@ meta line is the badge** — 10 Choice now reuses it on its rows. Background rol
 are the items' geometry, not the section's. **Four viewport frames redrawn** (the paid card in each).
 Source group, form contract, editing, footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is a change** — the twin of 10 Choice's. **Card meta: Show greys where no newsletter on the site is `paid`** ⚑: with the cadence half of the generated line deleted, the line is one word drawn only on a paid letter, and the value rendered nothing. **Card: Raised is overridden in dark** — a mode, not a switch. *A count that picks between drawn layouts is a named set*: **Cards across stays a named set**, every value having a drawn frame. *A feed with nothing in it*: **not a feed** — zero newsletters is unreachable.
+
 ---
 
 ### 16 · Quote
@@ -1310,7 +1377,7 @@ Source group, form contract, editing, footer strip.
 
    | Control | Values |
    |---|---|
-   | Quote size | Regular · Large (**Large drops the heading**) |
+   | Quote size | Regular · Large. **At Large the heading row is greyed** — the quote takes the column and the line under the rule is dropped — **the authored text kept, not deleted** ⚑ *(changed in pass two: the field was stored and silently undrawn)* |
    | Rule under the quote | Show · Hide |
    | Field width | Narrow 320 · Medium 400 · Wide 480 |
    | Attribution | Name and detail · Name only |
@@ -1342,6 +1409,8 @@ quote** ⚑: two pieces of proof in one column would compete, and the quote is t
 chose. **Padding retired into Vertical spacing.** Source group, form contract, editing (the quote,
 its attribution and detail all inline), footer strip.
 
+**Patched · pass two, 1 September 2026.** *A control switched off by another is greyed, with the reason beside it*: **one case, and it is a change.** At ***Quote size: Large*** **the heading row greys**, where the authored line was stored and silently undrawn, **with the text kept rather than deleted** ⚑ — the rule's *never left accepting a value it will not honour*, applied to a content field rather than to a control. *Avatars with no photograph show initials*: **no subject, and the one place it might have had one is named** — the attribution draws **no portrait at any value**.
+
 ---
 
 ## Findings for the architect
@@ -1358,7 +1427,14 @@ its attribution and detail all inline), footer strip.
    tag archive at *By tag*, the author archive at *By author*, the post index otherwise — which is
    the closest true thing at each setting. A20 found the same gap for tags and A21 for authors;
    **this is the third category to hit it**.
-3. **Dismissal memory is not in the registry.** ⚑ 14 Slide-in Card offers *Not again this session*
+3. ~~**Dismissal memory is not in the registry.**~~ **SETTLED BY THE OWNER, 1 SEPTEMBER 2026: a
+   first-party cookie, and both values keep it.** *Not again for thirty days* writes a cookie with a
+   thirty-day expiry; *Not again this session* writes a **session cookie** that dies with the browser
+   rather than resting on whatever the module remembers. **One name, one flag, no personal data, no third
+   party**, and the section reads it **server-side**, so a dismissed card is **not rendered at all** ⚑ —
+   the only reading that also holds with JavaScript off. `slide-in-card`'s registry entry still needs the
+   sentence written into it, which is a registry job. *The original finding, for the record:*
+   14 Slide-in Card offers *Not again this session*
    and *Not again for thirty days*, and `slide-in-card`'s registry entry does not say whether it
    remembers a dismissal or where. `dismiss` is the closest module and belongs to A2's bar. **Named,
    not resolved, and this pass did not resolve it either.**
@@ -1405,7 +1481,11 @@ its attribution and detail all inline), footer strip.
    line, and must write it into the newsletter's own description in Ghost, which is authored text the
    section renders verbatim.
 
-11. **A subscribe form cannot take a payment, and Ghost's documentation says so plainly.** ⚑ *(new in the
+11. **A subscribe form cannot take a payment, and Ghost's documentation says so plainly.** **The fourth
+   option it opens up is refused — the owner, 1 September 2026:** a section will **not** carry a tier-ID
+   field and a real Portal checkout. A paid letter keeps **the generic sign-up link**, so there is nothing
+   for a publication to paste and nothing to paste wrongly. The platform gap stands; the design question
+   is closed. ⚑ *(new in the
    newsletter patch, checked against Ghost's theme documentation on 28 August 2026)* A `data-members-form`
    submission **creates a free member and sends a magic link** — nothing in it asks for money, whatever
    letter the reader ticked. Payment is a **separate Portal checkout**: `data-portal="signup/TIER_ID/monthly"`
@@ -1416,6 +1496,28 @@ its attribution and detail all inline), footer strip.
    if the editor pastes a tier ID, because **Ghost gives a theme no mapping from a newsletter to the tier that
    grants it** — the same gap finding 8 names, now with a price on it: that missing mapping is the only thing
    between a paid letter and a working checkout.
+
+12. **CSS cannot see content, and one control in this category depends on seeing it.** ⚑ *(new in pass two)*
+   7 Cover greys **Scrim: Light** against a light picture, measured on the bottom third where the form
+   sits. **Nothing in a stylesheet or a Ghost template can make that measurement** — so it is made
+   **in the editor, when the picture is chosen**, and stored with the image. **Two consequences.** A
+   picture replaced outside the section — swapped in Ghost, or served differently by an image
+   processor — is not re-measured, so a stored *Medium* can outlive the reason for it. And **the site
+   never re-checks**: the value the editor stored is the value that renders. The same limit is why
+   nothing in A22 reacts to a caption's length or a paragraph's line count, and why no design reorders
+   its DOM at a breakpoint.
+13. ~~**A control can be switched off by the site rather than by another control.**~~ **SETTLED BY THE
+   OWNER, 1 SEPTEMBER 2026: the rule's wording is widened** to *a control switched off **by another
+   control or by the connected site** is greyed, with the reason beside it* — one shared sentence rather
+   than eight per-category readings. The four A22 rows below are its first subjects and **nothing they
+   draw changes**. Recorded for the shared control definition. ⚑ *(raised in pass two)*
+   Four rows in A22 grey on a fact about the connected Ghost site, not on a sibling row: *Let the
+   reader choose* unless the site has more than one newsletter, 10 Choice's Members badge and 15 Two
+   Up's Card meta unless some letter is `paid`, and 12 Issue Preview's Archive link while its feed is
+   empty. **The rule's shape fits them exactly** — greyed, reason at the control, fallback named —
+   **but its wording says "by another control"**, and a build that reads the rule literally will not
+   know where to put the condition. Named as a wording question for the shared control definition, not
+   answered here.
 
 **Repeated from A21 and A26–A29 and still open:** a section cannot know what precedes it on the
 route. It matters more here — **a page can carry a newsletter section, A3·4's footer band and
@@ -1446,7 +1548,7 @@ Cumulative. Reused components are listed with the category that set them.
 | Archive meta line | 14 px muted items separated by ·, absent items dropped with their separators | A29·12 |
 | Single quote | 28 px heading-font line, no marks drawn, attribution beneath | A8·1 |
 | Reasons list | 1–3 authored lines, ≤ 40 ch, with its repeater — **and, since A22, an optional icon slot per line** | A6·11 |
-| Missing-image vocabulary | Reflow · Plate · Hand off | A19 |
+| Missing-image vocabulary | Reflow · Plate · Ground ⚑ *corrected 1 September 2026 — A19 deleted Hand off and Ground replaced it; A24 adds Hide* | A19 |
 | Universal trio | Background role · Vertical spacing · Top divider, outside every design's list | P0·8 (library-wide) |
 | Inline text toolbar · Link popover | Five actions over any selection; Ghost-aware target picker with new-tab and rel | P0·1 |
 | Icon slot · Icon Picker · Button icon | The only place an icon can exist; Tabler grid; before/after a button label | P0·2 |
@@ -1593,7 +1695,12 @@ members link; `A22-15 Two Up`'s generated meta line, now one word in all fifteen
 
 ### Open questions
 
-**QUESTION 1 — Which two designs are free** · **ANSWERED 28 AUGUST 2026: 1 Inline Row and 13 Boxed**, the recommendation confirmed. Recorded in §0 and in the roster; kept here for the record.
+**Housekeeping, 1 September 2026.** All three items below were settled before this pass and were reading as
+open; each is now **struck through with who settled it** and kept for the record. **Nothing on this list is
+open.** The questions this pass raises are in **Patch notes — pass two**, each marked OPEN FOR THE OWNER on
+its own line, and none of them is answered here.
+
+~~**QUESTION 1 — Which two designs are free**~~ · **SETTLED BY THE OWNER, 28 AUGUST 2026** · **ANSWERED 28 AUGUST 2026: 1 Inline Row and 13 Boxed**, the recommendation confirmed. Recorded in §0 and in the roster; kept here for the record.
 
 Two of the sixteen newsletter designs ship in the free theme. Which two is your call. These five are the
 plainest — a site could publish any of them and not look unfinished, and none of them needs the customer to
@@ -1620,7 +1727,7 @@ have good photography:
 option 1, "a plain ask" and "a plain ask in a box". With option 2, "a plain ask" and "an ask on a white
 card".
 
-**QUESTION 2 — What a paid newsletter's row does in the design that lists several letters** · **CHECKED
+~~**QUESTION 2 — What a paid newsletter's row does in the design that lists several letters**~~ · **SETTLED BY GHOST'S OWN DOCUMENTATION, CHECKED 28 AUGUST 2026** · **CHECKED
 AGAINST GHOST'S DOCUMENTATION, 28 AUGUST 2026, AND ANSWERED BY IT.** The owner asked whether ticking a paid
 letter and clicking Subscribe would ask the reader for payment. **It would not.** Ghost's theme
 documentation is explicit that a members form creates a free member and sends an email link; payment happens
@@ -1656,7 +1763,7 @@ this question asks you to confirm it.**
 reader sees one tick box, one email field, and beneath it "Field Notes · Members — Join to get Field Notes".
 Under option 2 they see two tick boxes and a line of explanation under the field.
 
-**QUESTION 3 — What the one-word letter mark says for a letter every member receives** · **ANSWERED
+~~**QUESTION 3 — What the one-word letter mark says for a letter every member receives**~~ · **SETTLED BY THE OWNER, 28 AUGUST 2026** · **ANSWERED
 28 AUGUST 2026: no word at all unless the letter is paid.** The mark is "Members" on a paid letter and
 absent on every other, and the card closes up rather than reserving the line. Redrawn in 15 Two Up (eleven
 places) and already the condition in 10 Choice's badge. Kept below for the record.
@@ -1696,3 +1803,150 @@ quote it too**. Correcting it there is a registry job, not this category's, and 
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** sixteen designs, numbered **1–16**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are named,
+never numbered: the letter-and-number labels elsewhere in this project are filing codes and say nothing about
+what a rule requires.
+
+**Frames changed — seventeen, and every one of them.** All sixteen design frames and `A22-0 Category Proof`
+gain a **PASS TWO PATCH** section: on a design frame, the greyed row drawn at panel size with the reason
+beneath it and a rule-by-rule grid saying what each of the five rules, each of the two Ghost findings and the
+work list's own item did to that design; on the proof, the same grid read category-wide, the
+**disabled-control map** for all sixteen, the open questions and a *left alone deliberately* card.
+**One frame gained a drawn state:** `A22-12 Issue Preview` now draws **THE EMPTY FEED** — the label, the
+rule, the two lines and the undrawn archive link — on a 948 px card beside a 320 px note, the pair pinned in
+the frames' own 1,288 px row rather than at the section's 1,296 content box, which is the width every
+explanatory card in these frames uses. **No arrangement moved, no
+control was added, removed or renamed, and no value, default, type scale, colour pack or spacing step
+changed.**
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Applied without exception, and five rows changed.** Each is drawn, the unavailable value struck, the reason one short sentence **at the control** and never a tooltip, the fallback named. **The five that were accepting a value the design would not honour:** 3 Split's **Field: In a row** at *Wide head* · 9 Slim Bar's **custom label** at *Label: Newsletter name* · 10 Choice's **Members badge: On** where no letter is `paid` · 15 Two Up's **Card meta: Show** for the same reason · 16 Quote's **heading** at *Quote size: Large*, the rule applied to a content field rather than a control ⚑. **Two new rows, both on 12** and both from the empty feed: **Archive link** and the Data group's **When nothing matches**. **The locks are restated, not converted:** Background role on 4, 5, 6, 7 and 10, the whole universal trio on 14, Top divider at *Full bleed* on 4 and 7. **Three things deliberately left ungreyed:** a width is not a control (14's Corner and Card width, 6's Picture side) · an advisory stays an advisory where both values are honoured (8's Compact at Huge) · a mode's own controls were never switched off (11's icon slots at *Reason marks: Icons*). **The rule's one exception is claimed nowhere in A22** — no control here is one this project can never offer. |
+| **A feed with nothing in it shows its designed empty state** *(the work list's own item)* | **Written into 12 Issue Preview, the category's only feed, and it reverses two of that entry's rulings.** The label and the rule hold; where the rows were, **“No issues yet”** at 20 px in the heading face and **“The first letter will appear here once it has gone out.”** at 15 px muted, the pair at **one row's height** so a page that loses its issues does not jump. **Never hidden** — it renders on the site as much as on canvas — and **never back-filled with whatever is newest**, the Data group's *When nothing matches* greying its back-fill value there ⚑. **The archive link is not drawn while the feed is empty.** **Both lines are fixed strings in the translation catalogue** ⚑: no new content field, no new control. **Withdrawn:** the rows, label and rule going absent together, and the notice living in the editor alone. **Kept in its own scope:** no placeholder row, no empty thumbnail, and no chip beside populated rows. **No subject on the other fifteen** — 10 Choice and 15 Two Up list newsletters and zero is unreachable, 11 Reasons' list is authored with a floor of one. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject in the category.** A22 renders no person in any of the sixteen — no author, no member avatar, no initials — and **16 Quote's attribution draws no portrait at any value** ⚑. Recorded rather than skipped: a list the user types gets two initials, an author Ghost supplies gets one letter, and the two are never mixed inside one component. |
+| **The Remove button never greys out** | **One subject, already compliant: 11 Reasons' authored list.** ✕ is live on every row and never disabled; at one line, clicking it produces the floor and the reason as one sentence under the list. **Add** disables at three with its reason readable — a ceiling on Add, never a lock on Remove. The Ghost-sourced lists in 9, 10, 12 and 15 have no Add and no Remove at all. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No conversion, in either direction.** 15 Two Up's **Cards across** — Two · Three · Auto — stays a named set: every value has a frame somebody has looked at. **12 Issue Preview's Count is the shared P0·5 panel's row**, drawn Three · Four · Six, and it is both an item count and a choice between arrangements — **recorded as an open question rather than converted**, so one category does not fork the shared panel. |
+| **A design may declare the width below which its script runs** | **No design declares one.** All sixteen declare `member-form`, which runs at every width. **14 Slide-in Card is the only design that could and does not:** `slide-in-card` runs at 390 as at 1440 — the card narrows to 342 and stays in its corner rather than collapsing — so there is no boundary to name, and **its no-JavaScript line already describes both ends**. No no-JavaScript line in the category needed a second half. |
+| **Ghost finding · the feature-image caption renders differently on the two Ghost versions** | **Does not reach this category, and is recorded rather than skipped.** A22 reads two images and neither carries a caption: 6 Image Split's and 7 Cover's are authored in the section with alt text and a focus, and 12's thumbnails read `feature_image` with `alt=""`. For a builder who adds one: **Ghost 6 removes `<em>` and `<strong>` from a caption while keeping links and `<b>`; Ghost 5 keeps everything**, so a caption that leans on italics gets them on one supported version and not the other. |
+| **Ghost finding · a comment count renders nothing at all without JavaScript** | **Does not reach this category.** A22 reads no comment count, ships no comment noun and labels no number — A28 owns that surface. Recorded because the shape is easy to get wrong: Ghost writes the number in with a script and **prepends** it to the noun, so a catalog string is the bare noun and never holds a number or a placeholder; an accessible label goes on the surrounding element, never on the count; and the widget degrades differently from its count, so one sentence cannot cover both. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, nothing reused, nothing deleted. |
+
+### Open questions this pass raises — none of them answered here
+
+~~**QUESTION 4 — Does 12 Issue Preview's Count stay a named set?**~~ · **SETTLED BY THE OWNER,
+1 SEPTEMBER 2026: yes — it stays three named buttons.** Nothing is converted and the shared panel is not
+forked; if a second category needs the same row, the stepper question is P0·5's to answer then.
+The rule says an item count stays a number picker and a choice between drawn arrangements is a named set.
+This row is both: Three · Four · Six each has a frame — three columns of 416, four wrapping, six wrapping —
+and it also says how many issues to show. Converting it would fork **P0·5's shared panel** for one category,
+which the newsletter patch already declined to do once. Left exactly as drawn, and named rather than guessed.
+
+~~**QUESTION 5 — May a publication author the empty feed's two lines?**~~ · **SETTLED BY THE OWNER,
+1 SEPTEMBER 2026: fixed strings now.** No field and no control is added. **If customers ask, it becomes one
+optional field that falls back to the shipped wording** — written down here so the fallback is part of the
+decision rather than an afterthought.
+They are drawn as fixed strings in the translation catalogue, so this pass adds no field and no control.
+Authoring them would add a content field to the shared list and a row to a panel the category holds at five
+controls, and “No issues yet” is a house voice in some publications. Not invented here.
+
+~~**QUESTION 6 — Where does the rule put a condition that comes from the site rather than from another
+control?**~~ · **SETTLED BY THE OWNER, 1 SEPTEMBER 2026: the rule's wording is widened** to *switched off
+by another control **or by the connected site***. One sentence in the shared control definition; no frame in
+A22 changes.
+Four rows in A22 grey on a fact about the connected Ghost site: *Let the reader choose* unless there is more
+than one newsletter, 10's Members badge and 15's Card meta unless some letter is `paid`, and 12's Archive
+link while its feed is empty. The rule's **shape** fits them exactly; its **wording** says “by another
+control”. Recorded as finding 13 — a wording question for the shared control definition, not a design one.
+
+**The three standing items are settled too — the owner, 1 September 2026:**
+~~dismissal memory~~ → **a first-party cookie**, thirty days by expiry and the session value as a session
+cookie, read server-side so a dismissed card is not rendered at all (finding 3; the registry entry still
+needs the sentence, which is a registry job);
+~~a real checkout on a paid letter~~ → **refused**: the paid letter keeps the generic sign-up link, so there
+is no tier ID to paste and nothing to paste wrongly (finding 11);
+~~the withdrawn `member-form` registry line~~ → **fixed**: A2, A3 and A32 already carried the correction, and
+**A30·11 Rail was the one entry left quoting the sentence as current** — corrected in *A30 Members Pages —
+Spec* on 1 September 2026 (finding 9).
+
+**Nothing in this category is left open.**
+
+### The owner's rulings — 1 September 2026
+
+Six questions were put to him the day this pass landed. **Three answer this pass's own questions, two close
+findings that had stood since the first pass, and one is a library-wide wording change.** **None changes an
+arrangement, a type scale, a colour or a spacing step.**
+
+1. **12 Issue Preview's Count stays three named buttons** — *a count that picks between drawn layouts is a
+   named set*. Every value has a frame, and converting one category's row would fork **P0·5's shared panel**.
+   The stepper question moves to P0·5, for the next category that needs it.
+2. **The empty feed's two lines stay fixed strings** — *a feed with nothing in it shows its designed empty
+   state*. No field, no control. **If customers ask, it becomes one optional field with a fallback to the
+   shipped wording**, recorded as part of the ruling rather than left to a later argument.
+3. **The greying rule's wording is widened** — *a control switched off **by another control or by the
+   connected site** is greyed, with the reason beside it*. A22's four site-conditional rows are its first
+   subjects: *Let the reader choose* unless the site has more than one newsletter, 10 Choice's Members badge
+   and 15 Two Up's Card meta unless some letter is `paid`, and 12's Archive link while its feed is empty.
+   **One sentence in the shared control definition; nothing in A22 is redrawn.** Finding 13 is struck.
+4. **14 Slide-in Card keeps both dismissal values, and both are a first-party cookie** ⚑. Thirty days is a
+   cookie with a thirty-day expiry; **this session is a session cookie** that dies with the browser rather
+   than resting on whatever the module remembers. **One name, one flag, no personal data and no third
+   party**, and because a cookie is sent with the request the section reads it **server-side**: a dismissed
+   card is **not rendered at all** rather than rendered and hidden — which is also the only reading that
+   holds with JavaScript off. Finding 3 is struck; `slide-in-card`'s registry entry still needs the sentence.
+5. **A paid letter keeps the generic sign-up link** — the tier-ID checkout is refused. Nothing for a
+   publication to paste and nothing to paste wrongly; the platform gap in finding 11 stands and the design
+   question is closed.
+6. **The withdrawn `member-form` sentence is corrected everywhere it was still quoted.** A2, A3 and A32
+   already carried the correction; **A30·11 Rail was the one entry left quoting “the `<form>` posts natively
+   to Ghost's members endpoint” as current**, and it is struck there with P0·4's notice named in its place.
+   **That edit was made to *A30 Members Pages — Spec* on 1 September 2026** and is recorded here because
+   this category's finding 9 asked for it.
+
+### The Open questions housekeeping
+
+**Done, and it found nothing open.** All three items in **Open questions** — the two free designs, what a paid
+letter's row does, and what the one-word mark says for a letter every member receives — **were settled on
+28 August 2026**, two by the owner and one by Ghost's own documentation, and all three are now **struck
+through with who settled it** and kept for the record. **Nothing on that list is open**, and the questions
+above are this pass's own, each marked OPEN FOR THE OWNER on its own line. **Nothing was answered in the
+housekeeping itself.**
+
+**Findings for the architect** was read the same way. **Struck by this document rather than by this pass:**
+finding 7's refusal of a member count (withdrawn in the reconciliation patch — `{{total_members}}` exists),
+finding 8's “not public” badge condition and finding 10's cadence line (both corrected in the newsletter
+patch, the owner ruling on 28 August 2026). **Left open and marked above:** findings 3, 9 and 11.
+**Findings 1 and 2 are platform gaps, not decisions** — Ghost has no newsletter-issue object and no
+newsletter archive route — and they stay written as gaps; **findings 12 and 13 are new in this pass** and 13
+is question 6.
+
+### Left alone deliberately
+
+**Two things in this category were changed outside Claude Design and are untouched here.** The
+**count-agnostic product copy** — nothing in this pass writes a number of designs into any marketing, app or
+frame string, and none was reintroduced — and **P0's per-prop mark allowlist**, whose wording about a mark
+being **absent** from the toolbar rather than greyed is P0's text and is not restated, softened or
+contradicted by anything above. **The scope is different and the difference is stated on every frame**: a
+mark a field does not permit is absent; a control switched off by another control is greyed with its reason.
+
+**Two sentences this pass could have rewritten and did not.** **6 Image Split's hand-off to 5 Panel and
+7 Cover's to 4 Contrast Band** both still describe a design turning into another when no picture is
+authored. No rule in this pass names hand-offs, so they were left as found and are named here — a thing left
+alone can be fixed in one message. **And every no-JavaScript line is unchanged**: all sixteen replace the
+form with P0·4's notice at the form row's own height.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen
+   designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and names
+   **1 Inline Row** and **13 Boxed** — both of which exist in this category's roster. Unchanged from the
+   owner's ruling of 28 August 2026.
+
+— End of pass two —

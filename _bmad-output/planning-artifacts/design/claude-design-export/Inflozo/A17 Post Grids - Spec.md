@@ -16,6 +16,8 @@ its entry, and the frame-by-frame list is in **Reconciliation notes** at the end
 
 **Design patch pass — 29 August 2026 (this document's current state).** Four rulings landed on this category and one of them reaches every design in it. **Ghost's templates cannot look across a loop**, so the span belongs to **the first post** rather than the first featured post, the filter strip cannot be built from the tags of the posts drawn, and 12 Bento's tall cell loses the flag as its input. **Load more is the main feed's only.** **Every hand-off in the category is deleted** — a placed design is the design that renders; where a precondition fails the section hides what does not apply and the panel may advise. **An author drawn from Ghost shows one letter, never two.** Every change is listed with the name of the rule that required it in **Patch notes** at the end. **Nothing was renumbered.**
 
+**Pass two — 1 September 2026 (this document's current state).** Two jobs, both narrow. **The disabled-control pattern** was applied wherever one control switches another off: eight per-design cases are now drawn greyed with the reason at the control, and the universal **Order** row states its reason at **Source: Hand-picked**. **The avatar rule** was carried across the eleven designs whose Meta enum offers **With photograph** — an author drawn from Ghost shows **one letter, never two** — and restated as refused, with its existing reason, on the other seven. **No control was added, removed or renamed, no default changed, no design renumbered, and no layout, type scale, colour pack or spacing step moved.** Four cases could not be applied without inventing a decision and are written as OPEN QUESTIONS in **Patch notes — pass two** at the end.
+
 **[Free] designs:** 1 Three Up · 4 Cards
 
 *(Shortlisted in this pass — 1 Three Up, 10 Ledger, 9 Big Type, 13 Thumb Side, 4 Cards — and **ruled by the owner on 29 August 2026**: the category default and the per-post plane. A free customer gets the plain grid and the card grid; the picture-free table, 10 Ledger, stays paid.)*
@@ -117,6 +119,13 @@ pass gives the absence its reason rather than leaving it as an omission: **A17 a
 rule 10's Image focus has nothing to attach to; the focal point belongs to the post, in Ghost.
 **The tag chip is governed everywhere by Tag: Show · Hide**, and the meta row by the **Meta** enum
 (None · Date only · Name and date · Name, date and reading time · **With photograph**).
+**At With photograph an author with no `profile_image` draws ONE letter in the circle, never two** ⚑
+1 September 2026, *avatars with no photograph show initials, and the two forms are not interchangeable*:
+every byline in A17 comes from Ghost, whose template language cannot split a name on the versions we
+support, so two initials are unreachable here. The two-initial form belongs to a list the user types
+and **A17 has none**; the forms are never mixed inside one component. **Eleven designs offer the
+value — 1, 2, 4, 5, 6, 11, 12, 15, 16, 17, 18 — and the other seven refuse it with the reason
+already at the control.**
 - Reading time "9 min read", date "12 March 2026". **Relative dates refused** ⚑. Two designs
   abbreviate to "12 Mar" — 10 Ledger and 14 Dense — with the full ISO date in `datetime`.
 
@@ -136,8 +145,11 @@ rule 10's Image focus has nothing to attach to; the focal point belongs to the p
 - **Head** eyebrow 13 uppercase `.08em` muted · title on a 780 measure · sub 17 muted on 620 ·
   head-to-grid 48 · note 32 under the grid · link 20 under the note. **Title ladder:** Small 28 ·
   Medium 34 (sixteen designs) · Large 40 (6 Split Head) · Display 48 (9 Big Type only).
-- **Order is a rule, never a sequence:** Newest first · Oldest first, and **disabled at Hand-picked**,
-  where the user's drag order is the order. **`shuffle` is declared
+- **Order is a rule, never a sequence:** Newest first · Oldest first, and **greyed at Hand-picked with
+  the reason beside it** — "not available while posts are hand-picked: your drag order is the order"
+  ⚑ 1 September 2026, *a control switched off by another is greyed, with the reason beside it*. The row
+  was already switched off; what the pass adds is the sentence at the control and a row that is greyed
+  rather than left accepting a value the query will not honour. **`shuffle` is declared
   nowhere** ⚑ — a grid whose order changes on reload cannot be proof-read.
 - **Responsive floor.** Five → four at 1080 → three at 834 → **one at ≤ 767 wherever the card draws
   a feature image.** Sixteen of the eighteen draw one; **fourteen of those sixteen collapse to a
@@ -149,7 +161,10 @@ rule 10's Image focus has nothing to attach to; the focal point belongs to the p
   design. Print is the light mode.
 - **Behaviour.** Two designs declare a module, sixteen declare none. `core` is assumed, not declared
   per design. **No A17 design loses a post without JavaScript**, and sixteen are pixel-identical with
-  it off. **`reveal` is refused on a grid.**
+  it off. **`reveal` is refused on a grid.** **No A17 design declares a width below which its script
+  runs** ⚑ 1 September 2026, *a design may declare the width below which its script runs*: both modules
+  run at every width and both no-JavaScript lines already read at every width. 15 Filtered's strip below
+  767 is the one place the claim is ambiguous, and it is an open question rather than a declaration.
 - **Dark.** Ground deepens, tag plate lifts to `#2A251E`, hairlines take `#332E27` — **measured, the
   light rule sits 9.1 lightness points below its ground and the dark rule 9.8 above its own, so one
   symmetric step serves both modes.** Photographs untouched. 8 Overlay's scrim re-tunes 45% → 55%.
@@ -159,6 +174,38 @@ rule 10's Image focus has nothing to attach to; the focal point belongs to the p
 - **Structure.** `<section aria-labelledby>` named by its title, an `<h2>`; posts a `<ul>` of `<li>`;
   **each title an `<h3>`** inside the card's `<a>`; tag and meta `<p>`s; image `<img>` with
   `feature_image_alt` or `alt=""`; tag plate `aria-hidden`.
+
+### The disabled-control pattern
+
+**A control switched off by another is greyed, with the reason beside it** — P0's treatment, applied
+without exception in this category: the row is drawn, the switched-off value is struck through, the
+reason is one short sentence at the control rather than a tooltip, and **no row is ever left accepting
+a value it will not honour**. **Nothing in A17 is hidden by another control** except the main feed's
+own pair, which the Data group hides because **P0·5** does — recorded as a conflict in Patch notes
+rather than resolved here. **The rule's one exception is claimed nowhere in A17**: no control in this
+category is one the project can never offer, so nothing is left undrawn.
+
+| Where | What greys, and the reason at the control |
+|---|---|
+| **Every design** | **Order**, at Source: Hand-picked — "not available while posts are hand-picked: your drag order is the order." |
+| **1 Three Up** | **Excerpt: Three lines**, at Per row Four — three lines of 15 px text under a 306 px image is a paragraph in a thumbnail. Falls to Two lines. |
+| **3 Four Up** | **Excerpt**, the whole row, at Per row Five — the floor draws no excerpt below a 306 px cell and Five is 240. Falls to Off. |
+| **7 Contrast Band** | **Excerpt: Three lines**, at Per row Four — 1 Three Up's cell, so 1 Three Up's narrowing. Falls to Two lines. |
+| **9 Big Type** | **Title: Display**, at Per row Three — 416 is 65% of the 636 the size was set for. Falls to Large. |
+| **11 Masonry** | **Columns: Three**, on the two-ratio cycle Landscape–Portrait — columns one and three would run the same crop sequence. Falls to Two. |
+| **15 Filtered** | **Excerpt: Three lines**, at Per row Four — a 306 px cell holds two. Falls to Two lines. |
+| **16 Load More** | **Excerpt: Three lines** at Per row Four and **the whole row** at Per row Six (196 px). Falls to Two lines, and to Off. |
+| **18 Edge to Edge** | **Scrim**, the whole row, at Text Under — there is nothing for the wash to sit behind. Returns at Standard. |
+| **4 Cards** | **Excerpt**, the whole row, at Per row Four — the card's 20 px padding leaves a 264 px text column. Falls to Off. *(Owner's ruling, 1 September 2026.)* |
+| **6 Split Head** | **Excerpt**, the whole row, at Per row Three — 856 in three is a 269 px cell. Falls to Off. *(Owner's ruling, 1 September 2026.)* |
+| **17 Panel** | **Excerpt**, the whole row, at Per row Four — the panel's cells run 278–290 px at every Inset. Falls to Off. *(Owner's ruling, 1 September 2026.)* |
+
+**Locked is a different case from switched off, and both are drawn.** A row the design fixes —
+7 at Background role Contrast, 8 at Background, 7 and 18 at Top divider None, 12 at Count 5,
+16 at Source This route's posts and at Pagination style Load more — is drawn with its reason beside
+it and never hidden. **The excerpt floor measures the text column, not the outer cell** ⚑ 1 September 2026, the owner's
+ruling — which is what put 4 Cards, 6 Split Head and 17 Panel in the table above. **Eleven cases in
+all**, and none of them hidden.
 
 ### The Data group — what replaces a repeater
 
@@ -171,7 +218,7 @@ controls, **not counted toward the brief's control budget** ⚑:
 | `filterValue` | ref opt | a tag or an author; read at By tag / By author |
 | `postRefs` | ref[] opt | read at Hand-picked; the Ghost post picker's references, **drag order = drawn order** |
 | `count` | int req | **a stepper, 1–100**, with per-design minimum, maximum and step |
-| `order` | enum req | Newest first · Oldest first; disabled at Hand-picked |
+| `order` | enum req | Newest first · Oldest first; **greyed at Hand-picked, with the reason at the control** |
 | `paginationStyle` | enum opt | main feed only: Numbered · Newer and older · Load more · None (A34's) |
 | `emptyHeading` `emptyBody` | text opt | main feed only; authored, with defaults |
 
@@ -240,7 +287,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    |---|---|
    | Per row | Three · Four |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines · Three lines (three unavailable at Four) |
+   | Excerpt | Off · Two lines · ~~Three lines~~ **greyed at Per row Four**, with the reason at the control; falls to Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | First cell | Off · Spans two columns |
    | Background role (universal) | Background · Surface · Contrast |
@@ -299,7 +346,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    |---|---|
    | Per row | Four · Five |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines |
+   | Excerpt | Off · ~~Two lines~~ **greyed at Per row Five**, with the reason at the control; falls to Off |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | First cell | Off · Spans two columns |
    | Background role (universal) | Background · Surface · Contrast |
@@ -331,7 +378,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    |---|---|
    | Per row | Three · Four |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · Three lines; **the whole row greys at Per row Four** — the card's 20 px padding leaves a 264 px text column — with the reason at the control; falls to Off |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | ~~Feature~~ | not drawn — the panel draws no span control; the panel is the authority (see Patch notes) |
    | Background role (universal) | Background · Surface · Contrast |
@@ -394,7 +441,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Head side | Left · Right |
    | Per row | Two · Three |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · Three lines; **the whole row greys at Per row Three** — 856 in three is a 269 px cell — with the reason at the control; falls to Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (80 at 834, 64 at 390) |
    | Top divider (universal) | None · Line · Fade |
@@ -422,7 +469,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    |---|---|
    | Per row | Three · Four |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · ~~Three lines~~ **greyed at Per row Four**, with the reason at the control; falls to Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
    | Background role (universal) | **Contrast (locked)** — the band is the design |
    | Vertical spacing (universal) | the band's own **64 · 88 · 120** |
@@ -492,7 +539,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Control | Values |
    |---|---|
    | Per row | Two · Three |
-   | Title | Large · Display (unavailable at Three) |
+   | Title | Large · ~~Display~~ **greyed at Per row Three**, with the reason at the control; falls to Large |
    | Rule | None · Hairline |
    | Excerpt | Off · Two lines |
    | Meta | None · Date only · **Tag and date** · Tag, author and date |
@@ -582,7 +629,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
 
    | Control | Values |
    |---|---|
-   | Columns | Two · Three · Four (changes every crop) |
+   | Columns | Two · Three (changes every crop; **Four was removed on 24 August 2026** and the table is corrected to match the frame, the owner's ruling of 1 September 2026); **Three greys on the two-ratio cycle Landscape–Portrait**, with the reason at the control, and falls to Two |
    | Cycle | Portrait–Landscape–Square · Square–Landscape–Portrait · Landscape–Portrait |
    | Excerpt | Off · Two lines · Three lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -770,7 +817,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Strip | Pills · Text |
    | Per row | Three · Four |
    | Image ratio | Landscape · Wide · Square · Portrait |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · ~~Three lines~~ **greyed at Per row Four**, with the reason at the control; falls to Two lines |
    | ~~Feature~~ | not drawn — the panel draws no span control; the panel is the authority (see Patch notes) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (80 at 834, 64 at 390) |
@@ -781,13 +828,13 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    **A pill with no post behind it is therefore possible at both values, and the drawn "no posts for
    this tag" state is what answers it.**
 8. **Empty.** No tags on the site, or none chosen → the strip is not rendered and the grid draws alone.
-9. **Behaviour module.** **`filter-strip`.** **Edit-safe: yes** — the module marks the current pill and manages the scrollable row below 767; it adds, removes and reorders nothing the editor placed, and it opens nothing over the canvas. **JS off, quoted: "Filters are `<a href>` links to Ghost routes and work perfectly — this module needs JS least of all."** Every pill still navigates to its tag archive; the current pill loses its marked state and the strip below 767 scrolls natively.
+9. **Behaviour module.** **`filter-strip`.** **Edit-safe: yes** — the module **only marks the current pill**, at every width; the scrollable row below 767 is native CSS overflow with no script involved ⚑ 1 September 2026, the owner's ruling, *a design may declare the width below which its script runs* — **this design declares none**. It it adds, removes and reorders nothing the editor placed, and it opens nothing over the canvas. **JS off, quoted: "Filters are `<a href>` links to Ghost routes and work perfectly — this module needs JS least of all."** Every pill still navigates to its tag archive; the current pill loses its marked state and the strip below 767 scrolls natively.
 10. **A11y.** The active pill uses the accent — **the third design to derive an on-accent label
     colour independently.** `#1A1712` on `#D96C3F` measures **6.63:1**; inactive pills 9.92:1 light.
     **⚑ Pills are 33 px tall — 11 px under the 44 px touch minimum, deliberately, as a dense
     secondary control.** Measured, not estimated. A finding rather than a defence.
 
-**Reconciled.** *Controls, eight:* Tags *(two values after this pass)* · Strip style · "All" link · Per row · Excerpt · **Meta** (new; five values) · **Tag** *(the chip inside the cards, not the strip above them — two tags, two controls, and the panel says so)* · **"View all" link**. *Behaviour:* **`filter-strip` is navigation to Ghost's tag routes at every value** ⚑ — real `<a href>` links; the module marks the current pill and manages the scrollable row below 767, and **any in-place filtering is dropped** because it promised a client-side subset the query never had. The "All" pill stays and points at the section's unfiltered route; **its label is a theme translation-catalog string** ⚑. *A11y:* **the pills keep their 33 px look and gain a 44 px hit area** — 5.5 px of transparent padding top and bottom, so the target passes without the strip growing. *Data:* Hand-picked, where the strip is still the site's tag list or the chosen list; Count stepper **1–12**.
+**Reconciled.** *Controls, eight:* Tags *(two values after this pass)* · Strip style · "All" link · Per row · Excerpt · **Meta** (new; five values) · **Tag** *(the chip inside the cards, not the strip above them — two tags, two controls, and the panel says so)* · **"View all" link**. *Behaviour:* **`filter-strip` is navigation to Ghost's tag routes at every value** ⚑ — real `<a href>` links; the module marks the current pill and nothing else, the scrollable row below 767 being native overflow, and **any in-place filtering is dropped** because it promised a client-side subset the query never had. The "All" pill stays and points at the section's unfiltered route; **its label is a theme translation-catalog string** ⚑. *A11y:* **the pills keep their 33 px look and gain a 44 px hit area** — 5.5 px of transparent padding top and bottom, so the target passes without the strip growing. *Data:* Hand-picked, where the strip is still the site's tag list or the chosen list; Count stepper **1–12**.
 
 ---
 
@@ -812,7 +859,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Button | Outline · Solid · Text |
    | Count | On · Off |
    | Per row | Two · Three · Four · Six |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · Three lines; **Three lines greys at Per row Four and the whole row greys at Per row Six**, with the reason at the control; falls to Two lines and to Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (80 at 834, 64 at 390) |
    | Top divider (universal) | None · Line · Fade |
@@ -861,7 +908,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Inset | Compact 32 · Comfortable 56 · Spacious 80 |
    | Head | Inside · Outside |
    | Per row | Three · Four |
-   | Excerpt | Off · Two lines · Three lines |
+   | Excerpt | Off · Two lines · Three lines; **the whole row greys at Per row Four** — the panel's cells run 278–290 px at every Inset — with the reason at the control; falls to Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (80 at 834, 64 at 390) |
    | Top divider (universal) | None · Line · Fade |
@@ -921,6 +968,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    | Per row | Two · Three · Four |
    | Image ratio | Landscape · Square · Portrait (no restriction at any count — the only unrestricted ratio control in A17) |
    | Text | Under · Over |
+   | Scrim | Light · Standard · Heavy — **the whole row greys at Text Under**, with the reason at the control (there is nothing for the wash to sit behind) |
    | Head | Inset · Edge |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (vertical only, there being no page margin to set) |
@@ -1218,19 +1266,39 @@ in the category, and **no design number changed**.
 
 ### Open questions for the architect
 
-1. **Carried forward, unchanged by this pass:** the pack-level `on-accent` / `on-contrast` derivation
-   (three independent derivations in this category), one image field or three (`ratio` / `cycle` /
-   `thumbSize`), tabular figures as a pack requirement, 9 Big Type's tag after the title in the DOM,
-   18 Edge to Edge's inset focus ring and its squared image, `postRefs` needing an ordering contract,
-   the two new catalogue strings, and **the main feed needing to be *designated*** — which this pass
-   leans on harder than the last one, because 16 Load More's locked Source is only meaningful if the
-   builder knows which section is the feed.
-2. **Closed by this pass, and worth recording as closed:** 11 Masonry's Columns Four (removed in the
-   reconciliation pass), 12 Bento's count of five (a locked stepper), and **12 Bento's unused
-   `featured` input — closed by the platform: it is unreachable inside a loop.**
-3. **New, and small:** with the strip no longer built from the posts drawn, **15 Filtered's "All" pill
-   and its dead-filter state are the only two places a pill's meaning depends on the route**. Both are
-   drawn; neither needs a module.
+*Marked item by item, 1 September 2026. A settled item is struck through with who settled it; a live
+one carries **OPEN FOR THE OWNER** on its own line. **Nothing here was answered in the housekeeping.***
+
+1. **Carried forward.** The pack-level `on-accent` / `on-contrast` derivation (three independent
+   derivations in this category), one image field or three (`ratio` / `cycle` / `thumbSize`), tabular
+   figures as a pack requirement, 9 Big Type's tag after the title in the DOM, 18 Edge to Edge's inset
+   focus ring and its squared image, the two new catalogue strings, and **the main feed needing to be
+   *designated*** — which this pass leans on harder than the last one, because 16 Load More's locked
+   Source is only meaningful if the builder knows which section is the feed.
+   **OPEN FOR THE OWNER**
+2. ~~`postRefs` needs an ordering contract.~~ **Settled in this document by the reconciliation pass,
+   24 August 2026**, and unchanged since: the Data group states **drag order = drawn order**, and
+   5 Lead + Grid states that the first pick takes the lead cell.
+3. ~~11 Masonry's Columns Four.~~ **Settled by the reconciliation pass, 24 August 2026** — closed by
+   removal; column count ≤ cycle length is enforced by the control. *(The design's control table still
+   prints the value; the disagreement between table and Reconciled paragraph is recorded in Patch
+   notes — pass two rather than resolved there.)*
+4. ~~12 Bento's count of five.~~ **Settled by the reconciliation pass, 24 August 2026** — Count is one
+   stepper and this design's is locked at 5, drawn disabled with its reason.
+5. ~~12 Bento's unused `featured` input.~~ **Settled by the design patch pass, 29 August 2026, on the
+   platform's authority** — a Ghost template cannot look across a loop, so the flag is unreachable and
+   the tall cell is the first post in the set's order.
+6. ~~15 Filtered's "All" pill and its dead-filter state.~~ **Settled by the design patch pass,
+   29 August 2026**, in the same sentence that raised it: both are drawn, neither needs a module, and
+   the "All" pill points at the section's unfiltered route.
+7. ~~The three excerpt narrowings on non-standard cell ladders — 4 Cards, 6 Split Head, 17 Panel — and
+   whether 15 Filtered's `filter-strip` does anything below 767 that CSS does not.~~ **Settled by the
+   owner, 1 September 2026:** the excerpt floor measures the text column, so all three grey; and the
+   strip's scroll is native CSS, so the module declares no width. Applied to the frames and the
+   control tables.
+8. **The conflict pass two will not choose:** a switched-off control is never hidden, and the Data
+   group hides the main feed's pair because **P0·5** does.
+   **OPEN FOR THE OWNER**
 
 ### Module declarations added — 31 August 2026
 
@@ -1257,7 +1325,7 @@ Module to Behaviour module and nothing was renumbered.**
 | 12 | Bento | **None** · edit-safe: yes · JS off: pixel-identical |
 | 13 | Thumb Side | **None** · edit-safe: yes · JS off: pixel-identical; `lightbox` considered and not declared |
 | 14 | Dense | **None** · edit-safe: yes · JS off: pixel-identical; the excerpt-on-hover gap stays unnamed |
-| 15 | Filtered | **`filter-strip`** · **edit-safe: yes** — it marks the current pill and manages the scrollable row, and adds, removes or reorders nothing the editor placed · JS off: every pill still navigates to its tag archive as an `<a href>`; the current pill loses its marked state and the strip scrolls natively below 767 |
+| 15 | Filtered | **`filter-strip`** · **edit-safe: yes** — it marks the current pill and nothing else, and adds, removes or reorders nothing the editor placed · JS off: every pill still navigates to its tag archive as an `<a href>`; the current pill loses its marked state and the strip scrolls natively below 767 |
 | 16 | Load More | **`load-more`** · **edit-safe: no** — it appends posts the editor did not place · JS off: Ghost's own numbered `/page/2/` links render in place of the button, which is absent rather than inert, so the archive is still fully readable |
 
 **Sixteen declare none and two declare a script**, which is what §0 already said; the count is now
@@ -1366,3 +1434,149 @@ built for text. Nothing changes on the live site either way; the question is wha
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** eighteen designs, numbered **1–18**.
+
+---
+
+## Patch notes — pass two, 1 September 2026
+
+Every change carries the **name** of the rule that required it. **Frames updated:** all eighteen
+design frames (`A17-1` … `A17-18`) and the proof frame `A17-0`, each gaining a **PASS TWO PATCH**
+block naming, for that design, what changed and the rule behind it; **`A17-0`, `A17-1`, `A17-3`,
+`A17-7`, `A17-8`, `A17-9`, `A17-11`, `A17-12`, `A17-15`, `A17-16` and `A17-18` also gain the greyed
+rows drawn** in P0's treatment, and the eleven designs that offer **With photograph** gain the drawn
+one-letter avatar with its reason. **Nothing was renumbered, renamed, redrawn or deleted; no control
+was added or removed; no value changed; no default changed; no layout, type scale, colour pack or
+spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **Order greys at Source: Hand-picked in all eighteen** — *a control switched off by another is
+   greyed, with the reason beside it*. The row was already switched off and the document already said
+   so; what was missing is the half of the rule that matters in use — the sentence at the control
+   ("not available while posts are hand-picked: your drag order is the order") and a row that is
+   greyed rather than left accepting a value the query will not honour. **Drawn on `A17-0`.**
+2. **Eight per-design narrowings are now drawn greyed with their reason** — *a control switched off by
+   another is greyed, with the reason beside it*. **1 Three Up** (Excerpt: Three lines at Per row
+   Four) and **9 Big Type** (Title: Display at Per row Three) had the narrowing written as
+   "unavailable" and were resolving it silently. **7 Contrast Band** and **15 Filtered** inherit
+   1 Three Up's 306 px cell and inherit its narrowing; both were still accepting three lines.
+   **3 Four Up** (Excerpt at Per row Five, a 240 px cell) and **16 Load More** (Three lines at Per row
+   Four, the whole row at Per row Six, a 196 px cell) were accepting an excerpt at widths the
+   category floor already says draws none — *the floor's rule, applied, not a new one*.
+   **11 Masonry** greys **Columns: Three** on the two-ratio cycle, which is the design's own
+   enumerated rule (column count ≤ cycle length) enforced in the direction that was still open.
+   **18 Edge to Edge** greys the whole **Scrim** row at Text Under, where the wash has nothing to sit
+   behind — the dependency was written last pass and the row was still live at both values of Text.
+   **Every fallback is the value the design already resolved to; no new value, no new control, no
+   changed default.**
+3. **The locked rows are restated as drawn, not hidden** — *a control switched off by another is
+   greyed, with the reason beside it*, its neighbouring case. 7 at Background role Contrast, 8 at
+   Background, 7 and 18 at Top divider None, 12 at Count 5, 16 at Source This route's posts and at
+   A34's Pagination style Load more. **A lock by the design is not a switch by another control**, and
+   both are drawn with a reason. Nothing about them changed.
+4. **One letter, never two, across the eleven Meta designs** — *avatars with no photograph show
+   initials, and the two forms are not interchangeable*. **1, 2, 4, 5, 6, 11, 12, 15, 16, 17 and 18**
+   offer **With photograph**; every byline they draw comes from Ghost, so a missing `profile_image`
+   draws **one** initial. The rule was applied to `A17-0` and `A17-1` on 29 August and is now stated
+   at the control on all eleven, with the drawn circle reading **N** for Naomi Alder. **The other
+   seven refuse the value with the reason already at the control** — 3 (a 306 px cell), 7 (a
+   photograph cannot be colour-mixed onto the band), 8 (an avatar inside a scrimmed caption), 9 (never
+   touches `feature_image`), 13 (two identifying images in one row), 10 and 14 (no author at any
+   setting). **No two-initial avatar exists anywhere in A17 and none may be introduced.**
+5. **No design declares a width below which its script runs** — *a design may declare the width below
+   which its script runs*. Sixteen declare no module; `filter-strip` and `load-more` both run at every
+   width, and both no-JavaScript lines already read at every width. **Nothing was declared, because
+   declaring one would be a decision rather than a record** — see the open question on 15 Filtered.
+6. **Open questions marked item by item** — housekeeping. Five items were settled elsewhere in this
+   document and are struck through with who settled them; three are live and each carries **OPEN FOR
+   THE OWNER** on its own line. **Nothing was answered in the housekeeping.**
+7. **Nothing was renumbered and no design was deleted.** Eighteen designs, 1 to 18.
+
+### Rules and facts checked, design by design
+
+| Rule or fact (by name) | Where it lands in A17 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **The pass's whole subject.** Every case is listed in **The disabled-control pattern** in the category layer: the universal Order row, eight per-design narrowings and six locks. **The rule's one exception is claimed nowhere in A17** — no control here is one the project can never offer, so nothing is left undrawn. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **Eleven designs carry the value and all eleven show one letter**; seven refuse it with a stated reason. Ghost supplies every byline in the category, so the two-initial form is unreachable and is used nowhere. |
+| **The Remove button never greys out** | **No subject, and nothing to fix.** A17 authors no list: no Add creates a post, no Remove deletes one. The post picker at Hand-picked has an ✕ on every row, no floor, and removing the last reference leaves the section unrendered on the site and outlined in the editor. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Per row, Columns, Arrangement, Cycle, Strip, Button and the rest are named values with a drawn frame behind each; Count and 16's Batch count items. The category's one conversion — 16's Batch, from four fixed buttons to a picker — was made on 29 August and meets the rule's test. |
+| **A design may declare the width below which its script runs** | **None does.** Two modules, both running at every width, both no-JavaScript lines reading at every width. 15 Filtered's below-767 strip is an open question, not a declaration. |
+| **Ghost's templates cannot count, add, or remember** | **Unchanged by this pass, and re-checked.** The span follows the first post's position, 12 Bento's tall cell likewise, 15's strip is Ghost's tag list or an authored one, 16's count line is composed from the query. No arithmetic was introduced. |
+| **CSS cannot see content** | **Re-checked, nothing withdrawn.** The greying added here is editor state — the panel knowing another control's value — not a stylesheet measuring content. Excerpts still clamp by line without reading their length. |
+| **Some fields we drew do not exist** | **Unchanged.** A17 reads `title`, `url`, `published_at`, `primary_author`, `primary_tag`, `excerpt`, `feature_image` and `reading_time`, and nothing this pass touched adds a field. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A17.** These are placeable sections whose markup this project owns; a post's body is A25's and A33's surface. |
+| **The feature-image caption renders differently on the two Ghost versions** | **No subject, and worth one line for a builder.** No A17 design draws a feature image's caption: the card reads `feature_image` and its alt text, and the paragraph under a title is `excerpt`. **The difference cannot reach this category**, and no design may start reading a caption without inheriting it. |
+| **A comment count renders nothing at all without JavaScript** | **No subject.** A17 reads no comment count, ships no comment noun in its translation catalogue and puts no accessible label on a number. |
+| **The two free designs are the owner's choice** | **Unchanged: 1 Three Up and 4 Cards**, ruled 29 August 2026, both present in the roster. |
+
+### The conflict this pass will not choose
+
+**Rule A says a control switched off by another is greyed and never hidden. A17's Data group hides the
+main feed's pair — Pagination style and the empty-state heading and body — at every Source except
+This route's posts, and it hides them because P0·5 does.** The hiding is caused by another control, so
+the rule reaches it; it cannot be greyed without redesigning P0·5, which this pass is instructed not to
+do. **Listed here rather than resolved**, and no A17 panel was changed on account of it.
+
+### Open questions raised by this pass
+
+1. **4 Cards, at Per row Four.** The card's own padding takes the text column under the 306 px the
+   excerpt floor is written against, so **Excerpt: Three lines may be a value this design cannot
+   honour**. Greying it means deciding that a padded cell counts as its outer width or its inner one,
+   which is a decision. **OPEN FOR THE OWNER**
+2. **6 Split Head, at Per row Three.** The grid column divides 856 into cells of about 269 px — under
+   the floor's 306 — so Excerpt may offer lines the design does not draw. The floor was written for the
+   1,296 divisions and this design does not use them. **OPEN FOR THE OWNER**
+3. **17 Panel, at Per row Four.** The panel's cells are *(width − 2·inset − 48) / 3*, giving about
+   278–290 px at every Inset, again under 306. Same question, on a ladder this design invented.
+   **OPEN FOR THE OWNER**
+4. **15 Filtered, below 767.** The design's no-JavaScript line says the strip **scrolls natively**;
+   its reconciliation paragraph says the module **manages** that scroll. If the module does nothing
+   there that CSS does not, the design declares no width; if it does, the width is 768 and the
+   no-JavaScript line must read on both sides of it. **OPEN FOR THE OWNER**
+5. **11 Masonry's control table still prints Columns Four** while the Reconciled paragraph says the
+   value was removed on 24 August. **Recorded, not resolved** — the frame is the authority and this
+   pass was not asked to change a value. **OPEN FOR THE OWNER**
+
+### Left alone deliberately
+
+**Two things were edited outside this environment and are untouched here.** **No printed design total
+was reintroduced** anywhere in this document or on any A17 frame — nothing in the category quotes a
+library size, and the count-agnostic copy stands. **P0's per-prop mark allowlist is not rewritten,
+softened or dropped**: the default inline marks, a field's right to narrow that set, and a disallowed
+mark being **absent** from the toolbar rather than greyed, all stand as written. **One thing was left
+because it may be deliberate**: 11 Masonry's control table keeps its Columns Four cell, listed above
+as an open question rather than edited out.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+   17, 18** — eighteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present** at the head of this document, on its own line, and
+   names **1 Three Up** and **4 Cards** — both of which exist in this category's roster of eighteen.
+
+---
+
+## The owner's rulings — 1 September 2026
+
+Five, all applied above; each carries the rule that governs it.
+
+1. **The excerpt floor measures the text column, not the outer cell** — *a control switched off by
+   another is greyed, with the reason beside it*. **4 Cards** greys Excerpt at Per row Four (a 306 px
+   card with 20 px padding leaves 264), **6 Split Head** at Per row Three (856 in three is 269), and
+   **17 Panel** at Per row Four (278–290 at every Inset). All three fall to **Off** and return one
+   count wider. One test, three designs, and no new value or default anywhere.
+   *Recorded alongside it:* 4 Cards at Per row Three leaves a 374 px column, between the floor's two
+   named widths of 306 and 416; **its values are unchanged there**, and nothing in this ruling touches
+   the two-lines-or-three question at intermediate widths.
+2. **15 Filtered's `filter-strip` only marks the current pill** — *a design may declare the width
+   below which its script runs*. The strip's horizontal scroll below 767 is native CSS overflow, so
+   **the design declares no width** and its no-JavaScript line, already true at every width, stands
+   unchanged. The contradicting half-sentence in the reconciliation paragraph is corrected.
+3. **11 Masonry's control table drops Columns Four** — bookkeeping under *the panel is the authority*.
+   The frame has said the value was removed since 24 August; the written table was still printing it.
+   **No value on the frame changed**, and no fourth ratio was added.
+4. **Nothing else moved.** No control was added, removed or renamed; no default changed; no layout,
+   type scale, colour pack or spacing step moved; **the numbering is 1–18, unchanged**.
+5. **Frames updated by these rulings:** `A17-4`, `A17-6`, `A17-15`, `A17-17` — each gaining the drawn
+   greyed row or the corrected behaviour line — and `A17-11`, which records the written table's
+   correction without changing anything drawn.

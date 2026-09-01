@@ -97,13 +97,21 @@ RUNBOOK = [
   'checks below tell you what moved. Two things in there were edited in the REPO rather than in '
   'Claude Design — the count-agnostic marketing copy and P0\u2019s mark allowlist — and step 2 is what '
   'catches it if the re-export undid either.'),
+ ('python3 tools/reapply-export-edits.py',
+  'Put back the edits a re-export cannot carry',
+  'Two edits live in the REPO, not in Claude Design: the count-agnostic marketing copy and '
+  'P0\u2019s mark allowlist. The 2026-08-31 pass tried to solve this by ASKING Claude Design not to '
+  'undo them \u2014 and the 2026-09-01 re-export proved that impossible. The sessions behaved '
+  'correctly and said so three times; the text was lost anyway, because a project copy cannot '
+  'preserve what it never held. RUN THIS FIRST, before anything reads the export. It reports any '
+  'wording it does not know how to reword rather than guessing.'),
  ('python3 tools/verify-design-pass.py',
   'Did the pass actually apply the rulings?',
   'One check per ruling, run against the export. Every structural check must pass. Six prose scans '
   'come back LOOK by design — they cannot tell a violation from a spec RECORDING that it removed the '
   'thing, so a human reads those six. The last two checks guard the repo-side hand edits: if the '
   're-export put a design total back on a marketing screen, or dropped P0\u2019s mark allowlist, they '
-  'go red here rather than months later.'),
+  'go red here rather than months later \u2014 and they are the check behind the step above, so a re-apply that missed something still fails here. It also caught A9-12 being CUT when the ruling said keep the design and remove only its control.'),
  ('python3 tools/export-roster.py > /dev/null && python3 tools/inventory-gen.py --write',
   'Re-derive the library from what was actually drawn',
   'The export is the count. This rewrites the inventory\u2019s totals and every category roster from '

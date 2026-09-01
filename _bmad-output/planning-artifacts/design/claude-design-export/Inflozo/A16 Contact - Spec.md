@@ -1410,10 +1410,10 @@ no-script state and the `<ol>`/`<ul>` rule is unchanged.
    locked at Image, with the reason shown** ⚑; **Vertical spacing resolves onto the head-and-form
    block's inset inside the image — 64 · 96 · 132, clamped so the block stays out of the top
    quarter** ⚑. Quick Controls: Image height · Scrim · Form position · Image focus.
-7. **Data.** Nothing from Ghost. No repeating unit. **No image** → A19's vocabulary: **Hand off** ⚑ —
-   the section renders as 2 Centred on the page ground and **the sidebar says which design is on the
-   page and why** ⚑, because a cover design with no cover is not a degraded cover, it is a different
-   section.
+7. **Data.** Nothing from Ghost. No repeating unit. **No image** → **the design renders as itself** ⚑
+   *amended in the patch pass — the hand-off to 2 Centred is deleted, because no design ever turns into
+   another design*: the scrim becomes the ground, the head and form stay where they are, and **the sidebar
+   advises 2 Centred** without switching to it.
 8. **Empty.** No eyebrow or blurb → each absent. **Head: Hide** → the form alone over the image,
    centred, and the `<form>` takes `aria-label="Contact Orbit Weekly"` ⚑. **No `imageAlt`** → the
    image is decorative and takes `alt=""` ⚑, because the head above it already says what the section
@@ -1427,7 +1427,7 @@ no-script state and the `<ol>`/`<ul>` rule is unchanged.
     placed over the top quarter of the image** ⚑, where the scrim is weakest.
     **Repeating items** — none drawn; all four lists kept.
     **Flagged ⚑** zero section padding · the taller mobile image · Fields fixed and shown disabled ·
-    *Scrim: Light* self-disabling · `imageFocus` as a field · Hand off with no image · no dark-mode
+    *Scrim: Light* self-disabling · `imageFocus` as a field · the scrim-as-ground state with no image · no dark-mode
     image variant · the top-quarter rule.
 
 **Editing.** The eyebrow, heading and blurb, the two field labels and their placeholders on the
@@ -1518,7 +1518,7 @@ Cumulative. Reused components are listed with the category that set them.
 | Reasons list | 1–3 authored lines, ≤ 40 ch, text only, with its repeater | A6·11 |
 | Ledger row | A ruled row with a label column and a value column | A9·15 |
 | Repeater | Drag handle, remove, *Add …* at the foot, seeded not blank | A3 |
-| Missing-image vocabulary | Reflow · Plate · Hand off | A19 |
+| Missing-image vocabulary | Reflow · Plate · Ground ⚑ *corrected 1 September 2026 — A19 deleted Hand off and Ground replaced it; A24 adds Hide* | A19 |
 | Disabled-value convention | A value that would fail is disabled with its measurement shown | A9·8, A29·3 |
 | **The labelled field** | **13 px label in `text`, 8 px above a 46 px field at the pack radius; 48 and 16 px stacked** | **A16 — new** |
 | **The message field** | **The same label over a 96 · 144 · 216 px box; the only field whose height is a control** | **A16 — new** |

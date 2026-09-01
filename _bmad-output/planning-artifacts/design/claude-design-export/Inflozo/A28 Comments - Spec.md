@@ -1,8 +1,21 @@
 # A28 Comments — written specification
 
-10 designs · Paper pack · drawn 23 August 2026 · **controls reconciled 25 August 2026** · **design patch pass, 29 August 2026**
+10 designs · Paper pack · drawn 23 August 2026 · **controls reconciled 25 August 2026** · **design patch pass, 29 August 2026** · **design patch pass two, 1 September 2026**
 
-**Design patch pass — 29 August 2026 (this document's current state).** Three platform facts landed on this
+**Design patch pass two — 1 September 2026 (this document's current state).** Two tested findings and one
+library rule landed on this category. **The count and the comments widget degrade differently without
+JavaScript, and one sentence cannot cover both**: tested against live Ghost servers on 31 August 2026, **the
+count creates no element at all** — no number, no word, no empty box — while **the widget itself does render**.
+Every design's no-JavaScript line is now written as two sentences. **The count's accessible label sits on the
+surrounding element, never on the count**, and **`countSingular` and `countPlural` are bare nouns** because
+Ghost's script *prepends* the number to them — a "%" or a `{count}` in either string renders literally.
+**Where the project's colour scheme is pinned there is no visitor dark-mode switch at all** — not greyed, not
+drawn, with the panel saying why — and **the comments widget takes its light or dark appearance from that same
+pinned value**, which is the rule the deleted Block colour row follows from. **4 Contrast Band is still offered
+only on a pinned scheme.** **Nothing was renumbered, no measure moved and no colour changed.** **One conflict
+with the previous pass is recorded rather than resolved** — see the Patch notes below.
+
+**Design patch pass — 29 August 2026 (superseded in part by pass two, above).** Three platform facts landed on this
 category and every design in it. **The comment count is drawn by Ghost's own script** — `{{comment_count}}`
 renders a placeholder that Ghost's comments script fills — so **with JavaScript off there is no number at all:
 not a zero, nothing**. Every design's no-JavaScript line is rewritten, and **no section's accessible name
@@ -147,21 +160,33 @@ Every design obeys these unless its own entry says otherwise.
   the head); **7 offers two values, 10 offers three.** At None the section takes `aria-label="Comments"` ⚑ — a
   translation-catalog string, not a literal. **No section is ever named by its count** ⚑ — Ghost's script
   draws the number, so 1's count sits beside the `h2` rather than inside it, **9's `h2` is its 13 px label
-  rather than its figure**, and 10 takes the `aria-label` at Count only as well as at None.
+  rather than its figure**, and 10 takes the `aria-label` at Count only as well as at None. **And where a design
+  reads the count aloud, the accessible label sits on the surrounding element, never on the count itself** ⚑ —
+  new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist
+  is not a label.
 - **The type.** Head 28 · 22 · 17 · 13 by value; the figure 76 or 104 in 9. Count 15, 17 in 9. Rules
   15, 14 in 6's rail. **Nothing below 13, and nothing between 13 and 15** ⚑.
 - **The count's own words.** `countSingular` "comment", `countPlural` "comments", `countEmpty`
   "No comments yet" — **three authored fields in all ten** ⚑, edited **in the panel rather than
   inline**, because the canvas shows one of the three at a time and editing in place would silently
   rewrite whichever variant happened to be on screen. **P0·6**'s state switcher steps 0 · 1 · many to
-  see each. **The number itself is Ghost's** and shows P0·1's lock pill.
+  see each. **The number itself is Ghost's** and shows P0·1's lock pill. **`countSingular` and `countPlural`
+  are bare nouns** ⚑ — new on 1 September 2026: Ghost's script **prepends** the number to the word, so a "%" or
+  a `{count}` inside either string renders literally on the page. **Checked on all eleven frames: neither
+  appears** ⚑; the 20-character limit is unchanged. **`countEmpty` is not bound by the same rule** ⚑ — **ruled by the owner on 1 September 2026**: it is a
+  whole line rather than a noun, it keeps "No comments yet", and **the one live check owed covers whether
+  Ghost prints a nought in front of it**.
 - **The comment box's colour.** **It is a setting inside Ghost, and Inflozo does not change it** ⚑ — so
   **no A28 design passes `mode=` at all**, the Block colour row is gone from every panel, and a read-only row
   **links to the setting** in its place. The previous pass's "Match the page resolves to `auto`" fix is
   **withdrawn as moot**. **4 Contrast Band is what this costs**: its band inverts the page, the box cannot be
   inverted with it, so that design is **offered only where the project's colour scheme is pinned** ⚑ — on a
   site that follows the visitor's system preference, half the audience would read a light thread on a dark
-  band. **The design is not offered there and never turns into another design.**
+  band. **The design is not offered there and never turns into another design.** **And where the colour scheme is
+  pinned there is no visitor dark-mode switch at all** ⚑ — not greyed: **not drawn**, with the panel saying
+  why, because it is the one control this project can never offer. **The comments widget takes its light or
+  dark appearance from that same pinned value** and is given no second selector of its own — which is the rule
+  the deleted Block colour row follows from, stated on 1 September 2026.
 - **Accent, once at most.** **Only 8 Prompt draws accent at all** — its buttons, or its link. No head,
   count, rule, bullet, chevron or figure is ever accent ⚑. **The accent inside the block is Ghost's and
   is not counted, because it is not ours.**
@@ -178,18 +203,26 @@ Every design obeys these unless its own entry says otherwise.
   need JavaScript."**, a **theme translation-catalog string** (`comments.noscript`), **not an authored
   field** ⚑. One line of markup, no module, taking the muted text token at the count's size, at the
   position the block would have occupied: no box, no icon, no border — a sentence, not an error state.
-  It stops the chrome promising a thread that never loads. **With JavaScript off there is no
-  count either** ⚑ — Ghost's script draws the number as well as the thread, so a scriptless page shows no
-  count at all, not a zero, and no `countEmpty` line; the head, the rules and that one sentence are what
-  remain. **Drawn on the proof frame** — on **two** designs since this pass, 1 Rule and 9 Big Count, because
-  the figure *is* 9's count and its absence is the category's hardest case.
+  It stops the chrome promising a thread that never loads. **The count and the widget degrade differently, and
+  one sentence cannot cover both** ⚑ — tested against live Ghost servers on 31 August 2026, and rewritten
+  category-wide in this pass. **The count renders nothing at all**: no number, no word, no empty box, **no
+  element**, because Ghost's script creates it and writes the number in, and no `countEmpty` line either.
+  **The comments widget itself does render.** **Every design's no-JavaScript line is therefore two sentences,
+  one for each**, and 8 Prompt's is three. **Drawn on the proof frame** — on **two** designs, 1 Rule and 9 Big
+  Count, because the figure *is* 9's count and its absence is the category's hardest case; **those cards show
+  the count's absence, not the widget's**. **The `<noscript>` line keeps its wording, "Comments need JavaScript."** — **ruled by the owner on 1
+  September 2026** ⚑. What the widget draws in that state was not established by the test, so **one live check
+  is owed** and the line is not rewritten on a guess. **And the section is always drawn** ⚑ — heading, rules
+  and that line render whether or not the discussion can, on the same ruling.
 - **Print.** **No A28 section prints** ⚑ — head, rules, `<noscript>` line and block all go. A printed
   page cannot be commented on. The second category in a row that prints nothing.
 - **Behaviour.** **Two designs declare a module** — 7's `accordion`, 8's `member-form` — both from
   the registry, both quoted. **Only one of the two survives without JavaScript**: 7's bar opens and closes,
   and **8's form no longer posts** ⚑ — Ghost's signup endpoint refuses a plain submission, so the designed
   no-JavaScript notice replaces it. The other eight declare none. **No design declares a module for the block
-  itself, because Ghost's script is not in the registry** ⚑. **No registry addition was needed in this
+  itself, because Ghost's script is not in the registry** ⚑. **No design declares a width below which its script
+  runs** ⚑ — neither module is width-conditional; 7's is native `<details>` and 8's runs at every width — so
+  no design owes a two-sided no-JavaScript sentence on that account. **No registry addition was needed in this
   pass**: the upgrade action is a Portal link, the `<noscript>` line is markup, and 9's At zero is
   server-side. **No frame carries an "ARCHITECT: registry addition" note.**
 - **Refused category-wide, each with a reason:** a comment count in the post header ⚑ (A24 owns it) ·
@@ -207,6 +240,7 @@ counted** ⚑, plus one read-only row.
 | Field | Type | Values |
 |---|---|---|
 | *Comment box colour* | read-only | **Deleted as a control in this pass** ⚑ — the box takes its colour from a setting inside Ghost, Inflozo does not change it, and **no design passes `mode=`**. The row links to the setting |
+| *Visitor dark-mode switch* | **not drawn** | **Where the project's colour scheme is pinned this control is not drawn at all** ⚑ — the one control this project can never offer — **and the panel says why**, as a sentence here: *"your site's colour scheme is fixed, so readers have nothing to switch."* **The comments widget takes its light or dark appearance from that same pinned value** and is given no second selector |
 | `avatarSaturation` | enum req | Muted 40 · Standard 60 · Vivid 80 → `saturation=` |
 | `whenClosed` | enum req | Show the notice · Hide the section · **Hide is 10's default** ⚑ |
 | *Who can comment* | read-only | Nobody · All members · Paid-members only — **Ghost → Settings → Membership owns it; the section reports it and cannot change it** ⚑ |
@@ -307,9 +341,9 @@ The list is **P0·3's shared item controls**, unchanged:
 | `rulesText` | text | yes | 140 ch | 1, 3, 4, 5, 7, 9, 10 · and 2 and 6 at House rules One line |
 | `rules[]` | list of text | yes | **1–4** × 60 ch | **2 and 6 only** ⚑ · the category's only authored array |
 | `closedNotice` | text | yes | 80 ch | All ten · default "Comments are closed on this post." ⚑ |
-| `countSingular` | text | no | 20 ch | **All ten · new** ⚑ · default "comment" |
-| `countPlural` | text | no | 20 ch | **All ten · new** ⚑ · default "comments" · drawn at 17 px in 9 |
-| `countEmpty` | text | no | 40 ch | **All ten · new** ⚑ · default "No comments yet" · 9's zero state at At zero Count line |
+| `countSingular` | text | no | 20 ch | All ten · default "comment" · **a bare noun** ⚑ — Ghost's script prepends the number, so a "%" or a `{count}` here renders literally |
+| `countPlural` | text | no | 20 ch | All ten · default "comments" · drawn at 17 px in 9 · **a bare noun** ⚑, same reason |
+| `countEmpty` | text | no | 40 ch | All ten · default "No comments yet" · 9's zero state at At zero Count line · **the bare-noun rule does not bind it** ⚑ — ruled 1 September 2026; one live check owed on Ghost's behaviour at zero |
 | `promptHeading` | text | req in 8 | 40 ch | **8 only** · default "Join the discussion" ⚑ |
 | `promptBody` | text | yes | 140 ch | 8 only · **shared by both prompt states** ⚑ · default "Members can reply, ask questions and tell us where we got it wrong." |
 | `promptButton` | text | req in 8 | 20 ch | 8 only · default "Sign up" ⚑ · Portal `signup` |
@@ -321,13 +355,13 @@ The list is **P0·3's shared item controls**, unchanged:
 | `avatarSaturation` | enum | no | Muted · Standard · Vivid | All ten |
 | `whenClosed` | enum | no | Show the notice · Hide the section | All ten · Hide in 10 ⚑ |
 | `signedOutReaders` | enum | no | The prompt only · The prompt and the block | **8 only** ⚑ |
-| `freeMembers` | enum | no | The upgrade prompt only · The upgrade prompt and the block | **8 only · new** ⚑ · shown only at paid-only commenting |
+| `freeMembers` | enum | no | The upgrade prompt only · The upgrade prompt and the block | **8 only** ⚑ · **greyed, with the reason beside it, where commenting is open to all members** — it was hidden there until 1 September 2026 |
 
 Read from Ghost, never authored:
 
 | Value | Type | Read by |
 |---|---|---|
-| `{{comment_count}}` | int | All ten · pluralised by the three authored words ⚑ · **twice in 9**, bare and pluralised · **drawn by Ghost's script, so it is absent with JavaScript off** ⚑ |
+| `{{comment_count}}` | int | All ten · pluralised by the three authored words ⚑ · **twice in 9**, bare and pluralised · **drawn by Ghost's script, so without JavaScript it creates no element at all** ⚑ · **its accessible label sits on the surrounding element, never on it** ⚑ |
 | `{{#if comments}}` | bool | All ten · false → `whenClosed` |
 | `{{#if @member}}` | bool | **8 only** · with the commenting setting, decides between three arrangements |
 | *Ghost setting:* commenting | enum | **Read-only in the sidebar, in all ten** ⚑ · **8 reads it to choose an arrangement** |
@@ -384,15 +418,12 @@ width, 28 to the block, padding 64.
 replaces the block, or the section goes at Hide. **The section never draws a placeholder comment, an
 outline or a reserved height** ⚑.
 
-**Behaviour module.** **none.** **No-JS: the block does not render and neither does the count** ⚑ — Ghost's
-script draws the number, so a scriptless page shows **no count at all: not a zero, nothing**. The hairline, the
-head, the rules line and the `<noscript>` line stand alone. **Category-wide, not a design defect** ⚑
-(finding 3).
+**Behaviour module.** **none.** **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. So the right-hand end of the head row is empty. **The comments widget itself does render.** It stands where it always did, with the hairline, the head and the rules line above it. **Category-wide, not a design defect** ⚑ (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>` named by the head, an `h2`; `aria-label="Comments"` at
 Heading None ⚑. **The count is beside the heading and never inside it** ⚑ — Ghost's script draws it, and a name that can be
 missing is not a name; `aria-label="Comments"` covers Count only as well as None. **Focus order enters the block after the rules line
-and the theme controls no stop inside it** ⚑.
+and the theme controls no stop inside it** ⚑. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing** and **Divider (On · Off)** into **Top
 divider (None · Line · Fade)**, both outside the list — Line is what On drew, Fade is new, and Line
@@ -447,12 +478,10 @@ edits content. **Quick: Heading, Head column, House rules, Sticky head.**
 does not widen** ⚑. Heading None with rules on → a column of rules with no head, drawn and legal. Both off → the column is a count alone at 320, the block still does not
 widen, and **it is still 2 Split Head** ⚑ — the panel may advise 1 Rule and never switches to it.
 
-**Behaviour module.** **none.** Sticky head is CSS — `position: sticky` needs no JavaScript and
-declares no module ⚑. **No-JS: the block is absent and so is the count** ⚑ — the left column is a head, its rules and the
-`<noscript>` line, with no number and no zero (finding 3).
+**Behaviour module.** **none.** Sticky head is CSS — `position: sticky` needs no JavaScript and declares no module ⚑. **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. So the left column is a head and its rules with nothing under them. **The comments widget itself does render.** It stands in the right column, and both columns draw (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. **The rules are a `<ul>`**, so a screen
-reader announces "list, 3 items" before the block ⚑. DOM order head → rules → block at every width.
+reader announces "list, 3 items" before the block ⚑. DOM order head → rules → block at every width. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`rules[]` is
 settled at one to four** ⚑ — one rule is drawn as one bulleted line, and removing the last sets House
@@ -492,7 +521,7 @@ it, block 720. **834** plane 754, inset 32, block 690, padding 80. **≤ 767** p
 | Panel width | Measure · Content |
 | Inset | Compact 32 · Comfortable 48 · Spacious 64 |
 | House rules | On · Off |
-| Plane edge | Soft · Hairline (**Soft disabled in dark with its reason shown**) |
+| Plane edge | Soft · Hairline (**Soft greyed in dark, with the reason beside it at the control** — *"not available in dark: the hairline carries every plane here"*) |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact · Comfortable · Spacious |
 | Top divider (universal) | None · Line · Fade |
@@ -507,11 +536,10 @@ House rules.**
 plane and **the plane shrinks to its content** ⚑. At Hide the section **the plane goes with the
 section** — it is the section's ground, not the page's furniture ⚑.
 
-**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — which here leaves a plane carrying a head, a rules
-line, 96 px of inset **and the `<noscript>` line**, and it is the design that needed that line most.
+**Behaviour module.** **none.** **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. **The comments widget itself does render.** So the plane carries a head, a rules line, its inset and the widget — **the design this fact costs least**, where the previous pass had it costing most (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. **The plane is a `<div>` with no role** ⚑ —
-it is a colour, not a region. Muted on surface is 5.4:1 in Paper light, re-checked per pack.
+it is a colour, not a region. Muted on surface is 5.4:1 in Paper light, re-checked per pack. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Inset stays**, because a plane's internal
 padding is not the space around the section — **the ladder A27·4 Panel leaves fixed at 40 px, and that
@@ -574,12 +602,11 @@ and the rules; the block never centres** ⚑.
 inside the band; **at Hide the section the entire band goes** ⚑ and the route closes A26 straight into
 A27.
 
-**Behaviour module.** **none.** **No-JS: the band draws, the block is absent and so is the count** ⚑ — a band with a head, one line and the
-`<noscript>` line in it, which is the honest consequence (finding 3).
+**Behaviour module.** **none.** **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. **The comments widget itself does render.** The band, its bleed and its derived colours draw with the widget standing in them, so **the design's whole argument survives** (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`. Contrast ink on contrast ground is 14.6:1 in
 Paper light and 13.9:1 in Paper dark; **a pack whose muted contrast fails is corrected in the pack, not
-here** ⚑. **Ghost's block sets its own contrast and we cannot audit it** ⚑ (finding 2).
+here** ⚑. **Ghost's block sets its own contrast and we cannot audit it** ⚑ (finding 2). **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Band padding retired into **Vertical spacing**, which resolves *inside* the band
 because the band **is** the section — **rule 3's band-internal exemption was considered and declined**,
@@ -634,11 +661,10 @@ another breaks the roster. **Quick: Heading, Box width, Head row, Inset.**
 block sits at the inset. `{{#if comments}}` false → the notice inside the box, box kept; at Hide the box
 goes with the section. Zero comments → **the box closes round a short block and reserves no height** ⚑.
 
-**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — the box draws, the head row draws with nothing at its
-right-hand end, and **the `<noscript>` line is what the box contains** (finding 3).
+**Behaviour module.** **none.** **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. So the head row draws with nothing at its right-hand end. **The comments widget itself does render.** It is what the box closes round; box, head row, divider and inset all draw (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2` inside the head row. **The box is a `<div>`
-with no role and the divider is a border, not an `<hr>`** ⚑.
+with no role and the divider is a border, not an `<hr>`** ⚑. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**; **Head row and Inset both stay**, being a
 border *inside* the box and the box's internal padding rather than the section's seam and spacing.
@@ -695,13 +721,11 @@ the clearest reason the three words became fields.
 off and rules off → a label alone, legal and drawn. `{{#if comments}}` false → the notice in the 1,008
 column, rail kept; at Hide both columns go ⚑.
 
-**Behaviour module.** **none.** Sticky rail is CSS. **No-JS: the block is absent and so is the count** ⚑ — and the count was 22 px, the biggest thing in the
-rail, so a scriptless rail is its label and its rules; `countEmpty` does not render there either, because that
-word is Ghost's script too (finding 3).
+**Behaviour module.** **none.** Sticky rail is CSS. **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. The count was 22 px, the biggest thing in the rail, so a scriptless rail is **its label and its rules**; `countEmpty` does not render there either, because that word is Ghost's script too ⚑. **The comments widget itself does render.** It stands in the 1,008 column beside them (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>` named by the rail's label, which is the `h2` ⚑. **DOM
 order is rail then block at every width, including Rail side Right, where the visual order is reversed
-by grid placement and the reading order is not** ⚑. Rules are a `<ul>`.
+by grid placement and the reading order is not** ⚑. Rules are a `<ul>`. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`rules[]`
 settled at one to four** with **P0·3's** item controls named. **The count's three words become fields**,
@@ -757,12 +781,7 @@ request.
 editor ⚑. `{{#if comments}}` false → **no bar at all** ⚑: the notice stands alone, because a disclosure
 with nothing behind it is a control that lies.
 
-**Behaviour module.** `accordion`. **Registry no-JS, quoted:** "Native `<details>` — fully functional,
-keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the
-server-rendered `open` attribute." **The bar therefore works without JavaScript; the block inside it does not render, and neither does the count
-on the bar** ⚑ — Ghost's script draws the number, so a scriptless bar is a label and a Show or Hide, and the
-`<noscript>` line is what the reader finds when they open it (finding 3). **The count is why this design puts a
-bar there at all, and that argument holds only with script.**
+**Behaviour module.** `accordion`. **Registry no-JS, quoted:** "Native `<details>` — fully functional, keyboard-operable, opens and closes with no JS at all. A9's `default state` control resolves to the server-rendered `open` attribute." **So the bar works without JavaScript — and it takes two more sentences after that** ⚑. **The count on the bar renders nothing at all**: no number, no word, **no element**, so a scriptless bar is a label and a Show or Hide. **The comments widget itself does render.** It is what opening the bar reveals (finding 3). **The count is why this design puts a bar there at all, and that argument holds only with script.** **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑. **This design declares no width below which its script runs** ⚑ — `<details>` is native and runs at every width — so it owes no two-sided sentence on that account.
 
 **Accessibility.** `<details>` / `<summary>`, so the open state is announced by the browser and needs no
 `aria-expanded` of ours ⚑. **The `h2` is inside the `<summary>`**, which keeps the section in the
@@ -770,7 +789,7 @@ heading outline while closed. **Focus does not move into the block on open** ⚑
 160 ms ease-out and **is dropped under reduced-motion while the word still changes** ⚑. **Editing
 `showLabel` and `hideLabel` in place:** while the section is selected a click on the word edits it and
 the rest of the bar still toggles, and **P0·1's Link action is disabled there with its reason shown** ⚑
-— a link inside a `<summary>` is not operable.
+— a link inside a `<summary>` is not operable. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **`showLabel`
 and `hideLabel` now edit inline**, with the two rulings above — the click that edits is not the click
@@ -816,7 +835,7 @@ words.
 | Prompt style | Panel · Hairline |
 | Form | Email field · Link only |
 | Signed-out readers | The prompt only · The prompt and the block |
-| Free members | The upgrade prompt only · The upgrade prompt and the block |
+| Free members | The upgrade prompt only · The upgrade prompt and the block (**greyed where commenting is open to all members, with the reason beside it** — *"not available while anyone who signs up can comment"*) |
 | House rules | On · Off (**off by default here**) |
 | Background role (universal) | Background · Surface · Contrast |
 | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -843,18 +862,12 @@ existing member typing a known address** ⚑. **The upgrade state draws no sign-
 reader is signed in. `{{#if comments}}` false → the notice and **no prompt of either kind** ⚑: inviting
 a reader into a conversation that is closed is worse than saying it is closed.
 
-**Behaviour module.** `member-form` at Form Email field; **none** at Link only, and **none in the
-upgrade state**, which is a link to Portal. **The registry's "posts natively to Ghost's members endpoint" quote is withdrawn** ⚑ — tested against two live
-Ghost servers, Ghost's signup endpoint refuses a plain form submission — so **the designed no-JavaScript notice
-replaces the form** at the form row's own height: *"Signing up needs JavaScript — turn it on to comment."* The
-**sent, error and loading states are Ghost's own script and are unchanged**. **Both buttons are conditional**:
-they do not render where the connected site cannot take them (self-signup switched off, or no payment provider
-connected), and where they do they open Ghost's own window — **with JavaScript off, nothing happens** ⚑.
+**Behaviour module.** `member-form` at Form Email field; **none** at Link only, and **none in the upgrade state**, which is a link to Portal. **The registry's "posts natively to Ghost's members endpoint" quote is withdrawn** ⚑ — tested against two live Ghost servers, Ghost's signup endpoint refuses a plain form submission — so **the designed no-JavaScript notice replaces the form** at the form row's own height: *"Signing up needs JavaScript — turn it on to comment."* The **sent, error and loading states are Ghost's own script and are unchanged**. **Both buttons are conditional**: they do not render where the connected site cannot take them (self-signup switched off, or no payment provider connected), and where they do they open Ghost's own window — **with JavaScript off, nothing happens** ⚑. **This frame degrades three ways and needs three sentences** ⚑, one more than the rest of the category. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. The prompt's words are server-rendered and draw beside that absence. **The comments widget itself does render.** It renders wherever the arrangement shows it. **The form is the third**: it does not post, and the designed notice stands where the field and button were (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>`, head `h2`, `promptHeading` — or `upgradeHeading` — an
 `h3`. The field has a real `<label>`, visually hidden, reading "Email address" ⚑. Errors are Ghost's and
 are announced by Ghost. Focus order: head → field → button → sign-in link; **in the upgrade state,
-head → button** ⚑, the shortest focus path in A28. Paper dark accent `#E0805A` on `#171511` is 8.9:1 ⚑.
+head → button** ⚑, the shortest focus path in A28. Paper dark accent `#E0805A` on `#171511` is 8.9:1 ⚑. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**, and **Top divider arrives as a row this
 design never had** (None by default, because Prompt style Hairline already draws one). **The
@@ -923,16 +936,12 @@ its 416** ⚑. **Zero comments** → the At zero value decides, **Count line by 
 `{{#if comments}}` false → **no figure at all** ⚑ and the notice takes the block's column: a count of a
 conversation nobody can join is a number without a referent.
 
-**Behaviour module.** **none.** **No `count-up`** ⚑ — the registry has it and A10 uses it, but animating
-the size of a discussion as the reader arrives is a claim about momentum the section cannot support.
-**No-JS: the block is absent and so is the figure** ⚑ — the figure *is* the count and Ghost's script draws it,
-so a scriptless column is its 13 px label and its rules line, and **At zero's count line does not render
-either** (finding 3).
+**Behaviour module.** **none.** **No `count-up`** ⚑ — the registry has it and A10 uses it, but animating the size of a discussion as the reader arrives is a claim about momentum the section cannot support. **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The figure renders nothing at all** — the figure *is* the count, so no number, no word, **no element** ⚑ — and **At zero's count line does not render either**; a scriptless column is its 13 px label and its rules line. **The comments widget itself does render.** It stands in the 808 column beside an empty one, which is why this design is one of the two drawn on the proof frame (finding 3). **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>` named by **the 13 px label, which is the `h2`** ⚑ — **not the
 figure and its word, as it was**: Ghost's script draws the figure, and a name that can be missing is not a name.
 **At Label Off the section takes `aria-label="Comments"`** ⚑. The figure and its word are a `<p>`, and **the
-figure takes the text token and never the accent** ⚑.
+figure takes the text token and never the accent** ⚑. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing**, Divider into **Top divider**. **At zero:
 Figure · Count line** arrives, defaulting to **Count line** ⚑ — a display-scale 0 on a quiet site is an
@@ -989,14 +998,13 @@ the whole section.
 nothing of the theme is visible** ⚑. That is legal, it is drawn, and it is the extreme this design
 exists to reach. `{{#if comments}}` false → nothing renders, by default.
 
-**Behaviour module.** **none.** **No-JS: the block is absent and so is the count** ⚑ — at Heading None, and at Heading Count only, that
-leaves **the `<noscript>` line alone as the whole section**, which is the honest floor of finding 3.
+**Behaviour module.** **none.** **No-JS, and it takes two sentences, not one** ⚑ — the count and the widget degrade differently, tested against live Ghost servers on 31 August 2026. **The count renders nothing at all**: no number, no word, no empty box, **no element** — Ghost's script creates it and writes the number in. At Heading Count only the count is the theme's whole visible text, so **nothing of the theme renders at all**. **The comments widget itself does render.** The section is then the widget and its spacing, which is the honest floor of finding 3. **The `<noscript>` line keeps its wording** — *"Comments need JavaScript."* — **ruled by the owner on 1 September 2026**; what the widget draws in that state is not established by the test, so **one live check is owed and the line is not rewritten on a guess** ⚑.
 
 **Accessibility.** `<section aria-labelledby>` named by the head at Heading Label; **at Count only and at None
 the section takes `aria-label="Comments"`** ⚑ — the count can never be the name, because Ghost's script draws
 it. **A 17 px muted head on a transparent ground is
 checked against the ground it is dropped onto, not against the page** ⚑ — surface and page in Paper
-differ by 2 % and both pass.
+differ by 2 % and both pass. **The count's accessible label sits on the surrounding element, never on the count itself** ⚑ — new on 1 September 2026: Ghost's script writes the number in, and a label on an element that may never exist is not a label.
 
 **Reconciled.** Padding retired into **Vertical spacing** — **keeping this design's own 40 · 64 · 96
 ladder and its Compact default**, recorded as a named exception rather than flattened into the
@@ -1024,14 +1032,22 @@ section as this design's default · allowing a section with nothing of the theme
 2. **Nothing inside the block can be styled or audited.** Type scale, spacing, avatars, buttons, focus
    rings and contrast are all Ghost's, inside a sandboxed frame. **The category's accessibility
    statement and its pack conformance both stop at the dashed outline** ⚑, and every design says so
-   rather than implying a coverage it does not have.
-3. **No JavaScript means no comments.** All 31 registry modules degrade; Ghost's comments-ui is not one
-   of them and has no server-rendered equivalent. **With JavaScript off, all ten designs render their frame, no block — and no count** ⚑, corrected in this
-   pass: `{{comment_count}}` is a placeholder Ghost's script fills, so there is no number, not even a zero, and
-   no `countEmpty` line either. 7's bar still opens and closes; **8's form no longer posts** — Ghost's signup
-   endpoint refuses a plain submission, so the notice replaces it. **The disclosure is the only A28 behaviour
-   that survives.** **The `<noscript>` line makes the state readable; it does not answer the finding.** Whether
-   the frame should render at all when the block cannot is still the architect's call.
+   rather than implying a coverage it does not have. **The count is the same problem one step out** ⚑ — its
+   element is Ghost's script's, not the template's, so **the accessible label goes on the surrounding element
+   the theme does draw**, never on the count. New on 1 September 2026.
+3. **The count and the widget degrade differently, and the two claims on file disagree.** `{{comment_count}}`
+   is a placeholder Ghost's script fills, so **without JavaScript the count creates no element at all** — no
+   number, not a zero, no `countEmpty` line — and that part is tested and settled. **The widget is where the
+   record conflicts.** The 29 August pass wrote that **Ghost's comments-ui has no server-rendered equivalent
+   and does not render**; the 31 August test against live Ghost servers says **the widget itself does render**.
+   **This pass carries the tested finding and records the conflict rather than resolving it** ⚑ — see the Patch
+   notes. **What the widget draws in that state was not established by the test**, so both consequences were **ruled by the owner on 1 September 2026**: the `<noscript>` line
+   **keeps its wording** pending one live check, and **the frame is always drawn** — heading, rules and that
+   line render whether or not the discussion can. **The standing question of this finding is closed**; what
+   remains is the check. 7's bar still opens and closes; **8's form no
+   longer posts** — Ghost's signup endpoint refuses a plain submission, so the notice replaces it. **Every
+   design's no-JavaScript line is now two sentences, one for the count and one for the widget**, and 8's is
+   three.
 4. **Is a plane a ground or a containment?** A25·3 Sheet called a raised plane `card · surface`; A26·3
    and A27·4 called the same thing a ground with containment `none`. **A28 follows the later reading**
    ⚑ — 3 Panel is `stack · none · surface` — but the two cannot both be right, and the reconciliation
@@ -1082,8 +1098,9 @@ else in this pass changes what the site renders at the defaults.
 - **"Match the page resolves to the pack's mode, not to `auto`" is withdrawn.** It was stated on the
   proof frame, in the shared group and on all ten panels. The old argument — that `auto` follows the
   reader's system rather than the page — was true only of a single-mode site; on a dual-mode Inflozo
-  theme the page *is* the reader's system. **Now: `auto` when the site ships both modes, the pack's mode
-  when it ships one.** 4 Contrast Band's forced value stays.
+  theme the page *is* the reader's system. ~~**Now: `auto` when the site ships both modes, the pack's mode when it ships one.**~~ **Struck on 1
+  September 2026** — the Block colour row is gone and no design passes `mode=` at all, so there is nothing
+  left to resolve. 4 Contrast Band is withheld on an unpinned scheme rather than forced.
 - **The `rules[]` contradiction is settled at one to four.** "Two to four" and "one rule is legal and is
   drawn as one bulleted line" were both written down. The minimum is **one**; removing the last rule
   sets House rules to Off, which is where the old "two" was really coming from.
@@ -1203,7 +1220,9 @@ and the other nine assume Ghost handles it. The **ARCHITECT: verify** flag stays
 
 ### Open questions
 
-**QUESTION 1 — Which two designs a free site gets — ANSWERED: 1 Rule · 5 Boxed**
+~~**QUESTION 1 — Which two designs a free site gets**~~
+**SETTLED — 1 Rule · 5 Boxed. Settled by the owner on 29 August 2026**, recorded in the `**[Free] designs:**`
+line at the head of this document and on the roster. Struck on 1 September 2026.
 
 Every category gives two of its ten designs away, and which two is your call. The five plainest here — the ones
 a real site could ship without looking unfinished, and that need no photography — are **1 Rule** (a hairline, a
@@ -1231,7 +1250,10 @@ discussion).
    commenting is switched off, which can read as a missing feature.
    A visitor sees one muted line, "24 comments", then the comment box.
 
-**QUESTION 2 — The design that draws no background of its own — ANSWERED: the shared row gains "None"**
+~~**QUESTION 2 — The design that draws no background of its own**~~
+**SETTLED — the shared background row gains a fourth value, *None: show whatever is behind*; "Inherit" is
+withdrawn and 10 Slim's row is locked at None. Settled by the owner on 29 August 2026**, and carried to the
+architect as finding 7 because the change is library-wide. Struck on 1 September 2026.
 
 One design in this category, **10 Slim**, exists because it declares no background: dropped inside a coloured
 panel it takes that panel's colour instead of painting over it. The shared background row offers three values
@@ -1254,7 +1276,9 @@ have** — and one of the library rules says the word "Inherit" should not appea
    drops to nine, and the number 10 becomes a permanent gap that can never be reused.
    A visitor on a site that used it would see whichever design replaced it.
 
-**QUESTION 3 — What a customer sees when a design needs a fixed light-or-dark site — ANSWERED: it is not offered**
+~~**QUESTION 3 — What a customer sees when a design needs a fixed light-or-dark site**~~
+**SETTLED — the design is not offered: 4 Contrast Band is drawn greyed in the picker under one line saying why
+and how to enable it. Settled by the owner on 29 August 2026.** Struck on 1 September 2026.
 
 **4 Contrast Band** puts the discussion on an inverted band — dark on a light site. Ghost's comment box takes
 its colour from a setting inside Ghost, which you set once, so the band only works on a site whose colour
@@ -1284,8 +1308,9 @@ value, *None: show whatever is behind***; the word "Inherit" is withdrawn, 10 Sl
 this category invented. **Question 3: a design that cannot work on a site is not offered on it** — where the
 colour scheme follows the visitor's device, 4 Contrast Band is drawn greyed in the picker and cannot be placed,
 under one line saying why and how to enable it; a site already using it is unaffected until its scheme changes.
-**All three are closed. The one item still open in this category is not a question but a check**: what Ghost
-renders to a signed-in free member inside the block when commenting is set to paid-members only.
+**All three are closed and all three are struck.** **The items still open in this category are listed under
+Patch notes — comments patch pass two, 1 September 2026, below**, each on its own line and marked **OPEN FOR
+THE OWNER**; none of them is answered here.
 
 ### Confirmations
 
@@ -1308,3 +1333,178 @@ renders to a signed-in free member inside the block when commenting is set to pa
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** ten designs, numbered **1–10**.
+
+---
+
+## Patch notes — comments patch pass two, 1 September 2026
+
+Every change below carries the **name** of the rule or the platform fact that required it. Rules are named,
+never numbered. Where a ruling could not be applied without inventing a decision, it is written at the end as
+an **open question** rather than guessed at.
+
+**Frames changed — all eleven:** `A28-0 Category Proof` and `A28-1` … `A28-10`. Each carries a dated
+**design patch pass two** panel above the 29 August one, newest first, and **every masthead now carries the
+pass-two stamp**. **The drawn Data group on all ten gains the not-drawn visitor dark-mode row**; **3 Panel's
+drawn Plane edge helper** is reworded from "disabled" to **greyed with the reason beside it**; **8 Prompt's
+drawn Free members helper** is rewritten from "shown only at that Ghost setting" to **greys, never hidden**. **No layout was redesigned, no measure
+moved, no colour changed, no control was renamed and no design's set of controls changed** except where named
+below. **Nothing was renumbered.**
+
+### The conflict, recorded rather than resolved
+
+**The 29 August pass wrote that the comments block does not render without JavaScript. The 31 August test
+against live Ghost servers says the widget does render.** Both statements are in this document's history and
+they cannot both stand. **This pass carries the tested finding**, because it is a measurement and the other was
+an inference from the registry, **and records the disagreement here rather than deleting the older claim**.
+Two consequences follow, **both ruled by the owner on 1 September 2026**:
+
+- **The `<noscript>` line keeps its wording**, *"Comments need JavaScript."* What the widget draws with
+  JavaScript off was not established by the test, so **the line stands and one live check is owed** rather
+  than a rewrite on a guess. **And the section is always drawn** — heading, rules and that line render whether
+  or not the discussion can, which closes finding 3's standing question.
+- **The two drawn no-JavaScript cards on `A28-0`** (1 Rule, 9 Big Count) **show the count's absence, not the
+  widget's**, and their captions now say so. They were not redrawn, because what to draw in the widget's place
+  is the open question itself.
+
+### This category's own rulings
+
+| What changed | Rule or fact that required it |
+|---|---|
+| **Every no-JavaScript line is now two sentences, one for the count and one for the widget.** Rewritten in all ten Behaviour module entries, on all ten frames, in the shared floor and in finding 3. **The count renders nothing at all** — no number, no word, no empty box, **no element**, because Ghost's script creates it and writes the number in — and **the widget itself does render**. 8 Prompt's is three sentences: its form is a third thing degrading a third way. Consequences by design: **1 Rule's** head row is empty at its right-hand end; **6 Rail** loses the 22 px count and its display-scale `countEmpty`; **7 Disclosure's** bar opens with no number on it; **9 Big Count** has no figure, the figure *being* the count; **10 Slim** at Count only renders nothing of the theme at all. | *A comment count renders nothing at all without JavaScript* |
+| **The count's accessible label sits on the surrounding element, never on the count.** Added to all ten Accessibility entries and to the shared floor's head rule. A label on an element Ghost's script may never create is not a label. This extends, and does not replace, the 29 August ruling that took the count out of every `h2`. | *A comment count renders nothing at all without JavaScript* |
+| **`countSingular` and `countPlural` are bare nouns.** Ghost's script **prepends** the number to the word, so a "%" or a `{count}` inside either string renders literally on the page. The constraint is written into the shared field list and the shared floor; the 20-character limits and the defaults "comment" and "comments" are unchanged. **Checked on all eleven frames: neither a "%" nor a `{count}` appears in any count string.** | *A comment count renders nothing at all without JavaScript* |
+| **Where the project's colour scheme is pinned there is no visitor dark-mode switch at all.** Not greyed — **not drawn**, with the panel saying why, as a sentence rather than a tooltip: *"your site's colour scheme is fixed, so readers have nothing to switch."* It is entered in the Data group as a **not-drawn row** so the panel carries the reason, and that row is drawn on all ten design frames and in `A28-0`'s shared field list. **The comments widget takes its light or dark appearance from that same pinned value and is given no second selector of its own** — which is the rule the Block colour row's deletion on 29 August already followed from, now stated as such. **No control was added, removed or changed by this**, and no design passes `mode=`. | *A control switched off by another is greyed, with the reason beside it* — its **one exception** |
+| **4 Contrast Band is offered only where the colour scheme is pinned.** Unchanged from 29 August and restated on the frame: greyed in the picker, the reason beside it — *"Needs a fixed light or dark site — change that in your theme settings and this becomes available."* **Withheld, never switched into another design.** A site already using it is unaffected until its scheme changes. | *A control switched off by another is greyed, with the reason beside it* |
+| **The feature-image caption finding has no subject here.** A28 authors no image at all — media is `none` in all ten — so nothing in this category leans on `<em>` or `<strong>` inside a caption, and no specification promise changes. Recorded so the check is not repeated. | *The feature-image caption renders differently on the two Ghost versions* |
+| **No printed design total appears anywhere in this category**, in the spec or on any of the eleven frames, and none was added. The copy here is count-agnostic and stays that way. | *(Repository ruling — no printed totals.)* |
+
+### The five rules, checked against this category
+
+| Rule | What it did here |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Three subjects.** **3 Panel's Plane edge** — Soft was "disabled in dark"; it is now **greyed with the reason written as a short sentence at the control**, *"not available in dark: the hairline carries every plane here"*, never hidden and never accepting a value it will not honour. **8 Prompt's Free members** — it was **shown only at paid-only commenting**, which is hiding; it now **stays in the panel and greys** where commenting is open to all members, under *"not available while anyone who signs up can comment"*. **On 8's own frame the drawn Ghost setting is paid-members only, so the row is drawn live and its helper states the greyed case** rather than the frame contradicting its own Data group. **The exception:** the visitor dark-mode switch under a pinned colour scheme is **not drawn at all** and the panel says why. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A28 renders no person and draws no initials of its own: every face and every avatar on the page is Ghost's, inside the widget, where the theme cannot reach. Nothing to check and nothing changed. |
+| **The Remove button never greys out** | **One subject** — `rules[]` on **2 Split Head** and **6 Rail**. Already compliant, re-checked, unchanged: ✕ is never disabled, never dimmed, never hidden; **removing the last rule sets House rules to Off and says so as one sentence under the list**; it is **Add** that stops at four with its reason shown. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No subject.** A28 has no count row at all. `rules[]` is P0·3's add-and-remove list rather than a number, and no control in the category picks between drawn arrangements by number. Nothing was converted in either direction. |
+| **A design may declare the width below which its script runs** | **No subject, stated rather than assumed.** Neither module is width-conditional: 7's `accordion` is native `<details>` and runs at every width, 8's `member-form` likewise. **No design declares a width**, so none owes a two-sided no-JavaScript sentence on that account — which is now written into the shared floor's Behaviour rule and onto 7's frame. |
+
+### The no-JavaScript line, per design — rewritten
+
+| # | Design | The count | The widget |
+|---|---|---|---|
+| 1 | Rule | Nothing at all — the right-hand end of the head row is empty | Renders; hairline, head and rules line draw above it |
+| 2 | Split Head | Nothing at all — the left column is a head and its rules | Renders in the right column; both columns draw, sticky is CSS |
+| 3 | Panel | Nothing at all | Renders on the plane, with its inset, head and rules line |
+| 4 | Contrast Band | Nothing at all | Renders in the band; bleed and derived colours draw, **the design's argument survives** |
+| 5 | Boxed | Nothing at all — nothing at the head row's right-hand end | Renders; the box closes round it, divider and inset intact |
+| 6 | Rail | Nothing at all — no 22 px count, no display-scale `countEmpty` | Renders in the 1,008 column; the rail is its label and its rules |
+| 7 | Disclosure | Nothing at all — the bar carries no number | **The bar opens and closes** (native `<details>`); the widget is what opening it reveals |
+| 8 | Prompt | Nothing at all — the prompt's words are server-rendered, the number is not | Renders wherever the arrangement shows it. **Third thing: the form does not post** and the designed notice stands in its place |
+| 9 | Big Count | Nothing at all — the figure **is** the count, and no At-zero count line | Renders in the 808 column beside an empty one |
+| 10 | Slim | Nothing at all — at Count only, nothing of the theme renders | Renders; the section is the widget and its spacing |
+
+**In every row the `<noscript>` line keeps its wording** — ruled by the owner on 1 September 2026 — **and
+the section is always drawn**. One live check on a scriptless page is owed, and would be a wording change
+rather than a redesign.
+
+### Open questions
+
+~~**OPEN FOR THE OWNER — 1. The sentence we show to a reader whose browser has JavaScript switched off.**~~
+**SETTLED — leave the line exactly as it is; one live check on a scriptless page is owed. Settled by the owner
+on 1 September 2026, as recommended.**
+
+Under every comment section we print one small line: **"Comments need JavaScript."** We wrote it when we
+believed the whole discussion vanished for those readers. Last week's test says **the discussion box itself
+still appears** — only the number beside the heading disappears. So the line may now be telling readers
+something untrue, sitting directly above the thing it says they cannot have. Nobody has yet looked at a real
+scriptless page to see what that box actually shows, so we do not know whether the line should be softened,
+narrowed or deleted. **Not answered here — pick one.**
+
+1. **Leave the line exactly as it is until someone looks at a real page. (RECOMMENDED)**
+   Ten minutes with JavaScript switched off settles it for good, and a wrong sentence written twice is worse
+   than a wrong sentence written once. Costs: the line stays possibly-wrong in the meantime, and it ships that
+   way if the check never happens.
+   A visitor sees no change: the section, then one small grey line, then whatever Ghost draws.
+2. **Narrow it to the part we have tested: "The comment count needs JavaScript."**
+   Every word of it is now known to be true. Costs: it explains a missing number, which nobody was looking
+   for, and says nothing about the discussion, which is the thing readers care about. It is precise and
+   useless.
+   A visitor sees a line about a number they never saw.
+3. **Delete the line.**
+   Nothing on the page can be wrong if nothing is there. Costs: if the box turns out to render as an empty
+   grey rectangle, the reader gets that with no explanation at all — which is the exact problem the line was
+   added to solve.
+   A visitor sees the section and then Ghost's box, unannotated.
+
+~~**OPEN FOR THE OWNER — 2. The words next to the number, when the number is nought.**~~
+**SETTLED — leave `countEmpty` at "No comments yet"; the same live check settles it. Settled by the owner on
+1 September 2026, as recommended.**
+
+Ghost writes the comment count by pasting a number in front of a word we supply — we give it "comment" and
+"comments", it prints "1 comment" and "24 comments". That is why those two must stay bare nouns: anything else
+in them prints on the page exactly as typed. **We also supply a third string for an empty discussion,
+"No comments yet", and we do not know whether Ghost pastes a nought in front of that one too.** If it does,
+readers see "0No comments yet". **Not answered here — pick one.**
+
+1. **Leave the wording and check it against a real empty post. (RECOMMENDED)**
+   Same ten-minute check as question 1, on the same page. The current wording is the one everybody prefers if
+   it works, and it is the wording already drawn on every frame. Costs: if it is wrong, it is wrong on a quiet
+   new site — the first post of a new customer, which is the worst place to find out.
+   A visitor on a post with no comments sees "No comments yet".
+2. **Change it to a phrase that reads correctly either way — "comments yet".**
+   Safe whichever way the test goes: with a nought in front it reads "0 comments yet", without one it reads
+   "comments yet". Costs: on its own it reads like a fragment, and we would be picking the uglier of two
+   wordings to avoid doing the check.
+   A visitor sees "0 comments yet".
+3. **Drop our own wording and let Ghost print its default.**
+   One fewer thing to get wrong. Costs: a publication cannot translate it or change its tone, which is exactly
+   why these three strings became editable fields in the first place.
+   A visitor sees Ghost's own phrasing, in English.
+
+~~**OPEN FOR THE OWNER — 3. Whether the section should appear at all for a reader who cannot use it.**~~
+**SETTLED — the section is always drawn. Settled by the owner on 1 September 2026, as recommended. Finding 3's
+standing question is closed.**
+
+The oldest open item in this category. If a reader's browser cannot run the discussion properly, should the
+whole comments section still be drawn — heading, house rules, the space it occupies — or should the page skip
+it and close straight into the related posts? **Not answered here — pick one.**
+
+1. **Always draw it. (RECOMMENDED)**
+   The reader is told there is a discussion and told what is missing, and the page reads the same for
+   everybody. It is also what the frames already draw. Costs: on the quietest designs the reader gets a
+   heading and a small grey line over an area that may do nothing for them.
+   A visitor sees the heading, the house rules, and whatever the box manages to draw.
+2. **Skip the whole section when the discussion cannot work.**
+   No reader ever meets a dead area. Costs: the page silently loses a feature the publication paid for, we
+   cannot tell that state apart from a bug, and a reader who wanted to comment is given no clue that
+   commenting exists.
+   A visitor sees the article, then the related posts.
+3. **Let the customer choose, as a setting.**
+   Both camps are served. Costs: one more control on ten panels answering a question most customers have never
+   thought about, for a shrinking minority of readers.
+   The editor sees an extra row: *When comments cannot load: show the section · hide it.*
+
+**Answered on 1 September 2026 — all three as recommended.** **Question 1:** the `<noscript>` line keeps its
+wording, "Comments need JavaScript.", and is no longer marked OPEN. **Question 2:** `countEmpty` keeps
+"No comments yet" and its 40-character limit; the bare-noun rule binds `countSingular` and `countPlural`
+only. **Question 3:** **the section is always drawn** — heading, house rules and the `<noscript>` line render
+whether or not the discussion can, no design hides itself on that account, and no control is added for it;
+**finding 3's standing question is closed**. **What the three leave behind is one check, not a question**:
+ten minutes on a real page with JavaScript switched off, to confirm what the widget draws there and whether
+Ghost prints a nought in front of `countEmpty`. **If either comes back wrong, it is a wording change, not a
+redesign.** **The category's only other open item is the architect's check on 8 Prompt.**
+
+**OPEN FOR THE ARCHITECT — a check, not a question.** What Ghost renders to a signed-in free member inside the
+widget when commenting is set to paid-members only. Undocumented, not verifiable, and still owed; 8 Prompt
+designs that state and the other nine assume Ghost handles it. The **ARCHITECT: verify** flag stays on 8's
+frame.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10** — ten designs, no gap created or
+  closed, no number reused, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and names
+  **1 Rule** and **5 Boxed** — both of which exist in this category's roster of ten.
+- **All three of this pass's open questions were answered by the owner on 1 September 2026**, all as
+  recommended. **The category's remaining items are two checks, not questions**: what the widget draws on a
+  scriptless page, and what Ghost renders to a free member under paid-only commenting.

@@ -875,9 +875,12 @@ is offered in full** — the box has no fill, which is what distinguishes this d
    (patch pass); the design keeps its own arrangement and the panel advises 1 Centred. **The /account/ rail is never empty.**
 9. **Behaviour module.** `member-form` and `scroll-spy` ⚑. Both edit-safe; **Rail sticks declares
    nothing** — `position:sticky` is CSS. **scroll-spy, quoted:** "The sticky list renders with the
-   first item marked current; no active-item tracking." **member-form, quoted:** "The `<form>` posts
-   natively to Ghost's members endpoint; Ghost's own server response replaces the designed sent
-   state."
+   first item marked current; no active-item tracking." **member-form — the registry quote is withdrawn here too, as it is in the other twelve** ⚑ *(owner's
+   ruling, 1 September 2026)*: ~~"The `<form>` posts natively to Ghost's members endpoint; Ghost's own
+   server response replaces the designed sent state."~~ **It cannot.** Ghost's signup endpoint refuses a
+   plain form submission, so **P0·4's notice replaces the form** in the rail at the form's own height;
+   the rail's list, its sticky behaviour and the sent state are unaffected. **This entry was the one place
+   in A30 where the sentence still read as current.**
 10. **Accessibility.** The rail is a `<nav aria-label="Your membership">` on /account/ and a plain
     `<ul>` on /signup/ ⚑ — a list of benefits is not navigation. The current row carries
     `aria-current="true"` and keeps it at Rail marks: Hide ⚑. **The whole row is the target** ⚑.

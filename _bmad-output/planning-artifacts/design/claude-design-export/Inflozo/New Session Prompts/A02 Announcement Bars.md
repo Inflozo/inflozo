@@ -8,7 +8,7 @@
 
 ## 1. What this is, and why it is different
 
-The Inflozo section library is **485 designs across 34 categories**. Every one is being designed before any is built.
+The Inflozo section library is **466 designs across 33 categories** — the original plan was 485 across 34; **A23 Search was deleted** and four design numbers were retired (A1·9, A2·13, A4·15, A9·12), and the numbers stay retired rather than being reused. Every one is being designed before any is built.
 
 **This pass produces two things at once**, and the second matters as much as the first:
 
@@ -51,7 +51,7 @@ Design every section in the **Paper** pack. Section colour comes from these seve
 
 ---
 
-## 3. The rules that keep 485 designs coherent
+## 3. The rules that keep the library coherent
 
 1. **Token-driven, always.** The same section must survive re-skinning across 12 Style Packs with **only tokens changing**. If a pack change would tempt you to move an element, the design is wrong. This is the single most important rule here — a section that only looks good in one pack is a defect, however beautiful.
 2. **Structure is the design.** What distinguishes two designs in a category is *arrangement*, not colour or font. Those come from the pack.
@@ -103,7 +103,7 @@ Pack: **Paper**, as A1.
 
 ## 6. Continuity — A1 is complete in this project
 
-Sixteen header designs are drawn and specified. Files: `A1-0 Category Proof.dc.html` (tokenisation proof, stress frame, shared field list, roster, open decisions) and `A1-1 Rail` … `A1-16 Reveal`, plus `A1 Headers — Spec.md`. Read A1-0 and the spec doc first; A1-1 Rail is the component reference.
+Fifteen header designs are drawn and specified — A1 runs 1–16 with **A1·9 Search-Forward deleted and its number retired**. Files: `A1-0 Category Proof.dc.html` (tokenisation proof, stress frame, shared field list, roster, open decisions) and `A1-1 Rail` … `A1-16 Reveal`, plus `A1 Headers - Spec.md`. Read A1-0 and the spec doc first; A1-1 Rail is the component reference.
 
 **Reuse verbatim — do not redesign:**
 
