@@ -154,24 +154,13 @@ WORK2 = {
   that control is GREYED with the sentence "not available while the media uses the accent
   colour" beside it. Draw the pair in both states. Use P0's treatment; do not invent one.""",
 
- 'A9': """- 12 FILTER LOSES ITS FILTER CONTROL. THE DESIGN ITSELF IS NOT CUT.
-  ** THE FIRST RUN OF THIS PROMPT DELETED DESIGN 12 ENTIRELY — the frame AND its roster row. That
-  was wrong. Design 12 must EXIST when you are finished. **
-  What to do, precisely:
-    DRAW  `A9-12 Filter.dc.html` back. It is gone from the export — the roster above marks it
-          MISSING AND MUST BE RESTORED — so redraw it from this specification's own entry for
-          design 12: same layout, same rows, same name "Filter", minus the strip below.
-    ADD   design 12's row back to the roster table, with the number 12 and the name Filter.
-    KEEP  the design's number. Nothing renumbers.
-    REMOVE only the filter STRIP — the control — from the frame, and its control row and its
-          no-JS line from the specification.
-  The reason the control goes: it would filter rows the SITE OWNER typed, and with JavaScript off
-  it has nothing to fall back to. The existing filter module degrades by being real links to Ghost
-  pages, and there are no Ghost pages for an FAQ answer somebody wrote in a text box. So the
-  control cannot degrade honestly and is removed. The design — a list of questions and answers —
-  degrades perfectly well without it: every row simply shows.
-  A design is cut only where this pass says CUT in capitals, as it does for A2 design 13. It does
-  not say that here.""",
+ 'A9': """- 12 FILTER IS CUT, AND THAT IS CONFIRMED (owner's ruling, 2026-09-01). The first run
+  of this pass removed the design and the owner has since ruled that this was right: with the
+  filter gone the design was a plain list of questions and answers, which is what 3 Open List
+  already is, so keeping it would have left two designs separated by nothing.
+  NOTHING TO DO HERE beyond confirming it: design 12 stays cut, THE NUMBER 12 IS RETIRED, and no
+  design renumbers. The category runs 1-11, 13, 14, 15. Do not draw 12 back.
+  Record the cut in your Patch notes with the reason above, so the next pass does not re-raise it.""",
 
  'A12': """- "COUNT PER ROW" KEEPS ITS THREE NAMED VALUES — three, four, five. It is NOT a
   number picker, and this is the one carve-out to the rule that every item count is one. The
@@ -287,10 +276,7 @@ WORK2 = {
 # export, so a wrongly-cut design vanishes from it — and a work list that says "keep design 12"
 # above a roster that omits 12 is a contradiction the session is right to stop on. These are
 # printed back into the roster, marked, so the instruction and the roster agree.
-RESTORE = {
-    'A9': [(12, 'Filter', 'cut by the first run of this pass; the ruling removed its CONTROL, '
-                          'not the design')],
-}
+RESTORE = {}   # nothing outstanding — A9-12's cut was ruled by the owner on 2026-09-01
 
 ORDER = ['P0', 'A1', 'A2', 'A3', 'A5', 'A9', 'A12', 'A13', 'A14', 'A15', 'A17',
          'A18', 'A19', 'A22', 'A24', 'A25', 'A26', 'A28', 'A33', 'A34']

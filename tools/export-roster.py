@@ -36,6 +36,11 @@ DELETED_DESIGNS = {
                 "struck. 'A field that never renders a result' is now any hero's button "
                 "with the Link Picker destination set to Ghost search.",
     # ── owner's ruling 2026-08-31, register 45(a) ───────────────────────────
+    ('A9', 12): "Owner's ruling 2026-09-01 — 'Filter' is cut, the whole design and not just its "
+                "control. SUPERSEDES the earlier reading of register 45(b) ('the filter comes off, "
+                "the design stays'): with the filter gone the design is a plain list of questions "
+                "and answers, which is what design 3 Open List already is, so keeping it would "
+                "leave two designs separated by nothing. The number is retired, not reused.",
     ('A2', 13): "Register 45(a) — 'Consent' is cut. No behaviour module covers a consent "
                 "bar and the closest, `dismiss`, is the wrong idea: dismissing makes a bar "
                 "go away, while consent must be RECORDED and honoured on the next visit. "
