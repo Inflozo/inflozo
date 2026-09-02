@@ -948,6 +948,38 @@ name.
 
 ---
 
+## A5 · The library review — nine rulings, 2026-09-02
+
+The 1 September export was read whole: 34 specifications, 32 session briefs, both index canvases and
+the two new records. It carried **49 items marked open**. They sorted into three piles, and the sort
+is the finding: **three of the four most-repeated questions were already answered** by rulings taken on
+2026-08-31, after most of those specs were written — the pack-token split (`Appendix D` §D.0), the
+main-feed designation (FR-H2 + AD-27) and how a control declares a dependency (FR-F7). Five more were
+registry rulings for the architect. **Nine needed the owner, and all nine are ruled here.**
+
+| # | Ruling | Where it lands |
+|---|---|---|
+| **R-39** | **A9's numbering gap stays open.** The roster reads 1–11, 13–15. Renumbering would repoint every existing reference to 13, 14 and 15, which is the failure the never-reuse rule exists to prevent — and every other cut in the library (A1·9, A2·13, A4·15) already leaves the same hole | ⬜ A9 spec: close the question |
+| **R-40** | **P0 is exempt from the `[Free]` line, confirmed.** It holds shared editor controls and no placeable designs, so it has nothing to make free. Satisfying the instruction would mean inventing design names | ⬜ P0 spec · **and the pass instruction is fixed so it stops re-asking** |
+| **R-41** | **The empty-state rule governs FEEDS only.** Items pulled from Ghost render the designed empty state; items the user AUTHORS render nothing at zero. A13 Process was right and the rule was too wide | ✅ **FR-H4**, as a test rather than a list |
+| **R-42** | **A3's frames are right; the instruction's wording was loose.** The wide-screen state of the accordion footers is the drawn column grid, not "a plain stacked list". No layout changes | ⬜ A3 spec: close the flag |
+| **R-43** | **A minimum-width rule measures the TEXT COLUMN, not the cell.** So A17's three narrow-cell designs grey the excerpt value they cannot honour, with the reason | ✅ **`Appendix C`** |
+| **R-44** | **A2 Edge renders OPEN without JavaScript.** That reader gets the message, its link and the rule at the open height; the close is hidden. A 4 px line nobody can open is not a bar | ⬜ A2 spec: confirm as ruled, not as the session's own choice |
+| **R-45** | **Four is the maximum for A24's two rows, and that is a design decision.** No fifth cell, no fifth link. The frames stop there because a fifth label wraps and a fifth link takes a second line | ⬜ A24 spec: close the question |
+| **R-46** | **A14 Galleries stays pictures-only — bound mode does not link to posts.** A gallery whose every frame links to its post is A17 Post Grids with the titles removed, and two categories resolving to the same visitor outcome is what FR-G5's uniqueness bar exists to prevent | ⬜ A14 spec |
+| **R-47** | **Picked order IS stored order.** References are held as dragged and handed to the template that way, never re-sorted by `published_at`. The failure it prevents is silent: A18-11 draws an ordinal over whatever it is given | ✅ **FR-H2** |
+
+**Three landed normatively the same day. Six are spec work** and go to a third design patch pass —
+none of them changes a drawn frame except R-43's greyed control, and four are closing a question the
+session was right to raise rather than answer.
+
+**Still not the owner's, and not blocking:** five registry rulings for the architect — A5's tabs
+announced twice without JavaScript, A5's scroller rule having no registry sentence, A13's walkthrough
+emitting a heading per panel, A33's gallery script having no registry entry, and whether
+`group-headings` may re-level a heading.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
