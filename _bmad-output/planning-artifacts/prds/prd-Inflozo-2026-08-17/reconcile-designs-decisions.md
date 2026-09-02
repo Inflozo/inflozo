@@ -1102,7 +1102,7 @@ or prose describing the state that frame is drawn in?** The caption also carries
 that correcting one value inside it without a ruling would leave a half-updated record reading as
 current. That is a better objection than the finding itself.
 
-**RULED 2026-09-03 (R-73): a frame caption is a DESCRIPTION, not a specification, and it does not
+**RULED 2026-09-02 (R-73): a frame caption is a DESCRIPTION, not a specification, and it does not
 track control vocabulary.** It records how that frame was drawn on the day it was drawn — *"padding
 Comfortable 96, ground Background, actions Both"* — and nothing is built from it: the control names
 come from the specification and from P0, both of which are correct. All 28 captions stay as they are.

@@ -395,23 +395,34 @@ ADVISORY = {'R-8   no render-time hand-off', 'R-1   no computed byline counts',
             '--    extraction health (derivations)'}
 
 def c_no_design_total(S, lib):
-    """§37.7 / Appendix H — no S or M screen prints a library total.
+    """§37.7 / Appendix H — no S, M or B screen prints a library total.
 
     The screens said "485 designs" in fifteen places and "70 Free designs" in three. Correcting the
     figure was refused: Appendix H already forbids a design total in product copy, and a corrected
     number goes stale at the next change. The screens were made count-agnostic by hand on 2026-08-31,
     and this check is what keeps a Claude Design re-export from quietly putting them back.
+
+    **IT DID NOT KEEP IT. 2026-09-02.** This check owned its own regex, matching RAW HTML and
+    requiring three digits. The export splits a number from its noun across two <span>s and "70 Free"
+    is two digits, so the 1 September re-export put both totals back and this check passed on every
+    run for two days — through passes three, four and five. The detector now lives in ONE place,
+    beside the script that repairs what it finds, and both read the RENDERED text. Two copies of a
+    rule drift; that is what happened here (standing rule 7).
     """
+    return _leftovers_over(lambda fn: re.match(r'^(S\d|M\d|B )', fn))
+
+
+def _leftovers_over(want):
+    import importlib.util
+    s = importlib.util.spec_from_file_location(
+        'rex', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reapply-export-edits.py'))
+    rex = importlib.util.module_from_spec(s); s.loader.exec_module(rex)
     hits = []
     for fn in sorted(os.listdir(EXPORT)):
-        if not fn.endswith('.dc.html'):
-            continue
-        if not re.match(r'^(S\d|M\d|B |R |Index)', fn):
-            continue
-        t = open(os.path.join(EXPORT, fn), encoding='utf8').read()
-        for m in re.finditer(r'\b(\d{3})\+?\s*(?:designs?|sections?|Free\b)', t, re.I):
-            hits.append(f'{fn.split(" - ")[0]}: {m.group(0).strip()}')
-    return not hits, '; '.join(sorted(set(hits))[:6]) or 'no S/M screen prints a library total'
+        if fn.endswith('.dc.html') and want(fn):
+            hits += [f'{fn.split(" - ")[0]}: {h}'
+                     for h in rex.leftovers(open(os.path.join(EXPORT, fn), encoding='utf8').read())]
+    return not hits, '; '.join(sorted(set(hits))[:6]) or 'no S/M/B screen prints a library total'
 
 
 def c_mark_allowlist(S, lib):

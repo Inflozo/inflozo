@@ -62,13 +62,56 @@ COPY = [
     ('485 designs cannot each be drawn',      'The designs cannot each be drawn'),
     ('An empty page and 485 designs.',        'An empty page and every design.'),
     ('Ship the 70 Free',                      'Ship the free set'),
+    # ── Put back by the 2026-09-01 re-export and undetected until 2026-09-02, because both
+    #    detectors matched raw HTML. Written against the CURRENT markup, tags included.
+    ('color:#FF5941">485</span>',             'color:#FF5941">Hundreds</span>'),
+    ('<span>70 Free</span><span style="font-weight:600">All 485</span>',
+     '<span>The free set</span><span style="font-weight:600">All</span>'),
+    ('you ship the 70 Free ones',             'you ship the free set'),
+    ('Play with all 485 on the canvas, ship the Free designs',
+     'Play with every design on the canvas, ship the free set'),
+    # ── Never fixed at all: the meta rail on the two browsing screens. §A4 recorded that the
+    #    31 August substitution missed some, which is standing rule 7 in one line. This one was
+    #    also STALE — it still said 34 categories after A23 Search was deleted.
+    ('34 CATEGORIES<span>485</span>',         'ALL CATEGORIES<span>ALL DESIGNS</span>'),
     ('70 Free designs',                       'the free set'),
 ]
 
 # Files the rule governs: the app screens, the marketing pages, and the internal index frames.
 SCREEN = re.compile(r'^(S\d|M\d|B |R |Index)')
-# What a leftover looks like. Kept in step with verify-design-pass.py's own check.
-LEFTOVER = re.compile(r'\b(\d{3})\+?\s*(?:designs?|sections?|Free\b)', re.I)
+
+# Appendix H governs PRODUCT copy. `Index*.dc.html` are Claude Design's own progress canvases and
+# their totals are derived from the export itself, so a correct figure there is not a breach —
+# §A4's objection to them was that the number was STALE, and it is not now.
+PRODUCT = re.compile(r'^(S\d|M\d|B )')
+
+
+def leftovers(raw):
+    """Library totals printed in product copy — found in the RENDERED text, not the raw HTML.
+
+    **THE FIRST VERSION OF THIS WAS WRONG IN TWO WAYS AND BOTH WERE PROVED ON 2026-09-02.** It
+    matched raw HTML and required three digits. The export splits the number and its noun across
+    two <span>s — `>485</span><span …>designed sections</span>` — so nothing matched; and "70 Free"
+    is two digits, so nothing matched there either. The count-agnostic copy had been regressed by
+    the 1 September re-export and **this check, and verify-design-pass.py's copy of it, passed on
+    every run for two days.** A control that cannot fail is not a control (standing rule 2).
+
+    THE THRESHOLDS ARE THE WHOLE DESIGN, and the first attempt at them was also wrong. Flagging
+    every "N Free" caught the Section Picker's category rail — "404 & Empty *6*" sits next to a
+    "*Free only*" filter toggle, and stripping the tags between them glues the two into "6 Free".
+    A per-category count is a true, local, useful number and must not be flagged; a LIBRARY total
+    must always be. They separate cleanly by size, because the library is two orders larger than
+    its largest category.
+
+    # ponytail: fixed thresholds, not a derived total. Upgrade to reading tools/export-roster.py
+    # if a category ever approaches a third of the library, which would mean about eleven
+    # categories in total and a very different product.
+    """
+    t = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', raw))
+    return [m.group(0).strip() for m in re.finditer(
+        r'\b\d{3,4}\+?\s*(?:designs?|designed sections?|sections?)'   # designs: >= 100
+        r'|\b(?:[4-9]\d|\d{3,4})\s*Free\b'                            # free set: >= 40
+        r'|\b(?:[3-9]\d|\d{3})\s*CATEGOR\w*', t, re.I)]               # categories: >= 30
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. P0's per-prop mark allowlist — §37.7's last open finding, written here on 2026-08-31.
@@ -103,7 +146,7 @@ PRD records a delta.
 
 
 def apply_copy():
-    changed, leftovers = [], []
+    changed, left = [], []
     for fn in sorted(os.listdir(EXPORT)):
         if not fn.endswith('.dc.html') or not SCREEN.match(fn):
             continue
@@ -115,10 +158,9 @@ def apply_copy():
             open(path, 'w', encoding='utf8').write(t)
         if t != original:
             changed.append(fn)
-        for m in LEFTOVER.finditer(t):
-            a = max(0, m.start() - 55)
-            leftovers.append(f'{fn}: …{re.sub(r"[ \t\n]+", " ", t[a:m.end() + 25])}…')
-    return changed, leftovers
+        if PRODUCT.match(fn):
+            left.extend(f'{fn}: {h}' for h in leftovers(t))
+    return changed, left
 
 
 def apply_p0():
@@ -139,7 +181,7 @@ def apply_p0():
 def main():
     if not os.path.isdir(EXPORT):
         print(f'no export at {EXPORT}'); return 1
-    changed, leftovers = apply_copy()
+    changed, left = apply_copy()
     state, detail = apply_p0()
 
     verb = 'would change' if CHECK else 'changed'
@@ -147,10 +189,10 @@ def main():
           + (f' — {", ".join(sorted(changed))}' if changed else ''))
     print(f'  P0 allowlist   : {state} — {detail}')
 
-    bad = bool(leftovers) or state in ('missing', 'anchor-gone')
-    for l in leftovers:
+    bad = bool(left) or state in ('missing', 'anchor-gone')
+    for l in left:
         print(f'  ! UNHANDLED    : {l}')
-    if leftovers:
+    if left:
         print('\n  A printed total this script does not know how to reword. Add the exact string and\n'
               '  its replacement to COPY above — do NOT generalise it into a regex, because that is\n'
               '  how "Every design are available" got shipped once already.')
