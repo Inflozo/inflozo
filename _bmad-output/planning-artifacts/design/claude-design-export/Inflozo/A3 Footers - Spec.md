@@ -1176,10 +1176,46 @@ Frames updated: **`A3-2 Columns`**, **`A3-3 Two-Tier`**, **`A3-7 Big Type`**, **
 
 ### OPEN QUESTIONS raised by this pass
 
-1. **The work list describes the above-the-width state as “a plain stacked list of links”; every A3 frame draws an open column grid there.** Above 768 these five designs draw a grid — four across at 1440, two across at 1080, three across on A3·8 — not a stacked list, and below 768 at two to four columns they draw an open two-across grid rather than an accordion. **I wrote the no-JavaScript lines from the frames rather than from that phrasing, and changed no drawn layout.** If the intent was that the accordion designs should render a plain stacked list above 768, that is a layout change to five designs and needs saying as one. **OPEN FOR THE OWNER.**
+1. **The work list describes the above-the-width state as “a plain stacked list of links”; every A3 frame draws an open column grid there.** Above 768 these five designs draw a grid — four across at 1440, two across at 1080, three across on A3·8 — not a stacked list, and below 768 at two to four columns they draw an open two-across grid rather than an accordion. **I wrote the no-JavaScript lines from the frames rather than from that phrasing, and changed no drawn layout.** If the intent was that the accordion designs should render a plain stacked list above 768, that is a layout change to five designs and needs saying as one. ~~**OPEN FOR THE OWNER.**~~ **Closed by the owner on 2 September 2026: the frames were right and the instruction's wording was loose. The columns stay in all five designs, no layout changed, and the wording was corrected rather than the drawings.**
 2. ~~Remove at a floor: §0·0 and five design sections contradicted each other.~~ **Closed by the owner on 31 August 2026:** at the minimum, clicking Remove still registers as a click and says why nothing can be removed. Applied to §0's *Remove, and the floors* paragraph and to §2, §5, §8 and §12; the greyed-at-a-floor wording is gone from the category.
 
 **Confirmations.**
 
 1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen designs, no number added, removed, reused or moved.
 2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this category's roster.
+
+
+---
+
+## Patch notes — design patch pass three, 2 September 2026
+
+Frames updated: **`A3-0 Category Proof`** (a pass-three patch block recording the ruling). **No other frame changed**, and the five accordion-bearing panels — `A3-2 Columns`, `A3-3 Two-Tier`, `A3-7 Big Type`, `A3-8 Sitemap`, `A3-14 Image Band` — were read and needed nothing: each already draws the open column grid the ruling confirms and already reads both sides of its declared width. Nothing was restyled, no frame moved, no control, value, field, ground, type size, spacing value or accessibility note changed, no roster row moved, and no design was renumbered.
+
+**One item, and it closes a flag rather than changing anything.** Patch pass two's work list described the wide-screen state of the accordion footers as "a plain stacked list of links"; every A3 frame draws an open column grid there. The previous session wrote the no-JavaScript lines from the frames and raised the difference as an open question instead of acting on it. **The owner has ruled: the frames were right and the instruction's wording was loose. The columns stay, in all five designs, and the wording is corrected rather than the drawings.** Open question 1 of that pass is struck in place with the ruling and its date.
+
+| Rule (by name) | Change |
+|---|---|
+| Owner's ruling — the wording was corrected, not the drawings | **The flag is closed and no layout moved.** Above 768 the five designs draw a grid — four across at 1440, two across at 1080, three across on A3·8 — and below 768 two to four columns stay an open two-across grid while five to seven become native `<details>`. That is what §0·0, the five design sections, the sixteen-row no-JavaScript table and the five panels already say, and all of it stands unedited. Recorded in patch pass two's open-question list, in the pass-three block on `A3-0`, and here. |
+| A design may declare the width below which its script runs | **Confirmed, unchanged.** The declaration stays *"collapses into sections under 768"* on **2, 3, 7, 8 and 14** — with the condition named on 2 and 3, the setting named inside it on 7 and 14, and none on 8, where five groups is the floor and the width alone decides. Each no-JavaScript line still reads both sides of the width, and **on both sides the only loss is the 160 ms height transition**. The other eleven designs declare no width, because nothing in them runs at any width. |
+| A control switched off by another is greyed, with the reason beside it | **No new subject.** A3's switched-off controls are already drawn greyed with the reason at the control: A3·8's **Contrast disabled above four columns** with its ratio-and-reason line, A3·4's band ground disabling Contrast and its field controls disabled with the reason under a site that cannot honour the ask, and the **locked** Background role on A3·3, A3·5 and A3·14 with its reason shown. None is hidden, none accepts a value it will not honour. **The never-offerable exception has no case here:** A3 draws no visitor dark-mode switch. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **No subject.** A3 renders no person — A3·9's post rows carry no author avatar, and no A3 design draws an author, a member or a commenter. Recorded so the silence is not read as a miss. |
+| The remove button never greys out | **Confirmed, unchanged.** Remove stays visible and fully clickable at every floor — §2 "Two is the fewest this design draws.", §5 the same, §8 "A sitemap needs at least one column.", §12 two — each one clause under the list, pointing at no other control. Add still caps and still greys; only Remove was ever at issue. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Confirmed, unchanged.** Columns (Auto · Two · Three · Four), A3·8's Columns (Auto · Five · Six · Seven), Band height, Name scale and Density stay **named sets**; links per column, legal links, credit rows, chips and How many posts (2–4) stay **number pickers**. Nothing converted in either direction, and this pass added no count. |
+| Printed design totals stay out of product copy | **Honoured, and nothing written.** No copy was authored in this pass, and no design total — old, corrected or computed — appears in anything it touched. The counts A3 prints are its own sixteen on a design-library artefact, which is the category's roster and not a product-copy total. That judgement is unchanged, not re-opened. |
+| P0's per-prop mark allowlist | **Not touched.** This pass did not open P0. |
+| The marketing and app screens print no design total | **Not this category's, and not touched.** A3 holds no marketing or app screen. |
+
+**Left alone deliberately, and why.** Patch pass two's own section is left standing with its open question **struck in place** rather than deleted: it is the record of what was true on 31 August 2026, and removing it would hide the ruling instead of recording it. The same treatment the document already gives three earlier historical sections. The **wording** the ruling corrects lives in the pass-two work list, which is not this document; nothing in A3 repeated the "plain stacked list" phrasing, so there was no sentence here to rewrite — had there been one, it would have been corrected. The four settlements and the reconciliation notes keep their own historical language for the same reason.
+
+### Owner's rulings, this pass
+
+1. **The A3 frames were right and the pass-two wording was loose** — the accordion designs draw an open column grid above 768, the columns stay in all five, and no layout changes. Raised as open question 1 of patch pass two, ruled 2 September 2026.
+
+### Open questions
+
+**None raised by this pass.** Nothing here required inventing a decision. One item remains outstanding and it is the architect's, exactly as written and untouched: **finding 1 — `nav-transform` still needs to exist** in the behaviour registry; the four earlier findings stand as written.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen designs, no number added, removed, reused or moved.
+- **The "**[Free] designs:**" line is present**, on its own line at the head of this document, in the required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this category's roster.

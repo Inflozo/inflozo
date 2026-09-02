@@ -786,13 +786,15 @@ copy was re-authored. What the check produced:
 | A count that picks between drawn layouts is a named set | Recorded as rule 15 already; no frame change, in either direction. |
 | A design may declare the width below which its script runs | Recorded as rule 16 already; the primitives declare no modules, so no P0 design declares a width. |
 
-**OPEN QUESTION raised by this re-run.** The instructions' output item 4 requires confirming that the
+~~**OPEN QUESTION raised by this re-run.** The instructions' output item 4 requires confirming that the
 "**[Free] designs:**" line is present and names two designs that exist. **This contradicts a ruling already
 in this file** — the owner settled on 31 August 2026 that P0 is exempt, because it holds shared editor
 controls and no placeable designs, and closed open question 9 with "this does not need raising again in a
 later pass." Applying the instruction would mean inventing two design names that do not exist. **Not
-chosen either way and not invented.** The exemption stands as written until the owner rules otherwise.
-**OPEN FOR THE OWNER**
+chosen either way and not invented.** The exemption stands as written until the owner rules otherwise.~~
+**Settled by the owner, 2 September 2026: the exemption stands and no "[Free] designs:" line is added.**
+Raising it rather than inventing two names was the right call. Recorded in full at open question 10 and in
+the Confirmations.
 
 ### Owner's rulings on this pass's open questions — 31 August 2026
 
@@ -857,10 +859,13 @@ carries **OPEN FOR THE OWNER** on its own line.
    — P0 is the set of shared editor controls, not placeable designs. Stated in the Confirmations below so
    it is not raised again; no line was invented.
 
-10. **The re-issued instructions require a "[Free] designs:" line here; this file records the owner's
-   exemption for P0.** The two cannot both hold, and inventing two design names to satisfy the line is
-   the one thing neither permits. Left as it stands, unchanged, pending a word from the owner.
-   **OPEN FOR THE OWNER**
+10. ~~The re-issued instructions require a "[Free] designs:" line here; this file records the owner's
+   exemption for P0. The two cannot both hold, and inventing two design names to satisfy the line is
+   the one thing neither permits.~~ **Settled by the owner, 2 September 2026: P0 is exempt and the
+   exemption is final.** P0 holds shared editor controls and no placeable designs, so it has nothing to
+   make free; the standing instruction's "[Free] designs:" line does not apply here and **no line is
+   added**. The previous session's refusal to invent two design names to satisfy it was correct. **This
+   is settled and no later pass re-raises it.** Every design category still marks its own two.
 
 ### Confirmations
 
@@ -869,10 +874,11 @@ carries **OPEN FOR THE OWNER** on its own line.
   renumbered, renamed or removed. Frame files: `P0-0 Greyed Control Pattern` (new) · `P0-1` · `P0-2` ·
   `P0-3` · `P0-4` · `P0-5` · `P0-6`.
 - **There is no "[Free] designs:" line, and P0 is exempt from the requirement.** Settled by the owner,
-  31 August 2026: the roster and free-pair requirements apply to **design categories**, not to primitive
-  categories. P0 is the set of shared editor controls every category's panel draws from — there are no
-  placeable designs here to mark, and any line would name designs that do not exist. **This does not need
-  raising again in a later pass.** Every design category still marks its own two.
+  31 August 2026 and **confirmed final by the owner on 2 September 2026**: the roster and free-pair
+  requirements apply to **design categories**, not to primitive categories. P0 is the set of shared editor
+  controls every category's panel draws from — there are no placeable designs here to mark, and any line
+  would name designs that do not exist. **This is settled; no later pass re-raises it, and no line is
+  added.** Every design category still marks its own two.
 
 — End of specification —
 
@@ -890,3 +896,51 @@ carries **OPEN FOR THE OWNER** on its own line.
 **Numbering unchanged.** P0·0 · P0·1 · P0·2 · P0·3 · P0·4 · **P0·4a (new)** · P0·5 · P0·6 · P0·7 (S14) · P0·8. Nothing was renumbered; the new section takes a letter rather than a number so no existing reference moves.
 
 **There is no "[Free] designs:" line, and P0 remains exempt** by the owner's earlier ruling.
+
+---
+
+### Patch pass three — 2 September 2026 · P0 Editor Primitives
+
+One work item, one ruling, no redesign. **Frames updated: none** — see the frame check below. Every change
+carries the **name** of the rule that required it.
+
+| Rule | Change |
+|---|---|
+| Mark the two free designs | **Struck as settled, and it is the whole of this pass's work list.** The owner ruled on 2 September 2026 that **P0 is exempt**: it holds the shared editor controls every category's panel draws from, it has no placeable designs, so it has nothing to make free. **No "[Free] designs:" line was added and no design names were invented.** Open question 10 is struck with the owner and the date; the re-run's duplicate statement of the same question is struck beside it; the Confirmations now carry the exemption as final so no later pass re-raises it. The previous session flagged the contradiction rather than resolving it, which is the behaviour the ruling endorses. |
+| A control switched off by another is greyed, with the reason beside it | **Checked, no change.** Already carried by P0·0 in full — the greyed state, the value in force staying legible, the reason as a short sentence at the control rather than a tooltip, and the one exception of a different kind (a control this project can never offer is not drawn at all and the panel says why; the visitor dark-mode switch under a pinned colour scheme remains the only current case). Recorded library-wide as rule 13. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **Checked, no change.** Two letters for a list the user types, one letter for a person Ghost supplied, never mixed inside one component — drawn in P0·5 and stated as rule 4. |
+| The Remove button never greys out | **Checked, no change.** Carried by P0·3 with its explicit boundary — the greyed-control pattern does not reach it, because Remove is switched off by nothing — and by rule 14. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Checked, no change.** Rule 15, with its test intact: every value must have a frame somebody has looked at. Item counts stay steppers; arrangement controls keep their named values; neither is converted into the other. |
+| A design may declare the width below which its script runs | **Checked, no change.** Rule 16, including the requirement that a design declaring a width describes its no-JavaScript state on both sides of it. **No P0 design declares one** — the primitives are editor software and declare no modules (rule 11). |
+| Printed design totals | **Untouched, and nothing new was authored carrying one.** No P0 frame or spec line prints a design total. The count-agnostic marketing and app copy maintained in the repository was not touched, and is not in this project's files to touch. |
+| P0's per-prop mark allowlist | **Left alone, a third time.** It is not in this project's copy of the specification — it was written in the repository. It has not been re-authored, paraphrased or softened, and "absent" was not changed to "greyed": the inline text toolbar's carve-out in P0·0 and rule 13 stands unchanged. |
+| The frames | **Re-read in full and left untouched.** `P0-0` · `P0-1` · `P0-2` · `P0-3` · `P0-4` · `P0-5` · `P0-6`. **None of them carries a roster, a "[Free]" mark or an open-question block**, so the one work item on this pass's list has nowhere to land on a frame. Nothing was redrawn: no arrangement moved, no control was added, removed or renamed, and no value, default, type scale, colour or sentence changed. |
+
+**Left alone, and why — recorded rather than edited.**
+
+- **The owner is named in this file as "the owner" and nowhere by a proper name.** The strike therefore
+  reads "Settled by the owner, 2 September 2026", in the form every earlier ruling in this file uses. A
+  proper name was not invented.
+- **Open question 8 carries a stray `OPEN FOR THE OWNER` line beneath its struck-through text.** The
+  question itself is struck and closed (the Actions split, 31 August 2026, delivered as P0·4a), so the
+  marker is a leftover from the pass that closed it. This pass's list does not name it and removing it
+  would be an edit nobody asked for, so **it is left as found** and flagged here instead.
+
+**OPEN QUESTION — the one thing this pass could not close.** The instructions' **output item 4** requires
+confirming that the "**[Free] designs:**" line is present and names two designs that exist. **The same
+instructions' work list rules the opposite** — the exemption stands, do not add a [Free] line — and item 4
+cannot be satisfied without inventing two design names, which both the work list and the ruling forbid.
+The work list is the ruling and dated 2 September 2026, so **it governs and item 4's boilerplate is
+treated as stale for this category only**. The conflict is recorded here rather than resolved silently;
+the confirmation below states the position plainly instead of asserting a line that does not exist.
+**FOR THE OWNER'S NOTE, NOT A QUESTION REOPENED.**
+
+### Confirmations — patch pass three
+
+- **The design numbering is unchanged.** This category's numbers are **P0·0 · P0·1 · P0·2 · P0·3 · P0·4 ·
+  P0·4a · P0·5 · P0·6 · P0·7 (S14) · P0·8**. Nothing was renumbered, renamed, added or removed in this
+  pass.
+- **There is no "**[Free] designs:**" line, and there is not meant to be one.** P0 is exempt by the
+  owner's ruling of 31 August 2026, confirmed final on 2 September 2026: it holds shared editor controls
+  and no placeable designs, so no two designs exist to name and none were invented. This is the one output
+  item the pass's own work list forbids satisfying, and the conflict is recorded above.

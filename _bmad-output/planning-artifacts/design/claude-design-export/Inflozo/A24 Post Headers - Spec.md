@@ -1,7 +1,7 @@
 # A24 Post Headers — written specification
 
 16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
-**post headers patch, 28 August 2026**
+**post headers patch, 28 August 2026** · **pass two, 1 September 2026** · **pass three, 2 September 2026**
 
 **Post headers patch (28 August 2026).** Four rulings landed on this category and two of them touched
 every design in it. **A byline never counts:** "Jane and 2 others" is now "Jane and others"
@@ -849,7 +849,7 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
   | Control | Values |
   |---|---|
-  | Cells | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026**; every value has a drawn frame, so there is no + to grey and no fifth value: a fifth cell falls under 260 px on the content measure and its label wraps |
+  | Cells | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026**; every value has a drawn frame, so there is no + to grey and no fifth value: a fifth cell falls under 260 px on the content measure and its label wraps. **Four is the maximum, and it is a design decision — the owner's ruling of 2 September 2026**, which closes the caps question: no fifth cell is drawn and the reason on the frame is the reason |
   | Cell position | Above the title · Below the title |
   | Labels | Above the value · Inline |
   | Rules | Full · Between cells · None |
@@ -989,7 +989,7 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
   | Control | Values |
   |---|---|
-  | Links | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026** — each value drawing the first N of the site's enabled share destinations, in the site's own order; no + to grey and no fifth value, a fifth link taking the row onto a second line at 1440 |
+  | Links | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026** — each value drawing the first N of the site's enabled share destinations, in the site's own order; no + to grey and no fifth value, a fifth link taking the row onto a second line at 1440. **Four is the maximum, and it is a design decision — the owner's ruling of 2 September 2026**, which closes the caps question for the row as drawn; the pending native-share redraw cuts this row altogether, and that interaction is an open question in the pass-three notes |
   | Link style | Words · Words and glyphs |
   | Alignment | Left · Centre |
   | Divider | Hairline above · None |
@@ -1371,13 +1371,13 @@ marked OPEN FOR THE OWNER on its own line.** Nothing on it was answered here.
    — would make the design read as 8 Contrast Band, which the rule against one design becoming
    another forbids just as firmly.
    **OPEN FOR THE OWNER.**
-4. **The caps on the two new number pickers are the drawn maxima, 4 and 4.** Their reasons are drawn
-   (a fifth cell's label wraps; a fifth link takes a second line), but **neither cap was ruled on** —
-   they are the counts the frames were designed at. If either should go higher, the row and the
-   responsive rule both need redrawing. **The picker itself is gone — the owner returned both rows to
-   Two · Three · Four on 1 September 2026** — so there is no + and no cap to grey; what survives of
-   this item is the narrower question of **whether a fifth cell or a fifth link should ever be drawn**.
-   **OPEN FOR THE OWNER.**
+4. ~~**The caps on the two new number pickers are the drawn maxima, 4 and 4.**~~ · **SETTLED BY THE
+   OWNER, 2 September 2026: four is the maximum, and it is a design decision.** The reasons already
+   drawn are the reasons — a fifth cell falls under 260 px on the content measure and its label wraps;
+   a fifth link takes the row onto a second line at 1440 — so **no fifth cell and no fifth link is
+   drawn**, and the narrower question this item had shrunk to is closed with it. **The picker itself
+   was already gone**: the owner returned both rows to Two · Three · Four on 1 September 2026, and they
+   stay there, default Four, with no + and no cap to grey.
 5. ~~**Where should a panel put its advice, now that no design turns into another?**~~ · **SETTLED BY
    THE OWNER, 28 August 2026 — recorded in "The owner's answers" below: advice is one grey line under
    the design picker.** Not on the canvas, and not over the section — **directly below the control it
@@ -1534,9 +1534,11 @@ document's own ruling of 28 August 2026 pointed opposite ways at the same two ro
 and 4 arrangements somebody has looked at, which is the rule's test for a named set; both also say how
 many items to show, which is what the earlier pass read them as. **The rule wins**: the two panel rows
 are redrawn as segmented named values, the earlier conversion is struck where it is recorded, and
-**consistency with every other choice in A24 was the deciding reason**. **What stays open is narrower
+**consistency with every other choice in A24 was the deciding reason**. ~~**What stays open is narrower
 and is a drawing question, not a control one:** whether a fifth cell or a fifth link should ever be
-drawn — item 4 on the architect's list, marked OPEN FOR THE OWNER there.
+drawn — item 4 on the architect's list, marked OPEN FOR THE OWNER there.~~ · **SETTLED BY THE OWNER,
+2 September 2026: four is the maximum, it is a design decision, and no fifth cell or fifth link is
+drawn.**
 
 ~~**QUESTION 2 — Does `header-scroll` cover a bar that is not the site navigation?**~~ · **SETTLED BY
 THE OWNER, 1 September 2026: yes — the module covers any pinned bar, and the registry gains one
@@ -1640,3 +1642,73 @@ switches**; **no brand glyphs**; **the copied confirmation kept, inside the fall
 no-JavaScript line that reads **Email alone** — the trigger and Copy link both need a script.
 
 **Design numbering unchanged.** Nothing renumbered, nothing deleted.
+
+---
+
+## Patch notes — pass three, 2 September 2026
+
+Every change below carries the **name** of the rule that required it. Rules are named, never numbered.
+
+**One ruling reached this category and it changed no drawing.** The owner ruled the caps on **11
+Dateline's Cells** and **14 Share Row's Links**: **four is the maximum, and it is a design decision.**
+Both rows stay exactly as the owner set them on 1 September 2026 — **Two · Three · Four, a named set,
+default Four**. **No arrangement moved, no control was added, removed or renamed, and no value,
+default, layout, responsive rule, type scale, colour pack or spacing step changed anywhere in A24.**
+
+**Frames changed — seventeen, and every one of them.** All sixteen design frames and `A24-0 Category
+Proof` gain a **PASS THREE** section recording the ruling, what it closes, what was left alone and the
+numbering. **Two frames changed a sentence as well as gaining that section:** `A24-11 Dateline`'s Cells
+caption and `A24-14 Share Row`'s Links caption each gain one clause naming the ruling — "four is the
+maximum, and it is a design decision" — beside the reason the frame already drew.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **A count that picks between drawn layouts is a named set, not a number picker** | **The caps are ruled, and the rows are untouched.** Pass two recorded that the maxima on **11 Dateline's Cells** and **14 Share Row's Links** were the counts the frames were drawn at and that **neither had been ruled on**. The owner ruled both on 2 September 2026: **four is the maximum and it is a design decision**, so **no fifth cell and no fifth link is drawn**. **The reasons already on the frames are the reasons** — a fifth cell falls under 260 px on the content measure and its label wraps; a fifth link takes the row onto a second line at 1440. **Both control rows are unchanged**: Two · Three · Four, default Four, with no + and no ceiling to grey. **What changed is writing, not drawing:** the two panel captions, the two spec control rows, item 4 on the architect's list, and the pass-two paragraph that left the question open. |
+| **A control switched off by another is greyed, with the reason beside it** | **No subject in this pass and no row changed.** Every case in A24 was audited against this shape in pass two and none of them turns on a count. The ruling adds no dependency, so nothing greys that did not grey before, and **the rule's one exception is still claimed nowhere in A24** — the visitor dark-mode switch does not appear in this category. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **Already compliant and untouched.** Every fallback circle in A24 draws **one letter**, because every person here is a Ghost author and Ghost hands a theme a display name. No frame draws a two-letter circle, and this pass drew none. |
+| **The Remove button never greys out** | **No subject.** Nothing in A24 is an authored repeating list — no repeater, no Add, no Remove, no reorder. **Cells and Links are single values written onto the section**, which is why a ruling about their maximum creates no item list. In the site-wide Share-destinations setting, where the shared item-list controls do apply, **Remove stays visible and fully clickable at the floor** with the floor and the reason as one sentence under the list. |
+| **A design may declare the width below which its script runs** | **No design in A24 declares one, and none was invented in this pass.** 13 Sticky's two modules run at 390 as at 1440 and 14 Share Row's `share` runs at every width, so **both no-JavaScript lines describe every width**, as pass two rewrote them. Unchanged here. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, reused or deleted. |
+
+### Open questions this pass raises
+
+**QUESTION 1 — Does the four-maximum survive the native-share redraw of 14 Share Row?**
+**OPEN FOR THE OWNER**, and named rather than guessed. Two rulings now touch the same row and they do
+not point the same way. **The caps ruling of 2 September 2026 fixes four as the maximum** for the Links
+row as it is drawn today — two to four destinations from the site's enabled list. **The native-share
+ruling of 1 September 2026 cuts that row altogether** when the design is redrawn: one Share trigger,
+with Copy link and Email as the older-Ghost fallback, and the Links control cut rather than greyed.
+That redraw is still outstanding — this document and `A24-14`'s own panel both say so. **So the
+four-maximum stands until the redraw and has no subject after it**, and **whether anything in the
+redrawn row inherits a maximum is not decided here.** Nothing was changed on either account: the row is
+as pass two left it, the native-share panel at `A24-14`'s foot is untouched, and the redraw is still
+outstanding.
+
+### Left alone deliberately
+
+**The two things maintained outside Claude Design are untouched, as asked.** **No design total is
+written into any spec line, panel string or frame in this pass**, and no removed total was reinstated —
+the library changes size whenever a design is added or cut, so a number in product copy is wrong within
+a month. **P0's per-prop mark allowlist is P0's text**: not restated, softened or contradicted by
+anything above. The scopes stay distinct — **a mark a field does not permit is absent; a control
+switched off by another control is greyed with its reason beside it**.
+
+**Three things this pass could have rewritten and did not.** **The `readingTimeSuffix` fallback sentence
+in 15 Slim's Reconciled paragraph** is still left where it is, for the reason pass two gave: it cannot
+be told apart from a deliberate edit. **The three deleted hand-offs stay deleted.** **Every
+no-JavaScript line is unchanged** — fourteen designs pixel-identical with JavaScript off, 13 Sticky's as
+pass two rewrote it, 14 Share Row's still reading from the registry with its Copy-link caveat.
+
+**The struck text stays struck rather than deleted** in all four places the caps question is recorded,
+so the sequence — drawn at four, converted to a picker, converted back, then ruled — stays readable.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** —
+   sixteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Centred** and **2 Flush Left** — both of which exist in this category's roster.
+
+— End of pass three —

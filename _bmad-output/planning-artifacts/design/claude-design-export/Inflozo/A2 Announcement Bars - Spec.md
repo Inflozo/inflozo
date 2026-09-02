@@ -673,7 +673,7 @@ A 4 px accent rule across the top with a chip at its right end; pressed, it open
 
 **Behaviour module.** `accordion` — the chip is a disclosure — plus `dismiss` for the × beside it. Edit-safe. **Ruled by the owner, patch pass two: the disclosure is the hand-built one** — a `<button aria-expanded>` controlling the panel, not native `<details>`/`<summary>`. The accessibility field, which specified that markup all along, stands as written; the registry's compilation is what gives way, and **the library rule that the registry is the authority on module mechanics is overridden here, for this design, by name.** **ARCHITECT:** the registry owes either an `accordion` variant that compiles to `<button aria-expanded>` or a separate entry for it. **No module name is coined**; Edge keeps `accordion` as its declared module until the architect rules. Finding 2 closes with the ruling.
 
-**What the ruling costs.** A hand-built button needs script, so **Edge is no longer the one A2 design whose own behaviour is unaffected by JavaScript being off** — that sentence is withdrawn. **JS off:** the 4 px rule and the band are both server-rendered, and **the bar renders open with no chip.** A chip that cannot be pressed is the dead control the category's floors already refuse, and 4 px of accent over text nobody can reach is not a bar. So a reader without script gets the sentence, its link and the rule at the open height; the close is hidden, as everywhere else in A2. *Flagged as mine: the choice of the open state as the no-JavaScript state.* **OPEN FOR THE OWNER:** the alternative is that Edge does not render at all without script — it keeps the four-pixel promise and costs that reader the message.
+**What the ruling costs.** A hand-built button needs script, so **Edge is no longer the one A2 design whose own behaviour is unaffected by JavaScript being off** — that sentence is withdrawn. **JS off:** the 4 px rule and the band are both server-rendered, and **the bar renders open with no chip.** A chip that cannot be pressed is the dead control the category's floors already refuse, and 4 px of accent over text nobody can reach is not a bar. So a reader without script gets the sentence, its link and the rule at the open height; the close is hidden, as everywhere else in A2. **This is the owner's ruling, 2 September 2026**, and no longer the specifier's choice: the behaviour is exactly as it was specified in patch pass two, and only its authority changes. The alternative — that Edge does not render at all without script, keeping the four-pixel promise — **was considered and refused**, because a 4 px line nobody can open is not a bar and that reader would lose the message entirely.
 
 **What the ruling buys.** **Opens on: Hover and focus is now expressible at every state.** It was the one value `<details>` could not carry, and the old flag — that it silently degraded to Click and focus — withdraws. Escape-to-collapse and the × were script before this ruling and are script still.
 
@@ -708,7 +708,7 @@ No height ladder — the universal Vertical spacing locks here: collapsed is the
 
 **Accessibility.** The rule is decorative and `aria-hidden`. The chip is `<button aria-expanded>` — **the owner's ruling this pass, and now the whole design's markup rather than only its accessibility note** — whose accessible name is the full sentence plus "Show announcement", so a screen reader hears the message without opening anything while the visible label stays the authored short one. Chip: None is disabled because a hover-only 4 px strip fails 2.1.1. Opening moves no focus; Escape collapses when focus is inside; the × is a separate labelled button.
 
-**Flagged as mine.** `chipLabel` and its cap, disabling Chip: None, the overlapping mobile hit area, the 2 px chip growth on hover, the dark-pack recommendation for Open ground: Surface, and the open bar as the no-JavaScript state.
+**Flagged as mine.** `chipLabel` and its cap, disabling Chip: None, the overlapping mobile hit area, the 2 px chip growth on hover, and the dark-pack recommendation for Open ground: Surface. *The open bar as the no-JavaScript state leaves this list: it is the owner's ruling of 2 September 2026.*
 
 ---
 
@@ -828,7 +828,7 @@ Seven of the registry's 31, and nothing coined. `dismiss` appears on all fourtee
 | 10 | Pill | `dismiss` | Sticky is `position: sticky` over a spacer that stays |
 | 11 | Toast | `slide-in-card` · `dismiss` | degrades to a static card at the end of the page |
 | 12 | Takeover | `dismiss` | scrim, crops and the type step-down are all CSS |
-| 14 | Edge | `accordion` · `dismiss` | owner's ruling: the hand-built `<button aria-expanded>`, so the disclosure needs script; the registry owes the variant |
+| 14 | Edge | `accordion` · `dismiss` | owner's ruling: the hand-built `<button aria-expanded>`, so the disclosure needs script; the registry owes the variant. **No JS: the bar renders open with no chip** — owner's ruling, 2 September 2026 |
 | 15 | Triple | `dismiss` · `rotator` (below 768) | owner’s ruling: the phone band cycles its notices, five seconds, crossfade |
 
 **Modules A2 deliberately does not use.** `header-scroll` (the header's, and the source of the sticky offset A2 contributes to), `nav-drawer`, `reveal`, `count-up`, `confetti`, `typewriter`, `carousel` — 9 Rotator's archetype is a carousel and its module is `rotator`, which is the registry's name for the same thing in a bar — and the twenty-two others. Nothing in A2 animates on scroll, counts up, or reveals.
@@ -1016,3 +1016,37 @@ Frames updated (two rulings arrived mid-pass and are folded in here): **`A2-14 E
 
 - **The design numbering is unchanged: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15** — fourteen designs, the gap at 13 left open, nothing renumbered and no number reused. The two rulings above changed behaviour on 14 and 15 and touched no number.
 - **The "[Free] designs:" line is present** in §0, on its own line, naming **1 Rule** and **2 Split** — both of which exist in this category.
+
+---
+
+## Patch notes — design patch pass three, 2 September 2026
+
+Frames updated: **`A2-14 Edge`** (the disclosure block's *What it costs* line and the spec card's ruling and flag lines, re-attributed) · **`A2-0 Category Proof`** (a pass-three patch block recording the ruling). Nothing was restyled, no frame moved, no control changed, no value changed, no design renumbered, and **no specified behaviour changed anywhere in this category**.
+
+**One change, and it is an attribution.** Edge's no-JavaScript state was specified in patch pass two as the bar rendering **open with no chip**, and honestly flagged as the specifier's own choice with the alternative named. The owner has ruled on it: the open state is the ruling, dated **2 September 2026**. What a reader without script gets is unchanged — the sentence, its link and the 4 px rule at the open height, with the close hidden as everywhere else in A2. The refused alternative is recorded rather than dropped: not rendering at all keeps the four-pixel promise, and a 4 px line nobody can open is not a bar.
+
+| Rule (by name) | Change |
+|---|---|
+| Owner's ruling — Edge renders open without JavaScript | **The flag changes hands; the behaviour does not.** *Flagged as mine: the open state as the no-JavaScript state* is struck from 14 Edge's flag list and rewritten as the owner's ruling with its date, in the design's **What the ruling costs** field, in the **Behaviour modules — roster** note for 14, on the frame's disclosure block, and on the frame's spec card. The alternative that was refused is named in all four places, so the next reader sees a decision rather than an absence. |
+| A control switched off by another is greyed, with the reason beside it | **No subject.** Every A2 control another switch turns off is already drawn greyed with its reason at the control — Vertical spacing locked on the five fixed-height designs, Top divider locked None on all fourteen, Edge's Chip: None disabled with its 2.1.1 reason, Split's Ground values disabled with their measured ratio, Triple's Slots and Dividers inert below 768. Nothing is hidden and nothing accepts a value it will not honour. **The never-offerable exception has no subject here either:** A2 draws no visitor dark-mode switch. No control was added, removed or re-drawn in this pass. |
+| Avatars with no photograph show initials, and the two forms are not interchangeable | **No subject.** A2 renders no person, at either initial form. |
+| The remove button never greys out | **Confirmed, unchanged.** Remove stays visible and fully clickable at the floor in all three list designs, answering with **"A bar needs at least one message."** as one sentence under the list. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Confirmed, unchanged.** Messages stays a 1–6 number picker; Slots stays a number picker capped at three with its reason drawn in the panel. Neither was converted, and this pass added no count. |
+| A design may declare the width below which its script runs | **Confirmed, unchanged.** **A2·15 Triple** is the category's only declaration — *"collapses into sections under 768"* — and its no-JavaScript line already covers both sides of that width. **Edge declares none, and the ruling does not create one:** its script boundary is a state, not a width; the bar renders open at every width without script. |
+| Printed design totals stay out of product copy | **Honoured, and nothing written.** No copy was authored in this pass, and no design total — old, corrected or computed — appears in anything it touched. A2 still has no marketing or app copy. The per-frame eyebrow "DESIGN 14 OF 14" and the panel heading "shared by all 14" remain the *category's* own count on a design-library artefact, as the previous pass recorded and reasoned; that judgement is unchanged, not re-opened. |
+| P0's per-prop mark allowlist | **Not touched.** This pass did not open P0. |
+
+**Left alone deliberately, and why.** Patch pass two's own section — **"Three things the rulings did not settle"** — still lists Edge's no-JavaScript state as open for the owner. It is the record of what was true on 31 August 2026 and is superseded by this entry, not rewritten: flattening it would hide the ruling instead of recording it. The same reasoning the document has applied to three earlier historical sections applies here. If the owner wants that line struck through in place, it is one message.
+
+### Owner's rulings, this pass
+
+1. **14 Edge renders open without JavaScript** — the sentence, its link and the rule at the open height, the close hidden, no chip. Specified in patch pass two, ruled 2 September 2026. The alternative — not rendering at all — was considered and refused.
+
+### Open questions
+
+**None in this category.** Two items remain outstanding and both are the architect's, exactly as written and untouched by this pass: **finding 2's remainder** (the registry owes an `accordion` variant that compiles to `<button aria-expanded>`, or a separate entry; no module name is coined) and **finding 3** (15 Triple's module set varying by width, reopened by the owner's ruling and the architect's to confirm). Nothing in this pass required inventing a decision.
+
+### Confirmations
+
+- **The design numbering is unchanged: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15** — fourteen designs, the gap at 13 left open, nothing renumbered and no number reused.
+- **The "**[Free] designs:**" line is present** in §0, on its own line, naming **1 Rule** and **2 Split** — both of which exist in this category's roster.

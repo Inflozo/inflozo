@@ -640,8 +640,11 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    *⚑ Enumerated: two columns run the same sequence exactly when their index difference is a
    multiple of the cycle length. **So the column count must be no greater than the cycle length** —
    three ratios support three columns; **at four, columns one and four are identical.** Columns
-   Four is therefore a real gap: either remove the value or add a fourth ratio. Left in place with
-   a warning note; the architect should pick.*
+   Four was therefore **removed on 24 August 2026** — the enumerated rule is enforced by the control
+   and no fourth ratio was added. ⚑ 2 September 2026, *the panel is the authority*: **this paragraph
+   was the last place in the document still saying the value was "left in place with a warning note;
+   the architect should pick"**, which the frame has contradicted since 24 August and the control
+   table since 1 September. **The paragraph is what was corrected; nothing drawn changed.***
 7. **Data.** Designed for 9 and 12; correct at 5–15. **Below five the columns draw with what they have and the panel may advise 1 Three Up** ⚑ 29 August 2026.
    Columns end unevenly even at 9 in 3 — measured 74 px apart — **a property, not an empty state.**
 8. **Empty.** Plate at the cell's dictated ratio. **No image anywhere in the set → the image boxes are not
@@ -1280,9 +1283,10 @@ one carries **OPEN FOR THE OWNER** on its own line. **Nothing here was answered 
    24 August 2026**, and unchanged since: the Data group states **drag order = drawn order**, and
    5 Lead + Grid states that the first pick takes the lead cell.
 3. ~~11 Masonry's Columns Four.~~ **Settled by the reconciliation pass, 24 August 2026** — closed by
-   removal; column count ≤ cycle length is enforced by the control. *(The design's control table still
+   removal; column count ≤ cycle length is enforced by the control. *(~~The design's control table still
    prints the value; the disagreement between table and Reconciled paragraph is recorded in Patch
-   notes — pass two rather than resolved there.)*
+   notes — pass two rather than resolved there.~~ **The table was corrected on 1 September 2026 and the
+   enumerated paragraph on 2 September 2026; table, paragraph and frame now agree.**)*
 4. ~~12 Bento's count of five.~~ **Settled by the reconciliation pass, 24 August 2026** — Count is one
    stepper and this design's is locked at 5, drawn disabled with its reason.
 5. ~~12 Bento's unused `featured` input.~~ **Settled by the design patch pass, 29 August 2026, on the
@@ -1519,23 +1523,30 @@ do. **Listed here rather than resolved**, and no A17 panel was changed on accoun
 
 ### Open questions raised by this pass
 
-1. **4 Cards, at Per row Four.** The card's own padding takes the text column under the 306 px the
+1. ~~**4 Cards, at Per row Four.** The card's own padding takes the text column under the 306 px the
    excerpt floor is written against, so **Excerpt: Three lines may be a value this design cannot
    honour**. Greying it means deciding that a padded cell counts as its outer width or its inner one,
-   which is a decision. **OPEN FOR THE OWNER**
-2. **6 Split Head, at Per row Three.** The grid column divides 856 into cells of about 269 px — under
+   which is a decision.~~ **Settled by the owner, 1 September 2026** — the floor measures the inner
+   width; the greyed row is drawn on `A17-4`. *Restated by the owner on 2 September 2026, and the
+   restatement's own example sentence conflicts with the category floor — listed in Patch notes —
+   pass three rather than chosen.*
+2. ~~**6 Split Head, at Per row Three.** The grid column divides 856 into cells of about 269 px — under
    the floor's 306 — so Excerpt may offer lines the design does not draw. The floor was written for the
-   1,296 divisions and this design does not use them. **OPEN FOR THE OWNER**
-3. **17 Panel, at Per row Four.** The panel's cells are *(width − 2·inset − 48) / 3*, giving about
-   278–290 px at every Inset, again under 306. Same question, on a ladder this design invented.
-   **OPEN FOR THE OWNER**
-4. **15 Filtered, below 767.** The design's no-JavaScript line says the strip **scrolls natively**;
+   1,296 divisions and this design does not use them.~~ **Settled by the owner, 1 September 2026** —
+   same test, same treatment; the greyed row is drawn on `A17-6`.
+3. ~~**17 Panel, at Per row Four.** The panel's cells are *(width − 2·inset − 48) / 3*, giving about
+   278–290 px at every Inset, again under 306. Same question, on a ladder this design invented.~~
+   **Settled by the owner, 1 September 2026** — same test, same treatment; the greyed row is drawn on
+   `A17-17`.
+4. ~~**15 Filtered, below 767.** The design's no-JavaScript line says the strip **scrolls natively**;
    its reconciliation paragraph says the module **manages** that scroll. If the module does nothing
    there that CSS does not, the design declares no width; if it does, the width is 768 and the
-   no-JavaScript line must read on both sides of it. **OPEN FOR THE OWNER**
-5. **11 Masonry's control table still prints Columns Four** while the Reconciled paragraph says the
+   no-JavaScript line must read on both sides of it.~~ **Settled by the owner, 1 September 2026** —
+   the scroll is native CSS, so **the design declares no width** and the no-JavaScript line stands.
+5. ~~**11 Masonry's control table still prints Columns Four** while the Reconciled paragraph says the
    value was removed on 24 August. **Recorded, not resolved** — the frame is the authority and this
-   pass was not asked to change a value. **OPEN FOR THE OWNER**
+   pass was not asked to change a value.~~ **Settled by the owner, 1 September 2026** and finished on
+   **2 September 2026**: the table dropped the value then, the enumerated paragraph now.
 
 ### Left alone deliberately
 
@@ -1545,7 +1556,9 @@ library size, and the count-agnostic copy stands. **P0's per-prop mark allowlist
 softened or dropped**: the default inline marks, a field's right to narrow that set, and a disallowed
 mark being **absent** from the toolbar rather than greyed, all stand as written. **One thing was left
 because it may be deliberate**: 11 Masonry's control table keeps its Columns Four cell, listed above
-as an open question rather than edited out.
+as an open question rather than edited out. *(Superseded: the table was corrected on 1 September 2026
+and the enumerated paragraph on 2 September 2026, both under the owner's ruling — see Patch notes —
+pass three.)*
 
 ### Confirmations
 
@@ -1580,3 +1593,79 @@ Five, all applied above; each carries the rule that governs it.
 5. **Frames updated by these rulings:** `A17-4`, `A17-6`, `A17-15`, `A17-17` — each gaining the drawn
    greyed row or the corrected behaviour line — and `A17-11`, which records the written table's
    correction without changing anything drawn.
+
+---
+
+## Patch notes — pass three, 2 September 2026
+
+Every change carries the **name** of the rule that required it. **Two work-list items arrived and
+both had already landed in this document and on its frames on 1 September 2026, under the same two
+rulings.** They were re-read design by design and confirmed rather than re-applied; what was still
+outstanding was one stale paragraph and the bookkeeping around it. **Nothing was renumbered, renamed,
+redrawn or deleted; no control was added or removed; no value changed; no default changed; no layout,
+type scale, colour pack or spacing step moved.**
+
+**Frames updated:** `A17-11` only, which gains a **PASS THREE RECORD** block. **Nothing drawn on it
+changed** — it has drawn **Columns Two · Three** since 24 August. `A17-4`, `A17-6` and `A17-17`
+already carry the drawn greyed **Excerpt** row with its reason at the control, and `A17-15` already
+carries the corrected behaviour line; all four were checked and left exactly as drawn.
+
+### What changed, and the rule that required it
+
+1. **11 Masonry's enumerated paragraph now agrees with the frame** — *the panel is the authority*.
+   **Which of the two was wrong, and which was corrected: the writing.** The frame draws a two-value
+   Columns control and its note reads "Four was removed in this pass"; the control table was corrected
+   to match on 1 September 2026; **the enumerated ⚑ paragraph under that table was the last place in
+   the document still reading "Columns Four is therefore a real gap … left in place with a warning
+   note; the architect should pick."** That sentence is replaced with what the frame does — the value
+   was removed on 24 August, the rule *column count ≤ cycle length* is enforced by the control, and no
+   fourth ratio was added. **No value on any frame changed and no fourth ratio exists.**
+2. **Two stale cross-references struck** — housekeeping under the same rule. The Reconciled open
+   question "the design's control table still prints the value" and pass two's "left because it may be
+   deliberate" both described a disagreement that no longer exists; each is struck through with the
+   date it was closed.
+3. **Pass two's five open questions are marked settled** — housekeeping. Items 1, 2, 3 and 5 carry
+   **Settled by the owner, 1 September 2026**; item 4 the same. **Nothing was answered in the
+   housekeeping**, and item 1 additionally records the conflict below.
+4. **No design total appears anywhere in this document or on any A17 frame.** Nothing authored in this
+   pass quotes a library size, and no A17 copy string counts designs.
+
+### The five rules of this pass, checked against A17
+
+| Rule (by name) | Where it lands in A17 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Eleven cases, all drawn, none hidden** — the universal Order row, eight per-design narrowings and the three the width-floor ruling added. Unchanged by this pass. The rule's **one exception** is claimed nowhere in A17: no control here is one this project can never offer. The **conflict** with P0·5's hiding of the main feed's pair stands as recorded in pass two, unresolved and unchanged. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **Unchanged.** Eleven designs offer **With photograph** and all eleven draw **one letter**; the other seven refuse the value with the reason already at the control. **No two-initial avatar exists in A17** — every byline comes from Ghost — and none may be introduced. |
+| **The Remove button never greys out** | **No subject.** A17 authors no list. The post picker at Source: Hand-picked has an ✕ on every row, no floor, and removing the last reference leaves the section unrendered and outlined in the editor. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Per row, Columns, Cycle, Arrangement, Thumbnail, Strip and Button are named values with a drawn frame behind each; Count and 16 Load More's Batch count items. |
+| **A design may declare the width below which its script runs** | **None does**, and this is now settled rather than open: two modules, `filter-strip` and `load-more`, both run at every width, and both no-JavaScript lines already read at every width. 15 Filtered's below-767 scroll is native CSS overflow, so **no width is declared** and no no-JavaScript line needed a second half. |
+
+### The conflict this pass will not choose
+
+**The width-floor ruling's example sentence and the category floor disagree about what a text column
+under 306 px may draw.** The ruling as restated on 2 September asks that "the excerpt value the design
+cannot draw" be greyed and offers the sentence *"at four across this card's text column is 290 px;
+three lines needs 306"* — which reads as **Three lines greyed, falling to Two lines**. The category
+floor in §"The shared floor" and the disabled-control table say the opposite twice: **at exactly 306
+Three lines is already refused and falls to Two** (1 Three Up, 7 Contrast Band, 15 Filtered), and
+**below 306 no excerpt is drawn at all** (3 Four Up at 240 falls to Off). On that floor a 264, 269 or
+290 px column greys **the whole Excerpt row**, which is what was drawn on `A17-4`, `A17-6` and
+`A17-17` on 1 September and what the table records. **Both readings cannot hold: either the floor's
+two tiers move, or the example sentence's numbers do.** **The frames are left as drawn and nothing is
+chosen here.** **OPEN FOR THE OWNER**
+
+### Left alone deliberately
+
+**The two repository-maintained pieces are untouched**, as asked: no design total was written into any
+copy authored here, and **P0's per-prop mark allowlist is not rewritten, softened or dropped**.
+**The greyed Excerpt treatment on 4 Cards, 6 Split Head and 17 Panel is left exactly as drawn** —
+whole row, falling to Off, with the 264 / 269 / 278–290 px reason at the control — because changing it
+to a single greyed value would decide the conflict above. **The 1 September rulings' own record is not
+rewritten**: its dates stand as the dates the work landed.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+   17, 18** — eighteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present** at the head of this document, on its own line, and
+   names **1 Three Up** and **4 Cards** — both of which exist in this category's roster of eighteen.

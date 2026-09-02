@@ -31,16 +31,27 @@ Lightbox: Off, **"In the lightbox only" is greyed with the reason beside it** an
 the design's own under-the-frame value, in the eleven designs that offer the pair — 3 Mosaic and 9
 Full Bleed already resolved it and the other nine were resolving it silently; **9 Full Bleed's
 Gutter: None is greyed while its captions sit under each frame** rather than being forced off None by
-the panel; and **the Lightbox row is greyed at Source: From posts in all fifteen**, where every bound
-frame links to its post and no bound frame ever honoured On. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a
+the panel; and **the Lightbox row is greyed at Source: From posts in all fifteen**, where every bound frame links to its post and no bound frame ever honoured On — **withdrawn by pass three, below**. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a
 tablet and declare 768 as the width they retire under, and both no-JavaScript lines read on both
-sides of it** — owner-ruled, 1 September 2026. **13 Contact Sheet greys Captions from titles at Off
-in bound mode**, by the same ruling, so it stores no caption it cannot show. **Nothing was renumbered, renamed, redrawn or
+sides of it** — owner-ruled, 1 September 2026. **13 Contact Sheet greys Captions from titles at Off in bound mode**, by the same ruling, so it stores no caption it cannot show — **withdrawn by pass three, below**. **Nothing was renumbered, renamed, redrawn or
 deleted, no control was added or removed, no value changed, and no type scale, colour pack or spacing
 step moved.** **Both open questions this pass raised were ruled by the owner on 1 September
 2026 and are closed** — 13 Contact Sheet's captions in bound mode and the width the arrows retire
 under — and **one conflict is listed rather than chosen**: a switched-off control is never hidden, and the Data group's hidings come
 from P0·5 and P0·3, which this pass may not redesign.
+
+**Design patch pass three — 2 September 2026.** One work-list item, and it takes something away
+rather than adding it. **Bound mode does not link each picture to its post** — owner-ruled,
+2 September 2026, closing the open question the last pass raised. A gallery whose every frame links
+to a post resolves, for a visitor, to what a Post Grid resolves to, and two categories arriving at
+one outcome is what the library's uniqueness rule exists to prevent. **A14 stays pictures-only**: the
+per-frame post link is removed from bound mode wherever it was specified or drawn, and **the boundary
+is stated once in the category layer — A14 shows images the owner chose, A17 shows posts.** Two
+narrowings fall with it, because the link was the only reason either was ever written: **the Lightbox
+row is live again at Source: From posts in all fifteen**, and **13 Contact Sheet's Captions from
+titles is live again in bound mode**, its titles reachable in the overlay like everyone else's.
+**Nothing was renumbered, renamed, redrawn or deleted, no control was added or removed, no value
+changed, no type scale, colour pack or spacing step moved, and no design total is written anywhere.**
 
 **[Free] designs:** 1 Grid · 14 Index
 
@@ -90,9 +101,7 @@ one repeating unit, and every arrangement has to hold at whatever the author typ
 
 Three neighbours own adjacent ground and A14 does not repeat them. **A33 Koenig Card Treatments**
 owns the gallery card inside `{{content}}` — a gallery authored in a post, laid out by Ghost's own
-rules, which **none of A14's controls reach** ⚑. **A17 Post Grids** owns grids of posts, where the
-image is a post's feature image and the text is a title; A14's grids carry no titles and no links to
-posts. **A15 Video and Embeds** owns moving pictures. A14 owns still photographs the author chose.
+rules, which **none of A14's controls reach** ⚑. **A17 Post Grids** owns grids of posts, where the image is a post's feature image and the text is a title; A14's grids carry no titles and no links to posts. **The boundary, stated once and ruled by the owner on 2 September 2026: A14 shows images the owner chose, A17 shows posts** ⚑ — and it holds in both data modes, because a bound A14 frame reads a post's feature image and links to nothing. **A15 Video and Embeds** owns moving pictures. A14 owns still photographs the author chose.
 
 A14 inherits **A17's content box and padding ladder** (1,296 on 72 · 754 on 40 · 350 on 20;
 64 · 96 · 132); **A17's missing-image plate**; **A17·11's column masonry**; **A17·12's bento tile**;
@@ -146,11 +155,7 @@ referenced by number everywhere else. It is a `<dialog>`: **focus is trapped** w
 Tab cycles close · previous · next · the caption's link — **Escape closes it and returns focus to
 the frame that opened it** ⚑, and **← and → step and wrap** ⚑. **The caption is drawn inside the
 overlay at every Captions value, including Off** ⚑, with a mono counter at the top left. **The
-overlay requests the original file, not the cropped derivative** ⚑. **An image carrying its own link
-is never a lightbox trigger** ⚑ — the author's link wins, **and at
-Source: From posts that rule suppresses the lightbox on every bound frame** ⚑, each of which links
-to
-its post. The module is **`lightbox`, edit-safe:
+overlay requests the original file, not the cropped derivative** ⚑. **An image carrying its own link is never a lightbox trigger** ⚑ — the author's link wins. **A bound frame carries no link** ⚑ — owner ruling, 2 September 2026 — so **the overlay behaves at Source: From posts exactly as it does at Source: Authored**. The module is **`lightbox`, edit-safe:
 no** ⚑.
 
 ### The shared floor
@@ -260,17 +265,16 @@ role locked** in 6 Contrast Band and 9 Full Bleed · **Under each** disabled at 
 |---|---|---|
 | Lightbox: Off — 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15 | Captions' **In the lightbox only** | "Not available while the lightbox is off: the caption would be unreachable." Captions falls to **Under each** — **Under the frame** in 7 — and the value returns with the lightbox |
 | Captions: Under each — 9 Full Bleed | Gutter's **None** | "Not available while captions sit under each frame: there is no space for the line to sit in." Replaces the silent forcing of Gutter off None ⚑ |
-| Source: From posts — all fifteen | the whole **Lightbox** row | "Not available while the gallery is bound to posts: every frame links to its post, which opens instead of the overlay" ⚑ |
-| Source: From posts — 13 Contact Sheet | **Captions from titles**, greyed at **Off** | "Not available in this design while the gallery is bound to posts: nothing is captioned on the page, and a bound frame opens its post rather than the overlay, so a title would be stored and never read." **Owner-ruled, 1 September 2026** ⚑ |
 
 **The fallback is the category's own rule, not a new one** ⚑: **a caption is never unreachable**, the
 rule 3 Mosaic and 9 Full Bleed were already applying. **11 Overlay, 12 Captioned Rows and 14 Index
-have no Captions control**, so nothing there depends on the lightbox. **13 Contact Sheet is the one design where the pattern needed a ruling, and
-it has one** ⚑: its Lightbox row is already forced On because nothing is captioned on the page, and
-bound mode suppresses the overlay on every frame — so **Captions from titles is greyed at Off there**,
-and the design stores no text it cannot show. **Ruled by the owner on 1 September 2026**; the
-alternatives he refused were drawing captions under each square in bound mode, which is a different
-design, and keeping titles nobody can read.
+have no Captions control**, so nothing there depends on the lightbox. **Two rows this table carried are withdrawn** ⚑ — the whole Lightbox row greyed at Source: From
+posts in all fifteen, and 13 Contact Sheet's Captions from titles greyed at Off in bound mode. Both
+were written because a bound frame linked to its post and opened it instead of the overlay;
+**the owner's ruling of 2 September 2026 removes that link**, so neither control is switched off by
+another any more and both are live in both data modes. **13 Contact Sheet's own Lightbox: Off stays
+disabled** for its own standing reason — nothing is captioned on the page there, so with no overlay
+the captions would be unreachable.
 
 ### Editing
 
@@ -304,13 +308,10 @@ posts** ships on all fifteen panels as the Data group, drawn as **P0·5** with n
 | Filter | Latest · Featured · By tag · By author · Hand-picked | P0·5's five paths; Hand-picked hides Count and Order |
 | Order | Newest · Oldest | P0·5's two |
 | Count | stepper, ceiling = the design's drawn-for range | never above **A14's 48** ⚑ |
-| Captions from titles | On · Off | On writes `caption` ← the post title; Off leaves them empty ⚑. **Greyed at Off in 13 Contact Sheet**, with the reason beside it — **owner-ruled, 1 September 2026** ⚑ |
+| Captions from titles | On · Off | On writes `caption` ← the post title; Off leaves them empty ⚑. **Live in all fifteen and in both data modes** — the 1 September greying in 13 Contact Sheet is withdrawn ⚑ |
 
 **Mapping**: `image` ← the post's **feature image** · `caption` ← the post title at Captions from
-titles: On · `alt` ← the image's own alt in Ghost, empty if it has none. **The frame links to its
-post**, so **the lightbox is suppressed on every bound frame** ⚑ — A14's own rule that an author's
-link
-beats the overlay, applied by the data mode rather than by a new control. **Add, Remove and Reorder
+titles: On · `alt` ← the image's own alt in Ghost, empty if it has none. **The frame does not link to its post** ⚑ — owner ruling, 2 September 2026: A14 shows images the owner chose and A17 Post Grids shows posts, so a bound frame is a picture and nothing else. **The lightbox behaves in bound mode exactly as it does at Source: Authored.** **Add, Remove and Reorder
 are
 hidden in bound mode** — P0·3's read-only card, one row per post ⚑. **A post with no feature image
 is
@@ -489,7 +490,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Gap | Tight · Normal · Loose |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -512,7 +513,7 @@ media picker as its Add: the shared controls, named once.
    and short ⚑. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is
    the default and this section's every drawn state.** At From posts each frame ← **the post's
    feature image**, `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's
-   alt in Ghost; **the frame links to its post, which suppresses the lightbox on that frame** ⚑;
+   alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**;
    **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no feature image is
    skipped and the panel says how many were** ⚑. Count's ceiling here is **12**, this design's
    drawn-for range.
@@ -561,7 +562,7 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three · Four |
    | Gap | Tight · Normal · Loose |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Crop | As uploaded (locked — 1 Grid named) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -584,8 +585,7 @@ media picker as its Add: the shared controls, named once.
    height and **the break point is not stable across widths** ⚑. **Data — Source: Authored · From
    posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's every drawn
    state.** At From posts each frame ← **the post's feature image**, `caption` ← the post title at
-   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links to its post,
-   which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's
+   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's
    read-only card); **a post with no feature image is skipped and the panel says how many were** ⚑.
    Count's ceiling here is **12**, this design's drawn-for range. **Crop stays locked at As uploaded
    in bound mode** ⚑ — bound frames keep their feature images' own ratios, which is what this design
@@ -630,7 +630,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
    | Gap | Tight · Normal · Loose |
    | Captions | In the lightbox only · Under each · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -653,8 +653,7 @@ media picker as its Add: the shared controls, named once.
    **7+** → rows of three continue beneath ⚑ and **the lead is never repeated**. **Data — Source:
    Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's
    every drawn state.** At From posts each frame ← **the post's feature image**, `caption` ← the
-   post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links
-   to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are
+   post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are
    hidden** (P0·3's read-only card); **a post with no feature image is skipped and the panel says
    how many were** ⚑. Count's ceiling here is **12**, this design's drawn-for range. The lead is
    **the first post the filter returns** ⚑; Crop's As uploaded stays disabled.
@@ -693,7 +692,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Head | Inside the plane · Above it |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -716,8 +715,7 @@ media picker as its Add: the shared controls, named once.
    **many** → wraps inside the padding. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner
    ruling. **Authored is the default and this section's every drawn state.** At From posts each
    frame ← **the post's feature image**, `caption` ← the post title at **Captions from titles: On**,
-   `alt` ← the image's alt in Ghost; **the frame links to its post, which suppresses the lightbox on
-   that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no
+   `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no
    feature image is skipped and the panel says how many were** ⚑. Count's ceiling here is **12**,
    this design's drawn-for range.
 8. **Empty state.** With every string empty the plane holds frames alone ⚑, which is legitimate and
@@ -757,7 +755,7 @@ media picker as its Add: the shared controls, named once.
    | Columns | Two · Three |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -781,8 +779,7 @@ media picker as its Add: the shared controls, named once.
    1 Grid. **many** → wraps inside the 868 column. **Data — Source: Authored · From posts** ⚑,
    **P0·5**, owner ruling. **Authored is the default and this section's every drawn state.** At From
    posts each frame ← **the post's feature image**, `caption` ← the post title at **Captions from
-   titles: On**, `alt` ← the image's alt in Ghost; **the frame links to its post, which suppresses
-   the lightbox on that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's read-only card);
+   titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's read-only card);
    **a post with no feature image is skipped and the panel says how many were** ⚑. Count's ceiling
    here is **8**, this design's drawn-for range.
 8. **Empty state.** **With no heading and no blurb the head column is the credit alone** ⚑ and the
@@ -822,7 +819,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Gap | Tight · Normal · Loose |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Contrast (locked — the inverted band is this design's whole identity; the row names 1 Grid) |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding, the section's own being 0 at every value) |
    | Top divider (universal) | None · Line · Fade |
@@ -843,7 +840,7 @@ media picker as its Add: the shared controls, named once.
    **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and
    this section's every drawn state.** At From posts each frame ← **the post's feature image**,
    `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost;
-   **the frame links to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and
+   **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and
    Reorder are hidden** (P0·3's read-only card); **a post with no feature image is skipped and the
    panel says how many were** ⚑. Count's ceiling here is **12**, this design's drawn-for range. The
    band is unchanged in bound mode; only where the pictures come from changes.
@@ -886,7 +883,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
    | Peek | On · Off |
    | Captions | Under the frame · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under the frame) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -910,8 +907,7 @@ media picker as its Add: the shared controls, named once.
    section's height never changes** ⚑. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner
    ruling. **Authored is the default and this section's every drawn state.** At From posts each
    frame ← **the post's feature image**, `caption` ← the post title at **Captions from titles: On**,
-   `alt` ← the image's alt in Ghost; **the frame links to its post, which suppresses the lightbox on
-   that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no
+   `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no
    feature image is skipped and the panel says how many were** ⚑. Count's ceiling here is **20**,
    this design's drawn-for range. Crop's As uploaded stays disabled in bound mode — slides must
    share a height whatever the source.
@@ -966,7 +962,7 @@ media picker as its Add: the shared controls, named once.
    | Gap | Tight · Normal · Loose |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
    | Arrows | On · Off |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the strip's inner padding, the section's own being 0) |
    | Top divider (universal) | None · Line · Fade |
@@ -990,7 +986,7 @@ media picker as its Add: the shared controls, named once.
    full measure ⚑. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is
    the default and this section's every drawn state.** At From posts each frame ← **the post's
    feature image**, `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's
-   alt in Ghost; **the frame links to its post, which suppresses the lightbox on that frame** ⚑;
+   alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**;
    **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no feature image is
    skipped and the panel says how many were** ⚑. Count's ceiling here is **20**, this design's
    drawn-for range. **See all is still authored** ⚑ — nothing counts the archive, in either mode.
@@ -1043,7 +1039,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait (As uploaded disabled) |
    | Gutter | None · Hairline · Even (None greys while Captions is Under each, with the reason beside it) |
    | Captions | In the lightbox only · Under each · Off (Under each greys at Gutter: None; In the lightbox only greys at Lightbox: Off and Captions falls to Under each — each with the reason beside it) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Locked, with the reason shown in the row — the ground is `transparent` and the frames cover it wall to wall |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (vertical only; side padding is 0 at every value, which is the design) |
    | Top divider (universal) | None · Line · Fade |
@@ -1065,8 +1061,7 @@ media picker as its Add: the shared controls, named once.
    wraps; **a short last row shows the ground and nothing stretches** ⚑. **Data — Source: Authored ·
    From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's every drawn
    state.** At From posts each frame ← **the post's feature image**, `caption` ← the post title at
-   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links to its post,
-   which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's
+   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's
    read-only card); **a post with no feature image is skipped and the panel says how many were** ⚑.
    Count's ceiling here is **12**, this design's drawn-for range.
 8. **Empty state.** As 1 Grid, with one difference: **a failed image is very visible here** because
@@ -1115,7 +1110,7 @@ media picker as its Add: the shared controls, named once.
    | Lead width | Full bleed · Contained |
    | Followers | Three · Four |
    | Captions | Under each · Lead only · In the lightbox only (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Gap | Tight · Normal · Loose (between the followers only) |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -1137,7 +1132,7 @@ media picker as its Add: the shared controls, named once.
    repeated** ⚑. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is
    the default and this section's every drawn state.** At From posts each frame ← **the post's
    feature image**, `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's
-   alt in Ghost; **the frame links to its post, which suppresses the lightbox on that frame** ⚑;
+   alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**;
    **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no feature image is
    skipped and the panel says how many were** ⚑. Count's ceiling here is **7**, this design's
    drawn-for range. The lead is **the first post the filter returns** ⚑ — Order decides which
@@ -1180,7 +1175,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded (As uploaded live) |
    | Gap | Tight · Normal · Loose |
    | Caption wash | Soft · Standard |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1202,7 +1197,7 @@ media picker as its Add: the shared controls, named once.
    **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and
    this section's every drawn state.** At From posts each frame ← **the post's feature image**,
    `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost;
-   **the frame links to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and
+   **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and
    Reorder are hidden** (P0·3's read-only card); **a post with no feature image is skipped and the
    panel says how many were** ⚑. Count's ceiling here is **12**, this design's drawn-for range.
 8. **Empty state.** **An empty caption draws the wash and nothing on it** ⚑ — never "Untitled",
@@ -1249,7 +1244,7 @@ media picker as its Add: the shared controls, named once.
    | Frame width | Half · Two thirds |
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Rules | Between rows · Off |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1269,8 +1264,7 @@ media picker as its Add: the shared controls, named once.
    **5+** → it keeps going and the panel names 1 Grid ⚑; nothing is disabled. **Data — Source:
    Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's
    every drawn state.** At From posts each frame ← **the post's feature image**, `caption` ← the
-   post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links
-   to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are
+   post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are
    hidden** (P0·3's read-only card); **a post with no feature image is skipped and the panel says
    how many were** ⚑. Count's ceiling here is **4**, this design's drawn-for range. Two to four
    posts is the drawn-for range; above it the panel names 1 Grid and nothing is disabled.
@@ -1318,7 +1312,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape (two values only) |
    | Numbering | On · Off |
    | Gap | Tight 4 · Normal 8 · Loose 16 (a tighter ladder) |
-   | Lightbox | On, with ~~Off~~ disabled and the reason shown (the row greys again at Source: From posts — see the open question) |
+   | Lightbox | On, with ~~Off~~ disabled and the reason shown |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (resolving onto the band's inner padding) |
    | Top divider (universal) | None · Line · Fade |
@@ -1346,13 +1340,9 @@ media picker as its Add: the shared controls, named once.
    1 Grid. **many** → wraps to the 48 ceiling ⚑ — eight rows and 1,736 px at six columns. **Data —
    Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this
    section's every drawn state.** At From posts each frame ← **the post's feature image**, `caption`
-   ← the post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame
-   links to its post, which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are
+   ← the post title at **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are
    hidden** (P0·3's read-only card); **a post with no feature image is skipped and the panel says
-   how many were** ⚑. Count's ceiling here is **48**, this design's drawn-for range. **Captions from
-   titles is greyed at Off in this design, with the reason beside it** ⚑ — **owner-ruled, 1 September
-   2026**: nothing is captioned on the page here and a bound frame opens its post rather than the
-   overlay, so a post title would be stored and never read. The other designs keep the control live.
+   how many were** ⚑. Count's ceiling here is **48**, this design's drawn-for range. **Captions from titles is live in this design in both data modes** ⚑. The greying written on 1 September 2026 rested on a bound frame opening its post instead of the overlay; **the owner's ruling of 2 September 2026 removes that link**, so a bound title is reachable in the overlay here exactly as it is everywhere else. **Lightbox: Off stays disabled** for this design's own reason — nothing is captioned on the page.
 8. **Empty state.** **Nothing here can be empty except the head** ⚑. A failed image draws the
    hover-surface plate **with its number still beneath it** ⚑, so the numbering never skips.
 9. **Behaviour module.** `lightbox`, edit-safe: no ⚑; same quotation as 1 Grid. **This is the design
@@ -1399,7 +1389,7 @@ media picker as its Add: the shared controls, named once.
    | Row height | Compact · Comfortable |
    | Rules | Between rows · Ends only |
    | Numbering | On · Off |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
@@ -1422,7 +1412,7 @@ media picker as its Add: the shared controls, named once.
    not need it. **Data — Source: Authored · From posts** ⚑, **P0·5**, owner ruling. **Authored is
    the default and this section's every drawn state.** At From posts each frame ← **the post's
    feature image**, `caption` ← the post title at **Captions from titles: On**, `alt` ← the image's
-   alt in Ghost; **the frame links to its post, which suppresses the lightbox on that frame** ⚑;
+   alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**;
    **Add, Remove and Reorder are hidden** (P0·3's read-only card); **a post with no feature image is
    skipped and the panel says how many were** ⚑. Count's ceiling here is **48**, this design's
    drawn-for range. Bound rows read **the post title into the caption** at 17 px, which is what this
@@ -1474,7 +1464,7 @@ media picker as its Add: the shared controls, named once.
    | Crop | Square · Landscape · Portrait · As uploaded |
    | Box label | Off · The eyebrow · The eyebrow and the count |
    | Captions | Under each · In the lightbox only · Off (In the lightbox only greys at Lightbox: Off, with the reason beside it, and Captions falls to Under each) |
-   | Lightbox | On · Off (the row greys at Source: From posts, with the reason beside it — every bound frame links to its post) |
+   | Lightbox | On · Off |
    | Gap | Tight · Normal · Loose |
    | Background role (universal) | Background · Surface · Contrast |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
@@ -1497,8 +1487,7 @@ media picker as its Add: the shared controls, named once.
    reads "1 photograph"** ⚑. **many** → wraps inside the inset. **Data — Source: Authored · From
    posts** ⚑, **P0·5**, owner ruling. **Authored is the default and this section's every drawn
    state.** At From posts each frame ← **the post's feature image**, `caption` ← the post title at
-   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame links to its post,
-   which suppresses the lightbox on that frame** ⚑; **Add, Remove and Reorder are hidden** (P0·3's
+   **Captions from titles: On**, `alt` ← the image's alt in Ghost; **the frame does not link to its post** ⚑ — A14 shows images, A17 shows posts — and **the lightbox behaves as it does at Source: Authored**; **Add, Remove and Reorder are hidden** (P0·3's
    read-only card); **a post with no feature image is skipped and the panel says how many were** ⚑.
    Count's ceiling here is **12**, this design's drawn-for range. **The generated count is drawn only
    at Source: Authored** ⚑ — owner ruling, 30 August 2026. A bound gallery skips a post with no
@@ -1594,17 +1583,14 @@ media picker as its Add: the shared controls, named once.
    the
    first category with no query behind it; **Source: From posts** now binds frames to feature images
    by
-   owner ruling. The consequence worth deciding: **a bound gallery is A17 Post Grids without the
-   titles.** The two are separated by what they draw, not by what they read, and a user who wants
-   "recent posts as pictures" can now reach it from two categories.
-10. **A bound frame is a link, so the lightbox never opens on it.** ⚑ That falls out of A14's own
-    rule
-   that an author's link beats the overlay, and it means **the same section behaves differently in
-   the
-   two modes** — captions reachable in the overlay when authored, reachable only as page text when
-   bound. 13 Contact Sheet is the acute case: bound, it draws no caption anywhere. The panel states
-   it;
-   whether bound mode should force Captions from titles: On is a product call.
+   owner ruling. **Ruled by the owner on 2 September 2026: A14 shows images the owner chose, A17 shows posts.** A
+   bound gallery reads posts and links to none of them, so the two categories no longer resolve to
+   the same thing for a visitor. The boundary is written once in the category layer.
+10. **A bound frame is not a link, and that is what keeps A14 off A17's ground.** ⚑ Owner ruling,
+   2 September 2026, replacing this finding's earlier form. The overlay therefore behaves the same
+   in both data modes, and the difference the earlier finding recorded — captions reachable in the
+   overlay when authored and only as page text when bound — no longer exists. What a builder should
+   carry: **bound mode changes where the pictures come from and nothing else.**
 11. **The 80-character caption limit was set by the weakest case and starved the strongest.** ⚑ It
    existed so 11 Overlay would never truncate — a design that truncates by construction, at three
    lines. Raised to 200. Recorded as a pattern to watch: **a shared-list limit set by one design's
@@ -1655,8 +1641,8 @@ See-all
 icon is optional and off by default), nothing moved. **Source: From posts adds no drawn state
 either** —
 a bound section is pixel-identical to an authored one; what differs is where the pictures come from,
-that
-each frame links to its post, and that the lightbox does not open on it. **Behaviour, not a mark.**
+and nothing else — **a bound frame carries no link and the lightbox opens on it exactly as it does
+when the pictures are authored** (owner ruling, 2 September 2026). **Behaviour, not a mark.**
 If the
 build wants a bound-mode canvas state, it is a frame this pass did not draw.
 
@@ -1837,16 +1823,17 @@ answered here.
    optional, a frame without one gets `alt=""`, and the editor draws a warning dot on that item.
 3. **There is no sort module, and 14 Index is where one would be wanted.**
    **OPEN FOR THE OWNER**
-4. **A bound gallery is A17 Post Grids without the titles.** The category layer says A14's grids
-   carry no titles and no links to posts; bound mode gives every frame a link to its post.
-   **OPEN FOR THE OWNER**
+4. ~~A bound gallery is A17 Post Grids without the titles.~~ **Closed by the owner, 2 September
+   2026: A14 shows images the owner chose, A17 shows posts.** The per-frame post link is removed
+   from bound mode, the boundary is stated once in the category layer, and the two categories no
+   longer resolve to one outcome for a visitor.
 5. **The locked-control test in finding 13 is still waiting to be ratified or overruled
    library-wide.**
    **OPEN FOR THE OWNER**
 6. ~~13 Contact Sheet's captions in bound mode have nowhere to go.~~ **Closed by the owner,
-   1 September 2026: Captions from titles is greyed at Off in this design when the gallery is bound
-   to posts**, with the reason beside it. The design stores no text it cannot show, and the two
-   alternatives — captions under each square in bound mode, or unreadable titles — were refused.
+   1 September 2026**, and **superseded on 2 September 2026**: the greying rested on a bound frame
+   opening its post instead of the overlay, and bound mode no longer links to the post — so a bound
+   title is reachable in the overlay and **Captions from titles is live here in both data modes**.
 7. ~~8 Filmstrip names no width for its arrows' retirement.~~ **Closed by the owner, 1 September
    2026: the arrows stay on a laptop and a tablet and retire under 768**, in 8 and in 7 alike, and
    both no-JavaScript lines now read on both sides of that width.
@@ -1919,8 +1906,9 @@ spacing step moved.**
 3. **The Lightbox row greys at Source: From posts in all fifteen** — *a control switched off by
    another is greyed, with the reason beside it*. Bound mode already suppressed the overlay on every
    frame, because an author's link beats the lightbox and a bound frame links to its post; the row
-   nevertheless kept accepting **On**. It is now greyed with the reason beside it, in every panel.
-   **Greyed, not hidden**, and not left accepting a value nothing honours.
+   nevertheless kept accepting **On**. It is now greyed with the reason beside it, in every panel. **Greyed, not hidden**, and not left
+   accepting a value nothing honours. **Withdrawn by pass three, 2 September 2026** — the link this
+   rested on is removed, and the row is live at both sources.
 4. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a tablet, and both declare 768** —
    *a design may declare the width below which its script runs*, **owner-ruled, 1 September 2026**.
    **This is the one place these two designs changed rather than being restated.** 7's "arrows dropped
@@ -1933,10 +1921,10 @@ spacing step moved.**
 5. **13 Contact Sheet greys Captions from titles at Off in bound mode** — *a control switched off by
    another is greyed, with the reason beside it*, **owner-ruled, 1 September 2026**, closing the open
    question this pass raised. Nothing is captioned on the page in this design and a bound frame opens
-   its post rather than the overlay, so a post title would be stored and never read. The control is
-   drawn, greyed at Off, with the sentence at the control; **the other fourteen designs keep it
-   live**. Refused: captions under each square in bound mode, which is a different design, and
-   keeping titles nobody can read.
+   its post rather than the overlay, so a post title would be stored and never read. The control is drawn, greyed at Off, with the sentence at the control; **the other fourteen designs
+   keep it live**. Refused: captions under each square in bound mode, which is a different design,
+   and keeping titles nobody can read. **Withdrawn by pass three, 2 September 2026** — with no post
+   link on a bound frame the title is reachable in the overlay, and the control is live here too.
 6. **Open questions marked item by item** — housekeeping. Two items were settled elsewhere in this
    document and are struck through with who settled them; six are live and each carries **OPEN FOR
    THE OWNER** on its own line. **Nothing was answered in the housekeeping.**
@@ -1979,8 +1967,10 @@ owner's rulings** below. One item remains, and it is the conflict rather than a 
 ### The owner's rulings — 1 September 2026
 
 1. **13 Contact Sheet turns Captions from titles off in bound mode**, greyed with the reason beside
-   it — *a control switched off by another is greyed, with the reason beside it*. The design keeps its
-   uncaptioned sheet and stores nothing a reader cannot reach.
+   it — *a control switched off by another is greyed, with the reason beside it*. The design keeps
+   its uncaptioned sheet and stores nothing a reader cannot reach. **Superseded by the owner's
+   ruling of 2 September 2026**, which removes the bound frame's post link and makes the title
+   reachable in the overlay.
 2. **7 Carousel and 8 Filmstrip keep their arrows on a laptop and a tablet, and retire them under
    768** — *a design may declare the width below which its script runs*. One width for both scrolling
    designs, and both no-JavaScript lines read on both sides of it.
@@ -2000,5 +1990,109 @@ the retired word "Even" by the owner's ruling of 30 August 2026, and nothing in 
 1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
    fifteen designs, nothing renumbered, no number reused, no gap created or closed. **The only
    drawn changes in the whole pass are 7's and 8's arrows on laptop and tablet, both owner-ruled.**
+2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Grid**
+   and **14 Index** — both of which exist in this category's roster.
+
+---
+
+## Patch notes — pass three, 2 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **One work-list item**, and
+it removes something rather than adding it. **Frames updated:** all fifteen design frames (`A14-1` …
+`A14-15`) and the proof frame `A14-0`, each gaining a **PASS THREE PATCH** block; `A14-0`, `A14-3`
+and `A14-9` lose the greyed Lightbox row pass two drew, and `A14-13` draws its **Captions from
+titles** row live. **Nothing was renumbered, renamed, redrawn or deleted; no control was added or
+removed; no value changed; no layout, type scale, colour pack or spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **Bound mode does not link each picture to its post** — *the owner's ruling of 2 September 2026*,
+   closing the open question pass two raised. A gallery whose every frame links to a post resolves,
+   for a visitor, to what a Post Grid resolves to, and two categories arriving at one outcome is what
+   the library's uniqueness rule exists to prevent. **A14 stays pictures-only.** At **Source: From
+   posts** a frame still takes the post's **feature image**, its **title** as `caption` at Captions
+   from titles: On, and the image's own **alt** — and links to nothing. The link is removed from the
+   category layer's lightbox settlement, from the Data group's mapping, and from all fifteen designs'
+   **Data** field.
+2. **The boundary is stated once in the category layer** — *the same ruling*. **A14 shows images the
+   owner chose; A17 Post Grids shows posts.** It sits in the neighbours paragraph, beside the
+   sentence that already said A14's grids carry no titles and no links to posts, and it is referenced
+   rather than restated per design. It holds in both data modes.
+3. **The Lightbox row is live again at Source: From posts, in all fifteen** — *a control switched off
+   by another is greyed, with the reason beside it*. Pass two greyed the row and the only reason
+   written at the control was that every bound frame linked to its post and opened it instead of the
+   overlay. **With the link gone, nothing switches the row off**, and leaving it greyed would mean
+   inventing a second reason the owner has not given. The row's line in every control table reads
+   **On · Off** again, the two drawn greyed rows on `A14-0`, `A14-3` and `A14-9` are removed rather
+   than restated, and pass two's item 3 is tagged **withdrawn** where it stands rather than rewritten.
+4. **13 Contact Sheet's Captions from titles is live again in bound mode** — *a control switched off
+   by another is greyed, with the reason beside it*, **superseding the owner's ruling of 1 September
+   2026**. That ruling rested on one fact: nothing is captioned on the page in this design, and a
+   bound frame opened its post rather than the overlay, so a stored title could never be read. **The
+   overlay now opens on a bound frame**, so the title is reachable exactly where this design's
+   captions have always been reachable. **This design's own Lightbox: Off stays disabled**, for its
+   own standing reason — nothing is captioned on the page — and that row is untouched.
+5. **The findings and the open questions are brought into line.** Finding 9's "consequence worth
+   deciding" is answered with the ruling; finding 10, *a bound frame is a link, so the lightbox never
+   opens on it*, is replaced by its opposite; open question 4 is **closed**; open question 6, closed
+   on 1 September, is marked **superseded**. The reconciliation note that a bound section differs by
+   "each frame links to its post" now reads that it differs by **where the pictures come from and
+   nothing else**.
+6. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### Rules and facts checked, design by design
+
+| Rule or fact (by name) | Where it lands in A14 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Two cases removed, none added.** What remains is the pair the category always had: **In the lightbox only** greyed at Lightbox: Off in the eleven designs that offer both, and **9 Full Bleed's Gutter: None** greyed while its captions sit under each frame. Both keep their sentences at the control. **The rule's one exception is claimed nowhere in A14** — no control here is one this project can never offer. |
+| **The Remove button never greys out** | **Unchanged, re-checked on all fifteen.** ✕ is on every row, never dimmed, never hidden; **Add at the ceiling is the one disabled control**. In bound mode the list is still P0·3's read-only card and there is no Remove to dim. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Columns, Crop, Gap, Gutter, Frame height, Row height, Thumb and Followers stay named sets with a drawn frame behind each value; P0·5's **Count** stays a stepper, because it counts items. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A14 draws no person and no initials block; a missing photograph draws the plate carrying its alt text. |
+| **A design may declare the width below which its script runs** | **Unchanged.** 7 Carousel and 8 Filmstrip declare **768** for their arrows, owner-ruled 1 September 2026, and both no-JavaScript lines read on both sides of it. The other thirteen run `lightbox` at every width. **The no-JavaScript lines are unaffected by this pass** — the frame was already an `<a href>` to the full-size image before any script ran, and it still is. |
+| **Ghost's templates cannot count, add, or remember** | **Unchanged.** **15 Boxed's generated count still draws only at Source: Authored**, by the owner's ruling of 30 August 2026: a bound gallery skips a post with no feature image and the templates cannot subtract the skipped ones. Removing the post link does not give them arithmetic. |
+| **CSS cannot see content** | **Unchanged.** Nothing added here measures a caption, a line count or a length. |
+| **Some fields we drew do not exist** | **Unchanged, and one field fewer is read.** Bound mode reads a post's feature image, its title and the image's own alt. **The post's URL is no longer read at all.** |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A14.** Ghost's own gallery card inside a post is A33's surface. |
+| **The feature-image caption renders differently on the two Ghost versions** | **No subject.** No A14 design draws a feature image's caption. |
+| **A comment count renders nothing at all without JavaScript** | **No subject.** A14 reads no comment count. |
+| **The two free designs are the owner's choice** | **Unchanged: 1 Grid and 14 Index**, ruled 30 August 2026, both present in the roster. |
+
+### Open questions raised by this pass
+
+**None.** The ruling was applied without inventing a decision: the two narrowings that fell were
+each written with the post link as their only stated reason, and both were removed rather than
+re-argued. **Nothing was left greyed with a reason that is no longer true, and no new reason was
+written on the owner's behalf.**
+
+**Carried forward, unchanged and unanswered by this pass** — three items, each **OPEN FOR THE
+OWNER**: the missing sort module that 14 Index would want; the locked-control test in finding 13,
+still to be ratified or overruled library-wide; and the conflict pass two would not choose, where
+P0·5 and P0·3 **hide** controls that Rule A would have greyed. **This pass touched none of them.**
+
+### Left alone deliberately
+
+**Two things are maintained outside this environment and are untouched here.** **No design total was
+written anywhere** — not in this document, not on any A14 frame, in any form, and none was inherited
+into the new copy. **P0's per-prop mark allowlist is not rewritten, softened or dropped.**
+
+**Left as written, and said so rather than tidied:** pass two's dated **Patch notes** and the dated
+patch blocks on the frames are **records of what that pass did**, so the two items this pass reverses
+are **tagged "Withdrawn by pass three"** where they stand rather than edited into agreement. A reader
+of either block sees what was decided, and when it stopped being true.
+
+**Also left:** 9 Full Bleed's **Gutter: None · Hairline · Even** keeps the retired word "Even" by the
+owner's ruling of 30 August 2026, and **15 Boxed's count in bound mode** stays as ruled on 30 August
+2026 — the eyebrow alone, no number.
+
+### The owner's ruling — 2 September 2026
+
+1. **Bound mode does not link each picture to its post** — *A14 shows images the owner chose, A17
+   shows posts*. A bound gallery reads posts for their feature images and links to none of them, so
+   the two categories do not resolve to one outcome for a visitor. **A14 stays pictures-only.**
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
 2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Grid**
    and **14 Index** — both of which exist in this category's roster.
