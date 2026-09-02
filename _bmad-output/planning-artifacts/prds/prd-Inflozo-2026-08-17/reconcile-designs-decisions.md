@@ -1039,6 +1039,19 @@ which rendered the post. **An older Ghost 5 post therefore renders cards A33's s
 match.** No specification mentions this. It is register **57** and it needs a ruling — style both
 shapes, or state that the treatments are Lexical-only and say so where a customer can see it.
 
+**Two rulings came straight out of the probe** *(owner, 2026-09-03)*:
+
+- **R-66 · The card treatments target the CURRENT Ghost renderer only, and say so where a customer
+  can see it.** A post written before Ghost 5's current editor keeps Ghost's own default card
+  styling — readable, just not carrying the chosen treatment. The alternative was weighed and
+  refused: a second selector set roughly doubles A33's stylesheet and its testing permanently, and
+  **the header card would need different rules rather than a second selector**, since the older
+  markup lacks the structure the treatments rely on. Ghost 5 is end-of-life, so the affected set
+  shrinks on its own.
+- **R-67 · `kg-nft-card` stays unstyled, deliberately, and the spec records that.** It keeps Ghost's
+  default appearance. Six treatments for a card almost no customer will insert is work spent in the
+  wrong place; recording it as a decision is what stops it being re-raised as an oversight.
+
 ---
 
 ## B · Approved decisions superseded by this session

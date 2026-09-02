@@ -94,12 +94,18 @@ EXTRA = {
   classes depending which one rendered the post** — most severely the header card, which under the
   older renderer carries almost none of the structure your treatments style. So an older post on a
   Ghost 5 site renders cards your selectors will not match.
-  **DO NOT INVENT AN ANSWER TO THIS.** Record it in the specification as a known limitation with the
-  facts above, and mark it OPEN FOR THE OWNER — the choice between styling both shapes and declaring
-  the treatments current-editor-only is his, and it is being put to him separately.
+  **THE OWNER HAS RULED ON THIS (2026-09-03): the treatments target the CURRENT renderer only.**
+  A post written before Ghost 5's current editor keeps Ghost's own default card styling — readable,
+  just not carrying the chosen treatment. Write that into the specification as a stated limitation,
+  in words a customer could be shown, not as an open question. The reason it went that way is worth
+  recording with it: a second selector set would roughly double this category's stylesheet and its
+  testing permanently, and the header card would need genuinely different rules rather than a second
+  selector, because the older markup lacks the structure the treatments rely on. Ghost 5 is
+  end-of-life, so the affected posts are a shrinking set.
 
-- `kg-nft-card` STILL EXISTS and this category draws twenty cards without it. Also not a fix: record
-  it as a coverage question, marked OPEN FOR THE OWNER.""",
+- `kg-nft-card` STILL EXISTS and this category draws twenty cards without it. **The owner has ruled
+  (2026-09-03): it stays unstyled, deliberately.** It keeps Ghost's default appearance. Record that
+  as a decision rather than a gap, so no later pass raises it as an oversight.""",
 }
 
 
