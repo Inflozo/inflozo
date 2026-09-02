@@ -31,7 +31,10 @@ dp4 = importlib.util.module_from_spec(_s); _s.loader.exec_module(dp4)
 dp3, dp2, dp1, er = dp4.dp3, dp4.dp2, dp4.dp1, dp4.er
 
 SWEEP = dp4.image_focus_sweep()          # derived, never typed
-EXTRA_ONLY = ['A33']                     # in the pass for its own work, not the sweep
+# In the pass for their own work, not the sweep. Found by the 2026-09-03 stress test: pass five as
+# first built had NO home for R-60, R-61 or R-62, and left four categories with outstanding work out
+# of the pass entirely. A sixth pass would have been certain.
+EXTRA_ONLY = ['P0', 'A13', 'A17', 'A18', 'A33']
 ORDER = sorted(set(SWEEP) | set(EXTRA_ONLY),
                key=lambda c: int(c[1:]) if c[1:].isdigit() else 0)
 
@@ -51,6 +54,92 @@ SWEEP_JOB = """- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YO
   data binding. Say so once if this spec does not already."""
 
 EXTRA = {
+ 'P0': """- THREE QUESTIONS YOUR LAST SESSION RAISED ARE ANSWERED. All three were sharp and none was
+  guessable; each is now ruled.
+  (a) **TWO CONTROLS DRAWN ABSENT THAT THE LAST RULING DID NOT NAME** — the filter block under
+      Source = Static, and the Recent row with nothing picked yet. The test is now general:
+      **could this control EVER do anything in this design?** Could-never means it is not drawn and
+      the panel says why; could-but-not-now means greyed with the reason. **The filter block greys**
+      — a Static source could carry a filter, it just does not now. **The Recent row is neither**:
+      a picker with nothing picked is an EMPTY LIST, not a control something switched off, and it
+      stays drawn as the empty list it is. Draw both.
+  (b) **THE GREYED CONTROL WHOSE VALUE IN FORCE IS NOT ONE OF ITS OWN** — Order at Hand-picked.
+      **What you drew provisionally is right and is now ruled**: no value marked, and the reason
+      sentence carries the order in force. The alternatives were inventing a third value the control
+      does not have, or marking one that is not in force. Change the flag from provisional to ruled.
+  (c) **DOES IMAGE FOCUS GREY OR VANISH WHERE NOTHING IS CROPPED?** It is **not drawn**, and the
+      panel says why — a design that places a photograph at its own shape will never crop, so focus
+      can never have work to do there. That is the could-never side of the same test. The
+      never-offered case is no longer a single named exception; it is a category, and this is its
+      second member. Draw that state on P0·9 beside the cropping one.""",
+
+ 'A13': """- 11 WALKTHROUGH'S DOUBLE ANNOUNCEMENT IS RULED. With JavaScript off, the tabs module
+  precedes each stacked panel with its label as a heading, and your panels already carry their own —
+  so the same label is announced twice. **The module emits its heading ONLY where the panel does not
+  already carry one.** Your design's own heading is never dropped instead, because that would change
+  the WITH-JavaScript state too. Rewrite design 11's no-JavaScript line accordingly.
+
+- YOUR EMPTY-STATE CONTRADICTION IS RESOLVED, AND IN YOUR FAVOUR. You raised that pass two asked for
+  a designed "nothing here yet" state while this category has always said that at zero the section
+  does not render, and you correctly changed neither. **The rule was too wide, not the category.**
+  It now governs FEEDS only: items pulled from Ghost render the designed empty state, because an
+  empty tag archive that renders nothing is a broken page a visitor arrived at deliberately. **Items
+  the user AUTHORS — a Process list — render nothing at zero**, because there is no such page to
+  break and an editor who has typed no steps is mid-build. Close the question with that.""",
+
+ 'A17': """- 18 EDGE TO EDGE MAY SQUARE ITS IMAGE AND INVERT ITS FOCUS RING. Both were raised as
+  departures; both are ruled as **consequences of running to a bleed edge**, not departures. An
+  outward focus ring is clipped at the viewport, so at an edge cell it inverts to an inset offset —
+  that is what the focus requirement demands there, not a style choice. A rounded corner at a bleed
+  edge leaves a visible gap, so squaring is structural. Record both as ruled, with those reasons.
+  The pack's radius still governs every card that COULD follow it; this design cannot.
+
+- THE MISSING SORT MODULE IS ANSWERED, AND THE ANSWER IS NO. There is no client-side sort module and
+  there will not be: the order a list shows is the order its owner arranged. A module for one or two
+  designs would also have to differ from its own no-JavaScript state, which is a cost with no gain.
+  Close the finding rather than carrying it.
+
+- AN EXCERPT ON HOVER IS CSS, NOT A MODULE. 14 Dense's hover excerpt needs no registry entry — it is
+  already on the list of behaviours that need no JavaScript at all. Close that half of the finding by
+  pointing at it.""",
+
+ 'A18': """- `group-headings` MAY STEP THE HEADINGS IT GROUPS, AND MUST. You assumed this and you were
+  right; it is now ruled. The module inserts each group heading at the level the design declares and
+  steps the titles it groups one level below. **That is the only arrangement whose outline is correct
+  in BOTH states** — nested with the script, describing a grouped list; flat peers without it,
+  describing a flat list. Each state then tells the truth about itself. Inserting a group heading as
+  a peer of the titles it groups would announce a nesting that is not there. Write the contract in.
+
+- THE MISSING SORT MODULE IS ANSWERED, AND THE ANSWER IS NO. Same as A17: the order a list shows is
+  the order its owner arranged, and no client-side sort module exists or will. Close the finding.""",
+ 'A5': """- TWO REGISTRY QUESTIONS YOU RAISED ARE ANSWERED.
+  (a) **12 Tabs is announced twice with JavaScript off.** Ruled: **the tabs module emits its heading
+      ONLY where the panel does not already carry one.** Your design's own heading is never dropped
+      instead — that would change the WITH-JavaScript state too, and the no-JS branch should differ
+      from the JS branch as little as possible. Rewrite design 12's no-JavaScript line.
+  (b) **14 Scroller's 3 px rule has no registry sentence.** Ruled generally, because the general form
+      matters more than this case: **a module hides only the affordances IT ADDS, never a static
+      element the design drew.** Your rule is CSS the stylesheet emits, so **it survives with
+      JavaScript off**. Say so in design 14's no-JavaScript line.""",
+
+ 'A12': """- 15 GROUPS MUST NOT NAME ANOTHER DESIGN. Its Ghost-mode sentence says that with no group
+  field "every author lands in the unlabelled block and the section draws as 1 Grid". You left this
+  one alone and were right to: no corrected wording existed to align it to. There is now — 13 Rail
+  was corrected in the same way. **Describe the arrangement, not the design**: an unlabelled block of
+  cards with no group headings. The editor may still ADVISE "1 Grid reads better here"; advising is
+  permitted, naming is not.""",
+
+ 'A14': """- THE MISSING SORT MODULE IS ANSWERED, AND THE ANSWER IS NO. You raised that 14 Index is
+  where a sort would be wanted and none exists. **None will.** The order a gallery shows is the order
+  its owner arranged. A module for one design would also have to differ from its own no-JavaScript
+  state — a visitor without script would get the arranged order anyway — so the two states would
+  disagree for no gain. Close the finding with the ruling rather than carrying it.""",
+
+ 'A15': """- YOUR PLAYLIST AND TABS DESIGNS ARE ANNOUNCED TWICE WITH JAVASCRIPT OFF, and it is ruled.
+  The tabs module precedes each stacked panel with its label as a heading, and designs 10 and 15
+  already carry their own. **The module emits its heading ONLY where the panel does not already carry
+  one.** The design's own heading is never dropped instead. Rewrite both no-JavaScript lines.""",
+
  'A4': """- YOUR CATEGORY LAYER STILL DESCRIBES THE OLD ACTIONS CONTROL. Near the top of this
   document, under "What the design patch pass changed category-wide", it says: *"The Actions control,
   on every design that has one, is Both · Primary · None — those three words, as drawn."*
@@ -110,8 +199,12 @@ EXTRA = {
 
 
 def build_prompt(cat, title, designs, holes):
-    roster = '\n'.join(f'  {d["n"]:>2}. {d["name"]}' for d in designs)
-    scope = f"THIS CATEGORY — {cat} {title}, {len(designs)} designs:\n\n{roster}"
+    if cat == 'P0':
+        scope = ("THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS\n"
+                 "every category's side panel draws from. Change one here and every category inherits it.")
+    else:
+        roster = '\n'.join(f'  {d["n"]:>2}. {d["name"]}' for d in designs)
+        scope = f"THIS CATEGORY — {cat} {title}, {len(designs)} designs:\n\n{roster}"
     hole_note = ''
     if holes:
         hole_note = ('\n\nRETIRED NUMBERS IN THIS CATEGORY: ' +
@@ -148,16 +241,19 @@ THE WORK LIST FOR {cat}:
 def render():
     lib, _ = er.build()
     live = {c: v for c, v in lib.items() if not v.get('deleted')}
-    unknown = [c for c in ORDER if c not in live]
+    unknown = [c for c in ORDER if c != 'P0' and c not in live]
     assert not unknown, f'ORDER names a category the export does not have: {unknown}'
     orphan = sorted(set(EXTRA) - set(ORDER))
     assert not orphan, f'EXTRA has a category ORDER never emits: {orphan}'
 
     cards = []
     for step, cat in enumerate(ORDER, 1):
-        v = lib[cat]; title = v['title']
-        designs = [d for d in v['designs'] if not d.get('deleted')]
-        holes = [d for d in v['designs'] if d.get('deleted')]
+        if cat == 'P0':
+            title, designs, holes = 'Editor Primitives', [], []
+        else:
+            v = lib[cat]; title = v['title']
+            designs = [d for d in v['designs'] if not d.get('deleted')]
+            holes = [d for d in v['designs'] if d.get('deleted')]
         tags = []
         if cat in SWEEP: tags.append('image focus')
         if cat in EXTRA: tags.append('+ extra')

@@ -1052,6 +1052,30 @@ shapes, or state that the treatments are Lexical-only and say so where a custome
   default appearance. Six treatments for a card almost no customer will insert is work spent in the
   wrong place; recording it as a decision is what stops it being re-raised as an oversight.
 
+## A8 · The stress test before the last pass — five more rulings, 2026-09-03
+
+Before sending pass five out, every ruling was traced to a spec that would carry it, and every
+category was checked for work the pass did not cover. **The test found the pass incomplete**, which
+is what it was for: three rulings made the same day had no home, four categories with outstanding
+work were not in the pass at all, and P0's own session had raised three sharp questions about the
+2026-09-03 rulings that nobody had answered. Six categories — A7, A20, A25, A27, A28, A34 — came
+back genuinely finished and are correctly absent.
+
+**All five below are architecture, not product.** None went to the owner, because each follows from a
+rule already made rather than needing a decision he has not taken.
+
+| # | Ruling | Where |
+|---|---|---|
+| **R-68** | **Greyed or not offered — the test is whether the control could EVER do anything in this design.** Could-never → not drawn, panel says why. Could-but-not-now → greyed with the reason. Structural versus stateful. The dark-mode switch under a pinned scheme was the first case, not the only one — Image focus on a design that never crops is the second. **An empty list is neither**, so a picker with nothing picked stays the empty list it is | ✅ `Appendix C` · ⬜ P0 |
+| **R-69** | **A greyed control whose value in force is not one of its own values names it in the reason and marks no value.** Order at Hand-picked: the order in force is the dragged one, neither Newest nor Oldest. Ratifies what P0 drew provisionally; the alternatives were inventing a third value or marking one not in force | ✅ `Appendix C` · ⬜ P0 |
+| **R-70** | **A design that runs to a bleed edge may square an image the pack would round, and inverts its focus ring to an inset offset.** Both are consequences of the bleed rather than departures from the pack: an outward ring is clipped at the viewport, and a rounded corner leaves a visible gap. R-64 governs cards that could follow the pack and choose not to; this is a design that cannot | ⬜ A17 |
+| **R-71** | **A12-15 Groups describes its ungrouped arrangement instead of naming design 1.** It is the same correction already ruled for 13 Rail, and the session was right to stop: no corrected wording existed to align to when it was asked. There is now. The editor may still advise "1 Grid reads better here" — AD-37 permits exactly that | ⬜ A12 |
+| **R-72** | **An excerpt revealed on hover is CSS, not a module.** Already on research `§2.2`'s list of behaviours needing no JavaScript; A17's finding closes by pointing at it rather than by anyone writing a module | ⬜ A17 |
+
+**What the stress test changed about pass five.** It grew from 24 prompts to 28: **P0, A13, A17 and
+A18 were missing entirely**, and A5, A12, A14 and A15 were carrying only the sweep when each had a
+ruling owed. Had it gone out as built, a sixth pass would have been certain.
+
 ---
 
 ## B · Approved decisions superseded by this session

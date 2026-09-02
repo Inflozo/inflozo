@@ -2681,3 +2681,27 @@ card, which in mobiledoc carries almost none of the structure the treatments sty
 nobody's list and no spec mentions it. It needs a ruling: style both shapes, or state that Inflozo's
 card treatments apply to Lexical posts only and say so where a customer can see it. Register item
 **57**.
+
+---
+
+## 36. Ghost has no focal point, so Image focus is ours to resolve · 2026-09-03
+
+Checked during the pass-five stress test, because every Image-focus prompt asserts *"Ghost never sees
+this — it is a hint the compiler resolves"* and that is a claim about an external platform. R-51 gives
+the control a second axis; if Ghost had a focal-point parameter, the control would be a **binding**
+rather than a hint and would belong in a different half of the architecture entirely.
+
+Read from Ghost's own `img_url` helper on T1 (6.58.0):
+
+| | |
+|---|---|
+| Parameters `img_url` accepts | `absolute` · `format` · `size` — **and nothing else** |
+| Focal point / gravity / crop | **absent** — no such option exists anywhere in the helper or the image-size utilities |
+
+**So the claim holds.** A focus value never reaches Ghost: Inflozo resolves the crop at compile and
+emits the result, which is why Image focus is a **control** and not a data binding, and why it can
+carry a horizontal axis at all without Ghost having to support one.
+
+**This expires with the helper.** If Ghost ever adds a focal-point parameter, the right design would
+change — the crop could be deferred to Ghost's own image service rather than baked at compile.
+Re-read at any Ghost major. Register item **58**.

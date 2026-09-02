@@ -156,12 +156,13 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass FIVE \u2014 24 prompts, mostly one job',
-  'DESIGN-PATCH-PROMPTS-5.html. 23 of them carry the SAME small change: Image focus was never a '
-  'shared control \u2014 two dozen categories each wrote out their own copy \u2014 and pass four '
-  'defined it once in P0\u00b79 with both axes. Three carry one extra item: A33\u2019s card '
-  'selectors, now settled against Ghost\u2019s own renderers, and A4 and A6, whose category layers '
-  'still describe the Actions control as it was before the 31 August split. Run in any order, then '
+ ('now', 'Design patch pass FIVE \u2014 28 prompts, and it is meant to be the LAST',
+  'DESIGN-PATCH-PROMPTS-5.html. Stress-tested before release, and the test found it INCOMPLETE: as '
+  'first built it had no home for three rulings made the same day and left four categories with '
+  'outstanding work out of the pass entirely \u2014 24 prompts became 28. Every ruling now traces to '
+  'a category in the pass, every factual claim the prompts make was checked against the specs, and '
+  'six categories (A7, A20, A25, A27, A28, A34) came back genuinely finished and are correctly '
+  'absent. 23 carry the Image-focus sweep; 11 carry extra work. Run in any order, then '
   'verify-design-pass.py and reapply-export-edits.py.'),
  ('soon', 'The Image-focus sweep \u2014 23 categories',
   'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
