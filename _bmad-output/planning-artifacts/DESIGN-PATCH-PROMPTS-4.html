@@ -64,7 +64,7 @@ the specifications had not caught up — the pack colours, the main-feed designa
 declares a dependency, hand-picked order, and whether one design may use two behaviours. Every prompt
 carries all five, because they were each raised in more than one category.</p>
 <p class="lede">One thing this pass starts but does not finish, named rather than hidden:
-<b>Image focus is enumerated separately in 21 category specs</b> instead
+<b>Image focus is enumerated separately in 25 category specs</b> instead
 of being one shared control. P0 gains the single definition here; the rest need a mechanical sweep
 afterwards, and the P0 prompt names them.</p>
 <p class="lede">Verify each returned export with <code>python3 tools/verify-design-pass.py</code>,
@@ -182,7 +182,7 @@ THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROL
 every category&#x27;s side panel draws from. Change one here and every category inherits it,
 which is why this runs first.
 
-NOT YOUR JOB, BUT SO YOU KNOW WHY THIS MATTERS: 19 other categories still enumerate their own copy of Image focus — A1, A2, A3, A4, A5, A6, A8, A9, A10, A11, A12, A15, A16, A21, A22, A29, A30, A31, A32. They are swept separately. Define it correctly here and that sweep becomes mechanical.
+NOT YOUR JOB, BUT SO YOU KNOW WHY THIS MATTERS: 23 other categories still enumerate their own copy of Image focus — A1, A2, A3, A4, A5, A6, A8, A9, A10, A11, A12, A14, A15, A16, A19, A21, A22, A24, A26, A29, A30, A31, A32. They are swept separately. Define it correctly here and that sweep becomes mechanical.
 
 THE WORK LIST FOR P0:
 
@@ -199,7 +199,7 @@ THE WORK LIST FOR P0:
   Every category inherits this from P0, so this frame is where it changes.
 
 - IMAGE FOCUS BECOMES A SHARED CONTROL, DEFINED HERE ONCE, AND IT CARRIES BOTH AXES.
-  Today it is not a shared control at all: 24 category specs each enumerate their own copy of it,
+  Today it is not a shared control at all: two dozen category specs each enumerate their own copy,
   which is exactly the failure the owner ruled on as &quot;one control name means one set of values&quot;.
   Define it here: **Centre · Top · Bottom AND Centre · Left · Right**.
   The horizontal half is new (owner&#x27;s ruling, 2026-09-03). A wide photograph cropped into a tall

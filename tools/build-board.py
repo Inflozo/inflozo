@@ -163,12 +163,14 @@ ACTIONS = [
   'inherits. FIVE of the eighteen needed no ruling at all: the answers already existed and the specs '
   'had not caught up, so every prompt carries them. Then verify-design-pass.py and '
   'reapply-export-edits.py, per the runbook above.'),
- ('soon', 'The Image-focus sweep \u2014 19 categories',
-  'Image focus is enumerated separately in 21 category specs instead of being one shared control, '
-  'which is the owner\u2019s own "one control name, one set of values" ruling in its worst form. '
-  'Pass four defines it once in P0 with both axes; the other 19 still carry private copies and need '
-  'a mechanical sweep. The list is derived from the export by tools/design-patch-prompts-4.py, not '
-  'typed.'),
+ ('soon', 'The Image-focus sweep \u2014 23 categories',
+  'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
+  'which is the owner\u2019s "one control name, one set of values" ruling in its worst form. Pass '
+  'four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY '
+  'PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The '
+  'list is derived by tools/design-patch-prompts-4.py, which tests the real condition \u2014 does '
+  'the spec enumerate the values WITHOUT referencing P0\u00b79 \u2014 after its first version got '
+  'this wrong by assuming a category in the pass had been fixed.'),
  ('soon', 'Five registry rulings for the architect',
   'Not yours, and not blocking: A5\u2019s tabs announced twice without JavaScript, A5\u2019s scroller '
   'rule having no registry sentence, A13\u2019s walkthrough emitting a heading per panel, A33\u2019s '

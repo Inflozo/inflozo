@@ -1,7 +1,7 @@
 # A24 Post Headers — written specification
 
 16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
-**post headers patch, 28 August 2026** · **pass two, 1 September 2026** · **pass three, 2 September 2026**
+**post headers patch, 28 August 2026** · **pass two, 1 September 2026** · **pass three, 2 September 2026** · **pass four, 3 September 2026**
 
 **Post headers patch (28 August 2026).** Four rulings landed on this category and two of them touched
 every design in it. **A byline never counts:** "Jane and 2 others" is now "Jane and others"
@@ -582,7 +582,7 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
   **Standfirst inert**, Tag line and Meta live. **Cut:** a darken toggle, a focal point, parallax.
 - **7 · Data.** The route's `post`. **No zero case.** Tags and authors as elsewhere, drawn in the contrast text at 82%. **A picture is the one thing this design cannot do without**, and the panel says so before the post proves it.
 
-- **8 · Empty state. No picture → Hide** ⚑ — **the hand-off to 1 Centred is deleted by this pass**, because no design ever turns into another design. The picture and the scrim are not drawn; **the band keeps its Height, its Text position and its Title size on the pack's own ground**, and **the words take the page's own text colour** ⚑, since contrast text on a pale ground cannot be read. The standfirst stays inert, as it is in this design at every setting. **Scrim greys with "Needs a feature image".** The picker still reads Full Bleed, nothing is re-set and nothing is switched, and **the panel may advise 1 Centred for a site whose posts rarely carry a picture — advice, never a switch.** **In the editor the state is drawn as it will render**, not as an error state.
+- **8 · Empty state. No picture → Hide** ⚑ — **the hand-off to 1 Centred is deleted by this pass**, because no design ever turns into another design. The picture and the scrim are not drawn; **the band keeps its Height, its Text position and its Title size on the pack's own ground**, and **the words take the page's own text colour** — **the owner's ruling, 3 September 2026**, ratifying without change what this category invented out of necessity — since contrast text on a pale ground cannot be read. The standfirst stays inert, as it is in this design at every setting. **Scrim greys with "Needs a feature image".** The picker still reads Full Bleed, nothing is re-set and nothing is switched, and **the panel may advise 1 Centred for a site whose posts rarely carry a picture — advice, never a switch.** **In the editor the state is drawn as it will render**, not as an error state.
 
 - **9 · Behaviour module. None; `core` assumed. No-JS: pixel-identical** — the scrim is a CSS gradient and the picture is an `<img>`. Edit-safe. `reveal` and `video-facade` both refused: the first hides the page's `h1`, the second belongs to A15 Video and Embeds, which owns a poster that plays.
 
@@ -957,7 +957,7 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
 - **8 · Empty state.** Neither the picture nor the standfirst is ever drawn, so neither has one. No tag → the eyebrow is removed. **At Meta Off the bar loses its byline and its reading time and is a title and a meter**; at Meta Off with Bar contents Title the bar is a single truncated line, which is the design's minimum and still a control. **In the editor the bar is not drawn at all** — behaviours do not run while editing — **and the panel's warning is the only place the user meets it before publishing** ⚑, which is a gap the picker should close rather than this design.
 
-- **9 · Behaviour module. Declares `reading-progress` for the meter and `header-scroll` for the bar** ⚑ — **new in this pass, and the correction the pass exists for.** The bar was drawn as `position: sticky` and **cannot work that way on any site**: a stuck element holds only inside its own container's box, and this bar's container — the header — has already left the screen at the moment the bar is wanted. **The bar is therefore script-revealed and pinned at the threshold**, which is still the resting title's lower edge. **No module name was invented; both are in the registry — and the owner settled the module's scope on 1 September 2026: `header-scroll` covers any pinned bar, not the site navigation alone, the registry gaining one sentence to say so, so this design needs no module of its own.** **Edit-safe:** neither module runs in the editor and the resting header is complete without them. **No-JS — rewritten in this pass, and the registry's line now reads literally:** "The bar is hidden entirely (it is decorative)." **With JavaScript off this design renders nothing of the bar and reserves no space for it.** No bar, no title link, no reading time, no meter and no track, and **no reserved strip**: the header simply scrolls away as every other Post Header design's does, and the article starts at the top under it. **The bar cannot be built without a script** — a browser can only pin an element inside its containing box, and the header the bar belongs to has scrolled out of view by the moment the bar is wanted. **Of the three shapes considered, the other two were refused with their costs:** a persistent title bar, always visible, **costs every such visitor 56 px of phone screen for a feature they are not getting**; and a bar that is drawn in the header but does not follow **reads as broken rather than as a choice**. The design's one distinguishing feature is invisible to that visitor, and that is the accepted cost. **The bar declares no width** — `header-scroll` and `reading-progress` run at 390 as at 1440, the bar being 56 below 767 rather than absent — **so this line describes every width, not just the narrow one.** Reduced motion: the bar appears without its slide, at the same threshold.
+- **9 · Behaviour module. Declares `reading-progress` for the meter and `header-scroll` for the bar** ⚑ — **new in this pass, and the correction the pass exists for.** The bar was drawn as `position: sticky` and **cannot work that way on any site**: a stuck element holds only inside its own container's box, and this bar's container — the header — has already left the screen at the moment the bar is wanted. **The bar is therefore script-revealed and pinned at the threshold**, which is still the resting title's lower edge. **No module name was invented; both are in the registry — and the owner settled the module's scope on 1 September 2026: `header-scroll` covers any pinned bar, not the site navigation alone, the registry gaining one sentence to say so, so this design needs no module of its own.** **And declaring two modules is permitted — confirmed 3 September 2026: the compiler emits the union of the modules a design declares, and has done since the inventory merge**, so this design's pair needed no ruling of its own. **Edit-safe:** neither module runs in the editor and the resting header is complete without them. **No-JS — rewritten in this pass, and the registry's line now reads literally:** "The bar is hidden entirely (it is decorative)." **With JavaScript off this design renders nothing of the bar and reserves no space for it.** No bar, no title link, no reading time, no meter and no track, and **no reserved strip**: the header simply scrolls away as every other Post Header design's does, and the article starts at the top under it. **The bar cannot be built without a script** — a browser can only pin an element inside its containing box, and the header the bar belongs to has scrolled out of view by the moment the bar is wanted. **Of the three shapes considered, the other two were refused with their costs:** a persistent title bar, always visible, **costs every such visitor 56 px of phone screen for a feature they are not getting**; and a bar that is drawn in the header but does not follow **reads as broken rather than as a choice**. The design's one distinguishing feature is invisible to that visitor, and that is the accepted cost. **The bar declares no width** — `header-scroll` and `reading-progress` run at 390 as at 1440, the bar being 56 below 767 rather than absent — **so this line describes every width, not just the narrow one.** Reduced motion: the bar appears without its slide, at the same threshold.
 
 - **10 · Accessibility.** `<header>` with the page's one `<h1>` in the resting header. **The bar carries no heading level** and is not a landmark; it is a `<div>` holding an `<a href="#top">` whose accessible name is the **complete, untruncated title** — the visible text is clipped by CSS, never by the string. **The meter is `aria-hidden` and is not a progressbar role** ⚑: a reader's scroll position is not a task's progress, and announcing it would speak over the article. **Focus order is unchanged by the bar** — the module inserts it at the header's end in the DOM, so tabbing goes nav, header links, bar link, article. **Measured:** bar title 13.8:1 light and 15.1:1 dark; meter 3.1:1 and 4.4:1 against its track as non-text. Print: **the bar and the meter print nothing**; the resting header prints as drawn at 26 pt.
 
@@ -989,7 +989,7 @@ fallback; the date's long form. **Catalog strings, not fields** ⚑: "and", "and
 
   | Control | Values |
   |---|---|
-  | Links | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026** — each value drawing the first N of the site's enabled share destinations, in the site's own order; no + to grey and no fifth value, a fifth link taking the row onto a second line at 1440. **Four is the maximum, and it is a design decision — the owner's ruling of 2 September 2026**, which closes the caps question for the row as drawn; the pending native-share redraw cuts this row altogether, and that interaction is an open question in the pass-three notes |
+  | Links | Two · Three · Four (default Four) — **a named set again, the owner reversing the number picker on 1 September 2026**, **four the maximum and a design decision (2 September 2026), standing until the native-share redraw and inherited by nothing after it (3 September 2026)** — each value drawing the first N of the site's enabled share destinations, in the site's own order; no + to grey and no fifth value, a fifth link taking the row onto a second line at 1440. **Four is the maximum, and it is a design decision — the owner's ruling of 2 September 2026**, which closes the caps question for the row as drawn; the pending native-share redraw cuts this row altogether, and that interaction is an open question in the pass-three notes |
   | Link style | Words · Words and glyphs |
   | Alignment | Left · Centre |
   | Divider | Hairline above · None |
@@ -1361,16 +1361,19 @@ marked OPEN FOR THE OWNER on its own line.** Nothing on it was answered here.
    names, pins it to the viewport, and leaves it at the header's end in the DOM so focus order is
    unchanged. **What remains is the registry edit, which is mechanical**, and the no-JavaScript state
    — no bar at all — was correct either way.
-2. **Two modules on one design.** 13 Sticky now declares two, which the library has done once before
-   (a hero declaring a form and a countdown). Nothing in the ground rules forbids it; nothing states
-   it either. Recorded rather than decided.
-   **OPEN FOR THE OWNER.**
-3. **The words on 5 Full Bleed's picture-less band take the page's own text colour.** ⚑ Invented here
-   out of necessity: the design's text colour is the contrast pack's, which is invisible on a pale
-   ground. The alternative — keeping the contrast colours and putting the band on the contrast ground
-   — would make the design read as 8 Contrast Band, which the rule against one design becoming
-   another forbids just as firmly.
-   **OPEN FOR THE OWNER.**
+2. ~~**Two modules on one design.**~~ · **ANSWERED, 3 September 2026 — and the answer already
+   existed: a design may declare more than one behaviour module, and the compiler emits the union.**
+   This has been true since the inventory merge, so 13 Sticky declaring `reading-progress` and
+   `header-scroll` was never a question; the ground rules simply had not said so where this category
+   could read it. **Nothing on the design changes:** both modules stay declared, neither runs in the
+   editor, and the no-JavaScript line is as pass two rewrote it.
+3. ~~**The words on 5 Full Bleed's picture-less band take the page's own text colour.** ⚑ Invented
+   here out of necessity.~~ · **SETTLED BY THE OWNER, 3 September 2026: ratified as drawn.** The
+   design's text colour is the contrast pack's, which is invisible on a pale ground, and **the
+   alternative is refused for the reason this category gave** — keeping the contrast colours and
+   putting the band on a contrast ground would make the design read as 8 Contrast Band, which the rule
+   that no design ever turns into another design forbids just as firmly. **The flag is no longer this
+   category's invention; it is the owner's ruling**, and no drawing changed with it.
 4. ~~**The caps on the two new number pickers are the drawn maxima, 4 and 4.**~~ · **SETTLED BY THE
    OWNER, 2 September 2026: four is the maximum, and it is a design decision.** The reasons already
    drawn are the reasons — a fifth cell falls under 260 px on the content measure and its label wraps;
@@ -1672,10 +1675,13 @@ maximum, and it is a design decision" — beside the reason the frame already dr
 | **A design may declare the width below which its script runs** | **No design in A24 declares one, and none was invented in this pass.** 13 Sticky's two modules run at 390 as at 1440 and 14 Share Row's `share` runs at every width, so **both no-JavaScript lines describe every width**, as pass two rewrote them. Unchanged here. |
 | **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, reused or deleted. |
 
-### Open questions this pass raises
+### Open questions this pass raises — settled by the owner, 3 September 2026
 
-**QUESTION 1 — Does the four-maximum survive the native-share redraw of 14 Share Row?**
-**OPEN FOR THE OWNER**, and named rather than guessed. Two rulings now touch the same row and they do
+~~**QUESTION 1 — Does the four-maximum survive the native-share redraw of 14 Share Row?**~~ ·
+**SETTLED BY THE OWNER, 3 September 2026: the four-maximum stands until the native-share redraw, and
+nothing inherits it after** — the redraw leaves one Share trigger, so there is no count left to cap.
+**Naming the collision rather than picking a side was the right call; the sequencing was the missing
+piece.** The record below is left as it was written. Two rulings now touch the same row and they do
 not point the same way. **The caps ruling of 2 September 2026 fixes four as the maximum** for the Links
 row as it is drawn today — two to four destinations from the site's enabled list. **The native-share
 ruling of 1 September 2026 cuts that row altogether** when the design is redrawn: one Share trigger,
@@ -1712,3 +1718,84 @@ so the sequence — drawn at four, converted to a picker, converted back, then r
    names **1 Centred** and **2 Flush Left** — both of which exist in this category's roster.
 
 — End of pass three —
+
+---
+
+## Patch notes — pass four, 3 September 2026
+
+Every change below carries the **name** of the rule that required it. Rules are named, never numbered.
+
+**Three answers reached this category and none of them changed a drawing.** The owner ruled the
+**sequencing of the four-maximum against the native-share redraw** on **14 Share Row**; he **ratified
+the page's-own-text-colour decision on 5 Full Bleed** that this category had invented and flagged as
+its own; and **13 Sticky's two-module question turned out to be already answered** — the compiler emits
+the union of the modules a design declares, and has done since the inventory merge. **No arrangement
+moved, no control was added, removed or renamed, and no value, default, layout, responsive rule, type
+scale, colour pack or spacing step changed anywhere in A24.**
+
+**Frames changed — seventeen, and every one of them.** All sixteen design frames and `A24-0 Category
+Proof` gain a **PASS FOUR** section recording the three answers, the five rules as audited, what was
+left alone and the numbering. **Three frames changed a sentence as well as gaining that section:**
+`A24-5 Full Bleed`'s no-picture caption and its field 8 now name the owner's ruling where they carried
+⚑ "invented here"; `A24-13 Sticky`'s field 9 gains one clause saying two modules are permitted;
+`A24-14 Share Row`'s Links caption gains one clause naming the sequencing.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **A count that picks between drawn layouts is a named set, not a number picker** | **The collision at 14 Share Row's Links is closed by sequencing, and the row is untouched.** Pass three found two rulings pointing different ways — the caps ruling of 2 September fixing four as the maximum, the native-share ruling of 1 September cutting the row altogether at the redraw — and named the collision instead of choosing. **The owner ruled the sequence on 3 September 2026: four is correct for the row as it is drawn today, and the redraw replaces the row with one Share trigger, so there is no count left to cap and nothing inherits the maximum.** **The Links row is unchanged**: Two · Three · Four, default Four, drawing the first N of the site's enabled destinations in the site's own order. **11 Dateline's Cells is not a subject** — the native-share redraw does not reach it and its four-maximum stands unqualified. **What changed is writing, not drawing:** the Links caption on `A24-14`, the spec's Links control row, and pass three's QUESTION 1, now struck through with who settled it. |
+| **No design ever turns into another design** | **5 Full Bleed's picture-less band keeps the page's own text colour — the owner's ruling, 3 September 2026.** The decision was invented here in the post-headers patch, when the hand-off to 1 Centred was deleted, and was flagged ⚑ as this category's own. **It is ratified exactly as drawn.** The alternative the category rejected — keeping the contrast pack's text and putting the band on a contrast ground — **would make the design read as 8 Contrast Band**, which this rule forbids as firmly as it forbids a hand-off. **The flag changes owner and nothing else changes:** field 8, the frame's no-picture caption and the frame's own field 8 now read "the owner's ruling, 3 September 2026" in place of ⚑. |
+| **A design may declare more than one behaviour module** | **13 Sticky declaring two was always permitted, and the open question is replaced by the answer.** **The compiler emits the union**, and has since the inventory merge, so `reading-progress` for the meter beside `header-scroll` for the bar needed no ruling — the ground rules had simply not said so where this category could read it. **Item 2 on the architect's list is struck through with the answer and its date.** Nothing on the design moved: both modules stay declared, neither runs in the editor, the resting header is complete without them, and **the no-JavaScript line is as pass two rewrote it** — the bar hidden entirely, no space reserved. |
+| **A control switched off by another is greyed, with the reason beside it** | **No subject in this pass and no row changed.** Every case in A24 was audited against this shape in pass two — 5 Full Bleed's locked Feature image and Background role and its inert Vertical spacing and Standfirst, 13 Sticky's Bar edge None in dark, 14 Share Row's inert Feature image and its warning at the destinations setting — and the three answers above add no dependency, so **nothing greys that did not grey before**. **The rule's one exception is still claimed nowhere in A24**: the visitor dark-mode switch does not appear in this category. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **Already compliant and untouched.** Every fallback circle in A24 draws **one letter** — every person here is a Ghost author and Ghost hands a theme a display name. The strict case is still 13 Sticky's bar, where **the avatar is drawn without any name at all and capped at 24**, so the single letter is the only identification. No frame draws a two-letter circle and this pass drew none. |
+| **The Remove button never greys out** | **No subject.** Nothing in A24 is an authored repeating list — no repeater, no Add, no Remove, no reorder. **Cells and Links are single values written onto the section.** In the site-wide Share-destinations setting, where the shared item-list controls do apply, **Remove stays visible and fully clickable at the floor**, with the floor and the reason as one sentence under the list. |
+| **A design may declare the width below which its script runs** | **No design in A24 declares one, and none was invented in this pass.** 13 Sticky's two modules run at 390 as at 1440 and 14 Share Row's `share` runs at every width, so **both no-JavaScript lines describe every width**, as pass two rewrote them. Unchanged here. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, reused or deleted. |
+
+### Open questions this pass raises
+
+**None.** The three answers were applied as written and none of them required a decision this category
+was not given. **The two questions this pass closed are struck through rather than deleted** — pass
+three's QUESTION 1 at the foot of the pass-three notes, and items 2 and 3 on the architect's list — so
+the sequence stays readable.
+
+### Left alone deliberately
+
+**The seven carried items stay exactly where they are**, as asked: the 820 title measure and its
+ladders, the avatar letter's missing fill token, A1·4 Overlay as an unenforceable precondition, the
+day-gap threshold on the updated date, the Share-destinations site setting, Image focus as a crop hint
+Ghost never sees, and `@page.show_title_and_feature_image` rendering the whole section as nothing.
+**Item 6 on the architect's list is untouched** and nothing on it was resolved here.
+
+**14 Share Row's native-share redraw is still outstanding.** It is a redesign, not a patch: the
+design's subject is a row of destinations and its written argument rests on them. The panel at
+`A24-14`'s foot saying so is untouched, and **the sequencing ruling above does not authorise the redraw
+— it only says what the maximum means before and after it**.
+
+**The two things maintained outside Claude Design are untouched.** **No design total is written into any
+spec line, panel string or frame in this pass**, and no removed total was reinstated. **P0's per-prop
+mark allowlist is P0's text**: not restated, softened or contradicted by anything above. The scopes stay
+distinct — a mark a field does not permit is absent; a control switched off by another control is
+greyed with its reason beside it.
+
+**Three things this pass could have rewritten and did not.** **The `readingTimeSuffix` fallback sentence
+in 15 Slim's Reconciled paragraph** is still left where it is, for the reason pass two gave: it cannot
+be told apart from a deliberate edit. **The three deleted hand-offs stay deleted.** **Every
+no-JavaScript line is unchanged** — fourteen designs pixel-identical with JavaScript off, 13 Sticky's as
+pass two rewrote it, 14 Share Row's still reading from the registry with its Copy-link caveat.
+
+**One fact was checked and needed no edit.** The Style Pack's **on-contrast text, accent-on-contrast,
+dark elevation, dark hover-surface and tabular figures are COMPUTED**, so no design derives a readable
+text colour for itself. **5 Full Bleed derives nothing of the kind**: its picture-less band uses the
+page's own text colour, which the pack already declares, and the flag beside its **dark scrim at
+`#090806`** is about a scrim rather than a pack text value and stays as it is.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** —
+   sixteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Centred** and **2 Flush Left** — both of which exist in this category's roster.
+
+— End of pass four —

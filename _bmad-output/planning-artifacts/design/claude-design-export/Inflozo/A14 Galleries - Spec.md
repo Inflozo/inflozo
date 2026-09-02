@@ -53,6 +53,22 @@ titles is live again in bound mode**, its titles reachable in the overlay like e
 **Nothing was renumbered, renamed, redrawn or deleted, no control was added or removed, no value
 changed, no type scale, colour pack or spacing step moved, and no design total is written anywhere.**
 
+**Design patch pass four — 3 September 2026.** Two work-list items, and **neither changes a drawing**.
+**The locked-control test is dropped** — *the owner's ruling of 3 September 2026*: the test finding 13
+proposed, for when a control should be locked rather than offered, is **not adopted**, because the
+library-wide rule *a control switched off by another is greyed, with the reason beside it* already does
+that job and two overlapping tests would be worse than one. **Finding 13 is struck with the ruling and
+its date**, and **A14's two locked-row cases stand as drawn** — 2 Masonry's Crop stays, 5 Split Head's
+row stays deleted, each with its reason at the control. **How a control says it switches another one off
+is settled**: the dependency is **declared in the control's own definition and carries its reason**, so
+the panel, the checker and the compiler read one source and no design hand-draws the relationship. Four
+further answers are written in as facts rather than decided here: **the pack's contrast colours are
+COMPUTED** and no design derives one; **A14 is never a page's main feed**; **hand-picked references keep
+the order they were dragged**, ruled 2 September 2026; and **a design may declare more than one behaviour
+module**, which strikes finding 4. **Nothing was renumbered, renamed, redrawn or deleted, no control was
+added or removed, no value changed, no type scale, colour pack or spacing step moved, and no design total
+is written anywhere.**
+
 **[Free] designs:** 1 Grid · 14 Index
 
 *(Shortlisted in this pass — 1 Grid, 14 Index, 12 Captioned Rows, 15 Boxed, 13 Contact Sheet: the
@@ -111,6 +127,14 @@ than a containment**; **A9·5 and A16·1's two-column split and its 1,080 collap
 row**; **A9·8's disabled-value convention**; **A3's repeater**; **A1's eyebrow, icon button and
 striped plate**; **A6's focus ring**. **A14 adds ten components and nothing else** — they are listed
 at the foot.
+
+**The Style Pack supplies its own contrast colours, and no design derives one** ⚑. Every pack value is
+marked **COMPUTED** (worked out from colours the pack already declares) or **AUTHORED** (a human picks
+it), and **on-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular figures
+are all COMPUTED**. **A17·7's derivation is inherited as a reading of those tokens, not as arithmetic
+A14 performs**: 6 Contrast Band's band and 9 Full Bleed's carried colour take the computed value rather
+than working out a readable text colour for themselves. Written in as a fact, 3 September 2026; no
+colour on any frame changes.
 
 ### The four settlements (§8 of the brief)
 
@@ -254,6 +278,21 @@ not honour**. **Nothing in A14 is hidden by another control** except the two hid
 inherits from the shared primitives, which are recorded as a conflict in Patch notes rather than
 changed here.
 
+**How a control says it switches another one off is settled, and it is not drawn by the design** ⚑.
+**The dependency is declared in the control's own definition and carries its reason**, so the panel, the
+checker and the compiler all read one source. The two rows in the table below are **renderings of a
+declared dependency**, and the sentence drawn at the control is the reason string the declaration
+carries — not panel copy invented in this category. Written in as a fact, 3 September 2026: the
+mechanism belongs to the shared control definition and nothing in A14 is redrawn by it.
+
+**The locked-control test is dropped** ⚑ — *the owner's ruling of 3 September 2026*. The test finding 13
+proposed, for when a control should be **locked** rather than offered, is **not adopted**: the greying
+rule above already does that job, and two overlapping tests would be worse than one. **A14's two
+locked-row cases are untouched** — 2 Masonry's Crop stays, 5 Split Head's deleted row stays deleted —
+and each keeps its reason drawn at the control under *a design may offer fewer choices on a shared
+control, and must say why*. **A locked row is a design-level narrowing rather than one control switching
+another off**, which is recorded in Patch notes rather than resolved here.
+
 **Design-level narrowings, drawn greyed since the reconciliation pass** ⚑: **As uploaded** disabled
 in 3 Mosaic, 7 Carousel and 9 Full Bleed · **Crop locked at As uploaded** in 2 Masonry · **Background
 role locked** in 6 Contrast Band and 9 Full Bleed · **Under each** disabled at Gutter: None in 9 ·
@@ -318,6 +357,11 @@ is
 skipped and the panel says how many were** ⚑. Crop's disabled values stay disabled in bound mode,
 and
 2 Masonry's lock still holds — bound frames keep their feature images' own ratios there.
+
+**Hand-picked photographs keep the order they were dragged into** ⚑ — **ruled 2 September 2026**. At
+**Filter: Hand-picked** the references are held in the user's own order and handed to the template that
+way, **never re-sorted by date**, which is the reason P0·5 hides Order in that path. Written in as a
+fact, 3 September 2026; no control changes.
 
 ### Visitor-facing strings
 
@@ -1563,9 +1607,11 @@ media picker as its Add: the shared controls, named once.
    `column-count` and runs with no script. A true packed masonry is not buildable from the registry;
    the nearest entries are `reveal` and `shuffle` and neither is it. Recorded so nobody later
    specifies packing and assumes a module exists.
-4. **Two designs declare two modules each.** ⚑ 7 and 8 declare `carousel` *and* `lightbox`. Nothing
-   in FR-G7 forbids it and nothing permits it explicitly; no section in A1–A13 needed two. Both
-   degradations are quoted in full and they compose cleanly.
+4. ~~**Two designs declare two modules each.**~~ ⚑ 7 and 8 declare `carousel` *and* `lightbox`, and
+   the question this finding asked — whether a design may — **was already answered: a design may
+   declare more than one behaviour module, and the compiler emits the union**, true since the
+   inventory merge. **Struck as a settled question, 3 September 2026.** What stays is the fact: two
+   modules in 7 and 8, both degradations quoted in full, and they compose cleanly.
 5. **`alt` is required for the design to work and cannot be enforced.** ⚑ In 9 and 13 the frame
    carries no visible text, so `alt` is the accessible name and nothing else is. The editor shows a
    warning dot and never blocks publishing — the right call for a publication tool, and it means the
@@ -1601,13 +1647,14 @@ media picker as its Add: the shared controls, named once.
    image**, so focus is theme-side, per item, and **a photograph reused in another section carries
    no
    focus with it.** A build decision, not a design one.
-13. **A locked control and a locked value are not the same thing.** ⚑ 5 Split Head's "Head
-    behaviour,
-   locked at Static" is deleted as a refusal wearing a control's clothes; 2 Masonry's "Crop, locked
-   at
-   As uploaded" survives. The test this pass used: **the row stays only if the control is live
-   elsewhere in the category and the locked value is this design's identity.** Worth adopting
-   library-wide, or overruling once and for all.
+13. ~~**A locked control and a locked value are not the same thing.**~~ ⚑ **Struck by the owner's
+    ruling of 3 September 2026: the locked-control test is not adopted.** The rule *a control switched
+   off by another is greyed, with the reason beside it* already does that job, and two overlapping
+   tests would be worse than one. **The two drawings this finding described stand as they are**:
+   5 Split Head's "Head behaviour, locked at Static" stays deleted and the no-sticky refusal stays in
+   panel copy; 2 Masonry's "Crop, locked at As uploaded" stays, with its reason drawn at the control
+   under *a design may offer fewer choices on a shared control, and must say why*. Neither is
+   re-argued here.
 
 
 ---
@@ -1682,7 +1729,8 @@ build wants a bound-mode canvas state, it is a frame this pass did not draw.
 7. **2 Masonry's "Crop, locked at As uploaded" versus the same rule.** The row survives, with the
    test
    stated on the frame: Crop is live in fourteen siblings and its locked value here is the design's
-   identity. Finding 13 asks the owner to ratify or overrule that test library-wide.
+   identity. **The owner declined to adopt that test library-wide on 3 September 2026** — the greying rule
+   already does the job — and **the row is unchanged**: the reason stays drawn at the control.
 8. **13 Contact Sheet's "nothing captioned on the page" versus "a caption is never unreachable".**
    The
    identity wins and **Lightbox: Off is disabled** with the reason shown (A9·8's convention) rather
@@ -1827,9 +1875,10 @@ answered here.
    2026: A14 shows images the owner chose, A17 shows posts.** The per-frame post link is removed
    from bound mode, the boundary is stated once in the category layer, and the two categories no
    longer resolve to one outcome for a visitor.
-5. **The locked-control test in finding 13 is still waiting to be ratified or overruled
-   library-wide.**
-   **OPEN FOR THE OWNER**
+5. ~~The locked-control test in finding 13 is still waiting to be ratified or overruled
+   library-wide.~~ **Closed by the owner, 3 September 2026: the test is not adopted** — the greying
+   rule already does that job — and finding 13 is struck with the ruling and its date. **No drawing
+   changed, and neither locked-row case was re-argued.**
 6. ~~13 Contact Sheet's captions in bound mode have nowhere to go.~~ **Closed by the owner,
    1 September 2026**, and **superseded on 2 September 2026**: the greying rested on a bound frame
    opening its post instead of the overlay, and bound mode no longer links to the post — so a bound
@@ -2089,6 +2138,118 @@ owner's ruling of 30 August 2026, and **15 Boxed's count in bound mode** stays a
 1. **Bound mode does not link each picture to its post** — *A14 shows images the owner chose, A17
    shows posts*. A bound gallery reads posts for their feature images and links to none of them, so
    the two categories do not resolve to one outcome for a visitor. **A14 stays pictures-only.**
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Grid**
+   and **14 Index** — both of which exist in this category's roster.
+
+---
+
+## Patch notes — pass four, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **Two work-list items, and
+neither changes a drawing.** **Frames updated:** all fifteen design frames (`A14-1` … `A14-15`) and the
+proof frame `A14-0`, each gaining a **PASS FOUR PATCH** block naming, for that design, what was ruled
+and what was written in. **No section frame was redrawn, no panel row was added, removed or greyed,
+nothing was renumbered, renamed or deleted, no value changed, and no layout, type scale, colour pack or
+spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **The locked-control test is dropped** — *the owner's ruling of 3 September 2026*. Finding 13
+   proposed a test for when a control should be **locked** rather than offered — "the row stays only if
+   the control is live elsewhere in the category and the locked value is this design's identity" — and
+   it had been waiting to be ratified since 24 August 2026. **It is not adopted**: the rule *a control
+   switched off by another is greyed, with the reason beside it* already does that job, and two
+   overlapping tests would be worse than one. **The finding is struck with the ruling and its date** in
+   three places: the findings list, amendment 7 of the reconciliation notes, and item 5 of the
+   open-questions list. **A14's two locked-row cases stand exactly as drawn** — 2 Masonry's Crop stays,
+   5 Split Head's row stays deleted — each with its reason at the control.
+2. **How a control says it switches another one off is written in as an answer** — *a control switched
+   off by another is greyed, with the reason beside it*. **The dependency is declared in the control's
+   own definition and carries its reason**, so the panel, the checker and the compiler read one source,
+   and **no design hand-draws the relationship**. It sits in **The disabled-control pattern**. **A14
+   carried no open question in that shape** — its finding 13 was the locked-control test, and the schema
+   half of the dependency question was raised in another category — so the fact **replaces nothing**; it
+   is added where the two declared dependencies are described. Those two are unchanged: **In the
+   lightbox only** greyed at Lightbox: Off in the eleven designs that offer the pair, and **9 Full
+   Bleed's Gutter: None** greyed while its captions sit under each frame.
+3. **The pack's contrast colours are COMPUTED, and no design derives one** — *an answer that already
+   existed*. Every Style Pack value is marked **COMPUTED** or **AUTHORED**; on-contrast text,
+   accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all **COMPUTED**.
+   **A17·7's derivation is inherited as a reading of those tokens rather than arithmetic A14 performs**,
+   and 6 Contrast Band's band and 9 Full Bleed's carried colour take the computed value. Written into
+   the category layer. **No colour on any frame changes.**
+4. **Hand-picked photographs keep the order they were dragged into** — *ruled 2 September 2026*.
+   Written into **Data — galleries from posts**: at Filter: Hand-picked the references are handed to the
+   template in the user's own order and **never re-sorted by date**, which is why P0·5 hides Order in
+   that path. **No control changes.**
+5. **A design may declare more than one behaviour module, and finding 4 is struck** — *an answer that
+   already existed*, true since the inventory merge; the compiler emits the union. **7 Carousel and
+   8 Filmstrip keep `carousel` and `lightbox` as drawn**, both degradations quoted in full.
+6. **A14 is never a page's main feed** — *an answer that already existed*. Exactly one section per page
+   is designated the main feed and the project file stores which one. **A14 has no Show ladder, no
+   page-number control and no feed empty state**, and its bound mode reads posts for their feature
+   images only. Recorded on the proof frame so the category is not read as a candidate. **No subject
+   here, and nothing added.**
+7. **The roster, the control lists, the data fields, the no-JavaScript lines and the declared
+   behaviours were re-checked and none changed.** Fifteen rows, **[Free]** on 1 Grid and 14 Index;
+   every control table as pass three left it; the fields still `image · focus · alt · caption · link`
+   per item with `eyebrow · heading · blurb · credit` on the section; the no-JavaScript line per design
+   unchanged, including 7's and 8's reading on both sides of **768**; `lightbox` in all fifteen with
+   `carousel` beside it in 7 and 8.
+8. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The five rules of this pass, checked design by design
+
+| Rule (by name) | Where it lands in A14 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Two declared dependencies, both already drawn and neither changed:** *In the lightbox only* greyed at Lightbox: Off in 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 15, and **9 Full Bleed's Gutter: None** greyed while its captions sit under each frame. Each carries its reason as a sentence at the control. **What this pass adds is where the relationship is declared**, not a new greying. **The rule's one exception is claimed nowhere in A14** — no control here is one this project can never offer. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject.** A14 draws no person and no initials block, and reads `profile_image` nowhere. A missing photograph draws the plate carrying its alt text. |
+| **The Remove button never greys out** | **Unchanged, re-checked on all fifteen.** The images list has no floor; ✕ is on every row, never dimmed, never hidden; removing to one is allowed and so is removing the last. **Add at 48 is the one disabled control**, with the reason shown. In bound mode the list is P0·3's read-only card and there is no Remove to dim. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Columns, Crop, Gap, Gutter, Frame height, Row height, Thumb and Followers stay named sets with a drawn frame behind each value; **P0·5's Count stays a stepper**, because it counts items. |
+| **A design may declare the width below which its script runs** | **Unchanged.** 7 Carousel and 8 Filmstrip declare **768** for their arrows, owner-ruled 1 September 2026, and **both no-JavaScript lines read on both sides of it**. The other thirteen run `lightbox` at every width and are pixel-identical with JavaScript off. |
+
+### Open questions raised by this pass
+
+1. **The ruling points at the greying rule as covering the locked-row cases, and A14's two locked rows
+   are not that case.** *A control switched off by another is greyed, with the reason beside it*
+   describes one control switching another off. **2 Masonry's Crop locked at As uploaded, and the row
+   5 Split Head lost, are design-level narrowings** — nothing switches them; the design offers fewer
+   choices and says why. Dropping the test therefore leaves those two resting on *a design may offer
+   fewer choices on a shared control, and must say why*, which is the rule they were drawn under before
+   the test was ever proposed. **Nothing was changed on this account** and neither row was re-argued.
+   If the greying rule is meant to cover locked rows as well, that is **a wording change in the shared
+   control definition, not an A14 drawing**.
+   **OPEN FOR THE OWNER**
+
+**Carried forward, unchanged and unanswered by this pass** — two items, each **OPEN FOR THE OWNER**:
+the missing sort module that 14 Index would want, and the conflict pass two would not choose, where
+**P0·5 and P0·3 hide** controls the greying rule would have greyed. **This pass touched neither.**
+
+### Left alone deliberately
+
+**Two things are maintained outside this environment and are untouched here.** **No design total was
+written anywhere** — not in this document, not on any A14 frame, in any form, neither the old number
+nor a corrected one. **P0's per-prop mark allowlist is not rewritten, softened or dropped.**
+
+**Left as written, and said so rather than tidied:** the dated **Patch notes** of the 30 August,
+31 August, 1 September and 2 September passes, and the dated patch blocks on the frames, are **records
+of what those passes did**. Where a later pass reversed one of their items, the item stays tagged in
+place rather than edited into agreement. **This pass reverses nothing**, so nothing gained a new tag.
+
+**Also left:** 9 Full Bleed's **Gutter: None · Hairline · Even** keeps the retired word "Even" by the
+owner's ruling of 30 August 2026; **15 Boxed's count in bound mode** stays the eyebrow alone, ruled
+30 August 2026; and **13 Contact Sheet's Lightbox: Off stays disabled** for its own standing reason.
+
+### The owner's ruling — 3 September 2026
+
+1. **The locked-control test is not adopted** — *a control switched off by another is greyed, with the
+   reason beside it*. One test rather than two overlapping ones. Finding 13 is struck with the ruling
+   and its date, and no drawing changes.
 
 ### Confirmations
 

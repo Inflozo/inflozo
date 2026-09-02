@@ -14,11 +14,12 @@ are confirmations here, not decisions, and they close the library's most-repeate
 places at once.
 
 ONE THING THIS PASS DELIBERATELY DOES NOT FINISH, and it is named rather than hidden. R-51 gives
-Image focus a horizontal axis. That control is enumerated **independently in 24 category specs** —
-it is not a shared control at all, which is R-53's own complaint in its worst form. So P0 gains the
-single definition here and the categories in this pass point at it; the remaining categories still
-carry their private copies and need a mechanical sweep. `IMAGE_FOCUS_SWEEP` below is that list, and
-it is DERIVED from the export rather than typed, so it cannot go stale.
+Image focus a horizontal axis. That control is enumerated **independently in two dozen category
+specs** — it is not a shared control at all, which is R-53's own complaint in its worst form. P0
+gains the single definition, and **only A13 is asked to switch to it**, because A13 is where the gap
+was found; every other category still carries a private copy and needs a mechanical sweep.
+`image_focus_sweep()` derives that list from the export rather than taking it on trust — see its
+docstring for why the first version of it was wrong.
 """
 import os, re, sys, html, importlib.util
 
@@ -33,21 +34,32 @@ dp2, dp1, er = dp3.dp2, dp3.dp1, dp3.er
 ORDER = ['P0', 'A13', 'A14', 'A17', 'A18', 'A19', 'A24', 'A26']
 
 
-def image_focus_sweep():
-    """Categories that enumerate the focus values themselves, minus those this pass fixes.
+ENUMERATES = re.compile(r'Centre · Top · Bottom|Centre / Top / Bottom|Top · Centre · Bottom')
+REFERENCES = re.compile(r'P0·9|P0-9')
 
-    Derived, never typed: the whole point of R-53 is that this control has private copies, and a
+
+def image_focus_sweep():
+    """Categories still carrying a PRIVATE copy of the focus values.
+
+    Derived, never typed: R-53's whole point is that this control has private copies, and a
     hand-written list of them would be one more thing to go stale.
+
+    THE FIRST VERSION OF THIS FUNCTION WAS WRONG, and the 2026-09-03 export proved it. It excluded
+    every category in ORDER, assuming that being in the pass meant being fixed. It does not: only
+    A13 was ASKED to switch to the shared control, and A14, A19, A24 and A26 were in the pass for
+    other work entirely — so they were reported as swept while still carrying private copies. The
+    test is now what it should always have been: does the spec enumerate the values WITHOUT
+    referencing P0·9? P0 itself is the definition and is never in the list.
     """
-    pat = re.compile(r'Centre · Top · Bottom|Centre / Top / Bottom|Top · Centre · Bottom')
     out = []
     for fn in sorted(os.listdir(EXPORT)):
         if not fn.endswith('- Spec.md'):
             continue
         cat = fn.split()[0]
-        if cat in ORDER:
+        if cat == 'P0':
             continue
-        if pat.search(open(os.path.join(EXPORT, fn), encoding='utf8').read()):
+        t = open(os.path.join(EXPORT, fn), encoding='utf8').read()
+        if ENUMERATES.search(t) and not REFERENCES.search(t):
             out.append(cat)
     return sorted(out, key=lambda c: int(c[1:]) if c[1:].isdigit() else 0)
 
@@ -91,7 +103,7 @@ WORK4 = {
   Every category inherits this from P0, so this frame is where it changes.
 
 - IMAGE FOCUS BECOMES A SHARED CONTROL, DEFINED HERE ONCE, AND IT CARRIES BOTH AXES.
-  Today it is not a shared control at all: 24 category specs each enumerate their own copy of it,
+  Today it is not a shared control at all: two dozen category specs each enumerate their own copy,
   which is exactly the failure the owner ruled on as "one control name means one set of values".
   Define it here: **Centre · Top · Bottom AND Centre · Left · Right**.
   The horizontal half is new (owner's ruling, 2026-09-03). A wide photograph cropped into a tall

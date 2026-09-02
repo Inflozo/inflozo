@@ -24,7 +24,7 @@ on every page** (Ghost cannot continue a count across pages) and **"load more" i
 print rule no longer names another design, and 15 Load More's Batch size is a number rather than two
 fixed buttons. **Nothing was renumbered.**
 
-**Pass two — 1 September 2026 (this document's current state).** One job, and one piece of
+**Pass two — 1 September 2026.** One job, and one piece of
 housekeeping. **The disabled-control pattern** was applied wherever one control switches another
 off: the universal **Order** row now states its reason at **Source: Hand-picked**, and six
 per-design cases across **1 Rows, 5 Grouped, 8 Row Cards, 14 Index and 15 Load More** are drawn
@@ -38,6 +38,26 @@ could not be applied without inventing a decision — 10 Lead and List's Meta at
 — **and the owner settled it on 1 September 2026: slim followers carry no meta.** That row is
 *narrowed* rather than switched off, since the lead still reads it, and carries its reason at the
 control. The **Open questions** housekeeping is recorded in **Patch notes — pass two** at the end.
+
+**Pass four — 3 September 2026 (this document's current state).** Three work-list items, and **one of
+them changes a drawn label.** **One control name means one set of values** — the owner's ruling of
+3 September — is reconciled against **A17**, where the card and its shared fields are defined:
+**`order` is two values in all fifteen again** and 14 Index's Title A–Z moves to a control of its own,
+**`alphabetical` On · Off**, which greys Order while it is on; **8 Row Cards' and 15 Load More's
+Thumbnail row is renamed Picture** (`picture`, Off · Small · Medium), because a control that can also
+be switched *off* is a different control; **`thumbSize` is Small · Medium · Large**, A17's set,
+resolved 96 · 144 · 200 at 2 Thumb Rows; and **`rowDensity` is one set of three named values with five
+resolutions**, which is the ruling's own reading and renames nothing. **The card's exceptions have
+moved to A17**, where the card is defined — A18's three DOM-order departures and its one truncation
+are entries in the card's own closed register now, and this document points at them rather than
+declaring them. **Four answers that already existed are written in:** the pack's contrast colours,
+dark elevation and tabular figures are **COMPUTED**; the main feed is **designated** and the project
+file stores which section it is; hand-picked references **keep their drag order**; and a design **may
+declare more than one behaviour module**. **Three collisions this reconciliation found are recorded as
+open questions rather than fixed** — 9 Big Type's Meta enum, 9 Big Type's Title size, and Columns
+across 3 Slim and 14 Index. **Nothing was renumbered, no design was deleted, no value's meaning
+changed and no layout, type scale, colour pack or spacing step moved.** Everything is in **Patch
+notes — pass four** at the end.
 
 **[Free] designs:** 1 Rows · 3 Slim
 
@@ -70,11 +90,16 @@ a whole page width.**
 **1 · Density and separators.** **Row density is a second control beside the universal Vertical
 spacing** ⚑ amended — a list has two spacings, the space around it and the space inside it, and the
 per-design **Padding** row was the first of those under another name. It is gone from all fifteen
-panels. Names are shared, quantities are not: **16 · 24 · 36** on an ordinary row, **44 · 56 · 72**
-on 3 Slim, **20 · 28 · 40** on 9 Big Type and 13 Timeline, **12 · 16 · 24** on 14 Index, card
-padding **16 · 24 · 32** on 8 Row Cards. Where a ladder is genuinely different it keeps a distinct
-name: 8 Row Cards' card padding stays **Row density**, and 7 Contrast Band's **80 · 96 · 132** is
-Vertical spacing's own resolution rather than a second row. **Separators are one vocabulary of
+panels. **⚑ Amended 3 September 2026, *one control name means one set of values*: the three named values are
+the set, and the five ladders are resolutions of it.** **Compact · Comfortable · Spacious** in every
+design that draws the row, resolved **16 · 24 · 36** on an ordinary row, **44 · 56 · 72** on 3 Slim
+(where the value is the row's whole height), **20 · 28 · 40** on 9 Big Type and 13 Timeline,
+**12 · 16 · 24** on 14 Index and **card padding 16 · 24 · 32** on 8 Row Cards — a measurement in each
+design's own geometry rather than a second value set, which is why **nothing is renamed**. The old
+wording, that a genuinely different ladder keeps a distinct name, is **withdrawn**; 7 Contrast Band's
+**80 · 96 · 132** remains **Vertical spacing's** resolution rather than a second row, and **10 Lead
+and List draws no Row density row at all** (Followers sets the row's shape). See *One control name,
+one set of values — as it lands in A18*. **Separators are one vocabulary of
 three — Off · Between rows · Boxed** — defaulting to Between rows in eleven designs. **Boxed is
 never a default** ⚑: a list that closes itself top and bottom is a table, and A17·10 Ledger is where
 a site should go for one. **Three designs have no Rule control** — 8 Row Cards (a plane),
@@ -85,8 +110,12 @@ touch floor wins.
 
 **2 · The thumbnail.** **Nine of the fifteen draw no image at all** and are by construction immune
 to a missing one. **Three put it at the leading edge** — 2 Thumb Rows (96 · 144 · 200),
-15 Load More (Off · 96 · 160), 10 Lead and List on its lead only. **One puts it at the trailing
-edge, and only because it has a card to bound it** — 8 Row Cards (Off · 112 · 160). **Every list
+15 Load More (Off · 96 · 160), 10 Lead and List on its lead only. **One puts it at the trailing edge, and only because it has a card to bound it** — 8 Row Cards
+(Off · 112 · 160). **⚑ Amended 3 September 2026: the two designs whose thumbnail can be switched off
+write `picture`, not `thumbSize`, and their panel row reads Picture** — a control that can also be
+switched *off* is a different control and takes a different name, which is A17's own reading of the
+ruling. `thumbSize` is **Small · Medium · Large** (2 Thumb Rows, resolved 96 · 144 · 200); `picture`
+is **Off · Small · Medium** (8 Row Cards at Off · 112 · 160, 15 Load More at Off · 96 · 160). **Every list
 thumbnail is sized rather than proportioned** ⚑, so it costs the same pixels at every width.
 **⚑ Amended: the shape is a control now** — **Thumbnail shape Landscape 3:2 · Square 1:1** on
 2 Thumb Rows, 8 Row Cards and 15 Load More, because a square thumb is the commonest list pattern on
@@ -112,8 +141,9 @@ structural claims rather than settings of 5 Grouped.
 
 **4 · Zero, one and many.** **Zero published → the section does not render**: no head, no empty
 list, no placeholder, no sample post, and for 7 Contrast Band and 12 Panel the band and the panel go
-with it. **⚑ Amended for one case:** at **Source: This route's posts** on a paginated template the
-section is **the designated main feed** and renders **an authored empty state** — "Nothing here yet"
+with it. **⚑ Amended for one case:** at **Source: This route's posts** on a paginated template the section is **the designated main feed** — **⚑ 3 September 2026, *an answer that already
+existed*: exactly one section per page is designated the main feed and the project file stores which
+one, so a design is told rather than working it out** — and renders **an authored empty state** — "Nothing here yet"
 over "There are no posts on this page yet. Try the archive." — because **an empty tag archive must
 render a page, not nothing**. Every other Source keeps the old rule. **Zero in the editor →** the
 list's outline at three rows plus one line naming the query ("No posts tagged Reporting. This
@@ -159,8 +189,10 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   820 is A17's 780 head measure plus one 40 px step ⚑; 200 is the width of
   "26 February 2026 · 9 min read" at 13 px and is identical in every design that hangs one.
 - **Type.** Title 22 heading font · 21 at 834 · 19 at 390. Excerpt 16/1.6 muted, clamped by line.
-  Eyebrow 13 uppercase tracked. Meta 13. **Titles wrap and are never clipped — one exception,
-  3 Slim**, which clips visually and keeps the whole string in the DOM.
+  Eyebrow 13 uppercase tracked. Meta 13. **Titles wrap and are never clipped — one exception, 3 Slim**, which clips visually and keeps the
+  whole string in the DOM; **⚑ amended 3 September 2026, that exception is written into the card's own
+  promise in A17** — *the card's exceptions belong in the card* — and it is the only truncation in the
+  library.
 - **Head** eyebrow · title on 620 · sub 17 · note 13 under the list · link 20 under the note.
   **Title ladder: Small 28 (9 Big Type) · Medium 34 (thirteen designs) · Large 40 (6 Split Head).**
   **Every head string edits inline** with the P0·1 toolbar; `linkLabel` and `linkUrl` stay a pair,
@@ -170,13 +202,21 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   (the Meta enum carries it, after A17·9), 14 Index (Detail governs it), 5 Grouped (Group by governs
   it at Tag; the Month and Year gap is recorded in the Reconciliation notes).
 - **The meta row** is the four-value enum everywhere it exists — None · Date only · Name and date ·
-  Name, date and reading time. **A17's fifth value, With photograph, does not cross into A18** ⚑:
+  Name, date and reading time — **⚑ with one divergence found on 3 September 2026 and left alone:
+  9 Big Type draws None · Date only · Tag and date · Name, tag and date** under the same name, because
+  A17·9's exception moves its tag into the meta line. One name with two sets, recorded as an OPEN
+  QUESTION in Patch notes — pass four, because A17·9 draws the same divergence and it is one ruling
+  for both categories. **A17's fifth value, With photograph, does not cross into A18** ⚑:
   `profile_image` is read by no design here, and a 24 px circle beside a hung date or a thumbnail is
   a second identifying object in one row. **12 Panel's fixed meta is withdrawn** and takes the enum.
 - **Order is a rule, never a sequence:** Newest first · Oldest first, **greyed at Hand-picked with
   the reason at the control** ⚑ pass two — "not available while posts are hand-picked: your drag
-  order is the order" — where the drag order is the order. **⚑ 14 Index adds a third value, Title A–Z**, server-side
-  `title asc`. **`shuffle` is declared nowhere** ⚑; three designs depend on a date order, and both
+  order is the order" — where the drag order is the order. **⚑ Amended 3 September 2026: 14 Index no longer adds a third value here.** *One control name means
+  one set of values*, so `order` is two values in all fifteen and the alphabetical sort is **14 Index's
+  own `alphabetical` row, On · Off** — server-side `title asc` — **which greys Order while it is on**,
+  with the reason at the control. **⚑ Ruled 2 September 2026: hand-picked references are held in the
+  order the user dragged them and handed to the template that way, never re-sorted by date** — which is
+  why this row greys in that path rather than being quietly ignored. **`shuffle` is declared nowhere** ⚑; three designs depend on a date order, and both
   date values are one.
 - **Responsive floor.** **Nine designs hang something at the right edge at 1440 and all nine drop it
   under the title at 834**, into A17's meta row unchanged. **Reading time leaves the meta below 767
@@ -186,9 +226,12 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   the link; no fill, border, shadow or radius; hover a 2 px accent underline at 160 ms; focus A6's
   ring on the whole row. **The excerpt binds `excerpt`** ⚑ — the custom excerpt where one is
   authored, Ghost's generated plaintext otherwise, clamped by line as designed; `custom_excerpt`-only
-  survives where a design **frames** the excerpt, and **nothing in A18 frames one**. **Three
-  departures, each flagged:** 4 Dated and 13 Timeline put the date first; 9 Big Type moves the tag
-  into the meta, after A17·9.
+  survives where a design **frames** the excerpt, and **nothing in A18 frames one**. **Three departures, and ⚑ amended 3 September 2026 they are A17's to declare rather than
+  this document's** — *the card's exceptions belong in the card*: **4 Dated** and **13 Timeline** (date,
+  tag, title, excerpt, author) and **9 Big Type** (title, then tag) are three of the four entries in
+  **the card's own DOM-order register in A17**, beside A17·9's identical move. **The register is
+  closed:** a design not named in it may not depart, and a new departure is added there or nowhere.
+  Each design's A11y line now points at the register instead of raising its departure locally.
 - **Two exceptions to "no plane":** 8 Row Cards (per-post plane, and A17·4's hover lift) and
   12 Panel (one plane for the section). **Both lose their shadow in dark and are measurably weaker
   there.**
@@ -198,13 +241,26 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
 - **Accent** is spent twice a section — hover underline and focus ring. **Two designs spend a third,
   both as controls:** 7 Contrast Band's lifted accent, 15 Load More's Solid button. **A tag, a
   numeral and a timeline marker are never accent.**
+- **The pack supplies its own contrast colours, and they are COMPUTED** ⚑ 3 September 2026, *an
+  answer that already existed*. Every Style Pack value is marked **COMPUTED** — worked out
+  automatically from colours the pack already declares — or **AUTHORED**, and **on-contrast text,
+  accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all COMPUTED**.
+  **No A18 design derives one for itself, ever again:** 7 Contrast Band reads the computed on-contrast
+  and accent-on-contrast, 15 Load More's Solid button reads the computed on-accent, 8 Row Cards' and
+  12 Panel's dark planes read the computed dark elevation, and 11 Numbered's tabular figures are
+  supplied rather than hoped for. **The category's five "independent derivations" were five readings of
+  one set of tokens**; every measurement already recorded stands, and **no colour or drawn value
+  changes.**
 - **Behaviour.** **Two modules in the category** ⚑ amended — `group-headings` (5 Grouped, new in
   this pass) and `load-more` (15 Load More); `core` assumed, never declared per design. On the
   main feed the **Pagination style** row may call `load-more` — the registry's, never a new name.
   **No A18 design loses a post without JavaScript**, **thirteen are pixel-identical with it off**,
   and the two that are not say so on their frames: 5 Grouped renders flat and ungrouped, 15 Load
-  More renders Ghost's numbered `/page/2/` links in place of its button. **No registry addition is
-  needed and no module name was invented**; `infinite-scroll` stays refused category-wide.
+  More renders Ghost's numbered `/page/2/` links in place of its button. **No registry addition is needed and no module name was invented**; `infinite-scroll` stays refused
+  category-wide. **⚑ 3 September 2026, *an answer that already existed*: a design may declare more than
+  one behaviour module and the compiler emits the union** — true since the inventory merge. **No subject
+  in A18:** thirteen designs declare none and two declare one each, so the category is not waiting on a
+  ruling it never asked for.
 - **Structure.** `<section aria-labelledby>` → `<h2>`; `<ul>` of `<li>`; **each title an `<h3>`**;
   dates `<time datetime>`; plate `aria-hidden`. **Two departures:** 11 Numbered is an `<ol>` — the
   only one in the library — and 5 Grouped makes each heading an `<h3>` and steps its titles to
@@ -218,6 +274,43 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   remove. **Member visibility is offered nowhere** ⚑ — every action here is navigation. **Image focus
   has nothing to attach to** ⚑ — A18 authors no image, and a thumbnail's focal point belongs to the
   post, in Ghost. **Rule 11's optional button icon reaches one design**, 15 Load More.
+
+### One control name, one set of values — as it lands in A18
+
+**The owner's ruling, 3 September 2026**, reconciled against **A17 · Post Grids**, where the card and
+the shared query fields are defined. **One name owns one list of values.** A user who learns a control
+in one design must not meet a different control wearing the same name in the next, and **where two
+designs genuinely differ they differ by name** — some designs losing a value they had is the intended
+cost.
+
+**What the set is** — A17's reading, adopted here without change: the set is **the list of value
+names**, in one order, with no design adding, removing or re-ordering an entry. A design states **what
+those names resolve to in its own geometry**, and that resolution is a measurement, not a value. The
+universal Vertical spacing has always worked this way.
+
+| Name | The one set | A18's resolution |
+|---|---|---|
+| `order` | **Newest first · Oldest first** | **All fifteen, and two is the whole set**; greyed at Source: Hand-picked with the reason at the control. **⚑ Changed in this pass: 14 Index's third value, Title A–Z, is withdrawn from this name.** |
+| `alphabetical` | **On · Off**, default Off | **14 Index only** ⚑ new in this pass, carrying the withdrawn value. Server-side `title asc`, never a client sort. **At On it greys `order`** — "not available while the index runs A–Z: the alphabet is the order" — and the dependency is declared in this control's own definition, with its reason, so the panel, the checker and the compiler read one source. **Nothing drawn changes:** an index running A–Z is what the frame already showed. |
+| `thumbSize` | **Small · Medium · Large** | **2 Thumb Rows only**, resolved **96 · 144 · 200**. A17·13 Thumb Side resolves the same set at 96 · 120 · 160 in a 636 px cell. **The old note that A18 wrote "the same field name with a different enum" is withdrawn** — the set is identical and only the resolution differs. |
+| `picture` | **Off · Small · Medium** | ⚑ **new name in this pass**, carrying what **8 Row Cards** and **15 Load More** drew as Thumbnail: **a control that can also be switched *off* is a different control and takes a different name**, which is A17's own reading. Resolved **Off · 112 · 160** on 8 Row Cards and **Off · 96 · 160** on 15 Load More; the panel label reads **Picture**. **No value was added, removed or re-ordered** — only the name over them. |
+| `thumbShape` | **Landscape · Square** | Already compliant and **unchanged**: one set on 2 Thumb Rows, 8 Row Cards and 15 Load More, the tag plate following the shape. It keeps its name on all three; on the two that now write `picture` its greyed reason reads "greyed at Picture Off". |
+| `rowDensity` | **Compact · Comfortable · Spacious** | **One set, five resolutions, nothing renamed:** **16 · 24 · 36** on an ordinary row (1, 2, 4, 5, 6, 7, 11, 12, 15) · **44 · 56 · 72** on 3 Slim, the row's whole height · **20 · 28 · 40** on 9 Big Type, and on 13 Timeline as the space between posts on a rail that has no row box · **12 · 16 · 24** on 14 Index · **card padding 16 · 24 · 32** on 8 Row Cards. **10 Lead and List has no such row**; 7 Contrast Band's 80 · 96 · 132 is **Vertical spacing's** resolution. |
+| `count` · `batchSize` | *(steppers, not sets)* | A stepper has a range rather than a value list: `count` **1–100 with per-design bounds**, `batchSize` **3–25**. A range that differs per design is what the bounds are for, and **no count was converted in either direction.** |
+| `meta` | **⚑ two sets — an OPEN QUESTION** | Thirteen designs draw **None · Date only · Name and date · Name, date and reading time**; **9 Big Type draws None · Date only · Tag and date · Name, tag and date** under the same name, because A17·9's exception moves its tag into the meta line. **A17·9 draws the same divergence**, so this is one ruling for two categories rather than a rename in one. **Left alone**, recorded in Patch notes — pass four. (4 Dated and 13 Timeline are *not* cases: they write `author`, a different name for a different set.) |
+| `titleSize` | **⚑ two sets — an OPEN QUESTION** | **3 Slim and 14 Index share Small · Medium (17 · 19)**; **9 Big Type's row, drawn under the same label Title size, is Display · Huge.** The honest fixes are a rename on 9 Big Type or a rename on the other two, and both are decisions about a drawn label on designs this work list does not name. **Left alone**, recorded. |
+| `columns` | **⚑ two sets — an OPEN QUESTION** | **3 Slim's One · Two** and **14 Index's Two · Three · Four**. Both stay **named sets** — *a count that picks between drawn layouts is a named set, not a number picker*, and every value has a drawn width behind it — but they are two sets under one name. Giving 3 Slim the wider set would offer it two columns counts it cannot draw; giving either a new name is a label decision. **Left alone**, recorded. |
+
+**What A18 gives up.** **Nothing drawn, and one shared row narrows:** `order` no longer carries an
+alphabetical value, so a site that wants one reaches it through 14 Index's own control rather than
+through the query panel. **What is kept:** the capability itself, which is server-side and cheap, and
+which an index is the one design in the library to want.
+
+**A narrowing is not a second set.** *A design may offer fewer choices on a shared control, and must
+say why* governs 12 Panel's Rule without Boxed, 14 Index's Title size without Medium at Columns Four
+and every locked universal row; this ruling governs a name carrying **different** values, not **fewer**
+values with a reason drawn. The two rules are read together here rather than chosen between, and the
+tension is listed in **Patch notes — pass four** rather than resolved.
 
 ### The disabled-control pattern
 
@@ -239,9 +332,9 @@ A18**: no control in this category is one the project can never offer, so nothin
 | **Fourteen designs** | **Order**, at Source: Hand-picked — "not available while posts are hand-picked: your drag order is the order." **15 Load More cannot reach the case**: its Source is locked, so Hand-picked is unreachable there. |
 | **1 Rows** | **Meta position**, at Meta None — there is no meta to place. The stored value returns when Meta is set. |
 | **5 Grouped** | **"Everything else" label**, at Group by Month, Year and Nothing — only a tag group can be missing; and **Heading position**, at Group by Nothing — there are no headings to position. Both were conditional and one was hidden. |
-| **8 Row Cards** | **Thumbnail shape**, at Thumbnail Off — no picture to shape and no plate to follow it. |
-| **14 Index** | **Title size: Medium**, at Columns Four — 19 px in a 306 px column is three lines for most titles. Falls to **Small**. |
-| **15 Load More** | **Count**, which the design does not read at all — the route's pagination is the total; and **Thumbnail shape**, at Thumbnail Off. |
+| **8 Row Cards** | **Thumbnail shape**, at **Picture** Off — no picture to shape and no plate to follow it. *(The switching control was drawn as Thumbnail until 3 September 2026; only its name changed.)* |
+| **14 Index** | **Title size: Medium**, at Columns Four — 19 px in a 306 px column is three lines for most titles. Falls to **Small**. **⚑ New 3 September 2026: Order (data)**, at **Alphabetical On** — "not available while the index runs A–Z: the alphabet is the order." The stored value returns when Alphabetical is off. |
+| **15 Load More** | **Count**, which the design does not read at all — the route's pagination is the total; and **Thumbnail shape**, at **Picture** Off. |
 | **10 Lead and List** *(narrowed, not switched off)* | **Meta**, at Followers: Slim lines — **slim followers carry no meta** (the owner, 1 September 2026). The row stays live because it still sets the lead's, and carries the sentence at the control: "slim followers carry no meta — this sets the lead's." |
 
 **Locks are the rule's neighbouring case and are drawn, never hidden:** 7 Contrast Band at
@@ -285,7 +378,7 @@ controls, **not counted toward the brief's control budget** ⚑:
 | `filterValue` | ref opt | a tag or an author; read at By tag / By author |
 | `postRefs` | ref[] opt | read at Hand-picked; the Ghost post picker's references, **drag order = drawn order** |
 | `count` | int req | **a stepper, 1–100**, with per-design minimum, maximum and step |
-| `order` | enum req | Newest first · Oldest first; **Title A–Z at 14 Index**; **greyed at Hand-picked**, with the reason at the control — "your drag order is the order" |
+| `order` | enum req | Newest first · Oldest first — **two values, and two is the whole set** ⚑ amended 3 September 2026, *one control name means one set of values*; 14 Index's old third value moves to that design's own `alphabetical` row, On · Off, which greys this one while it is on; **greyed at Hand-picked**, with the reason at the control — "your drag order is the order" |
 | `paginationStyle` | enum opt | main feed only: Numbered · Newer and older · Load more · None (A34's) |
 | `emptyHeading` `emptyBody` | text opt | main feed only; authored, with defaults |
 
@@ -366,8 +459,11 @@ stepper, `excerpt`, the main feed's empty state and Pagination style. *Universal
 4. **Responsive.** 1440 thumb 144 × 96 (144 square at Thumbnail shape Square), gap 24, text 652,
    meta 200 · 834 meta under title, thumb holds 144, text 590 · ≤ 767 thumb 96, title 18, **excerpt
    hidden whatever the control says**. **The picture never leaves the leading edge and never stacks.**
-5. **Fields.** As 1 Rows plus `feature_image` + `feature_image_alt`. **⚑ Writes `thumbSize` with
-   values 96 · 144 · 200** — same field name as A17·13, different enum — **and `thumbShape`** ⚑ new.
+5. **Fields.** As 1 Rows plus `feature_image` + `feature_image_alt`. **⚑ Writes `thumbSize`, whose one set is Small · Medium · Large — A17·13's set exactly —
+   resolved here at 96 · 144 · 200** ⚑ amended 3 September 2026, *one control name means one set of
+   values*: the old note that this was the same field name with a different enum is **withdrawn**, the
+   difference being a resolution in a row twice as wide. **And `thumbShape`**, Landscape · Square, one
+   set on all three designs that draw a picture.
 6. **Controls.**
 
    | Control | Values |
@@ -439,7 +535,10 @@ the plate following the shape), **Tag** and the **"View all" link** join the fiv
    no dash, no placeholder. Date and reading time are guaranteed by Ghost, so **a tag is the only
    gap this design can show.**
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — the truncation is CSS. `filter-strip` considered and not declared.
-10. **A11y. ⚑ The only design in the library that truncates a title.** The clip is
+10. **A11y. ⚑ The only design in the library that truncates a title, and ⚑ 3 September 2026 the
+    exception is A17's to carry** — *the card's exceptions belong in the card*, so the card's title
+    promise now reads "wraps, never clamped, never truncated, with one exception" and names this
+    design. The clip is
     `white-space: nowrap` + `text-overflow: ellipsis`; **the full string stays in the DOM**, is the
     link's accessible name and is what is indexed. **No `title` attribute is added.** A6's ring
     overlaps the rules at 44 px — accepted. **44 px is exactly A1's touch minimum and Row density
@@ -447,7 +546,8 @@ the plate following the shape), **Tag** and the **"View all" link** join the fiv
 
 **Reconciled.** *Controls, six:* the **"View all" link** joins the five; Padding retired. **No Tag
 row, with the reason at the control.** *Data:* the Data group and a **1–30 stepper** — the widest in
-A18. *Universal:* Row density keeps its name, 44 · 56 · 72 being the row and not the section.
+A18. *Universal:* Row density keeps its name **and the shared set Compact · Comfortable · Spacious**,
+44 · 56 · 72 being this design's resolution of it — the row and not the section.
 
 ---
 
@@ -487,8 +587,10 @@ A18. *Universal:* Row density keeps its name, 44 · 56 · 72 being the row and n
    scheduled posts to a public query.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the date column is server-rendered from each post's `published_at`. **Nothing in the registry sorts client-side**, so a reader cannot reverse the order with or without script — A17·10's gap, unchanged.
 10. **A11y. ⚑ DOM order departs from the card: date, tag, title, excerpt, author** — the visual and
-    reading orders agree, and the card's promise that a design switch never changes what a screen
-    reader hears is broken here, deliberately, in one place. **The column's width is computed** (the
+    reading orders agree. **⚑ 3 September 2026 the departure is registered in the card itself**, in
+    A17's closed DOM-order register, which is now the only place a departure may be declared; the
+    card's promise is narrower than it read and true as it now reads, and this design is one of the
+    four it names. **The column's width is computed** (the
     longest rendered date + 24, floored at 96) — the one measured-rather-than-named dimension in
     A18, for localisation ⚑.
 
@@ -634,10 +736,12 @@ retired. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    legitimate at Spacious, and not warned.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — the inversion is a token substitution. **JS off:** pixel-identical. **Print: on white, without the band** ⚑ amended — the same rows, the same measure, the same rules. A17·7's behaviour, kept; its old phrasing as a design switch, withdrawn. **The design stays Contrast Band: it loses its ground, not its identity.**
 10. **A11y.** Measured on the band, light: title 15.87:1, muted `#A5A29D` 5.32:1. Dark (the band
-    inverts to `#EDE7DA`): 15.42:1 and `#6C6961` 5.61:1. **⚑ The accent needs a pack-level answer:**
-    the light band takes the dark accent at 5.73:1; the dark band takes the light accent at 4.42:1
-    and **only clears AA as large text**, drawn as a 14 px semibold underline. **Fourth independent
-    derivation of `on-contrast` in the library.**
+    inverts to `#EDE7DA`): 15.42:1 and `#6C6961` 5.61:1. **⚑ Answered 3 September 2026, *an answer that already existed*: on-contrast text and
+    accent-on-contrast are COMPUTED pack values, and this design reads them.** The light band takes the
+    dark accent at 5.73:1; the dark band takes the light accent at 4.42:1 and **only clears AA as large
+    text**, drawn as a 14 px semibold underline. **Every measurement stands; what changes is that the
+    section no longer works out the colour it draws.** The "fourth independent derivation" finding is
+    closed.
 
 **Reconciled.** *Controls, seven:* **Tag** and the **"View all" link** join the five. *Universal:*
 **Background role locked at Contrast**, **Top divider locked None**, and the band's 80 · 96 · 132 is
@@ -657,15 +761,15 @@ ruling is withdrawn and replaced by that. *Data:* the Data group, a 1–25 stepp
 4. **Responsive.** 1440 card 1,296, padding 24, gap 16, thumb 160 × 107 trailing (160 square at
    Square), excerpt held to 760 · 834 thumb 128 — **no hang to collapse, so nothing else moves** ·
    ≤ 767 padding 16, gap 12, thumb 88, excerpt hidden, meta reduced to the date.
-5. **Fields.** As 2 Thumb Rows. **Writes `card`, a third `thumbSize` value set (Off · 112 · 160) ⚑
-   and `thumbShape`.**
+5. **Fields.** As 2 Thumb Rows. **Writes `card`, `picture` ⚑ renamed 3 September 2026 from `thumbSize` — one set,
+   Off · Small · Medium, resolved Off · 112 · 160 — and `thumbShape`.**
 6. **Controls.**
 
    | Control | Values |
    |---|---|
    | Card | Surface · Ground |
-   | Thumbnail | Off · Small · Medium |
-   | Thumbnail shape | **Landscape · Square**; **greyed at Thumbnail Off** — no picture to shape and no plate to follow it — with the reason at the control |
+   | Picture | Off · Small · Medium (Off · 112 · 160); ⚑ **renamed from Thumbnail, 3 September 2026** — a control that can also be switched *off* is a different control and takes a different name |
+   | Thumbnail shape | **Landscape · Square**; **greyed at Picture Off** — no picture to shape and no plate to follow it — with the reason at the control |
    | Row density | Compact · Comfortable · Spacious (card padding 16 · 24 · 32) |
    | Excerpt | Off · One line · Two lines |
    | Meta | None · Date only · Name and date · Name, date and reading time |
@@ -675,24 +779,27 @@ ruling is withdrawn and replaced by that. *Data:* the Data group, a 1–25 stepp
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
 
-   **No Rule** — the only A18 design without it. **Row density keeps its name** as the card's
-   internal padding: a genuinely different ladder.
+   **No Rule** — the only A18 design without it. **Row density keeps its name and the shared set
+   Compact · Comfortable · Spacious**, resolved here as the card's internal padding, 16 · 24 · 32
+   ⚑ amended 3 September 2026: a different quantity is a resolution, not a second value set.
 7. **Data.** Designed for 5 and 10; correct at 1–15 (a card is 24% taller than a bare row).
    1 → **the best single-post case in A18.**
-8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at
-   Thumbnail Off and does not hand off**, unlike 2 Thumb Rows, because the card is the design and the
+8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at Picture Off and does not hand off**, unlike 2 Thumb Rows, because the card is the design and the
    picture is a passenger. **Cards are not equalised** — a stack has no row to equalise.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — the lift does not run while editing. **JS off:** pixel-identical — the hover lift is a CSS transition and respects `prefers-reduced-motion` by keeping the end state.
 10. **A11y.** The card is the `<a>`. **⚑ DOM order is A17's and the visual order puts the image
     last**; `alt=""` in practice, the same trade A17·13 recorded. **A6's ring has the 16 px gap to
     live in — the most comfortable in A18.** Contrast on the card 16.25:1 / 5.85:1; dark
-    14.56:1 / 6.41:1. **⚑ In dark the shadow and the lift are dropped and the surface step alone
-    carries the plane.**
+    14.56:1 / 6.41:1. **⚑ In dark the shadow and the lift are dropped and the surface step alone carries the plane**, and
+    **⚑ 3 September 2026 the dark elevation that step reads is a COMPUTED pack value** — *an answer that
+    already existed* — not something this design works out.
 
 **Reconciled.** *Controls, eight:* **Thumbnail shape**, **Tag** and the **"View all" link** join the
 five; Padding retired into Vertical spacing while **Row density keeps its own name** as card padding.
-*Data:* the Data group, a 1–15 stepper, `excerpt`. *Universal:* Background role is the ground behind
-the cards and is not locked; where it meets Card Surface the panel says the two converge.
+*Data:* the Data group, a 1–15 stepper, `excerpt`. *Universal:* Background role is the ground behind the cards and is not locked; where it meets Card
+Surface the panel says the two converge. **Pass four:** the Thumbnail row is renamed **Picture**
+(`picture`, Off · Small · Medium) under *one control name means one set of values*, and the card's
+dark elevation is read from the pack rather than derived.
 
 ---
 
@@ -723,8 +830,12 @@ the cards and is not locked; where it meets Card Surface the panel says the two 
    | Vertical spacing (universal) | Compact · Comfortable · Spacious |
    | Top divider (universal) | None · Line · Fade |
 
-   **No Excerpt** — the title is the excerpt, at four times the size. **No Tag row** — the tag
-   lives inside the Meta enum here, A17·9's exception.
+   **No Excerpt** — the title is the excerpt, at four times the size. **No Tag row** — the tag lives inside the Meta enum here, A17·9's exception. **⚑ Found in this
+   pass and left alone:** this design's **Meta** row carries **None · Date only · Tag and date ·
+   Name, tag and date**, which is not the four-value enum the other designs draw under the same name —
+   one name with two sets, which *one control name means one set of values* forbids. **A17·9 draws the
+   same divergence for the same reason**, so it is one ruling for two categories rather than a rename
+   here; recorded as an OPEN QUESTION in Patch notes — pass four.
 7. **Data.** Designed for 3–5; correct at 1–6, legible to 10. **The count line carries the
    category's only standing warning** — "Display titles read best at five or fewer", three at Huge —
    **and the stepper carries no maximum below the category's.** 1 → **the strongest single-post case
@@ -734,8 +845,9 @@ the cards and is not locked; where it meets Card Surface the panel says the two 
    thin post. Its exposure is the opposite: a very long title at 48 px is three lines, and it wraps.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical. `reveal` and `typewriter` both considered and refused.
 10. **A11y.** The `<h2>` is visually the smallest heading on the page and structurally still the
-    parent. **⚑ DOM order departs from the card — title then tag** — the second exception across the
-    two categories, after A17·9's identical move.
+    parent. **⚑ DOM order departs from the card — title then tag** — and **⚑ 3 September 2026 it is
+    registered in the card itself**, in A17's closed DOM-order register, beside A17·9's identical move,
+    rather than raised again here.
 
 **Reconciled.** *Controls, six:* the **"View all" link** joins the five; Padding retired. **No Tag
 row:** the Meta enum is where this design's tag is governed. *Data:* the Data group and a stepper
@@ -839,9 +951,10 @@ group, a 2–15 stepper (25 at Slim lines), `excerpt` on the lead.
    higher than its neighbours'. Correct: the numeral labels the title.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — the numerals are rendered into the markup, **not by a CSS counter** ⚑, so every position is present. `count-up` considered and refused.
 10. **A11y. ⚑ The list is an `<ol>`, the only one in A17 or A18**, and **the drawn numeral is
-    `aria-hidden`** because the list type already announces the position. **Tabular figures are a
-    requirement, not a preference** — the second design after A17·10 to need them, and now recorded
-    as a pack requirement.
+    `aria-hidden`** because the list type already announces the position. **Tabular figures are a requirement, not a preference** — the second design after A17·10 to need
+    them, and **⚑ 3 September 2026, *an answer that already existed*: tabular figures are a COMPUTED
+    pack value and are supplied, not hoped for.** The finding that the packs *should* carry them is
+    closed.
 
 **Reconciled.** *Controls, seven:* **Tag** and the **"View all" link** join the five; Padding
 retired. *Data:* the Data group, a 1–25 stepper, `excerpt`, and the fixed-set advice moved onto the
@@ -891,8 +1004,9 @@ Order row, where the value it warns about lives.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — the panel is a container, not a behaviour. **JS off:** pixel-identical. `accordion` considered and refused.
 10. **A11y. ⚑ The panel is a `<div>` with no role** — A17·17's ruling, reused. At Head Outside the
     `<h2>` sits outside the panel in the DOM as well as visually. Contrast 16.25:1 / 5.85:1 light,
-    14.56:1 / 6.41:1 dark. **⚑ In dark the panel's border and the row dividers converge on one
-    token** where light has two.
+    14.56:1 / 6.41:1 dark. **⚑ In dark the panel's border and the row dividers converge on one token** where light has two,
+    and **⚑ 3 September 2026 the panel's dark elevation is a COMPUTED pack value** — *an answer that
+    already existed* — so the plane no longer derives its own step.
 
 **Reconciled.** *Controls, eight:* **Meta** (new — the fixed meta had a measurement, not a reason),
 **Tag** and the **"View all" link** join the five; Padding retired into Vertical spacing, around the
@@ -940,8 +1054,8 @@ separate ladder. *Data:* the Data group, a 1–15 stepper, `excerpt`.
    time, and nothing says so; a proportional rail was refused because a six-month gap would draw a
    metre of empty line.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the rail, the markers and the dates are markup and CSS. `scroll-spy` and `reveal` considered and refused.
-10. **A11y.** Rail and markers `aria-hidden`. **⚑ DOM order is date, tag, title, excerpt, author** —
-    4 Dated's departure, for the same reason. **A6's ring wraps the text and the date and stops
+10. **A11y.** Rail and markers `aria-hidden`. **⚑ DOM order is date, tag, title, excerpt, author** — 4 Dated's departure, for the same reason,
+    and **⚑ 3 September 2026 registered in the card itself**, in A17's closed DOM-order register. **A6's ring wraps the text and the date and stops
     short of the rail**, which is shared between rows.
 
 **Reconciled.** *Controls, seven:* **Tag** and the **"View all" link** join the five; Padding
@@ -961,14 +1075,18 @@ row carrying the date-order note.
    title 17, date 13 · 1080 Four becomes three · 834 **three and four both become two at 365** ·
    ≤ 767 one column. **The entry is identical at all four widths; only the column count changes.**
 5. **Fields.** Section six; query the Data group's; post `title`, `url`, and one of `published_at`
-   or `primary_tag`. **Reads no image, author, excerpt or reading time.** Writes `columns`, `detail`,
-   `titleSize`; **shares `titleSize`'s Small · Medium (17 · 19) with 3 Slim.**
+   or `primary_tag`. **Reads no image, author, excerpt or reading time.** Writes `columns`, `detail`, `titleSize` and **`alphabetical`** ⚑ new;
+   **shares `titleSize`'s Small · Medium (17 · 19) with 3 Slim.** **⚑ Found in this pass and left
+   alone:** `columns` carries **Two · Three · Four** here and **One · Two** at 3 Slim, and `titleSize`'s
+   Small · Medium is not 9 Big Type's Display · Huge under the same drawn label — two names each
+   carrying two sets, recorded as OPEN QUESTIONS in Patch notes — pass four rather than renamed.
 6. **Controls.**
 
    | Control | Values |
    |---|---|
    | Columns | Two · Three · Four |
    | Detail | Title only · Title and date · Title and tag |
+   | Alphabetical | On · Off, default Off ⚑ **new 3 September 2026** — server-side `title asc`, never a client sort; **at On it greys Order (data)** with the reason at the control ("not available while the index runs A–Z: the alphabet is the order") |
    | Title size | Small · ~~Medium~~ — **Medium is greyed at Columns Four**, with the reason at the control ("19 px in a 306 px column is three lines for most titles"); **falls to Small** and returns at Columns Two and Three |
    | Rule | Off · Between rows · Boxed |
    | Row density | Compact · Comfortable · Spacious (12 · 16 · 24) |
@@ -982,21 +1100,24 @@ row carrying the date-order note.
 7. **Data.** Designed for 15 and 25; **the stepper reaches 30**, and below four posts the panel
    suggests Columns Two. **Columns are balanced by count, not height** — 15 across three is 5·5·5,
    across four is 4·4·4·3, and the count line reports the division. 1 → **one title beside two empty
-   columns, the worst single-post case in A18.** **⚑ Order gains a third value here, Title A–Z**, a
-   server-side `title asc` — never a client sort.
+   columns, the worst single-post case in A18.** **⚑ Amended 3 September 2026: Order does not gain a third value here.** *One control name means one
+   set of values*, so the alphabetical sort is **this design's own `alphabetical` row, On · Off** —
+   server-side `title asc`, never a client sort — **and it greys Order while it is on**, with the reason
+   at the control. The drawn state is the index the frame always showed; what changed is the name it is
+   reached by, and `order` is two values in all fifteen again.
 8. **Empty.** At Detail Title and tag an untagged post draws its title alone and its entry is 21 px
    shorter; **entries are not equalised.** At Title and date nothing can be missing.
-9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — and **Title A–Z is server-side, so it needs none.** `filter-strip` considered and refused (A17·15 owns it); `shuffle` refused.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical — and **Alphabetical is server-side, so it needs none.** `filter-strip` considered and refused (A17·15 owns it); `shuffle` refused.
 10. **A11y. ⚑ One `<ul>` for the whole index, flowed into columns by CSS** — not one list per
     column — so the announced order and the read order are the same. **At Compact an entry is 62 px
     with a date and 44 px without**, meeting the touch floor. **Titles are never clipped here**,
-    unlike 3 Slim's. **Title A–Z changes the announced order because it changes the rendered order**,
-    which is the point of it.
+    unlike 3 Slim's. **Alphabetical changes the announced order because it changes the rendered order**, which is the point of it.
 
 **Reconciled.** *Controls, six:* the **"View all" link** joins the five; Padding retired. **No Tag
-row:** Detail governs it. *Data:* the Data group, a 1–30 stepper, and **Order's third value,
-Title A–Z** ⚑ — which closes the category's standing finding that `order` has no alphabetical value,
-without coining a module.
+row:** Detail governs it. *Data:* the Data group and a 1–30 stepper. **Pass four:** the alphabetical sort is
+**`alphabetical` On · Off**, a control of this design's own, and **`order` is two values here as
+everywhere** ⚑ 3 September 2026 — the standing finding that `order` has no alphabetical value stays
+closed, now without giving one name two sets, and still without coining a module.
 
 ---
 
@@ -1009,11 +1130,10 @@ without coining a module.
    auto-width and centred above 767, full width below.
 4. **Responsive.** 1440 thumb 96 × 64 (96 square at Square), text to 760, meta 200; button 45 px
    tall, centred, 44 px below the last rule; count line under it · 834 meta under the title · ≤ 767
-   thumb 80, **button full width**. **⚑ At Thumbnail Medium the phone draws 96, so the two settings
-   converge below 767.**
+   thumb 80, **button full width**. **⚑ At Picture Medium the phone draws 96, so the two settings converge below 767.**
 5. **Fields.** As 2 Thumb Rows. **⚑ Amended: `source` is locked at This route's posts and `count` is
    not read at all** — the route's own pagination is the total. Writes
-   `batchSize` and `buttonStyle` *(both shared with A17·16)*, `thumbSize`, `thumbShape` and
+   `batchSize` and `buttonStyle` *(both shared with A17·16)*, `picture` ⚑ renamed 3 September 2026 from `thumbSize` (one set, Off · Small · Medium, resolved Off · 96 · 160), `thumbShape` and
    **`buttonLabel`** ⚑ new.
 6. **Controls.**
 
@@ -1022,8 +1142,8 @@ without coining a module.
    | Batch size | **a stepper, 3–25, default 10** — the route's page size |
    | Button | Outline · Solid · Text |
    | Button label | `buttonLabel`, ≤ 24 ch, with an optional icon |
-   | Thumbnail | Off · Small · Medium |
-   | Thumbnail shape | **Landscape · Square**; **greyed at Thumbnail Off** — no picture to shape — with the reason at the control |
+   | Picture | Off · Small · Medium (Off · 96 · 160); ⚑ **renamed from Thumbnail, 3 September 2026** — a control that can also be switched *off* is a different control and takes a different name |
+   | Thumbnail shape | **Landscape · Square**; **greyed at Picture Off** — no picture to shape — with the reason at the control |
    | Rule | Off · Between rows · Boxed |
    | Row density | Compact · Comfortable · Spacious |
    | Excerpt | Off · One line · Two lines |
@@ -1050,20 +1170,19 @@ without coining a module.
    placed on the route whose posts it draws, so the route's pagination and the button are one
    mechanism rather than two. **Pagination style is locked at Load more**, as before. 0 in the editor → three outlined rows **and the button
    in its resting state**, the only editor empty state in A18 that includes a control.
-8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at
-   Thumbnail Off rather than handing off** — the button, not the picture, is the design.
+8. **Empty.** Plate at the thumbnail's box, in the set shape. **No image on any post → draws at Picture Off rather than handing off** — the button, not the picture, is the design.
    **Exhausted → the button is replaced by the count line "All 15 posts shown"**, now **a theme
    translation-catalogue string** ⚑, and the section ends there.
 9. **Behaviour module.** **`load-more`.** **Edit-safe: no** — it appends rows the editor did not place; the module does not run while editing, so the editor shows the resting state and the first batch only. **JS off, quoted from the registry: "Ghost's numbered `/page/2/` pagination links render instead (FR-G4, explicitly)."** The first batch is server-rendered and complete; only the button is replaced, so the archive stays fully readable. **`infinite-scroll` refused.** ⚑ **This line corrects the earlier "Edit-safe" on this design**; see the module-declaration entry in Patch notes.
 10. **A11y.** **The button is a real `<button>` and is not rendered at all without JavaScript**, so
     there is never an inert control. **Focus moves to the first new row after a batch arrives**, and
     the count line is an `aria-live="polite"` region. Button 45 px tall, full width below 767.
-    **Solid's derived on-accent label measures 4.9:1** ⚑ — the fifth independent derivation of a
-    colour the packs should supply. **An icon on the button is decorative and `aria-hidden`**; the
+    **Solid's on-accent label measures 4.9:1** ⚑ — and **⚑ 3 September 2026, *an answer that already
+    existed*: on-accent is a COMPUTED pack value, so this design reads it rather than deriving it.** The
+    measurement is unchanged and the fifth-derivation finding is closed. **An icon on the button is decorative and `aria-hidden`**; the
     accessible name is `buttonLabel`.
 
-**Reconciled.** *Controls, eleven:* **Row density** and **Excerpt** restored, **Button label**
-authored with an optional icon, **Thumbnail shape**, **Tag** and the **"View all" link** added;
+**Reconciled.** *Controls, eleven:* **Row density** and **Excerpt** restored, **Button label** authored with an optional icon, **Thumbnail shape** — governing the row now named **Picture** ⚑ pass four — **Tag** and the **"View all" link** added;
 Padding retired. *Strings:* `buttonLabel` authored with the default "Load more"; **the count and
 exhausted lines are catalogue strings**, not English literals — the old "no authored strings in this
 design's own furniture" ruling is overruled. *Data:* the Data group and **Pagination style locked at
@@ -1091,7 +1210,7 @@ Cumulative. **Established in A18** unless another category is named.
 | **Timeline rail** | A 1 px hairline cut to the first and last markers, with an 11 px muted marker per post | **A18** (13) |
 | **Leading ordinal** | A tabular numeral at the title's size in the muted colour, inside an `<ol>`, `aria-hidden` | **A18** (11) |
 | **Titles-only index** | One `<ul>` flowed into 2–4 columns, read down then across | **A18** (14) |
-| **Alphabetical order value** | `Title A–Z` — a third server-side `order` value, never a client sort | **A18** (14) |
+| **Alphabetical order** | `alphabetical` On · Off at 14 Index — a design's own control, server-side `title asc`, **not a third `order` value** ⚑ amended 3 September 2026 under *one control name means one set of values*; it greys `order` while it is on, never a client sort | **A18** (14) |
 | **Post card** | Image, tag, title, excerpt, meta in fixed DOM order; whole card one `<a>`; heading-font title | A17 |
 | **Tag plate** | Missing-image substitute at the image's box, carrying the primary tag, `aria-hidden` | A17 |
 | **Data group** | Source · Tag/Author · Hand-picked · Count · Order (+ the main feed's pagination and empty-state fields); P0·5 configured for posts | A17 |
@@ -1138,9 +1257,9 @@ under a title is a second identifying object beside a thumbnail or a date, which
 fifth Meta value, With photograph, does not cross into A18**. It stays in the union because A17 and
 A21 use it, and the union is what makes switching safe.
 
-**Per-design fields — twenty-six.** `rule` · `rowDensity` · `excerpt` · `meta` · `tag` are shared by
-most; `thumbSize` · `thumbShape` · `titleSize` · `author` · `columns` by two or three each; and
-`metaPosition` · `dateStyle` · `groupBy` · `headingPosition` · `otherGroupLabel` · `headSide` ·
+**Per-design fields — twenty-seven** ⚑ amended 3 September 2026 (`thumbSize` renamed to `picture` on the two designs that can switch it off, and `alphabetical` added at 14 Index). `rule` · `rowDensity` · `excerpt` · `meta` · `tag` are shared by
+most; `thumbShape` · `titleSize` · `author` · `columns` · `picture` by two or three each; and
+`thumbSize` · `alphabetical` · `metaPosition` · `dateStyle` · `groupBy` · `headingPosition` · `otherGroupLabel` · `headSide` ·
 `band` · `card` · `alignment` · `leadLayout` · `leadRatio` · `followerStyle` · `numberStyle` ·
 `panelEdge` · `headPosition` · `marker` · `datePosition` · `detail` · `trailing` · `batchSize` ·
 `buttonStyle` · `buttonLabel` by one each. **`padding` is gone from all fifteen**, retired into the
@@ -1158,8 +1277,10 @@ query is what the user owns.
 
 - **1 · `count`'s values are per-category.** Closed. Count is one stepper, 1–100, with per-design
   bounds; the two ladders were two guesses at the same number.
-- **8 · `order` has no alphabetical value.** Closed. **Title A–Z** is a third server-side `order`
-  value, drawn at 14 Index, the one design in the library that wants an alphabet.
+- **8 · `order` has no alphabetical value.** Closed, and **⚑ restated 3 September 2026**: the
+  alphabet is reached through **14 Index's own `alphabetical` control (On · Off)**, server-side
+  `title asc`, **not through a third `order` value** — *one control name means one set of values*.
+  Same capability, same drawn index, one name per value set.
 - **A18 had no authored strings and shipped English ones.** Closed. `otherGroupLabel` and
   `buttonLabel` are authored with kept defaults, and 15 Load More's count and exhausted lines are
   catalogue strings. **A18 previously shipped no catalog string at all.**
@@ -1172,43 +1293,73 @@ query is what the user owns.
 
 *Marked item by item, 1 September 2026 — housekeeping only. A settled item is struck through with
 who settled it; a live one carries **OPEN FOR THE OWNER** on its own line. **Nothing was answered
-here.***
+there.*** **⚑ Worked through again on 3 September 2026: eight of the ten are now struck** — item 2 by
+the owner's naming ruling, items 3, 4, 8, 9 and 10 as *answers that already existed*, and items 5 and
+6 by *the card's exceptions belong in the card*. **One remains open: item 7, the missing client-side
+sort.** The dates and the original wording are kept and struck rather than deleted.
 
 1. ~~15 Load More reinterprets `count`.~~ **Settled by the post lists patch, 28 August 2026.** 15 Load More no longer reinterprets `count`: the design is
    main-feed-only, the route's pagination is the total, and `count` is not read there. **The field
    means the same thing in all fifteen designs.** What replaces it is a smaller question, below:
    Batch size is the route's page size, and only the theme can write that number.
-2. **A control name is not a field.** `rowDensity` carries five different value sets across A18,
-   `thumbSize` three, and now `order` carries three values in one design and two in fourteen. This
-   generalises A17's "one image field or three?".
-   **OPEN FOR THE OWNER**
-3. **A pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.** Five designs across the two
-   categories derive one independently. **The strongest finding, restated.**
-   **OPEN FOR THE OWNER**
-4. **Tabular figures are a pack requirement**, needed by A17·10 and A18·11 and statable nowhere.
-   **OPEN FOR THE OWNER**
-5. **The post card's DOM order now has four exceptions** — A17·9, A18·4, A18·9, A18·13 — and they
-   should be written into the card rather than left in four design specs.
-   **OPEN FOR THE OWNER**
-6. **The card's "never truncated" promise has one exception**, A18·3, and the same applies.
-   **OPEN FOR THE OWNER**
+2. ~~**A control name is not a field.** `rowDensity` carries five different value sets across A18,
+   `thumbSize` three, and now `order` carries three values in one design and two in fourteen.~~
+   **Answered by the owner's ruling of 3 September 2026, *one control name means one set of values*,
+   and reconciled against A17 in this pass.** **The set is the list of value names**, and a quantity
+   is a resolution in a design's own geometry: `rowDensity` is **one set with five resolutions** and is
+   renamed nowhere; `thumbSize` is **Small · Medium · Large** (A17·13's set, resolved 96 · 144 · 200 at
+   2 Thumb Rows) while the two designs that can switch the picture off now write **`picture`,
+   Off · Small · Medium**; and **`order` is two values in all fifteen**, 14 Index's third value having
+   moved to its own **`alphabetical`** row. The stale half of this item — that `order` carries three
+   values in one design — is withdrawn with it. **Three collisions this reconciliation found are open
+   in Patch notes — pass four** (9 Big Type's `meta`, 9 Big Type's `titleSize`, `columns`).
+3. ~~**A pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.** Five designs across the two
+   categories derive one independently. **The strongest finding, restated.**~~ **Answered
+   3 September 2026 — *an answer that already existed*: every Style Pack value is marked COMPUTED or
+   AUTHORED, and on-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular
+   figures are all COMPUTED.** The five derivations were five readings of one set of tokens.
+   7 Contrast Band, 15 Load More, 8 Row Cards, 12 Panel and 11 Numbered read them; **no design derives
+   one for itself again, and no colour or measurement changed.**
+4. ~~**Tabular figures are a pack requirement**, needed by A17·10 and A18·11 and statable nowhere.~~
+   **Answered 3 September 2026 — *an answer that already existed*: tabular figures are a COMPUTED pack
+   value and are supplied.** 11 Numbered's numerals no longer rest on a hope.
+5. ~~**The post card's DOM order now has four exceptions** — A17·9, A18·4, A18·9, A18·13 — and they
+   should be written into the card rather than left in four design specs.~~ **Done, 3 September 2026,
+   by *the card's exceptions belong in the card*: A17 carries the closed DOM-order register**, with all
+   four entries and their reasons. This document points at it; the three A18 designs' A11y lines no
+   longer declare their departures locally. **A new departure is added there or nowhere.**
+6. ~~**The card's "never truncated" promise has one exception**, A18·3, and the same applies.~~
+   **Done, 3 September 2026:** the exception is written into **the card's own title promise in A17** —
+   "wraps, never clamped, never truncated, with one exception" — naming 3 Slim, its `nowrap` + ellipsis
+   clip, the full string in the DOM as the accessible name, and no `title` attribute.
 7. **No module covers a client-side sort** (A17·10, A18·4) — the same gap, named twice, and
-   deliberately not closed by 14 Index's server-side value.
+   deliberately not closed by 14 Index's server-side sort, which is now its own `alphabetical`
+   control. **⚑ 3 September 2026 it carries a second reason as well:** a third `order` value would give
+   one name two value sets, which *one control name means one set of values* forbids. **The one item on
+   this list still open.**
    **OPEN FOR THE OWNER**
-8. **Two designs are measurably weaker in dark** — 8 Row Cards and 12 Panel — because the shadow is
-   dropped and Paper's surface step is modest. A pack-level dark elevation would fix both.
-   **OPEN FOR THE OWNER**
-9. **The main feed needs to be *designated*.** "This route's posts on a paginated template" is a
+8. ~~**Two designs are measurably weaker in dark** — 8 Row Cards and 12 Panel — because the shadow is
+   dropped and Paper's surface step is modest. A pack-level dark elevation would fix both.~~
+   **Answered 3 September 2026 — *an answer that already existed*: dark elevation and dark
+   hover-surface are COMPUTED pack values**, and both planes read them. The measurements are unchanged
+   — the shadow is still dropped in dark and the surface step still carries the plane — but neither
+   design works the step out for itself.
+9. ~~**The main feed needs to be *designated*.** "This route's posts on a paginated template" is a
    template fact, not a section setting; the builder has to tell the section which it is, or the
-   empty state and the pagination select cannot be shown conditionally. **A17's finding, unchanged
-   and now load-bearing in two categories.**
-   **OPEN FOR THE OWNER**
-10. **`postRefs` needs an ordering contract in the schema.** Drag order is drawn order in the
+   empty state and the pagination select cannot be shown conditionally.~~ **Answered
+   3 September 2026 — *an answer that already existed*: exactly one section per page is designated the
+   main feed and the project file stores which one.** A design is told; it does not work it out. That
+   is what makes the empty state and the pagination select conditional, and what makes 15 Load More's
+   locked Source meaningful.
+10. ~~**`postRefs` needs an ordering contract in the schema.** Drag order is drawn order in the
     editor; the template must be handed the references *in that order* rather than re-sorting them
-    by `published_at`. Ghost's `#get` helper does not preserve an arbitrary order for free — and
-    **11 Numbered draws an ordinal over whatever order it is handed**, so a silent re-sort would
-    renumber the list.
-    **OPEN FOR THE OWNER**
+    by `published_at`.~~ **Answered — ruled 2 September 2026: hand-picked references are held in the
+    order the user dragged them and handed to the template that way, never re-sorted by date.** That
+    is why Order greys at Hand-picked rather than being quietly ignored, and it is why **11 Numbered's
+    ordinal can be trusted over a hand-picked set** — a silent re-sort would have renumbered the list.
+    What remains is mechanical rather than a decision: Ghost's `#get` helper does not preserve an
+    arbitrary order for free, so the builder needs a path — *a remainder for the architect, not a
+    question for the owner.*
 
 ---
 
@@ -1245,7 +1396,7 @@ gained the authored **"Everything else" label** and the `{{date}}` locale confir
 Background role **locked at Contrast**, Top divider **locked None**, and its 80 · 96 · 132 kept as
 Vertical spacing's resolution; **8** kept **Row density** as its card-padding ladder; **9** got a
 stepper whose maximum is advisory; **12** gained the standard **Meta** enum and lost its fixture;
-**14** gained **Title A–Z** on Order; **15** gained **Thumbnail shape**, an authored **Button label**
+**14** gained **Title A–Z** on Order *(withdrawn 3 September 2026 and moved to its own `alphabetical` control)*; **15** gained **Thumbnail shape**, an authored **Button label**
 with an optional icon, **Row density** and **Excerpt** restored, catalogue strings, a stepper on the
 reachable total (**since superseded** — see the post lists patch), and **Pagination style locked at
 Load more**.
@@ -1381,11 +1532,18 @@ as a locked value with the reason beside it.
    widths, so the number-picker rule was read as not applying. The same reading was recorded in the
    About and Team category and is still unresolved across the library; it should be settled once,
    not per category — which the rule has now done for A18 and A17 alike.
-4. **Carried forward, unchanged by this pass:** the pack-level `on-contrast` / `on-accent`
+4. ~~**Carried forward, unchanged by this pass:** the pack-level `on-contrast` / `on-accent`
    derivation (five independent derivations now), tabular figures as a pack requirement, the post
    card's four DOM-order exceptions, the single truncation exception, the missing client-side sort,
    dark elevation for 8 Row Cards and 12 Panel, the main feed needing to be *designated*, and
-   `postRefs` needing an ordering contract.
+   `postRefs` needing an ordering contract.~~ **Seven of the eight are answered, 3 September 2026** —
+   four as *answers that already existed* and two by *the card's exceptions belong in the card*:
+   on-contrast, on-accent, dark elevation and tabular figures are **COMPUTED** pack values; the four
+   DOM-order exceptions and the one truncation are **entries in A17's closed card register**; the main
+   feed is **designated, and the project file stores which section it is**; and `postRefs` **keeps the
+   order the user dragged**, ruled 2 September 2026. **One survives — the missing client-side sort:**
+   nothing in the registry sorts in the browser, no module name was coined for it, and it now carries a
+   second reason as well, since a third `order` value would give one name two sets.
    **OPEN FOR THE OWNER**
 
 ### Module declarations added — 31 August 2026
@@ -1411,7 +1569,7 @@ relabelled from Module to Behaviour module and nothing was renumbered.**
 | 11 | Numbered | **None** · edit-safe: yes · JS off: pixel-identical, the numerals being in the markup rather than in a CSS counter |
 | 12 | Panel | **None** · edit-safe: yes · JS off: pixel-identical |
 | 13 | Timeline | **None** · edit-safe: yes · JS off: pixel-identical |
-| 14 | Index | **None** · edit-safe: yes · JS off: pixel-identical; Title A–Z is server-side |
+| 14 | Index | **None** · edit-safe: yes · JS off: pixel-identical; Alphabetical is server-side |
 | 15 | Load More | **`load-more`** · **edit-safe: no** — it appends rows the editor did not place · JS off: Ghost's own numbered `/page/2/` links render in place of the button, the first batch being server-rendered and complete |
 
 **Thirteen declare none and two declare a script**, matching §0's count. **No name outside the
@@ -1570,7 +1728,7 @@ the identical conflict.
    the sentence at the control ("slim followers carry no meta — this sets the lead's") rather than
    greying, which would take the lead's meta with it. Applied to `A18-10`, to the design's control
    table and to the disabled-control pattern. **No value changed and no control was added.**
-   **No question remains open in A18.**
+   **No question remained open in A18 on 1 September 2026.** *(Dated rather than deleted: pass four, 3 September 2026, raises six — see **Patch notes — pass four**.)*
 
 ### Left alone deliberately
 
@@ -1591,3 +1749,175 @@ resolved**.
    fifteen designs, no gap created or closed, no number reused, nothing renumbered.
 2. **The "[Free] designs:" line is present** at the head of this document, on its own line, and
    names **1 Rows** and **3 Slim** — both of which exist in this category's roster of fifteen.
+
+---
+
+## Patch notes — pass four, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. Rules are named and never
+numbered: the letter-and-number labels elsewhere in this project are filing codes and say nothing
+about what a rule requires. **Three work-list items. One of them changes a drawn label on two frames
+and adds one drawn row on a third; nothing else drawn moved.**
+
+**Frames updated:** all fifteen design frames (`A18-1` … `A18-15`) and the proof frame `A18-0`, each
+gaining a **PASS FOUR PATCH** block naming, for that design, what was ruled and what was written in.
+**Three frames change more than their block:** `A18-8` and `A18-15` draw their thumbnail control
+labelled **Picture** where it read Thumbnail, and their greyed **Thumbnail shape** row reads "greyed at
+Picture Off"; `A18-14` draws a new **Alphabetical** row and its **Order** row back at two values, and
+its pass-two greyed Order pill drops the third value with it. **Nothing was renumbered or deleted, no
+value was added, removed or re-ordered, no default changed, and no layout, type scale, colour pack or
+spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **One control name means one set of values** — *the owner's ruling, 3 September 2026*, reconciled
+   against **A17**, where the card and the shared query fields are defined. A new category-layer
+   section states the ruling and resolves it name by name: **One control name, one set of values — as
+   it lands in A18**. The three collisions A17 named are closed:
+   - **`order` is Newest first · Oldest first in all fifteen again.** 14 Index's third value,
+     **Title A–Z**, is withdrawn from the shared name and moves to **`alphabetical` On · Off**, a
+     control of that design's own, server-side `title asc`. **The value the user could reach is the
+     same value; the name it is reached by is not.** The alternative — deleting the capability, which
+     the ruling's "some designs lose a value they had" points at — was **declined and recorded**: the
+     sort is server-side, cheap and already drawn, and an index is the one design in the library that
+     wants an alphabet.
+   - **`picture` Off · Small · Medium** now carries what **8 Row Cards** and **15 Load More** drew as
+     Thumbnail, on A17's own reading that **a control that can also be switched *off* is a different
+     control and takes a different name**. **`thumbSize` stays Small · Medium · Large** — A17·13's
+     set — and in A18 it is written by **2 Thumb Rows** alone, resolved 96 · 144 · 200. The note that
+     A18 wrote "the same field name with a different enum" is withdrawn.
+   - **`rowDensity` is one set with five resolutions.** Compact · Comfortable · Spacious everywhere it
+     is drawn, resolved 16 · 24 · 36 · 44 · 56 · 72 · 20 · 28 · 40 · 12 · 16 · 24 and card padding
+     16 · 24 · 32 in the designs' own geometries. **Nothing is renamed**, and §8's old sentence — that
+     a genuinely different ladder keeps a distinct name — is **withdrawn as superseded**, since under
+     the ruling's own reading a quantity is a measurement rather than a value.
+2. **A dependency is declared in the control's own definition and carries its reason** — *a control
+   switched off by another is greyed, with the reason beside it*. The one greying this pass adds is
+   declared that way: **14 Index's `alphabetical` carries the fact that it greys `order`, and the
+   reason**, so the panel, the checker and the compiler read one source and the design hand-draws
+   nothing. It is entered in **The disabled-control pattern** beside the existing cases.
+3. **The card's exceptions belong in the card** — and **A17 now carries them**, where the card is
+   defined. **Removed from this document as declarations and kept as pointers:** the three A18
+   DOM-order departures (**4 Dated** and **13 Timeline** — date, tag, title, excerpt, author — and
+   **9 Big Type** — title, then tag) are three of the four entries in **A17's DOM-order register**, and
+   **3 Slim's single-line clip** is written into the card's title promise itself. Each design's A11y
+   line points at the register instead of raising its departure locally, and §0's card bullet says
+   which document owns them. **No design changed**, and **A17 owns them**: this pass edited no A17
+   file.
+4. **The pack's contrast colours, dark elevation and tabular figures are COMPUTED** — *an answer that
+   already existed*. Written into the shared floor, and into the five designs that were working values
+   out for themselves: **7 Contrast Band** reads computed on-contrast and accent-on-contrast,
+   **15 Load More's** Solid button reads computed on-accent, **8 Row Cards'** and **12 Panel's** dark
+   planes read computed dark elevation, and **11 Numbered's** tabular figures are supplied rather than
+   hoped for. **The category's five "independent derivations" were five readings of one set of
+   tokens.** **No colour, contrast measurement or drawn value changes.**
+5. **The main feed is designated, and the project file stores which section it is** — *an answer that
+   already existed*. Written into settlement 4, where the empty state and the pagination select are
+   made conditional. A design is told rather than working it out, which is also what makes 15 Load
+   More's locked Source meaningful.
+6. **Hand-picked references keep the order they were dragged** — *ruled 2 September 2026*. Written onto
+   the Order bullet with its date: the references are held in the drag order and handed to the template
+   that way, never re-sorted by date, **which is why Order greys in that path rather than being quietly
+   ignored**. `postRefs`' missing ordering contract is closed.
+7. **A design may declare more than one behaviour module, and the compiler emits the union** — *an
+   answer that already existed*. **No subject in A18:** thirteen designs declare none and two declare
+   one each. Recorded so the category is not read as waiting on a ruling it never asked for.
+7b. **The 1 September "Findings for the architect → Still open" list is worked through** —
+   housekeeping. It is the ten-item list this pass's answers land on, and **eight of the ten are now
+   struck with the date and the rule or ruling that settled them**: item 2 by *one control name means
+   one set of values*; items 3, 4, 8, 9 and 10 as *answers that already existed* (COMPUTED pack
+   values, the designated main feed, hand-picked drag order); and items 5 and 6 by *the card's
+   exceptions belong in the card*. **Item 7, the missing client-side sort, is the one still open**, now
+   with a second reason. **Nothing was answered in the housekeeping** — every answer is one of the
+   rulings above, written where the finding was still printed as open. The stale half of item 2 (that
+   `order` carried three values in one design) is withdrawn with it, and the four other places that
+   still printed the withdrawn value — the Data group's field table, the component inventory's
+   alphabetical row, the closed-findings bullet and the reconciliation pass summary — now read as
+   `alphabetical`.
+8. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The five rules of this pass, checked design by design
+
+| Rule (by name) | Where it lands in A18 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **One case added and one thing learned.** Added: **14 Index's Order at Alphabetical On**, drawn greyed with the sentence at the control and the stored value returning. Learned: the dependency is **declared in the control's own definition** with its reason, which is how the new case is written and how the existing ones are now read. The pass-two cases, the four locks, 10 Lead and List's narrowing and 12 Panel's absent Boxed are unchanged. **The rule's one exception — a control the project can never offer, drawn nowhere and explained in the panel — is claimed nowhere in A18**; the pinned-colour-scheme case has no subject in this category. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **No subject, unchanged.** A18 draws no person and reads no `profile_image`; A17's fifth Meta value does not cross into this category and no initials block exists in the fifteen. If a design ever draws a Ghost byline it gets **one letter, never two** — Ghost's template language cannot split a name on the versions we support. |
+| **The Remove button never greys out** | **No subject, and nothing to fix.** A18 authors no list: no Add creates a post, no Remove deletes one. The post picker at Source: Hand-picked has an ✕ on every row, no floor, and removing the last reference empties the set. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row converted, in either direction** — and the naming ruling reinforced it: `count` (1–100, per-design bounds) and `batchSize` (3–25) count posts and stay steppers; 3 Slim's and 14 Index's **Columns** are drawn widths and stay named sets. **They are also two sets under one name**, which is a separate finding and is recorded as an open question below rather than fixed by conversion. |
+| **A design may declare the width below which its script runs** | **Neither module does**, unchanged. `group-headings` and `load-more` run at every width, and both no-JavaScript lines already read at every width. **Nothing was declared, because declaring one would be a decision rather than a record.** |
+
+### Open questions raised by this pass
+
+1. **`meta` carries two sets, and the second one is A17's too.** Thirteen A18 designs draw
+   **None · Date only · Name and date · Name, date and reading time**; **9 Big Type draws
+   None · Date only · Tag and date · Name, tag and date** under the same name, because the card's
+   register lets it move its tag into the meta line. **A17·9 draws the same divergence for the same
+   reason**, so a rename in A18 alone would split the two categories that share the card, and dropping
+   either set would take a drawn value off a frame. **Nothing was changed on this account.**
+   **OPEN FOR THE OWNER**
+2. **`titleSize` carries two sets.** 3 Slim and 14 Index share **Small · Medium (17 · 19)**;
+   **9 Big Type's row, drawn under the same label Title size, is Display · Huge** — a display ladder
+   rather than a size step. Renaming either side is a decision about a drawn label on a design this
+   work list does not name. **Nothing was changed on this account.**
+   **OPEN FOR THE OWNER**
+3. **`columns` carries two sets.** **3 Slim: One · Two. 14 Index: Two · Three · Four.** Both pass the
+   named-set test — every value has a drawn width behind it — but they are two lists under one name.
+   Widening 3 Slim would offer it column counts it cannot draw at a 44 px row; renaming either is a
+   label decision. **Nothing was changed on this account.**
+   **OPEN FOR THE OWNER**
+4. **Does a differing *quantity* under a shared value name count as a second set?** This document
+   reads the set as the list of value names, which is the reading A17 landed and the reading that lets
+   `rowDensity` stay one name. **On the stricter reading, in which the quantities are the set, five A18
+   ladders and A17·13's 96 · 120 · 160 all have to move or take new names** — which is why it needs one
+   ruling across the two categories rather than two. **A17 has the identical question open**, and this
+   pass changed nothing on its account.
+   **OPEN FOR THE OWNER**
+5. **`group-headings` still has no written contract.** Unchanged from pass two: the registry names the
+   module but does not say whether it may re-level a heading. This document still assumes it inserts
+   each group heading as an `<h3>` and steps the titles it groups to `<h4>`, because that is the only
+   arrangement whose outline is correct both with the script and without it.
+   **OPEN FOR THE OWNER**
+6. **The missing client-side sort**, carried forward and now with a second reason: nothing in the
+   registry sorts in the browser, no module name was coined, and a third `order` value would give one
+   name two sets. 14 Index's Alphabetical is server-side and is not that sort.
+   **OPEN FOR THE OWNER**
+
+### Conflicts listed rather than chosen
+
+1. **A narrowing and a second set are governed by different rules, and they meet on the same rows.**
+   *A design may offer fewer choices on a shared control, and must say why* permits **12 Panel's Rule
+   without Boxed**, **14 Index's Title size without Medium at Columns Four** and every locked universal
+   row; *one control name means one set of values* says no design may add, remove or re-order an entry.
+   **Read together here** — the naming ruling governs a name carrying *different* values, the narrowing
+   rule governs *fewer* values with a reason drawn — and **listed rather than resolved**, because
+   reading them the other way would strip four narrowings this category has drawn and explained since
+   pass one. **No panel was changed on this account.**
+2. **The Data group still hides the main feed's pair because P0·5 does.** Unchanged from pass two:
+   Pagination style and the empty-state pair are hidden at every Source except This route's posts,
+   the hiding is caused by another control, and it cannot be greyed without redesigning P0·5, which
+   this pass is instructed not to do. **A17 records the identical conflict.** Knowing where a
+   dependency is declared does not decide this one.
+3. **5 Grouped is still absent from the Tag Show · Hide list**, and closing it would give the design
+   two controls that both hide the tag. **9 Big Type's Count maximum stays advisory**, as the category
+   ruled. Both remain where they were.
+
+### Left alone deliberately
+
+**The two repository-maintained pieces are untouched, as asked.** **No design total was written
+anywhere** — not in this document, not on any of the sixteen frames, in any form; nothing here quotes
+a library size, and the count-agnostic copy stands. **P0's per-prop mark allowlist is not rewritten,
+softened or dropped.** Beyond those: **the pass-two entry is left as written**, dates and all, with
+this pass's changes recorded here rather than edited through it; **8 Row Cards' Row density keeps its
+name**, now as a resolution of the shared set rather than as "a genuinely different ladder";
+**`thumbShape` keeps its name on all three designs that draw a picture**, since its one set is already
+compliant and renaming it beside `picture` would give one set two names for no gain; and **no A17,
+A19, A20, A21 or A27 file was edited**, though this pass reads A17's card register and its shared-field
+declarations as the authority.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The "[Free] designs:" line is present** at the head of this document, on its own line, and names
+   **1 Rows** and **3 Slim** — both of which exist in this category's roster of fifteen, and both
+   confirmed by the owner on 28 August 2026.

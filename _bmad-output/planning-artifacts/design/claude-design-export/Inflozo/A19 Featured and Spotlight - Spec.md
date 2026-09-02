@@ -60,6 +60,20 @@ findings reaches this category: **A19 reads no feature-image caption and no comm
 renumbered, no control was added or removed, and no value, default, layout, type scale, colour pack
 or spacing step changed.**
 
+**Eighth pass — pass four, 2 September 2026.** **A19 had no pass three** — that work list did not
+reach this category — so this pass follows pass two and keeps the name it was given. **Its whole work
+list was two answers that already existed**, and neither changes a drawing: **the Style Pack's three
+contrast values are COMPUTED tokens and no design derives one for itself** (which closes finding 6's
+outstanding half and the pack half of the architect's open question), and **a cross-field dependency
+is declared in the control's own definition and carries its reason** (which closes finding 13's schema
+half — the one item in A19 that was OPEN FOR THE OWNER). **Three further standing facts are written in
+with their dates**: hand-picked posts keep the order they were dragged into (ruled 2 September 2026),
+exactly one section per page is the main feed and A19 is never it, and a design may declare more than
+one behaviour module — which has no subject here, 15 Carousel declaring `carousel` alone. **One item
+is left open and named rather than guessed at: Ground's picture-substitute token.** All sixteen frames
+gain a **PASS FOUR PATCH** block. **Nothing was renumbered, no control was added or removed, and no
+value, default, layout, type scale, colour pack or spacing step changed.**
+
 **[Free] designs:** 1 Split · 6 Big Type
 
 *(Shortlisted in this pass, plainest first — 1 Split, 6 Big Type, 12 Picks, 14 Slim, 3 Card — and
@@ -180,6 +194,21 @@ Every design obeys these unless its own entry says otherwise.
 
 - **Print.** Every design prints as drawn except two: **5 Contrast Band prints its own arrangement on white with the band's ground dropped** ⚑ (A17·7's rule, reworded in the design patch pass — it prints as itself, not as another design) and **15 Carousel prints its slides stacked**, all of them, in query order.
 
+### The pack's contrast colours
+
+**Written in 2 September 2026 — an answer that already existed.** **Every Style Pack value is marked
+either COMPUTED — worked out automatically from colours the pack already declares — or AUTHORED, and
+on-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all
+COMPUTED.** **No design in A19 derives a readable text colour for itself.** 5 Contrast Band's four
+on-band values — the muted text, the hairline, the plate at `#322F28` and the focus ring's lifted
+accent — and the contrast pair behind **2 Full Bleed's** and **7 Overlap's** Ground are **readings of
+those tokens in both modes**, not arithmetic a design performs; A17·7's derivation (muted 60 % ·
+hairline 10 % · plate 7 %) is inherited as a reading of them. **No colour and no measured ratio
+anywhere in the category changes on this account** — the values quoted in each design's field 10 are
+the ones already drawn. **What this does not settle, and what is not guessed at here: the token for a
+picture's substitute at the picture's exact box**, which Ground spends the contrast colour a fourth
+way on. That is named as an open question at the end of this document.
+
 ### The content
 
 **Six invented posts (Orbit Weekly)** — A17's and A18's first six in their original positions, so
@@ -249,6 +278,12 @@ one value onto the section and every post reads it. **A picked post that is no l
 skipped**, and if none survive, *When nothing matches* applies — the same rule the query sources
 use.
 
+**Hand-picked posts keep their order — ruled 2 September 2026.** `pickedPosts` is held **in the order
+the user dragged them** and handed to the template that way, **never re-sorted by date**, which is why
+Order greys at that Source with that sentence at the control. This is the behaviour the category
+already drew — the picker's drag, and 12 Picks' ordinals as an honest editorial ranking; **what is
+added is the ruling and its date. No control changes.**
+
 ### The disabled-control pattern
 
 **A control switched off by another is greyed, with the reason beside it** — P0's treatment, applied
@@ -257,6 +292,15 @@ struck through, **the reason is one short sentence at the control rather than a 
 fallback named is the value the design already resolved to, and **no row is left accepting a value it
 will not honour**. **Two rows in A19 were doing exactly that and are the pass's only behavioural
 changes**: 3 Card's Surface value and 14 Slim's Detail row.
+
+**Where the dependency is declared — written in 2 September 2026, an answer that already existed.**
+**The dependency is declared in the control's own definition and carries its reason**, so the panel,
+the checker and the compiler read one source, and **a design does not hand-draw the relationship**.
+The sentence beside a switched-off control in the table below is **the reason string that
+declaration carries**, not copy invented per category; the mechanism itself ships in **P0·0**'s shared
+control definition (the owner, 1 September 2026). **Nothing in A19 is redrawn by this**: the ten cases
+across nine designs, plus Order and Count on all fifteen, are unchanged in appearance, and what is now
+written down is where the relationship lives.
 
 | Where | What greys, and the reason at the control |
 |---|---|
@@ -1063,7 +1107,7 @@ design it was set in.
 | **Rail heading** | An authored ≤ 26-character list label, drawn at eyebrow size or spent on the list's `aria-label` — the fix for an invented `aria-label` | **A19** (11), this pass |
 | **Translation-catalog string** | A reader-visible string that names a control rather than content: theme-translated, never an authored field | **A19** (15), this pass |
 | **Editor count line** | "N posts are featured. M drawn." plus the design's own advice | A17 |
-| **On-contrast derivation** | `color-mix` toward the band's own text: muted 60% · hairline 10% · plate 7% | A17 (7) |
+| **On-contrast derivation** | `color-mix` toward the band's own text: muted 60% · hairline 10% · plate 7% — **from 2 September 2026 read as a reading of COMPUTED pack tokens, not arithmetic a design performs** | A17 (7) |
 | **Dated row** | A row with its date hung at the right edge — reused by 11's rail at 834 and 12's meta at 1440 | A18 (4) |
 | **Row density** | A second padding control inside a list, named Compact · Comfortable · Spacious with per-design quantities | A18 (1) |
 | **Separator vocabulary** | Off · Between rows · Boxed, one separator per design; A19 spends Off · Between bands/followers/picks · Column rule | A18 (1) |
@@ -1160,9 +1204,13 @@ answered elsewhere in the document.
    rule the query sources use. One rule, written once.**
 6. ~~**Open — a pack-level `on-contrast`, `on-contrast-accent` and `on-accent`.**~~ **Settled by the
    owner, 1 September 2026: the pack takes all three.** Restated from A17 and A18; 5 Contrast Band
-   derived them independently for the third time, at four ratios rather than one. **What the build
+   derived them independently for the third time, at four ratios rather than one. ~~**What the build
    owes: confirming the pack's values against what 5 Contrast Band draws at each of the four**, or
-   dark bands shift.
+   dark bands shift.~~ **Closed 2 September 2026, by an answer that already existed: every pack value
+   is marked COMPUTED or AUTHORED, and all three of these are COMPUTED** — so there is nothing to
+   confirm against a derivation, because **no design derives one**. 5 Contrast Band reads the tokens
+   at each of its four uses and the colours on its frame are unchanged. Written into the category
+   layer as **The pack's contrast colours**.
 7. **Closed by the design patch pass — there is no “this design cannot render this post”.** All
    fifteen render. 2 Full Bleed and 7 Overlap draw **Ground**, 4 Poster reflows, 13 Quote draws its own
    thin state, and every panel advises where it used to hand off. **What the build still owes: an
@@ -1202,11 +1250,13 @@ answered elsewhere in the document.
     dependency in one category, all drawn by hand.** ~~How a disabled dependency should look~~ —
     **settled by the pass-two rule *a control switched off by another is greyed, with the reason
     beside it*, 1 September 2026: greyed, never hidden, the reason a sentence at the control, the
-    fallback named.** **How the schema declares one is still unanswered, and the count is now ten
-    cases across nine designs plus two on every design in the category. OPEN FOR THE OWNER** — the
-    only item on this list that is. The *display* is settled twice over: greyed with a reason at the
-    control, and **the mechanism ships in P0·0's shared control definition** (the owner, 1 September
-    2026), so what remains is the schema's declaration of the dependency itself, not its appearance.
+    fallback named.** ~~How the schema declares one is still unanswered. OPEN FOR THE OWNER~~ —
+    **closed 2 September 2026, by an answer that already existed: the dependency is declared in the
+    control's own definition and carries its reason**, so the panel, the checker and the compiler
+    read one source and no design hand-draws the relationship. The mechanism ships in **P0·0's
+    shared control definition** (the owner, 1 September 2026). **The count is unchanged — ten cases
+    across nine designs plus two on every design in the category — and none of them is redrawn.**
+    **Nothing on this list is now OPEN FOR THE OWNER.**
 14. **New — the universal trio needs a lock with a reason string.** Five locks in A19, each drawn
     with the sentence that explains it. **A lock without a reason reads as a bug**, and the reason is
     per design, so it cannot live in the trio's own definition. Pass two widened it — the same string is
@@ -1424,15 +1474,17 @@ pack or spacing step changed.**
 
 ### Open question — the architect's
 
-1. **Unchanged and now narrower.** The Data group's *When nothing matches* still
-   belongs to the group rather than to A19; the pack still owes `on-contrast`,
-   `on-contrast-accent` and `on-accent`, which 5 Contrast Band derives for the third time — and
-   **Ground now spends the contrast colour a fourth way**, as a field behind nothing. Print rules
-   still live per design. **The twelfth Tag row adds nothing new to the build**: it is the row eleven
-   designs already carry. **What Ground adds to the build's list: one token used as a picture's
-   substitute, at the picture's exact box, in two designs.** **OPEN FOR THE OWNER — and after
-   1 September 2026 this is the only item in the category that is, alongside finding 13's schema
-   half.**
+1. **Narrowed again on 2 September 2026, and now one thing only.** ~~The pack still owes
+   `on-contrast`, `on-contrast-accent` and `on-accent`, which 5 Contrast Band derives for the third
+   time~~ — **answered: all three are COMPUTED pack values and no design derives one**, written into
+   **The pack's contrast colours**. The Data group's *When nothing matches* belongs to the group,
+   settled by the owner on 1 September 2026; print rules become a proper field at a fourth case, his
+   ruling of the same day. **The twelfth Tag row adds nothing new to the build**: it is the row eleven
+   designs already carry. **What is left is one token: a picture's substitute, at the picture's exact
+   box, in 2 Full Bleed and 7 Overlap** — the fourth way Ground spends the contrast colour, and not one
+   of the five values the pack's COMPUTED list names. **It is left rather than folded into
+   `on-contrast`, because deciding it here would invent a token.** **OPEN FOR THE OWNER — and after
+   2 September 2026 it is the only item in the category that is.**
 
 2. ~~**Added by pass two — a reason string on every greyed row, not only on a locked one.**~~
    **Settled by the owner, 1 September 2026: one mechanism — a greyed state, a struck value, a reason
@@ -1666,3 +1718,113 @@ the roster's phrasing, the free-designs line, the module table — **it was left
    settled it.
 
 — End of pass two —
+
+---
+
+## Patch notes — pass four, 2 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **A19 had no pass three** —
+that work list did not reach this category — so this pass follows pass two and keeps the name it was
+given. **One work-list item, in two halves, and neither changes a drawing.** **Frames updated:** all
+fifteen design frames (`A19-1` … `A19-15`) and the proof frame `A19-0`, each gaining a **PASS FOUR
+PATCH** block naming, for that design, what was ruled and what was written in. **No section frame was
+redrawn, no panel row was added, removed or greyed, nothing was renumbered, renamed or deleted, no
+value or default changed, and no layout, type scale, colour pack or spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **The pack's three colour values are COMPUTED, and no design derives one** — *an answer that
+   already existed*. Every Style Pack value is marked **COMPUTED** or **AUTHORED**; on-contrast text,
+   accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all **COMPUTED**.
+   **5 Contrast Band's four on-band values** — muted text, hairline, the plate at `#322F28` and the
+   focus ring's lifted accent — and **the contrast pair behind 2 Full Bleed's and 7 Overlap's Ground**
+   are readings of those tokens rather than arithmetic a design performs; A17·7's derivation is
+   inherited as such. Written into the category layer as **The pack's contrast colours**, and the
+   inventory's *On-contrast derivation* row now says so. **Finding 6's outstanding half and the pack
+   half of the architect's open question are closed with the answer and its date. No colour and no
+   measured ratio on any frame changes.**
+2. **How a control says it switches another one off is written in as an answer** — *a control switched
+   off by another is greyed, with the reason beside it*. **The dependency is declared in the control's
+   own definition and carries its reason**, so the panel, the checker and the compiler read one
+   source, and **no design hand-draws the relationship**; the mechanism ships in **P0·0's shared
+   control definition**. It sits in **The disabled-control pattern**, beside the table it explains.
+   **This closes finding 13's schema half — the one item in A19 that was OPEN FOR THE OWNER.** The
+   count is unchanged: **ten cases across nine designs, plus Order and Count on all fifteen**, none of
+   them redrawn. What is now written down is *where the relationship lives*; the sentence beside a
+   switched-off control is the reason string its declaration carries.
+3. **Hand-picked posts keep their order** — *ruled 2 September 2026*. Written into **The Data group**:
+   `pickedPosts` is handed to the template in the user's dragged order and **never re-sorted by date**,
+   which is why Order greys at that Source. **This is what the category already drew** — finding 5's
+   ordered reference list, the picker's drag, and 12 Picks' ordinals as an honest editorial ranking —
+   so the ruling is confirmed rather than reopened. **No control changes.**
+4. **Exactly one section per page is the main feed, and A19 is never it** — *an answer that already
+   existed*. The project file stores which section is the feed and **a design is told rather than
+   working it out**. **A19 declares no page-number control and no feed empty state**: the Data group's
+   *When nothing matches* is the query's zero-item answer, not a feed's. Recorded on the proof frame
+   so the category is not read as a candidate. **Nothing added.**
+5. **A design may declare more than one behaviour module** — *an answer that already existed*, true
+   since the inventory merge; the compiler emits the union. **A19 has one module-bearing design** —
+   15 Carousel, declaring `carousel` alone, **edit-safe: no** by the owner's ruling of 1 September
+   2026 — and the other fourteen declare none, so the rule has no subject here. Recorded so a single
+   declaration is not later read as a limit.
+6. **The roster, the control lists, the data fields, the no-JavaScript lines and the declared
+   behaviours were re-checked and none changed.** Fifteen rows with **[Free]** on 1 Split and 6 Big
+   Type; every control table as pass two left it, including 11 Lead and Rail's seven; **twenty-one
+   shared fields — six authored, five query, ten read**; the no-JavaScript line per design unchanged
+   — **fourteen pixel-identical**, 15 Carousel's track a native snap row with its dots inert and its
+   arrows absent; `carousel` in 15 and none declared elsewhere.
+7. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The five rules of this pass, checked design by design
+
+| Rule (by name) | Where it lands in A19 |
+|---|---|
+| **A control switched off by another is greyed, with the reason beside it** | **Ten cases across nine designs, plus Order and Count on all fifteen — all as pass two drew them, none redrawn.** 2 Full Bleed's Scrim (twice), 3 Card's Surface value, 8 Lead and Two's, 9 Alternating's and 12 Picks' Divider, 9's Starts, 11 Lead and Rail's Rail detail and Rail heading, 13 Quote's Author photo, 14 Slim's Detail, 15 Carousel's Navigation. **What this pass adds is where the relationship is declared**, not a new greying. **The rule's one exception is claimed nowhere in A19** — no control here is one this project can never offer. |
+| **Avatars with no photograph show initials, and the two forms are not interchangeable** | **Unchanged, and one form only.** Three designs draw an avatar — 1 Split, 4 Poster and 13 Quote — and each shows **one letter**, because the author comes from Ghost. **A19 has no user-typed list of people**, so the two-initial form has no subject in the category. |
+| **The Remove button never greys out** | **Unchanged, re-checked on all fifteen.** The Hand-picked picker is the category's only repeating list and **it has no floor**: remove is live on every row, removing the last empties the set, *When nothing matches* applies, and the panel says so at the click. No Add creates a post and no Remove deletes one. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **No row changed, in either direction.** Count counts posts, so it stays the shared 1–100 stepper with per-design bounds and its locks drawn; every arrangement control — Ratio, Title size, Excerpt, Meta, Divider, Starts, Rail detail, Navigation, Detail, Alignment — stays a named set with a drawn frame behind each value. |
+| **A design may declare the width below which its script runs** | **No subject.** 15 Carousel is the only module-bearing design and **its track runs at every width**; the other fourteen are pixel-identical with JavaScript off. No design here declares a width, so no no-JavaScript line needed a second side. |
+
+### Open questions
+
+1. **Ground's picture-substitute token.** The pack answer names five COMPUTED values, and **a picture's
+   substitute drawn at the picture's exact box is not one of them** — it is the fourth way
+   2 Full Bleed and 7 Overlap spend the contrast colour, as a field behind nothing. **It is left rather
+   than folded into `on-contrast`, because deciding it here would invent a token**, and both frames say
+   so in their pass-four blocks. Nothing was changed on this account.
+   **OPEN FOR THE OWNER**
+
+**Nothing else in the category is open.** Finding 13's schema half closed above was the only other
+item carrying **OPEN FOR THE OWNER** after pass two.
+
+### Left alone deliberately
+
+**Two things are maintained outside this environment and are untouched here.** **No design total was
+written anywhere** — not in this document, not on any A19 frame, in any form, neither an old number nor
+a corrected one. **P0's per-prop mark allowlist is not rewritten, softened or dropped.**
+
+**Left as written, and said so rather than tidied:** the dated **Patch notes** of the 30 August,
+31 August and 1 September passes, and the dated patch blocks on the frames, are **records of what those
+passes did**. **This pass reverses nothing**, so no item gained a new tag. **Also left:** 14 Slim's Rule
+control (the owner, 1 September 2026 — and the pack's colour answer names no hairline flag, so nothing
+about it changes), 15 Carousel's **edit-safe: no** with no Preview control, two 14 Slim bars on one page
+staying unwarned, and print as a per-design line until a fourth case appears — all four his rulings of
+1 September 2026.
+
+### The owner's ruling — 2 September 2026
+
+1. **Hand-picked posts keep the order they were dragged into** — references handed to the template in
+   that order and never re-sorted by date. **Confirms what A19 already drew; no control changes.**
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Split** and **6 Big Type** — both of which exist in this category's roster. Unchanged
+   from the owner's ruling of 30 August 2026.
+3. **Of the two open questions pass two named, one is closed and one remains:** finding 13's schema
+   half is answered above; **Ground's picture-substitute token stays OPEN FOR THE OWNER**, and it is
+   the only item in A19 that is.
+
+— End of pass four —

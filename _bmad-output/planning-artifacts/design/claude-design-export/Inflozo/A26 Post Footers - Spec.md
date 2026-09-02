@@ -2,7 +2,8 @@
 
 15 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
 **design patch pass, 30 August 2026** ·
-**design patch pass two, 1 September 2026**
+**design patch pass two, 1 September 2026** ·
+**design patch pass four, 3 September 2026**
 
 **[Free] designs:** 1 Author Bio · 6 Slim
 
@@ -21,6 +22,8 @@ panel disagree, the panel is the authority** — it is the thing that was design
 that was written down. Every invented decision is marked ⚑ here and on the frame.
 
 **Design patch pass two, 1 September 2026.** The category was re-read against **five further rules** and against **two things learned by testing real Ghost servers on 31 August 2026**. The rules, by name: **a control switched off by another is greyed, with the reason beside it**; **avatars with no photograph show initials, and the two forms are not interchangeable**; **the remove button never greys out**; **a count that picks between drawn layouts is a named set, not a number picker**; **a design may declare the width below which its script runs**. The findings: **the feature-image caption renders differently on the two Ghost versions**, and **a comment count renders nothing at all without JavaScript**. This category's own work list first settled the share block one way and **the owner reversed it the same day**; the ruling that stands is **native Ghost Share only** — **one trigger opening Ghost's own share panel, which owns its destinations and their order; Copy link and Email as the fallback where the app reports an older Ghost; the 2-to-4 stepper cut; the site setting reduced to two switches; and no brand glyph in any share block** ⚑. The caption finding was carried into 14 Ledger. **Every change is listed with the rule NAME that required it in Patch notes — pass two at the end of this document.** **No frame was redesigned, no design renumbered, no control's values changed, and no printed design total exists anywhere in this category to reintroduce.** Two things edited in the repository rather than here are left exactly as they stand: **the removal of every printed design total from the marketing and app screens**, and **P0's per-prop mark allowlist, including the word "absent"**.
+
+**Design patch pass four, 3 September 2026.** **Two rulings and five answers, carried in.** The rulings: **the all-tags link is authored, not assumed** — 8 Tag Row's archive row is **a Text Field for the label plus a Link Picker for the destination**, **the destination has no default, and the row does not render until one is set** — and **an author's post count may be shown, and a design may turn it off**, which leaves 10 Big Type's **Post count · Show · Hide** exactly as it was drawn and closes the question behind it. The five answers that already existed and are now written in rather than asked again: **every pack value is marked COMPUTED or AUTHORED, and on-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all COMPUTED**; **which section is the main feed is stored in the project file, not worked out by a design**; **a control's dependency is declared in the control's own definition and carries its reason**; **hand-picked posts keep the order the user dragged them**; and **a design may declare more than one behaviour module, the compiler emitting the union**. **Three of the five have no subject in A26** and are recorded as having none rather than left blank. **The five rules restated for this pass are pass two's five**, re-tested here: the only new subject is **8 Tag Row's Archive link, greyed while its destination is empty, with the reason beside it**. **Every change is listed with the rule NAME in Patch notes — pass four at the end of this document.** **No frame was redesigned, no design renumbered, no control's values changed, and no printed design total exists anywhere in this category to reintroduce.**
 
 **Controls-reconciliation pass.** The whole category was audited, design by design, against the PRD's
 control vocabulary and Ghost's verified data surface, thinking like an end user editing their own
@@ -172,7 +175,10 @@ Every design obeys these unless its own entry says otherwise.
   noreferrer · sponsored**. **Ghost-owned content is never inline-editable** ⚑: post titles, tag
   names, author names, bios, social handles, feature-image captions and tier facts — clicking one
   selects the section and the sidebar says **"Edit in Ghost"**. **A26 has exactly one authored URL
-  field** — 8 Tag Row's `archiveUrl` — and **it opens the Ghost-aware Link Picker** ⚑. **Buttons
+  field** — 8 Tag Row's `archiveUrl` — and **it opens the Ghost-aware Link Picker** ⚑. **It has no
+  default, and the row it draws does not render until a destination is set** — the owner's ruling of
+  3 September 2026, because **Ghost publishes no all-tags route** and a default could only point at a
+  page that may not exist. **Buttons
   accept an optional icon before or after the label** from P0·2, with its size and colour-role
   popover; the only buttons in the category are 12 Subscribe's (and 3, 5, 15's at Blocks Everything).
 - **No fixed English visitor-facing string ships** ⚑. Every string a reader sees is **an authored
@@ -188,6 +194,9 @@ Every design obeys these unless its own entry says otherwise.
   to remove.** P0·6's state switcher is how the absent blocks, the two- and three-author rows, the
   copied confirmation and 12's member states are seen while editing.
 - **Behaviour comes only from the fixed module registry.** A26 spends two: `share` and `member-form`.
+  **A design may declare more than one behaviour module and the compiler emits the union** — settled at
+  the inventory merge, and **3 Card, 5 Split and 15 Grid have each declared both all along**, so nothing
+  in the category needed a ruling.
   **Nothing in this pass needed behaviour the registry does not have**, so nothing is marked
   ARCHITECT: registry addition. **`share` is declared by the twelve designs that draw a share trigger**
   — 1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 14, 15 — **twelve, not the eleven this file said before the
@@ -281,7 +290,7 @@ strings — **and every one of them edits inline on the canvas as well**.
 |---|---|---|---|---|
 | `tagsLabel` | text | yes | 24 ch | 8, 13, 14, 15 · default "Filed under" |
 | `archiveLabel` | text | yes | 24 ch | 8 only · default "Browse the archive" ⚑ |
-| `archiveUrl` | URL | yes | — | 8 only ⚑ · the Link Picker · default the site's tag index — finding 5 |
+| `archiveUrl` | URL | yes | — | 8 only ⚑ · the Link Picker · **no default** · the row does not render until it is set — ruled 3 September 2026, finding 5 closed |
 | `authorLinkLabel` | text | yes | 24 ch | 1, 3, 4, 5, 11, 13, 15 · default **"More from {author name}" — the author's full name** ⚑ · the prefix in 10 |
 | `shareLabel` | text | yes | 24 ch | the twelve with share · default "Share this piece" · A24·14's |
 | `copiedLabel` | text | yes | 24 ch | the same twelve · default "Link copied" · A24·14's |
@@ -746,7 +755,8 @@ post has been updated at all** ⚑.
   hairline above at 32, archive link below. **834** row at 754, **size held** ⚑. **≤ 767** row at 350,
   **size held**, gap 8.
 - **5 · Content fields.** Read: `tags[]` — `name` and `url`, **never `accent_color`** ⚑. Authored:
-  `tagsLabel` ⚑, `archiveLabel` ⚑ and **`archiveUrl` — the only URL field in A26** ⚑.
+  `tagsLabel` ⚑, `archiveLabel` ⚑ and **`archiveUrl` — the only URL field in A26** ⚑, **which has no
+  default and gates the row: no destination, no archive line** ⚑ — ruled 3 September 2026.
 - **6 · Controls.**
 
   | Control | Values |
@@ -755,7 +765,7 @@ post has been updated at all** ⚑.
   | Tag size | Compact 15 · Comfortable 17 · Spacious 19 |
   | Tags shown | **a number picker, 1 to 12, default 6** |
   | Alignment | Left · Centre |
-  | Archive link | Off · On |
+  | Archive link | Off · On — **greyed while the destination is empty, with the reason beside it: "not available until a destination is set"** ⚑ |
   | Background role (universal) | Background · Surface · Contrast |
   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
   | Top divider (universal) | None · Line · Fade |
@@ -767,7 +777,11 @@ post has been updated at all** ⚑.
   number in it**; 15 at Tags shown 12 → twelve pills over four lines and the link, stated rather than
   clamped. **Ghost's order, primary first, not selectable, and no Add** ⚑.
   **Internal `#hash` tags are never drawn** ⚑. **On a page the row draws normally** — a page can carry
-  tags, so this design is not post-only ⚑.
+  tags, so this design is not post-only ⚑. **The archive line is authored in two parts and gated by
+  one of them** ⚑: `archiveLabel` keeps its default, **`archiveUrl` has none, and with the destination
+  empty the line does not render at all** — no label, no arrow, no reserved height, the tags closing
+  the footer alone. **Both states are drawn on `A26-8`**, beside the panel as it reads while the
+  destination is empty.
 - **8 · Empty state.** **An untagged post never draws this design** ⚑ — no "Untagged" pill, no ruled
   row and no hand-off. Editor: "This post has no tags, so this footer renders nothing. Add a tag in
   Ghost."
@@ -779,14 +793,17 @@ post has been updated at all** ⚑.
 - **Repeating items.** One, Ghost's. Tags shown picks a count, never which, and shows no Add.
 - **Reconciled.** **The archive link gains a Ghost-aware Link Picker** ⚑ — it had a label and no link
   control at all. The field carries **Open in new tab** and the rel values in the same popover as
-  P0·1's links, **defaults to the site's tag index**, and **resolves to the product's tags-route
-  decision once that is made** — finding 5, now visible in a panel rather than only in a spec.
+  P0·1's links. **Pass four cut its default**: the destination is authored, **the row does not render
+  until it is set**, and **finding 5 is closed by the owner's ruling** rather than by the product
+  deciding a tags route — **A29·11's `allTopicsUrl` had already set the same precedent**.
   `tagsLabel` and `archiveLabel` edit inline; the tag names stay Ghost's and say "Edit in Ghost".
   **Five controls, unchanged** — a content field is not a sixth control — plus the trio, with **Line
   resolving into the row's existing hairline**.
 - **Flagged ⚑** — the tag at reading size; the 44 px box as the target itself; the tag accent colour
   refused; internal tags never drawn; "+ more" as a link with no number in it; the size held at every width; nothing rendering on an untagged post; the archive route invented (**finding 5**); the archive link inside the list; tags
-  printing as a line.
+  printing as a line; **the destination authored with no default and the row gated on it** (ruled
+  3 September 2026, so **no longer an invented route**); **Archive link greyed while the destination is
+  empty**.
 
 ---
 
@@ -880,7 +897,10 @@ post has been updated at all** ⚑.
   **Cut:** tracking, shrink-to-fit, an uppercase value, a name-only value.
 - **7 · Data.** Authors 1 → as drawn; **2 → both names in the line, bio suppressed** ⚑; **3+ → the
   authored `deskLine`, default "More from the {site} desk"** ⚑. **The post count is absent rather than
-  zero** ⚑ on an author's first piece, **and Hide is its default** ⚑. Socials 0 → no row. On a page
+  zero** ⚑ on an author's first piece, **and Hide is its default** ⚑. **The count stays in the theme and
+  a design may turn it off** — the owner's ruling of 3 September 2026, which closes the question of
+  whether a derived figure that reads "1 post" on a new writer's page belongs here at all; **the
+  control, its values and its default are unchanged by the ruling.** Socials 0 → no row. On a page
   the destinations are absent ⚑.
 - **8 · Empty state.** **An author with no bio still draws the name at full size** ⚑ — Ghost
   guarantees an author, so the design cannot be empty.
@@ -895,7 +915,9 @@ post has been updated at all** ⚑.
   absent rather than zero. **Author socials** joins it, drawn under the meta line so the display moment
   keeps its air. **"More from the {site} desk" becomes an authored field with that default**, editable
   inline, while **the author's name inside the display line stays Ghost's**. The destinations become **Ghost's own share panel's**, with **two fallback switches in the site setting and no brand glyph anywhere**. **Six controls became eight**, and
-  **finding 6 keeps its product question** — the default answers the layout half of it.
+  **finding 6's product question is now closed as well** — ruled 3 September 2026: the count stays,
+  with an off switch. The default answered the layout half; the ruling answers the other, and **nothing
+  drawn on `A26-10` changes.**
 - **Flagged ⚑** — the ladder one step below A24·10's; the display line as the link; the derived count
   and its Hide default (**finding 6**); two authors in one line; three becoming the authored desk line;
   the name wrapping; the socials row under the meta line; the dark weight finding at display scale;
@@ -1271,18 +1293,27 @@ Every reusable component this category established or reused, cumulative.
    needs a negative colour and its on-colour before any of them can draw a real error.
 4. **The packs have no on-contrast surface token.** 4 Contrast Band derives one at 6% of the band's
    text for the subscribe field. A25·4 refused to draw a share control for the same reason. **Two
-   categories have now worked around the same missing token.**
-5. **Ghost has no canonical "all tags" route.** 8 Tag Row's archive link now has a Link Picker and a
-   default, and **the default still points at a route a theme has to invent**. **The product should
-   decide the route once**, because every category with a tag row will otherwise decide it separately.
-
-    **OPEN FOR THE OWNER.**
-6. **An author's post count is computable and probably should not be shown.** 10 Big Type now has
-   **Post count · Show · Hide, defaulting to Hide** — the layout half of the question is answered.
-   **The product half is not:** whether a derived figure that is embarrassing at small values belongs
-   in a theme at all.
-
-    **OPEN FOR THE OWNER.**
+   categories have now worked around the same missing token.** **Narrowed, 3 September 2026:** every
+   pack value is marked COMPUTED or AUTHORED, and **on-contrast text and accent-on-contrast are
+   COMPUTED** — so **no design derives a readable text colour for a coloured band, here or anywhere**,
+   and 4 Contrast Band's glyph and text colours come from the pack. **What is still missing is a
+   surface on contrast** — a field background on the band rather than text on it, which is not one of
+   the five COMPUTED values — **so the finding stands, narrowed to that one value.**
+5. **~~Ghost has no canonical "all tags" route.~~ Settled by the owner, 3 September 2026 — and with
+   his own answer rather than either option he was offered.** The platform fact is unchanged: **Ghost
+   publishes a page per tag and nothing above them**, so a destination cannot be hard-coded — and the
+   link cannot simply be dropped either, because a site owner may well have built such a page. **The
+   ruling: the link is authored.** 8 Tag Row's archive row is **a Text Field for the label plus a Link
+   Picker for the destination**, both already in the control vocabulary; **the destination has no
+   default**; and **the row does not render until one is set**, so it can never ship broken and an
+   owner with no such page simply leaves it empty. **The product does not have to decide a route after
+   all** — which is what the finding asked for. **A20's and A29·11's versions of the same field should
+   follow**, and A29·11 already does.
+6. **~~An author's post count is computable and probably should not be shown.~~ Settled by the owner,
+   3 September 2026.** 10 Big Type has **Post count · Show · Hide, defaulting to Hide** — the layout
+   half, answered by the last pass. **The product half is now answered too: it stays, and a design may
+   turn it off.** A new writer's page reading "1 post" is the reason the switch exists rather than the
+   reason to refuse the figure. **Nothing drawn changes**, and the question is closed.
 7. **Ghost stores one profile image and no focal point.** 11 Portrait crops it to 4:5 from the centre
    and 7 Next and Prev crops the feature image the same way; **neither can offer the Image focus the
    control vocabulary asks for**, because neither picture is an authored image field. **A crop-from-top
@@ -1461,7 +1492,7 @@ rule required it, and `A26-0` carries the category's version of the same panel p
 | 5 | Split | `share` `member-form` | As 1 for share; **the notice replaces the form** at Blocks Everything. The two columns are a grid and the collapse is a media query. |
 | 6 | Slim | `share` | As 1; at Blocks Tags it declares nothing and `core` is assumed. **The line, the dotted run and both rules are unchanged.** |
 | 7 | Next and Prev | none | **Pixel-identical.** Two links with a background image and a gradient; nothing is measured, faded in or lazily swapped. |
-| 8 | Tag Row | none | **Pixel-identical**, and **the "+ more" is a link rather than a disclosure**, which is what keeps that true. |
+| 8 | Tag Row | none | **Pixel-identical**, and **the "+ more" is a link rather than a disclosure**, which is what keeps that true. **The archive line is a server-rendered `<a>` where a destination is set and absent where it is not** — the same in both branches, because the gate is a template condition and not a script. |
 | 9 | Share Row | `share` | **It keeps its bar, its label, its ground and its padding, and draws Email alone** ⚑ — drawn as the fourth state on `A26-9`. **This is the category's largest no-JavaScript loss after the native-share ruling**, where before the ruling it was the smallest: a trigger that needs a script cannot degrade into links that no longer exist. |
 | 10 | Big Type | `share` | As 1. **The display name, the post count and the size ladder are server-rendered.** |
 | 11 | Portrait | `share` | As 1. The portrait is an `<img>` with `width`, `height` and `object-fit: cover` — no layout shift. |
@@ -1474,7 +1505,7 @@ rule required it, and `A26-0` carries the category's version of the same panel p
 
 ### Open questions — every item, with who settled it
 
-**Housekeeping, 1 September 2026.** Every item below is struck through with the name of whoever settled it, so a reader can tell a closed question from a live one at a glance. **Nothing in this section is still open.** The items that are still open live in **Findings for the architect** above and are marked there on their own line: **finding 5** (Ghost has no canonical all-tags route) and **the product half of finding 6** (whether an author's post count belongs in a theme at all) both read **OPEN FOR THE OWNER**, and **finding 10 was settled by this pass and is struck**.
+**Housekeeping, 1 September 2026.** Every item below is struck through with the name of whoever settled it, so a reader can tell a closed question from a live one at a glance. **Nothing in this section is still open.** The items that are still open live in **Findings for the architect** above and are marked there on their own line: **finding 5** (Ghost has no canonical all-tags route) and **the product half of finding 6** (whether an author's post count belongs in a theme at all) both read **OPEN FOR THE OWNER**, and **finding 10 was settled by this pass and is struck**. **Superseded on 3 September 2026:** findings 5 and 6 were both settled by the owner that day and are struck in the findings list, so **no finding in this category now reads OPEN FOR THE OWNER**; finding 4 is narrowed rather than closed.
 
 **1 · ~~Which two designs a free customer gets.~~ Ruled: 1 Author Bio · 6 Slim — settled by the owner, 30 August 2026.** One complete footer —
 tags, author, share and the next post on the article's measure — and one 44 px line with no author
@@ -1638,4 +1669,93 @@ is more honest and much more frame; describing it once risks a builder guessing 
   fifteen designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted.
 - **The [Free] designs line is present** at the head of this document and names **1 Author Bio** and
   **6 Slim**, both of which exist in this category's roster and are badged **[Free]** in it.
+- **No printed design total was reintroduced** anywhere in this pass.
+
+---
+
+## Patch notes — design patch pass four, 3 September 2026
+
+Every change below carries the **name** of the rule or the ruling that required it. Rules are named,
+never numbered. Where a ruling could not be applied without inventing a decision, it is written here
+as an **OPEN QUESTION** rather than guessed.
+
+**Frames changed — all sixteen:** `A26-0 Category Proof` and `A26-1` … `A26-15`. Every frame gains a
+dated **post footers patch · pass four** panel saying what changed in that design and which rule
+required it. **One frame changed in its drawn content: `A26-8 Tag Row`** — the archive link's two
+states and the panel as it reads while the destination is empty. **`A26-0`'s shared field list has one
+row rewritten** (`archiveUrl`). **Nothing else was redrawn, and no control's values changed anywhere.**
+
+### This category's work list
+
+| What changed | Why, and where |
+|---|---|
+| **The all-tags link is authored, not assumed.** 8 Tag Row's archive row is now **a Text Field for the label plus a Link Picker for the destination** — both already in the control vocabulary, nothing invented — and **the destination has no default**. Ghost publishes a page per tag and nothing above them, so a hard-coded destination would point at a page that may not exist; dropping the link would take it from the owners who have built one. **The row does not render until a destination is set**, so it cannot ship broken, and an owner with no such page leaves it empty. **Both states are drawn on `A26-8`**, with the panel beside them. **The label keeps its default, "Browse the archive"** — a label with no destination is harmless. **In the panel, Archive link is greyed while the destination is empty, with the reason beside it** — "not available until a destination is set" — rather than hidden or left accepting a value it will not honour. Written into the floor's editing bullet, the shared field list, 8 Tag Row's content fields, controls table, data paragraph, no-JavaScript line, Reconciled paragraph and flagged list, and onto `A26-8` and `A26-0`. **Finding 5 is closed by the ruling**, in the owner's own terms rather than either option he was offered. | *(The all-tags link is authored, not assumed.* Also *a control switched off by another is greyed, with the reason beside it.)* |
+| **An author's post count may be shown, and a design may turn it off.** 10 Big Type's **Post count · Show · Hide, default Hide** is **unchanged** — the ruling settles that the figure belongs in a theme at all, which is what was asked. At Show it is still **absent rather than zero** on an author's first piece. Written into 10 Big Type's data and Reconciled paragraphs and onto `A26-10`; **the product half of finding 6 is closed** and **nothing drawn changes.** | *(An author's post count may be shown, and a design may turn it off.)* |
+
+### The five answers that already existed
+
+| Answer | What it did here |
+|---|---|
+| **The pack supplies its contrast colours, and they are COMPUTED** | **On-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all COMPUTED** — the pack works them out — so **no A26 design derives a readable text colour for a coloured band**, and 4 Contrast Band's text and glyph colours are the pack's. **Finding 4 is narrowed, not closed:** the value that category still works around is **a surface on contrast** — the subscribe field's background at 6 % of the band's text — which is not one of the five COMPUTED values. Written into finding 4 and onto all sixteen frames. |
+| **Which section is the main feed is stored in the project file** | **No subject in A26.** The category owns no feed, no query, no empty state of a query and no page-number control — the roster's fifteen designs read the post's own tags, authors and neighbours. Recorded as having no subject rather than left blank. |
+| **A control's dependency is declared in the control's own definition, with its reason** | **Every greyed row in A26 reads its reason from one source** — the panel, the checker and the compiler alike — rather than each panel drawing the relationship by hand. Subjects unchanged: the four locked **Background role** rows, **Fade refused on 4's band**, **the greyed Share destinations row on all twelve share panels**, **Tags shown's + at twelve**, **14 Ledger's Rows at seven**, **7 Next and Prev's Tile height at two of three Media values**, and **12 Subscribe's member buttons, which are the never-offered case and are not drawn at all**. **One subject is new in this pass: 8 Tag Row's Archive link while its destination is empty**, which takes the category from eight greyed subjects to nine. |
+| **Hand-picked posts keep the order the user dragged them** | **No subject in A26.** **Nothing in the category is an authored array** — checked again against all fifteen content models — so there is no dragged order to preserve; the tags, the authors, the handles and the two neighbours are Ghost's, in Ghost's order, and **7 Next and Prev's Within chooses a scope rather than an item**. |
+| **A design may declare more than one behaviour module** | **Already true here, and now written down.** **3 Card, 5 Split and 15 Grid each declare `share` and `member-form`**, and **the compiler emits the union** — settled at the inventory merge, so the category was asking a settled question. Added to the floor's behaviour bullet. **No module was added or removed in this pass:** `share` on 1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 14, 15; `member-form` on 3, 5, 12, 15; 7 and 8 declare none. |
+
+### The five rules restated for this pass
+
+**They are pass two's five, and they were re-tested rather than re-applied.** **A control switched off
+by another is greyed, with the reason beside it** — nine subjects now, one of them new, and the
+never-offered exception is still 12 Subscribe's member buttons; **no A26 panel carries a visitor
+dark-mode switch**. **Avatars with no photograph show initials** — **one letter, everywhere,
+unchanged**, because every person in A26 comes from Ghost; **the two-initial form belongs to a list the
+user types and A26 has no such list**. **The remove button never greys out** — **no subject for the
+third pass running**: nothing in A26 is an authored repeating list. **A count that picks between drawn
+layouts is a named set, not a number picker** — re-tested on the four remaining near-count rows and
+**not one converts**: **Tags shown 1–12** and **14 Ledger's Rows 3–7** stay number pickers, **15 Grid's
+Columns** and **Blocks on eleven panels** stay named sets, and **7's Within is a scope**. **A design may
+declare the width below which its script runs** — **still no subject**: `share` and `member-form` are
+width-independent and every collapse in the category is a media query, so **no no-JavaScript line here
+describes both sides of a threshold**.
+
+### Left alone deliberately
+
+- **No printed design total exists anywhere in A26** — not in this document, not on any of the sixteen
+  frames — so there was nothing to remove and **nothing was added**. Where this pass wrote about size,
+  it wrote count-agnostically.
+- **P0's per-prop mark allowlist is untouched.** This pass did not open that document.
+- **The marketing and app screens were not opened either.** They are maintained in the repository, and
+  this pass authored no product copy of any kind.
+- **The Archive link toggle stays.** With the destination gating the row there are now two ways to
+  switch the line off, which is one more than the design needs — but **the work list did not name the
+  toggle**, and cutting a control the owner did not ask about is exactly the silent edit this pass is
+  told not to make. See the open question below.
+- **8 Tag Row's control count stays at five.** The Link Picker is a content field, not a sixth control
+  — the same call the last pass made when the field was added.
+- **10 Big Type's frame, control values and default are untouched.** The ruling closed a question about
+  the figure, not about the drawing.
+- **The earlier passes' sentences are kept where a change would only be a rephrasing**, including the
+  pass-two paragraph that counted eight greyed subjects: the ninth is recorded here rather than by
+  editing history.
+
+### Open questions
+
+**OPEN QUESTION · Whether 8 Tag Row's Archive link toggle survives its own gate.** The destination now
+decides whether the line renders, so **Off · On is a second switch for the same thing** — useful for an
+owner who wants to keep a destination stored while hiding the line, redundant otherwise. **Not guessed:
+the toggle is left exactly as drawn**, greyed while the destination is empty.
+
+**OPEN QUESTION · Who re-points the same field in the other categories.** **A29·11's `allTopicsUrl`
+already has no default and does not render without a target**, so it needs nothing. **A20's version
+still says the product should decide the route and that its field should then default to it** — that
+sentence is now wrong, and **A20's spec is not this category's to edit.** Named rather than quietly
+left.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+  fifteen designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+  names **1 Author Bio** and **6 Slim** — both of which exist in this category's roster, where they are
+  badged **[Free]**.
 - **No printed design total was reintroduced** anywhere in this pass.

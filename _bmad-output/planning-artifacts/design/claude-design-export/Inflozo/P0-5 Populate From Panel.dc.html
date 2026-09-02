@@ -41,7 +41,7 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
       <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">You write the cards yourself in the Content group. Nothing updates automatically.</span>
     </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATIC · THE FILTER BLOCK IS ABSENT, NOT DISABLED ⚑ · CONTENT GROUP SHOWS THE P0·3 AUTHORED LIST</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATIC · THE FILTER BLOCK IS ABSENT, NOT DISABLED ⚑ · CONTENT GROUP SHOWS THE P0·3 AUTHORED LIST · <strong style="font-weight:600">LEFT AS DRAWN AND RAISED AS AN OPEN QUESTION</strong> UNDER THE 3 SEPTEMBER RULING — THE RULING NAMES COUNT/ORDER AND THE GHOST-SOURCED LIST, NOT THIS BLOCK</span>
   </div>
 
   <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0;position:relative">
@@ -144,7 +144,26 @@
         <span style="font-size:12px;color:#A8A29A">Search posts to add</span>
       </div>
     </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">HAND-PICKED · SEARCH-AND-PICK LIST · DRAG REORDERS, × UNPICKS · COUNT AND ORDER ARE HIDDEN — THE PICKED LIST IS THE COUNT AND THE ORDER ⚑ · NO MAXIMUM · UNPUBLISHED PICKS DROP OUT SERVER-SIDE, THE ROW STAYS WITH AN "UNPUBLISHED" NOTE</span>
+    <div style="display:flex;flex-direction:column;gap:5px;border-top:1px solid #E7E2DB;padding-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;font-weight:500;color:#A8A29A">Count</span>
+        <div style="display:flex;align-items:center;border:1px solid #EAE5DD;border-radius:8px;overflow:hidden;background:#F2EFEA">
+          <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-right:1px solid #EAE5DD;color:#C9C2B8;cursor:not-allowed">−</span>
+          <span style="width:32px;text-align:center;font-size:12.5px;font-weight:600;color:#A8A29A">3</span>
+          <span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-left:1px solid #EAE5DD;color:#C9C2B8;cursor:not-allowed">+</span>
+        </div>
+      </div>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">The list you picked is the count.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#A8A29A">Order</span>
+      <div style="display:flex;background:#F2EFEA;border-radius:24px;padding:3px">
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#C9C2B8;cursor:not-allowed">Newest</span>
+        <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#C9C2B8;cursor:not-allowed">Oldest</span>
+      </div>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">The list you picked is the order — these posts render in the order you dragged them.</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">HAND-PICKED · SEARCH-AND-PICK LIST · DRAG REORDERS, × UNPICKS · <strong style="font-weight:600">COUNT AND ORDER ARE GREYED WITH THEIR REASON, NOT HIDDEN</strong> ⚑ — OWNER-RULED 1 SEPTEMBER 2026 AND RESTATED 3 SEPTEMBER, WHEN THE "BUT THIS IS A MODE" EXCEPTION WAS WITHDRAWN LIBRARY-WIDE · THE COUNT STEPPER SHOWS THE NUMBER IN FORCE, WHICH IS THE NUMBER OF PICKS · <strong style="font-weight:600">THE ORDER CONTROL SITS ON NEITHER VALUE ⚑</strong> — THE ORDER IN FORCE IS THE DRAGGED ONE, WHICH IS NOT ONE OF ITS TWO VALUES, SO THE SENTENCE CARRIES IT · NO MAXIMUM · UNPUBLISHED PICKS DROP OUT SERVER-SIDE, THE ROW STAYS WITH AN "UNPUBLISHED" NOTE</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1290px"><strong style="font-weight:600">Constraints stated once, for every category</strong> ⚑: the Count stepper caps at 100. <strong style="font-weight:600">Hand-picked has no maximum at all</strong> — it accepts as many posts as the user cares to pick and warns past 25, drawn in the next frame. No relative-date filters — "this month" is route vocabulary, not section vocabulary. A secondary feed renders nothing at zero items, heading and container together — an empty "More essays" band is a defect the panel prevents by construction. Meta toggles are the design's own: a design with no excerpt slot never offers an Excerpt toggle. The tag and author selects live-search past ten entries with the same field grammar as the Link Picker.</p>
@@ -177,7 +196,7 @@
   <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THERE IS NO MAXIMUM ⚑ · THE WARNING APPEARS AT 26 AND STAYS · THE COUNT IN THE GROUP HEADER TURNS WARNING-TONED AT THE SAME MOMENT · NOTHING IS BLOCKED AND NOTHING IS SILENTLY DROPPED</span>
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE COST IS PER PAGE, NOT PER SECTION — THE SENTENCE SAYS SO IN THOSE WORDS · THE MEASURED FIGURES ARE NAMED ⚑: THREE SECTIONS AT 25 EACH IS 75 QUERIES, ABOUT THREE-QUARTERS OF A SECOND ON EVERY VISITOR'S PAGE LOAD · THE UNIT IS THE PAGE, WHICH IS THE PART A USER GETS WRONG</span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">UNCHANGED: THE PICKED LIST IS THE COUNT AND THE ORDER, SO COUNT AND ORDER STAY HIDDEN UNDER THIS FILTER · THE 100 CAP BELONGS TO THE COUNT STEPPER, WHICH THIS FILTER DOES NOT USE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE PICKED LIST IS THE COUNT AND THE ORDER, SO COUNT AND ORDER ARE <strong style="font-weight:600">GREYED WITH THEIR REASON</strong> UNDER THIS FILTER — DRAWN IN THE PANEL ABOVE, NOT HIDDEN ⚑ · THE 100 CAP BELONGS TO THE COUNT STEPPER, WHICH THIS FILTER DOES NOT USE</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">A cap would be easier to build and harder to justify.</strong> Hand-picking is how an editor curates, and the honest answer to a long list is the cost, stated where the picking happens. The warning names the unit that actually bills — the page — because a user counting sections will underestimate it by however many sections they placed, and it now names the measured figures so the cost is a quantity rather than a mood.</p>
