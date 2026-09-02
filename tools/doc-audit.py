@@ -287,6 +287,17 @@ DOCS = [
   'record of what was actually sent and a record is not rewritten. Imports the four Ghost facts, '
   'the output contract and the page CSS from design-patch-prompts.py; rosters DERIVE from the '
   'export. Only the work lists are authored, because a ruling cannot be derived.'),
+ ('tools/design-patch-prompts-4.py', 'tool', 'Design patch prompts — pass four',
+  'Generates DESIGN-PATCH-PROMPTS-4.html: the spec-side half of R-48 to R-59, over eight categories. '
+  'Carries the FIVE questions that needed no ruling at all — the pack tokens, the main-feed '
+  'designation, the dependency declaration, hand-picked order and multi-module designs — in every '
+  'prompt, because each was raised in more than one category. Names one job it starts and does not '
+  'finish: Image focus is enumerated separately in 21 specs instead of being one shared control, so '
+  'P0 gains the definition and the rest need a sweep. That sweep list is DERIVED from the export, '
+  'never typed, because a hand-written list of private copies is one more thing to go stale.'),
+ ('planning-artifacts/DESIGN-PATCH-PROMPTS-4.html', 'live', 'Design patch prompts, pass four',
+  'The owner-facing page for the fourth patch pass — eight prompts, P0 first because it holds two '
+  'shared controls every category inherits. NOT YET RUN.'),
  ('tools/design-patch-prompts-3.py', 'tool', 'Design patch prompts — pass three',
   'Generates DESIGN-PATCH-PROMPTS-3.html: the six spec-side halves of the owner\'s nine rulings of '
   '2026-09-02, over seven categories. Small by design — four of the seven close a question the '
@@ -468,6 +479,8 @@ def check():
                             'the roster or a pass-2 work list'),
                            ('design-patch-prompts-3.py', 'DESIGN-PATCH-PROMPTS-3.html',
                             'the roster or a pass-3 work list'),
+                           ('design-patch-prompts-4.py', 'DESIGN-PATCH-PROMPTS-4.html',
+                            'the roster, a pass-4 work list, or the Image-focus sweep list'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],

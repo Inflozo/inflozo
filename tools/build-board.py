@@ -156,13 +156,19 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass THREE \u2014 seven prompts, ready',
-  'DESIGN-PATCH-PROMPTS-3.html. The library was read whole on 2 September: 49 items marked open, '
-  'most already answered elsewhere or the architect\u2019s, NINE needed you and all nine are ruled. '
-  'Three changed a requirement and are landed. These seven carry the rest into the specs \u2014 and '
-  'four of them simply CLOSE a question the last session was right to raise rather than answer. Run '
-  'in any order; nothing here depends on anything else. Then verify-design-pass.py and '
+ ('now', 'Design patch pass FOUR \u2014 eight prompts, ready',
+  'DESIGN-PATCH-PROMPTS-4.html. Every open question in the library was put to the owner on '
+  '2 September and he answered eighteen; six changed a requirement and are landed. These eight carry '
+  'the rest into the specs. RUN P0 FIRST \u2014 it holds two shared controls every category '
+  'inherits. FIVE of the eighteen needed no ruling at all: the answers already existed and the specs '
+  'had not caught up, so every prompt carries them. Then verify-design-pass.py and '
   'reapply-export-edits.py, per the runbook above.'),
+ ('soon', 'The Image-focus sweep \u2014 19 categories',
+  'Image focus is enumerated separately in 21 category specs instead of being one shared control, '
+  'which is the owner\u2019s own "one control name, one set of values" ruling in its worst form. '
+  'Pass four defines it once in P0 with both axes; the other 19 still carry private copies and need '
+  'a mechanical sweep. The list is derived from the export by tools/design-patch-prompts-4.py, not '
+  'typed.'),
  ('soon', 'Five registry rulings for the architect',
   'Not yours, and not blocking: A5\u2019s tabs announced twice without JavaScript, A5\u2019s scroller '
   'rule having no registry sentence, A13\u2019s walkthrough emitting a heading per panel, A33\u2019s '
