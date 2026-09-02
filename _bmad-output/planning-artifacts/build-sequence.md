@@ -3,7 +3,7 @@ title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
 updated: 2026-08-31 (sixth pass) — steps 1, 2, 3 and 4 COMPLETE, and the inventory merge is complete apart from the propagation of the 2026-08-31 rulings. STEP 5 IS THE CRITICAL PATH. The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
-covers: the six steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
+covers: the steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
 # Build Sequence
@@ -117,7 +117,7 @@ Steps 1 and 2 run **in parallel with the owner's design work (step 3)**, and tha
 ✅ Step 3 Design prompts 2 & 3 + the controls pass (owner) ─────────┘                                         │
    └─ prompt 2 is exported: step 5 is unblocked ────────────────────────────────────────┐           (probes, if any)
                                                                                         ▼                     ▼
-                                                                          Step 5 /bmad-ux ──► inventory merge ──► Step 6 stories
+                                                                          Step 5 /bmad-ux ──► inventory merge ──► Step 5b prototype ──► Step 6 stories
 ```
 
 **Read that second line.** Step 5 waits on nothing any more — prompt 2 is exported. The safe default
@@ -658,7 +658,7 @@ prompt flagged rather than guessed, and carry anything genuinely open to the own
 
 **Produces:** the four journeys and **eight** flows — the PRD's six, plus the two decided 2026-08-21.
 **Needs from the owner:** less than this document originally assumed — see below.
-**Unblocks:** step 6.
+**Unblocks:** step 5b — and through its walked prototype, step 6 (R-75).
 
 The PRD preamble delegates these explicitly. Keep this pass separate from step 4 — one verifies, this one authors, and combining them produces a document that half-checks and half-invents.
 
@@ -812,7 +812,9 @@ So:
     says to render key-screen HTML mocks into `.working/` and then ask which un-mocked surfaces
     need a visual reference. SKIP THAT STEP. Every key screen in this product IS ALREADY MOCKED,
     at higher fidelity than that tool produces, in the export. Rendering a second, lesser mock
-    beside a finished frame creates two answers to one question. For a surface that genuinely has
+    beside a finished frame creates two answers to one question. (Step 5b's prototype, later, is
+    NOT that: each of its pages names the frame it derives from and is checked against it — one
+    answer, restated in walkable form.) For a surface that genuinely has
     no frame, the substitute is NOT a mock — it is a Claude Design prompt (§5), so the drawing
     happens in the same project and inherits the same system. Say in your finalize notes that you
     skipped it and why.
@@ -841,7 +843,7 @@ All paths are relative to /home/ghost/Dev/Inflozo.
       in a live document that supersedes it.
 
   _bmad-output/planning-artifacts/build-sequence.md
-      The six steps. This is step 5. It governs on any conflict with the build board.
+      The build steps. This is step 5. It governs on any conflict with the build board.
 
   _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
       NORMATIVE. Read its preamble first — it names every normative companion in the same
@@ -851,9 +853,9 @@ All paths are relative to /home/ghost/Dev/Inflozo.
       rather than the research step.
 
   _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
-      THE MOST IMPORTANT SINGLE INPUT AFTER THE PRD. Seventy-three numbered owner rulings
-      (R-1 … R-73) taken between 27 August and 2 September, each naming the documents it
-      moves. §B records which previously-approved decisions they supersede. Anything that
+      THE MOST IMPORTANT SINGLE INPUT AFTER THE PRD. Every numbered owner ruling to date
+      (R-1 upward — the file's §A sections carry them; READ THE FILE for the current
+      highest, it has moved every session), each naming the documents it moves. §B records which previously-approved decisions they supersede. Anything that
       contradicts this file is wrong, unless it is a `record`.
 
   _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
@@ -1098,7 +1100,7 @@ session that hand-edits a frame hits it every time:
 
 START HERE — THE MAP ALREADY EXISTS. `reconcile-designs.md` carries a section headed
 
-    ## SCREENS · App screens S1-S14, marketing M1-M9, `B Missing Surfaces`, `Editor Sidebar
+    ## SCREENS · App screens S1–S14, marketing M1–M9, `B Missing Surfaces`, `Editor Sidebar
        Kit` (frames only — no spec exists)
 
 and inside it three tables that are the most directly useful thing in the project for this
@@ -1138,9 +1140,11 @@ mechanism, and the four journeys STILL STANDS.
   before. It stood for two days because BOTH controls that existed to catch it were matching raw
   HTML and missed a number split across two <span>s. It was repaired on 2026-09-02 and the
   detector now lives in one place. THE LESSON FOR YOU: on the S, M and B screens, read what the
-  file says TODAY. A dated report about them is a hypothesis (standing rule 1). Two items are already fixed (the design totals
-printed on the marketing screens, and P0's mark allowlist) and both are now GATED rather than
-remembered. Four of the five P0 findings are resolved; the fifth is fixed too.
+  file says TODAY. A dated report about them is a hypothesis (standing rule 1).
+
+  ALSO FROM §A4: two of §37.7's items were already fixed before this prompt was written — the
+  design totals printed on the marketing screens, and P0's mark allowlist — and both are now
+  GATED rather than remembered. Four of the five P0 findings are resolved; the fifth is fixed too.
 
 SURFACES REPORTED AS HAVING NO FRAME. VERIFY EACH AGAINST THE EXPORT BEFORE EXTRAPOLATING — a
 keyword scan is inconclusive and several of these words appear on screens that are about
@@ -1209,7 +1213,8 @@ Five that touch this step directly:
   many designs, categories or free designs exist. Those move monthly by FR-J14's own commitment,
   Appendix H forbids them in product copy, and every one of them in this project has gone stale.
 
-  COUNTS ARE DERIVED, NEVER RESTATED (standing rule 4). Every count in this project has gone
+  COUNTS ARE DERIVED, NEVER RESTATED — a standing rule, cited here by its words because the
+  repo's two rule lists number it differently (CLAUDE.md says so itself). Every count in this project has gone
   stale at least once. Do not write a library total, a category total or a free-design total
   into DESIGN.md or EXPERIENCE.md. Appendix H already forbids a design total in product copy.
   Where you need to express scale, word it so it cannot go stale ("every design", "the free
@@ -1236,7 +1241,7 @@ EXPLANATION AND MORE INSTRUCTION.
   WHERE IT IS A ROUTINE JUDGEMENT CALL, MAKE IT and say so in one line. Where the decision is
   genuinely his, present it and WAIT — do not default it.
 
-  FLAG, DO NOT GUESS (standing rule 6). If two approved decisions contradict, or an
+  FLAG, DO NOT GUESS — a standing rule, again cited by its words, not a number. If two approved decisions contradict, or an
   instruction cannot be followed without inventing a decision the owner never made, STOP AND
   ASK. This project has been damaged more than once by a confident guess that looked
   reasonable.
@@ -1321,8 +1326,10 @@ delete a file you did not create.
   - Nothing in either document contradicts `reconcile-designs-decisions.md`.
   - No count is restated that could be derived.
   - `python3 tools/doc-audit.py --check` passes, run twice.
-  - `build-sequence.md`, `HANDOVER.md` and the build board say step 5 is done and step 6 is
-    next. `BUILD-BOARD.html` is GENERATED — edit `tools/build-board.py`, never the HTML.
+  - `build-sequence.md`, `HANDOVER.md` and the build board say step 5 is done and STEP 5B —
+    the static prototype — is next. NOT step 6: R-75 keeps step 6 shut until the owner has
+    walked 5b's prototype. `BUILD-BOARD.html` is GENERATED — edit `tools/build-board.py`,
+    never the HTML.
   - You have written a short report for the owner: what you specified, which surfaces you had
     to extrapolate and why, how many Claude Design prompts he now needs to run, what you
     found already drawn that §37.7 said was missing, and anything you had to ask him about.
@@ -1356,7 +1363,9 @@ INPUTS, IN ORDER:
      ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
      `Calibration Set.dc.html`; reuse the drawn screens' construction. If a page of yours would
      look wrong side by side with its frame, the page is wrong.
-  3. The PRD for behaviour, and its Appendix H for every string.
+  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
+     prd.md — "## Appendix H — Voice & Microcopy Canon". It is NOT appendix-h1-string-catalog.md,
+     which is the visitor-facing catalog shipped inside a user's THEME.)
 
 OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
   index.html                 the front door: the surface list, and the four journeys and eight
@@ -1384,6 +1393,12 @@ DONE WHEN the owner can double-click index.html and click through all four journ
 eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
 in one short message: the file to double-click, and the two or three places you had to make a
 judgement call he should look at hardest.
+
+AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
+build-sequence.md (this section and the step table) and in HANDOVER.md, and update
+tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
+the gate is the OWNER'S WALK, not the build. When he says he has walked it, record the date
+here in this section — that sentence is what unlocks step 6, and it is his to say.
 ```
 
 ---

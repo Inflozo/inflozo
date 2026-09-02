@@ -64,7 +64,9 @@ So:
     says to render key-screen HTML mocks into `.working/` and then ask which un-mocked surfaces
     need a visual reference. SKIP THAT STEP. Every key screen in this product IS ALREADY MOCKED,
     at higher fidelity than that tool produces, in the export. Rendering a second, lesser mock
-    beside a finished frame creates two answers to one question. For a surface that genuinely has
+    beside a finished frame creates two answers to one question. (Step 5b's prototype, later, is
+    NOT that: each of its pages names the frame it derives from and is checked against it — one
+    answer, restated in walkable form.) For a surface that genuinely has
     no frame, the substitute is NOT a mock — it is a Claude Design prompt (§5), so the drawing
     happens in the same project and inherits the same system. Say in your finalize notes that you
     skipped it and why.
@@ -93,7 +95,7 @@ All paths are relative to /home/ghost/Dev/Inflozo.
       in a live document that supersedes it.
 
   _bmad-output/planning-artifacts/build-sequence.md
-      The six steps. This is step 5. It governs on any conflict with the build board.
+      The build steps. This is step 5. It governs on any conflict with the build board.
 
   _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
       NORMATIVE. Read its preamble first — it names every normative companion in the same
@@ -103,9 +105,9 @@ All paths are relative to /home/ghost/Dev/Inflozo.
       rather than the research step.
 
   _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
-      THE MOST IMPORTANT SINGLE INPUT AFTER THE PRD. Seventy-three numbered owner rulings
-      (R-1 … R-73) taken between 27 August and 2 September, each naming the documents it
-      moves. §B records which previously-approved decisions they supersede. Anything that
+      THE MOST IMPORTANT SINGLE INPUT AFTER THE PRD. Every numbered owner ruling to date
+      (R-1 upward — the file's §A sections carry them; READ THE FILE for the current
+      highest, it has moved every session), each naming the documents it moves. §B records which previously-approved decisions they supersede. Anything that
       contradicts this file is wrong, unless it is a `record`.
 
   _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
@@ -350,7 +352,7 @@ session that hand-edits a frame hits it every time:
 
 START HERE — THE MAP ALREADY EXISTS. `reconcile-designs.md` carries a section headed
 
-    ## SCREENS · App screens S1-S14, marketing M1-M9, `B Missing Surfaces`, `Editor Sidebar
+    ## SCREENS · App screens S1–S14, marketing M1–M9, `B Missing Surfaces`, `Editor Sidebar
        Kit` (frames only — no spec exists)
 
 and inside it three tables that are the most directly useful thing in the project for this
@@ -390,9 +392,11 @@ mechanism, and the four journeys STILL STANDS.
   before. It stood for two days because BOTH controls that existed to catch it were matching raw
   HTML and missed a number split across two <span>s. It was repaired on 2026-09-02 and the
   detector now lives in one place. THE LESSON FOR YOU: on the S, M and B screens, read what the
-  file says TODAY. A dated report about them is a hypothesis (standing rule 1). Two items are already fixed (the design totals
-printed on the marketing screens, and P0's mark allowlist) and both are now GATED rather than
-remembered. Four of the five P0 findings are resolved; the fifth is fixed too.
+  file says TODAY. A dated report about them is a hypothesis (standing rule 1).
+
+  ALSO FROM §A4: two of §37.7's items were already fixed before this prompt was written — the
+  design totals printed on the marketing screens, and P0's mark allowlist — and both are now
+  GATED rather than remembered. Four of the five P0 findings are resolved; the fifth is fixed too.
 
 SURFACES REPORTED AS HAVING NO FRAME. VERIFY EACH AGAINST THE EXPORT BEFORE EXTRAPOLATING — a
 keyword scan is inconclusive and several of these words appear on screens that are about
@@ -461,7 +465,8 @@ Five that touch this step directly:
   many designs, categories or free designs exist. Those move monthly by FR-J14's own commitment,
   Appendix H forbids them in product copy, and every one of them in this project has gone stale.
 
-  COUNTS ARE DERIVED, NEVER RESTATED (standing rule 4). Every count in this project has gone
+  COUNTS ARE DERIVED, NEVER RESTATED — a standing rule, cited here by its words because the
+  repo's two rule lists number it differently (CLAUDE.md says so itself). Every count in this project has gone
   stale at least once. Do not write a library total, a category total or a free-design total
   into DESIGN.md or EXPERIENCE.md. Appendix H already forbids a design total in product copy.
   Where you need to express scale, word it so it cannot go stale ("every design", "the free
@@ -488,7 +493,7 @@ EXPLANATION AND MORE INSTRUCTION.
   WHERE IT IS A ROUTINE JUDGEMENT CALL, MAKE IT and say so in one line. Where the decision is
   genuinely his, present it and WAIT — do not default it.
 
-  FLAG, DO NOT GUESS (standing rule 6). If two approved decisions contradict, or an
+  FLAG, DO NOT GUESS — a standing rule, again cited by its words, not a number. If two approved decisions contradict, or an
   instruction cannot be followed without inventing a decision the owner never made, STOP AND
   ASK. This project has been damaged more than once by a confident guess that looked
   reasonable.
@@ -573,8 +578,10 @@ delete a file you did not create.
   - Nothing in either document contradicts `reconcile-designs-decisions.md`.
   - No count is restated that could be derived.
   - `python3 tools/doc-audit.py --check` passes, run twice.
-  - `build-sequence.md`, `HANDOVER.md` and the build board say step 5 is done and step 6 is
-    next. `BUILD-BOARD.html` is GENERATED — edit `tools/build-board.py`, never the HTML.
+  - `build-sequence.md`, `HANDOVER.md` and the build board say step 5 is done and STEP 5B —
+    the static prototype — is next. NOT step 6: R-75 keeps step 6 shut until the owner has
+    walked 5b's prototype. `BUILD-BOARD.html` is GENERATED — edit `tools/build-board.py`,
+    never the HTML.
   - You have written a short report for the owner: what you specified, which surfaces you had
     to extrapolate and why, how many Claude Design prompts he now needs to run, what you
     found already drawn that §37.7 said was missing, and anything you had to ask him about.

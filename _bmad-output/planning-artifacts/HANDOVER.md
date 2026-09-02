@@ -21,7 +21,7 @@ numbered options and one marked **(RECOMMENDED)**.
 |---|---|
 | `planning-artifacts/INDEX.md` | Every document with a one-line brief. **Start here.** Four statuses: **live** (edit these), **tool** (runnable), **record** (dated — *never edit*), **retired**. |
 | `planning-artifacts/BUILD-BOARD.html` | Where the project stands, what is next, prompts with copy buttons. |
-| `planning-artifacts/build-sequence.md` | The six steps from PRD to first story. Governs on any conflict with the board. |
+| `planning-artifacts/build-sequence.md` | The build steps from PRD to first story. Governs on any conflict with the board. |
 | `.../architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` | The invariants everything is built from. |
 
 ## Where the project is
@@ -57,7 +57,7 @@ delta is §A4 of `reconcile-designs-decisions.md` (`reconcile-designs.md` is a `
 edited). Two of §37.7's items are now fixed: the design totals printed on the marketing screens, and
 P0's per-prop mark allowlist.
 
-**ANY UI OR UX TASK STARTS IN THE DESIGN EXPORT — THE WHOLE DIRECTORY** *(owner, 2026-08-31)*. It is
+**ANY UI OR UX TASK STARTS IN THE DESIGN EXPORT — THE WHOLE DIRECTORY** *(owner, 2026-08-31 — since 2026-09-02 ruling **R-74**, binding until the project finishes)*. It is
 the largest investment in this project and it is never to be missed. The full map is in `CLAUDE.md`;
 the short version is that it holds far more than the screen frames — the design system itself
 (`Calibration Set`, `Editor Sidebar Kit`, `R Responsive System`), every drawn design, a per-category

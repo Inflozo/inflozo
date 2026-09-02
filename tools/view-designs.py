@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""View the Claude Design export in a browser on this machine — ruling R-75's tool.
+"""View the Claude Design export in a browser on this machine — a utility for SESSIONS, not the owner.
 
     python3 tools/view-designs.py            # serve the export and open the design index
     python3 tools/view-designs.py S4         # open a specific frame (prefix match on the filename)
@@ -10,9 +10,12 @@ its static picture from a plain file open. But the export's runtime (`support.js
 over `fetch`, which browsers block on `file://` — so the two Index canvases' links and the mock
 interactions only work over HTTP. One command, no install: this uses Python's own web server.
 
-The owner's ruling behind this (R-75, 2026-09-02): every surface must be viewable as a static
-design on his machine BEFORE it is built dynamically. The export is that viewable state; this is
-the door to it.
+AND WHAT THIS IS NOT — the owner was explicit. Ruling R-75 (2026-09-02) is about him seeing
+INFLOZO'S OWN UI as static pages before dynamic build, and he REJECTED the frame-viewer reading of
+it in the same breath: "I do not want to view the exported frames. I want to see the Inflozo UI in
+local." His deliverable is step 5b's prototype (see `build-sequence.md`), which needs no server at
+all. This tool exists so that a SESSION doing design work can eyeball a frame over HTTP. Do not
+offer it to him as the answer to R-75.
 """
 import os
 import sys

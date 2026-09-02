@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (the merge acted on this file; §A2–§A4 were added 2026-08-31 and are the part still to propagate)
+status: live (§A2–§A3's R-30…R-38 are still owed to normative documents, before E4/E9; §A10's two standing rulings bind every remaining step)
 created: 2026-08-27
-updated: 2026-08-31 (design patch pass rulings, the §F asks ruled, §37.7 re-verified)
+updated: 2026-09-03 (§A5–§A10: the library review, the open-questions sheet, the architect rulings, the stress-test rulings, pass five verified, and the standing rulings R-74/R-75)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 

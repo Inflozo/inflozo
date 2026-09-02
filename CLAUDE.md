@@ -10,7 +10,7 @@ compiles the design into a Ghost theme and deploys it to the customer's own Ghos
 |---|---|
 | `_bmad-output/planning-artifacts/INDEX.md` | Every document with a one-line brief. **Start here.** |
 | `_bmad-output/planning-artifacts/HANDOVER.md` | Where the project stands and what is next. |
-| `_bmad-output/planning-artifacts/build-sequence.md` | The six steps from PRD to first story. Governs on any conflict with the board. |
+| `_bmad-output/planning-artifacts/build-sequence.md` | The steps from PRD to first story. Governs on any conflict with the board. |
 | `.../architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` | The invariants everything is built from. |
 
 **Four document statuses in `INDEX.md`, and they bind:** **live** (edit these) · **tool** (runnable) ·

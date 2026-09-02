@@ -60,9 +60,17 @@ STEPS = [
   're-verified against the current export on 2026-08-31 and still standing (see \u00a7A4 of the '
   'decisions file for the delta; two of its items are now fixed).',
   'Four journeys and eight flows, authored rather than verified.', None),
+ ('s5b', '5b', 'Static prototype', 'later',
+  "The owner's ruling R-75 (2026-09-02): he sees INFLOZO'S OWN UI — not the design frames — as "
+  'static, clickable pages on his machine before anything is built dynamically. Built from step '
+  "5's spines and the design export (R-74); opens from a double-click, no server, no install.",
+  'A walkable static prototype of the product. The owner walking it is what unlocks step 6.',
+  'step 5'),
  ('s6', '6', 'Epics and stories', 'later',
-  'Expands section 8 into stories. It does not re-plan anything.',
-  'The story breakdown.', 'step 5'),
+  'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: it does not open '
+  'until the owner has walked the step-5b prototype, and per R-74 every story with a surface '
+  'names the frame it is built from.',
+  'The story breakdown.', 'step 5b — the walked prototype'),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
@@ -84,6 +92,7 @@ PROMPTS = [
   'Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled '
   'item to you as a numbered decision.'),
  ('s5',  'Journeys and flows', 'live', None),
+ ('s5b', 'Static prototype', 'live', None),
  ('s6',  'Epics and stories', 'live', None),
  ('s6b', 'Readiness gate', 'live', None),
 ]
@@ -189,9 +198,20 @@ def fenced(md):
 
 def build():
     md = open(SRC, encoding='utf8').read()
-    blocks = fenced(md)
-    # the memlog snippet is a bash block, not a step prompt — drop anything not starting with /
-    blocks = [b for b in blocks if b.lstrip().startswith('/')]
+    # A step prompt is a fenced block that either starts with a slash command, or sits under a
+    # '### … Prompt …' heading. The union matters: step 5b's prompt starts with plain prose
+    # ('Build the static prototype…') and the OLD slash-only filter silently dropped it while
+    # the count check still passed — an invisible prompt with a green check — and step 6b's
+    # slash prompt sits under a heading with no 'Prompt' in it, so a heading-only anchor
+    # drops that one instead. Both signals together cover every shape this file actually has.
+    heads = [(m.start(), m.group(0)) for m in re.finditer(r'^###[^\n]*$', md, re.M)]
+    blocks = []
+    for m in re.finditer(r'\n```\n(.*?)\n```', md, re.S):
+        body = m.group(1)
+        prior = [h for h in heads if h[0] < m.start()]
+        under_prompt = prior and 'Prompt' in prior[-1][1]
+        if body.lstrip().startswith('/') or under_prompt:
+            blocks.append(body)
     if len(blocks) != len(PROMPTS):
         print(f'  ! build-sequence.md has {len(blocks)} slash-prompts, PROMPTS declares '
               f'{len(PROMPTS)}. Update tools/build-board.py.', file=sys.stderr)

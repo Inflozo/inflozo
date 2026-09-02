@@ -130,7 +130,7 @@ DOCS = [
 
  # ── process ──────────────────────────────────────────────────────────────────
  ('build-sequence.md', 'live', 'The build sequence',
-  'The six steps from finished PRD to first story, what each needs from the owner, and a runnable '
+  'The steps from finished PRD to first story, what each needs from the owner, and a runnable '
   'prompt for each. Steps 1–4 and the inventory merge are COMPLETE; step 5 (journeys and flows) is '
   'the critical path. One step-2 prompt contains an instruction later proven FALSE, flagged in '
   'place rather than deleted.'),
@@ -178,7 +178,7 @@ DOCS = [
   '41 probe families, 1,078 owner-flag rows (the Ghost Build Room agenda), the PRD amendments by FR. '
   'Its findings array is reconcile-designs.findings.json beside it.'),
  ('prds/.../reconcile-designs-decisions.md', 'live', 'Ghost Build Room rulings',
-  'Step 4b (2026-08-27, extended 2026-08-31): the owner\'s rulings on everything 4a could not settle '
+  'Step 4b (2026-08-27, extended through 2026-09-03: §A5-§A9 the library review, the open-questions sheet, the architect rulings, the stress-test rulings and pass five; §A10 the two STANDING rulings R-74/R-75 — export fidelity till project end, and the static-prototype gate on step 6): the owner\'s rulings on everything 4a could not settle '
   'by reading, each naming the documents that must move. §A the room\'s rulings · §A2 the design '
   'patch pass · §A3 the §F asks, all now ruled · §A4 §37.7 re-verified for step 5 · §B FOUR APPROVED '
   'DECISIONS SUPERSEDED (D3 native search, D17 accent seeding, D26 gap names, D27 in half) — read it '
