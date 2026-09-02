@@ -1016,6 +1016,31 @@ guarantee.
 
 ---
 
+## A7 · The six architect rulings, and the A33 probe — 2026-09-03
+
+These were never the owner's. They were held back from `LIBRARY-QUESTIONS.html` on the grounds that a
+question about how a behaviour module is written is a technical ruling, and carrying it to a
+non-engineer would be asking him to arbitrate an implementation detail.
+
+| # | Ruling | Where |
+|---|---|---|
+| **R-60** | **`tabs` emits its heading ONLY where the panel does not already carry one.** Three designs draw their own — A5-12, A13-11, A15-10/15 — and announced the same label twice with JavaScript off. The module's heading exists to make the stacked state navigable; where the panel has one, that job is done. **The design's own heading is never dropped instead**, because that would change the WITH-JavaScript state too | ✅ research `§7` |
+| **R-61** | **A module hides only the affordances IT ADDS, never a static element the design drew.** A5-14 Scroller refuses dots and offers a 3 px static rule; that rule is CSS, so it survives. The general form matters more than the case: **the no-JS state is the server-rendered state minus what the script would have created, and nothing else** | ✅ research `§7` |
+| **R-62** | **`group-headings` MAY step the headings it groups, and must** — ratifying what the A18 pass assumed rather than overturning it. It is the only arrangement whose outline is correct in **both** states: nested with the script, flat peers without it, each describing that state truthfully | ✅ research `§7` |
+| **R-63** | **Ghost's gallery row-ratio script is not a module and gets no registry entry.** Ghost ships it with the card; Inflozo neither writes, bundles nor budgets for it — the same treatment `cards.js` gets. A33 styles the result and declares no module | ✅ research `§2.2` |
+| **R-64** | **Card corners come from the pack's radius token; per-card corners are declined.** A radius is a Style Pack decision, so a card opting out would be the one element disagreeing with everything around it — and per-card corners would be twenty controls whose only job is to disagree with the pack | ✅ FR-Q7 |
+| **R-65** | **A33's unverified selectors, settled by execution** — see `MEASUREMENTS.md` §35 and register **57**. Four of the six confirmed on both majors; `kg-email-card` **does not exist on the web** and its selector is deleted rather than corrected; and Ghost 5 turns out to ship **two** renderers whose class sets differ on six card types | ✅ §35 · register 57 · ⬜ A33 spec |
+
+**The probe found two things nobody had asked for**, and the second is the one that matters. `kg-nft-card`
+is still in both builds while A33 draws twenty cards without it — a coverage decision rather than a fix.
+And **Ghost 5 renders Koenig cards through two different renderers**, because a Ghost 5 site can hold
+posts written before Lexical; header, file, product, video and embed emit different classes depending
+which rendered the post. **An older Ghost 5 post therefore renders cards A33's selectors will not
+match.** No specification mentions this. It is register **57** and it needs a ruling — style both
+shapes, or state that the treatments are Lexical-only and say so where a customer can see it.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
