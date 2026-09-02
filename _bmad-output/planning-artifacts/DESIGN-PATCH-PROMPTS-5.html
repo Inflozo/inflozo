@@ -1,0 +1,2527 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Design patch prompts, pass five</title><style>*{box-sizing:border-box}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--patch:#96650a;--patch-s:#fff4d9;--build:#12784a;--build-s:#e2f5ec;
+--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--patch:#e8bd57;--patch-s:#33280d;--build:#5ed6a0;--build-s:#112f20;
+--sh:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.36)}}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 96px}
+h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 22px;font-size:.93rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);
+margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog{height:8px;flex:1;min-width:180px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--build);transition:width .3s}
+.count{font-weight:680;font-size:.9rem;white-space:nowrap}
+.btn{font:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+margin:0 0 14px;overflow:hidden}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
+.chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
+color:var(--accent);min-width:44px;text-align:center}
+.cname{font-weight:650;flex:1}
+.cmeta{color:var(--muted);font-size:.82rem}
+.tick{width:19px;height:19px;accent-color:var(--build);cursor:pointer;flex:none}
+.cat.done .cname{text-decoration:line-through}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px 16px}
+.cat.open .body{display:block}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;
+overflow:auto;max-height:460px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
+.note{background:var(--patch-s);color:var(--patch);border-radius:9px;padding:10px 13px;
+font-size:.87rem;margin:0 0 16px}
+.big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
+font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
+footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}</style></head>
+<body><div class="wrap">
+<div class="kick">Inflozo</div>
+<h1>Design patch pass five — mostly one mechanical job</h1>
+<p class="lede"><b>23 of these carry the same small change.</b> Image focus was never a
+shared control — two dozen categories each wrote out their own copy of its values, which is the
+"one control name, one set of values" ruling in its worst form. Pass four defined it once in
+<b>P0·9</b> with both axes; these categories still have private copies and none has the new
+horizontal axis. Each prompt asks for the same replacement.</p>
+<p class="lede">Three carry one extra item: <b>A33</b>'s card selectors, now settled by reading
+Ghost's own renderers, and <b>A4</b> and <b>A6</b>, whose category layers still describe the Actions
+control as it was before the 31 August split — their own patch notes have it right, but the layer is
+what a reader meets first.</p>
+<p class="lede">Run in any order; nothing here depends on anything else. Then
+<code>python3 tools/verify-design-pass.py</code> and
+<code>python3 tools/reapply-export-edits.py</code>.</p>
+<div class="cat" data-cat="A1">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A1 done">
+    <span class="step">1</span>
+    <span class="cid">A1</span><span class="cname">Headers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A1 Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A1 Headers, 15 designs:
+
+   1. Rail
+   2. Split Rail
+   3. Stacked Masthead
+   4. Overlay
+   5. Floating Pill
+   6. Drawer-First
+   7. Mega Bar
+   8. Utility + Nav
+  10. Contrast Band
+  11. Side Rail
+  12. Boxed
+  13. Centre Nav
+  14. Icon Utilities
+  15. Big Type
+  16. Reveal
+
+THE WORK LIST FOR A1:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A2">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A2 done">
+    <span class="step">2</span>
+    <span class="cid">A2</span><span class="cname">Announcement Bars</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A2 Announcement Bars
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A2 Announcement Bars, 14 designs:
+
+   1. Rule
+   2. Split
+   3. Badge
+   4. Two-Line
+   5. Capture
+   6. Countdown
+   7. Dateline
+   8. Ticker
+   9. Rotator
+  10. Pill
+  11. Toast
+  12. Takeover
+  14. Edge
+  15. Triple
+
+THE WORK LIST FOR A2:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A3">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A3 done">
+    <span class="step">3</span>
+    <span class="cid">A3</span><span class="cname">Footers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A3 Footers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A3 Footers, 16 designs:
+
+   1. Minimal Line
+   2. Columns
+   3. Two-Tier
+   4. Newsletter Band
+   5. Contrast Band
+   6. Centred Stack
+   7. Big Type
+   8. Sitemap
+   9. Latest Posts
+  10. Contact Block
+  11. Colophon
+  12. Card
+  13. Tags
+  14. Image Band
+  15. Wrap
+  16. Mini Bar
+
+THE WORK LIST FOR A3:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A4">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A4 done">
+    <span class="step">4</span>
+    <span class="cid">A4</span><span class="cname">Heroes</span>
+    <span class="cmeta">image focus · + extra</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A4 Heroes
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A4 Heroes, 17 designs:
+
+   1. Centred
+   2. Flush Left
+   3. Split
+   4. Full Bleed
+   5. Image Under
+   6. Big Type
+   7. Masthead
+   8. Card
+   9. Contrast Band
+  10. Video Poster
+  11. Subscribe
+  12. Offset Image
+  13. Latest Post
+  14. Full Height
+  16. Pull Quote
+  17. Slim
+  18. Overlap Card
+
+THE WORK LIST FOR A4:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+- YOUR CATEGORY LAYER STILL DESCRIBES THE OLD ACTIONS CONTROL. Near the top of this
+  document, under &quot;What the design patch pass changed category-wide&quot;, it says: *&quot;The Actions control,
+  on every design that has one, is Both · Primary · None — those three words, as drawn.&quot;*
+  **That is no longer true and has not been since 31 August 2026.** Your own Patch notes at the foot
+  of this file record the change correctly: Actions is a labelled group of one toggle per action —
+  **Primary action: On · Off** and **Secondary action: On · Off** — with both off being the old None.
+  The split ran across 36 designs library-wide; the canonical definition is **P0·4a**.
+  The layer is what a reader meets first, so it is the sentence that misleads. Rewrite it to describe
+  the toggles. Quote the old list only if you show the mapping, the way A1 does.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A5">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A5 done">
+    <span class="step">5</span>
+    <span class="cid">A5</span><span class="cname">Features</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A5 Features
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A5 Features, 16 designs:
+
+   1. Three Up
+   2. Two Up
+   3. Four Up
+   4. Cards
+   5. Split Head
+   6. Rows
+   7. Alternating Media
+   8. Media Top
+   9. Bento
+  10. Contrast Band
+  11. Checklist
+  12. Tabs
+  13. Spotlight
+  14. Scroller
+  15. Index
+  16. Panel
+
+THE WORK LIST FOR A5:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A6">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A6 done">
+    <span class="step">6</span>
+    <span class="cid">A6</span><span class="cname">CTA Banners</span>
+    <span class="cmeta">image focus · + extra</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A6 CTA Banners
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A6 CTA Banners, 15 designs:
+
+   1. Centred
+   2. Flush Left
+   3. Split
+   4. Card
+   5. Contrast Band
+   6. Inline Form
+   7. Full Bleed Image
+   8. Image Split
+   9. Big Type
+  10. Slim
+  11. Reasons
+  12. Pair
+  13. Overlap
+  14. Members
+  15. Signature
+
+THE WORK LIST FOR A6:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+- YOUR CATEGORY LAYER STILL DESCRIBES THE OLD ACTIONS CONTROL. Under &quot;The shared floor&quot; it
+  says: *&quot;Actions is one control, two values: Both · Primary.&quot;*
+  **That is no longer true and has not been since 31 August 2026.** Your own Patch notes record it
+  correctly: A6&#x27;s group holds a single toggle, **Secondary action: On · Off**, because A6 never
+  offered None — a banner with no action is a section head — so **the primary action is a constant,
+  not a decision**. The canonical definition is **P0·4a**.
+  The layer is what a reader meets first. Rewrite it to describe the toggle and the constant.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A8">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A8 done">
+    <span class="step">7</span>
+    <span class="cid">A8</span><span class="cname">Testimonials</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A8 Testimonials
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A8 Testimonials, 15 designs:
+
+   1. Single
+   2. Three Up
+   3. Two Up
+   4. Grid
+   5. Wall
+   6. Split Head
+   7. Slider
+   8. Portrait
+   9. Contrast Band
+  10. Big Quote
+  11. Faces
+  12. Rows
+  13. Highlight
+  14. Slim Line
+  15. Overlap
+
+THE WORK LIST FOR A8:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A9">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A9 done">
+    <span class="step">8</span>
+    <span class="cid">A9</span><span class="cname">FAQ</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A9 FAQ
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A9 FAQ, 14 designs:
+
+   1. Accordion
+   2. Two Column
+   3. Open List
+   4. Cards
+   5. Split Head
+   6. Grouped
+   7. Index
+   8. Contrast Band
+   9. Numbered
+  10. Image Split
+  11. Tabs
+  13. Slim
+  14. Ask
+  15. Ledger
+
+THE WORK LIST FOR A9:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A10">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A10 done">
+    <span class="step">9</span>
+    <span class="cid">A10</span><span class="cname">Stats and Numbers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A10 Stats and Numbers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A10 Stats and Numbers, 15 designs:
+
+   1. Row
+   2. Cards
+   3. Grid
+   4. Single
+   5. Lead Stat
+   6. Split Head
+   7. Contrast Band
+   8. Ledger
+   9. Bars
+  10. Image Split
+  11. Inline
+  12. Sourced
+  13. Slim
+  14. Change
+  15. Big Type
+
+THE WORK LIST FOR A10:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A11">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A11 done">
+    <span class="step">10</span>
+    <span class="cid">A11</span><span class="cname">Logo Walls</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A11 Logo Walls
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A11 Logo Walls, 15 designs:
+
+   1. Row
+   2. Caption Row
+   3. Grid
+   4. Boxed
+   5. Cards
+   6. Split Head
+   7. Contrast Band
+   8. Marquee
+   9. Rail
+  10. Slim
+  11. Named
+  12. Tiers
+  13. Dense
+  14. Inline
+  15. Big Type
+
+THE WORK LIST FOR A11:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A12">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A12 done">
+    <span class="step">11</span>
+    <span class="cid">A12</span><span class="cname">About and Team</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A12 About and Team
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A12 About and Team, 15 designs:
+
+   1. Grid
+   2. Cards
+   3. Rows
+   4. Story and Team
+   5. Split Head
+   6. Portraits
+   7. Contrast Band
+   8. Founder
+   9. Faces
+  10. Directory
+  11. Slim
+  12. Big Type
+  13. Rail
+  14. Reveal
+  15. Groups
+
+THE WORK LIST FOR A12:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A14">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A14 done">
+    <span class="step">12</span>
+    <span class="cid">A14</span><span class="cname">Galleries</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A14 Galleries
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A14 Galleries, 15 designs:
+
+   1. Grid
+   2. Masonry
+   3. Mosaic
+   4. Panel
+   5. Split Head
+   6. Contrast Band
+   7. Carousel
+   8. Filmstrip
+   9. Full Bleed
+  10. Lead and Grid
+  11. Overlay
+  12. Captioned Rows
+  13. Contact Sheet
+  14. Index
+  15. Boxed
+
+THE WORK LIST FOR A14:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A15">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A15 done">
+    <span class="step">13</span>
+    <span class="cid">A15</span><span class="cname">Video and Embeds</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A15 Video and Embeds
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A15 Video and Embeds, 15 designs:
+
+   1. Player
+   2. Split
+   3. Panel
+   4. Contrast Band
+   5. Full Bleed
+   6. Cover
+   7. Grid
+   8. Lead and Grid
+   9. Carousel
+  10. Playlist
+  11. Chapters
+  12. Embed Card
+  13. Thumb Rows
+  14. Slim Bar
+  15. Tabs
+
+THE WORK LIST FOR A15:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A16">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A16 done">
+    <span class="step">14</span>
+    <span class="cid">A16</span><span class="cname">Contact</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A16 Contact
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A16 Contact, 15 designs:
+
+   1. Split
+   2. Centred
+   3. Card
+   4. Panel
+   5. Contrast Band
+   6. Details Grid
+   7. Map Split
+   8. Locations
+   9. Slim Bar
+  10. Big Type
+  11. Enquiry Types
+  12. Boxed
+  13. Directory
+  14. Reasons
+  15. Cover
+
+THE WORK LIST FOR A16:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A19">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A19 done">
+    <span class="step">15</span>
+    <span class="cid">A19</span><span class="cname">Featured and Spotlight</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A19 Featured and Spotlight
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A19 Featured and Spotlight, 15 designs:
+
+   1. Split
+   2. Full Bleed
+   3. Card
+   4. Poster
+   5. Contrast Band
+   6. Big Type
+   7. Overlap
+   8. Lead and Two
+   9. Alternating
+  10. Pair
+  11. Lead and Rail
+  12. Picks
+  13. Quote
+  14. Slim
+  15. Carousel
+
+THE WORK LIST FOR A19:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A21">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A21 done">
+    <span class="step">16</span>
+    <span class="cid">A21</span><span class="cname">Author Showcases</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A21 Author Showcases
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A21 Author Showcases, 15 designs:
+
+   1. Grid
+   2. Cards
+   3. Rows
+   4. Split Head
+   5. Contrast Band
+   6. Founder
+   7. Panel
+   8. Faces
+   9. Big Type
+  10. Directory
+  11. Rail
+  12. Carousel
+  13. Lead and Rest
+  14. Image Band
+  15. Slim
+
+THE WORK LIST FOR A21:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A22">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A22 done">
+    <span class="step">17</span>
+    <span class="cid">A22</span><span class="cname">Newsletter</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A22 Newsletter
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A22 Newsletter, 16 designs:
+
+   1. Inline Row
+   2. Card
+   3. Split
+   4. Contrast Band
+   5. Panel
+   6. Image Split
+   7. Cover
+   8. Big Type
+   9. Slim Bar
+  10. Choice
+  11. Reasons
+  12. Issue Preview
+  13. Boxed
+  14. Slide-in Card
+  15. Two Up
+  16. Quote
+
+THE WORK LIST FOR A22:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A24">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A24 done">
+    <span class="step">18</span>
+    <span class="cid">A24</span><span class="cname">Post Headers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A24 Post Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A24 Post Headers, 16 designs:
+
+   1. Centred
+   2. Flush Left
+   3. Split
+   4. Image Top
+   5. Full Bleed
+   6. Edge to Edge
+   7. Card
+   8. Contrast Band
+   9. Overlap
+  10. Big Type
+  11. Dateline
+  12. Rail
+  13. Sticky
+  14. Share Row
+  15. Slim
+  16. Two Column
+
+THE WORK LIST FOR A24:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A26">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A26 done">
+    <span class="step">19</span>
+    <span class="cid">A26</span><span class="cname">Post Footers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A26 Post Footers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A26 Post Footers, 15 designs:
+
+   1. Author Bio
+   2. Rows
+   3. Card
+   4. Contrast Band
+   5. Split
+   6. Slim
+   7. Next and Prev
+   8. Tag Row
+   9. Share Row
+  10. Big Type
+  11. Portrait
+  12. Subscribe
+  13. Rail
+  14. Ledger
+  15. Grid
+
+THE WORK LIST FOR A26:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A29">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A29 done">
+    <span class="step">20</span>
+    <span class="cid">A29</span><span class="cname">Archive Headers</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A29 Archive Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A29 Archive Headers, 14 designs:
+
+   1. Centred
+   2. Split Head
+   3. Contrast Band
+   4. Panel
+   5. Full Bleed
+   6. Image Split
+   7. Rail
+   8. Bar
+   9. Big Type
+  10. Boxed
+  11. Filter
+  12. Portrait
+  13. Index
+  14. Sticky
+
+THE WORK LIST FOR A29:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A30">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A30 done">
+    <span class="step">21</span>
+    <span class="cid">A30</span><span class="cname">Members Pages</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A30 Members Pages
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A30 Members Pages, 13 designs:
+
+   1. Centred
+   2. Split Pitch
+   3. Card
+   4. Panel
+   5. Contrast Band
+   6. Cover
+   7. Image Split
+   8. Tiers
+   9. Big Type
+  10. Boxed
+  11. Rail
+  12. Ledger
+  13. Steps
+
+THE WORK LIST FOR A30:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A31">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A31 done">
+    <span class="step">22</span>
+    <span class="cid">A31</span><span class="cname">Error and Utility</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A31 Error and Utility
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A31 Error and Utility, 10 designs:
+
+   1. Centred
+   2. Split Reason
+   3. Card
+   4. Boxed
+   5. Panel
+   6. Contrast Band
+   7. Cover
+   8. Elsewhere
+   9. Directory
+  10. Display
+
+THE WORK LIST FOR A31:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A32">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A32 done">
+    <span class="step">23</span>
+    <span class="cid">A32</span><span class="cname">Paywall</span>
+    <span class="cmeta">image focus</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A32 Paywall
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A32 Paywall, 12 designs:
+
+   1. Fade
+   2. Card
+   3. Panel
+   4. Contrast Band
+   5. Boxed
+   6. Split Pitch
+   7. Tiers
+   8. Ledger
+   9. Big Type
+  10. Cover
+  11. Sticky Bar
+  12. Meter
+
+THE WORK LIST FOR A32:
+
+- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of
+  its values, which is the owner&#x27;s ruling &quot;one control name means one set of values&quot; in its worst
+  form in the whole library. It is now defined ONCE, in **P0·9**, and it carries BOTH axes:
+  **Centre · Top · Bottom** and **Centre · Left · Right**.
+  The horizontal half is new (owner&#x27;s ruling, 2026-09-03) and this category does not have it yet. A
+  wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing
+  to say about which side survives.
+  What to do: wherever this specification enumerates the focus values, replace the enumeration with a
+  reference to P0·9&#x27;s definition. Do not restate the values. If a design&#x27;s panel draws the control,
+  draw both axes. If a design constrains the control — offering fewer values for a good reason —
+  keep the constraint and say what it is, because that is a design decision rather than a private copy.
+  GHOST NEVER SEES THIS: it is a hint the compiler resolves, which is why it is a control and not a
+  data binding. Say so once if this spec does not already.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A33">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A33 done">
+    <span class="step">24</span>
+    <span class="cid">A33</span><span class="cname">Koenig Card Treatments</span>
+    <span class="cmeta">+ extra</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS FIVE · A33 Koenig Card Treatments
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS IS. A small, mostly mechanical pass. Its main job is to finish something pass four started:
+Image focus is now one shared control instead of two dozen private copies, and this category still
+has a private copy. A few categories carry one extra item each.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+THIS CATEGORY — A33 Koenig Card Treatments, 6 designs:
+
+   1. Plain
+   2. Card
+   3. Panel
+   4. Wide
+   5. Full Bleed
+   6. Contrast Band
+
+THE WORK LIST FOR A33:
+
+- FOUR OF YOUR SIX UNVERIFIED SELECTORS ARE CONFIRMED. Read from Ghost&#x27;s own card
+  renderers on both supported versions on 2026-09-03. Drop the &quot;unverified&quot; mark from each and record
+  that it was checked against the code that emits it:
+    `kg-cta-card`      the call-to-action card — CONFIRMED, both versions
+    `kg-callout-card`  CONFIRMED, both versions
+    `kg-product-card`  CONFIRMED, and its inner classes are `kg-product-title`, `kg-product-image`,
+                       `kg-product-description-wrapper`, `kg-product-button-wrapper`
+    `kg-header-card`   CONFIRMED, and Ghost 6&#x27;s shape is `kg-header-card-content`, `-heading`,
+                       `-subheading`, `-subheading-wrapper`, `-text`, `-image`, plus
+                       `kg-header-button-wrapper`, `kg-v2`, `kg-style-accent`, `kg-style-image`,
+                       `kg-layout-split`, `kg-size-large`, `kg-swapped`, `kg-align-center`,
+                       `kg-content-wide`
+
+- `kg-email-card` DOES NOT EXIST, AND THE FIX IS DELETION RATHER THAN CORRECTION. The email card&#x27;s
+  renderer returns an empty container unless the render target is email — so on the web it produces
+  no element and no class at all. Your rule for it matches nothing, ever. You were already right that
+  the card &quot;never renders on the web&quot;; the mistake was carrying a selector for it anyway. **Remove
+  the selector.** There is nothing to correct it to.
+
+- GHOST 5 HAS A SECOND RENDERER, AND SIX CARDS COME OUT DIFFERENTLY. This was on nobody&#x27;s list.
+  Ghost 5 ships both the current renderer and an older one, because a Ghost 5 site can still hold
+  posts written before the current editor. **header, file, product, video and embed emit different
+  classes depending which one rendered the post** — most severely the header card, which under the
+  older renderer carries almost none of the structure your treatments style. So an older post on a
+  Ghost 5 site renders cards your selectors will not match.
+  **DO NOT INVENT AN ANSWER TO THIS.** Record it in the specification as a known limitation with the
+  facts above, and mark it OPEN FOR THE OWNER — the choice between styling both shapes and declaring
+  the treatments current-editor-only is his, and it is being put to him separately.
+
+- `kg-nft-card` STILL EXISTS and this category draws twenty cards without it. Also not a fix: record
+  it as a coverage question, marked OPEN FOR THE OWNER.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+  navigator.clipboard.writeText(b.parentElement.querySelector('pre').textContent);
+  b.textContent='Copied';setTimeout(()=>b.textContent='Copy prompt',1400);}));
+document.querySelectorAll('.chead').forEach(h=>h.addEventListener('click',e=>{
+  if(e.target.classList.contains('tick'))return;
+  h.parentElement.classList.toggle('open');}));
+const K='inflozo-patch5';
+const st=JSON.parse(localStorage.getItem(K)||'{}');
+document.querySelectorAll('.cat').forEach(c=>{
+  const id=c.dataset.cat,t=c.querySelector('.tick');
+  if(st[id]){t.checked=true;c.classList.add('done');}
+  t.addEventListener('change',()=>{st[id]=t.checked;c.classList.toggle('done',t.checked);
+    localStorage.setItem(K,JSON.stringify(st));});});
+</script></body></html>

@@ -295,6 +295,16 @@ DOCS = [
   'record of what was actually sent and a record is not rewritten. Imports the four Ghost facts, '
   'the output contract and the page CSS from design-patch-prompts.py; rosters DERIVE from the '
   'export. Only the work lists are authored, because a ruling cannot be derived.'),
+ ('tools/design-patch-prompts-5.py', 'tool', 'Design patch prompts — pass five',
+  'Generates DESIGN-PATCH-PROMPTS-5.html. Mostly one mechanical job repeated: the Image-focus sweep, '
+  'whose category list is DERIVED by the same test pass four uses. Three categories carry one extra '
+  'item — A33\'s card selectors settled by execution, and A4 and A6, whose CATEGORY LAYERS still '
+  'describe the Actions control as it was before the 2026-08-31 split while their own patch notes '
+  'have it right. That pair was found by reading the layer rather than counting matches: A1, A2 and '
+  'A32 quote the old value list too, but only as the mapping, which is correct.'),
+ ('planning-artifacts/DESIGN-PATCH-PROMPTS-5.html', 'live', 'Design patch prompts, pass five',
+  'The owner-facing page for the fifth patch pass. Runnable in any order; nothing depends on '
+  'anything else. NOT YET RUN.'),
  ('tools/design-patch-prompts-4.py', 'tool', 'Design patch prompts — pass four',
   'Generates DESIGN-PATCH-PROMPTS-4.html: the spec-side half of R-48 to R-59, over eight categories. '
   'Carries the FIVE questions that needed no ruling at all — the pack tokens, the main-feed '
@@ -489,6 +499,8 @@ def check():
                             'the roster or a pass-3 work list'),
                            ('design-patch-prompts-4.py', 'DESIGN-PATCH-PROMPTS-4.html',
                             'the roster, a pass-4 work list, or the Image-focus sweep list'),
+                           ('design-patch-prompts-5.py', 'DESIGN-PATCH-PROMPTS-5.html',
+                            'the roster, the sweep list, or a pass-5 work list'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],

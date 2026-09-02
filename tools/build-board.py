@@ -156,13 +156,13 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass FOUR \u2014 eight prompts, ready',
-  'DESIGN-PATCH-PROMPTS-4.html. Every open question in the library was put to the owner on '
-  '2 September and he answered eighteen; six changed a requirement and are landed. These eight carry '
-  'the rest into the specs. RUN P0 FIRST \u2014 it holds two shared controls every category '
-  'inherits. FIVE of the eighteen needed no ruling at all: the answers already existed and the specs '
-  'had not caught up, so every prompt carries them. Then verify-design-pass.py and '
-  'reapply-export-edits.py, per the runbook above.'),
+ ('now', 'Design patch pass FIVE \u2014 24 prompts, mostly one job',
+  'DESIGN-PATCH-PROMPTS-5.html. 23 of them carry the SAME small change: Image focus was never a '
+  'shared control \u2014 two dozen categories each wrote out their own copy \u2014 and pass four '
+  'defined it once in P0\u00b79 with both axes. Three carry one extra item: A33\u2019s card '
+  'selectors, now settled against Ghost\u2019s own renderers, and A4 and A6, whose category layers '
+  'still describe the Actions control as it was before the 31 August split. Run in any order, then '
+  'verify-design-pass.py and reapply-export-edits.py.'),
  ('soon', 'The Image-focus sweep \u2014 23 categories',
   'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
   'which is the owner\u2019s "one control name, one set of values" ruling in its worst form. Pass '
