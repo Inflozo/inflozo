@@ -74,6 +74,19 @@ is left open and named rather than guessed at: Ground's picture-substitute token
 gain a **PASS FOUR PATCH** block. **Nothing was renumbered, no control was added or removed, and no
 value, default, layout, type scale, colour pack or spacing step changed.**
 
+**Ninth pass — pass five, 3 September 2026.** One work-list item, and it is a naming change.
+**Image focus is one shared control, defined once in P0·9 and carrying both axes, and this
+category’s private copy of its values is withdrawn.** A19 draws no focus row on any of the fifteen
+designs, so nothing was added to a panel: what changed is that every place this document or a frame
+spelled the values out now points at **P0·9** and names the slot instead, and every place that
+explained the absence by saying the focal point is set in Ghost has been corrected — **Ghost never
+sees focus**, which is a hint the compiler resolves into the crop the theme ships with rather than a
+data binding. **Whether A19 should now draw the control is OPEN FOR THE OWNER**, recorded rather
+than guessed at: the ground the absence stood on has gone, and putting a row on fifteen panels is a
+design decision, not a rename. All sixteen frames gain a **PASS FIVE PATCH** block. **Nothing was
+renumbered, no control was added or removed, and no value, default, layout, type scale, colour pack
+or spacing step changed.**
+
 **[Free] designs:** 1 Split · 6 Big Type
 
 *(Shortlisted in this pass, plainest first — 1 Split, 6 Big Type, 12 Picks, 14 Slim, 3 Card — and
@@ -173,9 +186,14 @@ Every design obeys these unless its own entry says otherwise.
 - **Editing, and what is not editable.** Every authored text edits inline with **P0·1**;
   **Ghost-owned content never does** — clicking a post title, tag, author name or excerpt says
   **“Edit in Ghost”**. Every URL field that survives opens the Ghost-aware **Link Picker**.
-  **Image focus belongs to the post** ⚑ — A19 authors no image, so rule 10's Centre · Top · Bottom
-  sits on the post's `feature_image` in Ghost; the panels say so rather than drawing a field that
-  writes nothing. **Rule 11's optional button icon reaches nothing** ⚑: the only button-shaped
+  **Image focus is P0·9’s shared control, and this document restates none of its values** ⚑ —
+  **P0·9 defines it once and carries both axes**, and a category supplies only the slot it applies
+  to, which here would be the post’s `feature_image`. **Ghost never sees focus**: it is a hint the
+  compiler resolves into the crop the theme ships with, not a data binding, so it declares no
+  behaviour module and there is nothing to fail with JavaScript off. **No design in A19 draws a
+  focus row**, on the category’s standing ground that it authors no image — **and that ground is now
+  open** ⚑, because “the focal point is set in Ghost” describes something Ghost does not store. Left
+  as found and recorded **OPEN FOR THE OWNER** in Patch notes — pass five. **Rule 11's optional button icon reaches nothing** ⚑: the only button-shaped
   things in the category are 15 Carousel's A1·14 arrows, whose glyph is the design's, and a
   carousel whose arrows can be any icon stops looking like one. **Member visibility is offered
   nowhere** ⚑ — every action in A19 is a link to a post, and a spotlight that hides itself from a
@@ -535,7 +553,7 @@ sidebar order.**
 
 10. **Accessibility.** One `<a>` around picture and text; DOM order image → eyebrow → title → excerpt → meta → call to action. Head authored → head `<h2>` above the column and the post steps to `<h3>`; otherwise the post's title is the `<h2>`. **The eyebrow's two halves are one string with the dot as text**, so it is read as one label rather than as two. Avatar `aria-hidden`, the name beside it carries the meaning. **Centred text is kept to the title, excerpt and meta and never applied to a run longer than three lines** — at Excerpt Three lines the panel warns rather than disabling. Contrast as 1 Split.
 
-**Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, governing the tag half of the middle-dot eyebrow, the section's own word surviving alone at Hide; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when it has no picture) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus is named as the post's** — a 4:5 crop is the most destructive in the category and the focal point is set in Ghost.
+**Reconciled.** Padding retired into **Vertical spacing**; **Tag: Show · Hide** added, governing the tag half of the middle-dot eyebrow, the section's own word surviving alone at Hide; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when it has no picture) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus points at P0·9**, whose values this document does not restate — a 4:5 crop is the most destructive in the category, and the crop it would fix is this section’s, not something Ghost stores ⚑.
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **the hand-off to 1 Split is deleted and this design reflows** — the crop is dropped and the narrow centred column draws the type at its set Width. The plate is still refused at 560 × 700, for the reason it always was. *Avatars with no photograph*: **one letter, not two**. The Switch buttons are gone and the panel advises.
 
@@ -672,7 +690,7 @@ sidebar order.**
 
 10. **Accessibility.** One `<a>` wrapping picture and card; **the card is inside the anchor, not a sibling**, so the whole composition is one target and there is no dead zone between them. DOM order image → eyebrow → title → excerpt → meta → call to action. **A6's ring is drawn around the union of picture and card** ⚑ — an L-shaped bounding box, rendered as the anchor's own outline at a 4 px offset, which the browser computes correctly because the card is a child rather than an overlay. Post title `<h2>`, or `<h3>` under an authored head. Contrast as 3 Card on surface.
 
-**Reconciled.** Padding retired into **Vertical spacing**, the 64 px overlap still not a control; **Tag: Show · Hide** added on the card's eyebrow; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when pictureless) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus is the post's, and Top is the value most of these crops want** — the card covers the picture's lower corner. At Image width Full bleed the panel notes that a Top divider Line draws on the section above.
+**Reconciled.** Padding retired into **Vertical spacing**, the 64 px overlap still not a control; **Tag: Show · Hide** added on the card's eyebrow; **`linkUrl`** removed; the Data group carries **Hand-picked** (one post, warned when pictureless) and **Count as a stepper** locked at 1; the excerpt binds **`excerpt`**. **Image focus points at P0·9**, whose values this document does not restate, **and Top is still the value most of these crops want** — the card covers the picture’s lower corner. At Image width Full bleed the panel notes that a Top divider Line draws on the section above.
 
 **Patched · design patch pass, 30 August 2026.** *No design ever turns into another design*: **Ground replaces the hand-off to 3 Card.** The picture's box becomes a flat field of the contrast colour and the card overlaps it by 64 px exactly as always, so **the overlap — which is the design — survives a post with no picture**. The Switch buttons are gone, the panel advises 3 Card, and the fallback can no longer fail.
 
@@ -1344,10 +1362,14 @@ binding changes where a string comes from and not how it looks.
   `excerpt` with Ghost's generated fallback; **13 Quote keeps `custom_excerpt` required** and its
   hand-off to 6 Big Type. A17 and A18 reached the same conclusion by the same test, and A19 is the
   first category where the test finds a design.
-- **Rule 10 (Image focus) and rule 11 (button icons) reach nothing in A19, and both are stated
-  rather than skipped.** A19 authors no image — every picture is a post's, and its focal point is set
-  in Ghost — and the category has no label-bearing button; 15 Carousel's arrows are A1·14 icon
-  buttons whose glyph belongs to the design.
+- **Rule 10 (Image focus) and rule 11 (button icons) reach nothing in A19 as drawn, and both are
+  stated rather than skipped.** Image focus is **P0·9’s shared control** — defined there with both
+  axes and not enumerated here — and A19 draws no focus row because it authors no image. **The
+  reason once given for that has not survived** ⚑: the old wording said the focal point is set in
+  Ghost, and Ghost stores no focal point, so whether A19 gains the control is **OPEN FOR THE OWNER**
+  and is recorded in Patch notes — pass five rather than settled here. Rule 11 is unchanged — the
+  category has no label-bearing button; 15 Carousel’s arrows are A1·14 icon buttons whose glyph
+  belongs to the design.
 - **Rule 9 (Member visibility) is offered nowhere.** Every action in A19 is a link to a post. A
   spotlight that hides itself from a logged-out reader is A32's paywall wearing a section's clothes,
   and A32 is the category for it.
@@ -1828,3 +1850,84 @@ staying unwarned, and print as a per-design line until a fourth case appears —
    the only item in A19 that is.
 
 — End of pass four —
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **The work list held one
+item**, and it is a naming change rather than a drawing: *one control name means one set of values*.
+
+### What changed
+
+- **Image focus points at P0·9 instead of listing the values here** — *one control name means one set
+  of values*. Image focus was never a shared control: two dozen category specs each wrote out their
+  own copy of its values. It is now defined once, in **P0·9**, carrying **both axes**, and a category
+  supplies only the slot it applies to. **Every enumeration in A19 is withdrawn** — the category
+  layer’s editing paragraph, the rule-10 finding, and the **Reconciled** lines on 4 Poster and
+  7 Overlap — and **no value is restated anywhere in this document or on any frame**. Where a
+  design’s note said something useful about which value its crop wants — 7 Overlap’s **Top** — that
+  observation is kept; naming one value as advice is not a private copy of the set.
+- **Ghost never sees this, and it is now said** — *a control is not a data binding*. Focus is a hint
+  the compiler resolves into the crop the theme ships with: the project stores the choice, the
+  compiler resolves it, and nothing about it reaches Ghost or comes back. It therefore declares no
+  behaviour module and cannot fail with JavaScript off. Written into the category layer once, and
+  restated in the pass-five block on each frame because a frame is read on its own.
+- **The four designs that draw no image use P0·9’s not-drawn case** — *a control that could never
+  have work to do is not drawn*. 6 Big Type, 12 Picks, 13 Quote and 14 Slim draw no picture at any
+  setting, so the row is absent and the panel says why: no greyed row, no empty label, no
+  placeholder. This is what those four panels already did; the wording now names P0·9 as the source
+  of the treatment.
+- **No constraint is claimed anywhere in A19** — *a design may offer fewer choices on a shared
+  control, and must say why*. No design here offers a subset of the focus values, because no design
+  offers the control at all; nothing was constrained, greyed or renamed.
+
+### Open for the owner
+
+- **OPEN FOR THE OWNER — does A19 now draw P0·9’s Image focus?** *What I would have needed to know:*
+  whether the control is offered on a picture the section crops but does not own. *Why it is open:*
+  A19 draws no focus row anywhere, and the reason every panel gave for that — the focal point is set
+  in Ghost — is not true; **Ghost stores no focal point**, which is why A29, A30, A31 and A32 all
+  apply focus to the Ghost image. The absence may still be right, but the ground it stood on has
+  gone. *What I did instead:* applied the naming change and **left the absence exactly as found**,
+  adding and removing nothing on fifteen panels.
+- **OPEN FOR THE OWNER — one focus control per image slot, against a section whose pictures come
+  from a query.** *What I would have needed to know:* whether one row governs every picture a loop
+  draws, or whether the control has a subject only where a section draws exactly one. P0·9 says the
+  control belongs to the image slot it sits under and a section with two slots draws two; A19 has no
+  slots — 8 Lead and Two, 9 Alternating, 10 Pair, 11 Lead and Rail and 15 Carousel each draw several
+  posts’ pictures from one query, at more than one shape. *What I did instead:* recorded it and drew
+  nothing. It only becomes live if the first question is answered yes.
+
+### Left alone, and said so rather than tidied
+
+- **The marketing and app screens print no design total, and P0’s per-prop mark allowlist is
+  maintained in the repository.** Neither is in this project’s copy, neither was touched, and neither
+  is re-created here. **No design total is written into any copy authored in this pass** — not the
+  old number, not a corrected one.
+- **The dated Patch notes of the 30 August, 31 August, 1 September and 2 September passes stand as
+  records of what those passes did.** This pass reverses nothing, so no earlier item gained a new
+  tag.
+- **Ground’s picture-substitute token stays OPEN FOR THE OWNER**, unchanged from pass four. It is
+  unrelated to this work list and was not re-argued.
+
+### Re-checked and unchanged
+
+**The roster** — fifteen rows, **[Free]** on 1 Split and 6 Big Type. **The control lists** — every
+control table as pass two left it, including 11 Lead and Rail’s seven; no control was added,
+removed, renamed or revalued. **The data fields** — **twenty-one shared fields, six authored, five
+query, ten read**; no field was added, and `imageFocus` is **not** a field in A19, which is the point
+of the change above. **The no-JavaScript line per design** — unchanged; fourteen designs are
+pixel-identical with JavaScript off and 15 Carousel keeps its resting state and its **Edit-safe: no**.
+**The declared behaviours** — unchanged; **None** with `core` assumed on fourteen designs, `carousel`
+on 15.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Split** and **6 Big Type** — both of which exist in this category’s roster. Unchanged
+   from the owner’s ruling of 30 August 2026.
+
+— End of pass five —

@@ -69,6 +69,23 @@ module**, which strikes finding 4. **Nothing was renumbered, renamed, redrawn or
 added or removed, no value changed, no type scale, colour pack or spacing step moved, and no design total
 is written anywhere.**
 
+**Design patch pass five — 3 September 2026.** Two work-list items, and **neither changes a drawing**.
+**Image focus stops being this category's control to define and becomes a citation of P0·9** — *one
+control name means one set of values*. A14 held a private copy of the values in the category layer, in
+the shared field list, in the item-editing rules and in the item-list block of all sixteen frames; every
+one of them now points at **P0·9**, which defines the control once and carries **both axes**. The
+horizontal axis is new to this category by the owner's ruling of 3 September 2026, and it is inherited
+rather than restated: a wide photograph cropped into a tall frame loses its sides, and a vertical-only
+control has nothing to say about which side survives. **No A14 panel ever drew the control as rows** —
+it is reached from the Image Picker popover — so nothing was redrawn, and **Ghost never sees it**: the
+compiler resolves the hint, which is why it is a control and not a data binding, stated once in
+settlement 2. **The missing sort module is answered, and the answer is no** — owner-ruled, 3 September
+2026: the order a gallery shows is the order its owner arranged, and a module for one design would have
+to disagree with its own no-JavaScript state, so **finding 8 is closed with the ruling** rather than
+carried. **Nothing was renumbered, renamed, redrawn or deleted, no control was added or removed, no
+value changed, no type scale, colour pack or spacing step moved, and no design total is written
+anywhere.**
+
 **[Free] designs:** 1 Grid · 14 Index
 
 *(Shortlisted in this pass — 1 Grid, 14 Index, 12 Captioned Rows, 15 Boxed, 13 Contact Sheet: the
@@ -156,9 +173,12 @@ and the fourth value gives the photographs back. **As uploaded is disabled in 3 
 and 9 Full Bleed** ⚑ — a fixed tile, slides that must share a height, and a wall-to-wall set that
 would align nowhere — and **locked on in 2 Masonry**, which exists for it. A9·8's convention
 throughout: shown, struck through, with the reason. **Where a photograph is cropped is content, so
-the focal point is a field on the image and not a
-control** ⚑ — and in this pass it takes the library's own name and values: **Image focus, Centre ·
-Top · Bottom, on every image, reached from the Image Picker popover and never a hidden field** ⚑.
+the focal point is a field on the image and not a section
+control** ⚑ — and the field is **Image focus, whose values this category cites rather than keeps a copy
+of: they are defined once in P0·9 and carry both axes** ⚑ (3 September 2026). It ships on every image,
+is reached from the Image Picker popover, and is never a hidden field. **Ghost never sees it**: Image
+focus is a hint the compiler resolves, which is why it is a control and not a data binding — said once
+here, for the whole category.
 **The mono label on every plate names
 the crop and the ratio it came from** — `03 · 4:3 ← 3:2` — so the cost is visible on the frame.
 
@@ -442,7 +462,7 @@ panel names its neighbours by number ⚑ rather than pretending the overlap is n
 | ↳ `image` | image | **req** | — | all fifteen | `img_url` derivatives in the grid, **the original in the overlay** ⚑ |
 | ↳ `alt` | text | opt ⚑ | 120 ch | all fifteen | Not the caption; load-bearing in 9 and 13 |
 | ↳ `caption` | text | opt | **200 ch** ⚑ | all fifteen | Never deleted by a control ⚑; raised from 80 in this pass |
-| ↳ `focus` | enum | opt | — | all fifteen | **Image focus** Centre · Top · Bottom, from the Image Picker popover ⚑ |
+| ↳ `focus` | enum | opt | — | all fifteen | **Image focus** — P0·9's control, both axes, cited not enumerated ⚑; from the Image Picker popover; a compiler hint, never a Ghost field |
 | ↳ `link` | url | opt | — | all fifteen | An item's own link beats the lightbox ⚑ |
 | *the position* | generated | — | — | 3, 10, 12, 13, 14, 15 | The lead; the row number; the count in 15's label ⚑ |
 | *@site.title* | Ghost | req | — | any design with no heading | The set's `aria-label` where no heading is authored ⚑ |
@@ -501,8 +521,8 @@ media picker as its Add: the shared controls, named once.
 - **At Source: From posts the list is P0·3's read-only card** ⚑ — no Add, no drag handles, no
   Remove,
   one row per post, and a skipped post (no feature image) counted in a note.
-- **Inside an item the user edits content only** ⚑ — image, **Image focus** (Centre · Top · Bottom,
-  from the Image Picker popover ⚑), alt, caption ≤ 200, link via the Link Picker. All three of those
+- **Inside an item the user edits content only** ⚑ — image, **Image focus** (P0·9's control,
+  both axes, cited not enumerated, from the Image Picker popover ⚑), alt, caption ≤ 200, link via the Link Picker. All three of those
   are optional: no caption draws no line in 1, keeps the wash in 11, keeps the column in 12, keeps
   the row height in 14; no alt gets `alt=""` and a warning dot in the editor ⚑; a link opens instead
   of the overlay ⚑. **No layout, spacing, alignment or emphasis is editable inside an item**, in any
@@ -1476,9 +1496,9 @@ media picker as its Add: the shared controls, named once.
     ⚑ — 80 px tall — and **the thumb is `aria-hidden` inside it** ⚑ so the row announces once.
     Caption
     13.4:1; number 5.4:1.
-    **Flagged ⚑** no date column · no sortable header (**the registry has no sort module**;
-    `shuffle`
-    randomises) · the row never stacking · `<ul>` rather than `<table>` · the thumb never the target
+    **Flagged ⚑** no date column · no sortable header — **the registry has no sort module and none
+    will exist**, owner-ruled 3 September 2026: a gallery shows the order its owner arranged, and
+    `shuffle` randomises, which is the opposite · the row never stacking · `<ul>` rather than `<table>` · the thumb never the target
     ·
     no pagination.
     **New in this pass ⚑** the caption at 200 · Padding retired into Vertical spacing, Row height
@@ -1623,8 +1643,12 @@ media picker as its Add: the shared controls, named once.
 7. **A14 cannot know what sits above or below it.** ⚑ The same route-awareness gap A16, A21, A22 and
    A26–A29 raised. **9 Full Bleed makes it acute**: its ground is `transparent`, so what shows
    through where the last row is short belongs to whatever section is beneath.
-8. **There is no sort module, and 14 Index is where it would be wanted.** ⚑ `shuffle` randomises,
-   which is the opposite. Refused rather than invented.
+8. ~~**There is no sort module, and 14 Index is where it would be wanted.**~~ ⚑ **Closed by the
+   owner, 3 September 2026: none will exist.** The order a gallery shows is the order its owner
+   arranged. A module for one design would also have to differ from its own no-JavaScript state — a
+   visitor without script would get the arranged order anyway — so the two states would disagree for
+   no gain. `shuffle` randomises, which is the opposite, and it stays the only ordering module in the
+   registry.
 9. **The category's founding fact is amended, and the product should know it.** ⚑ A14 was drawn as
    the
    first category with no query behind it; **Source: From posts** now binds frames to feature images
@@ -1641,12 +1665,12 @@ media picker as its Add: the shared controls, named once.
    existed so 11 Overlay would never truncate — a design that truncates by construction, at three
    lines. Raised to 200. Recorded as a pattern to watch: **a shared-list limit set by one design's
    worst case penalises the designs that lead with the field.**
-12. **Image focus needs somewhere to live.** ⚑ Settlement 2 made the focal point content rather than
-    a
-   control, and this pass gives it the library's three values. **Ghost stores no focal point on an
-   image**, so focus is theme-side, per item, and **a photograph reused in another section carries
-   no
-   focus with it.** A build decision, not a design one.
+12. **Image focus needs somewhere to live, and it now lives in one place.** ⚑ Settlement 2 made the
+   focal point content rather than a section control; **P0·9 defines the control once, on both axes,
+   and this category cites it rather than keeping a copy of the values** — 3 September 2026. **Ghost
+   stores no focal point on an image**, so focus is theme-side, per item, resolved by the compiler,
+   and **a photograph reused in another section carries no focus with it.** A build decision, not a
+   design one.
 13. ~~**A locked control and a locked value are not the same thing.**~~ ⚑ **Struck by the owner's
     ruling of 3 September 2026: the locked-control test is not adopted.** The rule *a control switched
    off by another is greyed, with the reason beside it* already does that job, and two overlapping
@@ -1706,10 +1730,9 @@ build wants a bound-mode canvas state, it is a frame this pass did not draw.
    at any
    limit. Settlement 3's other rulings are untouched.
 3. **"The focal point is a field, not a control" versus Image focus.** Both hold. It stays a
-   per-image
-   field; it now has the library's name and three values (Centre · Top · Bottom) and is reached from
-   the
-   Image Picker popover, never hidden. **No section-level crop-position control was added.**
+   per-image field; **its values are P0·9's, both axes, cited here and not restated** — 3 September
+   2026 — and it is reached from the Image Picker popover, never hidden. **No section-level
+   crop-position control was added.**
 4. **Per-design Padding versus universal Vertical spacing.** The duplicate row is removed
    everywhere. In
    6, 8 and 13 **Vertical spacing resolves onto the band's or the strip's inner padding** rather
@@ -1869,8 +1892,9 @@ answered here.
 2. ~~`alt` is load-bearing in 9 and 13 and cannot be required.~~ **Settled by the
    controls-reconciliation pass of 24 August 2026**, recorded in the shared field list: `alt` stays
    optional, a frame without one gets `alt=""`, and the editor draws a warning dot on that item.
-3. **There is no sort module, and 14 Index is where one would be wanted.**
-   **OPEN FOR THE OWNER**
+3. ~~There is no sort module, and 14 Index is where one would be wanted.~~ **Settled by the owner,
+   3 September 2026: none will exist** — a gallery shows the order its owner arranged, and a module
+   for one design would disagree with its own no-JavaScript state.
 4. ~~A bound gallery is A17 Post Grids without the titles.~~ **Closed by the owner, 2 September
    2026: A14 shows images the owner chose, A17 shows posts.** The per-frame post link is removed
    from bound mode, the boundary is stated once in the category layer, and the two categories no
@@ -2250,6 +2274,113 @@ owner's ruling of 30 August 2026; **15 Boxed's count in bound mode** stays the e
 1. **The locked-control test is not adopted** — *a control switched off by another is greyed, with the
    reason beside it*. One test rather than two overlapping ones. Finding 13 is struck with the ruling
    and its date, and no drawing changes.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Grid**
+   and **14 Index** — both of which exist in this category's roster.
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **Two work-list items, and
+neither changes a drawing.** **Frames updated:** all sixteen — `A14-0` and `A14-1` … `A14-15` — each in
+one sentence of panel copy. **Nothing was renumbered, renamed, redrawn or deleted; no control was added
+or removed; no value changed; no layout, type scale, colour pack or spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **Image focus stops being this category's control and becomes a citation of `P0·9`** — *one control
+   name means one set of values*. A14 carried a private copy of the values in four places: settlement 2
+   of the category layer, the shared field list's `focus` row, the item-editing rules under **Repeating
+   items**, and the item-list block of all sixteen frames. **Every one now cites P0·9 and none restates
+   the values.**
+2. **The horizontal axis arrives by inheritance, not by drawing** — *one control name means one set of
+   values*, owner-ruled 3 September 2026. P0·9 carries **both axes**; A14 says "both axes" and stops
+   there. **No A14 panel ever drew the control as rows** — Image focus is reached from the Image Picker
+   popover, per image — so there was nothing to redraw, and no panel gained or lost a row.
+3. **The compiler sentence is written once** — *one control name means one set of values*. Settlement 2
+   now says in as many words that **Ghost never sees Image focus: it is a hint the compiler resolves,
+   which is why it is a control and not a data binding.** It was implied before, in the field list and
+   in finding 12; it is now stated.
+4. **Finding 12 is rewritten around the citation and keeps its build warning** — *one control name means
+   one set of values*. Ghost stores no focal point on an image, focus is theme-side and per item, and a
+   photograph reused in another section still carries no focus with it.
+5. **The missing sort module is closed with the ruling** — *the owner's ruling of 3 September 2026*.
+   **Finding 8 is struck** with the ruling and its date; **the 30 August open question 3 is struck** with
+   the same; and **14 Index's flagged line now carries the reason rather than the absence** — a gallery
+   shows the order its owner arranged, `shuffle` randomises, and a module for one design would disagree
+   with its own no-JavaScript state.
+6. **No constraint on Image focus was invented, and none was removed.** No A14 design offers fewer focus
+   values than P0·9 defines, so there is no constraint to state; the two designs that arguably crop
+   nothing are recorded as an open item below rather than settled here.
+7. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The pass's rules and facts, checked design by design
+
+| Rule or fact (by name) | Where it lands in A14 |
+|---|---|
+| **One control name means one set of values** | **The whole of this pass.** Four private enumerations removed, all replaced by a citation of P0·9; both axes inherited; the values are written nowhere in this category. |
+| **A control that could never do anything here is not drawn, and the panel says why** | **Recorded, not applied — see the open item.** P0·9's never-offered member is a design that places a photograph at its own shape. **2 Masonry** (Crop locked at As uploaded) and **8 Filmstrip** (native widths at one height) may be that case in A14; deciding it would remove a control from two panels, which no work-list item names. **Left drawn as found.** |
+| **The roster, with [Free] marked** | **Unchanged and re-checked.** Fifteen rows, the five closed slots untouched; **[Free] designs: 1 Grid · 14 Index**, ruled 30 August 2026. |
+| **The control lists** | **Unchanged.** Six controls on eleven designs, five on 2, 3, 7 and 9's own counts as drawn, plus the universal trio and the Data group. Image focus is per-image and has never been in a design's control count. |
+| **The data fields** | **One note changed, no field changed.** `focus` keeps its type, its optionality and its scope; its note now cites P0·9 and says it is a compiler hint, never a Ghost field. |
+| **The no-JavaScript line per design** | **Unchanged in all fifteen.** Focus is resolved before the page ships, so it reads the same with script off; 7 Carousel and 8 Filmstrip keep 768 as the width their arrows retire under. |
+| **The behaviour each design declares** | **Unchanged.** `lightbox` in all fifteen, `carousel` additionally in 7 and 8. **No sort module was added**, by the ruling above, and A14 still coins nothing. |
+| **Ghost's templates cannot count, add, or remember** | **Re-checked, no subject.** Image focus is resolved by the compiler and never reaches a template; the numbers in 12, 13 and 14 stay a stylesheet counter, 8's and 13's See-all label stays authored. |
+| **CSS cannot see content** | **Re-checked, no subject.** Focus sets an object position; it measures nothing. |
+| **Some fields we drew do not exist** | **Unchanged, and it is the reason focus is theme-side.** Ghost stores no focal point on an image. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A14.** These are placeable page sections whose markup and words this project owns end to end. |
+| **Printed design totals** | **Nothing authored in this pass carries one.** No number of designs appears in any sentence written here or on any frame edited here. |
+
+### Open questions raised by this pass
+
+1. **Does P0·9's never-offered rule catch 2 Masonry and 8 Filmstrip?** **OPEN FOR THE OWNER.** *What I
+   would have needed to know:* whether a design that never crops **because a control is locked or absent**
+   (2 Masonry's Crop locked at As uploaded, 8 Filmstrip's native widths) counts as P0·9's "places a
+   photograph at its own shape", and whether a design that merely **sits at As uploaded today** — which
+   any of the other thirteen can — greys instead. *What I did instead:* left both panels exactly as drawn,
+   with Image focus offered on every image in all fifteen, and applied the rest of the work list. Removing
+   the control from two panels is a drawing change no work-list item names.
+2. **"A field on the image and not a control" versus "a control, not a data binding".** **OPEN FOR THE
+   OWNER.** *What I would have needed to know:* which word the library wants for Image focus, since
+   settlement 2 defends it as a **field** (against a section-level crop-position control) and P0·9 and this
+   work list call it a **control** the compiler resolves. *What I did instead:* wrote both, as the 30 August
+   reconciliation already did — it stays a per-image field, its values are P0·9's, and no section-level
+   control was added. The two statements agree on every fact and differ only in the noun.
+
+**Carried forward, unchanged and unanswered by this pass** — one item, **OPEN FOR THE OWNER**: the
+conflict pass two would not choose, where **P0·5 and P0·3 hide** controls the greying rule would have
+greyed. **This pass touched it not at all.** The missing sort module leaves this list, closed by the
+owner's ruling above.
+
+### Left alone deliberately
+
+**Two things are maintained outside this environment and are untouched here.** **No design total was
+written, corrected or removed anywhere** — not in this document, not on any of the sixteen frames, and
+not in any sentence this pass authored; the count-agnostic marketing and app copy is the repository's,
+and **P0's per-prop mark allowlist** is not in this project's copy of that specification and has not been
+re-authored, paraphrased or referred to as though it were.
+
+**Three things inside A14 were left as found, and are recorded rather than edited.** **Settlement 2's
+refusal of a section-level crop-position control stays**, because P0·9 is a named set on two axes and not
+a draggable focal point, so the refusal still says what it always said. **The component inventory's crop
+row stays** — "the focal point is a field, not a control" — for the same reason. **The per-design "New in
+this pass ⚑" lines were not re-labelled**: each names the reconciliation pass that added Image focus to
+that design, and rewriting fifteen historical labels would lose what they record. The earlier passes'
+"carried forward" sentences are likewise left as they were written: they are the history of those passes,
+and this pass's closure is recorded here.
+
+### The owner's rulings — 3 September 2026
+
+1. **Image focus is one shared control, defined once in P0·9, and it carries both axes** — *one control
+   name means one set of values*. Categories cite it and supply only the slot it sits under.
+2. **There will be no sort module.** The order a gallery shows is the order its owner arranged; a module
+   for one design would have to differ from its own no-JavaScript state, so the two states would disagree
+   for no gain.
 
 ### Confirmations
 

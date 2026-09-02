@@ -64,12 +64,21 @@ panel, the checker and the compiler read one source, and a design never hand-dra
 tint, Soft dark, unavailable — not available while the media uses the accent colour"). The reason is
 text in the panel, so it is reachable by reading order as well as by focus.
 
-**The one exception, and it is different in kind.** A control **this project can never offer** is not
-drawn at all, and the panel says why in one note where the control would have been. The test is
-permanence: a control another control switched off comes back when that control changes, so it waits in
-place, greyed; a control that never comes back would be a permanently grey row, which is furniture the
-user learns to ignore. **The visitor dark-mode switch under a pinned colour scheme is the only current
-case.** A category that believes it has a second one puts it to the owner rather than drawing it.
+**The never-offered case, and it is different in kind.** A control that **could never do anything here**
+is not drawn at all, and the panel says why in one note where the control would have been.
+
+**The test is general, owner-ruled 3 September 2026: could this control EVER do anything in this
+design?** **Could-but-not-now** means it is drawn greyed with its reason, because it comes back when the
+control that switched it off changes. **Could-never** means it is not drawn and the panel says why,
+because a permanently grey row is furniture the user learns to ignore. The earlier wording of this test
+was permanence; the general form is the same test asked of the design rather than of the project, and it
+is what settles a case a ruling has not named.
+
+**This is now a category rather than a single exception, and it has two members.** The **visitor
+dark-mode switch under a pinned colour scheme**, and **Image focus on a design that crops nothing**
+(P0·9, drawn this pass — a design that places a photograph at its own shape will never crop, so focus can
+never have work to do there). A category that believes it has a third puts it to the owner rather than
+drawing it.
 
 **What this pattern does not reach.** Three things, all owner-ruled.
 
@@ -83,9 +92,11 @@ case.** A category that believes it has a second one puts it to the owner rather
    you picked is the order — these posts render in the order you dragged them." — and **P0·3's Add /
    Remove / drag on a Ghost-sourced list** — "These come from Ghost, so there is nothing to add here."
    Two categories flagged the clash rather than copying it; P0 is where it changes, and every category
-   inherits it. **Two cases are left drawn absent and raised as an open question rather than swept in**
-   (open question 11): P0·5's filter block under Source = Static, and P0·2's Recent row when nothing has
-   been picked yet. The hand-picked **picker** itself is not a control switched off by another and is
+   inherits it. **The two cases left drawn absent at that ruling are now ruled, each differently**
+   (open question 11, closed 3 September 2026): **P0·5's filter block under Source = Static greys** —
+   a Static source could carry a filter, it just does not now — and **P0·2's Recent row with nothing
+   picked is neither greyed nor absent**, because a picker with nothing picked is an empty list rather
+   than a control something switched off, and it stays drawn as the empty list it is. The hand-picked **picker** itself is not a control switched off by another and is
    unaffected — it is the mode's own body, and it appears when the mode does.
 2. **The inline text toolbar (P0·1).** A mark a field does not permit is **absent** from the toolbar,
    not greyed. A floating toolbar over a text selection has no room for a sentence, and the mark never
@@ -224,7 +235,7 @@ at 390.
 |---|---|
 | Search | one field, matches name + aliases; no-match state is a sentence ("Nothing for 'quartz'") + clear-search link, never a bare empty grid |
 | Category chips | All (default) · Arrows · Interface · Media · Commerce · Social / Brands — single-select, filter the grid |
-| Recent row | last 8 icons picked in this project; omitted entirely when empty ⚑ |
+| Recent row | last 8 icons picked in this project; **with nothing picked yet the row stays drawn as the empty list it is** — the label in place and a sentence where the cells would be, never removed and never greyed (owner-ruled 3 September 2026: a picker with nothing picked is an empty list, not a switched-off control; the earlier "omitted entirely when empty" is withdrawn) ⚑ |
 | Grid | 38 px cells, 8 per row, grouped under 10.5 px caps labels; current icon marked with the selection ring |
 | Remove icon | footer link, present only when opened from a filled slot |
 
@@ -449,17 +460,20 @@ undrawn primary-off-secondary-on combination.
 One shared panel — the sidebar **Data** group's entire body — for every section that can draw content
 from the user's Ghost site instead of authored content.
 
-**Source** — segmented: **Static (authored) · From posts.** Static: the filter block is drawn absent, not
-disabled — **left as found and raised as open question 11** under the 3 September 2026 ruling that
-withdrew the mode exception, which names Count/Order and the Ghost-sourced list and not this block; the
-Content group shows the P0·3 authored list. From posts reveals:
+**Source** — segmented: **Static (authored) · From posts.** Static: **the filter block is drawn greyed
+with its reason at the control** — "Not available while the source is Static." — **owner-ruled
+3 September 2026** under the general test, a Static source *could* carry a filter and simply does not
+now. The greyed select keeps its stored value legible, per P0·0, so the user sees what returns. The
+Content group shows the P0·3 authored list. **Count and Order under Static are left as found and raised**
+(open question 14): the ruling names the filter block, and an authored list's count is the P0·3 stepper
+in the Content group rather than this one. From posts reveals:
 
 | Control | Values |
 |---|---|
 | Filter | Latest · Featured · By tag · By author · Hand-picked (select, A1 dropdown panel) |
 | — By tag | tag select below the filter: live-searched, tag name + post count. Single pick |
 | — By author | author select: avatar + name + post count. Single pick — multi-author feeds belong to routes ⚑ |
-| — Hand-picked | search-and-pick post list: drag reorders, × unpicks, and **the picked order is the rendered order — references are handed to the template in the order the user dragged them and are never re-sorted by date** (ruled 2 September 2026); **Count and Order grey with the reason at the control** ⚑ *amended 1 September 2026, restated 3 September when the mode exception was withdrawn library-wide; now drawn in the frame* — the picked list is the count and the order. The greyed Count stepper shows the number in force, which is the number of picks. **The greyed Order control sits on neither of its two values** ⚑, because the order in force — the dragged one — is not one of them; its sentence carries the order instead (open question 12). **No maximum**: past 25 picks the count turns warning-toned and a sentence names the cost — every pick adds a database query, **on every page this section appears on**, not once per section; three sections of this size means 75 database queries and about three-quarters of a second added to every visitor's load. The warning names those figures. The warning **names the measured figures**: three hand-picked sections at 25 each is **75 database queries, about three-quarters of a second** added to every visitor's page load. Nothing is blocked. An unpublished pick drops out server-side; its row stays with an "Unpublished" note |
+| — Hand-picked | search-and-pick post list: drag reorders, × unpicks, and **the picked order is the rendered order — references are handed to the template in the order the user dragged them and are never re-sorted by date** (ruled 2 September 2026); **Count and Order grey with the reason at the control** ⚑ *amended 1 September 2026, restated 3 September when the mode exception was withdrawn library-wide; now drawn in the frame* — the picked list is the count and the order. The greyed Count stepper shows the number in force, which is the number of picks. **The greyed Order control sits on neither of its two values** ⚑, because the order in force — the dragged one — is not one of them; **no value is marked and the reason sentence carries the order in force** (owner-ruled 3 September 2026; what was drawn provisionally is right, and the provisional flag is lifted — open question 12, closed). The alternatives ruled out were inventing a third value the control does not have, and marking a value that is not in force. **No maximum**: past 25 picks the count turns warning-toned and a sentence names the cost — every pick adds a database query, **on every page this section appears on**, not once per section; three sections of this size means 75 database queries and about three-quarters of a second added to every visitor's load. The warning names those figures. The warning **names the measured figures**: three hand-picked sections at 25 each is **75 database queries, about three-quarters of a second** added to every visitor's page load. Nothing is blocked. An unpublished pick drops out server-side; its row stays with an "Unpublished" note |
 | Count | stepper, 1–{design max}, **hard cap 100** |
 | Order | Newest · Oldest |
 | Meta toggles | chips, per-design: only the fields this design can place — from date · author · excerpt · reading time · tag chip |
@@ -670,9 +684,11 @@ ruling.
    and both stated in P0·0:** the **inline text toolbar** omits a mark a field does not permit rather
    than greying it; and the **Remove button** never greys (rule below). **The third — a control
    belonging to a mode the user is not in — was withdrawn by the owner on 3 September 2026: greying has
-   no "but this is a mode" exception**, because a user cannot see which of the two they are looking at. **One exception of a different kind:** a control this
-   project can *never* offer is not drawn at all and the panel says why — the visitor dark-mode switch
-   under a pinned colour scheme is the only current case.
+   no "but this is a mode" exception**, because a user cannot see which of the two they are looking at. **One case of a different kind, and it is now a
+   category with two members:** a control that could **never** do anything here is not drawn at all and
+   the panel says why — the visitor dark-mode switch under a pinned colour scheme, and Image focus on a
+   design that crops nothing (P0·9). **The test is general: could this control ever do anything in this
+   design?** Could-never is not drawn; could-but-not-now greys.
 14. **The Remove button never greys out.** Unchanged, and restated here because it is the reference case
    rule 13 points at. Remove stays visible and fully clickable at a list's floor, and clicking it
    produces the floor and the reason as one sentence under the list (P0·3).
@@ -729,6 +745,15 @@ axis with the reason at the control, in which case the switched-off values grey 
 rather than disappearing. It may **not** rename an axis, add a value, offer a percentage, or draw a
 draggable focal point: named values only is library-wide.
 
+**Where a design crops nothing, the control is not drawn** — owner-ruled 3 September 2026. A design that
+places a photograph at its own shape will never crop, so focus can never have work to do there: that is
+the could-never side of P0·0's test, and the panel carries one note where the control would have been —
+"There is no image focus here. This design places your photograph at its own shape, so nothing is cropped
+and there is nothing for focus to choose." It does not grey, because nothing switched it off and nothing
+brings it back. **This is the second member of the never-offered category**, beside the visitor dark-mode
+switch under a pinned colour scheme. Drawn on the frame beside the cropping case. It is distinct from a
+category **narrowing an axis**, which greys the switched-off values with the reason at the control.
+
 **Numbering.** This takes the next free number so that nothing already written moves; P0·8 remains the
 library-wide rules list, and no existing reference changes.
 
@@ -745,7 +770,7 @@ For the category patches to cite by name.
 | Component | What it is | First established |
 |---|---|---|
 | Greyed control | a control another control switched off: greyed, the value in force still legible, the reason as a sentence under it | P0·0 |
-| Never-offered note | the single note that sits where a control this project can never offer would have been | P0·0 |
+| Never-offered note | the note that sits where a control that could never do anything here would have been; two members — the visitor dark-mode switch under a pinned colour scheme, and Image focus on a design that crops nothing | P0·0, P0·9 |
 | Initials avatar | two letters for a name the user typed, one letter for a name Ghost supplied; never mixed in one component | P0·5 |
 | Image focus | which part of a photograph survives the crop: Centre · Top · Bottom **and** Centre · Left · Right, per image slot; resolved by the compiler, never seen by Ghost | P0·9 |
 | Inline text toolbar | 5-action floating toolbar over any text selection; docks at 390 | P0·1 |
@@ -753,6 +778,7 @@ For the category patches to cite by name.
 | Plain-text lock pill | the pill naming a Ghost binding where the toolbar would sit | P0·1 |
 | Icon slot | the only place an icon can exist; dashed 20 px empty state while selected | P0·2 |
 | Icon Picker | searchable Tabler grid: chips, recent row, no-match sentence | P0·2 |
+| Empty-list row | a list with nothing in it yet drawn as the empty list it is — label in place, a sentence where the cells would be, no greying and no removal | P0·2 (Recent row) |
 | Icon slot popover | swap · Size S/M/L · Colour role ×4 · Remove | P0·2 |
 | Button icon option | Before/After icon on any button; Small, label-coloured | P0·2 |
 | Authored item list | drag rows + overflow (Duplicate·Remove) + Add-with-placeholder + range line | P0·3 |
@@ -931,30 +957,35 @@ carries **OPEN FOR THE OWNER** on its own line.
    added**. The previous session's refusal to invent two design names to satisfy it was correct. **This
    is settled and no later pass re-raises it.** Every design category still marks its own two.
 
-11. **Two absent controls the 3 September ruling does not name.** The ruling withdrew the "but this is a
-   mode" exception and named two panels: P0·5's Count and Order at Hand-picked, and P0·3's Add / Remove /
-   drag on a Ghost-sourced list. Both are now greyed. **Two further controls were drawn absent under the
-   same withdrawn exception and are left as found:** P0·5's filter block under Source = Static, and
-   P0·2's Recent row when nothing has been picked yet. Neither is named by the ruling, and the second is
-   arguably not a switched-off control at all but an empty list. Greying them would redraw two panels
-   nobody asked for, so they are raised rather than swept.
-   **OPEN FOR THE OWNER**
+11. ~~**Two absent controls the 3 September ruling does not name** — P0·5's filter block under
+   Source = Static, and P0·2's Recent row when nothing has been picked yet, both left as found.~~
+   **Settled by the owner, 3 September 2026, and the test is now general: could this control EVER do
+   anything in this design?** Could-never is not drawn and the panel says why; could-but-not-now greys
+   with the reason. **The filter block greys** — a Static source could carry a filter, it just does not
+   now. **The Recent row is neither**: a picker with nothing picked is an **empty list**, not a control
+   something switched off, and it stays drawn as the empty list it is. Both are drawn — P0·5 and P0·2.
 
-12. **A greyed control whose value in force is not one of its own values.** Order at Hand-picked is
-   greyed, and P0·0 requires the value in force to stay legible — but the order in force is the dragged
-   one, which is neither Newest nor Oldest. **Drawn provisionally** with the pill on neither value and the
-   order named in the reason sentence ("The list you picked is the order — these posts render in the
-   order you dragged them."). The alternatives are a third greyed value the control does not really have,
-   or leaving the pill on the value the user last chose, which P0·0 forbids for toggles. Recorded rather
-   than settled.
-   **OPEN FOR THE OWNER**
+12. ~~**A greyed control whose value in force is not one of its own values.** Order at Hand-picked, drawn
+   provisionally with no value marked and the order named in the reason sentence.~~ **Settled by the
+   owner, 3 September 2026: what was drawn provisionally is right and is now ruled** — no value marked,
+   and the reason sentence carries the order in force. The alternatives — inventing a third value the
+   control does not have, or marking one that is not in force — were both refused. The provisional flag
+   is lifted in the spec and on frame `P0-5`.
 
-13. **Does Image focus grey or vanish where nothing is cropped?** A design that places a photograph at
-   its own shape crops nothing, so focus has no work to do. Under the greyed-control rule it greys with
-   its reason; under the never-offered exception it is not drawn at all and the panel says why, since
-   that design will never crop. **Both readings fit the rules as written**, and the never-offered
-   exception is meant to have exactly one current case, so this is not a local decision. Raised, not
-   drawn either way — P0·9's frame draws only the cropping case.
+13. ~~**Does Image focus grey or vanish where nothing is cropped?**~~ **Settled by the owner,
+   3 September 2026: it is not drawn, and the panel says why.** A design that places a photograph at its
+   own shape will never crop, so focus can never have work to do there — the could-never side of the same
+   test. **The never-offered case is no longer a single named exception; it is a category, and this is its
+   second member.** Drawn on `P0-9` beside the cropping case.
+
+14. **Count and Order in the Data group under Source = Static.** The 3 September ruling names **the
+   filter block**, which now greys; Count and Order were drawn absent under Static by the same withdrawn
+   exception and are **left as found**. Under the general test they do not answer cleanly: an authored
+   list's count and order are the P0·3 stepper and drag handles in the **Content** group, so a Data-group
+   Count under Static may be could-never rather than could-but-not-now — in which case it takes the note,
+   not the grey. What I would have needed to know: whether "the filter block" in the ruling means the
+   Filter select and its sub-select alone, or everything the "From posts" state reveals. Applied the work
+   list to the Filter select and left Count and Order as found.
    **OPEN FOR THE OWNER**
 
 ### Confirmations
@@ -1085,6 +1116,70 @@ REOPENED.**
 - **The design numbering is unchanged.** This category's numbers are **P0·0 · P0·1 · P0·2 · P0·3 · P0·4 ·
   P0·4a · P0·5 · P0·6 · P0·7 (S14) · P0·8 · P0·9 (new)**. Nothing was renumbered, renamed or removed;
   P0·9 takes the next free number so no existing reference moves.
+- **There is no "[Free] designs:" line, and there is not meant to be one.** P0 holds shared editor
+  controls and no placeable designs, so there are no two designs to name and none were invented. The
+  exemption is the owner's, of 31 August 2026, confirmed final on 2 September 2026.
+
+---
+
+### Patch pass five — 3 September 2026 · P0 Editor Primitives
+
+Three rulings, all answering questions pass four raised, and no redesign. Dated with the rulings it
+applies. **Frames updated: `P0-0 Greyed Control Pattern` · `P0-2 Icon Slot and Picker` ·
+`P0-5 Populate From Panel` · `P0-9 Image Focus`.** Every change carries the **name** of the rule that
+required it.
+
+| Rule | Change |
+|---|---|
+| A control switched off by another is greyed, with the reason beside it | **The test is now general, and it is written into the pattern: could this control EVER do anything in this design?** Could-never means it is not drawn and the panel says why; could-but-not-now means greyed with the reason. P0·0's exception paragraph is rewritten around the general form, rule 13's tail with it, and the frame's permanence note is replaced by the test. The earlier wording is not contradicted — permanence is the same test asked of the project rather than of the design — but the general form is what settles a case no ruling names. |
+| A control switched off by another is greyed, with the reason beside it | **P0·5's filter block under Source = Static now greys**, with "Not available while the source is Static." at the control. A Static source *could* carry a filter and simply does not now, which is the could-but-not-now side. The greyed select keeps its stored value legible per P0·0, so the user sees what returns; the Content group still shows the P0·3 authored list. Drawn on frame `P0-5`; open question 11's first half is closed. |
+| An empty list is not a control something switched off | **P0·2's Recent row stays drawn when nothing has been picked yet** — the label in place, a sentence where the cells would be, the grid below it unchanged. It is neither greyed (nothing switched it off) nor absent (it is a list, and it is empty). The spec's "omitted entirely when empty" is **withdrawn**; frame `P0-2` gains the drawn state beside the resting picker. Open question 11's second half is closed. **Mine ⚑:** the empty row's sentence and the decision to follow the picker's own no-match rule — a sentence, never a bare empty grid. |
+| A greyed control whose value in force is not one of its own values | **Order at Hand-picked is ruled, not provisional.** No value marked, and the reason sentence carries the order in force: "The list you picked is the order — these posts render in the order you dragged them." Nothing was redrawn — the provisional flag is lifted in P0·5's text and on frame `P0-5`. Open question 12 is closed with the owner and the date. |
+| A control that could never do anything here is not drawn, and the panel says why | **Image focus is not drawn where a design crops nothing**, and the panel carries one note in its place. A design that places a photograph at its own shape will never crop, so focus can never have work to do there. **The never-offered case is no longer a single named exception; it is a category, and this is its second member**, beside the visitor dark-mode switch under a pinned colour scheme. Drawn on `P0-9` beside the cropping case; stated in P0·9, in P0·0, in rule 13 and in the component inventory. |
+| One control name means one set of values | **P0 holds no private copy of Image focus to remove.** P0·9 *is* the shared definition, written in pass four; the 24 private copies are in the categories that cite it. Nothing was de-duplicated here because there is nothing here to de-duplicate — recorded so the silence is not read as a miss, and raised below in case the instruction meant something else. |
+| The roster, with [Free] marked | **Not applicable.** P0 is the set of shared editor controls and has no placeable designs, so it has no roster and no free pair. Owner-ruled 31 August 2026, confirmed final 2 September 2026; no line was added and no design names were invented. |
+| The control lists | **Updated where this pass changed one:** P0·2's Recent row (drawn empty, not omitted) and P0·5's Static state (filter block greyed, not absent). Every other control, value, default and label in this category is unchanged. |
+| The data fields | **Unchanged.** Nothing in this pass reads or writes a Ghost field. Image focus in particular is a compiler hint and not a data binding, which P0·9 already says in those words. |
+| The no-JavaScript line per design | **Unchanged.** The primitives are editor software and declare no behaviour modules (rule 11), so no P0 design carries a script or a width; P0·4's no-JavaScript form notice covers forms and was not touched. Nothing drawn this pass runs anything: an absent control, a greyed select and an empty list all render server-side. |
+| The behaviour each design declares | **None, unchanged and re-stated.** No P0 design declares a module, P0·9 included. |
+| Printed design totals | **Nothing authored in this pass carries one.** No frame line, spec line or sentence written here names a number of designs. The count-agnostic marketing and app copy maintained in the repository was not touched and is not in this project's files to touch. |
+| P0's per-prop mark allowlist | **Left alone, a fifth time.** It is not in this project's copy of the specification — it was written in the repository. It has not been re-authored, paraphrased or softened, and "absent" was not changed to "greyed". Its carve-out in P0·0 and rule 13 rests on the permanence test and survives the general form of that test unchanged, since a mark a field does not permit could never do anything in that field. |
+
+**Left alone, and why — recorded rather than edited.**
+
+- **The frame counters still read "N OF 6"** on `P0-0` · `P0-1` · `P0-2` · `P0-3` · `P0-5` · `P0-6`, and
+  `P0-9` carries none. Adding P0·9 in pass four made the figure stale; changing it would mean editing six
+  frames no work list names. Left as found, as in pass four, and flagged again here.
+- **Open question 8's stray `OPEN FOR THE OWNER` line** is still beneath its struck-through text. Still
+  not named by any work list; still left as found.
+- **Count and Order in the Data group under Source = Static** are still drawn absent — open question 14
+  below. The ruling names the filter block; these are not it, and the general test does not answer them
+  cleanly, because an authored list's count and order live in the Content group.
+- **P0·2's own Recent row cap of 8** and the grid's cells are untouched. Only the empty state changed.
+
+**OPEN FOR THE OWNER — two items, both recorded rather than guessed.**
+
+- **Open question 14: does greying the filter block under Static carry Count and Order with it?** What I
+  would have needed to know: whether "the filter block" means the Filter select and its sub-select alone,
+  or everything the "From posts" state reveals. What I did instead: greyed the Filter select with its
+  reason, as the work list directs, and left Count and Order as found.
+- **This category's "private copy" of Image focus was not found.** What I would have needed to know: what
+  the preamble refers to, since P0·9 is itself the shared definition written last pass and no second
+  enumeration of focus values exists in this category's spec or frames. What I did instead: left the
+  shared definition as the only copy, added the never-offered state the work list asks for, and changed
+  nothing else about it.
+
+**Output item 4, again — recorded, not resolved.** The standing instruction asks for confirmation that a
+"**[Free] designs:**" line is present and names two designs that exist. **P0 is exempt** by the owner's
+ruling of 31 August 2026, confirmed final on 2 September 2026, and the same instruction forbids inventing
+names. The two cannot both hold; the position is stated plainly below rather than asserting a line that
+does not exist. **FOR THE OWNER'S NOTE, NOT A QUESTION REOPENED.**
+
+### Confirmations — patch pass five
+
+- **The design numbering is unchanged.** This category's numbers are **P0·0 · P0·1 · P0·2 · P0·3 · P0·4 ·
+  P0·4a · P0·5 · P0·6 · P0·7 (S14) · P0·8 · P0·9**. Nothing was renumbered, renamed, added or removed in
+  this pass.
 - **There is no "[Free] designs:" line, and there is not meant to be one.** P0 holds shared editor
   controls and no placeable designs, so there are no two designs to name and none were invented. The
   exemption is the owner's, of 31 August 2026, confirmed final on 2 September 2026.

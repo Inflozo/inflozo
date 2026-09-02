@@ -1,7 +1,8 @@
 # A24 Post Headers — written specification
 
 16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
-**post headers patch, 28 August 2026** · **pass two, 1 September 2026** · **pass three, 2 September 2026** · **pass four, 3 September 2026**
+**post headers patch, 28 August 2026** · **pass two, 1 September 2026** · **pass three, 2 September 2026** · **pass four, 3 September 2026** ·
+**pass five, 4 September 2026**
 
 **Post headers patch (28 August 2026).** Four rulings landed on this category and two of them touched
 every design in it. **A byline never counts:** "Jane and 2 others" is now "Jane and others"
@@ -38,6 +39,21 @@ renamed, and no value, default, type scale, colour pack or spacing step changed.
 open question is settled too:** `header-scroll` **covers any pinned bar**, not the site navigation
 alone, and the registry gains one sentence saying so — a mechanical edit, and the no-JavaScript state
 was correct either way.
+
+**Pass five (4 September 2026).** **One work-list item, and it is a naming change rather than a design
+one.** **Image focus is one shared control, defined once in P0·9**, and this category held a private
+copy of its values — in the Post block table below and in the panel note on the ten designs that draw
+a picture. Each now **cites P0·9 and restates nothing**. **P0·9 carries both axes**, the side-to-side
+half being the owner's ruling of 3 September 2026, so every panel that draws the control now draws
+**one label and two segmented rows**; **nothing is constrained anywhere in A24**, because which axis
+does the cropping depends on the photograph's own shape and the section cannot know which it has.
+**Ghost never sees the choice** — it is a hint the compiler resolves into the position the picture is
+anchored at inside its frame, which is why it is a control and not a data binding, and it declares no
+behaviour module. **Eleven frames changed** — `A24-0` and the ten designs that draw a picture; the six
+that never draw one were left alone, Image focus being absent there with its reason already at the
+inert Feature image row. **Nothing was renumbered, no control was added, removed or renamed, no
+default moved, and no value, layout, responsive rule, type scale, colour pack or spacing step
+changed.** The record is in **Patch notes — pass five** at the end.
 
 **[Free] designs:** 1 Centred · 2 Flush Left
 
@@ -237,13 +253,16 @@ Every design obeys these unless its own entry says otherwise.
 | Standfirst | From the excerpt · Off | From the excerpt |
 | Feature image | From the post · Off | From the post |
 | **Avatar** | Off · Small 24 · Medium 36 · Large 44 | Small 24 · Medium 36 in 10 Big Type |
-| **Image focus** | Centre · Top · Bottom | Centre |
+| **Image focus** | **P0·9's shared control — both axes, defined there and not restated here** ⚑ | **P0·9's default on both axes** |
 | **Caption** | From Ghost · Hide | From Ghost |
 
 **Three rows are new and two Meta values are new.** **Avatar** is settlement 2's own step, which had
 no panel until this pass ⚑. **Image focus** withdraws the category's refusal of a focal point ⚑ — it
-sits in the block rather than in an Image Picker popover because A24 has no image field of its own,
-Ghost owning the picture; it is a crop hint the theme applies and is never written back to the file.
+**is P0·9's shared control, cited and not copied** — both axes, defined there and not restated here —
+and it sits in the block rather than in an Image Picker popover because A24 has no image field of its
+own, Ghost owning the picture. **Ghost never sees it:** it is a hint the compiler resolves into the
+position the picture is anchored at inside its frame, never written back to the file and never sent to
+Ghost, which is why it is a control and not a data binding, and it declares no behaviour module.
 **Caption** binds Ghost's per-post `feature_image_caption` and replaces the deleted authored
 `post.feature_image_caption`. **Meta's two new values:** **Author only**, for the evergreen site that keeps bylines
 and hides dates, and **Author, updated date and reading time**, which reads `post.updated_at` and
@@ -256,7 +275,9 @@ in 15 Slim (the one design that draws no avatar), **set** to Medium in 10 Big Ty
 24 inside 13 Sticky's bar whatever the row says ⚑. Image focus and Caption are **absent** in the six
 designs that never draw a picture, **greyed** in 8 Contrast Band until its picture is turned on, and
 live in the ten that draw one — except that **7 Card takes Image focus and no Caption**: a caption
-inside a card has no edge to sit under.
+inside a card has no edge to sit under. **In the ten that draw a picture both of Image focus's axes are
+drawn and neither is constrained**, so nothing greys for being narrowed and no axis carries a reason of
+its own; 8 Contrast Band's two greyed rows are a dependency on Feature image, not a narrowing.
 
 **A design may do five things to a block field and no more, and every case is drawn.**
 
@@ -1126,6 +1147,7 @@ Every reusable component this category established or reused, cumulative.
 | Avatar + meta row | 24 px circle, initials fallback, "Name · date" at 13 px | A1·6, A1·7 |
 | Focus ring | 4 px offset, −4 inset at a container edge | A6, A17·18 |
 | Named ratio ladder | Landscape 3:2 · Wide 16:9 · Square 1:1 · Portrait 4:5 | A8 |
+| **Image focus** | **Which part of a photograph survives the crop — both axes, one label and two segmented rows; a compiler hint, never sent to Ghost** | **P0·9 — cited, not copied** |
 | Measure and page margin | 1,296/72 · 754/40 · 350/20 | A17 |
 | On-contrast derivation | muted = band mixed 60% to its own text; fill = the 10% step | A17·7 |
 | Tag plate | striped/filled plate at a missing picture's box exactly | A17 |
@@ -1799,3 +1821,93 @@ page's own text colour, which the pack already declares, and the flag beside its
    names **1 Centred** and **2 Flush Left** — both of which exist in this category's roster.
 
 — End of pass four —
+
+---
+
+## Patch notes — pass five, 4 September 2026
+
+Every change below carries the **name** of the rule that required it. Rules are named, never numbered.
+
+**One work-list item reached this category, and it is a naming change rather than a design one.**
+**Image focus is one shared control, defined once in P0·9**, and A24 held a private copy of its values:
+the Post block table above, the category-layer sentence beside it, and the panel note on each of the
+ten designs that draw a picture. Each now **cites P0·9 and restates nothing**. **P0·9 carries both
+axes** — the side-to-side half is the owner's ruling of 3 September 2026 and this category did not have
+it — so **every panel that draws the control now draws one label and two segmented rows**. **No
+arrangement moved, no control was added, removed or renamed, and no value, default, layout, responsive
+rule, type scale, colour pack or spacing step changed anywhere in A24.**
+
+**Frames changed — eleven.** `A24-0 Category Proof` and the ten designs that draw a picture: `A24-1`,
+`A24-3`, `A24-4`, `A24-5`, `A24-6`, `A24-7`, `A24-8`, `A24-9`, `A24-12`, `A24-16`. Each gains a **PASS
+FIVE** section and each has its Image focus row redrawn; `A24-0`, `A24-1`, `A24-3` and `A24-5` also had
+prose that enumerated the values, now citing P0·9. **Six frames were left alone** — `A24-2`, `A24-10`,
+`A24-11`, `A24-13`, `A24-14`, `A24-15`: they never draw a picture, Image focus is **absent** there with
+its reason already at the inert Feature image row, and none of them held a copy of the values.
+
+### What changed, and the rule that required it
+
+| Rule | Change |
+|---|---|
+| **One control name means one set of values** | **Every private copy of Image focus in A24 is gone.** The Post block table's row, the category-layer sentence that followed it, and the panel note on ten frames each cited their own enumeration; each now **names P0·9 and restates nothing**. **P0·9's second axis is drawn where the control is drawn** — one label, two segmented rows, up and down above side to side — and the row's *shape* therefore changed from a select to two segmented rows, because P0·9 defines the shape as well as the values ⚑. The Post block's other rows keep the shape they were drawn with. **A24 adds nothing to the control:** no renamed axis, no added value, no percentage, no draggable point. |
+| **A design may offer fewer choices on a shared control, and must say why** | **No design in A24 constrains either axis, and none was made to.** All ten offer both axes whole, so there is no narrowing to justify, nothing greys for being narrowed, and no axis carries a reason of its own. The reason is stated once, on the frames and in the category layer: **which axis does the cropping depends on the photograph's own shape** — a portrait loses its sides in a wide frame, a landscape its top in a tall one — **and the section cannot know which it has**. |
+| **A control that could never do anything here is not drawn, and the panel says why** | **Not reached, and nothing was added.** P0·9's never-offered note is written for a design that **places a photograph at its own shape and crops nothing**; A24 has no such design — all ten crop, 7 Card hardest of all, its picture having no ratio and re-cropping whenever the title wraps. The six designs that draw no picture at all are the **absent** case of this category's five verbs, and their panels already say why at the inert Feature image row. No never-offered note was written and none was removed. |
+| **A control switched off by another is greyed, with the reason beside it** | **One subject, unchanged in substance: 8 Contrast Band.** Feature image is set Off there, so Image focus and Caption grey until it is turned back on. With two rows instead of one, **both rows grey together, the value in force stays legible in each, and one reason sentence covers the pair** ⚑ — see the open question below. Pass two's other greyed and inert rows are untouched, and nothing greys that did not grey before. |
+| **The roster, with [Free] marked** | **Unchanged.** Sixteen designs — 1 Centred, 2 Flush Left, 3 Split, 4 Image Top, 5 Full Bleed, 6 Edge to Edge, 7 Card, 8 Contrast Band, 9 Overlap, 10 Big Type, 11 Dateline, 12 Rail, 13 Sticky, 14 Share Row, 15 Slim, 16 Two Column — with **1 Centred** and **2 Flush Left** marked [Free], as the owner confirmed on 28 August 2026. |
+| **The control lists** | **One row rewritten, in the shared Post block, and it reaches the ten panels that draw it.** Every other control, value, default, order, struck value and greyed row in all sixteen designs is exactly as pass four left it. |
+| **The data fields** | **Unchanged, and one description sharpened.** Image focus **is not a data field and never was** — it binds nothing, Ghost owns the photograph, and the choice is a compiler hint. The category layer now says so in P0·9's words. No Ghost field was added, dropped or re-typed. |
+| **The no-JavaScript line per design** | **Unchanged, all sixteen.** Fourteen designs stay pixel-identical with JavaScript off; 13 Sticky's is as pass two rewrote it, the bar hidden entirely with no space reserved; 14 Share Row's reads from the registry with its Copy-link caveat. **Focus needs no script:** the compiler resolves it before the theme ships. |
+| **The behaviour each design declares** | **Unchanged.** Fourteen declare none and assume `core`; **13 Sticky declares `reading-progress` and `header-scroll`**; **14 Share Row declares `share`**. **P0·9 declares no module and no width**, so no declaration moved. |
+| **A design may declare the width below which its script runs** | **No design in A24 declares one, and none was invented here.** Both module-declaring designs run at every width. |
+| **A count that picks between drawn layouts is a named set, not a number picker** | **Checked, no change.** Image focus is a named set on both axes and became no kind of number; 11 Dateline's Cells and 14 Share Row's Links stay Two · Three · Four, default Four. |
+| **The Remove button never greys out** | **No subject.** Nothing in A24 is an authored repeating list. |
+| **Printed design totals** | **Nothing authored in this pass names one.** No spec line, panel string or frame caption written here quotes a number of designs, in any form, and no removed total was reinstated. |
+| **P0's per-prop mark allowlist** | **Left alone.** It is not in this project's copy of P0's specification — it was written in the repository. Nothing above re-authors, paraphrases, softens or contradicts it. |
+| **Numbering** | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16.** Sixteen designs, no gaps, nothing renumbered, reused or deleted. |
+
+### Open questions this pass raises
+
+- **OPEN FOR THE OWNER — where does Image focus sit in a category with no image field of its own?**
+  *What I would have needed to know:* whether P0·9's per-slot rule locates the control under the Post
+  block's **Feature image** row when Ghost owns the photograph and the section has no image slot.
+  *Why it is open:* P0·9 draws the control **under the image slot it belongs to** and speaks of a
+  section with two slots drawing two controls; A24 has no image field at all — the picture is the
+  post's, which is why the reconciliation pass put the row in the Post block rather than in an Image
+  Picker popover. *What I did instead:* **left the row exactly where it was**, beside Feature image,
+  drew both axes there, and claimed nothing about a slot.
+- **OPEN FOR THE OWNER — does a greyed two-axis control carry one reason sentence or one per axis?**
+  *What I would have needed to know:* whether P0·0's greyed treatment repeats its reason under each row
+  of a control that now has two. *Why it is open:* P0·0 was written when every control had a single
+  row, and 8 Contrast Band is the only place in A24 where a greyed Image focus is drawn. *What I did
+  instead:* greyed **both** rows, kept the value in force legible in each, and drew **one** reason
+  sentence for the pair — flagged ⚑ as mine rather than presented as the rule.
+
+### Left alone deliberately
+
+**The six designs that draw no picture were not touched.** 2 Flush Left, 10 Big Type, 11 Dateline,
+13 Sticky, 14 Share Row and 15 Slim carry no Image focus row and no copy of its values; their panels
+already name the reason at the inert Feature image row. Adding P0·9's never-offered note there would
+mean asserting a reason P0·9 wrote for a different case.
+
+**The seven carried items stay on the register exactly as they are** and none was resolved here,
+including **Image focus as a crop hint Ghost never sees** — which P0·9 now states in the same words, so
+the item is unchanged rather than closed. **Item 6 on the architect's list is untouched.**
+
+**14 Share Row's native-share redraw is still outstanding.** It is a redesign, not a patch, and nothing
+in this pass authorises it.
+
+**The category's own history was not rewritten.** Finding 13 and the Reconciliation notes still record
+the withdrawal of the focal-point refusal in the words the reconciliation pass used; they enumerate no
+values, so nothing there needed changing, and the pass-one reasoning stays readable.
+
+**The two things maintained outside Claude Design are untouched.** **No design total is written into
+any spec line, panel string or frame in this pass.** **P0's per-prop mark allowlist is P0's text**: not
+restated, softened or contradicted above.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** —
+   sixteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **1 Centred** and **2 Flush Left** — both of which exist in this category's roster.
+
+— End of pass five —

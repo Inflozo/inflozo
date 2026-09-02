@@ -1,7 +1,8 @@
 # A33 Koenig Card Treatments — written specification
 
 6 treatments · Paper pack · drawn 24 August 2026 · controls-reconciliation pass 25 August 2026 ·
-**Koenig card treatments patch pass 28 August 2026** · **selector pass 1 September 2026**
+**Koenig card treatments patch pass 28 August 2026** · **selector pass 1 September 2026** ·
+**Koenig card treatments patch pass five 3 September 2026**
 
 This file is the reconciled specification. The pass reused the P0 editor primitives by name and
 redesigned none of them; every conflict it opened with an earlier A33 ruling is recorded, one line
@@ -210,13 +211,42 @@ parts, `.kg-embed-card`, `.kg-callout-card`/`.kg-callout-emoji`/`.kg-callout-tex
 `.kg-file-card` and its parts, `.kg-audio-card` and its player parts, `.kg-video-card` and its player
 parts, `.kg-header-card` with `kg-size-*` and `kg-style-*`, `.kg-signup-card` and its form parts,
 `.kg-product-card`/`.kg-product-card-container`, `.kg-width-wide` and `.kg-width-full`.
-**Not verified, and therefore flagged**: the call-to-action card's class, drawn as `.kg-cta-card`;
-the email-content card's, drawn as `.kg-email-card` and needed by nothing, since it never renders on
-the web; the eight callout colour variants beyond `.kg-callout-card-accent`, whose pattern is
-`.kg-callout-card-<colour>`; the product card's inner classes below `.kg-product-card-container`; and
-whether Ghost 6's header card keeps the documented class set. **A wrong selector styles nothing and
-fails silently**, which is the worst failure available here, so none of the five carries a rule on its
-own and each is an open question below.
+**Confirmed against Ghost's own card renderers, 3 September 2026 — read from the code that emits the
+classes, on both supported versions.** Four selectors that were flagged now carry rules of their own:
+`.kg-cta-card` (the call-to-action card); `.kg-callout-card`; `.kg-product-card`, whose inner classes
+are `kg-product-title`, `kg-product-image`, `kg-product-description-wrapper` and
+`kg-product-button-wrapper`; and `.kg-header-card`, whose Ghost 6 shape is `kg-header-card-content`,
+`-heading`, `-subheading`, `-subheading-wrapper`, `-text`, `-image`, plus `kg-header-button-wrapper`,
+`kg-v2`, `kg-style-accent`, `kg-style-image`, `kg-layout-split`, `kg-size-large`, `kg-swapped`,
+`kg-align-center` and `kg-content-wide`. **Each was checked against the code that emits it**, which is
+what retires the flag.
+
+**The email-content card's selector is deleted rather than corrected.** Its renderer returns an empty
+container unless the render target is email, so **on the web it produces no element and no class at
+all** — the rule matched nothing, ever, and there is nothing to correct it to. The card is still drawn
+dashed in every roll, because an author can still insert it; what is gone is the selector.
+
+**Still unverified, and still carrying no rule of its own**: the eight callout colour variants beyond
+`.kg-callout-card-accent`, whose pattern is `.kg-callout-card-<colour>`. The confirmation names the
+callout card, not its colour variant classes, so the variants stay marked rather than promoted on a
+reading — recorded as **OPEN FOR THE OWNER** in Patch notes. **A wrong selector styles nothing and
+fails silently**, which is the worst failure available here.
+
+**The treatments target Ghost's current card renderer only — the owner's ruling, 3 September 2026, and
+a stated limitation rather than an open question.** Ghost 5 ships both the current renderer and an
+older one, because a Ghost 5 site can still hold posts written before the current editor, and
+**header, file, product, video and embed cards emit different classes depending which renderer
+produced the post** — most severely the header card, whose older markup carries almost none of the
+structure the treatments style. In words a customer can be shown: **a post written before Ghost 5's
+current editor keeps Ghost's own default card styling — readable, just not carrying the chosen
+treatment.** **Why it went that way, recorded with the ruling**: a second selector set would roughly
+double this category's stylesheet and its testing permanently, and the header card would need
+genuinely different rules rather than a second selector, because the older markup lacks the structure
+the treatments rely on. **Ghost 5 is end-of-life, so the affected posts are a shrinking set.**
+
+**`.kg-nft-card` stays unstyled, deliberately — the owner's ruling, 3 September 2026.** Ghost still
+ships the card and this category draws twenty cards without it; it keeps Ghost's default appearance.
+**Recorded as a decision rather than a gap**, so no later pass raises it as an oversight.
 
 **Two selector traps, named so a builder does not fall into them.** `.kg-file-card-caption` is the
 file card's *description* and not a card caption — the Captions control must not reach it ⚑. And
@@ -239,7 +269,9 @@ Ghost's card CSS for every card it draws — the twelve excludable cards other t
 theme always re-includes Ghost's own `cards.min.js`, so no behaviour is lost.** One stylesheet owns
 the look, Ghost keeps owning the behaviour, and there is no cascade to fight and no seam between a
 treated card and an untouched one. **`nft` is ignored by the owner's instruction**: A33 draws no NFT
-card, so it is not excluded, not drawn, and carries no open question.
+card, so it is not excluded, not drawn, and carries no open question — and since 3 September 2026 it is
+a recorded decision that the card **stays unstyled and keeps Ghost's default appearance**, not an
+oversight waiting on a later pass.
 
 **The ruling is conditional on one test, and the fallback is written rather than left to a builder** ⚑.
 The bundle Ghost serves at `/public/cards.min.js` may be built *from* the theme's `card_assets`
@@ -401,14 +433,14 @@ is always safe.
 | Toggle | `.kg-toggle-card` | `heading` · `content` | text · rich text | — | both required · Ghost supplies the chevron and its script · **the markup is a plain container with an `h4` and a `button`, not `details`/`summary`** ⚑ |
 | Button | `.kg-button-card` | `label` · `url` · `align` | text · url · enum | — | label ≤ 40 · left or centre · the fill is the site accent |
 | Embed | `.kg-embed-card` | `url` → `html` · `caption` | url → provider markup · rich text | caption | the markup is the third party's; A33 styles only the frame ⚑ · **Ghost sets the card's width itself and A33 leaves it there by ruling** ⚑ (owner, 1 September 2026) |
-| Product | `.kg-product-card` | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither · **Ghost renders the stars with no text equivalent and a theme cannot add one** ⚑ (a Ghost limitation) |
+| Product | `.kg-product-card` | `title` · `description` · `image` · `rating` · `buttonLabel` + `buttonUrl` | text · rich text · file · int · text + url | image, rating, button pair | rating 1–5 · the button pair is both-or-neither · **Ghost renders the stars with no text equivalent and a theme cannot add one** ⚑ (a Ghost limitation) · **inner classes confirmed, 3 September 2026**: `kg-product-title`, `kg-product-image`, `kg-product-description-wrapper`, `kg-product-button-wrapper` |
 | File | `.kg-file-card` | `file` · `title` · `description` → `name`, `size` | file · text · rich text → derived | description | name and size come from the upload, read-only |
-| Header | `.kg-header-card` | `heading` · `subheading` · `buttonLabel` + `buttonUrl` · `size` · `style` · `backgroundImage` | text · text · text + url · enum · enum · file | subheading, button pair, image | **three sizes × four styles = twelve variants the theme owes** ⚑ (C.1) |
+| Header | `.kg-header-card` | `heading` · `subheading` · `buttonLabel` + `buttonUrl` · `size` · `style` · `backgroundImage` | text · text · text + url · enum · enum · file | subheading, button pair, image | **three sizes × four styles = twelve variants the theme owes** ⚑ (C.1) · **class confirmed on both versions, 3 September 2026**; Ghost 6's shape is `kg-header-card-content`, `-heading`, `-subheading`, `-subheading-wrapper`, `-text`, `-image`, plus `kg-header-button-wrapper`, `kg-v2`, `kg-style-accent`, `kg-style-image`, `kg-layout-split`, `kg-size-large`, `kg-swapped`, `kg-align-center`, `kg-content-wide` |
 | Markdown | **none** | `md` | rich text | — | **no wrapper class** ⚑ · renders as ordinary headings, lists, links and images |
 | HTML | **none** | `html` · `visibility` | author markup · enum | — | public · free members · paid members · **whatever the author pastes wins** ⚑ · **no wrapper element** ⚑ — the Rules control and the Contrast Band have no target here |
 | Divider | `hr`, no class | position only | — | — | a bare `hr` · weight, width and space are the treatment's; **the optional centred glyph is an icon slot** (P0·2) on the divider card's own panel ⚑ |
-| Email content | `.kg-email-card` ⚑ unverified | `greeting` · `fallback` · `text` | text · text · rich text | greeting, fallback | **never renders on the web** ⚑ · `first_name` placeholder with the author's fallback |
-| Call to action | `.kg-cta-card` ⚑ unverified | `text` · `image` · `sponsorLabel` · `buttonLabel` + `buttonUrl` · `background` · `visibility` · `showOn` | rich text · file · text · text + url · enum · enum · enum | image, sponsorLabel, button pair | **renders on the web, in the newsletter, or both** ⚑ · audience is public, free or paid |
+| Email content | **none** | `greeting` · `fallback` · `text` | text · text · rich text | greeting, fallback | **never renders on the web** ⚑ — the renderer returns an empty container unless the render target is email, so on the web there is **no element and no class**, and **the `.kg-email-card` selector is deleted rather than corrected** (renderers, 3 September 2026) · `first_name` placeholder with the author's fallback |
+| Call to action | `.kg-cta-card` | `text` · `image` · `sponsorLabel` · `buttonLabel` + `buttonUrl` · `background` · `visibility` · `showOn` | rich text · file · text · text + url · enum · enum · enum | image, sponsorLabel, button pair | **renders on the web, in the newsletter, or both** ⚑ · audience is public, free or paid · **class confirmed against both renderers, 3 September 2026** |
 | Public preview | **no element** | position only | — | — | **no element at all** ⚑ · Ghost leaves only an invisible comment where it cuts the response · A32 renders the gate |
 | GIF | `.kg-image-card` | the search and the pick | file | — | renders as an image card and follows those settings |
 | Audio | `.kg-audio-card` | `file` · `title` · `thumbnail` | file · text · file | thumbnail | **Ghost ships the player and its script** ⚑ · A33 styles the shell and the progress accent |
@@ -875,9 +907,10 @@ worked around. Nothing below was answered in the housekeeping.
 ## Open questions
 
 **This section is new.** A33 had none before the selector pass; the five items below were raised by
-writing the selectors down. **Three are now settled by the owner and two are commissioned checks with
-their outcomes pre-written, so nothing in this category is waiting on a decision** — questions 2 and 4
-are waiting on a Ghost server, which is a different thing and is named as such.
+writing the selectors down. **Four are now settled and one is a commissioned check with its outcomes
+pre-written, so nothing in this category is waiting on a decision** — question 4's check came back on
+3 September 2026 and settled every row but one, and question 2 is still waiting on a Ghost server,
+which is a different thing and is named as such.
 
 1. ~~**Which cards does A33 exclude in `card_assets`?**~~ **SETTLED BY THE OWNER, 1 September 2026.
    Three answers were given the same day and the third is the ruling**; all three are left visible,
@@ -904,17 +937,19 @@ are waiting on a Ghost server, which is a different thing and is named as such.
    it" — the width class is on the figure and is reachable — but **"Ghost's script arranges a gallery's
    rows from the images' ratios, and a wider card would let it re-arrange into rows nobody has
    drawn."** No frame was redrawn and no value was added.
-4. **Two card classes are unverified and one card is undrawn.** The call-to-action and email-content
-   cards do not appear in Ghost's documented class list, and the frames draw them as `.kg-cta-card`
-   and `.kg-email-card`; the callout's eight non-accent colour variants, the product card's inner
-   classes and Ghost 6's header card are the same shape of uncertainty. Separately, **Ghost documents a
-   `.kg-nft-card` that is not among the twenty this category draws** — a coverage question, not a
-   selector one. Confirming these needs a running server of each supported version, or a read of
-   Ghost's own source — `ghost/core/core/frontend/src/cards/css` names every card class Ghost ships and
-   `koenig` holds the renderers. **The owner asked for both on 1 September 2026**; neither a live server
-   nor github.com is reachable from this design environment, so **the check is commissioned and the
-   answer comes from outside this project**. Nothing was guessed in the meantime.
-   **OPEN — CHECK COMMISSIONED, 1 September 2026**
+4. ~~**Two card classes are unverified and one card is undrawn.**~~ **CHECK RUN, 3 September 2026,
+   AND SETTLED EXCEPT ONE ROW.** Read from Ghost's own card renderers on both supported versions:
+   **`.kg-cta-card` confirmed**, **`.kg-callout-card` confirmed**, **`.kg-product-card` confirmed**
+   with `kg-product-title`, `kg-product-image`, `kg-product-description-wrapper` and
+   `kg-product-button-wrapper` inside it, and **`.kg-header-card` confirmed** with Ghost 6's shape
+   written into the field list. **`.kg-email-card` does not exist**: the email card's renderer returns
+   an empty container unless the render target is email, so on the web there is no element and no
+   class — **the selector is deleted rather than corrected**. **`.kg-nft-card` is ruled by the owner
+   to stay unstyled**, keeping Ghost's default appearance; that is a decision, not a gap.
+   **What remains open is one row**: whether the confirmation of `.kg-callout-card` also covers the
+   **eight non-accent colour variants** (pattern `.kg-callout-card-<colour>`). Nothing was promoted on
+   a reading, so the variants stay marked and carry no rule alone.
+   **OPEN FOR THE OWNER — the callout colour variants only, 3 September 2026**
 5. ~~**Does the credit convention survive being written as a selector?**~~ **SETTLED BY THE OWNER,
    1 September 2026: the false positive is accepted, and the control says so.** `figcaption
    em:last-child` also matches an author's ordinary closing emphasis — a caption ending on an
@@ -1282,22 +1317,24 @@ published post's HTML on both and record whether the `<em>` survives inside the 
   the sentence to each frame's Credit line help text. **Then raise it as a new open question**: whether
   the credit convention survives as a feature at all, which is the owner's call and not the build's.
 
-**CHECK 2 · Confirm the five unverified selectors, and one card we never drew.** (Open question 4.)
-Read Ghost's own source rather than guessing: **`ghost/core/core/frontend/src/cards/css`** names every
-card class Ghost ships a stylesheet for, and **`koenig`** holds the renderers that emit them. Record
-the Ghost version each answer came from. What is outstanding: the **call-to-action** card's class
-(drawn as `.kg-cta-card`), the **email-content** card's (`.kg-email-card`), the **eight non-accent
-callout colour variants** (pattern `.kg-callout-card-<colour>`), the **product card's inner classes**
-below `.kg-product-card-container`, and whether **Ghost 6's header card** keeps
-`kg-size-*`/`kg-style-*`.
-- **Where a guess is confirmed:** replace *UNVERIFIED ⚑* with *verified, Ghost <version>, <date>* in
-  the proof frame's selector list, and drop the "⚑ unverified" note from that row of the shared field
-  list. Nothing else changes.
-- **Where a guess is wrong:** correct the class in the shared field list, the selector list, the
-  treatment's *Selects* line and the card roll's label on all six frames — **the label is drawn text,
-  so it is six edits, not one** — and add the correction to Patch notes.
-- **`.kg-nft-card`:** Ghost ships it and this category draws no NFT card. **Record which supported
-  versions still emit it** and hand the coverage decision to the owner. Do not draw one.
+**CHECK 2 · Confirm the five unverified selectors, and one card we never drew.** **RUN, 3 September
+2026 — this check is closed except for one row**, and what came back is applied in *The selectors*,
+the shared field list, the proof frame's selector list and all six treatment frames.
+- **Confirmed against the renderers on both supported versions:** `.kg-cta-card`, `.kg-callout-card`,
+  `.kg-product-card` (inner: `kg-product-title`, `kg-product-image`,
+  `kg-product-description-wrapper`, `kg-product-button-wrapper`) and `.kg-header-card` (Ghost 6's
+  shape as listed in the field list). The unverified marks are dropped and each carries a rule.
+- **`.kg-email-card` does not exist and the fix was deletion, not correction** — the renderer emits an
+  empty container off the email target, so nothing on the web ever carried the class.
+- **`.kg-nft-card`:** ruled by the owner to stay unstyled and keep Ghost's default appearance. Do not
+  draw one, and do not raise it again as a gap.
+- **Still to confirm, and the only thing left of this check:** the **eight non-accent callout colour
+  variants** (pattern `.kg-callout-card-<colour>`). **Where confirmed:** drop the unverified mark from
+  that row of the field list and the proof's selector list; **where wrong:** correct the pattern in
+  both, in each treatment's *Selects* line, and add the correction to Patch notes.
+- **Ghost 5's second renderer is not part of this check any more**: the owner ruled on 3 September
+  2026 that the treatments target the current renderer only, and it is written into *The selectors* as
+  a stated limitation.
 
 **CHECK 3 · Does an exclusion take Ghost's card JavaScript with it?** (Open question 1's condition —
 **do this one first**, because the ruling's branch depends on it and nothing else in the handoff does.)
@@ -1360,3 +1397,116 @@ commissioned checks rather than closed.
 - **Checked and left alone: `C Post Body`.** Its line that Ghost ships CSS for thirteen of the
   twenty-two cards is still true — the ruling changes what *this theme* excludes, not what Ghost
   ships — so C.1 was not edited. Recorded so nobody hunts for a change that should not exist.
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change this pass made, with the rule **name** or the Ghost fact that required it. **No design
+was renumbered, no frame was redesigned, and no control gained, lost or renamed a value.**
+
+### The selectors
+
+- **Four selectors drop their unverified mark, and each now records what it was checked against** —
+  `.kg-cta-card`, `.kg-callout-card`, `.kg-product-card` (inner: `kg-product-title`,
+  `kg-product-image`, `kg-product-description-wrapper`, `kg-product-button-wrapper`) and
+  `.kg-header-card` (Ghost 6's shape written out in full in the shared field list). Read from Ghost's
+  own card renderers on both supported versions. Required by **"do not remove a ⚑ flag without the
+  evidence that retires it"**, which is also why each row names the renderers rather than the
+  documentation.
+- **The `.kg-email-card` selector is deleted rather than corrected.** The email card's renderer
+  returns an empty container unless the render target is email, so on the web it produces no element
+  and no class — the rule matched nothing, ever. Required by **"a wrong selector styles nothing and
+  fails silently"**: a selector that can never match is that failure in its purest form. **The card is
+  still drawn dashed in every roll**; the field list's Ghost class cell now reads **none**, and the
+  proof frame's selector row reads *no element*.
+- **The treatments target Ghost's current card renderer only, written as a stated limitation in
+  customer-facing words** — "a post written before Ghost 5's current editor keeps Ghost's own default
+  card styling: readable, just not carrying the chosen treatment." The reason is recorded beside it: a
+  second selector set would roughly double this category's stylesheet and its testing permanently, and
+  the header card would need genuinely different rules rather than a second selector, because the
+  older markup lacks the structure the treatments rely on; Ghost 5 is end-of-life, so the affected
+  posts are a shrinking set. Required by the owner's ruling of 3 September 2026 and by
+  **"where a ruling can be applied, it is applied rather than left as a question."**
+- **`.kg-nft-card` is recorded as a decision, not a gap** — it stays unstyled and keeps Ghost's default
+  appearance. Written into *The selectors*, the `card_assets` ruling paragraph and the proof frame's
+  selector list, so no later pass raises it as an oversight.
+- **Open question 4 and developer-handoff Check 2 are marked run and closed except one row**; the
+  Open questions preamble now reads four settled, one commissioned.
+
+### The rest of the specification
+
+- **The roster is unchanged** — six treatments, the same tuples, the same six controls each, the same
+  `accordion` + `core` module list, and the **[Free]** pair untouched. No extra item was added to this
+  category: the work list names none.
+- **The control lists are unchanged.** Nothing this pass touched is a control: the selectors are the
+  stylesheet's, not the panel's. 1 Plain's *Tinted cards* **Selects** line no longer calls the
+  call-to-action class unverified, which is a wording consequence of the confirmation and not a change
+  of value.
+- **The data fields changed in two cells only** — email content's Ghost class (now **none**) and the
+  call-to-action's (now unflagged) — plus the product and header notes carrying their confirmed inner
+  classes. **Fifty-nine authored fields and eight scraped or derived ones**, unchanged.
+- **The no-JavaScript line is unchanged in all six designs**, and so is the behaviour each design
+  declares (`accordion`, `core`). Nothing on this work list touches a script, a state hook or a
+  degradation: the toggle still cannot open with JavaScript off, for the reason already written.
+
+### Frames
+
+- **All six treatment frames**: the *where we are not certain* panel is rewritten as confirmed /
+  deleted / still open, gains the current-renderer-only limitation and the NFT decision, and the
+  *no class at all* line now names the email card. Each frame gains a **pass five patch** block naming
+  what changed, the rule that required it, what was left alone and why.
+- **The category proof**: the selector list's email row becomes *no element*, the call-to-action,
+  product and header rows are marked confirmed with their source, the callout row splits into
+  *card confirmed / variants unverified*, the "Not A33's" row records the NFT ruling, and the frame
+  gains the same pass five patch block.
+- **Nothing else on any frame was touched**: no card was redrawn, no panel changed a control, no
+  number moved.
+
+### Left alone deliberately, and why
+
+- **`_build/a33*.js` was neither run nor edited.** The generators predate two passes; re-exporting
+  from them would revert both. Every change above was made in the `.dc.html` files directly. Recorded
+  rather than fixed, as in the previous pass.
+- **No design total appears in any copy this pass authored** — not a stale one, not a corrected one.
+  The counts in this document (six treatments, twenty cards, fifty-nine fields) are this category's own
+  roster and inventory, not a library total.
+- **P0's per-prop mark allowlist and the marketing and app screens' wording were not touched**; they
+  are maintained outside this project and no project copy of them was assumed.
+- **The proof frame's shared-field-list table still predates the 28 August pass on two rows** (the
+  gallery's fixed width, the public-preview row reading *marker*). Left as found: correcting it is not
+  on this work list, and where the file and a drawn panel disagree the panel is the authority.
+
+### Open for the owner
+
+- **OPEN FOR THE OWNER · the eight callout colour variants.** *What I needed to know:* whether
+  confirming `kg-callout-card` also confirms the variant classes `.kg-callout-card-<colour>` beyond
+  the documented `.kg-callout-card-accent`, since those — not the card class — are what this
+  specification had marked unverified. *What I did instead:* left the variant row marked and carrying
+  no rule of its own, and recorded the card class as confirmed. Required by
+  **"where a ruling cannot be applied without inventing a decision, it is written as an open question
+  rather than guessed."**
+- **OPEN FOR THE OWNER · the count of unverified selectors.** *What I needed to know:* which sixth
+  selector the work list means; this specification carries **five** unverified items (call to action,
+  email content, the callout colour variants, the product card's inner classes, Ghost 6's header
+  card), and the work list says six. *What I did instead:* applied the work list to the five that
+  exist and changed nothing else.
+- **OPEN FOR THE OWNER · Ghost 6's header card and the twelve-variant table.** *What I needed to
+  know:* whether the confirmed Ghost 6 class set — which names `kg-size-large`, `kg-style-accent` and
+  `kg-style-image` but not the whole `kg-size-small|medium` / `kg-style-dark|light` family — still
+  supports C.1's "three sizes × four styles = twelve variants the theme owes." *What I did instead:*
+  recorded the confirmed class list beside that line and left the twelve-variant claim exactly as
+  found.
+- **OPEN FOR THE OWNER · Image focus.** *What I needed to know:* whether this category is expected to
+  cite P0·9. The pass preamble says A33 still holds a private copy of the control; **it holds no copy
+  and no control** — the category declines Image focus with a reason (media never crops here, and the
+  image is Ghost's field), and it writes out no values, so there was nothing to converge under
+  **"one control name means one set of values."** *What I did instead:* left the declination as found,
+  in both the reconciliation floor and rule 7 of the findings.
+
+### Confirmations
+
+- **Design numbering is unchanged:** **1 Plain · 2 Card · 3 Panel · 4 Wide · 5 Full Bleed ·
+  6 Contrast Band.** Six treatments, numbers 1–6, nothing renumbered.
+- **The `**[Free] designs:**` line is present**, on its own line in the roster, in the required shape,
+  and names two treatments that exist: **1 Plain** and **4 Wide**.

@@ -26,8 +26,8 @@
 </section>
 
 <section data-screen-label="P0-9 the control" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
-<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">SIDEBAR WIDTH 280 · TWO SEGMENTED ROWS UNDER ONE LABEL · NAMED VALUES ONLY, NO PERCENTAGES AND NO DRAGGABLE POINT ⚑</div>
-<div style="display:flex;gap:48px;align-items:flex-start">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">SIDEBAR WIDTH 280 · TWO SEGMENTED ROWS UNDER ONE LABEL · NAMED VALUES ONLY, NO PERCENTAGES AND NO DRAGGABLE POINT ⚑ · BESIDE IT, THE SAME GROUP ON A DESIGN THAT CROPS NOTHING: THE CONTROL IS NOT DRAWN AND THE PANEL SAYS WHY</div>
+<div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
 
   <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
     <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Media</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
@@ -65,7 +65,28 @@
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">ONE LABEL, TWO ROWS · THE AXES ARE INDEPENDENT AND EITHER MAY SIT AT CENTRE · DEFAULT IS CENTRE AND CENTRE</span>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:10px;max-width:320px">
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Media</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Image</span>
+      <div style="display:flex;align-items:center;gap:8px;height:40px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:0 9px">
+        <span style="width:26px;height:26px;border-radius:5px;flex-shrink:0;background:repeating-linear-gradient(135deg,#DCD5CA 0 3px,#E9E3D9 3px 6px)"></span>
+        <span style="font-size:12px;color:#6E6A64;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">two-on-the-steps.jpg</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#A8A29A">2400×1200</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Caption</span>
+      <span style="width:34px;height:20px;border-radius:20px;background:#E84B34;display:inline-flex;align-items:center;justify-content:flex-end;padding:0 2px;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF"></span></span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#EFECE7;border-radius:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">There is no image focus here. This design places your photograph at its own shape, so nothing is cropped and there is nothing for focus to choose.</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6"><strong style="font-weight:600">NOT DRAWN · RULED 3 SEPTEMBER 2026</strong> · NO GREYED ROW, NO EMPTY LABEL, NO PLACEHOLDER — THE CONTROL IS ABSENT AND THE GROUP CARRIES ONE NOTE WHERE IT WOULD HAVE BEEN · THIS IS THE COULD-NEVER SIDE OF P0·0'S TEST: A DESIGN THAT PLACES A PHOTOGRAPH AT ITS OWN SHAPE WILL NEVER CROP, SO FOCUS CAN NEVER HAVE WORK TO DO HERE · <strong style="font-weight:600">THE SECOND MEMBER OF THE NEVER-OFFERED CATEGORY</strong>, BESIDE THE VISITOR DARK-MODE SWITCH UNDER A PINNED COLOUR SCHEME</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;flex:0 0 300px;max-width:320px">
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE VALUES ARE FIXED AND THE SAME EVERYWHERE ⚑ · CENTRE · TOP · BOTTOM AND CENTRE · LEFT · RIGHT · NO CATEGORY ADDS A VALUE, RENAMES AN AXIS, OFFERS A PERCENTAGE OR DRAWS A DRAGGABLE FOCAL POINT — NAMED VALUES ONLY IS LIBRARY-WIDE</span>
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">A CATEGORY MAY OFFER FEWER VALUES ONLY UNDER THE EXISTING RULE, AND MUST SAY WHY AT THE CONTROL · A SWITCHED-OFF AXIS GREYS WITH ITS REASON, IN P0·0'S TREATMENT — IT IS NOT REMOVED</span>
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE CONTROL BELONGS TO THE IMAGE SLOT IT SITS UNDER · A SECTION WITH TWO IMAGE SLOTS DRAWS TWO OF THEM, EACH UNDER ITS OWN SLOT, NEVER ONE FOR THE SECTION</span>
@@ -131,7 +152,7 @@
   </div>
   <div style="display:flex;flex-direction:column;gap:10px;max-width:320px">
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">ONE CONTROL NAME MEANS ONE SET OF VALUES · TWENTY-FOUR CATEGORY SPECS EACH ENUMERATED THEIR OWN IMAGE FOCUS, WHICH IS THE FAILURE THAT RULING WAS WRITTEN FOR · THEY DROP THEIR COPIES AND CITE THIS FRAME, SUPPLYING ONLY THE SLOT IT APPLIES TO</span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">OPEN QUESTION, RAISED NOT DECIDED ⚑ · WHETHER A DESIGN THAT PLACES A PHOTOGRAPH AT ITS OWN SHAPE — NOTHING CROPPED, SO NOTHING FOR FOCUS TO DO — DRAWS THE CONTROL GREYED WITH ITS REASON OR DOES NOT DRAW IT AT ALL · BOTH READINGS FIT THE RULES AS WRITTEN AND THE ANSWER IS THE OWNER'S · SEE THE SPEC'S PATCH NOTES</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7"><strong style="font-weight:600">RULED 3 SEPTEMBER 2026, NO LONGER OPEN ⚑</strong> · WHERE A DESIGN PLACES A PHOTOGRAPH AT ITS OWN SHAPE — NOTHING CROPPED, SO NOTHING FOR FOCUS TO DO — <strong style="font-weight:600">THE CONTROL IS NOT DRAWN AND THE PANEL SAYS WHY</strong>, DRAWN IN THE FIRST SECTION BESIDE THE CROPPING CASE · THE NEVER-OFFERED CASE IS NO LONGER A SINGLE NAMED EXCEPTION BUT A CATEGORY, AND THIS IS ITS SECOND MEMBER · IT GREYS NOWHERE, BECAUSE NOTHING SWITCHED IT OFF AND NOTHING BRINGS IT BACK</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">Focus is the one image decision a design cannot make for the user.</strong> A design owns the shape of its frame; only the person who chose the photograph knows what is in it. Two axes, six named values, one definition — and every category that draws an image now points here instead of writing its own.</p>

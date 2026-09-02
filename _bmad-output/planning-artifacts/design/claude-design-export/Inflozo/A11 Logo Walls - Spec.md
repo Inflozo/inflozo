@@ -12,7 +12,7 @@ Every rule below is stated once here and once on the design's own frames and spe
 
 *(Shortlisted in this pass — 1 Row, 10 Slim, 3 Grid, 4 Boxed — and **ruled by the owner on 30 August 2026**: the category default and the typeless band, one row across the page and one band under a hero, neither needing a caption or a photograph. It is the only line the merge reads.)*
 
-**Controls-reconciliation patch, 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface, reusing the shared editor primitives designed in **P0 · Editor primitives** — the P0·1 inline text toolbar and its link popover, the P0·2 icon slot and Icon Picker, the P0·3 item-list controls, the Link Picker and the editor state switcher. **Five things changed across all fifteen designs.** **Hover: Resolve to colour · None** ships as a section control: the resolve applies to **every mark, linked or not**, while the hover surface stays the link's — before this pass a greyscale wall with no URLs authored could never resolve at all. **The universal trio — Background role, Vertical spacing, Top divider — sits outside every design's control list**, and every per-design **Padding** row has retired into Vertical spacing; **7 Contrast Band's 44 · 64 · 88 and 10 Slim's width-independent 32 · 44 · 56 survive as that control's resolutions rather than as second rows**, while 4 Boxed's Panel padding, 5 Cards' Card height and 13 Dense's Row gap keep their own, because they measure something other than the section. **Every visible string edits inline on canvas** with the P0·1 toolbar — the head fields, `note`, 2 Caption Row's label, 11 Named's captions and 12 Tiers' two tier labels — and `linkUrl` opens the Ghost-aware **Link Picker**, the section link taking an optional P0·2 icon before or after its label. **Five published strings become theme catalog strings**: 8 Marquee's “Pause the logo wall” and “Play the logo wall”, 9 Rail's “Logo wall, scrollable”, “Scroll left” and “Scroll right”. And **`logos[]` is named as the P0·3 item list** on all fifteen frames, with **Image focus: Centre · Top · Bottom in the Image Picker's popover, disabled with its reason shown** — nothing in A11 is cropped. Per design: **8 Marquee gains Gap: Tight 40 · Comfortable 64 · Wide 96**, 9 Rail carries an **ARCHITECT: registry addition** note, and **7 Contrast Band's Background role is locked** with the reason on the frame. §18 records every conflict with an earlier ruling, one line each.
+**Controls-reconciliation patch, 24 August 2026.** The category was audited, design by design, against the PRD's control vocabulary and Ghost's verified data surface, reusing the shared editor primitives designed in **P0 · Editor primitives** — the P0·1 inline text toolbar and its link popover, the P0·2 icon slot and Icon Picker, the P0·3 item-list controls, the Link Picker and the editor state switcher. **Five things changed across all fifteen designs.** **Hover: Resolve to colour · None** ships as a section control: the resolve applies to **every mark, linked or not**, while the hover surface stays the link's — before this pass a greyscale wall with no URLs authored could never resolve at all. **The universal trio — Background role, Vertical spacing, Top divider — sits outside every design's control list**, and every per-design **Padding** row has retired into Vertical spacing; **7 Contrast Band's 44 · 64 · 88 and 10 Slim's width-independent 32 · 44 · 56 survive as that control's resolutions rather than as second rows**, while 4 Boxed's Panel padding, 5 Cards' Card height and 13 Dense's Row gap keep their own, because they measure something other than the section. **Every visible string edits inline on canvas** with the P0·1 toolbar — the head fields, `note`, 2 Caption Row's label, 11 Named's captions and 12 Tiers' two tier labels — and `linkUrl` opens the Ghost-aware **Link Picker**, the section link taking an optional P0·2 icon before or after its label. **Five published strings become theme catalog strings**: 8 Marquee's “Pause the logo wall” and “Play the logo wall”, 9 Rail's “Logo wall, scrollable”, “Scroll left” and “Scroll right”. And **`logos[]` is named as the P0·3 item list** on all fifteen frames, with **Image focus in the Image Picker's popover, disabled with its reason shown** — nothing in A11 is cropped. *(De-enumerated in place, 3 September 2026: the values are P0·9's and are not restated. The record of that pass is otherwise unchanged.)* Per design: **8 Marquee gains Gap: Tight 40 · Comfortable 64 · Wide 96**, 9 Rail carries an **ARCHITECT: registry addition** note, and **7 Contrast Band's Background role is locked** with the reason on the frame. §18 records every conflict with an earlier ruling, one line each.
 
 **Specification-only pass, this session.** Every design now carries four added fields — descriptor, structural descriptor, archetype, behaviour module — at the head of its section, plus an **Items** field naming what the sidebar does with `logos[]`. Nothing drawn changed, no frame moved and no earlier field was rewritten: responsive rules, content fields, controls, data binding, empty states, behaviour and accessibility notes all stand as written. **No module rename was needed** — this document named no modules at all, having written behaviour as motion and as the reader’s own scrolling rather than as JavaScript. Every module name below is the fixed 31-module registry’s (FR-G7) and every no-JS sentence is quoted from it rather than composed here.
 
@@ -76,7 +76,9 @@ Everything here applies to all fifteen unless a design says otherwise.
 
 **Print.** Greyscale and Muted print as drawn — paper is where a greyscale wall was always going. **8 Marquee and 9 Rail both print as their own track wrapped onto the page**, because a printed page has no viewport to scroll — the print stylesheet wraps the track, and neither design becomes another one. 7 Contrast Band drops its band and therefore **prints the light files**, the one place printing changes which file is used. The dark plate never prints, since print is the light mode.
 
-**The item list — where it lives, and the rules that hold in all fifteen.** **Reconciled: it is the P0·3 item list, named in those words on all fifteen frames**, and every image field carries **Image focus: Centre · Top · Bottom** in the Image Picker's popover — **disabled here with its reason shown, because nothing in A11 is cropped**: the file is drawn whole inside its box at `object-fit: contain`, so there is no discarded edge for a focus to choose. The repeater sits in the sidebar below the design’s own controls: one row per logo showing a 24 px thumbnail of the file, its `alt` as the row’s label, a drag handle, a remove action, and **Add logo** at the end. **The thumbnail is the row’s identity, because `alt` is the only text most items have** — in 11 Named the `caption` is drawn under it in muted. Selecting a logo on the canvas selects its row and opens that item’s fields; ⌥↑ / ⌥↓ moves the focused row.
+**Image focus, and it is P0·9's — one control, defined once, not restated here.** Where a design crops a photograph into a frame of its own shape, Image focus says which part of the photograph survives the crop. It is defined in **P0·9** and it carries **both axes**, up and down and side to side; this specification names the control and the slot it sits under and does not enumerate its values, because one control name means one set of values. **In A11 the slot is the item list's two image fields, `logo` and `logoDark`**, and the control sits in the Image Picker's popover on each — **disabled, with its reason shown, on all fifteen designs**: nothing in A11 is cropped, so neither axis has an edge to choose. That disabling is A11's own and is flagged as such; whether P0·9's not-drawn note belongs here instead is recorded as an open item in the Patch notes. **Ghost never sees this.** Focus is a hint the compiler resolves into the crop it emits — never a field, never a binding, never a template variable.
+
+**The item list — where it lives, and the rules that hold in all fifteen.** **Reconciled: it is the P0·3 item list, named in those words on all fifteen frames**, and every image field carries **Image focus — P0·9's shared control, both axes, the values not restated here** — in the Image Picker's popover, **disabled with its reason shown, because nothing in A11 is cropped**: the file is drawn whole inside its box at `object-fit: contain`, so there is no discarded edge for either axis to choose. The repeater sits in the sidebar below the design’s own controls: one row per logo showing a 24 px thumbnail of the file, its `alt` as the row’s label, a drag handle, a remove action, and **Add logo** at the end. **The thumbnail is the row’s identity, because `alt` is the only text most items have** — in 11 Named the `caption` is drawn under it in muted. Selecting a logo on the canvas selects its row and opens that item’s fields; ⌥↑ / ⌥↓ moves the focused row.
 
 **Add never produces an empty shell, and A11 is the first category that cannot seed the required field.** `logo` is an upload and the theme has no artwork to invent, so a new item arrives holding **the editor’s placeholder tile** — a neutral 3:1 wordmark reading *Add a logo* in `text-muted`, drawn at the design’s own box height — with `alt` seeded as **“Publication name”** and the file picker open. **The tile is editor-only and never published**: an item still carrying it is not drawn on the front end and the panel counts it out, “11 of 12 placed”, which is 14 Inline’s chip wording used for the whole category. It lands **last**. *Flagged: the tile, the seeded alt and the “placed” counter are mine — no drawn panel shows them.*
 
@@ -1102,3 +1104,79 @@ Every change below carries the **name** of the rule or the platform fact that re
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+
+---
+
+## Patch notes — pass five · Image focus becomes one shared control, 3 September 2026
+
+Every change below carries the **name** of the rule that required it. Rules are named, never numbered.
+**One work item reached this category**, and it finishes what pass four started: Image focus was never a
+shared control — two dozen category specs each wrote out their own copy of its values, and A11 held one of
+them. It is now defined once, in **P0·9**, and it carries **both axes**. This category cites that definition
+and enumerates nothing.
+
+**Frames changed — all sixteen, one line each, and nothing else touched.** `A11-0 Category Proof` and the
+fifteen control-panel frames `A11-1 Row` · `A11-2 Caption Row` · `A11-3 Grid` · `A11-4 Boxed` ·
+`A11-5 Cards` · `A11-6 Split Head` · `A11-7 Contrast Band` · `A11-8 Marquee` · `A11-9 Rail` ·
+`A11-10 Slim` · `A11-11 Named` · `A11-12 Tiers` · `A11-13 Dense` · `A11-14 Inline` ·
+`A11-15 Big Type`. In each, the **LOGOS · the item list** group's Image focus sentence stops listing the
+values and cites P0·9 instead. **No panel gained or lost a row, no control changed its name, values or
+default, no primary section frame was redrawn, and no state strip changed** — the control is not drawn as a
+panel row in A11 at all: it lives in the Image Picker's popover, where it is disabled with its reason shown.
+
+### What changed, and the rule that required it
+
+| Rule (by name) | Change |
+|---|---|
+| One control name means one set of values | **§0's item-list paragraph no longer enumerates the focus values.** It names the control, names the slot it sits under — the item list's two image fields, `logo` and `logoDark` — and cites **P0·9** for what the values are. |
+| One control name means one set of values | **§0 gains the category's one Image focus paragraph**, by reference: what the control is, whose it is, which slot carries it in A11, that it is disabled here with its reason, and that the values live in P0·9. |
+| One control name means one set of values | **The side-to-side axis is in force here by reference rather than by restatement.** A11's old text carried the up-and-down values only. Nothing in this category narrows either axis, so both are in force wherever the control appears — and the wording is P0·9's, so the next change to it reaches A11 without an edit. |
+| One control name means one set of values | **"Ghost never sees this" is written in, once in the spec and once on `A11-0`.** Focus is a hint the compiler resolves into the crop it emits — never a field, never a binding, never a template variable. This category had not said so. |
+| One control name means one set of values | **The dated records are de-enumerated in place, not rewritten.** The controls-pass summary at the head of the document keeps its own words and loses only the value list, with a one-clause note saying what was removed and when. §19's reconciliation item 11 named no values and is untouched. |
+| A design may offer fewer choices on a shared control and must say why | **No subject in A11, and it is stated rather than left silent.** No design narrows either axis, and none offers a different set from any other: all fifteen carry the same disabled control on the same two fields. The category-wide disabling is not a narrowing — it removes no value from the set, it withholds the whole control, which is the rule below. |
+| A control that could never do anything here is not drawn, and the panel says why | **Not applied, and it is the one open item of this pass — see OPEN FOR THE OWNER.** A11's disabled treatment predates the ruling and this pass's work list does not name it. Left as found. |
+| Printed design totals stay out of product copy | **Honoured, and nothing written.** No design total — old, corrected or computed — appears in any copy authored in this pass. The figures here are this category's own fifteen designs, its twenty-four-logo item cap and its two image fields, none of which is a library total. |
+| The marketing and app screens' design total | **Untouched.** A repository edit, re-applied after export and checked independently. A11 holds no copy of that copy and nothing in this pass went near it. |
+| P0's per-prop mark allowlist | **Not touched.** It is not in this project's copy of P0's specification, and this pass opened P0 only to read P0·9's definition. |
+
+### What the pass was asked to check, and found unchanged
+
+- **The roster, with [Free] marked** — unchanged, restated in full: **1 Row [Free]** · 2 Caption Row ·
+  3 Grid · 4 Boxed · 5 Cards · 6 Split Head · 7 Contrast Band · 8 Marquee · 9 Rail ·
+  **10 Slim [Free]** · 11 Named · 12 Tiers · 13 Dense · 14 Inline · 15 Big Type. The free pair is the
+  owner's own choice of 30 August 2026 and this pass did not reopen it.
+- **The control lists** — unchanged. No control was added, removed, renamed or re-valued on any of the
+  fifteen; every count of "N of its own", every Quick Controls line and every lock or disablement stands as
+  drawn. Image focus was already present on all fifteen and is neither a new control nor a changed one — only
+  the sentence describing it changed.
+- **The data fields** — unchanged: the section's own fields and `logos[]` with `logo`, `logoDark`,
+  `alt` (required, the brand's name), `url` and 11 Named's `caption`, plus the `shape` enum the
+  editor computes at upload. **Focus adds no field:** it is a compiler hint, which is now said in those
+  words.
+- **The no-JavaScript line per design** — unchanged, all fifteen. Nothing about focus runs, so nothing about
+  it degrades: thirteen designs are pixel-identical with JavaScript off, and 8 Marquee and 9 Rail lose only
+  their track motion and their arrows, as already written.
+- **The behaviour each design declares** — unchanged: `marquee` on **8 Marquee**, `carousel` on
+  **9 Rail**, **none** on the other thirteen, with `core` assumed rather than declared. Focus declares no
+  module and needs none.
+
+### OPEN FOR THE OWNER
+
+- **OPEN FOR THE OWNER — should A11's disabled Image focus become P0·9's not-drawn note, on all fifteen
+  designs?** What I would have needed to know: whether *a control that could never do anything here is not
+  drawn, and the panel says why* is meant to reach a category where **no design crops anything** — P0·9 and
+  P0·0 both name "Image focus on a design that crops nothing" as the second member of the never-offered
+  category, which describes every design in A11, yet this pass's work list asks only that the values stop
+  being enumerated, and A11's disabled treatment was flagged as the session's own back in the
+  24 August controls pass. What I did instead: **left the disabled control as found** on all fifteen frames
+  and in the spec, replaced the enumeration with the reference P0·9 asks for, and wrote the question here and
+  on `A11-0` rather than redrawing sixteen frames on my own reading. If the answer is yes, the change is
+  one sentence per frame and one paragraph in §0.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** — fifteen
+  designs, nothing renumbered, renamed, added or removed.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and names
+  **1 Row** and **10 Slim** — both of which exist in this category's roster.

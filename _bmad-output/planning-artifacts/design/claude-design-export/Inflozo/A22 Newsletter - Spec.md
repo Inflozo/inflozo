@@ -2,7 +2,8 @@
 
 16 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation patch, 25 August 2026** ·
 **newsletter patch, 28 August 2026** · **declarations standardised, 31 August 2026** ·
-**pass two, 1 September 2026**
+**pass two, 1 September 2026** ·
+**pass five, 4 September 2026**
 
 The frames are `A22-0 Category Proof.dc.html` and `A22-1` … `A22-16`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -56,6 +57,20 @@ declaring one**. **Neither Ghost finding of 31 August reaches this category**: n
 feature-image caption and none reads a comment count. The **Open questions** housekeeping is in
 **Patch notes — pass two** at the end. **Nothing was renumbered, no control was added, removed or renamed,
 and no value, default, layout, type scale, colour pack or spacing step changed.**
+
+**Pass five, 4 September 2026.** **One work-list item, and it is a naming change rather than a design one.**
+**Image focus is one shared control, defined once in P0·9**, and this category held a private copy of its
+values in three places — the shared field list, 6 Image Split's control list and 7 Cover's. Each now **cites
+P0·9 and restates nothing**. **P0·9 carries both axes** — *Centre · Top · Bottom* and, by the owner's ruling
+of 3 September 2026, a side-to-side axis this category did not have — so **6 and 7 each draw two segmented
+rows under one label**, and **neither design constrains an axis**, so nothing greys and no reason sentence
+was needed. **Ghost never sees this** ⚑: focus is **a hint the compiler resolves** into the position the
+picture is anchored at inside its frame, which is why it is a control and not a data binding, why it
+declares no behaviour module, and why there is nothing about it to fail with JavaScript off. **Three frames
+changed** — `A22-0`, `A22-6`, `A22-7`; the other fourteen designs read no image and carried no copy of the
+values. **Nothing was renumbered, no control was added, removed or renamed, no default moved, and no value,
+layout, type scale, colour pack or spacing step changed.** The record is in **Patch notes — pass five** at
+the end.
 
 **[Free] designs:** 1 Inline Row · 13 Boxed
 
@@ -448,7 +463,7 @@ section is selected in the editor.
 | `quoteAttrib` · `quoteDetail` | text | opt | 40 · 30 ch | 16 | Joined with a middot; an absent detail drops it ⚑ |
 | `image` | image | opt | — | 6, 7 | ≥ 1,440 px in 6, ≥ 2,400 px in 7; **required in 7** |
 | `imageAlt` | text | opt | 120 ch | 6 | **Drawn as an alt in 6, stored and unused in 7** ⚑ |
-| `imageFocus` | enum | opt | — | **6, 7** | Centre · Top · Bottom — **a control since this pass** ⚑, in the panel and in the Image Picker popover |
+| `imageFocus` | enum | opt | — | **6, 7** | **P0·9's shared control — both axes, defined there and not restated here** ⚑. **Ghost never sees it**: a hint the compiler resolves into the position the picture is anchored at, which is why it is a control and not a data binding. In the panel and in the Image Picker popover |
 | `socialProof` | enum | req | — | 1–8, 13, 16 | Off (default) · Member count |
 | `membersBadge` | enum | req | — | 10, 12 | Off · On — **generated, never typed** ⚑. **10: only where a newsletter's `visibility` is `paid`** ⚑ *(corrected)*. **12: where a post's `visibility` is not `public`** — a real gate on a post, and unchanged |
 | `memberVisibility` | enum | req | — | all 16 | Source group; Everyone · Logged out · Free · Paid |
@@ -760,7 +775,7 @@ form contract, editing, footer strip.
    | Picture side | Left · Right |
    | Split | Even · Wide picture · Wide words |
    | Picture treatment | Bleed · Inset |
-   | Image focus | Centre · Top · Bottom |
+   | Image focus | **P0·9's shared control, both axes — the values are defined there and are not restated here** ⚑; drawn under the `image` slot, **nothing constrained** |
    | Plane | Raised · Flat |
    | Field | Stacked · In a row; **In a row is greyed at Split: Wide picture** — the words take 388 and the row will not hold — with the reason at the control and Stacked named as the fallback |
    | Social proof | Off · Member count |
@@ -816,7 +831,7 @@ spacing.** Source group, form contract, editing (the alt edits in the Image Pick
    |---|---|
    | Height | Short · Standard · Tall (**a minimum, not a crop**) |
    | Scrim | Light · Medium · Strong; **Light is greyed against a light picture**, measured on the bottom third where the form sits, with Medium named as the lightest value that passes. **The measurement runs in the editor when the picture is chosen, not on the site** ⚑ *(stated in pass two — CSS cannot see content)* |
-   | Image focus | Centre · Top · Bottom |
+   | Image focus | **P0·9's shared control, both axes — the values are defined there and are not restated here** ⚑; drawn under the `image` slot, **nothing constrained** |
    | Content position | Centre · Bottom |
    | Field width | Narrow 320 · Medium 400 · Wide 480 |
    | Band edges | Full bleed · Page margin |
@@ -1555,6 +1570,7 @@ Cumulative. Reused components are listed with the category that set them.
 | Authored item list · Ghost-sourced list card | Drag rows, overflow, Add-with-content, range line; "From Ghost" read-only rows | P0·3 |
 | Populate-from panel | Source · Filter · Count · Order · meta chips, with tag/author/hand-picked states | P0·5 |
 | State switcher | The State pill in the canvas chrome, beside View as | P0·6 |
+| **Image focus** | **Which part of a photograph survives the crop — both axes, one label and two rows, per image slot; a compiler hint, never sent to Ghost** | **P0·9 — cited, not copied** |
 | **The form row** | **Visually-hidden label, 46 px field, 46 px button 10 px apart, 13 px note under** | **A3·4 — carried verbatim** |
 | **The seven form states** | **Empty · focus · invalid · submitting · done · subscribed · members-off, at one height** | **A22 — extending A3·4's four** |
 | **The stacked form** | **Field and button 48 px each, 8 px apart, field text 16 — the ≤ 767 geometry** | **A22** |
@@ -1950,3 +1966,56 @@ form with P0·4's notice at the form row's own height.
    owner's ruling of 28 August 2026.
 
 — End of pass two —
+
+---
+
+## Patch notes — pass five
+
+**4 September 2026. One work-list item.** Every change below carries the **name** of the rule that required
+it. **Frames changed: three** — `A22-0 Category Proof`, `A22-6 Image Split`, `A22-7 Cover`. The other
+fourteen designs read no image, draw no focus control and held no copy of its values, so nothing in them was
+touched.
+
+| Rule | What it changed here |
+|---|---|
+| **One control name means one set of values** | **The three private copies of Image focus are gone.** The shared field list's `imageFocus` row, 6 Image Split's control list and 7 Cover's control list each **cite P0·9** and enumerate nothing. **Both axes are drawn** on 6 and 7 — one label, two segmented rows — because P0·9 carries both and this category had only the vertical half. |
+| **A design may offer fewer choices on a shared control and must say why** | **Neither design constrains an axis.** 6 and 7 both offer all six values, so there is no narrowing to justify, nothing greys, and no reason sentence was written. Recorded because the absence is a decision, not an oversight. |
+| **A control that could never do anything here is not drawn, and the panel says why** | **Not reached, and nothing was added.** P0·9's never-offered note belongs where a design owns a photograph and crops nothing. The fourteen designs without focus have **no image slot at all**, so there is nothing for the note to sit under; 6 and 7 both crop. |
+| **A control switched off by another is greyed, with the reason beside it** | **No change.** Focus depends on no other control in either design, and pass two's five greyed rows are untouched. |
+| **The roster, with [Free] marked** | **Unchanged.** Sixteen designs, on the proof frame, with **1 Inline Row** and **13 Boxed** marked [Free]. |
+| **The control lists** | **Two rows rewritten, both Image focus.** Every other control, value, default, order and greyed row in all sixteen designs is exactly as pass two left it. |
+| **The data fields** | `imageFocus` keeps its name, type, optionality and the designs it belongs to; only its description changed — a citation of P0·9 in place of an enumeration, plus the sentence that Ghost never sees it. **No field was added, removed, renamed or retyped.** |
+| **The no-JavaScript line per design** | **Unchanged, all sixteen** — the form is replaced by **P0·4's notice** at the form row's own height, no field and no button, the note kept beneath. Focus adds nothing that could fail: the compiler resolves it before the page ships. |
+| **The behaviour each design declares** | **Unchanged.** All sixteen declare `member-form`; **14 Slide-in Card also declares `slide-in-card`**. P0·9 declares no module and no width. |
+| **Printed design totals** | **Nothing authored in this pass names one.** No frame line, spec line or sentence written here quotes a number of designs, in any form; none was reintroduced, corrected or paraphrased. |
+| **P0's per-prop mark allowlist** | **Left alone.** It is not in this project's copy of P0's specification — it lives in the repository. Nothing above re-authors, paraphrases, softens or contradicts it. |
+
+### OPEN FOR THE OWNER
+
+- **Does the Image Picker popover draw both axes, or only up and down?** *What I would have needed to know:*
+  whether P0·9's two rows are mirrored whole into the popover, or whether the popover keeps the single row it
+  was drawn with in the reconciliation pass. *Why it is open:* P0·9 defines the control and says it sits under
+  the image slot, but says nothing about the popover, and this category's rule 10 — *every image field carries
+  a focus and it is never a hidden field* — was written when focus had one axis. *What I did instead:* drew
+  both axes in the panel on 6 and 7, kept the popover sentence exactly as found, and claimed nothing about how
+  many rows it holds.
+
+### Left alone deliberately
+
+- **The proof frame's field list reads *Used in: 7* for `imageFocus`** while this document's own field table
+  reads **6, 7** and 6 Image Split's panel draws the control. The panel is the authority, so the written table
+  is the one that matches what is drawn — but no work-list item names the frame's column, so **it was not
+  edited**. Named here so it is fixed deliberately rather than silently.
+- **6 Image Split's hand-off to 5 Panel and 7 Cover's to 4 Contrast Band** are still as pass two left them.
+  No rule in this pass names hand-offs.
+- **Everything pass two settled** — the five greyed rows, 12 Issue Preview's empty state, the seven form
+  states, the members handoff and the signed-in row — is untouched.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen
+   designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and names
+   **1 Inline Row** and **13 Boxed** — both of which exist in this category's roster.
+
+— End of pass five —

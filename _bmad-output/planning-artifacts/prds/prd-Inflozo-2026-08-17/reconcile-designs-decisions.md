@@ -1076,6 +1076,34 @@ rule already made rather than needing a decision he has not taken.
 A18 were missing entirely**, and A5, A12, A14 and A15 were carrying only the sweep when each had a
 ruling owed. Had it gone out as built, a sixth pass would have been certain.
 
+## A9 · Pass five verified, 2026-09-03 — and one thing two sessions found on their own
+
+**The Image-focus sweep is COMPLETE.** 27 categories reference `P0·9`; **none carries a private copy
+of the values.** All eleven extra-work items landed, checked one at a time rather than by a count:
+P0's three questions, A4's and A6's Actions layers, A5's two registry rulings, A12's naming fix,
+A13's double announcement and empty-state resolution, A14's sort answer, A15's headings, A17's
+bleed-edge rulings, A18's `group-headings` contract, and A33's selectors.
+
+**A33 is exemplary and worth recording as the pattern:** its four surviving `kg-email-card` mentions
+are all the specification *recording that the selector was deleted*, which is precisely what a raw
+count would have mis-read as a failure. So is A6's surviving `Both · Primary`, which is the shared
+floor saying it quotes the old list **only to show the mapping**.
+
+**ONE THING REMAINS, and neither session invented an answer to it.** A4 and A6 independently reported
+that their per-design **frame captions** still read `actions Both` — the retired value name — in the
+settings snapshot each frame carries (*"drawn at padding Comfortable 96, ground Background, title
+Large 40, actions Both"*). **28 frames: A4 fifteen, A6 twelve, and A6·0.** A7·12 also matches a search
+for it and is **not** an instance: A7's Actions is a single-axis control the split never touched, and
+the migration record says so.
+
+Both sessions asked the same question and refused to answer it: **is a frame caption a control table,
+or prose describing the state that frame is drawn in?** The caption also carries `padding` and
+`ground` — rows the universal trio retired — so A6 argued the whole line is a dated snapshot, and
+that correcting one value inside it without a ruling would leave a half-updated record reading as
+current. That is a better objection than the finding itself.
+
+It is the last open item in the library and it is put to the owner rather than guessed at.
+
 ---
 
 ## B · Approved decisions superseded by this session

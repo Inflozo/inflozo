@@ -204,7 +204,7 @@ list may go to nought, at which point the design hides the list and its hairline
 **min 0, max 6** ⚑. It is the category's only authored repeater, which is why it is the only list with an Add
 button — **7 Tiers' cards are Ghost's and correctly have none**. **The CTA takes an optional icon** before or
 after its label from the **P0·2 Icon Picker**, with that picker's size and colour-role popover; 10 Cover's image
-field carries **Image focus** (Centre · Top · Bottom) reachable from the Image Picker popover rather than hidden.
+field carries **Image focus as P0·9 defines it — both axes, and the values are not restated here** ⚑, reachable from the Image Picker popover rather than hidden.
 
 **Every visitor-facing string is a field with a default** ⚑ — eyebrow, heading, blurb, button label, sign-in
 prompt and link, manage link, legal line, benefit names and details, bar line and sub, meter label. **The two
@@ -305,7 +305,7 @@ gate** ⚑, so a post whose visibility changes from members to paid does not los
 | `legal` | text | opt | 160 ch | 1, 6 | **Authored, never generated** ⚑; drawn only where there is an email field |
 | `benefits[]` | list 0–6 | opt | name 60 ch · detail 90 ch | 1, 2, 3, 4, 5, 6, 8, 10 | **The category's only authored repeater** ⚑ — P0·3 item controls, Add arrives with content, remove never disabled, drag to reorder ⚑; **the detail is drawn only by 8** |
 | `benefitsLabel` | text | opt | 24 ch | as `benefits[]` | Default "What a membership includes"; stored and not drawn by 4 and 8 ⚑ |
-| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 10** | ≥ 2,400 px · 120 ch · Centre / Top / Bottom | 10 | **No image → the cover draws its scrim colour as a flat ground at the same height** ⚑. **Focus is reachable from the Image Picker popover and shown in the panel** — never hidden ⚑ |
+| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 10** | ≥ 2,400 px · 120 ch · **P0·9's two axes, not restated here** | 10 | **No image → the cover draws its scrim colour as a flat ground at the same height** ⚑. **Focus is reachable from the Image Picker popover and shown in the panel** — never hidden ⚑. **Image focus is P0·9's shared control, cited and not copied** ⚑ — both axes; **Ghost never sees the choice**, which the compiler resolves into the crop, so it is a control and not a data binding, and it declares no behaviour module |
 | `barLine` · `barSub` | text | opt | 60 · 60 ch | 11 | `barLine` defaults to the gate's heading, clipped to one line ⚑ |
 | `meterLabel` | text | opt | 90 ch | 12 | **`{total}` is the only token** ⚑ — **`{read}` is deleted**, because it asked a template to count the preview; never a percentage numeral |
 | `periodLabels` · `tierNote` | text | opt | 12 ch × 2 · 90 ch | 7 | "Monthly" · "Yearly"; the note is the price-and-cancellation line |
@@ -850,7 +850,7 @@ and inventing one here would be one design's private rule. Flagged, and left.
    96. **834** cover 460, copy 520, padding 80. **≤ 767** **full bleed forced**, cover 420, copy 310,
    button full width, fade 120, padding 64 ⚑. **The 420 floor is a floor, not a step** ⚑.
 5. **Content fields.** As 1, plus `image` (**required** ⚑, ≥ 2,400 px), `imageAlt` (opt 120 ch) and
-   `imageFocus` (enum, nine positions — **a field, not a control** ⚑). `benefits[]` is drawn only at
+   `imageFocus` (**the axes P0·9 defines, cited and not copied** ⚑ — **a field, not a control** ⚑, left as found and raised in the Patch notes). `benefits[]` is drawn only at
    Included list = Show ⚑.
 6. **Controls.**
 
@@ -863,7 +863,7 @@ and inventing one here would be one design's private rule. Flagged, and left.
    | Included list | Show · Hide, default Hide |
    | Included list items | the P0·3 item controls |
    | Fade | None · Short 96 · Standard 160 |
-   | Image focus | Centre · Top · Bottom |
+   | Image focus | **Both axes, as defined in P0·9** — up and down · side to side; the values are not restated here, and neither axis is narrowed ⚑ |
    | Eyebrow | Show · Hide |
    | Sign-in link | Show · Hide |
    | Button icon | None · Before label · After label |
@@ -1243,3 +1243,58 @@ Frames updated: `A32-1 Fade` and `A32-6 Split Pitch` — the two designs whose A
 | One toggle per thing — no compound values | **"Button and email field" was two things in one value.** A form (button or text link) and a field (present or absent) were sharing a list. Split: the **Action** row keeps the form axis, and **Email field: On · Off** becomes its own toggle in the Actions group. Canonical definition: **P0·4a**. |
 | One toggle per thing — no compound values | **A32·6's Action row is gone, and its constant is stated.** Its list was *Button · Button and email field*, so with the field split out the form axis had a single value left. A one-value control is a constant, and the rule says a constant is stated in the panel rather than offered as a switch. |
 | A control switched off by another is greyed, with the reason beside it | **The upgrade gate greys the field with its reason** — Ghost already has the address — which is what this specification already said in words on every gate and now says at the control. |
+
+---
+
+## Patch notes — Image focus points at P0·9, 3 September 2026
+
+One work item, and it finishes what pass four started. **Frames updated: `A32-10 Cover`** — the category's
+only design with an image, and so the only frame that drew this control. Nothing was renumbered, renamed or
+redesigned; no other design gained or lost a row.
+
+| Rule (by name) | Change |
+|---|---|
+| One control name means one set of values | **This category's private copy of Image focus is gone, replaced by a citation of P0·9.** The enumeration stood in four places and each now points at P0·9 instead: the editing section's sentence about 10 Cover's image slot, the shared field list's limit cell, design 10's **Content fields** (field 5) and design 10's **Controls** table. **The panel on `A32-10` draws the control with both axes** — one label, two segmented rows, in P0·9's shape — and states no values of its own. |
+| One control name means one set of values | **Both axes are drawn, the side-to-side one for the first time** (owner's ruling, 3 September 2026). It earns itself in this design: the cover is the only frame in A32 that crops a photograph, and a wide picture in a cover 520 tall loses its sides as readily as its top. |
+| A design may offer fewer choices on a shared control, and must say why | **No subject — nothing is narrowed here**, and the panel says why not: both axes have work to do at every width. No value greys, and this design claims no constraint. |
+| A control that could never do anything here is not drawn, and the panel says why | **No subject.** 10 Cover crops, so the control is drawn. **The other eleven designs have no image slot at all** — the note P0·9 describes belongs to a design that shows a photograph without cropping it, which A32 does not contain, so no never-offered note was added anywhere. |
+| Any new behaviour must name a module from the fixed registry | **No change.** Image focus is a compiler hint, so it declares nothing: A32 still declares `core`, `member-form`, `price-toggle`, `dismiss` and `reading-progress`, and **the no-JavaScript line per design is unchanged in all twelve** — the section draws and the action is dead. Stated once on `A32-10` and once in the field list. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Checked, no change.** Image focus is a named set on both axes; nothing here became a number picker or stopped being one. |
+| Declarations standardised | **10 Cover's control count did not move.** One label with two segmented rows is one control, so the design still declares **nine of its own**, the universals, the Data group and the Access source group outside it. The Quick Controls trio (Cover height · Scrim · Alignment) is untouched. |
+| The roster, with [Free] marked | **Unchanged.** `**[Free] designs:**` still reads **1 Fade · 5 Boxed** at the head of this document — the owner's choice of 29 August 2026 — and both are in the roster. |
+| The data fields | **`imageFocus` stays in the shared field list as an authored value**, with its values now cited rather than copied, and the list now says in P0·9's words that **Ghost never sees the choice**. No other field was added, removed or retyped. |
+| The behaviour each design declares | **Unchanged, all twelve.** |
+| Printed design totals | **Nothing authored in this pass carries one.** No frame line, spec line or sentence written here names a number of designs. |
+| P0's per-prop mark allowlist | **Left alone.** It is not in this project's copy of the specification. Nothing was re-authored, paraphrased or supplied in its place. |
+| Numbering | **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12.** No number reused, created or closed. |
+
+### Left as found, and why
+
+- **The three "a field, not a control" sentences are untouched** — design 10's Content fields, the Alignment
+  row's note on the panel, and the panel's own "what this settles" block. See the open item below.
+- **The generator `_build/a32d3.js` was not edited.** It is already a pass behind these frames — it still
+  carries the withdrawn "no image → hand-off to 4 Contrast Band" and has never held the Image focus row at
+  all — so a rebuild from it would revert far more than this pass. Editing it is not on the work list and
+  would mean re-authoring content the 29 August pass deleted. Flagged ⚑ rather than done.
+- **The roster table's `Ctl` column reads 6 for all twelve** while the prose beneath it gives the real
+  per-design counts (10: 9). Pre-existing, no work list names it, and a silent correction to twelve numbers is
+  exactly the kind of edit these passes ask not to make. Recorded here.
+
+### OPEN FOR THE OWNER
+
+- **Is "a field, not a control" superseded by P0·9?** — **OPEN FOR THE OWNER.** What I would have needed to
+  know: whether A30·6's call that focus belongs to the picture rather than to the section is the same statement
+  as P0·9's — a control drawn per image slot, resolved by the compiler — or a genuine disagreement about what
+  Image focus is. What I did instead: applied the work list around it. The panel draws the control with both
+  axes and cites P0·9; all three sentences are left exactly as written, in this specification and on the frame.
+- **What `imageFocus` stores** — **OPEN FOR THE OWNER.** This specification typed it as an enum of nine
+  positions. P0·9's two independent axes give nine combinations, so the count agrees, but whether the stored
+  value is one of nine names or a pair of axis values is a compiler question neither document settles. What I
+  did instead: left the field in the shared list and cited P0·9 for its values rather than inventing a shape.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12** — twelve designs, nothing
+  renumbered, renamed or removed.
+- **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Fade** and
+  **5 Boxed** — both of which exist in this category's roster.

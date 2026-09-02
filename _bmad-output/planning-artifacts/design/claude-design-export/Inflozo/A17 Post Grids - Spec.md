@@ -20,6 +20,8 @@ its entry, and the frame-by-frame list is in **Reconciliation notes** at the end
 
 **Pass four — 3 September 2026 (this document's current state).** Three work-list items, and **none of them changes a drawing.** **The post card's exceptions are written into the card**, which is defined here: the **four DOM-order departures** — A17·9, A18·4, A18·9, A18·13 — and the **one truncation**, A18·3 Slim, are recorded in the card's own definition instead of in five separate design specs, so the fifth exception is not filed where nobody looks. **One control name means one set of values** *(the owner's ruling, 3 September 2026)*: `thumbSize` and `order` are each declared once for the categories that inherit the card, **`ratio` / `cycle` / `thumbSize` are ratified as three controls rather than three value sets of one name**, and **10 Ledger may not coin a third `order` value** — its sort gap keeps a reason as well as an absence. **The excerpt floor is exclusive**: three lines needs a text column **above** 306 px, so at exactly 306 three lines is already refused and falls to two — which is what the shared floor and the disabled-control table have said all along, and the conflict pass three recorded is closed on the floor's side. **Four answers are written in as facts rather than decided here:** the pack's contrast colours **and its tabular figures are COMPUTED**, so no design derives one; **the main feed is designated and the project file stores which section it is**; **a dependency is declared in the control's own definition and carries its reason**; and **hand-picked references keep the order they were dragged**. **Nothing was renumbered, renamed, redrawn or deleted, no control was added or removed, no value changed, no default changed, no layout, type scale, colour pack or spacing step moved, and no design total is written anywhere.**
 
+**Pass five — 4 September 2026 (this document's current state).** A short pass, and **nothing it does changes a drawing.** **Two consequences of a bleed edge are ruled rather than filed as departures:** 18 Edge to Edge's **squared image** and its **inverted focus ring** are what running to the viewport's edge requires — an outward ring is clipped where there is nothing outside the cell, and a rounded corner at a bleed edge leaves a visible gap — so both are recorded as **ruled**, with those reasons, and **the pack's radius still governs every card that could follow it**. **Two gaps the category carried are closed rather than named:** there is **no client-side sort module and there will not be one** — *the order a list shows is the order its owner arranged* — so 10 Ledger's sort finding is answered **No**; and **an excerpt on hover is CSS, not a module**, so 14 Dense needs no registry entry for it, its own refusal of the control being unchanged. **A17 holds no private copy of Image focus to retire:** the category authors no image and enumerates no focus values anywhere, and its refusal now cites **P0·9** by name instead of standing alone. **Nothing was renumbered, renamed, redrawn or deleted, no control was added or removed, no value or default changed, no layout, type scale, colour pack or spacing step moved, and no design total is written anywhere.**
+
 **[Free] designs:** 1 Three Up · 4 Cards
 
 *(Shortlisted in this pass — 1 Three Up, 10 Ledger, 9 Big Type, 13 Thumb Side, 4 Cards — and **ruled by the owner on 29 August 2026**: the category default and the per-post plane. A free customer gets the plain grid and the card grid; the picture-free table, 10 Ledger, stays paid.)*
@@ -141,6 +143,13 @@ post.
   Square 1:1 · Portrait 4:5. `object-fit: cover`, centred. **No focal-point control anywhere in A17** — and the reconciliation
 pass gives the absence its reason rather than leaving it as an omission: **A17 authors no image**, so
 rule 10's Image focus has nothing to attach to; the focal point belongs to the post, in Ghost.
+**Image focus is P0·9, one shared control since 3 September 2026, and this category holds no private
+copy of it to retire** ⚑ 4 September 2026: A17 enumerates no focus values anywhere, narrows no axis
+and renames nothing, because **there is no image slot for the control to sit under** — the photograph
+belongs to the post. The absence now **cites P0·9** instead of standing on its own sentence.
+**A17's cells do crop**, at a named ratio, so this is not P0·9's drawn never-offered case, which is a
+design that crops nothing; whether the category is therefore a **third member of the never-offered
+category** is **OPEN FOR THE OWNER** — see *Patch notes — pass five*.
 **The tag chip is governed everywhere by Tag: Show · Hide**, and the meta row by the **Meta** enum
 (None · Date only · Name and date · Name, date and reading time · **With photograph**).
 **At With photograph an author with no `profile_image` draws ONE letter in the circle, never two** ⚑
@@ -185,7 +194,11 @@ already at the control.**
   design. Print is the light mode.
 - **Behaviour.** Two designs declare a module, sixteen declare none. `core` is assumed, not declared
   per design. **No A17 design loses a post without JavaScript**, and sixteen are pixel-identical with
-  it off. **`reveal` is refused on a grid.** **No A17 design declares a width below which its script
+  it off. **`reveal` is refused on a grid.**
+  **The two gaps this category carried are closed rather than named** ⚑ 4 September 2026: **a
+  client-side sort is ruled out** — the order a list shows is the order its owner arranged — and **an
+  excerpt on hover is CSS, needing no module at all**. **`infinite-scroll` stays refused
+  category-wide.** **No A17 design declares a width below which its script
   runs** ⚑ 1 September 2026, *a design may declare the width below which its script runs*: both modules
   run at every width and both no-JavaScript lines already read at every width. 15 Filtered's strip below
   767 is the one place the claim is ambiguous, and it is an open question rather than a declaration.
@@ -276,7 +289,9 @@ Compact · Comfortable · Spacious, resolved 64 · 96 · 132 at 1440 and 80 / 64
 **What A17 gives up.** **10 Ledger may not coin a third `order` value.** Its A11y note says the honest
 fix for the missing client-side sort is "a third `order` value server-side"; under this ruling that
 value would give one name two sets, so **the sort gap stays a gap and now has a reason as well as an
-absence**. Nothing drawn changes: no A17 design ever offered a third value.
+absence**. **Closed on 4 September 2026** by *the order a list shows is the order its owner arranged*:
+the sort itself is ruled out, so what was a gap with a reason is now an answered question. Nothing
+drawn changes: no A17 design ever offered a third value.
 
 **What is recorded for the categories that inherit the card.** A18 writes `rowDensity` with five
 quantity ladders, `thumbSize` with a set that begins **Off**, and `order` with a third value
@@ -692,7 +707,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    than special-cased.** From about sixteen the panel suggests Columns One.
 8. **Empty.** No tag → the row is one line shorter; **rows are stretched by their tallest cell as
    everywhere in A17, so a missing tag shows as space at the row's foot, not a shorter row.**
-9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing sorts, filters or measures. **JS off:** pixel-identical; every row, its tag and its abbreviated date are server-rendered. **⚑ No sort control:** a table invites sorting by column and no module covers it; the honest fix is a third `order` value server-side.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing sorts, filters or measures. **JS off:** pixel-identical; every row, its tag and its abbreviated date are server-rendered. **⚑ No sort control, and this is now ruled rather than open** *(4 September 2026, **the order a list shows is the order its owner arranged**)*: a table invites sorting by column, and the answer is **No**. There is no client-side sort module and there will not be one — a list shows the order its owner arranged, and a module built for one or two designs would also have to differ from its own no-JavaScript state, which is a cost with no gain. With a third `order` value already forbidden by *one control name means one set of values*, **this design offers no sort at any layer**, and the absence is an answer rather than a finding.
 10. **A11y. ⚑ It is a `<ul>` of `<li>`, not a `<table>`** — no column headers, no cell relationships;
     marking it up as a table would promise navigation that does not exist. The archetype names its
     responsive behaviour, not its markup. Abbreviated date is visual only; `<time datetime>` carries
@@ -701,7 +716,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
     tabular figures are a COMPUTED pack value**, supplied rather than hoped for; the degradation note
     stands only for a pack whose body font genuinely has none.
 
-**Reconciled.** *Controls, six:* Columns · Rows · Date · Tag *(already governed here)* · Title · **"View all" link**; Padding retired into Vertical spacing. **No Meta enum and no With photograph** — there is no author at any setting. *Data:* Hand-picked, and a hand-ordered ledger is the plainest use of the picker; Count stepper **2–30**, the widest in A17; **the main feed's empty state and Pagination style matter most here**, because this is the design most likely to *be* the archive. The sort gap is unchanged: no module covers it and none is coined.
+**Reconciled.** *Controls, six:* Columns · Rows · Date · Tag *(already governed here)* · Title · **"View all" link**; Padding retired into Vertical spacing. **No Meta enum and no With photograph** — there is no author at any setting. *Data:* Hand-picked, and a hand-ordered ledger is the plainest use of the picker; Count stepper **2–30**, the widest in A17; **the main feed's empty state and Pagination style matter most here**, because this is the design most likely to *be* the archive. **The sort question is closed** *(4 September 2026)*: no client-side sort module exists or will, the order shown being the order its owner arranged, and no module name was coined.
 
 ---
 
@@ -885,7 +900,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    at 16 Load More, not at A34.**
 8. **Empty.** Plate at 196 × 131 with the tag at 11 px. **No image on any post → no design switch**; at
    this size a wall of plates is a texture rather than a series of holes.
-9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; a wall of 196 px cells is markup and one grid rule. **⚑ The thing a 196 px cell most wants is an excerpt on hover, and no module in the registry covers it — a finding, and I am not naming one.**
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; a wall of 196 px cells is markup and one grid rule. **⚑ The thing a 196 px cell most wants is an excerpt on hover, and the registry half of that finding is answered** *(4 September 2026, **a behaviour that needs no JavaScript needs no module**)*: **an excerpt on hover is CSS, not a module** — it is already on the list of behaviours that need no JavaScript at all, so it needs no registry entry and no invented name. **The control itself stays cut**, on A17-0's own two reasons: hover-only content is invisible on a touch screen, and revealed on focus it moves the layout.
 10. **A11y.** Title 17 px is above the body floor. **The 11 px plate tag is the smallest type in A17**
     — `aria-hidden` decoration, and at Tag Off it is the only place the tag appears, **a real gap
     flagged rather than solved.**
@@ -893,7 +908,7 @@ Each entry gives the ten required fields. Fields shared with the floor above are
     composition with an obvious focal point; **a design whose subject is "how much has been
     published" has the grid itself as its focal point.** Recorded as a considered exception.
 
-**Reconciled.** *Controls, five:* Per row · Image ratio · Tag *(already governed here)* · Date · **"View all" link**; Padding retired into Vertical spacing. **No Meta enum and no With photograph** — there is no author or reading time to enumerate, and a 24 px avatar is an eighth of a 196 px cell. *Data:* Hand-picked; Count stepper **3–18**; main-feed empty state and Pagination style. The excerpt-on-hover gap is unchanged and still unnamed.
+**Reconciled.** *Controls, five:* Per row · Image ratio · Tag *(already governed here)* · Date · **"View all" link**; Padding retired into Vertical spacing. **No Meta enum and no With photograph** — there is no author or reading time to enumerate, and a 24 px avatar is an eighth of a 196 px cell. *Data:* Hand-picked; Count stepper **3–18**; main-feed empty state and Pagination style. **The excerpt-on-hover gap is closed rather than named** *(4 September 2026)* — a hover excerpt is CSS and needs no module; the control itself stays cut, for its own two reasons.
 
 ---
 
@@ -1086,13 +1101,19 @@ Each entry gives the ten required fields. Fields shared with the floor above are
    here than anywhere else.** Kept at "every post" for consistency with 8 Overlay and 11 Masonry; the
    inconsistency is recorded rather than resolved alone.
 9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the band, its zero gutter and its scrim at Text Over are CSS. `lightbox` considered and not declared — a full-bleed picture is the most tempting place for it in A17 and the cell is already a link to the post.
-10. **A11y. ⚑ The focus ring is this design's real problem:** A6's ring sits 4 px outside the element
-    and **a cell at the screen's edge has no 4 px outside it** — the ring is clipped on the first and
-    last cell of every row. **Specified as an inset ring on edge cells (`outline-offset: -4px`)**,
-    which changes the ring's appearance between cells in the same row — a real inconsistency worth
-    the architect's attention.
-    **⚑ The squared image is a departure from the pack, not from taste** — the one place rule 1's
-    "only tokens change" is strained, and the strongest single argument against this design existing.
+10. **A11y. The focus ring inverts at a bleed edge, and that is ruled** *(4 September 2026, **a
+    consequence of running to a bleed edge is not a departure**)*: A6's ring sits 4 px outside the
+    element and **a cell at the screen's edge has no 4 px outside it**, so an outward ring is clipped
+    at the viewport on the first and last cell of every row. **At an edge cell it inverts to an inset
+    offset (`outline-offset: -4px`)** — **what the focus requirement demands there, not a style
+    choice**. The ring still looks different on an edge cell and an inner one in the same row; the
+    reason is the edge, and it is recorded here rather than raised again as an inconsistency for the
+    architect to settle.
+    **⚑ The squared image is structural, and that is ruled too** *(same date, same rule)*: **a rounded
+    corner at a bleed edge leaves a visible gap** between the radius and the screen, so squaring the
+    image is a consequence of the bleed rather than a departure from the pack's radius token.
+    **The pack's radius still governs every card that could follow it — this design cannot**, and it
+    is the only design in A17 that cannot.
     **⚑ This is the one design in A17 that improves as the screen narrows:** every other spends its
     width on columns and loses them; this one spends its width on the image and keeps all of it.
 
@@ -1222,21 +1243,29 @@ made here.*
 5. ~~**`custom_excerpt` only** — no generated-excerpt fallback anywhere in A17.~~ **Closed by the
    reconciliation pass, 24 August 2026** — cells bind `excerpt`; struck here on 3 September 2026 as
    housekeeping.
-6. **No module covers an excerpt on hover** (14 Dense) or a client-side sort (10 Ledger). Both are
-   named as gaps rather than given invented module names. **10 Ledger's gap now carries a second
-   reason:** a third `order` value would give one name two value sets, which *one control name means
-   one set of values* forbids.
-   **OPEN FOR THE OWNER**
+6. ~~**No module covers an excerpt on hover** (14 Dense) or a client-side sort (10 Ledger). Both are
+   named as gaps rather than given invented module names.~~ **Both halves answered 4 September 2026,
+   and neither by naming a module.** **The sort: No** — there is no client-side sort module and there
+   will not be one, *the order a list shows is the order its owner arranged*; a module for one or two
+   designs would also have to differ from its own no-JavaScript state, which is a cost with no gain.
+   **The hover excerpt: it is CSS, not a module** — already on the list of behaviours that need no
+   JavaScript at all, so it needs no registry entry; **14 Dense's own refusal of the control is
+   unchanged**. **10 Ledger's second reason stands:** a third `order` value would give one name two
+   value sets, which *one control name means one set of values* forbids.
 7. ~~**Tabular figures are a pack requirement A17 cannot state** (10 Ledger).~~ **Answered
    3 September 2026: tabular figures are a COMPUTED pack value.**
 8. ~~**9 Big Type moves the tag after the title in the DOM** — the one departure from the card's
    promised field order.~~ **Answered 3 September 2026 by *the card's exceptions belong in the card*:**
    it is one of four registered departures, written into the card's definition; and it was never the
    only one.
-9. **18 Edge to Edge's focus ring must invert to an inset offset on edge cells.**
-   **OPEN FOR THE OWNER**
-10. **18 Edge to Edge's squared image** is a departure from the pack's radius token.
-    **OPEN FOR THE OWNER**
+9. ~~**18 Edge to Edge's focus ring must invert to an inset offset on edge cells.**~~ **Ruled
+   4 September 2026 — *a consequence of running to a bleed edge is not a departure*.** An outward ring
+   is clipped at the viewport, so at an edge cell the ring inverts to an inset offset: that is what the
+   focus requirement demands there. Recorded in the design's field 10 with that reason.
+10. ~~**18 Edge to Edge's squared image** is a departure from the pack's radius token.~~ **Ruled
+    4 September 2026 — same rule: structural, not a departure.** A rounded corner at a bleed edge
+    leaves a visible gap, so the square is a consequence of the bleed. **The pack's radius still
+    governs every card that could follow it.**
 11. ~~**`postRefs` needs an ordering contract in the schema.**~~ **Answered — ruled 2 September 2026:**
     references are held in the order the user dragged them and handed to the template that way, never
     re-sorted by date. The schema half stands as the builder's work, not as an open decision.
@@ -1929,6 +1958,140 @@ touched**, though this pass writes their inherited card's exceptions down; and *
 treatment on 4 Cards, 6 Split Head and 17 Panel stays exactly as drawn** — whole row, falling to Off,
 with the 264 / 269 / 278–290 px reason at the control — which is now the floor's confirmed reading
 rather than a held position.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+   17, 18** — eighteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present** at the head of this document, on its own line, and
+   names **1 Three Up** and **4 Cards** — both of which exist in this category's roster of eighteen.
+
+---
+
+## Patch notes — pass five, 4 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **Three work-list items, two
+of them rulings to record and one an answer to close, and none of them changes a drawing.** **Frames
+updated: all nineteen** — `A17-0 Category Proof` and `A17-1` … `A17-18`, each gaining a **PASS FIVE
+PATCH** card that states in one line what changed on that frame and which rule required it, and says
+*no subject on this frame* where a rule has none. **Nothing was renumbered, renamed, redrawn or
+deleted, no control was added or removed, no value or default changed, no layout, type scale, colour
+pack or spacing step moved, and no design total is written anywhere.**
+
+### What changed, and the rule that required it
+
+1. **18 Edge to Edge's inverted focus ring is ruled, not a departure** — *a consequence of running to a
+   bleed edge is not a departure*. A6's ring sits 4 px outside the element and a cell at the screen's
+   edge has no 4 px outside it, so an outward ring is clipped at the viewport; **at an edge cell it
+   inverts to an inset offset (`outline-offset: -4px`), which is what the focus requirement demands
+   there rather than a style choice**. The ring still looks different on an edge cell and an inner one
+   in the same row; the reason is the edge, and it is written into the design's field 10 instead of
+   being raised again as an inconsistency for the architect. **Findings item 9 struck.**
+2. **18 Edge to Edge's squared image is ruled structural** — same rule. **A rounded corner at a bleed
+   edge leaves a visible gap** between the radius and the screen, so the square is a consequence of the
+   bleed and not a strain on "only tokens change". **The pack's radius still governs every card that
+   could follow it — this design cannot**, and it is the only one in A17 that cannot. **Findings
+   item 10 struck.**
+3. **The missing sort module is answered, and the answer is No** — *the order a list shows is the order
+   its owner arranged*. There is no client-side sort module and there will not be one; a module built
+   for one or two designs would also have to differ from its own no-JavaScript state, which is a cost
+   with no gain. **10 Ledger's field 9, its Reconciled line and the frame's own prose now record an
+   answer rather than a finding**, and with a third `order` value already forbidden by *one control
+   name means one set of values*, **the design offers no sort at any layer**. **No module name was
+   coined.**
+4. **An excerpt on hover is CSS, not a module** — *a behaviour that needs no JavaScript needs no
+   module*. 14 Dense's hover excerpt needs no registry entry, being already on the list of behaviours
+   that need no JavaScript at all, so **that half of the finding is closed by pointing at it**.
+   **The control itself stays cut, unchanged**, on the design's own two reasons: hover-only content is
+   invisible on a touch screen, and revealed on focus it moves the layout. **Findings item 6 struck in
+   both halves.**
+5. **The category's Image focus refusal now cites P0·9** — *one control name means one set of values*.
+   **A17 holds no private copy to retire:** it enumerates no focus values anywhere, narrows no axis and
+   renames nothing, because it authors no image and so has **no slot for the control to sit under**.
+   The post card's sentence was standing on its own; it now names the shared control. **No control was
+   drawn, greyed or removed on any of the nineteen frames.**
+6. **The shared floor's Behaviour bullet records both closures** in one place, so a reader meets the
+   answers where the gaps used to be listed.
+7. **Nothing was renumbered and no design was deleted.** Eighteen designs, 1 to 18.
+
+### The roster, with [Free] marked
+
+| # | Design | | # | Design |
+|---|---|---|---|---|
+| 1 | Three Up **[Free]** | | 10 | Ledger |
+| 2 | Two Up | | 11 | Masonry |
+| 3 | Four Up | | 12 | Bento |
+| 4 | Cards **[Free]** | | 13 | Thumb Side |
+| 5 | Lead and Grid | | 14 | Dense |
+| 6 | Split Head | | 15 | Filtered |
+| 7 | Contrast Band | | 16 | Load More |
+| 8 | Overlay | | 17 | Panel |
+| 9 | Big Type | | 18 | Edge to Edge |
+
+**[Free] designs:** 1 Three Up · 4 Cards — the owner's ruling of 29 August 2026, unchanged.
+
+### The four declarations this pass was asked to re-state
+
+| What | Where it stands after this pass |
+|---|---|
+| **The control lists** | **Unchanged, all eighteen.** No control added, removed, renamed or re-valued; no default moved; every greyed and every locked row is as pass four left it. The eleven greyed cases and the seven locks are unchanged. |
+| **The data fields** | **Unchanged.** Twenty-six fields, as after the reconciliation pass. Nothing in this pass reads or writes a Ghost field, and **Image focus is a compiler hint rather than a data binding** (P0·9's own words), so it adds nothing to the field list. |
+| **The no-JavaScript line per design** | **Unchanged on all eighteen**, and two of them now rest on answers rather than findings: 10 Ledger is pixel-identical with JavaScript off and offers no sort at any layer; 14 Dense is pixel-identical and its hover excerpt, were it ever drawn, would need no script. **No design declares a width below which its script runs.** |
+| **The behaviour each design declares** | **Unchanged.** Two designs declare a module — **15 Filtered `filter-strip`, 16 Load More `load-more`** — and **sixteen declare none**; `core` is the theme's and never declared per design. **`infinite-scroll` stays refused category-wide**, `reveal` stays refused on a grid, and **no module name was coined by this pass** — the two gaps it closes are closed by a ruling and by a platform fact, not by a new entry. |
+
+### Open questions raised by this pass
+
+1. **This category's "private copy" of Image focus was not found.** OPEN FOR THE OWNER. What I would
+   have needed to know: what the preamble refers to, since A17 enumerates no focus values in this
+   document or on any of its nineteen frames — its position has been *no focal-point control anywhere
+   in A17* since the reconciliation pass. What I did instead: left every control exactly as found and
+   added one sentence citing **P0·9** to the card's existing refusal, which is the only part of the item
+   that can be honoured without inventing a control.
+2. **Is A17 a third member of the never-offered category?** OPEN FOR THE OWNER. P0·9's drawn
+   never-offered case is *a design that crops nothing*; **A17's cells do crop**, at a named ratio — what
+   is missing is not the crop but the slot, the photograph being the post's. P0 says a category that
+   believes it has a third member puts it to the owner rather than drawing it, so that is what this is.
+   What I did instead: recorded it in the post card and here, and drew nothing.
+3. **Does closing the module half of the hover-excerpt finding reopen the control?** OPEN FOR THE
+   OWNER. What I would have needed to know: whether the ruling is only about the registry, or also
+   directs 14 Dense to offer the excerpt now that the module objection is gone. The design's other two
+   objections — invisible on touch, moves the layout on focus — are untouched by it. What I did
+   instead: left the control cut, as found, and closed only the registry half.
+4. **If a hover excerpt is ever offered, must it also reveal on `:focus-within`?** OPEN FOR THE OWNER.
+   A hover-only reveal has no keyboard path, and the keyboard path is what moves the layout. Nothing was
+   drawn or added either way.
+5. **Carried forward, still unanswered:** whether a differing *quantity* under a shared value name
+   counts as a second set (pass four, item 1 — the only reading under which 13 Thumb Side's 96 · 120 ·
+   160 would move, and nothing was changed on its account); **A18's three collisions**, named here and
+   reconciled there; **pass two's conflict**, where P0·5 hides the main feed's pair that the greying rule
+   would grey; and **15 Filtered's strip below 767**, the one place the every-width claim is ambiguous.
+
+### Where the work list and this document did not agree
+
+- **The preamble says this category "still has a private copy" of Image focus; this document says there
+  is no focal-point control anywhere in A17.** **Recorded, not resolved**, and nothing was changed on
+  its account beyond the P0·9 citation — see open question 1. It is listed here because a mismatch
+  between a work list and a specification is the kind of thing these passes exist to surface.
+- **Nothing else in the work list contradicts anything already written.** The two rulings on 18 Edge to
+  Edge close items this document had itself marked OPEN FOR THE OWNER, in the direction the design was
+  already drawn, and both closures agree with pass four's *the card's exceptions belong in the card* —
+  neither is a DOM-order departure and neither joins that register.
+
+### Left alone deliberately
+
+**The two repository-maintained pieces are untouched, as asked.** **No design total was written
+anywhere** — not in this document, not on any of the nineteen frames, in any form; not the old number,
+not a corrected one. **P0's per-prop mark allowlist is not rewritten, softened or dropped.**
+
+**Dated records keep their wording.** The 24 August *Conflicts recorded rather than resolved* bullet
+("No module name was coined… the two gaps stay named and unowned") and the 31 August module-declarations
+table, whose row for 10 Ledger reads "the sort gap stays a gap", are **records of what those passes
+did** and are left as written; the closures are recorded here and struck in the live register
+(*Findings · Still open*, items 6, 9 and 10) rather than edited through history. **Every earlier patch
+block keeps its own date.**
+
+**One housekeeping note rather than a change.** This pass is dated **4 September 2026** so that it
+follows pass four's 3 September; the work list carries no date of its own.
 
 ### Confirmations
 

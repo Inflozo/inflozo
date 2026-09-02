@@ -1,9 +1,31 @@
 # A15 Video and Embeds — written specification
 
 15 designs · Paper pack · drawn 23 August 2026 · controls-reconciliation patch 24 August 2026 ·
-design patch pass 29 August 2026 · **design patch pass two 1 September 2026**
+design patch pass 29 August 2026 · design patch pass two 1 September 2026 ·
+**design patch pass five 3 September 2026**
 
-**Design patch pass two — 1 September 2026 (this document's current state).** One ruling landed on this
+**Design patch pass five — 3 September 2026 (this document's current state).** Two work-list items, and
+**neither changes a drawing.** **Image focus stops being this category's control to define and becomes a
+citation of P0·9** — *one control name means one set of values*. A15 wrote out its own copy of the values
+in the shared floor, in the shared field list and in the item-list block of every frame; **all of them now
+cite P0·9, which defines the control once and carries both axes**, and **the values are written nowhere in
+this category**. The horizontal axis therefore arrives by inheritance rather than by drawing: **no A15
+panel ever drew the control as rows** — it is per film, reached from the Image Picker popover — so no panel
+gained or lost a row, and **no design constrains the control**, so there is no constraint to state.
+**Ghost never sees it**: it is a hint the compiler resolves, which is why it is a control and not a data
+binding, and this document now says so. **The second item closes the category's oldest open flag:** the
+`tabs` module **emits its tab label as a heading only where the panel does not already carry one**, ruled
+3 September 2026 — one decision covering A13's Walkthrough and A15's **10 Playlist** and **15 Tabs** — so
+**the branch emits nothing in either design**, each stacked panel already carrying the film's own title, and
+**neither design's own title is dropped instead**, which would have changed the with-JavaScript state too.
+**Finding 4 is settled and struck through**, both no-JavaScript lines are rewritten, and the **ARCHITECT:
+`tabs` registry ruling** flag is resolved on both frames. **All sixteen frames were updated** — `A15-0` and
+`A15-1` … `A15-15`. **Two things are recorded as open rather than guessed at**, both in the pass-five
+**Patch notes**. **Nothing was renumbered, no design was deleted, no frame was redrawn, no control, value or
+field changed, no design total was written anywhere, and no measure, type size, colour pack or spacing step
+moved.**
+
+**Design patch pass two — 1 September 2026.** One ruling landed on this
 category and it deletes a promise rather than a drawing. **Nothing in A15 is ever fetched from YouTube,
 Vimeo or any other provider** — not by our server, not by the editor's browser, at any point — so
 **`title`, `description` and `poster` are required fields the customer fills in**, the panel asks for
@@ -194,8 +216,11 @@ Every design obeys these unless its own entry says otherwise.
   underline in 15; the action in 2 and 14. **None at all in 4 Contrast Band and 6 Cover** ⚑, where the
   ring takes the carried colour with a 1 px dark outline (A29·3's 4.0:1 finding).
 - **Imagery.** **A15 never dims, tints or filters a poster** ⚑ — not for dark mode, not on a band, not
-  behind a caption. The ground changes; the pictures do not. **Every poster carries Image focus —
-  Centre · Top · Bottom** ⚑, reached from the Image Picker popover and never a hidden field.
+  behind a caption. The ground changes; the pictures do not. **Every poster carries Image focus** ⚑ — **P0·9's shared control, whose values this
+  category cites rather than keeps a copy of: they are defined once, there, and carry both axes** ⚑
+  (3 September 2026) — reached from the Image Picker popover and never a hidden field. **No A15 design
+  offers fewer values than P0·9 defines**, so there is no constraint to state ⚑. **Ghost never sees it**:
+  it is a hint the compiler resolves, which is why it is a control and not a data binding ⚑.
 - **Print.** **Every design prints its poster, its title, its meta line and its URL** ⚑. **4 Contrast
   Band's band itself does not print** — its head, film, meta line and URL print on white (A17·7); **9 Carousel prints its slides stacked** in authored
   order; **15 Tabs prints every panel stacked with its label** ⚑.
@@ -309,7 +334,7 @@ its neighbours by number ⚑.
 | ↳ `url` | url | **req** | — | all fifteen | **A pasted URL** ⚑ — a provider embed, or a media file already hosted on the site's own Ghost; the provider is derived from the URL. **No upload** ⚑ |
 | ↳ `title` | text | **req** ⚑ | 70 ch | all fifteen | Names the anchor; **typed by the customer, never fetched from a provider** ⚑. Required asks, never blocks ⚑ |
 | ↳ `description` | text | **req** ⚑ | 160 ch | 1, 5, 13, 15 | **Required at the item**, drawn only in 13 and 15; stored everywhere ⚑. Required asks, never blocks ⚑ |
-| ↳ `poster` | image | **req** ⚑ | — | all fifteen | Carries **Image focus** (Centre · Top · Bottom) ⚑; **the customer's own image, never a provider thumbnail** ⚑. Required asks, never blocks ⚑ |
+| ↳ `poster` | image | **req** ⚑ | — | all fifteen | Carries **Image focus** — P0·9's control, both axes, cited not enumerated ⚑; a compiler hint, never a Ghost field ⚑; **the customer's own image, never a provider thumbnail** ⚑. Required asks, never blocks ⚑ |
 | ↳ `duration` | text | opt | 8 ch | all fifteen | **Typed by the author** ⚑. **Nothing reads it off a file and nothing is fetched from a provider** ⚑ |
 | ↳ `start` | text | opt | 8 ch | all fifteen | **New this pass** ⚑ — appended to the watch-page href and to the loaded player |
 | ↳ `transcriptUrl` | url | opt | — | all fifteen | Settlement 4 — a link, never a panel ⚑ |
@@ -447,11 +472,16 @@ count is the length of the authored list; `@site.title` is the only Ghost value.
    no module covers~~. **The ambient loop is deleted with the upload source**, so there is no behaviour
    left to gate and **the registry addition is withdrawn**. The number is kept rather than closed, so
    findings 4 and 5 are not renumbered. **Two registry gaps stand: findings 1 and 2.**
-4. **`tabs` puts headings in its no-JS branch** ⚑ (10 Playlist, 15 Tabs). The registry's degradation
+4. ~~**`tabs` puts headings in its no-JS branch** ⚑ (10 Playlist, 15 Tabs). The registry's degradation
    is "All panels render stacked and visible, each preceded by its tab label as a heading" — headings
-   neither design otherwise puts in the outline. **Settled once with A13's Walkthrough** and carried
+   neither design otherwise puts in the outline. Settled once with A13's Walkthrough and carried
    here rather than re-argued; both frames carry the **ARCHITECT: `tabs` registry ruling** flag until
-   the ruling lands.
+   the ruling lands.~~
+   **SETTLED BY THE OWNER, 3 SEPTEMBER 2026.** The module **emits its tab label as a heading only where
+   the panel does not already carry one.** Both designs' stacked panels carry the film's own title, so
+   **the branch emits nothing in either**, and **the design's own title is never dropped instead** —
+   dropping it would change the with-JavaScript state too. **One decision, three designs** — A13's
+   Walkthrough and these two. **The flag is resolved on both frames** ⚑.
 5. **Resolved: A4·10's `<button>` versus `<a href>` disagreement** ⚑. **The trigger compiles as the
    anchor** — an `<a href>` to the canonical watch page wrapping the poster — **and the module upgrades
    it in place**. This is the rule in all fifteen designs and in A4·10, which calls A15's theatre.
@@ -900,8 +930,9 @@ and counter are catalog strings.
    tab active on load, nothing remembered, nothing written while editing. **No-JS, quoted:** "All
    panels render stacked and visible, each preceded by its tab label as a heading." **A15 reads that
    as: every film renders stacked with its own poster, title and meta line** ⚑, in authored order.
-   **ARCHITECT: `tabs` registry ruling** ⚑ — the heading branch is headings this design does not
-   otherwise put in the outline; settled once with A13's Walkthrough and flagged on the frame.
+   **The module emits that heading only where the panel does not already carry one** ⚑ — ruled
+   3 September 2026 — and **this design's stacked panel carries the film's own title, so it emits none**;
+   **the design's own title is never dropped instead** ⚑. Finding 4, settled.
 10. **Accessibility.** Heading `h2`; `queueLabel` is an `h3` ⚑. The queue is a `<ul>` of `role="tab"`
     buttons with `aria-selected`, the player their one `role="tabpanel"`; **← and → move between rows,
     Home and End jump to the ends** ⚑. **The current row is marked by the hover surface and a bold
@@ -1129,8 +1160,11 @@ and counter are catalog strings.
    rather than fixed English. No description at Caption: Description → the line closes up ⚑.
 9. **Behaviour module.** `tabs` **and** `video-facade` ⚑. **tabs, edit-safe: yes** (A9·5's call).
    **No-JS, quoted:** "All panels render stacked and visible, each preceded by its tab label as a
-   heading." **Switching tabs destroys the loaded player** ⚑. **ARCHITECT: `tabs` registry ruling** ⚑ —
-   the heading branch, settled once with A13's Walkthrough and flagged on the frame.
+   heading" — **and the module emits that heading only where the panel does not already carry one** ⚑,
+   ruled 3 September 2026. **Each stacked panel here carries the film's own title and description, so
+   nothing is emitted**, and **the design's own title is never dropped instead** ⚑; every film renders
+   stacked with its own poster, title and meta line, in authored order. **Switching tabs destroys the
+   loaded player** ⚑. Finding 4, settled.
 10. **Accessibility.** Heading `h2`. The strip is `role="tablist"` with one `role="tab"` per film and the
     frame as the single `role="tabpanel"` ⚑; **← and → move between tabs, Home and End jump to the
     ends** ⚑, and **the tab is activated on arrow, not on focus alone** ⚑ — nothing loads because focus
@@ -1333,16 +1367,19 @@ upgrades it in place**, so with no script every design below navigates instead o
 | 7 | Grid | `video-facade` | Every cell renders and every cell navigates; **no cell is an unnamed link** — the "Film on {provider}" fallback is server-rendered. |
 | 8 | Lead and Grid | `video-facade` | The lead and the row render at their two sizes; each frame navigates. |
 | 9 | Carousel | `carousel` + `video-facade` | **The track is fully usable** — a native `scroll-snap` strip — with dots, arrows and counter hidden. Each slide's frame navigates. |
-| 10 | Playlist | `tabs` + `video-facade` | **Every film renders stacked** with its own poster, title and meta line, in authored order, each preceded by its label as a heading; each navigates. No current row, no swap. |
+| 10 | Playlist | `tabs` + `video-facade` | **Every film renders stacked** with its own poster, title and meta line, in authored order; each navigates. **No heading is emitted** — the panel carries the film's own title (ruled 3 September 2026). No current row, no swap. |
 | 11 | Chapters | `video-facade` | **The contents list works**: every timecoded row is an anchor carrying the provider's time parameter, so the reader lands at 5:03 on the provider's page. |
 | 12 | Embed Card | `video-facade` | The box, its label row, the notice above the frame and the open link all render as text; **the frame is a link to the embed's canonical page**, never an iframe. |
 | 13 | Thumb Rows | `video-facade` | Every row renders, rules included; **poster and title are one anchor**, so a row is one tab stop and one destination. |
 | 14 | Slim Bar | `video-facade` | The 88 px bar renders; **the whole bar is the anchor** and navigates to the watch page — or, on a first-party media URL, to the file. |
-| 15 | Tabs | `tabs` + `video-facade` | **Every film renders stacked**, each preceded by its tab label as a heading; each frame navigates. The strip never becomes a `<select>`. |
+| 15 | Tabs | `tabs` + `video-facade` | **Every film renders stacked** with its own poster, title and meta line; each frame navigates. **No heading is emitted** — the panel carries the film's own title (ruled 3 September 2026). The strip never becomes a `<select>`. |
 
-**The `tabs` registry ruling still stands open** on 10 Playlist and 15 Tabs: its degradation puts headings in the
+~~**The `tabs` registry ruling still stands open** on 10 Playlist and 15 Tabs: its degradation puts headings in the
 outline that neither design otherwise has. Settled once with A13's Walkthrough, flagged on both frames, and
-unchanged by this pass.
+unchanged by this pass.~~ **Ruled 3 September 2026:** the module **emits its tab label as a heading only where
+the panel does not already carry one**, so **it emits none in either design** — both panels carry the film's own
+title — and **neither design's own title is dropped instead**. The two rows above are rewritten and the flag is
+resolved on both frames.
 
 ### Confirmations
 
@@ -1538,3 +1575,129 @@ field list's three `req` rows, and on all sixteen frames. **Nothing in Open ques
   required shape, and names **1 Player** and **12 Embed Card** — both of which exist in this category's
   roster (numbers 1 and 12 of fifteen). It is the owner's own choice, confirmed on 29 August 2026, and
   **this pass did not change it**.
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **Two work-list items, and
+neither changes a drawing.** **Frames updated:** all sixteen — `A15-0` and `A15-1` … `A15-15`.
+**Nothing was renumbered, renamed, redrawn or deleted; no control was added or removed; no value, field,
+limit or count changed; no layout, type scale, colour pack or spacing step moved.**
+
+### What changed, and the rule that required it
+
+1. **Image focus stops being this category's control and becomes a citation of `P0·9`** — *one control
+   name means one set of values*. A15 held a private copy of the values in three places: the shared
+   floor's **Imagery** bullet, the shared field list's `poster` row, and the item-list block of all
+   sixteen frames (three sentences on each design frame, one on the proof). **Every one now cites P0·9 and
+   none restates the values.**
+2. **The horizontal axis arrives by inheritance, not by drawing** — *one control name means one set of
+   values*, owner-ruled 3 September 2026. P0·9 carries **both axes**; A15 says "both axes" and stops
+   there. **No A15 panel ever drew the control as rows** — it is per film, reached from the Image Picker
+   popover — so there was nothing to redraw and **no panel gained or lost a row**. The control has never
+   been in a design's control count, and the counts are unchanged: **the widest panel is still six**.
+3. **The compiler sentence is written once** — *one control name means one set of values*. The Imagery
+   bullet now says in as many words that **Ghost never sees Image focus: it is a hint the compiler
+   resolves, which is why it is a control and not a data binding.** It was implied before, in the field
+   list; it is now stated, and the proof frame's shared-field card says the same.
+4. **No constraint on Image focus was invented, and none was removed** — *a design may offer fewer
+   choices on a shared control and must say why*. **No A15 design offers fewer focus values than P0·9
+   defines**, and the shared floor now records that there is nothing to constrain. The one A15 case worth
+   naming — **6 Cover**, where the poster is the ground and the crop is the composition — still offers the
+   whole control, because that design crops more than any other, not less.
+5. **The `tabs` no-JavaScript lines of 10 Playlist and 15 Tabs are rewritten, and the category's oldest
+   open flag is closed** — *the module emits its heading only where the panel does not already carry one*,
+   ruled 3 September 2026. With JavaScript off the branch preceded every stacked panel with its tab label
+   as a heading, and each panel already carries the film's own title — the same words announced twice.
+   **The branch now emits nothing in either design**, and **the design's own title was never dropped
+   instead**, because that would have changed the with-JavaScript state too. **Finding 4 is struck** with
+   the ruling and its date, the **ARCHITECT: `tabs` registry ruling** flag is **resolved** on both frames,
+   and the two rows of **The no-JavaScript line, per design** are rewritten to match.
+6. **One decision, three designs.** The same ruling settles A13·11 Walkthrough and A15's 10 and 15;
+   this category carried the question rather than re-arguing it, and it is answered in the same words.
+7. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The pass's rules and facts, checked design by design
+
+| Rule or fact (by name) | Where it lands in A15 |
+|---|---|
+| **One control name means one set of values** | **Three private enumerations removed**, all replaced by a citation of P0·9; both axes inherited; the values are written nowhere in this category. |
+| **The module emits its heading only where the panel does not already carry one** | **Both no-JavaScript lines rewritten**, 10 Playlist and 15 Tabs; the branch emits nothing in either; neither design's own title is dropped. |
+| **A control switched off by another is greyed, with the reason beside it** | **Re-checked, unchanged.** Background role locked in 4, 5 and 6; two Aspect values disabled in 5; the Plays row locked in 6 and 11 — the reason in the row in every case. Image focus is greyed by nothing. |
+| **A control that could never do anything here is not drawn, and the panel says why** | **Checked, no subject.** P0·9's never-offered case is a design that places a picture at its own shape; **every A15 poster is cropped into a reserved `aspect-ratio` box**, so the control acts in all fifteen. |
+| **The roster, with [Free] marked** | **Unchanged and re-checked.** Fifteen rows, the five closed slots untouched; **[Free] designs: 1 Player · 12 Embed Card**, the owner's choice, confirmed 29 August 2026. |
+| **The control lists** | **Unchanged.** Five own controls on fourteen designs and four on 14 Slim Bar, six on 6 Cover, plus the universal trio and the Data group; 11 Chapters keeps two item blocks. |
+| **The data fields** | **One note changed, no field changed.** `poster` keeps its type, its required mark and its scope; its note now cites P0·9 and says the focus is a compiler hint, never a Ghost field. |
+| **The no-JavaScript line per design** | **Two rewritten, thirteen unchanged.** No A15 design declares a width its script runs below, so each line still describes one state. |
+| **The behaviour each design declares** | **Unchanged.** `video-facade` in all fifteen, `carousel` additionally in 9, `tabs` additionally in 10 and 15. **No module name was coined**, and the two registry-addition flags — 11 Chapters, 12 Embed Card — still stand. |
+| **Ghost's templates cannot count, add, or remember** | **Re-checked; one item recorded as open below.** Image focus is resolved by the compiler and never reaches a template. **10 Playlist's running total is a sum across the list**, which is the arithmetic this fact forbids a template — recorded, not edited. |
+| **CSS cannot see content** | **Re-checked, no subject.** Focus sets an object position; it measures nothing, and no line in this pass asks the stylesheet to read a caption's length. |
+| **Some fields we drew do not exist** | **Unchanged, and it is the reason focus is theme-side.** Ghost stores no focal point on an image, no duration a theme can read, and nothing A15 needs is fetched from a provider. |
+| **Inside a blog post's body we own the stylesheet and nothing else** | **Applies nowhere in A15** — these are placeable page sections whose markup, ARIA and words this project owns end to end, which is exactly why the `tabs` emission was ours to rule on. **A33 owns the video and embed cards inside `{{content}}`.** |
+| **Printed design totals** | **Nothing authored in this pass carries one.** No number of designs appears in any sentence written here or on any frame edited here. |
+
+### Open questions raised by this pass
+
+1. **Does a title that is not a heading element satisfy "the panel does not already carry one"?**
+   **OPEN FOR THE OWNER.** *What I would have needed to know:* whether the module's test is *the panel
+   already carries a heading element* or *the panel already renders that label itself*. **A15's film
+   titles are inside their anchors and never headings** — 13 Thumb Rows states the reason, that a heading
+   per film would put the strand into the outline twice — so on the strict element reading neither 10 nor
+   15 carries a heading in its panel, the emission returns, and the double announcement returns with it.
+   *What I did instead:* applied the ruling on its stated purpose, that the same words are not announced
+   twice, and rewrote both lines with **nothing emitted** and both designs' own titles untouched. If the
+   strict element reading is meant, two lines of this document and two frames go back. **This is the same
+   question A13 raised on its own Walkthrough, and A15 is an instance of it rather than a second
+   question.**
+2. **With no heading emitted, does 15 Tabs' tab strip itself render with JavaScript off?** **OPEN FOR THE
+   OWNER.** *What I would have needed to know:* whether the branch drops the strip entirely, as the
+   registry's wording has always implied, or renders it as a plain list above the stacked panels. *What I
+   did instead:* left the line describing **the stacked panels alone**, which is what every A15 pass has
+   said. One consequence is worth stating: **"Film {n}" is drawn in the tab and nowhere else**, so with no
+   script it is not drawn at all — nothing authored is lost, a film with no title showing its own URL by
+   10 Playlist's rule. **Also A13's question, and this is its second instance.**
+3. **10 Playlist's running total is arithmetic across the list.** **OPEN FOR THE OWNER.** *What I would
+   have needed to know:* whether the sum is computed **by the compiler at publish time** — which is how
+   Image focus is resolved, and would make it legal — or **by the template at render time**, which
+   *Ghost's templates cannot count, add, or remember* forbids. The durations are authored text, so a
+   provider is not the source either. *What I did instead:* left the queue's running total exactly as
+   drawn on `A15-10` and as written in this document, and recorded it here. Deleting a drawn line on an
+   inference is the expensive mistake; this pass's work list does not name it.
+
+### Left alone deliberately
+
+**Two things are maintained outside this environment and are untouched here.** **No design total was
+written, corrected or removed anywhere** — not in this document, not on any of the sixteen frames, and
+not in any sentence this pass authored; the count-agnostic marketing and app copy is the repository's, and
+**P0's per-prop mark allowlist** is not in this project's copy of that specification and has not been
+re-authored, paraphrased or referred to as though it were. A15 names its inline marks by pointing at the
+P0·1 toolbar, which is where the allowlist lives.
+
+**Three things inside A15 were left as found, and are recorded rather than edited.**
+
+- **Two lines on `A15-10 Playlist` still say the running total is "seeded from the provider on paste"
+  where the provider supplies one, and that it is "as right as the provider or the file".** Both predate
+  the design patch pass two of 1 September 2026, which withdrew every lookup: **nothing is fetched from a
+  provider at any point**, and the durations are typed. **The lines are stale rather than in dispute**, but
+  correcting panel copy no work-list item names is exactly the silent edit these passes ask me not to
+  make. **Flagged here for the next pass**, along with open question 3, which is about the same total.
+- **The per-design "New in this pass ⚑" and "Reconciled" labels were not re-dated.** Each names the pass
+  that added the thing it records, and rewriting fifteen historical labels would lose what they record.
+- **The earlier passes' "current state" headings are left as written**, including the 24 August
+  reconciliation paragraph, which still carries the phrase. Only this pass's paragraph and pass two's were
+  adjusted, so exactly one paragraph claims to be the document's current state.
+
+### The owner's rulings — 3 September 2026
+
+1. **Image focus is one shared control, defined once in P0·9, and it carries both axes** — *one control
+   name means one set of values*. Categories cite it and supply only the slot it sits under.
+2. **The `tabs` module emits its tab label as a heading only where the panel does not already carry one**,
+   and the design's own heading is never dropped instead. One decision, three designs.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, at the head of this document, and names **1 Player**
+   and **12 Embed Card** — both of which exist in this category's roster.

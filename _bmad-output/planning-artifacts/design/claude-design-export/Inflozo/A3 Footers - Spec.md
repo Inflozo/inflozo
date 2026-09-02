@@ -67,7 +67,7 @@ These apply to all 16 designs and are not repeated per design.
 
 **Member awareness.** A3·4 is the category's one CTA-bearing design, and its richer member-state model (**Signed-in members**, §4) subsumes the standard Member Visibility control per the reconciliation ground rules; no other A3 design carries a CTA, so none carries Member Visibility. Member checks compile server-side; nothing flashes.
 
-**Image focus.** Every image field carries an Image focus (Centre · Top · Bottom) reachable from the Image Picker popover — in A3 that is A3·14's footer image, including its site-cover binding. Post feature images are Ghost's own and take no focus control here.
+**Image focus.** A3 has one image field — A3·14's footer image, including its site-cover binding — and it carries an Image focus reachable from the Image Picker popover, never a hidden field. **The control and its values are P0·9's**, defined there once for the whole library and deliberately not restated here: both axes, their defaults, the one-control-per-slot rule and the rule for narrowing an axis all live in that section. Until this pass this specification wrote out its own copy of the up-and-down values, which is the failure the owner ruled on as *one control name means one set of values*; the enumeration is gone and the reference stands in its place, so the side-to-side axis added by the owner's ruling of 3 September 2026 is in force here by reference rather than by restatement. **Ghost never sees it** — it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding, and why nothing about it declares a behaviour module and nothing about it is lost with JavaScript off. **One constraint, kept as found and stated as a constraint:** post feature images (A3·9's post rows) are Ghost's own and take no focus control here, the reason being that the image is Ghost's. Whether that reason survives P0·9 — whose test is whether the design crops, not who supplied the image — is open for the owner in the pass-five Patch notes.
 
 **Button icons.** Any button accepts an optional icon before or after the label from the Icon Picker, per P0·2's button-icon rules — always Small, label-coloured, Size and Colour rows hidden. In A3: A3·4's subscribe button and A3·16's Back to top.
 
@@ -757,7 +757,7 @@ One full-bleed photograph closing the page, with the site's name over it and the
 - **Zero.** No links → the band and the legal line, with the lockup below the band at 26 px. **No image** → the band becomes a flat contrast panel at the same height, no scrim, carried text as A3·5, so the composition holds; in the editor, the striped placeholder and “Drop a footer image here”.
 - **Inside an item.** Label and URL. `image` and `imageAlt` are section fields: alt may be left empty, and the editor says plainly that a footer photograph usually carries no information — the words over it are what it is for.
 
-**Content fields.** `imageSource` (Uploaded · Site cover, default Site cover) · `image` (opt, 2400 px wide or more, cover, focus from the Image Picker popover) · `imageAlt` (opt, default empty) · `wordmark` · `mark` (used only when Overlay is Nothing) · `tagline` · `linkColumns[]` · `social[]` · `copyright` · `legalLinks[]` · `showAttribution`.
+**Content fields.** `imageSource` (Uploaded · Site cover, default Site cover) · `image` (opt, 2400 px wide or more, cover, Image focus from the Image Picker popover — P0·9) · `imageAlt` (opt, default empty) · `wordmark` · `mark` (used only when Overlay is Nothing) · `tagline` · `linkColumns[]` · `social[]` · `copyright` · `legalLinks[]` · `showAttribution`.
 
 **Controls.**
 
@@ -771,7 +771,7 @@ One full-bleed photograph closing the page, with the site's name over it and the
 | Social | Glyphs · Short labels · Off |
 | Icon style | Bare · Outlined box · Filled box |
 
-Universal: Vertical spacing; Top divider None — the photograph is the edge; **Background role is locked with the reason shown** — the image ground is this design's identity. **Image source defaults to `@site.cover_image`**, so the band works before any upload; Uploaded takes the section's own image. **Image focus (Centre · Top · Bottom) sits in the Image Picker popover** — never a hidden field — and applies to whichever source is active.
+Universal: Vertical spacing; Top divider None — the photograph is the edge; **Background role is locked with the reason shown** — the image ground is this design's identity. **Image source defaults to `@site.cover_image`**, so the band works before any upload; Uploaded takes the section's own image. **Image focus sits in the Image Picker popover** — never a hidden field — and applies to whichever source is active, Uploaded or the site cover. **The control and its values are P0·9's and are not restated here**; both axes are offered in full and neither is narrowed, because the band crops on both — a fixed pixel height crops a photograph's top and bottom, and a widening viewport over the same height crops its sides.
 
 Height is in pixels, not an aspect ratio, so the band is the same depth on a 1440 page and a 1920 one and the crop widens instead. Wordmark 34 px at 1440, 30 at 834, 26 at ≤ 767. Text sits on the page's own margin at Bottom left.
 
@@ -1219,3 +1219,74 @@ Frames updated: **`A3-0 Category Proof`** (a pass-three patch block recording th
 
 - **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** — sixteen designs, no number added, removed, reused or moved.
 - **The "**[Free] designs:**" line is present**, on its own line at the head of this document, in the required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this category's roster.
+
+---
+
+## Patch notes — design patch pass five, 3 September 2026
+
+One work-list item, and it is a deletion rather than an addition: this category stops writing out Image
+focus's values and cites the shared definition instead. **This document carries no pass-four section —
+pass four did not reach A3**, which is why the private copy of the values was still here to remove.
+**Frames updated: `A3-14 Image Band`** (two sentences in its control panel). **No other frame changed** —
+all seventeen A3 files were read for the enumeration and only that one carried it. Nothing was
+renumbered, no control changed its name or its values, no ground, type size, spacing value,
+data binding or accessibility note was touched, and no roster row moved. Every change carries the
+**name** of the rule that required it.
+
+| Rule (by name) | Change |
+|---|---|
+| One control name means one set of values | **§0's Image focus paragraph no longer enumerates the values.** It names the control, names the one slot it sits under in A3 — A3·14's footer image, including its site-cover binding — and cites **P0·9** for what the control is and what it offers. The old text carried the up-and-down values only, so the side-to-side axis added by the owner's ruling of 3 September 2026 is now in force here by reference rather than by a private restatement. |
+| One control name means one set of values | **§14's control prose no longer enumerates them either**, and neither does A3·14's panel: the frame's Image source note and its Footer image field both point at P0·9 instead of listing values. Those two sentences are the only frame text in the category that named them. |
+| One control name means one set of values | **"Ghost never sees this" is written in, once** — in §0, beside the reference, and echoed in one clause on the frame. Focus is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding. Neither §0 nor §14 said it before. It follows that no A3 design declares a module for it and nothing about it is lost with JavaScript off. |
+| A design may offer fewer choices on a shared control and must say why | **A3·14 narrows nothing, and §14 now says so with the reason.** The band crops on both axes — a fixed pixel height crops top and bottom, and a widening viewport over that height crops the sides — so both axes are offered in full. |
+| A design may offer fewer choices on a shared control and must say why | **A3's one existing constraint is kept and stated as a constraint:** A3·9's post feature images take no focus control here, the reason being that the image is Ghost's. Kept as found, not re-reasoned — see the open items. |
+| A control that could never do anything here is not drawn, and the panel says why | **Checked, no subject.** P0·9's could-never case is a design that places a photograph at its own shape. A3·14 is the category's only photograph and it crops — `cover` into a band of 160, 220 or 300 px — so no never-offered note was written and none was removed. No A3 design places an image at its own shape. |
+| A control switched off by another is greyed, with the reason beside it | **No new subject.** Focus is switched off by nothing in A3: it applies at both Image source values, and at no image at all the band falls back to the flat contrast panel, where the field itself is absent rather than greyed. A3's existing greyed and locked controls are untouched. |
+| A design may declare the width below which its script runs | **Unchanged.** Focus declares no module and no width; A3·14's declaration stays "collapses into sections under 768, at Links: Columns", and the other fifteen designs are as found. |
+| A count that picks between drawn layouts is a named set, not a number picker | **Checked, no change.** Focus is a named set on both axes by P0·9's definition, and nothing in A3 became a number picker or stopped being one. |
+| Printed design totals stay out of product copy | **Honoured, and nothing written.** No design total — old, corrected or computed — appears in the new text or anywhere this pass touched. The sixteen this document counts are its own roster, which is a design-library artefact and not product copy; that judgement is unchanged, not re-opened. |
+| The marketing and app screens print no design total | **Not this category's, and not touched.** A3 holds no marketing or app screen. |
+| P0's per-prop mark allowlist | **Not touched.** It is not in this project's copy, and this pass opened P0 only to read P0·9's definition. |
+
+**Left alone, and why — recorded rather than edited.**
+
+- **The roster, the control lists, the data fields, the no-JavaScript lines and the declared behaviour
+  modules are unchanged.** Image focus sits outside every per-design control list by §0's own structure —
+  it is reached from the Image Picker popover, not from a sidebar row — reads and writes no Ghost field,
+  and declares no module, so this work list had nothing to move in those four places. Checked design by
+  design rather than assumed, and the sixteen-row no-JavaScript table is as found.
+- **No panel row was drawn for the control.** The work list's "if a design's panel draws the control,
+  draw both axes" has nothing in this category to act on: A3·14's panel describes where the control lives
+  and does not draw it, as every A3 panel does for popover-reached controls. Adding a row nobody asked for
+  would be the redesign the preamble forbids; the two sentences that named the values were corrected
+  instead.
+- **`A3-0 Category Proof` was read and needed nothing.** Its shared field list and its four settlement
+  cards never named Image focus or its values, so there was no enumeration there to replace.
+- **The four earlier findings and `nav-transform` stand exactly as written.** Nothing in this work list
+  touches them.
+
+**Open items.**
+
+- **OPEN FOR THE OWNER — is "the image is Ghost's" a reason to withhold Image focus?** What I would have
+  needed to know: whether focus follows the slot regardless of who supplied the image, since P0·9's test
+  is whether the design crops and says nothing about the image's source. It matters here because A3·9's
+  post rows do crop — a 3:2 thumbnail on the measure, 72 × 54 at ≤ 767 — so under P0·9's test as written
+  the control would be offered there. **The library already answers this two ways:** A1 withholds focus
+  from post feature images on the same "the image is Ghost's" grounds, while A2·12 offers it on a bound
+  post image (Content source: From a post). What I did instead: left A3's constraint exactly as found,
+  stated it as a constraint with its reason, and recorded the divergence here. Withdrawing or extending a
+  control on an inference is the expensive mistake.
+- **OPEN FOR THE OWNER — is the site logo an image field for this purpose?** What I would have needed to
+  know: whether a logo height-capped and scaled to fit a lockup counts as a design that crops, or as one
+  that places the image at its own shape — P0·9's could-never case. A3 draws the site logo in every design
+  and §0 has never treated it as a focus-bearing image field. What I did instead: left it as found, wrote
+  no never-offered note, and recorded the question. A1 raised the same one against its three logo slots,
+  so this is likely already answered somewhere.
+
+**Confirmations.**
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16** —
+  sixteen designs, no number added, removed, reused or moved.
+- **The "**[Free] designs:**" line is present**, on its own line at the head of this document, in the
+  required shape, and names **1 Minimal Line** and **16 Mini Bar** — both of which exist in this
+  category's roster and as frames (`A3-1 Minimal Line.dc.html`, `A3-16 Mini Bar.dc.html`).

@@ -3,7 +3,8 @@
 15 designs · Paper pack · drawn 23 August 2026 · **controls-reconciliation pass, 25 August 2026** ·
 **design patch pass, 30 August 2026** ·
 **design patch pass two, 1 September 2026** ·
-**design patch pass four, 3 September 2026**
+**design patch pass four, 3 September 2026** ·
+**design patch pass five, 3 September 2026**
 
 **[Free] designs:** 1 Author Bio · 6 Slim
 
@@ -24,6 +25,8 @@ that was written down. Every invented decision is marked ⚑ here and on the fra
 **Design patch pass two, 1 September 2026.** The category was re-read against **five further rules** and against **two things learned by testing real Ghost servers on 31 August 2026**. The rules, by name: **a control switched off by another is greyed, with the reason beside it**; **avatars with no photograph show initials, and the two forms are not interchangeable**; **the remove button never greys out**; **a count that picks between drawn layouts is a named set, not a number picker**; **a design may declare the width below which its script runs**. The findings: **the feature-image caption renders differently on the two Ghost versions**, and **a comment count renders nothing at all without JavaScript**. This category's own work list first settled the share block one way and **the owner reversed it the same day**; the ruling that stands is **native Ghost Share only** — **one trigger opening Ghost's own share panel, which owns its destinations and their order; Copy link and Email as the fallback where the app reports an older Ghost; the 2-to-4 stepper cut; the site setting reduced to two switches; and no brand glyph in any share block** ⚑. The caption finding was carried into 14 Ledger. **Every change is listed with the rule NAME that required it in Patch notes — pass two at the end of this document.** **No frame was redesigned, no design renumbered, no control's values changed, and no printed design total exists anywhere in this category to reintroduce.** Two things edited in the repository rather than here are left exactly as they stand: **the removal of every printed design total from the marketing and app screens**, and **P0's per-prop mark allowlist, including the word "absent"**.
 
 **Design patch pass four, 3 September 2026.** **Two rulings and five answers, carried in.** The rulings: **the all-tags link is authored, not assumed** — 8 Tag Row's archive row is **a Text Field for the label plus a Link Picker for the destination**, **the destination has no default, and the row does not render until one is set** — and **an author's post count may be shown, and a design may turn it off**, which leaves 10 Big Type's **Post count · Show · Hide** exactly as it was drawn and closes the question behind it. The five answers that already existed and are now written in rather than asked again: **every pack value is marked COMPUTED or AUTHORED, and on-contrast text, accent-on-contrast, dark elevation, dark hover-surface and tabular figures are all COMPUTED**; **which section is the main feed is stored in the project file, not worked out by a design**; **a control's dependency is declared in the control's own definition and carries its reason**; **hand-picked posts keep the order the user dragged them**; and **a design may declare more than one behaviour module, the compiler emitting the union**. **Three of the five have no subject in A26** and are recorded as having none rather than left blank. **The five rules restated for this pass are pass two's five**, re-tested here: the only new subject is **8 Tag Row's Archive link, greyed while its destination is empty, with the reason beside it**. **Every change is listed with the rule NAME in Patch notes — pass four at the end of this document.** **No frame was redesigned, no design renumbered, no control's values changed, and no printed design total exists anywhere in this category to reintroduce.**
+
+**Design patch pass five, 3 September 2026.** **One work item, and it is a naming change.** **Image focus is one shared control, defined once in `P0 · Editor primitives` as P0·9, and it carries both axes** — the side-to-side half being the owner's ruling of 3 September 2026, which this category did not have. Until now two dozen category specs each enumerated their own copy of the control's values, which is the rule *one control name means one set of values* in its worst form in the library. **Wherever this document enumerated the focus values it now cites P0·9 instead, and it does not restate them.** **Ghost never sees a focus:** it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding, and why it declares no behaviour module. **A26 draws the control nowhere**, before this pass and after it — the category authors no image — **so nothing drawn changed on any of the sixteen frames, no control was added or removed, no default moved and no value changed.** **Two things this pass would have had to invent are recorded as open questions instead**: whether 7 Next and Prev and 11 Portrait, which both crop a Ghost-owned photograph, should now draw the control, and whether an avatar's circular crop is a subject for it. **Every change is listed with the rule NAME in Patch notes — pass five at the end of this document.** **No printed design total exists anywhere in this category to reintroduce, and none was written.**
 
 **Controls-reconciliation pass.** The whole category was audited, design by design, against the PRD's
 control vocabulary and Ghost's verified data surface, thinking like an end user editing their own
@@ -205,10 +208,14 @@ Every design obeys these unless its own entry says otherwise.
   page the destination pair is absent**, which is the category's absent-block rule and needs no new
   mechanism. 7 Next and Prev therefore does not render on a page; 8 Tag Row and 12 Subscribe do.
 - **Where an image field would carry a focus, there is no image field.** Rule 10 asks every image
-  field for **Image focus (Centre · Top · Bottom)** from the Image Picker; **A26 authors no image**
-  ⚑. 7's tile pictures are Ghost's `feature_image` and 11's portrait is Ghost's `profile_image` —
-  **both crop from the centre and neither offers a focus**, which is finding 7 and is stated on both
-  panels rather than left implicit.
+  field for **Image focus**, which is **one shared control defined once in P0·9, carrying both axes**;
+  **this document does not restate its values.** **A26 authors no image** ⚑. 7's tile pictures are
+  Ghost's `feature_image` and 11's portrait is Ghost's `profile_image` — **both crop from the centre
+  and neither offers a focus**, which is finding 7 and is stated on both panels rather than left
+  implicit. **Ghost never sees a focus in any case**: it is a hint the compiler resolves into the crop
+  the theme ships with, which is why it is a control and not a data binding, and why it declares no
+  behaviour module. **Whether the two Ghost-owned pictures should now draw it, and whether an avatar's
+  circular crop is a subject for it, are OPEN FOR THE OWNER** — Patch notes, pass five.
 - **Refused category-wide, each with a reason:** a comment count (A28) — **and the refusal has a second reason after this pass: Ghost writes the number in with a script and prepends it to the theme's own word, so without JavaScript the element is never created at all** ⚑, not a zero and not a dash, and the only catalog string that could ship would be the bare noun with no number and no placeholder — a related-posts grid (A27), a
   members-only badge (A32), a back-to-top link ⚑ (a browser affordance), a licence line, a word
   count. **The author's-social-links refusal is withdrawn** — see the floor's socials rule.
@@ -709,9 +716,11 @@ post has been updated at all** ⚑.
   | Vertical spacing (universal) | Compact · Comfortable · Spacious |
   | Top divider (universal) | None · Line · Fade |
 
-  Six, plus the universal trio. **Cut:** a scrim value, a crop ratio, a side swap, a heading, an
-  Image focus — **the tile picture is Ghost's `feature_image`, not an authored image field, so
-  there is no Image Picker here and the tile crops from the centre** ⚑.
+  Six, plus the universal trio. **Cut:** a scrim value, a crop ratio, a side swap, a heading, and
+  **Image focus, the shared control defined in P0·9** — **the tile picture is Ghost's `feature_image`,
+  not an authored image field, so there is no Image Picker here and the tile crops from the centre**
+  ⚑. **The values are P0·9's and are not restated here**, and whether this design should now draw the
+  control is an open question of pass five rather than a decision taken in it.
 - **7 · Data.** 2 → the pair; **1 → one tile at the full width keeping its kicker and alignment** ⚑;
   **0 → nothing renders** ⚑ — **the footer is absent, never replaced by another design**. **Within scopes with Ghost's own
   `in="primary_tag"` / `in="primary_author"`** ⚑, and at either value a post with no scoped neighbour
@@ -733,8 +742,9 @@ post has been updated at all** ⚑.
   **the design's whole value on a multi-topic site**. **The two kickers stop being fixed English and
   become authored fields with defaults**, editable inline; at Words and arrows the arrow joins the
   authored word rather than replacing it. **The page-target rule is stated on the panel and drawn as a
-  state**: on a page the pair is absent. **Image focus is not offered and the reason is shown** ⚑.
-  **Five controls became six.**
+  state**: on a page the pair is absent. **Image focus is not offered and the reason is shown** ⚑ — and
+  after pass five the panel **names P0·9 as the one definition of that control** rather than listing
+  its values. **Five controls became six.**
 - **Flagged ⚑** — full bleed with no radius or gap; the warm scrim at 76/12 and 86/20; `#FFFFFF`
   rather than the text token on the scrim; the mirror and its end at 390; 220 forced at 834; Tile
   height disabled at two of three media values; Within's three values; the authored kickers; the
@@ -955,9 +965,11 @@ post has been updated at all** ⚑.
   | Top divider (universal) | None · Line · Fade |
 
   Six, plus the universal trio, whose **Line spans both columns** ⚑. **Cut:** a crop, a radius,
-  a circular value, a caption, **and an Image focus** — **the portrait is Ghost's `profile_image`,
-  not an authored image field: Ghost stores one image and no focal point, so the crop is from the
-  centre** ⚑, which is finding 7.
+  a circular value, a caption, **and Image focus, the shared control defined in P0·9** — **the
+  portrait is Ghost's `profile_image`, not an authored image field: Ghost stores one image and no
+  focal point, so the crop is from the centre** ⚑, which is finding 7. **The values are P0·9's and
+  are not restated here**, and whether a 4:5 crop of a Ghost-owned portrait should now draw the
+  control is an open question of pass five rather than a decision taken in it.
 - **7 · Data.** Authors 1 → as drawn; **2 → two half-width portraits with three-line bios** ⚑; **3+ → the primary author alone, drawn exactly as at one author** ⚑ — **the owner's ruling of 30 August 2026**. `{{#primary_author}}` is Ghost's own helper for the singular first author and carries `name`, `bio`, `profile_image` and `url`, so the design needs **no loop and no arithmetic**; **the co-authors are named in one muted 13 px line under the name** — "with Daniel Reith and others", **no number**. **The split, the portrait size and the ratio are unchanged, so the design renders as itself at every author count.** **The cost, stated:** at three or more only one writer gets a photograph and a bio, and the designs that credit everyone equally are 1 Author Bio and 14 Ledger. **No photograph → the one-letter plate at the portrait crop** ⚑. **No
   bio → the portrait keeps its height** ⚑ and the row is a picture beside two lines. Socials 0 → no
   row, and the portrait's height is unchanged ⚑.
@@ -972,7 +984,7 @@ post has been updated at all** ⚑.
   120 px**; the socials row does not ⚑.
 - **Repeating items.** Four, all Ghost's; **no per-author portrait or bio length** ⚑.
 - **Reconciled.** **Author socials joins the list**, drawn under the bio in the words column, brand
-  icons from P0·2, version-gated and absent at zero handles. **Image focus is not offered and the panel says why** ⚑ — Ghost stores one profile image and no focal point, so **finding 7 stands and a crop-from-top default remains the platform's call**. **Patched 30 August:** the hand-off at three or more authors is deleted and **the design draws `primary_author` alone**, the owner's ruling, with the co-authors as one muted line. The destinations become **Ghost's own share panel's**, with **two fallback switches in the site setting and no brand glyph anywhere**. **Six controls became seven**, the trio outside the list with
+  icons from P0·2, version-gated and absent at zero handles. **Image focus is not offered and the panel says why** ⚑ — Ghost stores one profile image and no focal point, so **finding 7 stands and a crop-from-top default remains the platform's call**; after pass five the panel **names P0·9 as the one definition of that control** rather than listing its values. **Patched 30 August:** the hand-off at three or more authors is deleted and **the design draws `primary_author` alone**, the owner's ruling, with the co-authors as one muted line. The destinations become **Ghost's own share panel's**, with **two fallback switches in the site setting and no brand glyph anywhere**. **Six controls became seven**, the trio outside the list with
   **Line spanning both columns**, and the three labels edit inline while the name, bio and alt stay
   Ghost's.
 - **Flagged ⚑** — the portrait at picture scale; the centre crop and absent Image focus (**finding
@@ -1318,7 +1330,13 @@ Every reusable component this category established or reused, cumulative.
    and 7 Next and Prev crops the feature image the same way; **neither can offer the Image focus the
    control vocabulary asks for**, because neither picture is an authored image field. **A crop-from-top
    default would serve most portraits better**, and it is a platform-level choice the section cannot
-   make alone.
+   make alone. **Reopened by pass five, on one word of P0·9.** Image focus is now defined once, in
+   P0·9, and that definition says the choice is **a hint the compiler resolves and Ghost never sees**
+   — so **whether Ghost stores a focal point has no bearing on whether the control can be offered**,
+   and this finding's stated reason for the absence no longer holds on its own. P0·9's own ground for
+   not drawing the control is a design that **crops nothing**, and both of these crop. **The absence
+   is left exactly as drawn and the question is put to the owner** in Patch notes, pass five, rather
+   than settled here: adding a control to two designs is not a naming change.
 8. **`updated_at` is not a revision.** Ghost stamps it on every save, including a typo fix. **This
    pass cut the authored `revisionNote`, so the Updated row and the Updated line now rest on one
    invented threshold instead of two** — a gap of more than a day. Either Ghost needs a real revision
@@ -1433,7 +1451,8 @@ nothing in this pass changes what the footer looks like at rest in three packs.
   in every panel that repeats the phrase.
 - **Image focus lands nowhere in A26**, and rule 10 is satisfied by absence: **the category authors no
   image**. 7's tile picture and 11's portrait are Ghost's, crop from the centre, and say so on their
-  panels — finding 7.
+  panels — finding 7. **Since pass five the control has one definition, P0·9, carrying both axes**, and
+  every place this category named it cites that section instead of listing values.
 - **P0·3 lands in no A26 panel** — the only list a user orders is the Share-destinations *site
   setting*, where P0·3's controls live. **P0·5 lands nowhere** at all: the footer reads the post's own
   relations, never a query.
@@ -1750,6 +1769,94 @@ already has no default and does not render without a target**, so it needs nothi
 still says the product should decide the route and that its field should then default to it** — that
 sentence is now wrong, and **A20's spec is not this category's to edit.** Named rather than quietly
 left.
+
+### Confirmations
+
+- **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+  fifteen designs, no gap created or closed, no number reused, nothing renumbered, nothing deleted.
+- **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+  names **1 Author Bio** and **6 Slim** — both of which exist in this category's roster, where they are
+  badged **[Free]**.
+- **No printed design total was reintroduced** anywhere in this pass.
+
+---
+
+## Patch notes — design patch pass five, 3 September 2026
+
+Every change below carries the **name** of the rule or the ruling that required it. Rules are named,
+never numbered. Where a ruling could not be applied without inventing a decision, it is written here
+as an **OPEN QUESTION** rather than guessed.
+
+**Frames changed — all sixteen:** `A26-0 Category Proof` and `A26-1` … `A26-15`. Every frame gains a
+dated **pass five** panel saying what changed on it and which rule required it. **Not one frame
+changed in its drawn content.** `A26-0`'s rule-10 line, `A26-7`'s editing and Reconciled notes and
+`A26-11`'s portrait, panel and Reconciled notes are rewritten to cite P0·9 instead of naming values.
+**No control was added or removed anywhere, no default moved, no value changed, and no picture,
+measure, type step, colour pack or spacing step was touched.**
+
+### This category's work list
+
+| What changed | Why, and where |
+|---|---|
+| **Image focus points at P0·9 instead of listing its values.** The control is **defined once, in P0·9, and it carries both axes** — the side-to-side half by the owner's ruling of 3 September 2026, which this category did not have. **Every place this document enumerated the values now cites P0·9 and supplies only the slot**: the floor's image bullet, 7 Next and Prev's controls table and Reconciled paragraph, 11 Portrait's controls table and Reconciled paragraph, finding 7, and the reconciliation note. **The values are not restated anywhere in A26.** **Ghost never sees the choice** — it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding — and this is now said once, in the floor's image bullet, because the category had not said it. **The control declares no behaviour module**, so **no design's no-JavaScript line changed** and **no design's declared behaviour changed**: `share` on 1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 14, 15; `member-form` on 3, 5, 12, 15; 7 and 8 declare none. | *(One control name means one set of values.)* |
+| **Where the control is not drawn, the reason is the one written on the panel and nothing was added to it.** A26 draws Image focus **nowhere**, and the two designs that crop a photograph — **7 Next and Prev** (Ghost's `feature_image`, centre crop) and **11 Portrait** (Ghost's `profile_image`, 4:5, centre crop) — **already carried a drawn reason**, which is what P0·0's test asks for. **Both were left exactly as drawn** and both notes now name P0·9. **Whether either should now draw the control is an OPEN QUESTION below**, because P0·9's ground for never offering it is a design that crops nothing, and these crop. | *(A control that could never do anything here is not drawn, and the panel says why.* Also *one control name means one set of values.)* |
+| **No constraint was invented, and none was removed.** P0·9 allows a category to narrow an axis with the reason at the control, the switched-off values greying in P0·0's treatment. **A26 narrows nothing**, because it draws the control nowhere; **no axis was narrowed, renamed, extended, turned into a percentage or turned into a draggable focal point.** Recorded so the silence is not read as an omission. | *(One control name means one set of values.)* |
+
+### The rest of the output list, checked rather than assumed
+
+| Asked for | State after this pass |
+|---|---|
+| **The roster, with [Free] marked** | **Unchanged.** Fifteen designs, 1 to 15, and **[Free] designs: 1 Author Bio · 6 Slim** at the head of this document and badged on `A26-0`'s roster. Nothing was added, renamed or reordered. |
+| **The control lists** | **No list changed.** The counts still run four to seven — four on 6 and 9; five on 2, 8, 13 and 14; six on 7, 11, 12 and 15; seven on 1, 3, 4, 5 and 10. Image focus was never a row in any of them and is not one now. |
+| **The data fields** | **Unchanged.** Image focus reads and writes no Ghost field: it is a compiler hint, which P0·9 says in those words and the floor's image bullet now repeats once. |
+| **The no-JavaScript line per design** | **Unchanged on all fifteen.** The control declares no module, so there is nothing to run and nothing to fail with JavaScript off. |
+| **The behaviour each design declares** | **Unchanged on all fifteen**, listed in the work list above. `share` and `member-form` remain the category's two, and **no ARCHITECT: registry addition** appears anywhere. |
+| **The component inventory** | **No row added.** The inventory lists what this category established or reused, and **A26 uses Image focus nowhere**; a row for a control the category never draws would say something untrue. P0's own inventory carries it. Recorded rather than left silent. |
+
+### Left alone deliberately
+
+- **The absence of Image focus on 7 and 11.** The work list asked for a naming change. Adding a control
+  to two designs is not one, and the reason each panel gives is drawn, dated and the owner's to revise.
+  See the open questions.
+- **The avatars.** Every avatar in A26 is Ghost's `profile_image` cropped to a circle at 24, 40 or
+  56 px, on 1, 2, 3, 4, 5, 10, 11, 13, 14 and 15 — **a crop, and no focus is drawn on any of them.**
+  Left as found; the question is below rather than answered by adding ten controls.
+- **Finding 7's text is extended, not rewritten.** The platform fact it records is still true; what pass
+  five adds is that the fact no longer explains the absence on its own.
+- **No printed design total exists anywhere in A26** — not in this document, not on any of the sixteen
+  frames — so there was nothing to remove and **nothing was added**. Where this pass wrote about the
+  scale of the problem it wrote count-agnostically: "two dozen category specs" counts specs that
+  duplicated a control, not designs in the library.
+- **P0's per-prop mark allowlist is untouched**, a sixth time. This pass did not open that document to
+  edit it, and the allowlist is not in this project's copy.
+- **The marketing and app screens were not opened.** They are maintained in the repository and this pass
+  authored no product copy of any kind.
+- **P0·9 itself was not edited.** It is another category's specification; this one cites it.
+
+### Open questions
+
+**OPEN QUESTION · OPEN FOR THE OWNER · Should 7 Next and Prev and 11 Portrait now draw P0·9's Image
+focus?** **What I would have needed to know:** whether Image focus is offered on a photograph the
+design crops but does not own. **Why it is open:** P0·9 says the control belongs wherever a design
+crops a photograph into a frame of its own shape, and both of these do — a 16:9 or 200/260/320 px tile
+and a 4:5 portrait. The reason both panels give for the absence is that the picture is Ghost's rather
+than an authored field, and that Ghost stores no focal point — but P0·9 also says **the choice is a
+hint the compiler resolves and Ghost never sees**, so what Ghost stores has no bearing on it. P0·9's
+own ground for never offering the control is a design that **crops nothing**, which is not this case;
+if A26 is a third member of that category, P0·9 directs it to the owner rather than drawing it. **What
+I did instead:** applied the naming change, and **left both absences and both drawn reasons exactly as
+found** — nothing added, nothing removed. **One part of the same question, if the answer is yes:** 7
+draws two tiles from Ghost's two neighbour helpers, and P0·9 draws **one control per image slot**, so
+it is not clear whether one row would govern both tiles or whether the design has one slot or two.
+
+**OPEN QUESTION · OPEN FOR THE OWNER · Is an avatar's circular crop a subject for Image focus?** **What
+I would have needed to know:** whether a 24, 40 or 56 px circle counts as "a photograph cropped into a
+frame of its own shape", or whether there is a size below which focus is not worth a control. **Why it
+is open:** ten A26 designs crop Ghost's `profile_image` to a circle, so on the letter of P0·9 each
+would draw a focus control; at 24 px the choice is close to invisible, and ten new rows across the
+category is not a naming change. **What I did instead:** left every avatar as found, with no focus
+control anywhere, and recorded the question. **It is not this category's alone** — A1 owns the avatar
+and its one-letter fallback, and every category that reuses it inherits the same question.
 
 ### Confirmations
 

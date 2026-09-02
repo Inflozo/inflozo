@@ -35,8 +35,14 @@ SWEEP = dp4.image_focus_sweep()          # derived, never typed
 # first built had NO home for R-60, R-61 or R-62, and left four categories with outstanding work out
 # of the pass entirely. A sixth pass would have been certain.
 EXTRA_ONLY = ['P0', 'A13', 'A17', 'A18', 'A33']
-ORDER = sorted(set(SWEEP) | set(EXTRA_ONLY),
-               key=lambda c: int(c[1:]) if c[1:].isdigit() else 0)
+# ORDER is the sweep PLUS every category carrying extra work. It was briefly `SWEEP | EXTRA_ONLY`,
+# which broke the moment the sweep finished: SWEEP emptied, ORDER lost the categories that were in
+# the pass for a ruling rather than for the sweep, and the generator tripped its own assert. A page
+# whose work is finished should still regenerate — the git history is the record of what was sent,
+# not the working file.
+_EXTRA_KEYS = ['P0', 'A4', 'A5', 'A6', 'A12', 'A13', 'A14', 'A15', 'A17', 'A18', 'A33']
+ORDER = sorted(set(SWEEP) | set(EXTRA_ONLY) | set(_EXTRA_KEYS),
+               key=lambda c: (c != 'P0', int(c[1:]) if c[1:].isdigit() else 0))
 
 SWEEP_JOB = """- POINT AT P0·9 FOR IMAGE FOCUS INSTEAD OF LISTING THE VALUES YOURSELF.
   Image focus was never a shared control: two dozen category specs each wrote out their own copy of
@@ -245,6 +251,7 @@ def render():
     assert not unknown, f'ORDER names a category the export does not have: {unknown}'
     orphan = sorted(set(EXTRA) - set(ORDER))
     assert not orphan, f'EXTRA has a category ORDER never emits: {orphan}'
+    assert set(_EXTRA_KEYS) == set(EXTRA), f'_EXTRA_KEYS and EXTRA disagree: {set(_EXTRA_KEYS) ^ set(EXTRA)}'
 
     cards = []
     for step, cat in enumerate(ORDER, 1):

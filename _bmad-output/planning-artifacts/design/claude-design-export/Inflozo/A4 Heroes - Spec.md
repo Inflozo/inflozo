@@ -52,7 +52,7 @@ Everything in this section applies to all seventeen unless a design says otherwi
 
 **Action ladder.** Primary is A1·1's button at hero scale — accent fill, 15 px/600, padding 13×22, 46 px tall, the pack radius. **Flagged as a departure** from A1·1's own 14 px/600 and 9×17, which the header in every frame keeps: the two sizes coexist deliberately, the smaller one in the header and the larger in the hero. The bordered secondary is new to A4 and carries forward from here: surface fill, one hairline, the same metrics less the border's pixel. A1's muted ghost action is not used in a hero. Two actions maximum — a third is refused with A6 CTA Banners named. On a phone both actions stay: side by side where the labels fit a 350 px measure, stacked full width at 48 px where they do not. **The actions never leave at any width.**
 
-**The Actions control**, on every design that has one, is **Both · Primary · None** — those three words, as drawn. Where an entry below writes “Primary only” it means the panel's **Primary**.
+**The Actions control**, on every design that has one, is a **labelled group of one toggle per action** — **Primary action: On · Off** and **Secondary action: On · Off** — each toggle opening its own P0·4 member-aware card. Split library-wide on **31 August 2026** across 36 designs; the canonical definition is **P0·4a**. The old three-word list is quoted here only to show the mapping, as A1 does: *Both* is both toggles on, *Primary* is the primary alone, *None* is both off. What renders is unchanged; only how the editor reaches it. **Secondary greys with its reason while Primary is off** — a secondary action needs a primary beside it — and the secondary-without-primary combination the old list never offered is greyed rather than invented (P0·0). Where an entry below writes “Primary only” it means **Primary action: On** with **Secondary action: Off**. **7 Masthead** carries a single **Primary action** toggle, shipped off, and its group states that there is no second action on this design rather than drawing a switch for one.
 
 **The universal trio — this pass.** Every placeable section carries three controls **outside its own list**: **Background role** (Background · Surface · Contrast), **Vertical spacing** (Compact · Comfortable · Spacious) and **Top divider** (None · Line · Fade — default None on every hero; the header above already ends in a rule). The old per-design Padding and Ground rows were this trio under other names and are retired everywhere. Vertical spacing resolves 64 · 96 · 132 at 1440 (80 at 834, 64 at 390) unless a design names its own resolution — **9 Contrast Band** 44 · 64 · 88, **14 Full Height** 56 · 88 · 120, **17 Slim** 36 · 56 · 80 — a departure survives as a resolution, never a duplicate row. Genuinely different ladders keep their own names: **8 Card**'s Card padding and Inset (Vertical spacing locked there, reason shown) and **18 Overlap Card**'s Overlap (locked there too). A design whose ground is its identity locks Background role with the reason shown: **9** at Contrast, and the three image grounds **4**, **10**, **14**.
 
@@ -60,7 +60,7 @@ Everything in this section applies to all seventeen unless a design says otherwi
 
 **Editing.** Every visible authored text edits inline with the P0·1 toolbar — bold, italic, underline, link, with the link popover's open-in-new-tab and rel nofollow / noreferrer / sponsored options. Ghost-owned content — the site title, site description, post titles, tags, dates, member counts — is never inline-editable: clicking it shows the plain-text lock pill and “Edit in Ghost”. Every URL field opens the Ghost-aware Link Picker. Every button accepts an optional icon before or after its label from the P0·2 Icon Picker (always Small, label-coloured).
 
-**Image fields.** Every image field carries **Image focus** (Centre · Top · Bottom), reachable from the Image Picker popover — never a hidden field, and no longer a panel row anywhere: 4's old Picture focus row retires into the popover. On a post or page canvas, the pictures of **3, 5, 12, 14 and 18** default to the post's feature image with the source named — 18's rule, extended; no re-upload.
+**Image fields.** Every image field carries **Image focus**, reachable from the Image Picker popover — never a hidden field, and no longer a panel row anywhere: 4's old Picture focus row retires into the popover. **Its values are not written out here, and this specification no longer keeps a copy of them.** Image focus is one shared control, defined once in **P0·9**, and it carries **both axes** — an up-and-down axis and a side-to-side axis, each defaulting to Centre. The side-to-side half is the owner's ruling of **3 September 2026**: a wide photograph cropped into a tall frame loses its sides, and a vertical-only control has nothing to say about which side survives. A4 places the control and names the slot; it does not rename an axis, add a value, offer a percentage or draw a draggable focal point. **No design in A4 constrains the control**, and none is in P0·9's never-offered case: every picture in the category is cropped into a frame of the design's own shape, so focus always has work to do. **Ghost never sees this** — it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding: it declares no behaviour module, survives a design switch, and has nothing to fail with JavaScript off. On a post or page canvas, the pictures of **3, 5, 12, 14 and 18** default to the post's feature image with the source named — 18's rule, extended; no re-upload.
 
 **Visitor-facing strings.** No fixed English ships. Per string: editable fields with defaults — 11's five `email*` fields and its members line, 14's cue label (“Read on”), 15's placeholder and note, 16's attribution; theme translation-catalog strings — 11's invalid-state wording, 13's “Latest” label and “Members only” marker, 15's “Clear search”, 17's count grammar with its plural forms.
 
@@ -210,7 +210,7 @@ Text on seven columns, one picture on five, both on the page's own ground. The d
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
-**Image, this pass.** Image focus (Centre · Top · Bottom) joins the picture, in the Image Picker popover — never a hidden field. On a post or page canvas the picture defaults to the post's feature image with its source named, no re-upload — 18's rule, extended here.
+**Image, this pass.** Image focus joins the picture, in the Image Picker popover — never a hidden field; its values are P0·9's, on both axes, and are not restated here. On a post or page canvas the picture defaults to the post's feature image with its source named, no re-upload — 18's rule, extended here.
 
 **The crop is not a control.** It is fixed at 4:3, centred, from a picture 1200 px or wider.
 
@@ -252,7 +252,7 @@ One 16:9 photograph edge to edge with the set over it, anchored to the lower thi
 | Vertical spacing (universal) | Compact 64 · Comfortable 96 · Spacious 132 (measured from the picture's bottom edge) |
 | Top divider (universal) | None · Line · Fade (default None) |
 
-Universal: Background role **locked** — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel, not another role. Vertical spacing resolving 64 · 96 · 132, still measured from the picture's bottom edge. Top divider default None. Picture focus leaves the panel for the Image Picker popover, where every image field now carries it.
+Universal: Background role **locked** — the photograph is the ground, reason shown; with no image the section draws its own flat contrast panel, not another role. Vertical spacing resolving 64 · 96 · 132, still measured from the picture's bottom edge. Top divider default None. Picture focus leaves the panel for the Image Picker popover, where every image field now carries it, with P0·9's values on both axes.
 
 **Over the picture** decides how much of the set sits on the photograph; what it drops moves below the picture onto the page's own ground, where the scrim is not needed and the contrast is a measured token pair. It is the control that lets a site with a busy photograph keep a legible sub.
 
@@ -299,7 +299,7 @@ The set centred above a wide band of picture, with a caption under it.
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132, measured above the set; Top divider default None.
 
-**Image, this pass.** Image focus in the Image Picker popover; on a post or page canvas the band defaults to the post's feature image, source named. The caption edits inline with the P0·1 toolbar.
+**Image, this pass.** Image focus in the Image Picker popover — P0·9's control, both axes; on a post or page canvas the band defaults to the post's feature image, source named. The caption edits inline with the P0·1 toolbar.
 
 **The crop is fixed** at 2.4:1, and 16:9 on a phone — not a control.
 
@@ -610,7 +610,7 @@ Text on a 620 px measure at the left margin with the picture running off the rig
 
 Universal: Background role — new; this design previously had no ground control. Vertical spacing resolving 64 · 96 · 132. Top divider default None.
 
-**Image, this pass.** Image focus in the Image Picker popover; on a post or page canvas the picture defaults to the post's feature image, source named.
+**Image, this pass.** Image focus in the Image Picker popover — P0·9's control, both axes; on a post or page canvas the picture defaults to the post's feature image, source named.
 
 **Responsive.** Above 1080 the picture bleeds past the margin. Below 1081 there is no margin to spare: the picture takes a contained crop — the same geometry 3 Split uses at that width, arrived at by this design's own media query and not by becoming it (the rule that no design ever turns into another design) — and the arrangement, stated on the frame. **Header mode is Below, a correction to settlement 1** — a part-width picture cannot carry a transparent header, because the header would be half over a photograph and half over the page.
 
@@ -684,7 +684,7 @@ Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divi
 
 **Items.** No repeater — 4's picture and one scroll cue.
 
-**Fields.** As 4, plus `scrollCueLabel` (≤ 24, default “Read on”). Picture focus is 4's field and applies here; it is not a control on this design.
+**Fields.** As 4, plus `scrollCueLabel` (≤ 24, default “Read on”). Picture focus is 4's field and applies here — P0·9's control on both axes, in the Image Picker popover; it is not a panel row on this design.
 
 **Controls.**
 
@@ -751,7 +751,7 @@ Somebody else's sentence in the display position, with the publication's own hea
 
 Universal: Background role; Vertical spacing resolving 64 · 96 · 132; Top divider default None.
 
-**Editing, this pass.** Quote, name and role edit inline with the P0·1 toolbar; the portrait opens the Image Picker — square, ≥ 88 px, Image focus in the popover. The “nothing from Ghost” stance was audited and kept: there is no reviews API, and the editor still says so.
+**Editing, this pass.** Quote, name and role edit inline with the P0·1 toolbar; the portrait opens the Image Picker — square, ≥ 88 px, Image focus in the popover on both of P0·9's axes. The “nothing from Ghost” stance was audited and kept: there is no reviews API, and the editor still says so.
 
 **The reversal.** The headline renders in the eyebrow's treatment — 13 px uppercase tracked, muted — and the quotation takes the display position in the heading font at **regular weight**, measure 900 px centred or 720 px left. The section has one display moment as every section does; here it is spent on the quotation.
 
@@ -833,7 +833,7 @@ A wide picture with the text on a surface card pulled up over its bottom edge, t
 
 **Items.** No repeater — one picture, one card.
 
-**Fields.** `image` (required in practice — without it the overlap has nothing to overlap) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. Picture focus applies. Nothing from Ghost, except a post or page's feature image offered as the picture's default with its source named.
+**Fields.** `image` (required in practice — without it the overlap has nothing to overlap) · `imageAlt` · `eyebrow` · `headline` (req) · `sub` · `primaryAction` · `secondaryAction`. Picture focus applies — P0·9's control on both axes, in the Image Picker popover. Nothing from Ghost, except a post or page's feature image offered as the picture's default with its source named.
 
 **Controls.**
 
@@ -1083,3 +1083,39 @@ Frames updated: `A4-1 Centred`, `A4-2 Flush Left`, `A4-3 Split`, `A4-4 Full Blee
 | One toggle per thing — no compound values | **Actions becomes a labelled group of one toggle per action:** **Primary action: On · Off** and **Secondary action: On · Off**, each opening its own P0·4 member-aware card. The old *Both · Primary · None* maps exactly — **Both** is both on, **Primary** is the primary alone, **None** is both off — and "Both" was the compound value the rule names. Canonical definition: **P0·4a**. |
 | A control switched off by another is greyed, with the reason beside it | **The combination the old list never offered is greyed, not invented.** *Both · Primary · None* had no secondary-without-primary value, so no frame was ever drawn for it. **Secondary action greys with its reason while Primary action is off** — "a secondary action needs a primary beside it" — under the greyed-control pattern (P0·0). Nothing new was drawn to fill a state nobody had looked at. |
 | One toggle per thing — no compound values | **A4·7 Masthead holds one toggle, and the group says why.** Its old list was *None · Primary* — one action, one decision, no compound — so the split leaves a single **Primary action** toggle, shipping **off** because a masthead usually carries none. The group states that there is no second action on this design rather than drawing a switch for one. |
+
+---
+
+## Patch notes — pass five, 2 September 2026
+
+Frames updated: `A4-0 Category Proof`, `A4-3 Split`, `A4-4 Full Bleed`, `A4-5 Image Under`, `A4-10 Video Poster`, `A4-12 Offset Image`, `A4-13 Latest Post`, `A4-14 Full Height`, `A4-16 Pull Quote`, `A4-18 Overlap Card` — the category layer plus the nine designs that carry an image field. Nothing renumbered, renamed, redesigned or moved: no frame's layout, type, colour, spacing, number or name changed, and no control gained or lost a value.
+
+| Rule (by name) | Change |
+|---|---|
+| One control name means one set of values | **Image focus stops being A4's private copy and points at P0·9.** The shared floor's enumeration is gone and the control's values are no longer written anywhere in this category: the floor cites **P0·9** as the single definition and names **both axes** — up-and-down and side-to-side, each defaulting to Centre — without restating their values. The same substitution is made in **3 Split**, **4 Full Bleed**, **5 Image Under**, **12 Offset Image**, **14 Full Height**, **16 Pull Quote** and **18 Overlap Card**, and in every frame that printed the values: `A4-3`'s field hint and panel footer, `A4-4`'s panel footer and spec block (which printed the values as a control row), `A4-5`, `A4-12`, `A4-13`, `A4-14`, `A4-16` and `A4-18`. The side-to-side axis is new here — the owner's ruling of **3 September 2026** — and arrives by reference rather than as a second copy. |
+| One control name means one set of values | **No panel in A4 draws the control, so no panel gained two axis rows.** Focus has lived in the Image Picker popover since the reconciliation pass and is a panel row nowhere; the frames name the popover and cite P0·9 rather than drawing the rows. Recorded so the absence is not read as a rule missed. |
+| A design may offer fewer choices on a shared control, and must say why | **Checked design by design: no A4 design constrains either axis**, so there is no constraint to keep and no reason to state. Written into the shared floor as a positive statement rather than left silent. |
+| A control that could never do anything here is not drawn, and the panel says why | **P0·9's never-offered case applies nowhere in A4.** Every picture in the category is cropped into a frame of the design's own shape — 3's 4:3, 4 and 14's full bleed, 5's 2.4:1 and 16:9, 12's three picture heights, 13's 3:2 fall-back, 16's square portrait, 18's three picture heights — so focus always has work to do and no design carries the never-offered note. Recorded so the silence is not read as an omission. |
+| Any new behaviour must name a module from the fixed registry | **Image focus declares nothing, and the spec now says so in P0·9's own terms:** Ghost never sees it, it is a hint the compiler resolves into the crop, and that is why it is a control and not a data binding — nothing to run and nothing to fail with JavaScript off. A4's declared modules are unchanged: `video-facade` on **10**, `member-form` with `countdown` on **11**, nothing on the other fifteen. |
+| One toggle per thing — no compound values | **The category layer's Actions sentence is rewritten to describe the toggles.** The shared floor read "the Actions control … is **Both · Primary · None** — those three words, as drawn", which has been untrue since **31 August 2026**. It now reads as a labelled group of one toggle per action — **Primary action: On · Off** and **Secondary action: On · Off**, each its own P0·4 card, canonical definition **P0·4a** — with the old three words quoted **only to show the mapping, the way A1 does** (Both = both on, Primary = the primary alone, None = both off), the greyed secondary named, and "Primary only" defined as Primary on with Secondary off. `A4-0 Category Proof`'s control-vocabulary panel carried the same stale list and is corrected in the same words. The seventeen per-design control tables already declared the toggles and were not touched. |
+| Printed design totals | **Nothing authored in this pass carries one.** No number of designs appears in any sentence, frame line or caption written here. The category's own "seventeen designs, 1–14 and 16–18" is numbering, not product copy; no marketing or app-screen copy was authored or edited. |
+| The marketing and app screens print no design total | **Not A4's to carry, and nothing was attempted.** No copy on those screens was written, corrected or referenced. |
+| P0's per-prop mark allowlist | **Left alone, and not paraphrased.** It is not in this project's copy of the P0 specification; nothing here restates, summarises or replaces it. |
+| The roster, with [Free] marked | **Unchanged and re-confirmed.** The line **[Free] designs: 1 Centred · 17 Slim** stands in §0·0, and `A4-0`'s roster badges still read 1 and 17. No free design was re-chosen. |
+| The control lists · the data fields · the no-JavaScript line per design · the behaviour each design declares | **Unchanged except for the two items above.** Every control name, value, default, lock and disablement stands as written; the data fields stand — `imageFocus`, `pictureFocus`, `valueSource`, 7's sources and 11's member rows included, and this pass reads or writes no new Ghost field because focus is a compiler hint; every no-JavaScript line stands verbatim from the registry, fifteen designs declaring nothing; no design's behaviour changed. |
+
+### Left as found, deliberately
+
+- **The per-design frame spec blocks still print the pre-split Actions row** — "Actions: Both · Primary only · None" on `A4-1`, `A4-2`, `A4-3`, `A4-4`, `A4-5`, `A4-6`, `A4-8`, `A4-9`, `A4-10`, `A4-12`, `A4-13`, `A4-14`, `A4-16` and `A4-18`, and "Actions: None · Primary only" on `A4-7` — beside panels that already draw the two toggles. The work list names the **category layer's** sentence and only that, and the same blocks also still print the **Padding** and **Ground** rows the universal trio retired, so the whole block is a dated snapshot rather than one stale line. Correcting one line inside it, without a ruling on the block, would leave a half-updated record that reads as current. Left as found and recorded here; it is one message to approve if the intent is that these blocks track the panels.
+- **`A4-3 Split`'s frame spec block still says the no-image state "renders as 2 Flush Left."** §3's own Empty field names its own state — the picture's five columns close up and the text keeps its seven — under the rule that no design ever turns into another design, and pass four's confirmation sitting recorded 3 Split as completed. This one sentence, inside the same dated block, survived. Left as found rather than edited alongside, and flagged: the spec is right and the frame's block is wrong.
+- **The Open questions section says "No open questions remain in this category" and then carries items 4 and 5.** Item 5 names the free pair as **1 Centred and 2 Flush Left**, which §0·0 records as **withdrawn** — the owner decided 1 Centred and 17 Slim on 28 August 2026. Not named by this work list; left as found, and recorded because a reader meeting item 5 would read a settled decision as open.
+
+### OPEN FOR THE OWNER
+
+- **One control, two names.** A4 calls it **Image focus** on 3, 5, 12, 13 and 16 and **Picture focus** on 4, 14 and 18, and stores it as `imageFocus` on the first set and `pictureFocus` on the second. What I would have needed to know: whether P0·9's name is binding on every category — which would make "Picture focus" a rename the rule forbids — and, if so, whether the data field renames with it or the field names stay as authored. What I did instead: pointed **both** names at P0·9 so the values have one definition, and left every control name and every field exactly as found. Nothing was renamed.
+- **Whether A4's fixed crops narrow the new axis anywhere.** What I would have needed to know: whether a crop the design fixes by construction — 5's 2.4:1 band, 16's square portrait — is a reason to narrow the side-to-side axis, or whether a fixed crop is precisely where both axes matter. What I did instead: applied the work list as written, constrained nothing, and stated in the shared floor that no design in A4 constrains the control, so a later ruling has one sentence to change rather than nine.
+
+### Confirmations
+
+- **The design numbering is unchanged.** This category's numbers are **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 16 · 17 · 18** — seventeen designs, **15 retired and never reused**. Nothing was renumbered, renamed or removed.
+- **The "[Free] designs:" line is present** in §0·0 and names **1 Centred** and **17 Slim**, both of which exist in this category's roster and are drawn as `A4-1 Centred.dc.html` and `A4-17 Slim.dc.html`.

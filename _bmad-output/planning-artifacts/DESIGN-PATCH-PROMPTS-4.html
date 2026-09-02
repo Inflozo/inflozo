@@ -64,7 +64,7 @@ the specifications had not caught up — the pack colours, the main-feed designa
 declares a dependency, hand-picked order, and whether one design may use two behaviours. Every prompt
 carries all five, because they were each raised in more than one category.</p>
 <p class="lede">One thing this pass starts but does not finish, named rather than hidden:
-<b>Image focus is enumerated separately in 25 category specs</b> instead
+<b>Image focus is enumerated separately in 2 category specs</b> instead
 of being one shared control. P0 gains the single definition here; the rest need a mechanical sweep
 afterwards, and the P0 prompt names them.</p>
 <p class="lede">Verify each returned export with <code>python3 tools/verify-design-pass.py</code>,
@@ -181,8 +181,6 @@ RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
 THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS
 every category&#x27;s side panel draws from. Change one here and every category inherits it,
 which is why this runs first.
-
-NOT YOUR JOB, BUT SO YOU KNOW WHY THIS MATTERS: 23 other categories still enumerate their own copy of Image focus — A1, A2, A3, A4, A5, A6, A8, A9, A10, A11, A12, A14, A15, A16, A19, A21, A22, A24, A26, A29, A30, A31, A32. They are swept separately. Define it correctly here and that sweep becomes mechanical.
 
 THE WORK LIST FOR P0:
 

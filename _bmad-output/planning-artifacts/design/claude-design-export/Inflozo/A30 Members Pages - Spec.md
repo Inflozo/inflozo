@@ -6,6 +6,21 @@ The frames are `A30-0 Category Proof.dc.html` and `A30-1` … `A30-13`. **Where 
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
 that was written down. Every invented decision is marked ⚑ here and on the frame.
 
+**Pass five — 3 September 2026 (the current pass).** One work-list item, and it takes something out of this
+document rather than adding to it. **Image focus is one shared control, defined once in P0·9 and carrying
+both axes, and this category's private copy of its values is withdrawn.** Every enumeration of the focus
+values in this document is replaced by a reference to **P0·9 · Image focus** — the Data group's row, the
+shared field list's row, and 6 Cover's and 7 Image Split's content-field lines — and **no value is restated
+anywhere in this document or on any frame**. The **side-to-side axis is new** (the owner's ruling of
+3 September 2026) and this category did not have it: a wide photograph cropped into a tall frame loses its
+sides, and a vertical-only control has nothing to say about which side survives. **Both axes are drawn on
+both designs and neither axis is narrowed**, so neither carries a reason. **Ghost never sees the choice** ⚑ —
+it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control rather
+than a data binding and why it declares no behaviour module. **The eleven designs that draw no picture hold
+no focus row at all** — P0·9's not-drawn case, which is what those eleven panels already did. **Three frames
+changed:** `A30-0 Category Proof`, `A30-6 Cover`, `A30-7 Image Split`. Nothing else in this category was
+touched, and the full list is in **Patch notes — pass five** at the end.
+
 **The design patch pass, 28 August 2026.** The category was ruled against Ghost's real data surface and
 two live servers, and four rulings landed here. **Nothing identifying is printed on any account page** —
 no member name, no member email, no avatar. **Member since and the newsletter list are deleted**: Ghost's
@@ -167,7 +182,7 @@ design's own controls and **not counted** ⚑; three of them read-only.
 | `afterSend` | enum req | Sent panel in place (default ⚑) · Portal takes over |
 | `oneTimeCode` | enum req | Off (default) · On — **new in this pass** ⚑. **ARCHITECT: `member-form` registry extension + an endpoint to verify the code** |
 | `signedInBehaviour` | enum req | Membership summary (default) · Send them to the account page — **never the signup form** ⚑. **This is the category's member-state model**, and the reason no design carries a Member visibility row |
-| `image` · `imageFocus` | image · enum | **6 and 7 only.** Focus is Centre · Top · Bottom, **reachable from the Image Picker's popover** ⚑ |
+| `image` · `imageFocus` | image · enum | **6 and 7 only.** Focus is **P0·9 · Image focus** — one shared definition carrying **both axes**, neither narrowed on either design, **and its values are not restated here** ⚑ (pass five); **reachable from the Image Picker's popover** ⚑, never a hidden field. **Ghost never sees it**: a compiler hint the theme resolves, not a data binding ⚑. **The other eleven designs draw no picture and hold no focus row** — P0·9's not-drawn case |
 | *Everything that changes a subscription* | read-only | Ghost Portal — **the category's boundary; no control moves it** ⚑ |
 
 **Three notes sit under this group in all thirteen panels, new in the patch pass** ⚑. **Member buttons are
@@ -235,7 +250,7 @@ does not have**, so switching between any two designs preserves everything the u
 | `accessLabel` · `accessText` | text | opt | 24 · 60 ch | all 13 | **New in this pass** ⚑ — the cancelled member's row; **the seventh row label** |
 | `benefits[]` | list 0–6 | opt | name 60 ch · detail 90 ch | 1–5, 7, 10, 11, 12 | **The category's only authored list** ⚑, **and the P0·3 item controls govern it** — Add arrives with content, Remove never disabled, drag reorder, per-item content only. **The detail is drawn only by 12** |
 | `benefitsLabel` | text | opt | 24 ch | as `benefits[]` | Default "What a membership includes"; "Included" in 10 ⚑ |
-| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 6** | ≥ 2,400 px · 120 ch · — | 6, 7 | Required in 6, optional in 7 ⚑; **focus is a field, reachable from the Image Picker's popover** ⚑ |
+| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 6** | ≥ 2,400 px · 120 ch · — | 6, 7 | Required in 6, optional in 7 ⚑; **focus is P0·9's control** ⚑, both axes, values not restated here, reachable from the Image Picker's popover and never a hidden field |
 | `accountHeading` · `accountBlurb` | text | opt | 60 · 240 ch | all 13 | 2 is the design they exist for |
 | `rowLabels` (six) | text | opt | 24 ch each | all 13 | Email address · Plan · Renews · Payment · Newsletters · **Access** ⚑ — **six, not seven: Member since is deleted in the patch pass** ⚑ |
 | `endsLabel` | text | opt | 24 ch | all 13 | Default "Ends" — **used when `cancel_at_period_end` is true** ⚑ |
@@ -570,8 +585,8 @@ is invented.
    band 200. **834** inner 80, form 430. **≤ 767** cover 560 min, inner 64, form full width, heading
    28, account band 150 ⚑.
 5. **Content fields.** As 1, plus `image` **req** ≥ 2,400 px · `imageAlt` opt 120 ch (**an empty alt
-   is a decorative cover and is allowed** ⚑) · `imageFocus` enum opt, **a field, reachable from the
-   Image Picker's popover** ⚑. **The one required field in A30.** `benefits[]` is stored and not
+   is a decorative cover and is allowed** ⚑) · `imageFocus` enum opt — **P0·9's control, both axes,
+   neither narrowed, values not restated here** ⚑, reachable from the Image Picker's popover. **The one required field in A30.** `benefits[]` is stored and not
    drawn, so **P0·3 never opens here** ⚑.
 6. **Controls.**
 
@@ -583,6 +598,7 @@ is invented.
    | Fields | Email only · Name and email |
    | Legal line | Show · Hide |
    | Account band | Picture band 200 · No picture |
+   | Image focus (data) | **P0·9** — both axes, neither narrowed |
    | Sign-in link | Show · Hide |
    | Eyebrow | Show · Hide |
    | Note line | Show · Hide |
@@ -609,7 +625,11 @@ is invented.
 frame and now in the row itself. **All three universal rows are locked**, each with its reason shown:
 Background role at Image, Vertical spacing at 0 (Cover height is the ladder), Top divider at None.
 **Sign-in link, Eyebrow, Note line and CTA icon** arrive, and **Image focus joins the Data group** as
-an Image Picker popover row rather than a hidden field ⚑.
+an Image Picker popover row rather than a hidden field ⚑ — **and in pass five the control becomes P0·9's**,
+one shared definition carrying **both axes**, whose values this entry no longer restates. **Neither axis is
+narrowed**: the cover is a wide frame at 620 and a tall one at ≤ 767, where a wide photograph loses its
+sides, and the /account/ band at 200 crops the same picture hardest of all. **The count is unchanged at
+ten** — the Data group sits outside it.
 
 **Flagged ⚑** The 2,400 px minimum is invented. **The three scrim values are still checked against
 the striped placeholder rather than a real photograph — re-check all three before build.** The 200 px
@@ -629,7 +649,8 @@ account band is invented.
 4. **Responsive rule.** **1440** margin 72 + text 560 + gap 40 + picture 768, picture height = the
    column's, spacing 96. **834** margin 40 + text 400 + gap 32 + picture 362, spacing 80. **≤ 767**
    picture on top, full bleed, 200 tall at 16:9; form on 350; **included list hidden** ⚑; spacing 64.
-5. **Content fields.** As 1, plus `image` **opt** ≥ 1,600 px · `imageAlt` · `imageFocus`. **Optional
+5. **Content fields.** As 1, plus `image` **opt** ≥ 1,600 px · `imageAlt` · `imageFocus` — **P0·9's
+   control, both axes, neither narrowed, values not restated here** ⚑. **Optional
    here and required in 6** — the same field, two obligations ⚑.
 6. **Controls.**
 
@@ -638,6 +659,7 @@ account band is invented.
    | Picture side | Right · Left |
    | Text column | Narrow 480 · Medium 560 · Wide 640 |
    | Picture crop | Fill the column · Sixteen by nine |
+   | Image focus (data) | **P0·9** — both axes, neither narrowed |
    | Included list | Show · Hide |
    | Fields | Email only · Name and email |
    | Sign-in link | Show · Hide |
@@ -661,7 +683,11 @@ account band is invented.
 
 **Reconciled.** Padding retired into **Vertical spacing**. **Sign-in link, Eyebrow, Note line, List
 marker and CTA icon** arrive; `benefits[]` is the P0·3 list; **Image focus joins the Data group**
-beside the Image row ⚑ rather than living as a hidden field.
+beside the Image row ⚑ rather than living as a hidden field — **and in pass five the control becomes
+P0·9's**, both axes, values not restated here. **Neither axis is narrowed**, and each has a width where it
+does the work: at **Fill the column** the frame is 768 wide by the column's height, a tall crop of a wide
+file, where side to side chooses which half survives; at ≤ 767 it is a 200 px 16:9 band, where up and down
+chooses. **The count is unchanged at ten.**
 
 **Flagged ⚑** Holding the split at 834, against the archetype's ladder. Dropping the picture on
 /account/. The 1,600 px minimum.
@@ -1116,6 +1142,10 @@ Then, one line each, where this pass and the category's earlier rulings met:
 - **`imageFocus` stays a field and stops being unreachable.** The spec's "a field, not a control" ⚑
   stands; rule 10's "never a hidden field" is met by drawing it in the Data group as the Image
   Picker's popover row. 6 Cover's frame tile that asserted the old, half-wrong version is amended.
+  **Amended in pass five:** the control is **P0·9's**, defined once for the library and carrying **both
+  axes**, and **this category restates none of its values**. Its home is unchanged. The words "a field, not
+  a control" and P0·9's "a control and not a data binding" are recorded as an open item rather than
+  reconciled by choosing one.
 - **12 Ledger's item list was 2–6 and its empty state described nought lines.** The category's 0–6
   wins; the "wants four or more" editor note at one or two lines stays.
 - **8 Tiers' and 13 Steps' Order row contradicts "Order is Ghost's and is not selectable" ⚑.** A32
@@ -1258,3 +1288,102 @@ inventing a decision it is written here as an **open question** and asked in pla
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** thirteen designs, numbered **1–13**.
+
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+One work-list item, and it removes something from this document rather than adding to it. Every change
+carries the **name** of the rule that required it. **Frames changed — three:** `A30-0 Category Proof`,
+`A30-6 Cover`, `A30-7 Image Split`. The other eleven design frames were not touched, and no frame was
+redrawn: no layout, measure, colour, control, value, field, module or accessibility note moved.
+
+### What changed
+
+- **Image focus points at P0·9 instead of listing the values here** — *one control name means one set of
+  values*. Image focus was never a shared control: two dozen category specs each wrote out their own copy
+  of its values, and A30 was one of them. It is defined once now, in **P0·9**, and a category supplies only
+  the slot it applies to. **Four enumerations in this document are withdrawn** — the Data group's
+  `image` · `imageFocus` row, the shared field list's `image` · `imageAlt` · `imageFocus` row, 6 Cover's
+  content-field line and 7 Image Split's content-field line — and **three on the frames**: the proof
+  frame's field-list cell, and the Data-group row plus the spec card on each of 6 and 7. **No value is
+  restated anywhere in this document or on any frame.** Where a design's note said something useful about
+  which axis its crop wants, the observation is kept: naming what an axis is *for* on a given frame is a
+  design statement, not a copy of the value set.
+- **Both axes are drawn on both designs, and the side-to-side axis is new here** — *one control name means
+  one set of values*, the owner's ruling of 3 September 2026. **6 Cover** crops a photograph into a frame it
+  owns at every width — full bleed at 620, 560 minimum at ≤ 767, a 200 px band on /account/ — and **7 Image
+  Split** crops it into a 768-wide column the height of the text column, or a 200 px 16:9 band at ≤ 767. In
+  both, a wide file cropped tall loses its sides and the old vertical-only control had nothing to say about
+  which side survived. **Neither axis is narrowed on either design**, so neither carries a reason.
+- **"Ghost never sees this" is now said in the Data group** — *one control name means one set of values*
+  (P0·9's own words, carried rather than re-derived). Focus is **a hint the compiler resolves** into the
+  crop the theme ships with: nothing about the choice reaches Ghost and Ghost sends nothing back about it.
+  That is why it is a control rather than a data binding, why it survives a design switch, and why it
+  **declares no behaviour module** and has nothing to fail with JavaScript off. A30 had not said it.
+- **The eleven designs that draw no picture are named as P0·9's not-drawn case** — *a control that could
+  never do anything here is not drawn*. 1, 2, 3, 4, 5, 8, 9, 10, 11, 12 and 13 draw no photograph at any
+  setting, so there is no focus row, no greyed row and no placeholder in those eleven panels. **This is what
+  those eleven panels already did**; the shared floor and the Data group now name P0·9 as the source of the
+  treatment, and no panel was redrawn.
+- **6's and 7's control tables gained one row each, marked "(data)"** — *declarations standardised,
+  31 August 2026*, which says a Data-group control a design's own list names is marked "(data)" in the
+  table: `| Image focus (data) | **P0·9** — both axes, neither narrowed |`. **The counts are unchanged** —
+  ten on 6 and ten on 7 — because the Data group sits outside each design's own list and is not counted.
+
+### Checked and unchanged
+
+- **The roster, with [Free] marked.** Unchanged. Thirteen designs, the same tuples, the same control counts,
+  and **1 Centred** and **10 Boxed** still carry `[Free]`.
+- **The control lists.** No control was added, removed, renamed or re-valued. The only additions are the two
+  "(data)" declaration rows on 6 and 7, which name a Data-group control rather than a new one.
+- **The data fields.** Unchanged. `imageFocus` keeps its name, its type, its optionality and its home; the
+  only change is that its values are cited rather than copied. Nothing else in the shared field list moved.
+- **The no-JavaScript line per design.** Unchanged in all thirteen: **P0·4's notice replaces the form**, and
+  Image focus adds nothing to it — a compiler-resolved crop needs no script, so the no-JS reading of both
+  image designs is exactly as it was.
+- **The behaviour each design declares.** Unchanged: eleven designs declare `member-form`, **8 Tiers** adds
+  `price-toggle`, **11 Rail** adds `scroll-spy`, none declares more than two, and **P0·9 declares none**.
+  One-time code entry stays marked **ARCHITECT: `member-form` registry extension**.
+- **No design total is written anywhere.** Nothing authored in this pass names a number of designs in the
+  library. The "two dozen category specs" figure above is a count of specs that held a duplicate control,
+  not a design total.
+- **The two pieces maintained in the repository were left alone.** The count-agnostic marketing and app copy,
+  and P0's per-prop mark allowlist, are not in this project's copy and were neither re-authored nor
+  paraphrased.
+
+### Open questions recorded here
+
+- **OPEN FOR THE OWNER — "a field, not a control", or "a control and not a data binding"?** *What I would
+  have needed to know:* which of the two names for Image focus the library should use, since A30 ruled on
+  25 August 2026 that focus is **"a field, not a control"** — which is why it sits in the Data group — and
+  P0·9 says in as many words that it is **"a control and not a data binding"**, because Ghost never sees it.
+  *Why it is open:* the two agree on everything that can be drawn — where the row lives, what it does, that
+  it is never hidden, that no server is involved — and disagree only on the word, so choosing one silently
+  would either contradict this category's own recorded ruling or contradict the shared definition it is now
+  told to cite. *What I did instead:* kept A30's wording and its home exactly as found, cited P0·9 as the
+  definition, and drew P0·9's "Ghost never sees this" sentence beside the row so both readings are visible.
+- **OPEN FOR THE OWNER — where the control is drawn.** *What I would have needed to know:* whether P0·9's
+  "one label, two segmented rows, drawn under the image slot they belong to" means the section panel, or
+  whether A30's **Image Picker popover** satisfies it. *Why it is open:* A30 settled on 25 August 2026 that
+  focus lives in the picker's popover and is never a hidden field; P0·9 describes the shape of the control
+  but not which surface hosts it, and **A16 and A29 raised the same question independently**. *What I did
+  instead:* kept A30's popover home as found, drew both axes in the Data group row, and cited P0·9 — moving
+  the control into the section panel would be a design change this work list did not ask for.
+- **OPEN FOR THE OWNER — is there a never-offered note for a design that draws no picture at all?** *What I
+  would have needed to know:* whether P0·9's not-drawn note — whose words are about a design that *places* a
+  photograph at its own shape and so crops nothing — is meant to appear on a design that draws no photograph
+  at any setting. *Why it is open:* A30's eleven picture-less panels have never drawn a focus row or a note,
+  and adding a note about a control to eleven panels that have no image slot would be new drawing in eleven
+  frames this work list names none of; **A29 reported the same shortfall.** *What I did instead:* left the
+  eleven panels exactly as found and named them in the spec as P0·9's not-drawn case.
+
+### Confirmations
+
+- **Design numbering is unchanged.** This category's numbers are **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+  13** — thirteen designs, no gaps, nothing renumbered and no number reused.
+- **The `**[Free] designs:**` line is present**, at the head of the roster section, and names **1 Centred**
+  and **10 Boxed** — both of which exist in this category.
+
+— End of pass five —

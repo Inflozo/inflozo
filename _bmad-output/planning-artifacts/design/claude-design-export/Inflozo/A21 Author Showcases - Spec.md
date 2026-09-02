@@ -23,6 +23,18 @@ of the rule that required it in **Patch notes** at the end, along with the five 
 three the owner's, two the platform's; **nothing is left open in this category**, for him or for the
 architect.
 
+**Design patch pass five — 3 September 2026.** One work-list item, and it is a naming change rather
+than a drawing. **Image focus is one shared control, defined once in P0·9 and carrying both axes, and
+this category's private copy of its values is withdrawn.** A21 draws focus on one design only —
+**14 Image Band**, under its single image slot `backgroundImage` — so nothing was added to the other
+fourteen panels. What changed is that every enumeration of the values in this document and on the
+frames is replaced by a reference to **P0·9**, that panel now draws **both axes** as one label with two
+segmented rows, and that **Ghost never sees the choice**: focus is a hint the compiler resolves into
+`background-position`, which is why it is a control and not a data binding. **Nothing was renumbered,
+no control was added or removed, and no value, default, layout, type scale, colour pack or spacing step
+changed.** Pass-five changes are listed in **Patch notes — pass five** at the end of this document, and
+on `A21-14 Image Band` in a **PASS FIVE PATCH** block.
+
 **[Free] designs:** 3 Rows · 11 Rail
 
 *(Shortlisted in this pass — 3 Rows, 7 Panel, 10 Directory, 11 Rail, 15 Slim: the plainest designs, and
@@ -269,8 +281,12 @@ post (finding 1), and nothing in the panel can reveal a staff account without on
   — Ghost has no page that lists every writer (finding 3, ruled). **Every button and link takes an optional
   icon before or after its label** from **P0·2**, with its size and colour-role popover ⚑, and **the
   social row is nine icon slots and a website** from the same picker's brand set.
-- **`backgroundImage` (14) carries Image focus — Centre · Top · Bottom** ⚑, in the control list **and**
-  in the Image Picker popover; never a hidden field.
+- **`backgroundImage` (14) carries Image focus — the shared control defined once in P0·9, both axes** ⚑
+  3 September 2026. **Its values are P0·9's and are not restated here**; the design supplies only the
+  slot the control sits under, and constrains neither axis. It is in the control list **and** in the
+  Image Picker popover; never a hidden field. **Ghost never sees it** — focus is a hint the compiler
+  resolves into the crop the theme ships with, which is why it is **a control and not a data binding**;
+  it declares no behaviour module and cannot fail with JavaScript off.
 - **No fixed English visitor-facing string ships.** Authored strings have editable defaults. The
   strings that are announced or assembled rather than typed become **theme translation-catalog
   strings** ⚑: **the assembled credit sentence** in 8 and 15 (*"Written by A, B, C and others"* ⚑ 29 August 2026 —
@@ -375,7 +391,7 @@ real and visible; they are not machine-checkable.
 | `linkUrl` | url | opt | — | 8, 15 | The Link Picker, **authored** ⚑ 29 August 2026, with `linkLabel` editable and *Link: Show · Hide* on both designs; Ghost has no page that lists every writer, and an `/authors/` page is a custom page the site builds (finding 3, ruled) |
 | `colWriter` · `colWhere` · `colPosts` | text | opt | 16 ch | 10 | **The table's column labels, newly authored fields** ⚑ — defaults "Writer", "Where", "Posts" |
 | `backgroundImage` | image | opt | — | 14 | **An upload, not a Ghost field** ⚑; with none the band draws itself on the contrast ground ⚑ 29 August 2026 |
-| `imageFocus` | enum | opt | — | 14 | **Centre · Top · Bottom** ⚑, also in the Image Picker popover |
+| `imageFocus` | enum | opt | — | 14 | **P0·9's Image focus, both axes** ⚑ 3 September 2026 — values defined there, not copied here; a compiler hint Ghost never sees; also in the Image Picker popover |
 | `authorPicks[]` | list | opt | 1–12 | all 15 | **Author references** ⚑, P0·3 controls; the first leads in 6 and 13 |
 | `roleOverride` | text | opt | 40 ch | 1–4, 6, 10, 12, 13 | **Authored, keyed by author slug** ⚑; A12's mechanism |
 | `emptyText` | text | opt | 120 ch | all 15 | Default "No writers to show yet…" ⚑ |
@@ -1089,7 +1105,7 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    |---|---|
    | Height | Short · Standard · Tall (**a minimum, not a crop**) |
    | Scrim | Light · Medium · Strong (**Light disabled against light images**, checked on the bottom third) |
-   | Image focus | Centre · Top · Bottom |
+   | Image focus | **P0·9's values, both axes** (defined once in P0·9, not restated here; neither axis constrained) |
    | Head position | Top · Bottom (**never both at the foot**) |
    | Portraits across | Four · Six · Eight |
    | Post count | Show · Hide |
@@ -1110,15 +1126,17 @@ Each entry ends with **Reconciled**, naming what this pass changed.
    ⚑ 29 August 2026. **No picture → the band on the contrast ground is the empty state** ⚑, and it is
    this design, not another one.
 9. **Module.** None. **No-JS: pixel-identical** — the image is a CSS background on a real
-   `{{img_url}}` ⚑, the scrim is a gradient, and **Image focus resolves to `background-position`** ⚑.
+   `{{img_url}}` ⚑, the scrim is a gradient, and **both of Image focus's axes resolve to
+   `background-position`** ⚑ — a compiler hint, so **focus declares no module** and there is nothing to
+   fail with JavaScript off.
 10. **A11y.** Heading **h2**, names **h3**. **The background image is decorative and takes an empty
     alt** ⚑. Checked at Medium on the darkest and lightest thirds of the sample crop: heading and
     names 12.1:1, **counts 4.9:1 at 13 px** ⚑ — the reason Light disables itself.
     **Repeating items** — designed for 6 and 12, correct at 1–12; bio never drawn.
     **Flagged ⚑** the authored background image · the locked ground and spacing · the taller band at
     390 · literals rather than tokens over the image · the 18% initials plate · Light disabled by a
-    bottom-third check measured on upload rather than by CSS ⚑ · **the no-picture band on the contrast ground** ⚑ 29 August 2026 · height as a minimum · **Image focus as three named values
-    rather than a point** ⚑.
+    bottom-third check measured on upload rather than by CSS ⚑ · **the no-picture band on the contrast ground** ⚑ 29 August 2026 · height as a minimum · **Image focus drawn as P0·9's named values on
+    both axes rather than a point** ⚑ 3 September 2026, the slot it sits under being this design's.
     **Reconciled.** **Image focus** ⚑ closes the "no focal point" flag: A22 Cover and A23 Cover both
     carry it, and the band is taller at 390 than at 834, which is exactly where a centred crop cut
     heads off. It is reachable from the Image Picker popover as well as from the control list.
@@ -1289,7 +1307,7 @@ Cumulative. Reused components are listed with the category that set them.
 - **Five section frames redrawn** — **6 Founder**, whose social row is now icon slots for every filled
   handle in all four of its states; and new state frames on **1 Grid**, **2 Cards**, **12 Carousel**
   and **13 Lead and Rest** (*Social links: On*, the sub-6.36 version gate, and the no-handles case) and
-  on **14 Image Band** (*Image focus* at Centre, Top and Bottom).
+  on **14 Image Band** (*Image focus*, one state per value of the axis it then had — **the values are P0·9’s and are not restated; the frame now draws both axes**, pass five).
 - **All fifteen spec cards** — item 5 where a field list changed, item 6 wholesale, and a
   **Reconciled** paragraph at the foot.
 - **`a21-kit.js`, the category's authoring kit** — `socialRow` rewritten ⚑: it encoded the 5.x
@@ -1432,3 +1450,101 @@ name**, so neither is closed here.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **The work list held one
+item**, and it is a naming change rather than a drawing: *one control name means one set of values*.
+**Frames updated: `A21-14 Image Band` and `A21-0 Category Proof`** — the two that named the control.
+The other thirteen frames do not mention Image focus and were not opened.
+
+### What changed
+
+- **Image focus points at P0·9 instead of listing the values here** — *one control name means one set
+  of values*. Image focus was never a shared control: two dozen category specs each wrote out their own
+  copy of its values. It is now defined once, in **P0·9**, carrying **both axes**, and a category
+  supplies only the slot the control sits under. **Every enumeration in A21 is withdrawn** — the
+  category layer's editing paragraph, the shared field table's `imageFocus` row, 14 Image Band's
+  control table, its flagged list, the written-spec card and the controls line on its frame, and the
+  proof frame's field table and settlement 7 — and **no value is restated anywhere in this document or
+  on any frame**. Where a note said something useful about which value a crop wants, the observation is
+  kept without the set: the band is taller at 390 than at 834, which is where a middle crop takes the
+  heads off a group portrait. Naming the case is advice; naming the set is a private copy.
+- **14 Image Band's panel now draws both axes** — *one control name means one set of values*, the
+  owner's ruling of 3 September 2026. One label, two segmented rows, under `backgroundImage`, the
+  design's single image slot. The side-to-side axis is new: a wide photograph cropped into this band
+  loses its sides, and a vertical-only control has nothing to say about which side survives. The frame's
+  focus section is redrawn with both axes demonstrated, each on its own anchor line.
+- **Ghost never sees this, and it is now said** — *a control is not a data binding*. Focus is a hint the
+  compiler resolves into the crop the theme ships with: the project stores the choice, the compiler
+  resolves it, and nothing about it reaches Ghost or comes back. Written into the category layer's
+  editing paragraph, the `imageFocus` field row and the panel note, because each is read on its own.
+- **Both axes resolve to `background-position`, so the no-JavaScript line is unchanged** — *a design
+  may declare the width below which its script runs*. Focus declares no module and no width; 14 Image
+  Band stays **pixel-identical** with JavaScript off, and the second axis adds nothing to run.
+- **No constraint is claimed anywhere in A21** — *a design may offer fewer choices on a shared control,
+  and must say why*. 14 Image Band offers both axes whole, and says so at the control. Nothing was
+  narrowed, greyed or renamed, and no value was added.
+- **The never-offered case has no subject here** — *a control that could never do anything here is not
+  drawn, and the panel says why*. The band crops its photograph into a frame of its own shape at every
+  height, so focus always has work to do; P0·9's note is not used. The other fourteen designs draw no
+  authored image at all, so the question does not reach them either — see the open item below.
+
+### Open for the owner
+
+- **OPEN FOR THE OWNER — does P0·9's Image focus apply to the writers' portraits?** *What I would have
+  needed to know:* whether focus belongs on a photograph the section crops but does not own. Thirteen of
+  the fifteen designs crop Ghost's `profile_image` into a circle or a named ratio of their own — which
+  is P0·9's cropping case exactly — and A21 offers focus on the one authored upload only, in a single
+  design. *What I did instead:* applied the naming change and **added the control to nothing**. Putting
+  a row on thirteen panels, and deciding whether it is one control for the row or one per portrait, is a
+  design decision rather than a rename.
+- **OPEN FOR THE OWNER — with no picture uploaded, should focus hide or grey?** *What I would have
+  needed to know:* which side of P0·0's test the no-picture state falls on. The 29 August 2026 ruling
+  has 14 Image Band hide the picture, the scrim and Image focus together when nothing has been uploaded;
+  *a control switched off by another is greyed, with the reason beside it* would instead grey them, and
+  P0·9's not-drawn case is for a design that **could never** crop, which is not this one — an upload
+  brings the crop back. *What I did instead:* **left the hidden state exactly as found**, unchanged from
+  the 29 August ruling, and recorded the tension here rather than resolving it.
+- **OPEN FOR THE OWNER — the frame demonstrates both axes on a striped placeholder, not a photograph.**
+  *What I would have needed to know:* whether P0·9's "all three values against one photograph" means a
+  real photograph on the frame. *What I did instead:* used the library's striped image plate with mono
+  captions, as every other A21 frame does, and drew the anchor line each value holds.
+
+### Left alone, and said so rather than tidied
+
+- **The marketing and app screens print no design total, and P0's per-prop mark allowlist is maintained
+  in the repository.** Neither is in this project's copy, neither was touched, and neither is
+  re-created here. **No design total is written into any copy authored in this pass** — not the old
+  number, not a corrected one. This pass opened P0 only to read P0·9's definition.
+- **The dated Patch notes of the 29 and 31 August passes stand as records of what those passes did.**
+  This pass reverses nothing. One line in the 29 August reconciliation notes listed the focus state
+  frames by value; the record is kept and the enumeration in it replaced by the same reference, so the
+  document names the values nowhere.
+- **The two carried-forward architect items** — no sticky module for anything but the site header
+  (11 Rail), and a section cannot know what precedes it on the route — were not re-argued. Neither is
+  related to this work list.
+
+### Re-checked and unchanged
+
+**The roster** — fifteen rows, **[Free]** on 3 Rows and 11 Rail. **The control lists** — every control
+table as the 31 August standardisation left it; 14 Image Band still declares **seven controls of its
+own** plus the universal trio and the Data group, with Background role locked to the photograph and
+Vertical spacing at 0. No control was added, removed, renamed or revalued. **The data fields** —
+fourteen authored and nine read from Ghost; `imageFocus` is still the one focus field, on design 14
+alone, and no field was added. **The no-JavaScript line per design** — unchanged; fourteen designs are
+pixel-identical and 10 Directory keeps its flat alphabetical table under *Group by letter*. **The
+declared behaviours** — unchanged; **None** on fourteen designs, `group-headings` on 10 Directory,
+and focus declares nothing.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, nothing renumbered, no number reused, no gap created or closed.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, and
+   names **3 Rows** and **11 Rail** — both of which exist in this category's roster. Unchanged from the
+   owner's ruling of 29 August 2026.
+
+— End of pass five —

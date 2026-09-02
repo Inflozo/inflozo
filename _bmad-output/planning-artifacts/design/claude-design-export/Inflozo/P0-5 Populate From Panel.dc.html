@@ -25,7 +25,7 @@
 </section>
 
 <section data-screen-label="P0-5 panel states" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
-<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">FOUR STATES AT SIDEBAR WIDTH 280 · STATIC · BY TAG (SELECT OPEN) · BY AUTHOR · HAND-PICKED · THE PANEL IS THE DATA GROUP'S ENTIRE BODY</div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">FOUR STATES AT SIDEBAR WIDTH 280 · STATIC (FILTER GREYED, RULED THIS PASS) · BY TAG (SELECT OPEN) · BY AUTHOR · HAND-PICKED · THE PANEL IS THE DATA GROUP'S ENTIRE BODY</div>
 <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
 
   <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
@@ -37,11 +37,19 @@
         <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">From posts</span>
       </div>
     </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#A8A29A">Filter</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:34px;border:1px solid #EAE5DD;border-radius:8px;padding:0 10px;background:#F2EFEA;cursor:not-allowed">
+        <span style="font-size:12.5px;font-weight:500;color:#A8A29A">Latest</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Not available while the source is Static.</span>
+    </div>
     <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#EFECE7;border-radius:8px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
       <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">You write the cards yourself in the Content group. Nothing updates automatically.</span>
     </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">STATIC · THE FILTER BLOCK IS ABSENT, NOT DISABLED ⚑ · CONTENT GROUP SHOWS THE P0·3 AUTHORED LIST · <strong style="font-weight:600">LEFT AS DRAWN AND RAISED AS AN OPEN QUESTION</strong> UNDER THE 3 SEPTEMBER RULING — THE RULING NAMES COUNT/ORDER AND THE GHOST-SOURCED LIST, NOT THIS BLOCK</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">STATIC · <strong style="font-weight:600">CHANGED THIS PASS, RULED 3 SEPTEMBER 2026: THE FILTER BLOCK IS GREYED WITH ITS REASON, NOT ABSENT</strong> ⚑ — A STATIC SOURCE COULD CARRY A FILTER, IT JUST DOES NOT NOW, WHICH IS THE COULD-BUT-NOT-NOW SIDE OF THE GENERAL TEST IN P0·0 · THE GREYED SELECT KEEPS ITS STORED VALUE LEGIBLE, SO THE USER SEES WHAT RETURNS · CONTENT GROUP SHOWS THE P0·3 AUTHORED LIST · <strong style="font-weight:600">COUNT AND ORDER UNDER STATIC ARE LEFT AS FOUND AND RAISED</strong> — THE RULING NAMES THE FILTER BLOCK, AND AN AUTHORED LIST'S COUNT IS THE P0·3 STEPPER IN THE CONTENT GROUP · SEE THE SPEC'S PATCH NOTES</span>
   </div>
 
   <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0;position:relative">
@@ -163,7 +171,7 @@
       </div>
       <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">The list you picked is the order — these posts render in the order you dragged them.</span>
     </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">HAND-PICKED · SEARCH-AND-PICK LIST · DRAG REORDERS, × UNPICKS · <strong style="font-weight:600">COUNT AND ORDER ARE GREYED WITH THEIR REASON, NOT HIDDEN</strong> ⚑ — OWNER-RULED 1 SEPTEMBER 2026 AND RESTATED 3 SEPTEMBER, WHEN THE "BUT THIS IS A MODE" EXCEPTION WAS WITHDRAWN LIBRARY-WIDE · THE COUNT STEPPER SHOWS THE NUMBER IN FORCE, WHICH IS THE NUMBER OF PICKS · <strong style="font-weight:600">THE ORDER CONTROL SITS ON NEITHER VALUE ⚑</strong> — THE ORDER IN FORCE IS THE DRAGGED ONE, WHICH IS NOT ONE OF ITS TWO VALUES, SO THE SENTENCE CARRIES IT · NO MAXIMUM · UNPUBLISHED PICKS DROP OUT SERVER-SIDE, THE ROW STAYS WITH AN "UNPUBLISHED" NOTE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.6">HAND-PICKED · SEARCH-AND-PICK LIST · DRAG REORDERS, × UNPICKS · <strong style="font-weight:600">COUNT AND ORDER ARE GREYED WITH THEIR REASON, NOT HIDDEN</strong> ⚑ — OWNER-RULED 1 SEPTEMBER 2026 AND RESTATED 3 SEPTEMBER, WHEN THE "BUT THIS IS A MODE" EXCEPTION WAS WITHDRAWN LIBRARY-WIDE · THE COUNT STEPPER SHOWS THE NUMBER IN FORCE, WHICH IS THE NUMBER OF PICKS · <strong style="font-weight:600">THE ORDER CONTROL SITS ON NEITHER VALUE — RULED 3 SEPTEMBER 2026, NO LONGER PROVISIONAL</strong> ⚑ — THE ORDER IN FORCE IS THE DRAGGED ONE, WHICH IS NOT ONE OF ITS TWO VALUES, SO NO VALUE IS MARKED AND THE REASON SENTENCE CARRIES THE ORDER IN FORCE · NO MAXIMUM · UNPUBLISHED PICKS DROP OUT SERVER-SIDE, THE ROW STAYS WITH AN "UNPUBLISHED" NOTE</span>
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1290px"><strong style="font-weight:600">Constraints stated once, for every category</strong> ⚑: the Count stepper caps at 100. <strong style="font-weight:600">Hand-picked has no maximum at all</strong> — it accepts as many posts as the user cares to pick and warns past 25, drawn in the next frame. No relative-date filters — "this month" is route vocabulary, not section vocabulary. A secondary feed renders nothing at zero items, heading and container together — an empty "More essays" band is a defect the panel prevents by construction. Meta toggles are the design's own: a design with no excerpt slot never offers an Excerpt toggle. The tag and author selects live-search past ten entries with the same field grammar as the Link Picker.</p>

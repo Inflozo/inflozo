@@ -1,7 +1,8 @@
 # A16 Contact — written specification
 
 15 designs · Paper pack · drawn 23 August 2026 · controls-reconciliation patch 24 August 2026 ·
-**design patch pass 30 August 2026**
+**design patch pass 30 August 2026** · declarations standardised 31 August 2026 ·
+**pass five 3 September 2026**
 
 The frames are `A16-0 Category Proof.dc.html` and `A16-1` … `A16-15`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -369,8 +370,8 @@ distinctions are real and visible; they are not machine-checkable.
   `mapImage` · `mapImageDark` · `mapUrl`**. **`phone` and `email` are new** ⚑ and draw as
   `tel:` and `mailto:` links under the address in 8 — **an empty field drops its line**, and 7
   stores them without drawing them. **`coords` is dropped** ⚑: the static map is **an image the
-  owner uploads through the Image Picker**, with **Image focus (Centre · Top · Bottom) in the
-  picker's popover**, because **Inflozo names no tile provider in v1** — nothing is generated and
+  owner uploads through the Image Picker**, with **Image focus in the
+  picker's popover** — **its values are P0·9's, both axes, and are not restated here** ⚑ — because **Inflozo names no tile provider in v1** — nothing is generated and
   nothing is fetched while a reader is on the page. **`mapImageDark` is the optional second upload**
   ⚑; with none set the light image serves both modes and **the image is never filtered**. Hours and
   both maps are optional — no hours drops the line and its hairline; no map starts the card at its
@@ -439,7 +440,7 @@ or emphasis.
 | `columnLabels` | text ×3 | opt | 20 ch each | 13 | The table's three header strings ⚑ |
 | `label` | text | opt | 20 ch | 9 | The strip's label; **defaults to `@site.title`** ⚑ |
 | `directionsLabel` | text | opt | 20 ch | 8 | Default "Directions" |
-| `image` · `imageAlt` · `imageFocus` | image + text + enum | **req in 15** | 120 ch alt | 15 | **`imageFocus` is now a control as well as a field** ⚑ — Centre · Top · Bottom, in the panel and in the Image Picker's popover |
+| `image` · `imageAlt` · `imageFocus` | image + text + enum | **req in 15** | 120 ch alt | 15 | **`imageFocus` is now a control as well as a field** ⚑ — in the panel and in the Image Picker's popover; **its values are P0·9's, both axes, and are not enumerated in A16** |
 | `deliveryMode` · `afterSending` · `consentMode` | enum ×3 | req | — | the 10 form designs | The shared delivery group, **four rows since 30 August 2026** ⚑ — **`prefillMembers` is withdrawn**, because a theme never prints a member's own details into the page |
 | **`deliveryTarget`** | project setting | req to publish | — | the 10 form designs | **Not section content** ⚑ — an Inflozo project setting, promotable to a Ghost Admin custom setting (text); validated per mode; **empty blocks publishing** |
 | **`memberVisibility`** | enum | opt | — | the 10 form designs | Everyone (default) · Logged out · Free members · Paid members. **Absent on 6, 8, 9, 10, 13**, which draw no action ⚑ |
@@ -886,7 +887,7 @@ design as the fallback.
    | Top divider (universal) | None · Line · Fade |
 
    Then the location item list — **the first entry is the one drawn**, with **Map image** and the
-   optional **Map image (dark)** from the Image Picker and **Image focus** in its popover — Then
+   optional **Map image (dark)** from the Image Picker and **Image focus** in its popover, **both axes per P0·9** — Then
    **the universal trio** — Background role · Vertical spacing · Top divider — the **Delivery
    group** and the **Data group**, none of which count toward the budget. **Padding is retired into
    Vertical spacing** ⚑. Quick Controls: Fields · Map side · Beside the map.
@@ -916,7 +917,7 @@ picture.
 dead end**. **Fields and Data are amended**: **`coords` is dropped** ⚑ and **the static map is
 settled as a user upload** through the Image Picker — Inflozo names no tile provider in v1, so nothing
 is generated and nothing is fetched at render — with **`mapImageDark` as an optional second slot**
-and **Image focus in the picker's popover, never a hidden field**. Items gain **`phone` and
+and **Image focus in the picker's popover, never a hidden field** — **both axes, the values P0·9's**. Items gain **`phone` and
 `email`**, which 8 Locations draws and this design stores. **Empty**: no map image still takes
 A19's **Reflow**, and *Directions link: From address* means the missing-URL case no longer exists.
 **Member visibility** ships; the delivery group is rebuilt; **A11y** gains the no-script state.
@@ -977,7 +978,7 @@ is Ghost-owned, because **Ghost has no location object**.
 **Patched, 24 August 2026.** **Fields**: items gain optional **`phone`** and **`email`**, drawn as
 `tel:` and `mailto:` links under the address — **empty drops the line**, so the drawn cards are
 unchanged until one is filled — and **`coords` is dropped** with the thumbs settled as **uploads
-through the Image Picker** (Image focus in its popover, `mapImageDark` optional, never a filter).
+through the Image Picker** (Image focus in its popover, **both axes per P0·9**, `mapImageDark` optional, never a filter).
 **Directions link** arrives. **Items**: **Remove is never disabled** ⚑, retiring "disabled at one" —
 the editor already draws the zero state and says a location is needed. **A11y**: the new lines sit
 inside the card's `<address>` as real links, and **the whole card is still not a link** ⚑.
@@ -1386,7 +1387,7 @@ no-script state and the `<ol>`/`<ul>` rule is unchanged.
    two fields at 46, message 96, padding 0. **834** image 660, form 520, heading 34. **≤ 767** **image
    720** ⚑, form 350, fields 48 and stacked, field text 16, button full width, heading 28.
 5. **Fields.** `eyebrow` · `heading` · `blurb` · `image` (**required — the design is the
-   photograph**) · `imageAlt` · `imageFocus` (**Centre · Top · Bottom — now a control as well as a field** ⚑) ·
+   photograph**) · `imageAlt` · `imageFocus` (**values per P0·9 — now a control as well as a field** ⚑) ·
    the form's email and message strings. **Name, subject and phone are stored and never drawn** ⚑,
    along with the contact rows, `socials[]`, `locations[]` and `enquiries[]`.
 6. **Controls — eight of its own.**
@@ -1399,7 +1400,7 @@ no-script state and the `<ol>`/`<ul>` rule is unchanged.
    | Scrim | Light · Medium · Heavy (**Light disabled against an image lighter than 60% mean luminance, with the measurement shown**) |
    | Message height | Short · Medium (**no Tall**) |
    | Head | Show · Hide |
-   | Image focus | Centre · Top · Bottom |
+   | Image focus | **P0·9** — both axes, neither narrowed |
    | Blurb | Show · Hide (**disabled at Head: Hide**) |
    | Background role (universal) | **Locked at Image**, with the reason shown |
    | Vertical spacing (universal) | Compact · Comfortable · Spacious, resolving onto the head-and-form block's inset inside the image — 64 · 96 · 132 |
@@ -1578,7 +1579,7 @@ Picker's); the **no-destination** state tile now says the section cannot publish
 designs' states frames gained **a no-script tile** — the fields, the visible "Email us at …" line and
 the un-rendered button — which is why the category now owns **eight states, not seven**. Everything
 else the patch added ships off or unchanged at its default: Row icons and Cell icons Hide, Top divider
-None, the button icon slots empty, Blurb Show, Image focus Centre, Address shown Email, and the location `phone` and `email`
+None, the button icon slots empty, Blurb Show, Image focus Centre on both axes, Address shown Email, and the location `phone` and `email`
 empty. **If the build wants a drawn phone line on a location card, or a drawn row icon, those are
 frames this pass did not draw.**
 
@@ -1751,3 +1752,84 @@ the script path.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fifteen designs, numbered **1–15**.
+
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change with the **name** of the rule that required it. **One work item reached A16 in this
+pass** and it is the one below; nothing else in the category was touched, no frame was redesigned,
+and no name, number or measurement changed.
+
+**Numbering.** Unchanged: **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15**. No gap
+was created or closed, no number reused, nothing renumbered.
+
+### What changed
+
+1. **One control name means one set of values** — **A16 no longer enumerates Image focus.** The
+   category held a private copy of the values in four places: the `locations[]` entry in *Repeating
+   items*, the `image · imageAlt · imageFocus` row of the shared field list, **15 Cover's Fields
+   line**, and **15 Cover's Controls table**. All four now cite **P0·9 · Image focus** and state no
+   values of their own. Frames: `A16-0 Category Proof` · `A16-7 Map Split` · `A16-8 Locations` ·
+   `A16-15 Cover`.
+2. **One control name means one set of values**, second half — **the control carries both axes
+   wherever A16 draws it.** P0·9's side-to-side axis is the owner's ruling of 3 September 2026 and
+   this category did not have it. **15 Cover's panel now draws one label and two segmented rows**,
+   both at Centre; **7 Map Split's and 8 Locations' focus keeps its home in the Image Picker's
+   popover** and draws both axes there. **No axis is narrowed on any of the three**, so nothing greys
+   and no reason sentence is owed. A wide map cropped into 7's square, or a wide photograph cropped
+   into 15's band, is exactly the case the new axis exists for.
+3. **A control the compiler resolves is not a data binding** — stated once in the category, which it
+   was not before: **Ghost never sees Image focus.** The choice is a hint the compiler resolves into
+   the crop the theme ships with; nothing about it reaches Ghost and Ghost sends nothing back. A16
+   never described it as Ghost data, so nothing had to be withdrawn — but it follows that focus
+   **declares no behaviour module**, does not appear in the no-JavaScript table, and survives a design
+   switch with the rest of the section's content.
+4. **A control that could never do anything here is not drawn, and the panel says why** — **checked
+   on all fifteen, and it lands nowhere in A16.** The category has three image slots and **all three
+   crop**: 7's map into a 560 square (16:9 at 1,080), 8's thumb at 16:9, 15's photograph into a
+   full-bleed band of the section's own height. **No design in A16 places a photograph at its own
+   shape**, so P0·9's never-offered note is drawn in this category not once; the other twelve designs
+   have no image slot to put one under.
+5. **Named values only, never a percentage and never a draggable focal point** — checked: A16 draws
+   neither and never did.
+
+### Rules re-checked in this pass, no change
+
+- **A design may offer fewer choices on a shared control, and must say why** — no axis is narrowed on
+  7, 8 or 15, so no constraint is claimed and none is owed a reason. **15 Cover's top-quarter text
+  rule is not a narrowing**: it is why *Top* is the value the panel warns about, not a value it
+  withholds.
+- **The no-JavaScript line, design by design** — unchanged in all fifteen. Focus runs nothing.
+- **The behaviour each design declares** — unchanged: `contact-form` on the ten form designs, none on
+  the five formless ones.
+- **The roster, with [Free] marked** — unchanged: **2 Centred · 9 Slim Bar**.
+- **Printed design totals** — nothing authored in this pass carries one, and no count of any kind was
+  added.
+- **The two pieces maintained in the repository** — the marketing and app screens' no-total copy, and
+  P0's per-prop mark allowlist — **left alone, untouched and un-paraphrased**. Neither is in this
+  project's copy and neither was re-authored here.
+
+### Open questions
+
+**OPEN FOR THE OWNER · the dark map upload and P0·9's per-slot rule.** P0·9 draws one Image focus per
+image slot, and 7 Map Split and 8 Locations each carry two uploads for one frame — `mapImage` and the
+optional `mapImageDark`. *What I would have needed to know:* whether the dark upload is a second slot
+that gets its own focus control, or the same slot's alternative image, which would inherit the light
+image's focus. *What I did instead:* left it as found — **one Image focus per location item**, in the
+Image Picker's popover, applying to whichever image renders.
+
+**OPEN FOR THE OWNER · where the control is drawn on 7 and 8.** P0·9 says Image focus is drawn under
+the image slot it belongs to; A16 settled on 24 August 2026 that 7's and 8's focus lives in the
+**Image Picker's popover** rather than in the section panel, because the map sits inside a repeating
+item. *What I would have needed to know:* whether the popover satisfies "under the slot", or whether
+the section panel must draw the two rows itself. *What I did instead:* left the popover as found and
+drew both axes there.
+
+### Confirmations
+
+- **The design numbering is unchanged.** This category's numbers are **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 ·
+  9 · 10 · 11 · 12 · 13 · 14 · 15** — fifteen designs, nothing renumbered, renamed or removed.
+- **The "**[Free] designs:**" line is present** in the roster and names **2 Centred** and **9 Slim
+  Bar**, both of which exist in this category at those numbers.

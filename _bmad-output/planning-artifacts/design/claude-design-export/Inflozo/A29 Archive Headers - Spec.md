@@ -1,6 +1,19 @@
 # A29 Archive Headers — written specification
 
-14 designs · Paper pack · drawn 23 August 2026 · controls-reconciled 25 August 2026 · **design-patched 30 August 2026**
+14 designs · Paper pack · drawn 23 August 2026 · controls-reconciled 25 August 2026 · **design-patched 30 August 2026** · declarations standardised 31 August 2026 · **pass-five patched 3 September 2026**
+
+**Pass five — 3 September 2026 (the current pass).** One work-list item, and it is a naming change rather
+than a drawing. **Image focus is one shared control, defined once in P0·9 and carrying both axes, and
+this category's private copy of its values is withdrawn.** Every enumeration of the focus values in this
+document is replaced by a reference to **P0·9 · Image focus** — settlement 3, the shared floor, the Data
+group, the shared field list, 5 Full Bleed's controls note and finding 3 — and **no value is restated
+anywhere in this document or on any frame**. The **side-to-side axis is new** (the owner's ruling of
+3 September 2026) and this category did not have it: **5 Full Bleed and 6 Image Split now draw both axes**
+in the Image Picker's popover, **neither narrowed**, and **finding 3's missing horizontal axis is closed
+by the shared definition**. **Ghost never sees this** — focus is a hint the compiler resolves, which is
+why it is a control and not a data binding — and that is now said once on the shared floor. **Nothing was
+renumbered, no control was added or removed, no count changed, and no measure, type scale, colour pack or
+spacing step moved.** Two items are recorded **OPEN FOR THE OWNER** in **Patch notes — pass five**.
 
 The frames are `A29-0 Category Proof.dc.html` and `A29-1` … `A29-14`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -75,8 +88,9 @@ a label**, and 1, 7, 8 and 9 are the four designs that still read as composition
 **3 · A tag with a feature image, and one without.** **Two designs of the fourteen draw the image** —
 5 Full Bleed and 6 Image Split. 6 *uses* it: with none, the picture column goes and the text keeps
 its measure. **5 is built around it**, and with none **it renders itself** ⚑: the frame keeps its Height and its bottom-left type, and the picture slot resolves to the pack's contrast ground — white ink unchanged, no scrim drawn. **Amended in the design patch pass: the hand-off to 1 Centred is deleted**, because no design ever turns into another design. The panel advises — "no picture on this tag — 1 Centred reads better here" — and never switches. **Reconciled:** both designs now carry
-**`imageFocus` — Centre · Top · Bottom** ⚑, in the Image Picker's popover, applied to an upload **and
-to the Ghost image**.
+**`imageFocus`** ⚑, in the Image Picker's popover, applied to an upload **and
+to the Ghost image**. **Amended in pass five: the control is P0·9's** — one shared definition carrying
+**both axes** — and **its values are not restated here**.
 
 **4 · The zero-post archive.** It is reachable — an empty tag, a new author, a month with nothing in
 it — and **A17 Post Grids does not render at all when the query is empty**. So **A29 owns the
@@ -133,9 +147,14 @@ Every design obeys these unless its own entry says otherwise.
   The three CTA designs use **P0·4** under a section-level **Member visibility** row. States are
   **P0·6**'s switcher. **No design had a "Preview" control to remove** — rule 7 is satisfied by
   construction.
-- **Every image field carries Image focus** — Centre · Top · Bottom, in the Image Picker's popover and
-  never a hidden field ⚑. In A29 that is `featureImage` in **5** and **6**, and the focus **applies to
-  the Ghost image too**, because Ghost stores none.
+- **Every image field carries Image focus — the control defined once in P0·9** ⚑, in the Image Picker's
+  popover and never a hidden field. **Its values are P0·9's, both axes, and are not restated in this
+  document.** In A29 that is `featureImage` in **5** and **6**, and the focus **applies to the Ghost
+  image too**, because Ghost stores none. **Ghost never sees this** ⚑ — focus is a hint the compiler
+  resolves into the crop the theme ships with, which is why it is a control and not a data binding: it
+  declares no behaviour module and there is nothing to fail with JavaScript off. **Neither axis is
+  narrowed on either design**, so neither carries a reason. **The twelve designs that draw no picture
+  hold no focus row at all** — P0·9's not-drawn case, which is what those twelve panels already did.
 - **Targets.** Back links, pills, index rows, the all-topics link, social icon slots and actions are
   44 px. **Nothing interactive is under 44** ⚑, including the index row, where **the whole row is the
   target rather than the name** ⚑.
@@ -180,7 +199,7 @@ them read-only.
 | `nameSource` | enum req | From Ghost · Custom text → reads `{{#tag}}{{name}}`, `{{#author}}{{name}}` or the route's title ⚑ |
 | `descriptionSource` | enum req | From Ghost · Custom text · Off — From Ghost reads the tag description or the author bio |
 | `imageSource` | enum req | From Ghost · Upload · Off — **drawn disabled in the twelve designs that draw no image** ⚑; the field is kept, not discarded |
-| `imageFocus` | enum opt | **Centre · Top · Bottom — 5 and 6 only, new in this pass** ⚑; applies to the Ghost image as well as an upload |
+| `imageFocus` | enum opt | **P0·9 · Image focus — both axes, neither narrowed; 5 and 6 only** ⚑; applies to the Ghost image as well as an upload. **The values are P0·9's and are not restated here** |
 | `emptyBehaviour` | enum req | Head and notice (default ⚑) · Head only — **Hide is not offered** ⚑ |
 | *Where this runs* | read-only | Tag archive · Author archive · Date collection — **Ghost's route decides; the section reports it** ⚑ |
 
@@ -273,7 +292,7 @@ section's items** ⚑ — A29 draws no posts.
 | `titleOverride` | text | opt | 60 ch | all 14 | Empty means "use Ghost's name" ⚑ |
 | `description` | text | opt | 240 ch | all but 8 | Falls back to the tag description or the author bio |
 | `featureImage` | image | opt | — | 5, 6 | Tag feature image or author **cover**, not the profile picture ⚑ |
-| `imageFocus` | enum | opt | — | 5, 6 | **New** ⚑. Centre · Top · Bottom, in the Image Picker popover; **applies to the Ghost image too** |
+| `imageFocus` | enum | opt | — | 5, 6 | **P0·9's control** ⚑, both axes, values not restated here; in the Image Picker popover; **applies to the Ghost image too** |
 | `backLabel` | text | opt | 24 ch | 1, 2, 4, 6, 7, 8, 10, 13, 14 | Default "All posts" ⚑ |
 | `backUrl` | url | opt | — | same | Link Picker; defaults to `{{@site.url}}` ⚑ |
 | `actionLabel` | text | opt | 20 ch | 3, 7, 12 | Default "Subscribe" ⚑. **Per member state, P0·4**; plain text, no toolbar |
@@ -485,13 +504,15 @@ the universal trio and the Data group follow each list and are not counted.
    | Description | Show · Hide |
    | Post count | Under the description · Beside the eyebrow · Off |
    | Alignment | Left · Centre |
+   | Image focus (data) | **P0·9** — both axes, neither narrowed |
    | Background role (universal) | **Locked at Image** |
    | Vertical spacing (universal) | Resolving 0 |
    | Top divider (universal) | **Locked None** |
 
    **Seven.** Plus the trio — **Background role locked at Image**, Vertical spacing resolving 0,
-   Top divider locked None — and the Data group, which carries **Image focus *Centre · Top ·
-   Bottom*** ⚑.
+   Top divider locked None — and the Data group, which carries **Image focus — P0·9's control, both
+   axes, neither narrowed** ⚑ and is not counted. **Side to side has real work at 390**, where the frame
+   is 390 × 420 and a wide photograph loses its sides.
 7. **Data.** `{{#tag}}{{feature_image}}` or `{{#author}}{{cover_image}}` ⚑ — the cover, not the
    profile picture. **0** → notice on the scrim, image unchanged. **No image** → the picture slot resolves to the contrast ground and the design renders itself ⚑; the panel advises and never switches.
 8. **Empty.** **The no-picture state is drawn on the states strip** — the frame, the flat contrast ground and the white type.
@@ -522,6 +543,7 @@ the universal trio and the Data group follow each list and are not counted.
    |---|---|
    | Image side | Left · Right (visual only) |
    | Image shape | Landscape 3:2 · Four by three · Square |
+   | Image focus (data) | **P0·9** — both axes, neither narrowed |
    | Name size | Regular · Large · Display |
    | Eyebrow | Show · Hide |
    | Description | Show · Hide |
@@ -530,8 +552,10 @@ the universal trio and the Data group follow each list and are not counted.
    | Vertical spacing (universal) | Compact · Comfortable · Spacious (the old Padding row) |
    | Top divider (universal) | None · Line · Fade |
 
-   **Six.** Plus the trio (Vertical spacing is the old Padding) and the Data group with **Image
-   focus** ⚑.
+   **Six.** Plus the trio (Vertical spacing is the old Padding) and the Data group with **Image focus —
+   P0·9's control, both axes, neither narrowed** ⚑, which is not counted. **Both axes do their hardest
+   work at Square**, where a landscape file is cropped most and side to side is what chooses which side
+   survives.
 7. **Data.** As 5 for the image. **No image** → the column goes and **the text keeps 636** ⚑; no
    hand-off, because the remaining design is still a legitimate head. **0** → notice under the name.
 8. **Empty.** One empty half is the design's weakest state and is drawn.
@@ -909,10 +933,12 @@ the universal trio and the Data group follow each list and are not counted.
    that co-occur with this one"** ⚑. Both draw the site's tag list ordered by post count and mark the
    current one; on author and date routes nothing is marked.
 3. **There is no focal point on a feature image.** 5 and 6 crop from the centre because **Ghost
-   stores no focal-point data** ⚑. **Amended in the reconciliation pass:** `imageFocus` — Centre · Top · Bottom — now ships on both designs and is applied to the Ghost image as well as an upload, so the crop is
-   **authored** rather than computed. The finding stands for what Ghost *stores*: nothing. **It is
-   also short a horizontal axis**, as A12 and A13 both found — Centre · Top · Bottom has nothing to
-   say about a 3:2 crop of a portrait file.
+   stores no focal-point data** ⚑. **Amended in the reconciliation pass:** `imageFocus` now ships on both designs and is applied to the Ghost image as well as an upload, so the crop is
+   **authored** rather than computed. **Amended again in pass five:** the control is **P0·9's**, defined
+   once for the library, and **the horizontal axis this finding was short of now exists** — the owner's
+   ruling of 3 September 2026 gave P0·9 a second axis, so the shortfall A12 and A13 also reported is
+   closed by the shared definition rather than by this category. **The values are not restated here.**
+   The finding stands for what Ghost *stores*: nothing.
 4. **`pagination.total` and `count.posts` can disagree.** A29 counts what the archive query returns;
    **A20 Tag Collections counts what the tag holds** ⚑. On a site with member-only posts a reader can
    see "42 posts" on a tag card and "37 posts" on its archive. One of the two has to change, and it is
@@ -1235,3 +1261,112 @@ makes that decision.
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** fourteen designs, numbered **1–14**.
+
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change below carries the **name** of the rule or ruling that required it. Rules are named, never
+numbered. **The work list held one item**, and it is a naming change rather than a drawing.
+
+### What changed
+
+- **Image focus points at P0·9 instead of listing the values here** — *one control name means one set of
+  values*. Image focus was never a shared control: two dozen category specs each wrote out their own copy
+  of its values, and A29 was one of them. It is now defined once, in **P0·9**, and a category supplies
+  only the slot it applies to. **Six enumerations in this document are withdrawn** — settlement 3, the
+  shared floor's image bullet, the Data group's `imageFocus` row, the shared field list's `imageFocus`
+  row, 5 Full Bleed's controls note, and finding 3 (which held the values twice) — and **three on the
+  proof frame**: the shared floor's withdrawn-focal-point line, the field list's `imageFocus` cell and
+  finding 3. **No value is restated anywhere in this document or on any frame.** Where a design's note
+  said something useful about which value its crop wants, that observation is kept: naming what an axis
+  is *for* on a given crop is not a private copy of the set.
+- **Both axes are drawn on the two designs that draw an image** — *one control name means one set of
+  values*, second half, and the owner's ruling of 3 September 2026. **5 Full Bleed** and **6 Image
+  Split** each now draw **one label and two segmented rows**, both resting at Centre, in the **Image
+  Picker's popover** where A29 settled the control on 25 August 2026. **Drawing the control is not
+  restating the values**: the prose enumerations are gone, and what the panel draws is the control
+  itself. **Neither design narrows an axis**, so neither carries a reason — a narrowing would have to be
+  drawn in P0·0's greyed treatment with its reason at the control.
+- **Ghost never sees this, and A29 now says so once** — *a control is not a data binding*. Focus is a
+  hint the compiler resolves into the crop the theme ships with: the project stores the choice, the
+  compiler resolves it, and nothing about it reaches Ghost or comes back. It therefore declares no
+  behaviour module and cannot fail with JavaScript off. Written into **the shared floor** once, and
+  restated in the pass-five block on each frame because a frame is read on its own.
+- **Finding 3's missing horizontal axis is closed by the shared definition** — *one control name means
+  one set of values*. The finding recorded that the control was short a horizontal axis, as A12 and A13
+  also found. **P0·9 now carries a side-to-side axis** by the owner's ruling of 3 September 2026, so the
+  shortfall is answered in the place the control is defined rather than in this category. **The finding
+  still stands for what Ghost stores: nothing.**
+- **The twelve designs that draw no picture are named as P0·9's not-drawn case** — *a control that could
+  never do anything here is not drawn*. 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13 and 14 draw no photograph at
+  any setting, so there is no focus row, no greyed row and no placeholder. **This is what those twelve
+  panels already did**; the shared floor now names P0·9 as the source of the treatment. The Data group's
+  `imageSource` row stays **drawn disabled** with its reason, unchanged — the field is kept, not
+  discarded.
+- **5's and 6's control tables gained one row each, marked "(data)"** — *declarations standardised,
+  31 August 2026*, which says a Data-group control a design's own list names is marked "(data)" in the
+  table. `Image focus (data) | **P0·9** — both axes, neither narrowed`. **The counts are unchanged** —
+  seven on 5 and six on 6 — because the Data group sits outside each design's own list and is not
+  counted.
+
+### Open for the owner
+
+- **OPEN FOR THE OWNER — where the control is drawn.** *What I would have needed to know:* whether
+  P0·9's "one label, two segmented rows, drawn under the image slot they belong to" means the section
+  panel, or whether A29's **Image Picker popover** satisfies it. *Why it is open:* A29 settled on
+  25 August 2026 that focus lives in the picker's popover and is never a hidden field; P0·9 describes the
+  shape of the control but not which surface hosts it, and **A16 raised the same question
+  independently**. *What I did instead:* kept A29's popover home exactly as found, drew both axes in it,
+  and cited P0·9 as the definition — moving the control into the section panel would be a design change
+  this work list did not ask for.
+- **OPEN FOR THE OWNER — is there a never-offered note for a design that draws no picture at all?**
+  *What I would have needed to know:* whether P0·9's not-drawn note — whose words are about a design that
+  places a photograph at its own shape — is meant to appear on a design that draws no photograph at any
+  setting. *Why it is open:* A29's twelve image-less panels already draw the Data group's **Image** row
+  disabled with its reason, so a second sentence about focus may be a duplicate rather than a
+  clarification, and writing new wording would be inventing a decision. *What I did instead:* left the
+  twelve panels exactly as found — no focus row and no note — and recorded the question.
+
+### Left alone, and said so rather than tidied
+
+- **Two sentences on 5's and 6's frames still say the crop is centred.** 5's panel prose reads "There is
+  no image-position control. The crop is centred…" and 6's reads "No crop or focal-point control — same
+  finding as 5". Both are pass-two-era sentences that the same frames' own **Reconciled** lines already
+  contradict, and **neither is an enumeration of the focus values**, so this work list does not reach
+  them. **Left as found and recorded**, because a deliberate edit outside the work list is worth less
+  than a line in these notes.
+- **The marketing and app screens print no design total, and P0's per-prop mark allowlist is maintained
+  in the repository.** Neither is in this project's copy, neither was touched, and neither is re-created
+  here. **No design total is written into any copy authored in this pass** — not the old number, not a
+  corrected one.
+- **The dated Patch notes of the 30 and 31 August passes stand as records of what those passes did.**
+  This pass reverses nothing in them, so no earlier item gained a new tag.
+- **The "All topics →" link's target is still open with the architect**, unchanged by this pass and not
+  re-argued: Ghost provides no tag-index page, so `allTopicsUrl` has no default and the link does not
+  render without one.
+
+### Re-checked and unchanged
+
+**The roster** — fourteen rows, control counts 6 · 7 · 8 · 6 · 7 · 6 · 7 · 6 · 5 · 7 · 7 · 8 · 6 · 6,
+tuples and thin-content cells as pass four left them, and **[Free]** on **1 Centred** and **8 Bar**.
+**The control lists** — every table as the 31 August standardisation left it, plus the one "(data)" row
+on 5 and 6; no control was added, removed, renamed or revalued, and no default moved. **The data fields**
+— fourteen authored fields, one catalog string and five reads from Ghost; `imageFocus` is still an
+optional enum on 5 and 6 and still applies to the Ghost image as well as an upload. **The no-JavaScript
+line per design** — unchanged: twelve designs pixel-identical, 9 Big Type's `count-up` resolving to the
+final value already in the HTML, 14 Sticky pinning with CSS including the pinning, and the three member
+actions drawn and inert. **The behaviour each design declares** — unchanged: **none** on twelve,
+`count-up` on 9 (only at Count animation: On) and `filter-strip` on 11. **Image focus declares no
+module**, in this category as in P0·9.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14** — fourteen
+   designs, nothing renumbered, no number reused, no gap created or closed, nothing deleted.
+2. **The `**[Free] designs:**` line is present**, on its own line at the head of this document, in the
+   required shape, and names **1 Centred** and **8 Bar** — both of which exist in this category's
+   roster. Unchanged from the owner's ruling of 30 August 2026.
+
+— End of pass five —

@@ -645,7 +645,7 @@ A 200 px band with a picture in it: image on one side, headline, body and a butt
 
 **Data.** Member state, plus **Content source: Authored · From a post** (new this pass): bound, image ← the post’s feature image, headline ← its title, CTA ← its URL, chosen through the same P0·5 panel. Bound text is plain-text-locked (“Edit in Ghost”); the eyebrow and the button label stay authored and inline-editable. Empty `image` → the band renders as Image: None at 160 px whatever the control says; the striped placeholder is for the editor, never for a reader.
 
-**Image treatment.** The panel is bled to the band's edges with no radius of its own — a rounded card inside a full-bleed band reads as two objects. Panel width and crop follow the layout: 360 px at 16:9 on desktop, 260 px at 4:3 at 834, a 132 px band at 3:1 at ≤ 767, so the image must be authored with a subject that survives all three. **Image focus** (Centre · Top · Bottom) is set in the Image Picker popover — never a hidden field — and biases all three crops. Background fills the band and puts the text on the image behind a scrim built from the pack's contrast colour — never a black-to-transparent gradient — running 72% at the text edge to 28% at the far side, turning 90° at ≤ 767 to 30% → 82% top to bottom. In dark the image is dimmed 6% and nothing else is done to it: no filter, no duotone, no border; the scrim pair becomes 78/38%.
+**Image treatment.** The panel is bled to the band's edges with no radius of its own — a rounded card inside a full-bleed band reads as two objects. Panel width and crop follow the layout: 360 px at 16:9 on desktop, 260 px at 4:3 at 834, a 132 px band at 3:1 at ≤ 767, so the image must be authored with a subject that survives all three. **Image focus** is set in the Image Picker popover — never a hidden field — and biases all three crops. **The control and its values are P0·9's**, defined there once for the whole library: this category names the slot it sits under — `image`, its only one — and adds nothing, no fourth value and no renamed axis. **Both axes are in force here and neither is constrained**, which is what the three crops need: 16:9, 4:3 and 3:1 are three different shapes, so a photograph that keeps its sides in one loses them in another. **Ghost never sees this:** focus is a hint the compiler resolves into the crop the theme ships with, not something Ghost stores, which is why it is a control and not a data binding — it declares no module, and nothing about it is lost with JavaScript off. Background fills the band and puts the text on the image behind a scrim built from the pack's contrast colour — never a black-to-transparent gradient — running 72% at the text edge to 28% at the far side, turning 90° at ≤ 767 to 30% → 82% top to bottom. In dark the image is dimmed 6% and nothing else is done to it: no filter, no duotone, no border; the scrim pair becomes 78/38%.
 
 **Member ask (Part A·A9).** Action: Button and Action: Arrow link are both member asks when their URL points at sign-up, subscribe or a paid tier. Neither renders when the connected site cannot honour it — signup closed, members disabled, or no payment provider for a paid ask — and the 200 px band then carries image, eyebrow, headline and body with the close as the only interactive thing in it: the case Action: None already carries a sidebar warning for, and the warning now names this cause too. Content source: From a post is not an ask — a post link is a post link. It opens Ghost's Portal, so **with JavaScript off nothing happens**. **It renders when** members are on and signup is open; a paid ask needs a payment provider connected and a live paid tier as well; a sign-in link needs members on only.
 
@@ -1050,3 +1050,62 @@ Frames updated: **`A2-14 Edge`** (the disclosure block's *What it costs* line an
 
 - **The design numbering is unchanged: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15** — fourteen designs, the gap at 13 left open, nothing renumbered and no number reused.
 - **The "**[Free] designs:**" line is present** in §0, on its own line, naming **1 Rule** and **2 Split** — both of which exist in this category's roster.
+
+
+---
+
+## Patch notes — pass five, A2 Announcement Bars, 3 September 2026
+
+One work-list item, and it is a deletion rather than an addition: this category stops writing out Image
+focus's values and cites the shared definition instead. **Frame updated: `A2-12 Takeover`** — the only
+design in A2 that carries an image, and the only file that held the enumeration. Nothing was restyled, no
+frame moved, no control added or removed, no value changed, no design renumbered, and **no specified
+behaviour changed anywhere in this category**. Every change carries the **name** of the rule that required it.
+
+| Rule (by name) | Change |
+|---|---|
+| One control name means one set of values | **§12's Image treatment paragraph no longer enumerates the values.** It names the control, names the slot it sits under in A2 — `image`, the category's only one — and cites **P0·9** for what the control is and what it offers. The same enumeration is struck from `A2-12 Takeover` in both places it appeared: the Image row's note in the control panel, and the Content source prose under the From-a-post frame. |
+| One control name means one set of values | **The side-to-side axis is now in force here, by reference rather than by restatement.** A2's old text carried the up-and-down values only, so the axis added by the owner's ruling of 3 September 2026 was missing. The spec says both axes apply and that this design constrains neither, and gives the design's own reason: 16:9, 4:3 and 3:1 are three different shapes, so a photograph that keeps its sides in one crop loses them in another. |
+| One control name means one set of values | **"Ghost never sees this" is written in, once** — in §12, beside the reference. Focus is a hint the compiler resolves into the crop the theme ships with, not a field Ghost stores, which is why it is a control and not a data binding. A2 had not said it before. It follows that no A2 design declares a module for it and nothing about it is lost with JavaScript off. |
+| A design may offer fewer choices on a shared control and must say why | **No subject: A2 constrains nothing on this control.** 12 Takeover crops at all three widths and takes both axes in full. Nothing was withdrawn, and no constraint was invented in order to have one to state. |
+| A control that could never do anything here is not drawn, and the panel says why | **Checked, no subject.** P0·9's could-never case is a design that places a photograph at its own shape. 12 Takeover crops into a panel or fills the band at every width, so focus always has work to do and the never-offered note has nowhere to go in A2. The other thirteen designs carry no image field at all — no slot, so no control and no note. |
+| Printed design totals stay out of product copy | **Honoured, and nothing written.** No design total — old, corrected or computed — appears in the new text or anywhere this pass touched. A2 still has no marketing or app copy. The per-frame eyebrow "DESIGN 14 OF 14" and the panel heading "shared by all 14" remain the *category's* own count on a design-library artefact, as three earlier passes recorded and reasoned; that judgement is unchanged, not re-opened. |
+| P0's per-prop mark allowlist | **Not touched.** It is not in this project's copy, and this pass did not open P0 except to read P0·9's definition. |
+
+**Left alone, and why — recorded rather than edited.**
+
+- **Image focus was not added as a row to A2·12's Controls table, and no panel row was drawn.** It is
+  reached from the Image Picker popover, which no A2 frame draws — the panel states where it lives and what
+  it governs. The work list's "if a design's panel draws the control, draw both axes" therefore has nothing
+  in this category to act on, and drawing a control row nobody asked for would be the redesign the preamble
+  forbids. Both axes are stated in the notes that do exist.
+- **All fourteen design frames and `A2-0 Category Proof` were read for the enumeration**, not assumed clean.
+  Only `A2-12` carried it. A2-0's shared field list names `image` and `imageAlt` without mentioning focus,
+  so it needed no edit and got none.
+- **The roster with [Free] marked, the control lists, the data fields, the no-JavaScript line per design and
+  the behaviour each design declares are unchanged.** Focus sits outside every per-design control list by
+  §12's own structure, reads and writes no Ghost field, and declares no module — so this work list had
+  nothing to move in any of those five places. Checked design by design rather than assumed.
+
+**Open items.**
+
+- **OPEN FOR THE OWNER — does Image focus bias the Image: Background crop as well as the three panel crops?**
+  What I would have needed to know: whether the full-band background image, which fills 1440 × 200 and is
+  cropped as hard as any panel, is inside the control's scope — §12's sentence names the panel's three crops
+  only, and Background is a value of the same Image control. What I did instead: left the sentence's scope
+  exactly as found, added the reference and the second axis around it, and wrote nothing new about
+  Background either way.
+- **OPEN FOR THE OWNER — does focus stay offered on a bound Ghost feature image?** What I would have needed
+  to know: which of two categories has the library's rule, because they answer the same question
+  differently — A2·12 offers focus in both modes, authored and bound (Content source: From a post), while
+  A1 withholds it from post feature images on the grounds that the image is Ghost's. P0·9's test is whether
+  the design crops, and it says nothing about who supplied the image. What I did instead: left A2's
+  behaviour exactly as found — offered in both modes — and recorded the divergence here rather than
+  aligning two categories on an inference.
+
+**Confirmations.**
+
+- **The design numbering is unchanged: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15** — fourteen designs,
+  the gap at 13 left open, nothing renumbered and no number reused.
+- **The "**[Free] designs:**" line is present** in §0, on its own line, naming **1 Rule** and **2 Split** —
+  both of which exist in this category's roster.

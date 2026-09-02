@@ -39,7 +39,7 @@ could not be applied without inventing a decision — 10 Lead and List's Meta at
 *narrowed* rather than switched off, since the lead still reads it, and carries its reason at the
 control. The **Open questions** housekeeping is recorded in **Patch notes — pass two** at the end.
 
-**Pass four — 3 September 2026 (this document's current state).** Three work-list items, and **one of
+**Pass four — 3 September 2026.** Three work-list items, and **one of
 them changes a drawn label.** **One control name means one set of values** — the owner's ruling of
 3 September — is reconciled against **A17**, where the card and its shared fields are defined:
 **`order` is two values in all fifteen again** and 14 Index's Title A–Z moves to a control of its own,
@@ -58,6 +58,27 @@ open questions rather than fixed** — 9 Big Type's Meta enum, 9 Big Type's Titl
 across 3 Slim and 14 Index. **Nothing was renumbered, no design was deleted, no value's meaning
 changed and no layout, type scale, colour pack or spacing step moved.** Everything is in **Patch
 notes — pass four** at the end.
+
+**Pass five — 4 September 2026 (this document's current state).** A short pass, and **nothing it does
+changes a drawing.** **`group-headings` may step the titles it groups, and must** — the owner's
+ruling of 4 September 2026, which turns pass four's assumption into the module's written contract:
+the module **inserts each group heading at the level the design declares** and **steps the titles it
+groups one level below**, because **that is the only arrangement whose outline is correct in both
+states** — nested with the script, describing a grouped list; flat peers without it, describing a
+flat list. It is written into §8's grouping settlement, the Structure bullet and 5 Grouped's
+behaviour and A11y fields; **the frame is unchanged**, this being what it already drew.
+**The missing client-side sort module is answered, and the answer is No** — *the order a list shows is
+the order its owner arranged*. There is no client-side sort module and there will not be one, so
+**Findings item 7, the last one still open, is struck**, **4 Dated's field 9 records an answer rather
+than A17·10's gap**, and **no module name was coined**. **The category's Image focus refusal now
+cites P0·9**, image focus having been one shared control since 3 September 2026; **A18 holds no
+private copy to retire** — it enumerates no focus values anywhere, narrows no axis and renames
+nothing, because it authors no image and so has **no slot for the control to sit under**. **A18's four
+pictures do crop**, at a named size and a named shape, so whether the category joins P0·9's
+never-offered list is **OPEN FOR THE OWNER**. **Nothing was renumbered, renamed, redrawn or deleted,
+no control was added or removed, no value or default changed, no layout, type scale, colour pack or
+spacing step moved, and no design total is written anywhere.** Everything is in **Patch notes — pass
+five** at the end.
 
 **[Free] designs:** 1 Rows · 3 Slim
 
@@ -128,7 +149,14 @@ templates cannot tell that the month changed between two posts — no arithmetic
 previous item inside a loop — so the design **declares `group-headings`** and **renders flat and
 ungrouped without JavaScript**: every post present, in the set's order, **each row with its own date**, **no
 group heading and no group date at all** and no group gap or empty space where one would have been —
-the owner's ruling, 28 August 2026. That state is drawn on the frame and stated at the design's Group by row. The heading is **the eyebrow at one weight step up** (13 px, uppercase,
+the owner's ruling, 28 August 2026. That state is drawn on the frame and stated at the design's Group by row.
+**⚑ Ruled 4 September 2026, *an inserted heading steps the titles it groups*: the module inserts each
+group heading at the level the design declares — an `<h3>` here, under the section's `<h2>` — and
+steps the titles it groups one level below, to `<h4>`.** That is the only arrangement whose outline is
+correct in **both** states: nested with the script, describing a grouped list; flat `<h3>` peers
+without it, describing a flat list. **Inserting a group heading as a peer of the titles it groups
+would announce a nesting that is not there.** Pass four assumed this and was right; it is now the
+module's contract rather than a reading. The heading is **the eyebrow at one weight step up** (13 px, uppercase,
 `.08em`, muted, 600), sitting **above its group with 40 px over and 14 under**, or hung left in a
 200 px column. **Rules run inside a group and stop at its end.** **A row never repeats what its
 heading says** ⚑ — under a month heading the date renders "12 Mar", under a tag heading the row's
@@ -260,11 +288,20 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   category-wide. **⚑ 3 September 2026, *an answer that already existed*: a design may declare more than
   one behaviour module and the compiler emits the union** — true since the inventory merge. **No subject
   in A18:** thirteen designs declare none and two declare one each, so the category is not waiting on a
-  ruling it never asked for.
+  ruling it never asked for. **⚑ 4 September 2026 the category's two standing behaviour gaps are
+  closed here, where they used to be listed.** **`group-headings` has a contract** — *an inserted
+  heading steps the titles it groups* — so the module's heading levels are ruled rather than assumed;
+  and **there is no client-side sort module and there will not be one** — *the order a list shows is
+  the order its owner arranged* — so 4 Dated's and A17·10's shared gap is an answer, not a hole.
+  **No registry entry was added and no module name was coined by either closure.**
 - **Structure.** `<section aria-labelledby>` → `<h2>`; `<ul>` of `<li>`; **each title an `<h3>`**;
   dates `<time datetime>`; plate `aria-hidden`. **Two departures:** 11 Numbered is an `<ol>` — the
   only one in the library — and 5 Grouped makes each heading an `<h3>` and steps its titles to
-  `<h4>`.
+  `<h4>`. **⚑ 4 September 2026 the second of those is `group-headings`' written contract rather than
+  this document's assumption** — *an inserted heading steps the titles it groups*: the module inserts
+  the heading at the declared level and steps what it groups one level below, so the outline is
+  correct with the script and without it. **The step is the module's, not the design's**, which is why
+  the server-rendered flat list keeps its `<h3>` titles.
 - **Print.** Every design prints as drawn except two, and neither becomes another design ⚑ amended:
   **7 Contrast Band prints on white without its band** — same rows, same measure, same rules, so it
   loses its ground rather than its identity — and **15 Load More prints the rows it had loaded**.
@@ -273,7 +310,14 @@ and two mechanisms on one feed is a bug. **`infinite-scroll` is refused category
   Ghost-aware **Link Picker**. **No Preview control exists in A18** and there never was one to
   remove. **Member visibility is offered nowhere** ⚑ — every action here is navigation. **Image focus
   has nothing to attach to** ⚑ — A18 authors no image, and a thumbnail's focal point belongs to the
-  post, in Ghost. **Rule 11's optional button icon reaches one design**, 15 Load More.
+  post, in Ghost. **Image focus is P0·9, one shared control since 3 September 2026, and this category
+  holds no private copy of it to retire** ⚑ 4 September 2026: A18 enumerates no focus values in this
+  document or on any of its sixteen frames, narrows no axis and renames nothing, because **there is no
+  image slot for the control to sit under** — the photograph is the post's. The refusal now **cites
+  P0·9** instead of standing on its own sentence. **A18's four pictures do crop**, at a named size and
+  a named shape, so this is not P0·9's drawn never-offered case, which is a design that crops nothing;
+  whether the category is therefore a member of the never-offered list is **OPEN FOR THE OWNER** — see
+  *Patch notes — pass five*. **Rule 11's optional button icon reaches one design**, 15 Load More.
 
 ### One control name, one set of values — as it lands in A18
 
@@ -585,7 +629,7 @@ A18. *Universal:* Row density keeps its name **and the shared set Compact · Com
 8. **Empty.** **The date is never missing.** No tag, or Tag Hide → title moves up, date stays level
    with the title's first line. **⚑ A future `published_at` never appears** — Ghost does not return
    scheduled posts to a public query.
-9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the date column is server-rendered from each post's `published_at`. **Nothing in the registry sorts client-side**, so a reader cannot reverse the order with or without script — A17·10's gap, unchanged.
+9. **Behaviour module.** **None.** **Edit-safe: yes** — nothing runs. **JS off:** pixel-identical; the date column is server-rendered from each post's `published_at`. **⚑ Answered 4 September 2026, *the order a list shows is the order its owner arranged*: there is no client-side sort module and there will not be one**, so a reader cannot reverse the order with or without script — **the same answer A17·10 now carries, and no module name was coined for either.** What was A17·10's gap is a ruling.
 10. **A11y. ⚑ DOM order departs from the card: date, tag, title, excerpt, author** — the visual and
     reading orders agree. **⚑ 3 September 2026 the departure is registered in the card itself**, in
     A17's closed DOM-order register, which is now the only place a departure may be declared; the
@@ -640,21 +684,27 @@ date-order note.
 8. **Empty.** No tag at Group by Tag → **the authored `otherGroupLabel`, default "Everything
    else"** ⚑. **A row never repeats its heading:** Month → "12 Mar", Year → "12 March", Tag → full
    date and no row eyebrow.
-9. **Behaviour module.** **`group-headings`** ⚑ — Ghost cannot tell that the month changed between two posts, so the headings are cut in by the browser from each row's `<time datetime>` or its tag. **Edit-safe: yes** — the module runs in the editor, so the canvas shows the grouped list; it derives headings from content already on the page and moves, adds and removes nothing the editor placed. **JS off: the list renders flat and ungrouped** — every post present, in the set's order, **each row carrying its own date exactly as the design draws it**, **no group heading and no group date**, no group gaps and no empty space where one would have been. One consequence, stated rather than corrected: a set spanning more than one year shows no year anywhere. **No post is lost.**
+9. **Behaviour module.** **`group-headings`** ⚑ — Ghost cannot tell that the month changed between two posts, so the headings are cut in by the browser from each row's `<time datetime>` or its tag. **⚑ The module's heading-level contract is written in, 4 September 2026 — *an inserted heading steps the titles it groups*: it inserts each group heading at the level this design declares, `<h3>`, and steps the titles it groups one level below, to `<h4>`.** Nothing else in the DOM moves. **Edit-safe: yes** — the module runs in the editor, so the canvas shows the grouped list; it derives headings from content already on the page and moves, adds and removes nothing the editor placed. **JS off: the list renders flat and ungrouped** — every post present, in the set's order, **each row carrying its own date exactly as the design draws it**, **no group heading and no group date**, no group gaps and no empty space where one would have been, **and every title left at its server-rendered `<h3>`**. One consequence, stated rather than corrected: a set spanning more than one year shows no year anywhere. **No post is lost.**
    **`accordion` considered and refused** on design grounds despite a perfect degradation; **sticky
    headings refused** (they need no module and a section is not a scrolling pane).
-10. **A11y.** **⚑ The outline is correct in both states:** server-side each title is an `<h3>`
-    under the section's `<h2>`, which is what a flat list should announce, and **the module inserts
-    each heading as an `<h3>` and re-levels the titles it groups to `<h4>`** as it goes.
-    **⚑ Each heading is an `<h3>` and each post title steps to `<h4>`** — the only place in
-    A17 or A18 where a post title is not an `<h3>`, and it means switching designs changes the
+10. **A11y. ⚑ The outline is correct in both states, and 4 September 2026 that is the module's
+    contract rather than this document's assumption** — *an inserted heading steps the titles it
+    groups*. Server-side each title is an `<h3>` under the section's `<h2>`, which is what a flat list
+    should announce; **the module inserts each group heading as an `<h3>` and re-levels the titles it
+    groups to `<h4>`** as it goes, so the nested state announces the nesting it has.
+    **A group heading is never a peer of the titles it groups** — that would announce a nesting that
+    is not there. **Each post title therefore steps to `<h4>` in the grouped state** — the only place
+    in A17 or A18 where a post title is not an `<h3>`, and it means switching designs changes the
     document outline. One `<ul>` per group.
 
 **Reconciled.** *Controls, seven:* the authored **"Everything else" label** and the **"View all"
 link** join the five; Padding retired. *Strings:* **"Everything else" is no longer a literal** — it
 is `otherGroupLabel`, default kept, ≤ 26 ch, inline-editable — and **the month and year headings
 render through Ghost's `{{date}}` in the site's locale**, confirmed in this pass. *Data:* the Data
-group and a 1–25 stepper. **No Tag row:** recorded as a conflict, not closed.
+group and a 1–25 stepper. **No Tag row:** recorded as a conflict, not closed. **Pass five:** the
+module's heading levels are **ruled**, 4 September 2026 — it inserts the heading at the declared
+level and steps what it groups one below — and **nothing drawn changed**, this being the outline the
+frame already had.
 
 ---
 
@@ -1117,7 +1167,9 @@ row carrying the date-order note.
 row:** Detail governs it. *Data:* the Data group and a 1–30 stepper. **Pass four:** the alphabetical sort is
 **`alphabetical` On · Off**, a control of this design's own, and **`order` is two values here as
 everywhere** ⚑ 3 September 2026 — the standing finding that `order` has no alphabetical value stays
-closed, now without giving one name two sets, and still without coining a module.
+closed, now without giving one name two sets, and still without coining a module. **Pass five:** the
+category's missing client-side sort is **answered No**, 4 September 2026, and **Alphabetical is not
+that sort** — it is server-side `title asc`, which is why this design needs no module either way.
 
 ---
 
@@ -1295,8 +1347,9 @@ query is what the user owns.
 who settled it; a live one carries **OPEN FOR THE OWNER** on its own line. **Nothing was answered
 there.*** **⚑ Worked through again on 3 September 2026: eight of the ten are now struck** — item 2 by
 the owner's naming ruling, items 3, 4, 8, 9 and 10 as *answers that already existed*, and items 5 and
-6 by *the card's exceptions belong in the card*. **One remains open: item 7, the missing client-side
-sort.** The dates and the original wording are kept and struck rather than deleted.
+6 by *the card's exceptions belong in the card*. **⚑ 4 September 2026: item 7 is struck as well, and
+nothing on this list is open** — *the order a list shows is the order its owner arranged*. The dates
+and the original wording are kept and struck rather than deleted.
 
 1. ~~15 Load More reinterprets `count`.~~ **Settled by the post lists patch, 28 August 2026.** 15 Load More no longer reinterprets `count`: the design is
    main-feed-only, the route's pagination is the total, and `count` is not read there. **The field
@@ -1332,12 +1385,16 @@ sort.** The dates and the original wording are kept and struck rather than delet
    **Done, 3 September 2026:** the exception is written into **the card's own title promise in A17** —
    "wraps, never clamped, never truncated, with one exception" — naming 3 Slim, its `nowrap` + ellipsis
    clip, the full string in the DOM as the accessible name, and no `title` attribute.
-7. **No module covers a client-side sort** (A17·10, A18·4) — the same gap, named twice, and
+7. ~~**No module covers a client-side sort** (A17·10, A18·4) — the same gap, named twice, and
    deliberately not closed by 14 Index's server-side sort, which is now its own `alphabetical`
    control. **⚑ 3 September 2026 it carries a second reason as well:** a third `order` value would give
    one name two value sets, which *one control name means one set of values* forbids. **The one item on
-   this list still open.**
-   **OPEN FOR THE OWNER**
+   this list still open.**~~ **Answered 4 September 2026 — *the order a list shows is the order its
+   owner arranged*: there is no client-side sort module and there will not be one.** It was never a
+   gap in the registry; it was a question about who arranges a list, and the answer is its owner. A
+   module built for one or two designs would also have to differ from its own no-JavaScript state,
+   which is a cost with no gain. **4 Dated's field 9 and A17·10's now record an answer**, 14 Index's
+   Alphabetical stays server-side and is not that sort, and **no module name was coined.**
 8. ~~**Two designs are measurably weaker in dark** — 8 Row Cards and 12 Panel — because the shadow is
    dropped and Paper's surface step is modest. A pack-level dark elevation would fix both.~~
    **Answered 3 September 2026 — *an answer that already existed*: dark elevation and dark
@@ -1519,12 +1576,16 @@ as a locked value with the reason beside it.
    **the row discloses that changing it changes every paginated list on the site**. What remains for
    the architect is mechanical: a section control writing a theme-package value needs a path — *a
    remainder for the architect, not a question for the owner.*
-2. **`group-headings` has no written contract.** The registry names the module; it does not say
+2. ~~**`group-headings` has no written contract.** The registry names the module; it does not say
    whether the module may re-level a heading. This pass assumed it inserts each group heading as an
    `<h3>` and steps the titles it groups to `<h4>`, because that is the only arrangement whose
    outline is correct both with the script and without it. If the module may not touch heading
-   levels, the flat state is still correct and the grouped state announces two `<h3>` peers.
-   **OPEN FOR THE OWNER**
+   levels, the flat state is still correct and the grouped state announces two `<h3>` peers.~~
+   **Settled by the owner on 4 September 2026, *an inserted heading steps the titles it groups*: the
+   module inserts each group heading at the level the design declares and steps the titles it groups
+   one level below — and must.** The assumption this pass recorded was right; the second branch, in
+   which the module may not touch heading levels, is ruled out because a heading drawn as a peer of
+   the titles it groups would announce a nesting that is not there.
 3. ~~Column counts: layout or item count?~~ **Settled by *a count that picks between drawn layouts
    is a named set, not a number picker*, pass two, 1 September 2026** — the rule's test is whether
    every value has a frame somebody has actually looked at, and both rows pass it, so both stay
@@ -1544,6 +1605,8 @@ as a locked value with the reason beside it.
    order the user dragged**, ruled 2 September 2026. **One survives — the missing client-side sort:**
    nothing in the registry sorts in the browser, no module name was coined for it, and it now carries a
    second reason as well, since a third `order` value would give one name two sets.
+   **⚑ And that one is answered on 4 September 2026, *the order a list shows is the order its owner
+   arranged*: no client-side sort module exists or will. All eight are settled.**
    **OPEN FOR THE OWNER**
 
 ### Module declarations added — 31 August 2026
@@ -1872,15 +1935,19 @@ spacing step moved.**
    ruling across the two categories rather than two. **A17 has the identical question open**, and this
    pass changed nothing on its account.
    **OPEN FOR THE OWNER**
-5. **`group-headings` still has no written contract.** Unchanged from pass two: the registry names the
+5. ~~**`group-headings` still has no written contract.** Unchanged from pass two: the registry names the
    module but does not say whether it may re-level a heading. This document still assumes it inserts
    each group heading as an `<h3>` and steps the titles it groups to `<h4>`, because that is the only
-   arrangement whose outline is correct both with the script and without it.
-   **OPEN FOR THE OWNER**
-6. **The missing client-side sort**, carried forward and now with a second reason: nothing in the
+   arrangement whose outline is correct both with the script and without it.~~
+   **Answered by the owner on 4 September 2026, *an inserted heading steps the titles it groups*: the
+   module inserts each group heading at the level the design declares and steps the titles it groups
+   one level below — the assumption was right and is now the contract.** Written into §8, the Structure
+   bullet and 5 Grouped's fields 9 and 10. Nothing drawn changed.
+6. ~~**The missing client-side sort**, carried forward and now with a second reason: nothing in the
    registry sorts in the browser, no module name was coined, and a third `order` value would give one
-   name two sets. 14 Index's Alphabetical is server-side and is not that sort.
-   **OPEN FOR THE OWNER**
+   name two sets. 14 Index's Alphabetical is server-side and is not that sort.~~
+   **Answered 4 September 2026, *the order a list shows is the order its owner arranged*: no such
+   module exists or will.** Recorded at Findings item 7 and on 4 Dated's field 9.
 
 ### Conflicts listed rather than chosen
 
@@ -1921,3 +1988,141 @@ declarations as the authority.
 2. **The "[Free] designs:" line is present** at the head of this document, on its own line, and names
    **1 Rows** and **3 Slim** — both of which exist in this category's roster of fifteen, and both
    confirmed by the owner on 28 August 2026.
+
+---
+
+## Patch notes — pass five, 4 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. Rules are named and never
+numbered. **Three work-list items — one ruling to write in, one answer to close, one shared control to
+cite — and none of them changes a drawing.** **Frames updated: all sixteen** — `A18-0 Category Proof`
+and `A18-1` … `A18-15`, each gaining a **PASS FIVE PATCH** card that states in one line what changed
+on that frame and which rule required it, and says *no subject on this frame* where a rule has none.
+**Nothing was renumbered, renamed, redrawn or deleted, no control was added, removed, re-valued or
+re-defaulted, no layout, type scale, colour pack or spacing step moved, and no design total is written
+anywhere.**
+
+### What changed, and the rule that required it
+
+1. **`group-headings` may step the titles it groups, and must** — *an inserted heading steps the titles
+   it groups*, the owner's ruling of 4 September 2026. The module **inserts each group heading at the
+   level the design declares** — `<h3>` at 5 Grouped, under the section's `<h2>` — and **steps the
+   titles it groups one level below**, to `<h4>`. **That is the only arrangement whose outline is
+   correct in both states:** nested with the script, describing a grouped list; flat `<h3>` peers
+   without it, describing a flat list. **Each state then tells the truth about itself**, and a group
+   heading drawn as a peer of the titles it groups would announce a nesting that is not there.
+   **Written in four places:** §8's grouping settlement, the shared floor's **Structure** bullet,
+   **5 Grouped's field 9** (as the module's contract, with the flat state keeping its server-rendered
+   `<h3>` titles) and **field 10** (the outline in both states). **Pass four's assumption was right and
+   is now a contract** — its open question 5 and the 28 August list's item 2 are struck with the
+   ruling. **The step is the module's, not the design's**, which is why nothing about the
+   no-JavaScript state moved. **Nothing drawn changed on `A18-5 Grouped`**: this is the outline the
+   frame already had.
+2. **The missing client-side sort module is answered, and the answer is No** — *the order a list shows
+   is the order its owner arranged*. There is no client-side sort module and there will not be one; a
+   module built for one or two designs would also have to differ from its own no-JavaScript state,
+   which is a cost with no gain. **4 Dated's field 9 now records an answer rather than A17·10's gap**,
+   **Findings item 7 — the last item still open on that register — is struck**, and 14 Index's
+   **Alphabetical stays server-side `title asc` and is not that sort**. With a third `order` value
+   already forbidden by *one control name means one set of values*, **the category offers no sort at
+   any layer**. **No module name was coined**, and `infinite-scroll` stays refused category-wide.
+3. **The category's Image focus refusal now cites P0·9** — *one control name means one set of values*.
+   **A18 holds no private copy to retire:** it enumerates no focus values in this document or on any of
+   its sixteen frames, narrows no axis and renames nothing, because it authors no image and so has
+   **no slot for the control to sit under** — the photograph is the post's, in Ghost. The shared floor's
+   Editing bullet was standing on its own sentence; it now names the shared control. **No control was
+   drawn, greyed or removed on any of the sixteen frames**, and Image focus is a compiler hint rather
+   than a data binding, so it adds nothing to the field list.
+4. **The shared floor's Behaviour bullet records both closures** in one place, so a reader meets the
+   answers where the gaps used to be listed.
+5. **Nothing was renumbered and no design was deleted.** Fifteen designs, 1 to 15.
+
+### The roster, with [Free] marked
+
+| # | Design | | # | Design |
+|---|---|---|---|---|
+| 1 | Rows **[Free]** | | 9 | Big Type |
+| 2 | Thumb Rows | | 10 | Lead and List |
+| 3 | Slim **[Free]** | | 11 | Numbered |
+| 4 | Dated | | 12 | Panel |
+| 5 | Grouped | | 13 | Timeline |
+| 6 | Split Head | | 14 | Index |
+| 7 | Contrast Band | | 15 | Load More |
+| 8 | Row Cards | | | |
+
+**[Free] designs:** 1 Rows · 3 Slim — the owner's confirmation of 28 August 2026, unchanged.
+
+### The four declarations this pass was asked to re-state
+
+| What | Where it stands after this pass |
+|---|---|
+| **The control lists** | **Unchanged, all fifteen.** No control added, removed, renamed or re-valued; no default moved; every greyed row and every lock is as pass four left it — the universal **Order** row at Source: Hand-picked, the six per-design greyings across 1, 5, 8, 14 and 15, 14 Index's **Alphabetical** greying Order, and the four locks (7 Contrast Band's Background role and Top divider, 15 Load More's Source and Pagination style). 12 Panel's **Boxed** stays *absent* rather than disabled. |
+| **The data fields** | **Unchanged.** Twenty-four, counted as the schema counts them. Nothing in this pass reads or writes a Ghost field; the heading-level contract is markup the module emits, not a field, and **Image focus is a compiler hint rather than a data binding** (P0·9's own words). `groupBy`, `headingPosition` and `otherGroupLabel` are as pass one wrote them. |
+| **The no-JavaScript line per design** | **Unchanged on all fifteen**, and two of them now rest on answers rather than findings. **Thirteen are pixel-identical with JavaScript off.** **5 Grouped renders flat and ungrouped** — every post present, in the set's order, each row with its own date, no group heading and no group date, no group gap, **and every title left at its server-rendered `<h3>`**, which is the ruling's other half. **15 Load More renders Ghost's numbered `/page/2/` links** in place of its button. **4 Dated is pixel-identical and offers no sort at any layer.** **No design declares a width below which its script runs.** |
+| **The behaviour each design declares** | **Unchanged.** Two designs declare a module — **5 Grouped `group-headings`, 15 Load More `load-more`** — and **thirteen declare none**; `core` is the theme's and never declared per design. A design may declare more than one and the compiler emits the union; none here does. **`group-headings` now has a written heading-level contract**, **no registry entry was added and no module name was coined**, `accordion` and sticky headings stay refused at 5 Grouped, and `infinite-scroll` and `shuffle` stay refused category-wide. |
+
+### Open questions raised by this pass
+
+1. **Is A18 a member of P0·9's never-offered list?** P0·9's drawn never-offered case is *a design that
+   crops nothing*; **A18's four pictures do crop**, at a named size (96 · 144 · 200 at 2 Thumb Rows,
+   Off · 112 · 160 at 8 Row Cards, Off · 96 · 160 at 15 Load More, the lead's own box at 10 Lead and
+   List) and a named shape. What is missing is not the crop but the slot, the photograph being the
+   post's. What I would have needed to know: whether "never offered" means *nothing is cropped* or
+   *nothing is authored here to attach a focus to*. What I did instead: recorded it, cited P0·9 in the
+   Editing bullet and drew nothing. **A17 has the identical question open**, and it is one ruling for
+   both categories.
+   **OPEN FOR THE OWNER**
+2. **Where does the heading-level contract live once it is written?** This document now states it, and
+   it is a fact about the *module* rather than about 5 Grouped, so the registry entry for
+   `group-headings` is where it belongs — and the registry is not in this category's keeping. What I
+   would have needed to know: whether A18 stating it is enough, or whether the registry entry is to be
+   amended by whoever owns it. What I did instead: wrote it into A18's four places as the design's
+   declaration of what it relies on, and coined no registry text.
+   **OPEN FOR THE OWNER**
+3. **Carried forward, still unanswered:** the three collisions pass four recorded — **9 Big Type's
+   `meta` enum** (two sets under one name, A17·9 drawing the same divergence), **9 Big Type's
+   `titleSize`** (Display · Huge against Small · Medium) and **`columns`** across 3 Slim and 14 Index;
+   **whether a differing quantity under a shared value name counts as a second set**, which A17 also
+   has open; **pass two's conflict**, where P0·5 hides the main feed's pair that the greying rule would
+   grey; and **5 Grouped's absence from the Tag Show · Hide list**. **Nothing was changed on any of
+   their accounts.**
+   **OPEN FOR THE OWNER**
+
+### Where the work list and this document did not agree
+
+- **The work list says this category "still has a private copy" of Image focus; this document says
+  Image focus has nothing in A18 to attach to and enumerates no focus values.** **Recorded, not
+  resolved**, and nothing was changed on its account beyond the P0·9 citation — see open question 1.
+  A18's position has been *no image is authored here* since the reconciliation pass, and the four
+  designs that draw a picture draw the post's `feature_image` at a named box. It is listed here
+  because a mismatch between a work list and a specification is the kind of thing these passes exist
+  to surface. **A17 recorded the same mismatch on 4 September 2026.**
+- **Nothing else in the work list contradicts anything already written.** The heading-level ruling
+  closes a question this document had itself marked OPEN FOR THE OWNER, in the direction it had
+  already assumed and drawn; the sort answer closes the one item left on its own findings register.
+
+### Left alone deliberately
+
+**The two repository-maintained pieces are untouched, as asked.** **No design total was written
+anywhere** — not in this document, not on any of the sixteen frames, in any form; not the old number,
+not a corrected one, and nothing here quotes a library size. **P0's per-prop mark allowlist is not
+rewritten, softened or dropped.**
+
+**Dated records keep their wording.** The 28 August patch table's *"No module name was coined … the
+client-sort gap stays named and unowned"* and the 31 August module-declarations table, whose row for
+4 Dated reads "the sort gap stays a gap", are **records of what those passes did** and are left as
+written; the closures are recorded here and struck in the live register (*Findings · Still open*,
+item 7) and beside the open questions they answer, rather than edited through history. **Every earlier
+patch block keeps its own date.**
+
+**One housekeeping note rather than a change.** This pass is dated **4 September 2026** so that it
+follows pass four's 3 September; the work list carries no date of its own. **A17's pass five is dated
+the same day**, and the two rulings the categories share — the sort answer and the P0·9 citation — are
+recorded identically in both.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** —
+   fifteen designs, no gap created or closed, no number reused, nothing renumbered.
+2. **The `**[Free] designs:**` line is present** at the head of this document, on its own line, and
+   names **1 Rows** and **3 Slim** — both of which exist in this category's roster of fifteen.

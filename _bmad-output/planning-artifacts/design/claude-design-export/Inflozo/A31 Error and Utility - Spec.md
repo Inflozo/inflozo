@@ -1,6 +1,6 @@
 # A31 Error and Utility — written specification
 
-10 designs · Paper pack · drawn 24 August 2026 · controls reconciled 25 August 2026 · **design patch pass 30 August 2026**
+10 designs · Paper pack · drawn 24 August 2026 · controls reconciled 25 August 2026 · **design patch pass 30 August 2026** · **pass five 3 September 2026**
 
 The frames are `A31-0 Category Proof.dc.html` and `A31-1` … `A31-10`. **Where this file and a drawn
 panel disagree, the panel is the authority** — it is the thing that was designed; this is the thing
@@ -23,6 +23,19 @@ still render as themselves, with the panel free to advise and never to switch. T
 **item counts are a number picker** (8 Elsewhere's *How many posts*) and **gap names are "Tight · Normal · Loose"**
 (2 Split Reason's *Gap*). Every change is listed with the name of the rule that required it in **Patch notes** at
 the end. **All ten designs are kept and nothing is renumbered.**
+
+**Pass five, 3 September 2026.** One work-list item, and it is a naming change. **Image focus is one shared
+control, defined once in P0·9 and carrying both axes — Centre · Top · Bottom and Centre · Left · Right — and this
+category's private copy of its values is withdrawn.** Wherever this document or a frame spelled the values out it
+now points at **P0·9** and names the slot, which here is **7 Cover's photograph, the category's only image slot**;
+the other nine designs store the image group and draw it nowhere. **The side-to-side axis is new to A31** — a wide
+photograph cropped into 7 Cover's 4:5 mobile frame loses its sides, and a vertical-only control has nothing to say
+about which side survives — and **no constraint is claimed**, because both axes have work to do at that design's
+crops. **Ghost never sees focus**: it is a hint the compiler resolves into the crop the theme ships with, not a
+data binding, so it declares no behaviour module and cannot fail with JavaScript off. All eleven frames gain a
+**PASS FIVE PATCH** block. **Nothing was renumbered, no control was added or removed, and no value, default,
+layout, type scale, colour pack or spacing step changed.** Two things are recorded **OPEN FOR THE OWNER** rather
+than guessed at, in **Patch notes — pass five** at the end.
 
 **[Free] designs:** 1 Centred · 4 Boxed
 
@@ -223,6 +236,12 @@ Picker** — `primaryUrl`, `secondaryUrl`, `links[].url`. **The primary button t
 from the Icon Picker, before or after the label, on P0·2's button-icon rules (always Small, always the
 label's colour, its Size and Colour rows hidden) ⚑.
 
+**Image focus is P0·9's shared control, and this document restates none of its values** ⚑ — **P0·9 defines it
+once and carries both axes**, and a category supplies only the slot it applies to, which here is 7 Cover's
+`image`. **Ghost never sees focus**: it is a hint the compiler resolves into the crop the theme ships with
+rather than a data binding, which is why it reaches no template, declares no behaviour module and cannot fail
+with JavaScript off.
+
 **Ghost-owned content is never inline-editable** ⚑ — the status code, Ghost's wrong-password string,
 post titles and excerpts, navigation labels and `@site.title` all answer **"Edit in Ghost"** or show
 P0·1's lock pill. **`links[]` is the P0·3 authored list** with drag reorder, per-row Remove that is
@@ -293,7 +312,7 @@ scratch and then lose it.
 | `secondaryLabel` · `secondaryUrl` | text · url | opt | 30 ch | all 10 | A text link, never a second button ⚑. **On the 500 it is an authored mailto** ⚑ |
 | `links[]` | list 0–6 | opt | label 40 ch · url | 1, 2, 3, 4, 5, 6, 7, 10 | **The category's only authored repeater** ⚑. **Dropped on the 500, absent on the gate** ⚑; 8 and 9 store it |
 | `linksLabel` | text | opt | 24 ch | as `links[]` | Default "Try one of these"; **the accessible name of 5's nav landmark** ⚑ |
-| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 7** | ≥ 2,400 px · 120 ch · 9 positions | 7 | **No image → the picture and the scrim hide and the block draws on the page ground** ⚑. Focus is a field, not a control ⚑ — **and it sits in the Image Picker's popover rather than a hidden field** (Centre · Top · Bottom). Not drawn on the 500 at all |
+| `image` · `imageAlt` · `imageFocus` | image · text · enum | **req in 7** | ≥ 2,400 px · 120 ch · **focus per P0·9** | 7 | **No image → the picture and the scrim hide and the block draws on the page ground** ⚑. Focus is a field, not a control ⚑ — **and it sits in the Image Picker's popover rather than a hidden field**. **Its values are P0·9's, both axes, and are not restated here** ⚑. Not drawn on the 500 at all |
 | `postsLabel` | text | opt | 24 ch | 8 | Default "Recently on Orbit Weekly"; stored by the other nine ⚑ |
 | `directoryLabel` | text | opt | 24 ch | 9 | Default "Everything the site does have"; the nav landmark's accessible name ⚑ |
 | `gateDisplayWord` | text | opt | 16 ch | 10 | Default "Private" ⚑ — **invented**: there is no status code at `/private/` |
@@ -640,7 +659,8 @@ category floor.
    45 %. **834** 16:9, padding 48, measure 560. **≤ 767** **4:5 crop** ⚑, padding 24, measure 350,
    block centred, the button full width. **The scrim never changes with width** ⚑.
 5. **Content fields.** The union plus `image` · `imageAlt` · `imageFocus` — **required here, drawn
-   nowhere else** ⚑. **No image → the photograph and the scrim hide** ⚑.
+   nowhere else** ⚑. **No image → the photograph and the scrim hide** ⚑. **Focus is P0·9's control, both axes,
+   and its values are not restated here** ⚑ — it sits in the Image Picker's popover for this slot.
 6. **Controls.**
 
    | Control | Values |
@@ -669,6 +689,13 @@ category floor.
 **Reconciled ⚑** Six controls now, with Eyebrow added and the search row struck. **Background role is locked to Image** ⚑ — the photograph is the ground, and with no image the photograph and the scrim simply hide rather than the design falling back to a role or becoming another design ⚑. **Image focus now sits in the Image Picker's popover** ⚑: the "focus is a field, not a control" ruling stands, the unreachable part of it does not. Top divider defaults to None over a picture.
 
 **Patched ⚑ 30 August 2026** Six controls, and **the two hand-offs are retired**: at a 500, and with no image at all, the photograph and the scrim hide and the design draws its own block on the page ground. The panel may advise 6 Contrast Band and never switches to it. **Open question 2**: whether that page should instead sit on a flat plate in the scrim's own ink.
+
+**Patched ⚑ pass five, 3 September 2026** Six controls, unchanged. **Image focus points at P0·9 instead of listing
+its values** — both axes, and **the side-to-side half is new to this category**: the photograph is cropped
+full-bleed 16:9 at 1440 and 834 and into a 4:5 frame at ≤ 767, so a wide picture in the tall frame loses its
+sides and the axis has real work. **No constraint is claimed and both axes are offered in full**, and the control
+stays in the Image Picker's popover rather than becoming a panel row. **Ghost never sees it** — a compiler hint,
+not a data binding. Nothing drawn changed.
 
 **Flagged ⚑** The 4:5 mobile crop, the 45 % default and hiding the photograph rather than naming another design are invented here. The
 ring's 40 % ink offset is A31's one departure from A6. Whether a 500 may safely reference an uploaded file is the finding behind hiding the photograph.
@@ -977,3 +1004,87 @@ applied without inventing a decision, it is written as an **open question** belo
 **Nothing else changed.** No frame, no visual design, no wording of any control, no control's values, no design's set of controls, no free-design choice, no data binding, no accessibility note. This entry writes down what was already true in a form a tool can read.
 
 **Design numbering unchanged:** ten designs, numbered **1–10**.
+
+---
+
+## Patch notes — pass five, 3 September 2026
+
+Every change carries the **name** of the rule or ruling that required it. **The work list held one item**, and it
+is a naming change rather than a drawing: *one control name means one set of values*.
+
+### What changed
+
+- **Image focus points at P0·9 instead of listing the values here** — *one control name means one set of values*.
+  Image focus was never a shared control: two dozen category specs each wrote out their own copy of its values,
+  which is the owner's ruling in its worst form in the library. It is now defined once, in **P0·9**, carrying
+  **both axes**, and a category supplies only the slot it applies to. **Every enumeration in A31 is withdrawn** —
+  the shared field list's limit cell, which now reads *focus per P0·9* where it counted nine positions; the same
+  cell on the proof frame's field list; and **7 Cover's Media-group note**, which listed the vertical values on
+  the panel. **No value is restated anywhere in this document or on any frame.**
+- **The side-to-side axis arrives in this category** — the half of P0·9 A31 did not have, on the owner's ruling of
+  3 September 2026. **7 Cover is the only design it reaches**: the photograph is cropped full-bleed 16:9 at 1440
+  and 834 and into a **4:5** frame at ≤ 767, so a wide picture in the tall frame loses its sides. The Image row's
+  value summary on that frame now shows both axes — *focus Centre · Centre*. **The nine positions the field list
+  already claimed and the three values the panel enumerated never agreed**; P0·9 settles it, and the disagreement
+  is recorded here rather than quietly resolved.
+- **No constraint is claimed** — *a design may offer fewer choices on a shared control, and must say why*. 7 Cover
+  offers both axes in full, because both have work to do at its two crops. No design here constrains, greys or
+  renames any focus value, and no other design offers the control at all.
+- **Ghost never sees this, and it is now said** — *a control is not a data binding*. Focus is a hint the compiler
+  resolves into the crop the theme ships with: the project stores the choice, the compiler resolves it, and nothing
+  about it reaches Ghost or comes back. It therefore declares no behaviour module and cannot fail with JavaScript
+  off — which leaves **all ten designs declaring `core` and pixel-identical with JavaScript off**, exactly as before.
+  Written into the category layer once, and restated in the pass-five block on each frame because a frame is read
+  on its own.
+- **All eleven frames gain a PASS FIVE PATCH block** — the ten designs and the category proof. Nine of them say
+  that nothing changed and why: they store the image group and draw it on no page, so they had no enumeration to
+  withdraw.
+
+### Open for the owner
+
+- **OPEN FOR THE OWNER — is A31's "focus is a field, not a control" wording superseded?** *What I would have
+  needed to know:* whether P0·9's status as a shared control replaces this category's ruling that focus is a field
+  stored with the picture, or whether that ruling only ever described **where** it lives — in the Image Picker's
+  popover rather than as a panel row. *Why it is open:* the work list calls focus a control and not a data binding;
+  A31's field list and 7 Cover's reconciliation both call it a field and not a control. The two readings are
+  compatible if "not a data binding" is what A31 meant, and contradictory if "control" is now the word. *What I
+  did instead:* applied the naming change, **left A31's wording and the popover placement exactly as found**, and
+  stated the Ghost-never-sees-it fact, which both readings agree on.
+- **OPEN FOR THE OWNER — the proof frame's field list still describes a retired hand-off.** *What I would have
+  needed to know:* whether `A31-0 Category Proof`'s shared field list should be re-cut in a pass whose work list
+  names only image focus. *Why it is open:* that list's note cell for the image group still reads "No image → 7
+  renders 6 Contrast Band", which the pass of 30 August 2026 retired — 7 Cover now hides the photograph and the
+  scrim and draws its own block on the page ground, and **no design ever turns into another design**. The
+  specification, the roster and 7 Cover's own frame all say the current thing; this one cell does not. *What I did
+  instead:* changed only the focus cell this work list reaches, **left the hand-off sentence exactly as found**,
+  and recorded it here and on the frame rather than tidying it silently.
+
+### Left alone, and said so rather than tidied
+
+- **The marketing and app screens print no design total, and P0's per-prop mark allowlist is maintained in the
+  repository.** Neither is in this project's copy, neither was touched, and neither is re-created here. **No design
+  total is written into any copy authored in this pass** — not the old number, not a corrected one.
+- **The dated Patch notes of the 30 August and 31 August passes stand as records of what those passes did.** This
+  pass reverses nothing, so no earlier item gained a new tag, and no earlier reasoning was rewritten.
+- **7 Cover's open question 2 — a flat plate in the scrim's own ink — stays as the 30 August pass ruled it.**
+  Unrelated to this work list and not re-argued.
+
+### Re-checked and unchanged
+
+**The roster** — ten rows, **[Free]** on 1 Centred and 4 Boxed, the *What the page hides* column as the 30 August
+pass left it. **The control lists** — every control table unchanged: **1, 2, 3, 5, 6, 7 and 10 carry six · 4 Boxed
+five · 8 Elsewhere four · 9 Directory five**, with the universal trio, the Content group, the P0·6 state group and
+the page source group counted nowhere. **The data fields** — no field added or removed; `imageFocus` keeps its name,
+its type and its one user, and only the values it points at moved out of this document. **The no-JavaScript line
+per design** — unchanged: **every design is pixel-identical with JavaScript off**. **The declared behaviour** —
+unchanged: **`core` and nothing else in all ten**.
+
+### Confirmations
+
+1. **The design numbering is unchanged:** **1, 2, 3, 4, 5, 6, 7, 8, 9, 10** — ten designs, nothing renumbered, no
+   number reused, no gap created or closed.
+2. **The "[Free] designs:" line is present**, on its own line at the head of this document, and names **1 Centred**
+   and **4 Boxed** — both of which exist in this category's roster. Unchanged from the owner's ruling of 30 August
+   2026.
+
+— End of pass five —

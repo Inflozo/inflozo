@@ -43,7 +43,7 @@ Every placeable section carries **Background role**, **Vertical spacing** (Compa
 - **Every visible authored text is editable inline** with the shared floating toolbar (P0·1: bold / italic / underline / link; the link popover carries "Open in new tab" and the rel toggles `nofollow` · `noreferrer` · `sponsored`). That includes wordmark-as-text, taglines, nav-item labels in Authored mode, children, descriptions, column titles, `stripNote`, the strip's authored items, `featuredHeading`, `railHeading`, the BY TOPIC / BY AUTHORS headlines, and every action label via its P0·4 card.
 - **Ghost-owned content never shows the toolbar**: site title, site description (the tagline default), post titles, post dates, excerpts, tag names, author names, member name/tier/renewal, and nav labels in **From Ghost navigation** mode. Clicking it shows the P0·1 plain-text lock pill ("Site title — plain text, set in Ghost" / "Edit navigation in Ghost"); editing site title and description edits the Ghost setting.
 - **Every URL field opens the Ghost-aware Link Picker** (the P0·1 link popover): `ctaUrl`, child targets, authored strip items, authored column links, foot links, the P0·4 Link rows (Portal actions first).
-- **Every image field carries an Image focus (Centre · Top · Bottom), reachable from the Image Picker popover** — never a hidden field. A1's authored image fields: `logo`, `logoLight`, A1·15's logo image. Post feature images (A1·6, A1·7) are Ghost's and take no focus control here.
+- **Every image field carries an Image focus, reachable from the Image Picker popover** — never a hidden field. **The control and its values are P0·9's**, defined there once for the whole library and deliberately not restated here: both axes, their defaults, the one-control-per-slot rule and the rule for narrowing an axis all live in that section. Until this pass this specification wrote out its own copy of the values, which is the failure the owner ruled on as *one control name means one set of values*; the enumeration is gone and the reference stands in its place. A1's authored image fields, one control per slot: `logo`, `logoLight`, A1·15's logo image. **Ghost never sees it** — it is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding, and why nothing about it declares a behaviour module or degrades with JavaScript off. **One constraint, kept as found and stated as a constraint:** post feature images (A1·6's takeover, A1·7's rail) are Ghost's and take no focus control here. Whether that reason survives P0·9 — whose test is whether the design crops, not who supplied the image — is open for the owner in the pass-five Patch notes.
 - **Buttons accept an optional icon before or after the label**, from the Icon Picker with its size/colour-role popover (P0·2 button-icon rules: always Small, inherits the label colour). Applies to the primary button and the ghost action in all fifteen.
 - **No "Preview"-type control exists in any panel.** A1 shipped none (verified design by design); states are the editor's P0·6 switcher, audiences are View as.
 
@@ -1198,3 +1198,55 @@ Frames updated: `A1-1 Rail`, `A1-2 Split Rail`, `A1-5 Floating Pill`, `A1-12 Box
 **Design numbering unchanged:** fifteen designs, numbered **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired.
 
 **`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4, and both designs exist: `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.
+
+---
+
+## Patch notes — pass five, A1 Headers, 3 September 2026
+
+One work-list item, and it is a deletion rather than an addition: this category stops writing out Image
+focus's values and cites the shared definition instead. **Frames updated: none — "Left alone" below says
+why.** Every change carries the **name** of the rule that required it.
+
+| Rule | Change |
+|---|---|
+| One control name means one set of values | **§0·2's Image focus bullet no longer enumerates the values.** It names the control, names the slots it sits under in A1 (`logo`, `logoLight`, A1·15's logo image — one control per slot) and cites **P0·9** for what the control is and what it offers. The old text carried the up-and-down values only, so the side-to-side axis added by the owner's ruling of 3 September 2026 is now in force here by reference rather than by a private restatement. |
+| One control name means one set of values | **"Ghost never sees this" is written in, once.** Image focus is a hint the compiler resolves into the crop the theme ships with, which is why it is a control and not a data binding. §0·2 did not say it before. It follows that no A1 design declares a module for it and nothing about it is lost with JavaScript off. |
+| A design may offer fewer choices on a shared control and must say why | **A1's one constraint is kept and stated as a constraint:** post feature images (A1·6's takeover, A1·7's rail) take no focus control here, the reason being that they are Ghost's. Kept as found, not re-reasoned — see the open items. |
+| Printed design totals | **Nothing authored in this pass carries one.** No library design total appears in the new bullet or in this section, and none was added anywhere else. |
+
+**Left alone, and why — recorded rather than edited.**
+
+- **No frame was changed, because no A1 frame enumerates the focus values or draws the control.** All
+  sixteen files were read for it — `A1-0 Category Proof` and the fifteen designs. The control is reached
+  from the Image Picker popover, which no A1 control panel draws; `A1-0`'s shared field list names `logo`
+  and `logoLight` without mentioning focus. The work list's "if a design's panel draws the control, draw
+  both axes" therefore has nothing in this category to act on, and drawing a panel row nobody asked for
+  would be the redesign the preamble forbids.
+- **The control lists, the data fields, the no-JavaScript lines and the declared behaviour modules are
+  unchanged.** Image focus sits outside every per-design control list by §0·2's own structure, reads and
+  writes no Ghost field, and declares no module — so this work list had nothing to move in those four
+  places. Checked design by design rather than assumed.
+- **The roster and the [Free] line are unchanged.** Nothing in the work list touches either; both are
+  confirmed below.
+
+**Open items.**
+
+- **OPEN FOR THE OWNER — does anything in A1 crop, and should the control be offered here at all?** What
+  I would have needed to know: whether a logo height-capped and scaled to fit a bar counts as a design
+  that crops, or as one that places the image at its own shape — P0·9's could-never case, where the
+  control is not drawn and the panel carries a note in its place. All three of A1's image slots are
+  logos. What I did instead: applied the work list around it — replaced the enumeration with the
+  reference and left the control offered on every image field, as found. Withdrawing a control from three
+  slots on an inference is the expensive mistake here.
+- **OPEN FOR THE OWNER — is "the image is Ghost's" a reason to withhold Image focus?** What I would have
+  needed to know: whether focus is meant to follow the slot regardless of who supplied the image, since
+  P0·9's test is whether the design crops and says nothing about the image's source. What I did instead:
+  kept A1's existing constraint on A1·6's and A1·7's post feature images exactly as found and stated it
+  as a constraint with its reason, as the work list directs.
+
+**Confirmations.**
+
+- **The design numbering is unchanged.** This category's numbers are **1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 ·
+  10 · 11 · 12 · 13 · 14 · 15 · 16** — 9 stays retired. Nothing was renumbered, renamed, added or removed.
+- **`**[Free] designs:** 1 Rail · 13 Centre Nav`** is present in §0·4a, and both designs exist:
+  `A1-1 Rail.dc.html` and `A1-13 Centre Nav.dc.html`.
