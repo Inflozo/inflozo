@@ -156,14 +156,18 @@ ACTIONS = [
   'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
   'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
   'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass TWO \u2014 IN PROGRESS in Claude Design',
-  'DESIGN-PATCH-PROMPTS-2.html \u2014 20 self-contained prompts, one per category with work. RUN P0 '
-  'FIRST: the greyed-control treatment is drawn there once and every later category points at it. '
-  'THREE PROMPTS CHANGED on 2026-08-31 after the owner ruled on register 45 \u2014 A1 (Sticky and '
-  'Stay-transparent may not both be on), A2 (design 13 Consent is CUT, number retired) and A9 (new '
-  'to the pass: 12 Filter loses its filter control). If those three were already run, run them '
-  'again. Nothing in the pass is a question: every item is already in the PRD and the spine. When '
-  'the export comes back, follow the runbook at the top of this board.'),
+ ('now', 'Design patch pass THREE \u2014 seven prompts, ready',
+  'DESIGN-PATCH-PROMPTS-3.html. The library was read whole on 2 September: 49 items marked open, '
+  'most already answered elsewhere or the architect\u2019s, NINE needed you and all nine are ruled. '
+  'Three changed a requirement and are landed. These seven carry the rest into the specs \u2014 and '
+  'four of them simply CLOSE a question the last session was right to raise rather than answer. Run '
+  'in any order; nothing here depends on anything else. Then verify-design-pass.py and '
+  'reapply-export-edits.py, per the runbook above.'),
+ ('soon', 'Five registry rulings for the architect',
+  'Not yours, and not blocking: A5\u2019s tabs announced twice without JavaScript, A5\u2019s scroller '
+  'rule having no registry sentence, A13\u2019s walkthrough emitting a heading per panel, A33\u2019s '
+  'gallery script having no registry entry, and whether group-headings may re-level a heading. One '
+  'pass covers all five.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

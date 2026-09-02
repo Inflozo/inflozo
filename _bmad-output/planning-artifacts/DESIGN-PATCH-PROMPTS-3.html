@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Design patch prompts, pass three</title><style>*{box-sizing:border-box}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--patch:#96650a;--patch-s:#fff4d9;--build:#12784a;--build-s:#e2f5ec;
+--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--patch:#e8bd57;--patch-s:#33280d;--build:#5ed6a0;--build-s:#112f20;
+--sh:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.36)}}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 96px}
+h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 22px;font-size:.93rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);
+margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog{height:8px;flex:1;min-width:180px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--build);transition:width .3s}
+.count{font-weight:680;font-size:.9rem;white-space:nowrap}
+.btn{font:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+margin:0 0 14px;overflow:hidden}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
+.chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
+color:var(--accent);min-width:44px;text-align:center}
+.cname{font-weight:650;flex:1}
+.cmeta{color:var(--muted);font-size:.82rem}
+.tick{width:19px;height:19px;accent-color:var(--build);cursor:pointer;flex:none}
+.cat.done .cname{text-decoration:line-through}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px 16px}
+.cat.open .body{display:block}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;
+overflow:auto;max-height:460px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
+.note{background:var(--patch-s);color:var(--patch);border-radius:9px;padding:10px 13px;
+font-size:.87rem;margin:0 0 16px}
+.big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
+font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
+footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}</style></head>
+<body><div class="wrap">
+<div class="kick">Inflozo</div>
+<h1>Design patch pass three — the six spec-side rulings</h1>
+<p class="lede">The whole library was read on 2 September and 49 items were marked open. Most were
+already answered elsewhere or belong to the architect; <b>nine needed the owner and he ruled on all
+nine</b>. Three changed a requirement and are landed. These seven prompts carry the rest into the
+specifications. <b>Four of them simply close a question your last session was right to raise rather
+than answer.</b></p>
+<p class="lede">Run in any order — nothing here depends on anything else. Verify each returned export
+with <code>python3 tools/verify-design-pass.py</code>, then
+<code>python3 tools/reapply-export-edits.py</code>.</p>
+<div class="cat" data-cat="P0">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark P0 done">
+    <span class="step">1</span>
+    <span class="cid">P0</span><span class="cname">Editor Primitives</span>
+    <span class="cmeta">shared controls</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · P0 Editor Primitives
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS IS NOT A DESIGN CATEGORY. P0 Editor Primitives is the set of SHARED CONTROLS
+every category&#x27;s side panel draws from.
+
+THE WORK LIST FOR P0:
+
+- THE [Free] DESIGNS LINE DOES NOT APPLY TO P0, AND THAT IS NOW SETTLED (owner&#x27;s ruling,
+  2026-09-02). Your last session flagged that the instructions demanded a &quot;**[Free] designs:**&quot; line
+  while this file records an exemption, and refused to invent two design names to satisfy it. That
+  was correct. The exemption stands: P0 holds shared editor controls, it has no placeable designs,
+  so it has nothing to make free.
+  Strike the open question with the owner&#x27;s name and the date, and state the exemption once as
+  settled so no later pass re-raises it. Do not add a [Free] line.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A2">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A2 done">
+    <span class="step">2</span>
+    <span class="cid">A2</span><span class="cname">Announcement Bars</span>
+    <span class="cmeta">14 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A2 Announcement Bars
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A2 Announcement Bars, 14 designs:
+
+   1. Rule
+   2. Split
+   3. Badge
+   4. Two-Line
+   5. Capture
+   6. Countdown
+   7. Dateline
+   8. Ticker
+   9. Rotator
+  10. Pill
+  11. Toast
+  12. Takeover
+  14. Edge
+  15. Triple
+
+THE WORK LIST FOR A2:
+
+- EDGE RENDERS OPEN WITHOUT JAVASCRIPT, AND THAT IS THE OWNER&#x27;S RULING NOW (2026-09-02),
+  not your own choice. Your last session specified the open bar and honestly flagged the decision as
+  its own. The owner has confirmed it: a reader without script gets the sentence, its link and the
+  rule at the open height, and the close is hidden. The alternative — rendering nothing, which keeps
+  the four-pixel promise — was considered and refused, because a 4 px line nobody can open is not a
+  bar and that reader would lose the message entirely.
+  Change the flag from &quot;mine&quot; to the owner&#x27;s ruling with its date. The specified behaviour does not
+  change; only its authority does.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A3">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A3 done">
+    <span class="step">3</span>
+    <span class="cid">A3</span><span class="cname">Footers</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A3 Footers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A3 Footers, 16 designs:
+
+   1. Minimal Line
+   2. Columns
+   3. Two-Tier
+   4. Newsletter Band
+   5. Contrast Band
+   6. Centred Stack
+   7. Big Type
+   8. Sitemap
+   9. Latest Posts
+  10. Contact Block
+  11. Colophon
+  12. Card
+  13. Tags
+  14. Image Band
+  15. Wrap
+  16. Mini Bar
+
+THE WORK LIST FOR A3:
+
+- THE FRAMES WERE RIGHT AND THE INSTRUCTION&#x27;S WORDING WAS LOOSE (owner&#x27;s ruling,
+  2026-09-02). Your last session noticed that pass two described the wide-screen state of the
+  accordion footers as &quot;a plain stacked list of links&quot; while every A3 frame draws an open column
+  grid there, and it wrote the no-JavaScript lines from the frames rather than from that phrasing.
+  That was right. THE COLUMNS STAY. No layout changes, in any of the five designs.
+  Close the flag, recording that the wording was corrected rather than the drawings.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A9">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A9 done">
+    <span class="step">4</span>
+    <span class="cid">A9</span><span class="cname">FAQ</span>
+    <span class="cmeta">14 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A9 FAQ
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A9 FAQ, 14 designs:
+
+   1. Accordion
+   2. Two Column
+   3. Open List
+   4. Cards
+   5. Split Head
+   6. Grouped
+   7. Index
+   8. Contrast Band
+   9. Numbered
+  10. Image Split
+  11. Tabs
+  13. Slim
+  14. Ask
+  15. Ledger
+
+THE WORK LIST FOR A9:
+
+- THE NUMBERING GAP STAYS OPEN (owner&#x27;s ruling, 2026-09-02). You asked whether to close
+  it. The answer is no: the roster reads 1-11 and 13-15 and stays that way. Renumbering 13, 14 and 15
+  down would repoint every existing reference to them — in this document, on the proof frame, in the
+  repository and in anything already shipped — which is the exact failure the never-reuse rule
+  exists to prevent. Every other cut design in the library leaves the same hole: A1 skips 9, A2 skips
+  13, A4 skips 15.
+  Strike the open question with the owner&#x27;s name and the date. Nothing renumbers.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A14">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A14 done">
+    <span class="step">5</span>
+    <span class="cid">A14</span><span class="cname">Galleries</span>
+    <span class="cmeta">15 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A14 Galleries
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A14 Galleries, 15 designs:
+
+   1. Grid
+   2. Masonry
+   3. Mosaic
+   4. Panel
+   5. Split Head
+   6. Contrast Band
+   7. Carousel
+   8. Filmstrip
+   9. Full Bleed
+  10. Lead and Grid
+  11. Overlay
+  12. Captioned Rows
+  13. Contact Sheet
+  14. Index
+  15. Boxed
+
+THE WORK LIST FOR A14:
+
+- BOUND MODE DOES NOT LINK EACH PICTURE TO ITS POST (owner&#x27;s ruling, 2026-09-02). You
+  raised that a bound gallery is A17 Post Grids without the titles, and that is exactly why the
+  answer is no. A gallery whose every frame links to a post resolves, for a visitor, to the same
+  thing a Post Grid resolves to — and two categories arriving at one outcome is what the library&#x27;s
+  uniqueness rule exists to prevent.
+  A14 STAYS PICTURES-ONLY. Remove the per-frame post link from bound mode wherever it is specified
+  or drawn, and state the boundary once in the category layer: A14 shows images the owner chose,
+  A17 shows posts. Close the open question with the ruling.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A17">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A17 done">
+    <span class="step">6</span>
+    <span class="cid">A17</span><span class="cname">Post Grids</span>
+    <span class="cmeta">18 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A17 Post Grids
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A17 Post Grids, 18 designs:
+
+   1. Three Up
+   2. Two Up
+   3. Four Up
+   4. Cards
+   5. Lead and Grid
+   6. Split Head
+   7. Contrast Band
+   8. Overlay
+   9. Big Type
+  10. Ledger
+  11. Masonry
+  12. Bento
+  13. Thumb Side
+  14. Dense
+  15. Filtered
+  16. Load More
+  17. Panel
+  18. Edge to Edge
+
+THE WORK LIST FOR A17:
+
+- A WIDTH FLOOR MEASURES THE TEXT COLUMN, NOT THE CELL (owner&#x27;s ruling, 2026-09-02).
+  You raised that 4 Cards at Per row Four, 6 Split Head at Per row Three and 17 Panel at Per row Four
+  all fall under the 306 px excerpt floor once the cell&#x27;s padding is taken off — and that greying the
+  value meant deciding which width the floor measures. It measures the INNER width: a floor exists so
+  a reader can read, and what they read is the column the words sit in.
+  So in those three designs, at those settings, THE EXCERPT VALUE THE DESIGN CANNOT DRAW IS GREYED
+  WITH THE REASON BESIDE IT — use the greyed-control treatment from P0, and write the reason as a
+  sentence (&quot;at four across this card&#x27;s text column is 290 px; three lines needs 306&quot;). The floor
+  itself does not move, and no design is redrawn.
+- 11 MASONRY&#x27;S CONTROL TABLE STILL PRINTS &quot;Columns: Four&quot; while this document&#x27;s own Reconciled
+  paragraph says that value was removed on 24 August. One of the two is wrong. The frame is the
+  authority: check what 11 Masonry actually draws, make the table and the paragraph agree with it,
+  and say in your Patch notes which one you corrected.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A24">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A24 done">
+    <span class="step">7</span>
+    <span class="cid">A24</span><span class="cname">Post Headers</span>
+    <span class="cmeta">16 designs</span></div>
+  <div class="body"><pre>INFLOZO — DESIGN PATCH PASS THREE · A24 Post Headers
+Paste into a NEW Claude Design chat. Self-contained: assume no other context.
+
+WHAT THIS PASS IS. The whole library was read on 2026-09-02 and 49 items were found marked
+open. Most were already answered elsewhere or belong to the architect. NINE needed the owner and he
+ruled on all nine. Three of those changed a requirement and are already landed. THE SIX BELOW ARE
+THE REST, and they are small: four of them close a question your last session raised rather than
+answered, which was the right call and is why they are back here as a ruling instead of a correction.
+
+Nothing in this pass is a question, and nothing here asks you to redesign anything.
+
+DO NOT REDESIGN ANYTHING. Keep every frame, every name, every number. Change only what the work list
+names.
+
+TWO PIECES OF THIS LIBRARY ARE MAINTAINED IN THE REPOSITORY, NOT IN CLAUDE DESIGN.
+They are not yours to carry, and you could not carry them if you tried — your project copy has
+never held them, so an export replaces the repository&#x27;s copy with one that lacks them. This was
+asked of the 2026-08-31 pass; those sessions did exactly as asked, said so plainly, and the text
+was lost regardless. It is now re-applied by a script after every export and checked independently.
+
+So you need do nothing about either of these. They are named only so you recognise them and do not
+try to &quot;fix&quot; what looks missing:
+
+1. THE MARKETING AND APP SCREENS PRINT NO DESIGN TOTAL. Copy reads &quot;Ship every design&quot;, &quot;Browse
+   every design&quot;, &quot;Hundreds of designed sections&quot;, &quot;the free set&quot; — never a number.
+2. P0&#x27;s SPECIFICATION CARRIES A PER-PROP MARK ALLOWLIST that may not be in your copy.
+
+THE ONE THING THIS DOES ASK OF YOU: **never write a design total into any copy you author.** Not the
+old number, not a corrected one. The library changes size whenever a design is added or cut, so a
+number in product copy is wrong within a month — the last re-export printed both a stale &quot;485&quot; and a
+freshly computed &quot;466&quot;, and 466 was already wrong on the day it was written. An automated check
+fails the build if a number appears, so this costs you nothing to honour and a round trip to ignore.
+
+IF YOU ARE UNSURE about anything else: leave it, and say in your Patch notes that you left it and
+why. A thing left alone is fixed in one message; a deliberate edit silently reverted is found
+months later, if at all.
+
+WHY THIS PASS EXISTS — four facts that caused nearly every change below.
+
+1. GHOST&#x27;S TEMPLATES CANNOT COUNT, ADD, OR REMEMBER. No arithmetic, and inside a loop no
+   access to the previous item. So &quot;Jane and 2 others&quot;, &quot;Save 20%&quot;, a month heading that
+   appears only when the month changes, and a page-number window each need a different
+   approach or must go.
+2. CSS CANNOT SEE CONTENT. It does not know a caption runs over 140 characters or that a
+   paragraph is two lines, and it cannot reorder the DOM at a breakpoint.
+3. SOME FIELDS WE DREW DO NOT EXIST. Ghost gives a theme no member join date, no list of a
+   member&#x27;s newsletters, no newsletter cadence, no site address, and no &quot;posts per page&quot;
+   setting inside its admin.
+4. INSIDE A BLOG POST&#x27;S BODY WE OWN THE STYLESHEET AND NOTHING ELSE. Not the markup, not
+   the ARIA attributes, not the text. Ghost renders those.
+
+PART A — THE FIVE RULES THIS PASS ADDS. They apply to this category too, whether or
+not the work list below repeats them. Use the NAME, never the number.
+
+RULE A · A CONTROL SWITCHED OFF BY ANOTHER IS GREYED, WITH THE REASON BESIDE IT.
+   Never hidden, and never left accepting a value it will not honour. Write the reason as a
+   short sentence at the control, not as a tooltip: &quot;not available while the media uses the
+   accent colour&quot;. A control that vanishes teaches nothing — the user cannot tell a rule from
+   a bug — and one that silently ignores you is worse. Same shape as the Remove button rule.
+   ONE EXCEPTION, and it is different in kind: a control this project can NEVER offer is not
+   drawn at all and the panel says why. The visitor dark-mode switch under a pinned colour
+   scheme is the only current case.
+
+RULE B · AVATARS WITH NO PHOTOGRAPH SHOW INITIALS, AND THE TWO FORMS ARE NOT INTERCHANGEABLE.
+   A list the user types themselves gets TWO initials (&quot;Jane Doe&quot; -&gt; JD). An author pulled
+   from Ghost gets ONE letter (&quot;Jane Doe&quot; -&gt; J). This is not a style choice: Ghost&#x27;s template
+   language cannot split a name on the versions we support, so two initials are unreachable
+   for anything Ghost supplies. Never mix the two forms inside one component.
+
+RULE C · THE REMOVE BUTTON NEVER GREYS OUT. Unchanged from pass one and restated because it is
+   the reference case Rule A points at. At the minimum, Remove stays visible and fully
+   clickable, and clicking it produces the floor and the reason as one sentence under the list.
+
+RULE D · A COUNT THAT PICKS BETWEEN DRAWN LAYOUTS IS A NAMED SET, NOT A NUMBER PICKER.
+   The test is whether every value has a frame somebody has actually looked at. &quot;How many
+   items to show&quot; stays a number picker. &quot;Which of three drawn arrangements&quot; is three named
+   values. Do not convert one into the other.
+
+RULE E · A DESIGN MAY DECLARE THE WIDTH BELOW WHICH ITS SCRIPT RUNS.
+   Write it as &quot;collapses into sections under 768&quot;. Where a design declares one, its no-JS
+   line must describe the state on BOTH sides of that width, not just the narrow one.
+
+THIS CATEGORY — A24 Post Headers, 16 designs:
+
+   1. Centred
+   2. Flush Left
+   3. Split
+   4. Image Top
+   5. Full Bleed
+   6. Edge to Edge
+   7. Card
+   8. Contrast Band
+   9. Overlap
+  10. Big Type
+  11. Dateline
+  12. Rail
+  13. Sticky
+  14. Share Row
+  15. Slim
+  16. Two Column
+
+THE WORK LIST FOR A24:
+
+- FOUR IS THE MAXIMUM, AND IT IS A DESIGN DECISION (owner&#x27;s ruling, 2026-09-02). You
+  recorded that the caps on 11 Dateline&#x27;s Cells and 14 Share Row&#x27;s Links are simply the counts the
+  frames were drawn at, and that neither was ever ruled on. They are ruled now: four is the maximum
+  and no fifth cell or fifth link is drawn. The reasons already on the frames are the reasons — a
+  fifth cell&#x27;s label wraps, a fifth link takes a second line.
+  Close the open question. Both rows stay as the owner set them on 1 September: Two · Three · Four,
+  a named set, default Four.
+
+OUTPUT.
+1. Update this category&#x27;s frames.
+2. Update its spec: the roster (with [Free] marked), the control lists, the data fields,
+   the no-JavaScript line per design, and the behaviour each design declares.
+3. End the spec with a &quot;Patch notes&quot; section listing every change and the rule NAME that
+   required it (the name, not the number). Where a ruling cannot be applied without inventing a decision, write it
+   there as an OPEN QUESTION rather than guessing.
+4. Confirm at the end, in one line each: the design numbering is unchanged (list this
+   category&#x27;s numbers), and the &quot;**[Free] designs:**&quot; line is present and names two designs
+   that exist.
+5. Export the updated library as a zip.
+
+If any instruction above contradicts another, or contradicts something already in the
+spec, STOP and list the conflict rather than choosing.</pre>
+    <button class="btn copy">Copy prompt</button></div></div>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+  navigator.clipboard.writeText(b.parentElement.querySelector('pre').textContent);
+  b.textContent='Copied';setTimeout(()=>b.textContent='Copy prompt',1400);}));
+document.querySelectorAll('.chead').forEach(h=>h.addEventListener('click',e=>{
+  if(e.target.classList.contains('tick'))return;
+  h.parentElement.classList.toggle('open');}));
+const K='inflozo-patch3';
+const st=JSON.parse(localStorage.getItem(K)||'{}');
+document.querySelectorAll('.cat').forEach(c=>{
+  const id=c.dataset.cat,t=c.querySelector('.tick');
+  if(st[id]){t.checked=true;c.classList.add('done');}
+  t.addEventListener('change',()=>{st[id]=t.checked;c.classList.toggle('done',t.checked);
+    localStorage.setItem(K,JSON.stringify(st));});});
+</script></body></html>

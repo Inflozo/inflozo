@@ -287,6 +287,17 @@ DOCS = [
   'record of what was actually sent and a record is not rewritten. Imports the four Ghost facts, '
   'the output contract and the page CSS from design-patch-prompts.py; rosters DERIVE from the '
   'export. Only the work lists are authored, because a ruling cannot be derived.'),
+ ('tools/design-patch-prompts-3.py', 'tool', 'Design patch prompts — pass three',
+  'Generates DESIGN-PATCH-PROMPTS-3.html: the six spec-side halves of the owner\'s nine rulings of '
+  '2026-09-02, over seven categories. Small by design — four of the seven close a question the '
+  'pass-two session raised rather than answered, which is the behaviour the prompts asked for. '
+  'Imports everything shared from the pass-two generator, which imports its own from pass one; only '
+  'the work lists are authored. A third file rather than an edit to the second for the same reason '
+  'the second was not an edit to the first: each is the record of what was actually sent.'),
+ ('planning-artifacts/DESIGN-PATCH-PROMPTS-3.html', 'live', 'Design patch prompts, pass three',
+  'The owner-facing page for the third patch pass — seven prompts, runnable in any order because '
+  'nothing here depends on anything else. Carries the six spec-side rulings of 2026-09-02 (R-39 to '
+  'R-47, less the three that changed a requirement and landed directly). NOT YET RUN.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-2.html', 'live', 'Design patch prompts, pass two',
   'The owner-facing page for the second patch pass — one prompt per category that has work, P0 '
   'first because the greyed-control treatment is drawn there once and every later category points '
@@ -449,6 +460,8 @@ def check():
                             'the roster or the module registry'),
                            ('design-patch-prompts-2.py', 'DESIGN-PATCH-PROMPTS-2.html',
                             'the roster or a pass-2 work list'),
+                           ('design-patch-prompts-3.py', 'DESIGN-PATCH-PROMPTS-3.html',
+                            'the roster or a pass-3 work list'),
                            ('category-prompts.py', 'CATEGORY-PROMPTS.html',
                             'the prompt file or the design export')):
         if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'],
