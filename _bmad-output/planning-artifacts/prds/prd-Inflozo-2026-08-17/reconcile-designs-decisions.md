@@ -1102,7 +1102,19 @@ or prose describing the state that frame is drawn in?** The caption also carries
 that correcting one value inside it without a ruling would leave a half-updated record reading as
 current. That is a better objection than the finding itself.
 
-It is the last open item in the library and it is put to the owner rather than guessed at.
+**RULED 2026-09-03 (R-73): a frame caption is a DESCRIPTION, not a specification, and it does not
+track control vocabulary.** It records how that frame was drawn on the day it was drawn — *"padding
+Comfortable 96, ground Background, actions Both"* — and nothing is built from it: the control names
+come from the specification and from P0, both of which are correct. All 28 captions stay as they are.
+
+The two sessions' objection is what decided it. The caption already carries **`padding`** and
+**`ground`**, which are the *old row names* for what are now **Vertical spacing** and **Background
+role** — so the line is written in the vocabulary of its own day throughout, not current text with
+one stale word in it. Correcting only the Actions value would have produced 28 captions that read as
+current and are not, which is worse than 28 that are visibly of their date. **The panels are what
+would have mattered, and all 36 were redrawn in the split.**
+
+Recorded here so no later pass raises it again.
 
 ---
 
