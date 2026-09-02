@@ -294,6 +294,14 @@ DOCS = [
   'Imports everything shared from the pass-two generator, which imports its own from pass one; only '
   'the work lists are authored. A third file rather than an edit to the second for the same reason '
   'the second was not an edit to the first: each is the record of what was actually sent.'),
+ ('planning-artifacts/LIBRARY-QUESTIONS.html', 'live', 'Open questions — the owner\'s decision sheet',
+  'Every question the 33 category specifications still leave open after the 2026-09-02 rulings, as a '
+  'sheet the owner answers in the browser: plain-language explanation, numbered options with one '
+  'recommended, a note box per item, and a Copy-my-reply button that assembles the lot. Built from '
+  'tools/probe/report-template.html, which is the pattern ROUND-4-FINDINGS.html used and the one the '
+  'owner has actually decided from before. FOUR of the eighteen are already answered elsewhere and '
+  'ask only for confirmation; six more are technical rulings for the architect and are deliberately '
+  'NOT on the sheet. Becomes a `record` once answered.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-3.html', 'live', 'Design patch prompts, pass three',
   'The owner-facing page for the third patch pass — seven prompts, runnable in any order because '
   'nothing here depends on anything else. Carries the six spec-side rulings of 2026-09-02 (R-39 to '

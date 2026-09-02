@@ -1,0 +1,556 @@
+<title>Library Open Questions</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#12151a; --muted:#5b6472; --line:#e2e6ec;
+    --accent:#1f6feb; --accent-ink:#fff; --rec:#0f7b3f; --rec-bg:#e8f6ee;
+    --sev-crit:#b3261e; --sev-high:#c2410c; --sev-med:#8a6100; --sev-low:#4b5563; --sev-ok:#0f7b3f;
+    --code:#f2f4f7;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}}
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --muted:#9aa7b5; --line:#2a323c;
+    --accent:#4c8dff; --rec:#3fb950; --rec-bg:#12281c; --code:#0b0f14;
+    --sev-crit:#ff7b72; --sev-high:#ffa657; --sev-med:#e3b341; --sev-low:#9aa7b5; --sev-ok:#3fb950;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 200px}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px}
+  header h1{font-size:1.9rem;margin:0 0 6px;letter-spacing:-.02em}
+  header p{color:var(--muted);margin:0 0 6px}
+  .counts{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}
+  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;
+    padding:4px 12px;font-size:.82rem;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px;margin:20px 0}
+  .card.done{opacity:.72}
+  .head{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .sev{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:6px;border:1px solid currentColor;white-space:nowrap;margin-top:3px}
+  .sev.critical{color:var(--sev-crit)} .sev.high{color:var(--sev-high)}
+  .sev.medium{color:var(--sev-med)} .sev.low{color:var(--sev-low)} .sev.held{color:var(--sev-ok)}
+  h2{font-size:1.18rem;margin:0;letter-spacing:-.01em;flex:1 1 320px}
+  .tag{font-size:.74rem;color:var(--muted);border:1px solid var(--line);
+    border-radius:6px;padding:3px 8px;margin-top:3px}
+  .plain{margin:14px 0 0}
+  details{margin:12px 0 0;border-top:1px dashed var(--line);padding-top:10px}
+  summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+    padding:12px;overflow-x:auto;font-size:.82rem;line-height:1.5;margin:10px 0 0}
+  .opts{margin:16px 0 0;display:grid;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;background:transparent}
+  .opt.rec{border-color:var(--rec);background:var(--rec-bg)}
+  .opt.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .opt .body{flex:1}
+  .opt .lbl{font-weight:600}
+  .opt .why{color:var(--muted);font-size:.9rem;margin-top:3px}
+  .recflag{color:var(--rec);font-weight:700;font-size:.72rem;letter-spacing:.06em;
+    text-transform:uppercase;margin-left:6px}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);padding:7px 14px}
+  button:hover{border-color:var(--accent)}
+  button.pick{white-space:nowrap;align-self:center}
+  button.pick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  textarea{width:100%;margin-top:12px;min-height:62px;padding:10px 12px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);
+    border-top:1px solid var(--line);padding:14px 20px}
+  .bar .inner{max-width:920px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .bar .status{flex:1;color:var(--muted);font-size:.9rem;min-width:200px}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);
+    font-weight:600;padding:9px 20px}
+  #out{max-width:920px;margin:0 auto;white-space:pre-wrap}
+  @media (max-width:640px){.opt{flex-direction:column}button.pick{align-self:flex-start}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 id="title">Library open questions</h1>
+  <p id="subtitle">Everything the 33 category specifications still leave open, after the 2 September
+  rulings. <strong>Four are already answered</strong> and need only your nod; fourteen are real
+  decisions. Pick an option under each, add a note if you want to push back, then press
+  <strong>Copy my reply</strong> at the bottom and paste it back to me.</p>
+  <p id="subtitle" style="margin-top:10px">Six more are technical rulings about how a piece of
+  behaviour is written — the tabs that announce themselves twice, the scroller's rule, the
+  walkthrough's headings, Ghost's gallery script, the card corners and the grouping module.
+  <strong>Those are mine, not yours</strong>, and I am taking them; they are not on this sheet.</p>
+  <div class="counts" id="counts"></div>
+</header>
+<main id="findings"></main>
+</div>
+
+<div class="bar">
+  <div class="inner">
+    <div class="status" id="status">Nothing selected yet.</div>
+    <button id="copy" class="primary">Copy my reply</button>
+    <button id="show">Preview</button>
+  </div>
+</div>
+
+<script>
+const FINDINGS = [
+  {
+    "id": "C1",
+    "severity": "held",
+    "status": "ALREADY ANSWERED",
+    "area": "Style Packs",
+    "title": "The three missing colours — already solved, just needs your nod",
+    "plain": "Five separate designs across three categories each worked out their own readable text colour for a coloured band, because the Style Pack never supplied one. They all asked for the same thing. It already exists: on 31 August you approved a table that marks every pack value as either COMPUTED (worked out automatically) or AUTHORED (a human picks it). On-contrast text, accent-on-contrast, dark elevation and tabular figures are all computed. Nobody has to invent them again.",
+    "analogy": "Like five people each mixing their own shade of grey paint, when the tin was already on the shelf.",
+    "options": [
+      {
+        "label": "Confirm — the pack table covers it, and I carry that into the specs",
+        "why": "Costs nothing. Closes the single most-repeated question in the library, in five places at once.",
+        "recommended": true
+      },
+      {
+        "label": "Something is still missing — I will say what in the note box",
+        "why": "If a colour those designs need is genuinely not in that table, I would rather add it than have five designs keep inventing it."
+      }
+    ]
+  },
+  {
+    "id": "C2",
+    "severity": "held",
+    "status": "ALREADY ANSWERED",
+    "area": "Feeds",
+    "title": "Which section is the main feed — already solved",
+    "plain": "Two categories asked how a section knows it is 'the main feed' — the one showing this page's posts rather than a hand-picked strip. It matters because only the main feed shows an empty state and page numbers. This is already settled: exactly one section per page is designated the main feed, and the design file stores which one.",
+    "options": [
+      {
+        "label": "Confirm — carry it into the specs",
+        "why": "Costs nothing. Closes it in both categories.",
+        "recommended": true
+      },
+      {
+        "label": "Not quite — note what is missing",
+        "why": ""
+      }
+    ]
+  },
+  {
+    "id": "C3",
+    "severity": "held",
+    "status": "ALREADY ANSWERED",
+    "area": "Controls",
+    "title": "How a control says it switches another one off — already solved",
+    "plain": "Three categories asked how one control declares that it disables another — one category alone has ten cases, all drawn by hand. On 31 August you approved the answer: the dependency is written into the control's own definition and carries its reason, so the panel, the checker and the builder all read one source.",
+    "analogy": "Instead of ten sticky notes saying 'when this is on, grey that out', one line in the control's own description.",
+    "options": [
+      {
+        "label": "Confirm — carry it into the specs",
+        "why": "Costs nothing. Closes it in three categories.",
+        "recommended": true
+      },
+      {
+        "label": "Not quite — note what is missing",
+        "why": ""
+      }
+    ]
+  },
+  {
+    "id": "C4",
+    "severity": "held",
+    "status": "ALREADY ANSWERED",
+    "area": "Feeds",
+    "title": "Hand-picked posts keeping their order — already ruled",
+    "plain": "You ruled this on 2 September: when someone drags five posts into an order, the theme is handed them in that order and never re-sorts them by date. A18's Numbered design draws 1, 2, 3 over whatever it is given, so a silent re-sort would number the list wrongly and nothing would look broken. The spec has not caught up yet.",
+    "options": [
+      {
+        "label": "Confirm — it is ruled, carry it into the spec",
+        "why": "Costs nothing.",
+        "recommended": true
+      },
+      {
+        "label": "Reopen it — note why",
+        "why": ""
+      }
+    ]
+  },
+  {
+    "id": "D1",
+    "severity": "high",
+    "status": "MY MISTAKE",
+    "area": "Post Grids",
+    "title": "My excerpt-width ruling was off by one step, and A17 caught it",
+    "plain": "On 2 September I ruled that a minimum-width rule measures the text column rather than the whole cell. That stands. But the example I gave was wrong: I wrote 'this card's text column is 290 px; three lines needs 306', which reads as though 306 px is enough for three lines. The category says the opposite in two places — at exactly 306 px, three lines is already refused and falls back to two. So my sentence and the category's own floor disagree by one step, and the session flagged it rather than picking one.",
+    "analogy": "I said 'you need to be 306 cm tall for this ride'; the sign on the ride says 306 is too short.",
+    "evidence": "The category floor and the disabled-control table both say: at 306 px, Three lines is refused and falls to Two.\nMy example sentence implied 306 px is the threshold three lines needs.",
+    "options": [
+      {
+        "label": "The category is right — my example was wrong. Above 306 for three lines; at or below it, two.",
+        "why": "Costs a corrected sentence in one requirement. The category was checked against real drawings and I was writing from memory.",
+        "recommended": true
+      },
+      {
+        "label": "My sentence was right and the category floor should move",
+        "why": "Costs re-checking every design the floor was measured against — eighteen of them."
+      }
+    ]
+  },
+  {
+    "id": "D2",
+    "severity": "high",
+    "status": "TWO RULINGS COLLIDE",
+    "area": "Post Footers",
+    "title": "Two of your own rulings point different ways at the same row",
+    "plain": "A24's Share Row has a Links control. On 2 September you ruled four is the maximum for it. On 1 September you ruled that this row gets redrawn for Ghost's native sharing — one Share button, with Copy link and Email as the fallback, and the Links control cut entirely. The redraw has not happened yet. So the four-maximum is correct today and has nothing to apply to afterwards. The session applied neither over the other and asked.",
+    "analogy": "One rule says 'no more than four seats at this table'; another says the table is being replaced by a bench.",
+    "options": [
+      {
+        "label": "Four stands until the redraw; after it, nothing inherits a maximum",
+        "why": "Costs nothing now. The redrawn row has one trigger, so there is no count to cap. This is what the session assumed but would not decide.",
+        "recommended": true
+      },
+      {
+        "label": "The redrawn row keeps a maximum on something",
+        "why": "Say what it caps and I will write it in — but nothing in the redraw currently has a count."
+      },
+      {
+        "label": "Cancel the native-share redraw; keep the row as drawn",
+        "why": "Costs the Ghost-native sharing benefit. Only pick this if the redraw was a mistake."
+      }
+    ]
+  },
+  {
+    "id": "D3",
+    "severity": "high",
+    "status": "RULE COLLISION",
+    "area": "Controls",
+    "title": "Some controls hide when your new rule says they should grey",
+    "plain": "You ruled on 1 September that a control switched off by another is greyed with the reason beside it, never hidden — because a control that vanishes teaches nothing. But two shared editor panels HIDE controls instead, and two categories flagged the clash. Example: pick 'Hand-picked posts' as the source and the Count and Order controls disappear, rather than greying with 'the list you picked is the count'.",
+    "analogy": "You said 'grey out the button and say why'. Two screens still make the button vanish.",
+    "options": [
+      {
+        "label": "Grey everywhere — the shared panels change to match the rule",
+        "why": "Costs redrawing two shared panels, which every category then inherits. Consistent, and the reason is always visible.",
+        "recommended": true
+      },
+      {
+        "label": "Hiding is right when the control belongs to a MODE you are not in",
+        "why": "A defensible line: 'not in this mode' is different from 'switched off'. Costs a written test so nobody has to guess which is which — I would need you to say where the line falls."
+      },
+      {
+        "label": "Leave both behaviours as they are",
+        "why": "Costs the rule its meaning; the next category will ask again."
+      }
+    ]
+  },
+  {
+    "id": "D4",
+    "severity": "medium",
+    "status": "GAP",
+    "area": "Process",
+    "title": "Image focus can move a picture up and down, but not left and right",
+    "plain": "When a wide photo is cropped into a tall frame, the sides get cut off. The control that decides which part survives only offers Centre, Top and Bottom — all vertical. There is no way to say 'keep the left'.",
+    "analogy": "A photo of two people side by side, cropped tall: you can choose their heads or their feet, but not which person stays in shot.",
+    "options": [
+      {
+        "label": "Add Left and Right to the control",
+        "why": "Costs one control gaining two values, and every design using it gets them. Solves the actual case.",
+        "recommended": true
+      },
+      {
+        "label": "Leave it — vertical only",
+        "why": "Costs nothing now; the crop stays centred horizontally and a badly-placed subject cannot be rescued."
+      }
+    ]
+  },
+  {
+    "id": "D5",
+    "severity": "medium",
+    "status": "GAP",
+    "area": "Galleries",
+    "title": "Nothing can sort a gallery, and one design wants it",
+    "plain": "A14's 'Index' design lists pictures in a way that invites sorting — by name, by date. There is no behaviour module that sorts anything, anywhere in the library.",
+    "options": [
+      {
+        "label": "No sorting — the order is the order the owner arranged",
+        "why": "Costs the Index design a capability it hints at. Consistent with the rest of the library, where the owner's arrangement is always what ships.",
+        "recommended": true
+      },
+      {
+        "label": "Add a sort module",
+        "why": "Costs a new module to write, test and fit in the JavaScript budget, for one design — and it would need an honest answer for visitors with JavaScript off."
+      }
+    ]
+  },
+  {
+    "id": "D6",
+    "severity": "medium",
+    "status": "CONSISTENCY",
+    "area": "Post Lists",
+    "title": "The same control name means different things in different designs",
+    "plain": "'Row density' offers five different sets of choices across one category. 'Thumbnail size' offers three. So a user who learns what a control does in one design finds it behaving differently in the next.",
+    "analogy": "A dial labelled 'Speed' that goes 1–5 on one machine and Slow/Fast on another.",
+    "options": [
+      {
+        "label": "One name, one set of values, library-wide",
+        "why": "Costs a pass over the categories that disagree, and some designs lose a value they had. Buys a user who learns a control once.",
+        "recommended": true
+      },
+      {
+        "label": "A name may vary its values where the design genuinely differs",
+        "why": "Costs the user having to re-read every panel. Cheaper now, and it is how the library already is."
+      }
+    ]
+  },
+  {
+    "id": "D7",
+    "severity": "medium",
+    "status": "CONSISTENCY",
+    "area": "Post Lists",
+    "title": "The post card has four designs that reorder its parts",
+    "plain": "Every post card puts its pieces in a set order — title, date, excerpt. Four designs deliberately differ, and each records that in its own spec rather than the shared card definition. Nothing is wrong; it is just recorded in four places instead of one.",
+    "options": [
+      {
+        "label": "Write the four exceptions into the shared card definition",
+        "why": "Costs one edit. Anyone reading the card sees all four; today they would have to read four specs to find them.",
+        "recommended": true
+      },
+      {
+        "label": "Leave them in the design specs",
+        "why": "Costs nothing now, and the fifth exception will be recorded somewhere nobody looks."
+      }
+    ]
+  },
+  {
+    "id": "D8",
+    "severity": "low",
+    "status": "CONSISTENCY",
+    "area": "Post Lists",
+    "title": "The card promises it never truncates text, and one design does",
+    "plain": "Same shape as the last one, smaller: the shared card says text is never cut short, and A18-3 Slim cuts it. The exception is real and recorded in the design, not in the promise.",
+    "options": [
+      {
+        "label": "Write the exception into the promise",
+        "why": "Costs one sentence, and the promise stops being false.",
+        "recommended": true
+      },
+      {
+        "label": "Leave it",
+        "why": "Costs a rule that is not quite true, which is how rules stop being trusted."
+      }
+    ]
+  },
+  {
+    "id": "D9",
+    "severity": "low",
+    "status": "UNSTATED",
+    "area": "Post Headers",
+    "title": "Can one design use two pieces of behaviour at once?",
+    "plain": "A24's Sticky design needs two separate scripts. The library has done this once before, in a hero. Nothing forbids it and nothing permits it — it has simply never been written down.",
+    "options": [
+      {
+        "label": "Yes, and say so once",
+        "why": "Costs one sentence. It already happens twice; writing it down stops it being re-raised.",
+        "recommended": true
+      },
+      {
+        "label": "One design, one behaviour",
+        "why": "Costs redrawing the two designs that already do it."
+      }
+    ]
+  },
+  {
+    "id": "D10",
+    "severity": "medium",
+    "status": "INVENTED, NEEDS RATIFYING",
+    "area": "Post Headers",
+    "title": "A24-5 with no picture: the session had to invent a colour rule",
+    "plain": "This design puts words on a full-width photo, in the pale text a photo needs. With no photo, that pale text sits on a pale background and disappears. The session made it take the page's normal text colour instead — and flagged that it invented the rule. The alternative it rejected was giving the band a dark background, which would have made the design look like a different design in the same category.",
+    "analogy": "White writing works on a dark photo. Take the photo away and it is white on white.",
+    "options": [
+      {
+        "label": "Keep what the session did — normal text colour when there is no picture",
+        "why": "Costs nothing; it is already drawn. The rejected alternative would have made two designs look the same, which the library forbids.",
+        "recommended": true
+      },
+      {
+        "label": "No picture, no design — hide the section",
+        "why": "Costs the user a section that vanishes when they remove an image, which is surprising."
+      }
+    ]
+  },
+  {
+    "id": "D11",
+    "severity": "medium",
+    "status": "GHOST LIMITATION",
+    "area": "Post Footers",
+    "title": "Ghost has no 'all tags' page to link to",
+    "plain": "A26 wants a link to a page listing every tag on the site. Ghost does not publish one — there is a page per tag, and nothing above them. So the link has nowhere to go unless the site owner builds that page themselves.",
+    "options": [
+      {
+        "label": "Drop the link",
+        "why": "Costs the design a link. Honest: we cannot link to a page that does not exist.",
+        "recommended": true
+      },
+      {
+        "label": "Point it at a page the owner creates, and say so in the panel",
+        "why": "Costs the owner a setup step, and the link is broken until they do it."
+      }
+    ]
+  },
+  {
+    "id": "D12",
+    "severity": "low",
+    "status": "PRODUCT QUESTION",
+    "area": "Post Footers",
+    "title": "Should an author's post count be shown at all?",
+    "plain": "Some designs show '24 posts' under an author's name. The question is not whether we can — it is whether it flatters or embarrasses. A new writer's page reads '1 post'.",
+    "options": [
+      {
+        "label": "Show it, and let the design turn it off",
+        "why": "Costs nothing; it is drawn. A site with few posts can hide it.",
+        "recommended": true
+      },
+      {
+        "label": "Never show it",
+        "why": "Costs removing it from the designs that have it. Kinder to new writers by default."
+      }
+    ]
+  },
+  {
+    "id": "D13",
+    "severity": "low",
+    "status": "AWAITING RATIFICATION",
+    "area": "Galleries",
+    "title": "A rule about locked controls is waiting to be adopted or dropped",
+    "plain": "A14 proposed a test for when a control should be locked rather than offered, and it has been sitting unratified. It is not in force anywhere else in the library.",
+    "options": [
+      {
+        "label": "Drop it — the greyed-with-a-reason rule already covers this",
+        "why": "Costs nothing. Your 1 September rule does the same job and is already library-wide.",
+        "recommended": true
+      },
+      {
+        "label": "Adopt it library-wide",
+        "why": "Costs a pass over every category to apply it, and it may overlap confusingly with the greying rule."
+      }
+    ]
+  },
+  {
+    "id": "D14",
+    "severity": "medium",
+    "status": "A LIST, NOT A QUESTION",
+    "area": "Post Headers",
+    "title": "A24 carries seven small items nobody has ruled on",
+    "plain": "Not one decision but seven, all recorded and none settled: the title width ladder, a missing colour for the avatar letter, a precondition on A1-4 that cannot be enforced, when an 'updated' date counts as changed, where the share destinations setting lives, image focus being a hint Ghost never sees, and a Ghost page setting that can blank the whole section.",
+    "options": [
+      {
+        "label": "I take them one at a time and bring back only the ones that need you",
+        "why": "Costs a pass. Most will resolve against rulings you have already made — that is how nine of the last set went.",
+        "recommended": true
+      },
+      {
+        "label": "Walk through all seven with me now",
+        "why": "Costs your time on items that may already be answered."
+      }
+    ]
+  }
+];
+
+/* ── machinery ─────────────────────────────────────────────────────────── */
+const picks = new Map(), notes = new Map();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function render() {
+  const order = { held: 0, high: 1, medium: 2, low: 3 };
+  const list = [...FINDINGS].sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9));
+
+  const tally = {};
+  for (const f of FINDINGS) tally[f.severity] = (tally[f.severity] || 0) + 1;
+  document.getElementById('counts').innerHTML =
+    Object.entries(tally).map(([k, v]) =>
+      `<span class="pill">${v} ${k === 'held' ? 'to confirm' : esc(k)}</span>`).join('') +
+    `<span class="pill">${FINDINGS.filter(f => f.options?.length).length} need a reply</span>`;
+
+  document.getElementById('findings').innerHTML = list.map(f => `
+    <section class="card" id="card-${esc(f.id)}">
+      <div class="head">
+        <span class="sev ${esc(f.severity)}">${f.severity === 'held' ? 'confirm only' : esc(f.severity)}</span>
+        <h2>${esc(f.id)} · ${esc(f.title)}</h2>
+        ${f.area ? `<span class="tag">${esc(f.area)}</span>` : ''}
+        ${f.status ? `<span class="tag">${esc(f.status)}</span>` : ''}
+      </div>
+      ${(f.actor || f.radius) ? `<p class="plain"><strong>${f.actor ? 'Who: ' + esc(f.actor) : ''}${f.actor && f.radius ? ' · ' : ''}${f.radius ? 'Reaches: ' + esc(f.radius) : ''}</strong></p>` : ''}
+      <p class="plain">${esc(f.plain)}</p>
+      ${f.analogy ? `<p class="plain" style="color:var(--muted)"><em>${esc(f.analogy)}</em></p>` : ''}
+      ${f.evidence ? `<details><summary>How we know${f.ad ? ' · ' + esc(f.ad) : ''}</summary><pre>${esc(f.evidence)}</pre></details>` : ''}
+      ${f.options?.length ? `<div class="opts">${f.options.map((o, i) => `
+        <div class="opt ${o.recommended ? 'rec' : ''}" id="opt-${esc(f.id)}-${i}">
+          <div class="body">
+            <div class="lbl">${i + 1}. ${esc(o.label)}${o.recommended ? '<span class="recflag">recommended</span>' : ''}</div>
+            ${o.why ? `<div class="why">${esc(o.why)}</div>` : ''}
+          </div>
+          <button class="pick" aria-pressed="false" data-f="${esc(f.id)}" data-i="${i}">Choose</button>
+        </div>`).join('')}</div>` : ''}
+      <textarea data-note="${esc(f.id)}" placeholder="Counter-question or a note on ${esc(f.id)} — optional, and it goes into the reply."></textarea>
+    </section>`).join('');
+
+  document.querySelectorAll('button.pick').forEach(b => b.onclick = () => {
+    const { f, i } = b.dataset;
+    if (picks.get(f) === +i) picks.delete(f); else picks.set(f, +i);
+    document.querySelectorAll(`button.pick[data-f="${f}"]`).forEach(x => {
+      const on = picks.get(f) === +x.dataset.i;
+      x.setAttribute('aria-pressed', on);
+      x.textContent = on ? 'Chosen' : 'Choose';
+      x.closest('.opt').classList.toggle('sel', on);
+    });
+    document.getElementById('card-' + f).classList.toggle('done', picks.has(f));
+    status();
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(t =>
+    t.oninput = () => { notes.set(t.dataset.note, t.value.trim()); status(); });
+  status();
+}
+
+function status() {
+  const need = FINDINGS.filter(f => f.options?.length).length;
+  const q = [...notes.values()].filter(Boolean).length;
+  document.getElementById('status').textContent =
+    `${picks.size} of ${need} decided${q ? ` · ${q} question${q > 1 ? 's' : ''}` : ''}`;
+}
+
+function build() {
+  const lines = ['Library open questions — my rulings:', ''];
+  for (const f of FINDINGS) {
+    const p = picks.get(f.id), n = notes.get(f.id);
+    if (p === undefined && !n) continue;
+    if (p !== undefined) {
+      const o = f.options[p];
+      lines.push(`${f.id} — option ${p + 1}: ${o.label}${o.recommended ? ' (your recommendation)' : ''}`);
+    } else {
+      lines.push(`${f.id} — no option chosen yet`);
+    }
+    if (n) lines.push(`   Q: ${n}`);
+  }
+  const undecided = FINDINGS.filter(f => f.options?.length && !picks.has(f.id) && !notes.get(f.id));
+  if (undecided.length) {
+    lines.push('', `Not yet decided: ${undecided.map(f => f.id).join(', ')}`);
+  }
+  lines.push('', 'Apply the chosen options. Where I asked a question, answer it before applying that one.');
+  return lines.join('\n');
+}
+
+
+document.getElementById('copy').onclick = async () => {
+  const text = build(), btn = document.getElementById('copy');
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch { show(text); btn.textContent = 'Select and copy below'; }
+  setTimeout(() => btn.textContent = 'Copy my reply', 2200);
+};
+document.getElementById('show').onclick = () => show(build());
+function show(text) {
+  let el = document.getElementById('out');
+  if (!el) { el = document.createElement('pre'); el.id = 'out';
+    document.querySelector('.wrap').appendChild(el); }
+  el.textContent = text;
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+render();
+</script>
