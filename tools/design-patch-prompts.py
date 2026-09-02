@@ -121,7 +121,31 @@ OUTPUT = """OUTPUT.
 5. Export the updated library as a zip.
 
 If any instruction above contradicts another, or contradicts something already in the
-spec, STOP and list the conflict rather than choosing."""
+spec, STOP and list the conflict rather than choosing.
+
+IF YOU HAVE A QUESTION FOR THE OWNER, DO NOT ASK HIM AND DO NOT WAIT FOR AN ANSWER.
+He is running these prompts one after another and is not able to answer mid-session; an
+answer given in this chat also reaches nothing — it would live here and never arrive in
+the requirements, so the next pass would ask the same question again.
+
+Instead, for anything you cannot settle from this prompt and the specification in front
+of you:
+
+  RECORD IT in the Patch notes, on its own line, marked OPEN FOR THE OWNER.
+  SAY WHAT YOU WOULD HAVE NEEDED TO KNOW, in one sentence, in plain words.
+  SAY WHAT YOU DID INSTEAD — left it as found, or applied the work list around it.
+  THEN CARRY ON with the rest of the work list. One open item does not stop the others.
+
+Do not guess, and do not pick an option because it seems the smaller change. Flagging is
+the behaviour these passes want: several of the library's real errors were found because
+a session stopped at exactly this point instead of choosing.
+
+ONE THING WORTH KNOWING, because it changes what a question costs you. A category only
+sees itself. Roughly a third of the questions raised in these passes turn out to be
+ALREADY ANSWERED somewhere else in the project — the same question asked independently by
+four categories, or settled by a ruling made days after your specification was written.
+Recording a question is therefore cheap and often free; guessing at one is what is
+expensive. Write it down and let it be checked."""
 
 ASK = """IF YOU NEED A DECISION FROM THE OWNER — how to ask.
 

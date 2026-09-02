@@ -286,7 +286,7 @@ DOCS = [
   'belong to, and connector lines cutting through unrelated boxes. Written after a real overlap was '
   'reported — and its first version missed the worst case by only parsing two-point paths.'),
  ('tools/design-patch-prompts.py', 'tool', 'Per-category design patch prompts',
-  'Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here.'),
+  'Generates DESIGN-PATCH-PROMPTS.html — one self-contained Claude Design prompt per category plus P0, each carrying the four Ghost facts, the ten library-wide rules, its own roster and its own work list, because Claude Design cannot read this repo and each prompt is pasted into a fresh chat. Rosters DERIVE from the export via export-roster.py so design numbers cannot drift; only the rulings are authored here. **Its FACTS, OUTPUT and CSS are imported by every later pass**, so the standing instruction in OUTPUT — never ask the owner mid-session, record the question as OPEN FOR THE OWNER and carry on — reaches all of them from this one place.'),
  ('tools/design-patch-prompts-2.py', 'tool', 'Design patch prompts — pass two',
   'Generates DESIGN-PATCH-PROMPTS-2.html: the SPEC half of every ruling taken after pass one — '
   'R-30 to R-38, the carried-forward R-2/R-10/R-29, and two findings that came out of execution '
