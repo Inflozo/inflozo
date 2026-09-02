@@ -218,6 +218,14 @@ DOCS = [
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
  ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
+ ('tools/probe/run-verify-a33-cards.py', 'tool', 'Register probe · Koenig card selectors',
+  'Reads the class names Ghost\'s own card renderers emit, on both majors, to settle the six '
+  'selectors A33 had marked unverified. A SOURCE read rather than a render, and deliberately: the '
+  'renderer is the authority, and it covers cards a fixture cannot exercise — the email card never '
+  'renders on the web, so no post could ever have shown its class. Its control (four documented '
+  'classes must come back) caught a real error on the first run: the probe had assumed Ghost 6\'s '
+  'node path and Ghost 5 uses another, so Ghost 5 returned zero cards and the probe refused to '
+  'report the unknowns. Reads only — creates nothing, uploads nothing, changes nothing.'),
  ('tools/probe/run-verify-e2.py', 'tool', 'Register probe · E-2 captions',
   'feature_image_caption: its stored shape, {{ }} versus {{{ }}}, and gscan on the triple stash. '
   'Carries TWO controls because the answer turns on a non-difference: a plain-text caption must '

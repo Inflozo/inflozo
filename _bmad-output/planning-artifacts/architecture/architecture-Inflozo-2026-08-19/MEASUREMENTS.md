@@ -2602,3 +2602,82 @@ recollection.
 **This expires.** Both are facts about an external platform on a date, and Supabase changes both its
 feature set and its prices. **Re-read before E1 builds the mechanism** — if versioning has shipped by
 then it may replace the copy entirely. Register item **38**.
+
+---
+
+## 35. A33's unverified card selectors — eight confirmed, one refuted, two findings nobody asked for · 2026-09-03
+
+    python3 tools/probe/run-verify-a33-cards.py
+
+**The ask.** A33 ships a stylesheet and nothing else: its whole job is selecting Ghost's own card
+markup inside a post body, where we own the stylesheet and nothing else. Six of its selectors were
+marked `unverified`, two of them absent from Ghost's published class list. **A wrong selector styles
+nothing and does it silently** — no build fails, no test goes red, the card renders unstyled on a
+customer's site.
+
+**Method, and why it is a source read.** Ghost renders Koenig cards from `@tryghost/kg-default-nodes`
+— one renderer per card type, class names as literals. Reading the renderer is more direct than
+constructing twenty cards through the Admin API, and it covers cards a fixture cannot exercise: the
+email card never renders on the web at all, so no post could have shown its class.
+
+**The control caught a real error on the first run.** Four classes Ghost documents —
+`kg-image-card`, `kg-bookmark-card`, `kg-gallery-card`, `kg-toggle-card` — must come back or the
+extractor is reading the wrong thing. On the first run **Ghost 5 returned zero card types**: the
+probe had assumed Ghost 6's path (`build/cjs/nodes`) and Ghost 5 uses `lib/nodes`. It refused to
+report the unknowns. The path is now found rather than assumed.
+
+### 35a. Eight of nine assumptions hold, on both majors
+
+| Card | A33 assumed | T1 6.58.0 | T3 5.130.6 |
+|---|---|---|---|
+| call-to-action | `kg-cta-card` ⚑ *was unverified* | **confirmed** | **confirmed** |
+| callout | `kg-callout-card` | confirmed | confirmed |
+| product | `kg-product-card` ⚑ *inners unverified* | **confirmed**, and the inners are `kg-product-title`, `kg-product-image`, `kg-product-description-wrapper`, `kg-product-button-wrapper` | confirmed |
+| header | `kg-header-card` ⚑ *Ghost 6 shape unverified* | **confirmed**, and the shape is now known — see §35c | confirmed |
+| image · bookmark · gallery · toggle | *(the control)* | confirmed | confirmed |
+
+### 35b. One assumption is WRONG, and the fix is deletion rather than correction
+
+**`kg-email-card` does not exist on the web, and never did.** The email card's renderer:
+
+```js
+if (!html || options.target !== 'email') {
+    return renderEmptyContainer(document);
+}
+```
+
+On any web render the target is not `email`, so the card returns an **empty container** — no class,
+no element to style. **A33's `.kg-email-card` rule matches nothing, ever.** The spec was right that
+the card "never renders on the web" and wrong to carry a selector for it anyway. **Remove the
+selector rather than correcting it**; there is nothing to correct it to.
+
+### 35c. Ghost 6's header card, now that it is readable
+
+`kg-header-card` plus `kg-v2` and, per configuration: `kg-header-card-content`,
+`kg-header-card-heading`, `kg-header-card-subheading`, `kg-header-card-subheading-wrapper`,
+`kg-header-card-text`, `kg-header-card-image`, `kg-header-button-wrapper`, `kg-style-accent`,
+`kg-style-image`, `kg-layout-split`, `kg-size-large`, `kg-swapped`, `kg-align-center`,
+`kg-content-wide`.
+
+### 35d. TWO FINDINGS NOBODY ASKED FOR, and the second is the one that matters
+
+**(1) `kg-nft-card` is still in both builds.** A33 draws twenty cards and this is a twenty-first.
+Whether to style it or to state that it is deliberately unstyled is a decision, not a fix.
+
+**(2) Ghost 5 ships TWO renderers, and six card types emit DIFFERENT classes depending on which.**
+5.130.6 carries both `kg-default-nodes` (Lexical) and `kg-default-cards` (mobiledoc), because a
+Ghost 5 site can hold posts written before Lexical. Where they differ:
+
+| Card | Lexical only | Mobiledoc only |
+|---|---|---|
+| **header** | the entire `kg-header-card-*` set above, `kg-v2`, `kg-style-*`, `kg-layout-split` | — |
+| **file** | — | `kg-file-card-medium`, `kg-file-card-small` |
+| **product** | `kg-product-title`, `kg-product-image`, `kg-product-description-wrapper`, `kg-product-button-wrapper` | — |
+| **video** | `kg-thumbnail`, `kg-custom-thumbnail`, `kg-width-wide`, `kg-width-full` | — |
+| **embed** | `kg-twitter-card`, `kg-twitter-link` | — |
+
+**So an older Ghost 5 post renders cards A33's selectors will not match** — most severely the header
+card, which in mobiledoc carries almost none of the structure the treatments style. This was on
+nobody's list and no spec mentions it. It needs a ruling: style both shapes, or state that Inflozo's
+card treatments apply to Lexical posts only and say so where a customer can see it. Register item
+**57**.
