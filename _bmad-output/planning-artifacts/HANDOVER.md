@@ -44,6 +44,12 @@ python3 tools/doc-audit.py --check        # the documentation gate
 ## The immediate task
 
 **Step 5 — journeys and flows (`/bmad-ux`).** It is the critical path and it is blocked by nothing.
+The stress-tested prompt is `STEP-5-PROMPT.txt` and inside `build-sequence.md` step 5. **Two
+standing rulings now govern everything after it (2026-09-02, `reconcile-designs-decisions.md`
+§A10): R-74** — the Claude Design export is the design authority for every surface until the
+project finishes, extrapolate rather than invent — **and R-75** — the owner sees Inflozo's own UI
+as a static clickable prototype on his machine (**step 5b**, new) before dynamic build; **step 6
+does not open until he has walked it.**
 Its inputs are prompt 2's exported app screens (S1–S14, M1–M9) and **§37.7 of
 `prds/…/reconcile-designs.md`** — the editor surfaces with no frame and the flows drawn on wrong
 semantics. §37.7 was re-verified against the current export on 2026-08-31 and **still stands**; the
