@@ -95,7 +95,9 @@ These were each learned expensively. They are not style preferences.
    **Any UI or UX task reads the WHOLE of `design/claude-design-export/Inflozo/`** — it holds the design
    system, every drawn design, a per-category `-0 Category Proof`, the spec files, the executable render
    kits (`*-kit.js`, `_build/`, `interactions.js`, `support.js`), the per-category session prompts and
-   the original brief. `CLAUDE.md` carries the map. Never a subset.
+   the original brief. `Index.dc.html` and `Index - Categories.dc.html` are the map — they list every category design by design, grouped into the five families.
+   Never a subset. (There is no `CLAUDE.md` inside the export — that claim was wrong and was
+   corrected on 2026-09-02.)
 7. **Log every meaningful step to the memlog:**
    ```bash
    cd /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17
@@ -678,7 +680,7 @@ change — the sequencing above is still the safe default.
 The largest single investment in this project so far is the Claude Design work, and step 5 is the
 first step that could quietly throw it away — by specifying flows in prose that imply an interface
 nobody drew. It must not. **Read the whole of `design/claude-design-export/Inflozo/`, never a
-subset** — `CLAUDE.md` carries the map. Three frames are the design system itself (`Calibration Set`,
+subset** — `Index.dc.html` and `Index - Categories.dc.html` are the map — they list every category design by design, grouped into the five families; there is no `CLAUDE.md` inside it. Three frames are the design system itself (`Calibration Set`,
 `Editor Sidebar Kit`, `R Responsive System`); beside them sit every drawn design, a per-category
 `-0 Category Proof` carrying that category's tokenisation proof and roster, the spec files, **the
 executable render kits** (`*-kit.js`, `_build/`, `interactions.js`, `support.js`), the per-category

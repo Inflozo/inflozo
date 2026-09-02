@@ -392,10 +392,12 @@ GROUPS = [
   'Do not build from it, and do not let a tool read it.'),
  ('design/claude-design-export/', 'live', 'Design library export — the library itself',
   'Claude Design\'s export, and THE STARTING MATERIAL FOR EVERY UI OR UX TASK — read the WHOLE '
-  'directory, never a subset (CLAUDE.md carries the map). Far more than the screen frames: the design '
+  'directory, never a subset (Index.dc.html and Index - Categories.dc.html are the map — there is no '
+  'CLAUDE.md inside it). Far more than the screen frames: the design '
   'system itself (Calibration Set = tokens and type scale, Editor Sidebar Kit = every control and '
   'state, R Responsive System = the archetypes), the S1-S14 app screens, M1-M9 pages, B Missing '
-  'Surfaces, C Post Body, P0-1..P0-6, every drawn design, a per-category -0 Category Proof carrying '
+  'Surfaces, C Post Body, P0-0..P0-6 and P0-9 (P0-7 IS the S14 screen and P0-8 is a rules section '
+  'with no frames, so the gap is deliberate), every drawn design, a per-category -0 Category Proof carrying '
   'that category\'s tokenisation proof and roster, one spec file per category, THE EXECUTABLE RENDER '
   'KITS (*-kit.js, _build/, interactions.js, support.js), the per-category session prompts and the '
   'original brief. Also THE AUTHORITY on what the library contains — every count derives from here '
