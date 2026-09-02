@@ -736,111 +736,541 @@ displaced device detects the takeover from. Appendix H governs the wording.
 
 ### Prompt
 
+> **Stress-tested three times on 2026-09-02** and patched after each round — every path,
+> filename, FR, AD and ruling in it was executed against the repository, not assumed. The rounds
+> found: a P0 range whose gap is deliberate, that one export file is not one screen, that the
+> journey-to-frame map already exists and the old prompt never named it, that §A4's "the S/B/M
+> screens were not touched" has gone stale, that `R Responsive System` is about the generated
+> sites rather than this app, that the skill's key-screen-mock step contradicts the export, and
+> that the map file the old prompt sent you to **does not exist**.
+
 ```
 /bmad-ux
 
-Create the UX specifications for Inflozo: the mandated journeys and flows.
+Create the UX specifications for Inflozo: the four mandated journeys and the eight mandated
+flows. Working directory: /home/ghost/Dev/Inflozo
 
-PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-The preamble delegates this work explicitly and names the mandated floor. Personas are in
-section 3 and each carries its GHOST CREDENTIAL REACH, which is what decides how a journey
-actually plays out — the multi-site operator frequently is NOT the site Owner and cannot mint a
-Staff Access Token at all, which is precisely the case FR-C1's graceful no-token path serves.
+═══════════════════════════════════════════════════════════════════════════════
+0 · READ THIS SECTION BEFORE YOU ACTIVATE THE WORKFLOW
+═══════════════════════════════════════════════════════════════════════════════
 
-Four journeys:
-  connect → first deploy · blank-canvas build · Free-plan ship · downgrade recovery
+THIS IS NOT A GREENFIELD UX RUN, AND THE SKILL'S DEFAULT SHAPE IS WRONG FOR IT.
 
-EIGHT flows — the PRD's six, plus two decided in 2026-08-21 and described in the section above
-this prompt. Each is a designed surface, never a warning toast:
-  FR-J13 pre-deploy snapshot gate · FR-D18's three-party edit-lock choreography ·
-  FR-I4's guided routes-upload card · FR-J14's library-update confirm ·
-  FR-C2's Preview-only explanation with its clearing conditions ·
-  FR-I6's post-deploy template-binding checklist ·
-  the pre-deploy BACKUP GATE (see architecture-.../BACKUP-GATE.md) ·
-  DEPLOY HISTORY with pinning (10 versions Pro / 3 Free, pinned included)
+bmad-ux's Discovery says "elicit and capture the user's vision, never impose yours", and it
+offers colour-theme tools, design-direction tools and wireframe tools. For Inflozo, ALL OF
+THAT IS ALREADY DECIDED AND DRAWN. There is a complete, executed visual system and a fully
+drawn application sitting in the repository. Running a colour-theme elicitation here would
+throw away the single largest investment in this project.
 
-Two things the connect → first deploy journey must carry, because they are recent and easy to
-miss: the Staff Access Token is DEFERRED to first deploy and may be DECLINED PERMANENTLY, so the
-journey has two endings and the declined one must still ship a site; and G1's under-ten-minutes
-target excludes the token step, which is what makes it reachable.
+So:
+  - Take the FAST PATH, not the coaching path.
+  - DO NOT invoke the colour-themes, design-directions or excalidraw creative tools.
+  - DO NOT offer the Google Stitch design handoff. The design producer for this project is
+    CLAUDE DESIGN, and it already ran. Anything new goes back to it as a prompt (see §5).
+  - DESIGN.md IS A TRANSCRIPTION, NOT AN ELICITATION. Its tokens come from the export's
+    `Calibration Set.dc.html` and from `claude-design-prompt-2.md` §0.1, which restates the
+    whole system in words. If your DESIGN.md contains a colour, a typeface, a radius or a
+    spacing step that is not already in those two files, you invented it and it is wrong.
+  - AND ONE EXPLICIT CONFLICT, RESOLVED HERE SO YOU DO NOT STALL ON IT. bmad-ux's Finalize step
+    says to render key-screen HTML mocks into `.working/` and then ask which un-mocked surfaces
+    need a visual reference. SKIP THAT STEP. Every key screen in this product IS ALREADY MOCKED,
+    at higher fidelity than that tool produces, in the export. Rendering a second, lesser mock
+    beside a finished frame creates two answers to one question. For a surface that genuinely has
+    no frame, the substitute is NOT a mock — it is a Claude Design prompt (§5), so the drawing
+    happens in the same project and inherits the same system. Say in your finalize notes that you
+    skipped it and why.
+  - THE REAL WORK OF THIS STEP IS `EXPERIENCE.md` — the Information Architecture, the State
+    Patterns and above all the KEY FLOWS.
 
-THE DESIGN EXPORT IS YOUR STARTING MATERIAL AND YOU DO NOT INVENT AROUND IT. A large,
-deliberate design investment already exists at
-design/claude-design-export/Inflozo/, and this step must extend it rather than restart it.
+The owner is Umang. He is a solo founder and NOT AN ENGINEER. Greet him and work in plain
+language. No jargon unless you explain it in the same sentence.
 
-  READ THE WHOLE DIRECTORY, NOT A SUBSET. Every file in it is part of the work:
-    Calibration Set.dc.html         the tokens, type scale, spacing and colour roles — THE SYSTEM
-    Editor Sidebar Kit.dc.html      every sidebar control, panel, badge and state
-    R Responsive System.dc.html     the responsive archetypes and their collapse rules
-    S1 Sign In … S14 Editor Cards   the app
-    M1 Home … M9 404                the marketing site
-    B Missing Surfaces.dc.html      prompt 2's additional surfaces, B1-B25
-    C Post Body, P0-1 … P0-6        the post body and the editor primitives
-    <ID>-<n> <Name>.dc.html         every design in the library, drawn
-    <ID>-0 Category Proof.dc.html   per category: its tokenisation proof, stress frame and roster
-    <ID> <Name> - Spec.md           per category: ten spec fields per design (+ P0's spec)
-    *-kit.js, _build/*.js           THE SHARED RENDER KITS — real, executable code
-    interactions.js, support.js     the mock-interaction layer and the Claude Design runtime
-    New Session Prompts/, uploads/  the prompt each category was designed from, and the brief
-    screenshots/                    check images captured during the design work
-  Two that are easy to miss and expensive to miss: the -0 Category Proof frames answer "what is this
-  category allowed to look like" better than the spec prose does; and the kits are EXECUTABLE — each
-  block renders from a token object, which is why light, dark and every pack are the same code with a
-  different t. If you hand-edit a frame, note the kits' own warning: a literal Ghost Handlebars
-  expression must be written with zero-width entities, because a bare {{ … }} is a Claude Design
-  value hole and renders EMPTY.
-  design/claude-design-prompt-2.md is a record, and its section 0.1 restates the whole design
+═══════════════════════════════════════════════════════════════════════════════
+1 · THE SOURCES, IN PRECEDENCE ORDER
+═══════════════════════════════════════════════════════════════════════════════
+
+All paths are relative to /home/ghost/Dev/Inflozo.
+
+  CLAUDE.md
+      The seven standing rules. They bind this work. Read them first.
+
+  _bmad-output/planning-artifacts/INDEX.md
+      Every document with a one-line brief and one of four statuses:
+        live    — current and authoritative
+        tool    — runnable
+        record  — a DATED RECORD. **NEVER EDIT ONE.**
+        retired — provenance only
+      The statuses bind. If you need to correct something in a `record`, the correction goes
+      in a live document that supersedes it.
+
+  _bmad-output/planning-artifacts/build-sequence.md
+      The six steps. This is step 5. It governs on any conflict with the build board.
+
+  _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+      NORMATIVE. Read its preamble first — it names every normative companion in the same
+      folder and states the precedence order between them. Follow that order exactly.
+      Note especially: the research companions OUTRANK the PRD body on any fact about Ghost,
+      because the regression risk in this project has always lived in the distillation step
+      rather than the research step.
+
+  _bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
+      THE MOST IMPORTANT SINGLE INPUT AFTER THE PRD. Seventy-three numbered owner rulings
+      (R-1 … R-73) taken between 27 August and 2 September, each naming the documents it
+      moves. §B records which previously-approved decisions they supersede. Anything that
+      contradicts this file is wrong, unless it is a `record`.
+
+  _bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/
+      ARCHITECTURE-SPINE.md   — the invariants (AD-1 … AD-38). Design against them.
+      BACKUP-GATE.md          — the full specification of flow F7. Read it before you draw.
+      VERIFY-AT-BUILD.md      — the register of things proven or still to prove
+      MEASUREMENTS.md         — every executed claim with the command that produced it
+
+  _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/
+      THE DESIGN EXPORT. See §2. This is your starting material.
+
+═══════════════════════════════════════════════════════════════════════════════
+2 · THE DESIGN EXPORT IS YOUR STARTING MATERIAL, NOT A REFERENCE TO CONSULT
+═══════════════════════════════════════════════════════════════════════════════
+
+Owner's instruction, 2026-08-31, repeated since: **"I do not want that we have spent so much
+time and effort in Claude Design and that is lost."**
+
+Step 5 is the first step that could quietly throw that away — by specifying flows in prose
+that imply an interface nobody drew. It must not.
+
+READ THE WHOLE DIRECTORY, NEVER A SUBSET. `Index.dc.html` and `Index - Categories.dc.html` are
+the export's own map — they list every category design by design, grouped into five families.
+(Older notes in this project said "CLAUDE.md carries the map". THERE IS NO `CLAUDE.md` INSIDE THE
+EXPORT; that was wrong and was corrected on 2026-09-02. If you meet the claim again, it is stale.)
+What is there, and every part of it is part of the work:
+
+  Calibration Set.dc.html        THE SYSTEM — tokens, type scale, spacing, colour roles
+  Editor Sidebar Kit.dc.html     every sidebar control, panel, badge and state
+  R Responsive System.dc.html    THE GENERATED SITES' responsive system — fifteen structural
+                                 archetypes and their collapse rules at 1440 / 834 / 390. READ
+                                 THE FIRST LINE OF IT: "Responsive behaviour is a property of the
+                                 archetype, not the design." THIS IS ABOUT THE SECTIONS INFLOZO
+                                 BUILDS, NOT ABOUT INFLOZO'S OWN INTERFACE. Do not take it as the
+                                 app's responsive spec.
+  S1 Sign In … S14 Editor Cards  the application, drawn
+  M1 Home … M9 404               the marketing site, drawn
+  B Missing Surfaces.dc.html     the additional surfaces B1–B25
+  C Post Body.dc.html            the post body
+  P0-0 … P0-6, P0-9              the shared editor primitives, drawn. THE GAP IS DELIBERATE:
+                                 P0·7 IS the `S14 Editor Cards` screen, and P0·8 is a
+                                 library-wide RULES section that has no frames by design.
+                                 Do not go looking for a `P0-7` or `P0-8` file.
+  Index.dc.html, Index - Categories.dc.html   the two index canvases
+  <ID>-<n> <Name>.dc.html        every design in the section library, drawn
+  <ID>-0 Category Proof.dc.html  per category: its tokenisation proof, stress frame, roster
+  <ID> <Name> - Spec.md          per category: ten spec fields per design (+ P0's spec)
+  *-kit.js, _build/*.js          THE SHARED RENDER KITS — real, executable code
+  interactions.js, support.js    the mock-interaction layer and the Claude Design runtime
+  New Session Prompts/           the prompt each category was designed from
+  uploads/, screenshots/         the original brief, and check images from the design work
+  Actions Split - Migration Record.md    what the 31 August Actions split changed
+  Doc Audit - 1 September 2026.md        the export's own internal audit
+
+  THE `.dc.html` FILES ARE PLAIN, SELF-CONTAINED HTML with inline styles — open and read them
+  directly. `support.js` and `interactions.js` are Claude Design's runtime and the mock-interaction
+  layer; the `*-kit.js` and `_build/*.js` files are the render kits.
+
+  ONE FILE IS NOT ONE SCREEN. The S, M, B and P0 canvases each hold SEVERAL LETTERED REGIONS,
+  and the whole project refers to them by those letters. `S8 Deploy.dc.html` holds S8a … S8e;
+  `S4 Editor.dc.html` holds S4a … S4d; `B Missing Surfaces.dc.html` holds B1a, B1b, B3a, B3b,
+  B4a, B4b, B5a, B5b, B5c, B11a, B11b, B12a, B12b, B13a, B14a, B14b, B23a and the un-lettered
+  singles beside them. So `B19` is a REGION INSIDE a file, not a file. Derive the region list
+  by reading the canvas; do not conclude a surface is missing because there is no file named
+  after it. That mistake has already been made in this project.
+
+  AND THE APP SCREENS HAVE NO SPEC FILE. The A-categories each have a `<ID> <Name> - Spec.md`.
+  S, M, B and the Editor Sidebar Kit DO NOT — they are frames only. For those surfaces THE
+  FRAME IS THE ENTIRE SPECIFICATION, which is exactly why this step exists: EXPERIENCE.md is
+  where their behaviour gets written down for the first time.
+
+  TWO THAT ARE EASY TO MISS AND EXPENSIVE TO MISS:
+    - The `-0 Category Proof` frames answer "what is this thing allowed to look like"
+      better than the spec prose does.
+    - The kits are EXECUTABLE. Each block renders from a token object, which is why light,
+      dark and every pack are the same code with a different `t`.
+
+  DO NOT EDIT ANY FILE IN THE EXPORT. It is Claude Design's copy and a re-export overwrites
+  the repository's. Two hand edits were needed once and they now live in
+  `tools/reapply-export-edits.py` and are GATED by `tools/verify-design-pass.py`. If you
+  find something in the export that must change, write a Claude Design prompt for it (§5).
+
+  `design/claude-design-prompt-2.md` is a `record` and its §0.1 restates the whole design
   system in words — personality, colour tokens, the component rules. Read it as the brief.
 
-TWO AUTHORITIES, AND THEY DO NOT OVERLAP. The PRD wins on BEHAVIOUR — what a flow does, its
-states, its requirements, its copy obligations under Appendix H. The EXPORT wins on VISUAL
-LANGUAGE — which components a surface is built from, its tokens, spacing, density and tone.
-"Design artifacts are non-normative" has always meant the PRD decides what must happen; it has
-never meant a flow may invent a new interface vocabulary. Where a flow needs behaviour the
-drawn screens do not show, keep the components and change what they do.
+  `design/mockups/` is prompt 1's output and is SUPERSEDED for visual reference. Prompt 2's
+  export is later and wins. Consult the mockups for intent only, never for components.
 
-NEVER INVENT A SCREEN IN PROSE. For every surface a journey or flow touches, do one of two
-things and say which:
+TWO AUTHORITIES, AND THEY DO NOT OVERLAP.
+  The PRD wins on BEHAVIOUR — what a flow does, its states, its requirements, its copy
+  obligations under Appendix H.
+  The EXPORT wins on VISUAL LANGUAGE — which components a surface is built from, its tokens,
+  spacing, density and tone.
+  "Design artifacts are non-normative" has always meant the PRD decides what must happen. It
+  has never meant a flow may invent a new interface vocabulary. Where a flow needs behaviour
+  the drawn screens do not show, KEEP THE COMPONENTS AND CHANGE WHAT THEY DO.
+
+═══════════════════════════════════════════════════════════════════════════════
+3 · WHAT YOU ARE PRODUCING
+═══════════════════════════════════════════════════════════════════════════════
+
+FOUR JOURNEYS
+  J1  connect → first deploy
+  J2  blank-canvas build
+  J3  Free-plan ship
+  J4  downgrade recovery
+
+EIGHT FLOWS — the PRD's six, plus two decided by the owner on 2026-08-21. Each is a
+DESIGNED SURFACE, never a warning toast.
+  F1  FR-J13   pre-deploy snapshot gate
+  F2  FR-D18   the three-party edit-lock choreography
+  F3  FR-I4    the guided routes-upload card
+  F4  FR-J14   the library-update confirm
+  F5  FR-C2    the Preview-only explanation, with its clearing conditions
+  F6  FR-I6    the post-deploy template-binding checklist
+  F7  ——       the pre-deploy BACKUP GATE   (spec: architecture-.../BACKUP-GATE.md)
+  F8  FR-J7    DEPLOY HISTORY with pinning
+
+Personas are PRD §3. Each carries its GHOST CREDENTIAL REACH, and that is what decides how a
+journey actually plays out — the multi-site operator frequently is NOT the site Owner and
+cannot mint a Staff Access Token at all, which is precisely the case FR-C1's graceful
+no-token path serves. USE THE PRD's PERSONAS VERBATIM. The skill asks for named protagonists;
+these are the named protagonists. Do not invent new ones and do not rename them.
+
+SCOPE — WHAT IS AND IS NOT YOURS.
+  IN: the product — the editor, the dashboard, deploy, routes, billing, the B surfaces, and every
+  screen a journey or a flow passes through.
+  IN ONLY WHERE A JOURNEY LANDS ON IT: the marketing pages M1–M9. J3 (Free-plan ship) and J4
+  (downgrade recovery) touch pricing and plan limits, so M5 Pricing is in scope AS A DESTINATION.
+  Do not re-specify the marketing site as a whole.
+  OUT: the section library itself — the A-categories, their designs, their controls. That is
+  step 3's finished work and it has its own specs and its own gate. You consume it; you do not
+  re-open it.
+
+FORM FACTOR — RESOLVE IT FROM THE FRAMES, PER SCREEN. The skill wants form-factor settled before
+the IA closes, and this product does not have one answer. The frames say: `S4 Editor` is drawn at
+1440 and is a desktop shape (FR-D1: slim top bar, collapsible Layers panel, centre canvas, right
+Controls sidebar); `S3 Dashboard` carries explicit mobile treatment at 390. So DERIVE IT PER
+SURFACE by reading the frame, and where a surface in a flow has no answer in the frames or the
+PRD, that is a batched question (§8), not an assumption.
+
+ACCESSIBILITY FLOOR. The skill's EXPERIENCE.md spine has an Accessibility Floor section. Its
+content is NOT yours to invent: NFR-5 carries the accessibility scan and NFR-6 the render matrix
+and E2E gates. Specify the behavioural floor against those two, and note that visual contrast
+belongs to DESIGN.md.
+
+Appendix H of the PRD is the VOICE CANON and governs every string you write.
+`appendix-h1-string-catalog.md` is the string catalog itself.
+
+═══════════════════════════════════════════════════════════════════════════════
+4 · THINGS THAT ARE RECENT, DECIDED, AND EASY TO MISS
+═══════════════════════════════════════════════════════════════════════════════
+
+J1 HAS TWO ENDINGS. The Staff Access Token is DEFERRED to first deploy and may be DECLINED
+PERMANENTLY. The declined path must still ship a site. G1's under-ten-minutes target
+EXCLUDES the token step, which is what makes it reachable.
+
+F2's EDIT-LOCK CHOREOGRAPHY IS DECIDED (Round 4, finding F4). A TAKEOVER IS ALLOWED. The
+displaced device is then shown that its session was taken over and how much unsynced work
+went with it. That message reads `unsynced_edits` (AD-16: edits, never ops) and it must be
+HONEST RATHER THAN REASSURING — a takeover is not a graceful hand-off, so work that had not
+synced is genuinely gone. The security half is already enforced in the schema: a holder
+change cannot happen without advancing `lock_generation`, which is the number the displaced
+device detects the takeover from.
+
+F7's THREE NON-NEGOTIABLES. The gate fires ONCE PER SITE AT FIRST DEPLOY, not at connect, and
+it BLOCKS the deploy button until confirmed. It is a checklist — one checkbox per backup
+item, then a master confirm — and it opens by stating what Inflozo actually writes (the theme
+and `routes.yaml`) BEFORE recommending a full backup, because a warning that overstates gets
+clicked through and a gate everyone clicks through is not a gate. Three things the design
+must not soften:
+   - Ghost's JSON content export does NOT include images, and the gate has to say so.
+   - `ghost backup` covers everything in one command for self-hosted customers and should be
+     offered as the shortcut it is.
+   - GHOST(PRO) CUSTOMERS CANNOT BULK-DOWNLOAD THEIR IMAGES AT ALL. Inflozo cannot fix this
+     and must not paper over it.
+The honest register matters more here than anywhere else in the product.
+
+  ONE HONEST QUALIFICATION ON THAT LAST POINT, because standing rule 1 applies to it. The
+  Ghost(Pro) image claim is CITED, not EXECUTED — `BACKUP-GATE.md` records that Ghost's own
+  documentation offers no route and says to contact your host. There is no Ghost(Pro) test server
+  yet: T2 (Publisher) is owed and T4 (Starter) is deferred by owner decision but its gate is
+  launch-blocking. So write the gate's Ghost(Pro) copy so it stays true if the detail turns out
+  narrower than the documentation implies — say what Ghost Admin does and does not offer, and
+  point the customer at Ghost, rather than asserting a platform-wide impossibility in Inflozo's
+  own voice.
+
+F8's THREE RULES. At most 10 stored versions per project on Pro and 3 on Free, PINNED
+INCLUDED IN THAT COUNT.
+   - The limit is STATED, NOT IMPLIED. A list that silently drops its oldest entry reads as
+     complete when it is not.
+   - The history must NEVER SHOW A VERSION IT CANNOT RESTORE. A dead Restore button is worse
+     than a shorter list.
+   - AT LEAST ONE VERSION MUST STAY UNPINNED, enforced in the database, so the pin control
+     needs a clear refusal state rather than a silent failure. Unpinning is always allowed,
+     by design, so nobody can trap themselves.
+
+═══════════════════════════════════════════════════════════════════════════════
+5 · NEVER INVENT A SCREEN IN PROSE
+═══════════════════════════════════════════════════════════════════════════════
+
+For every surface a journey or a flow touches, do ONE of two things and SAY WHICH:
+
   (a) POINT AT AN EXISTING FRAME by filename, and specify the flow in its terms.
+
   (b) EXTRAPOLATE — name the nearest existing frame, state what it is being adapted from and
-      what changes, reuse its components and tokens verbatim, and write a short, self-contained
-      CLAUDE DESIGN PROMPT so the frame can be drawn IN THE SAME PROJECT and inherit the same
-      system. Collect those prompts in one appendix at the end. Do not describe a new visual
-      treatment in prose and leave it there.
+      what changes, reuse its components and tokens VERBATIM, and write a short,
+      self-contained CLAUDE DESIGN PROMPT so the frame can be drawn IN THE SAME PROJECT and
+      inherit the same system. Collect those prompts in ONE APPENDIX at the end of
+      EXPERIENCE.md.
+
 EVERY specified surface names the frame it derives from. That is what makes "we reused the
 design" checkable later instead of hoped for.
 
-SURFACES REPORTED AS HAVING NO FRAME (reconcile-designs.md 37.7, written 2026-08-27). VERIFY
-EACH against the export before extrapolating — a keyword scan is inconclusive and several of
-these words appear on screens that are about something else:
-  the Paywall editor (FR-H6) · the backup gate consent checklist (BACKUP-GATE.md) · the drift
-  report (FR-J16) · the credit toggle (FR-J15) · FR-D21's page-2 preview · FR-D6's
-  auto-generated marker and the membership/Private canvases · FR-D7's project mode and "Clear
-  dark overrides" · the New project sheet (FR-B2) · the downgrade / over-limit sheet (FR-L3) ·
-  FR-J10's first-deploy name confirm · FR-J8's partial-success state · FR-I1's
-  empty-custom-template warning · FR-D22's preview subject · the main-feed marker and reassign ·
-  the Staff Access Token step AND ITS DECLINE PATH (FR-C1 — journey J1's core) · history pinning
-Report any you find already drawn; 37.7 is a dated report, not a live inventory.
+A new visual treatment described in prose and left there is the exact failure this section
+exists to prevent.
 
-DRAWN, BUT ON THE WRONG MECHANISM — keep the visual treatment, re-specify the semantics:
-  B19's template-binding checklist uses page-{slug}.hbs, which FR-I1 forbids
-  B12's snapshot fires on every deploy and counts against history; FR-J13 says first upload, exempt
+WHEN YOU WRITE A CLAUDE DESIGN PROMPT, it must be self-contained (assume no other context),
+it must name the frame it inherits from, and it must carry this warning verbatim, because a
+session that hand-edits a frame hits it every time:
+
+    A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+    {{ … }} is a Claude Design value hole and renders EMPTY.
+
+═══════════════════════════════════════════════════════════════════════════════
+6 · YOUR WORK LIST
+═══════════════════════════════════════════════════════════════════════════════
+
+START HERE — THE MAP ALREADY EXISTS. `reconcile-designs.md` carries a section headed
+
+    ## SCREENS · App screens S1-S14, marketing M1-M9, `B Missing Surfaces`, `Editor Sidebar
+       Kit` (frames only — no spec exists)
+
+and inside it three tables that are the most directly useful thing in the project for this
+step. Grep for the headings:
+
+    #### Editor surfaces (surface · FR · screen · verdict)
+    #### Journeys and flows (PRD preamble line 45 + the two owner-decision flows)
+    #### Plan matrix (Appendix F.1) — what the screens say
+
+THE SECOND ONE ALREADY MAPS EVERY JOURNEY AND FLOW TO ITS DRAWN SURFACE and gives a verdict on
+each. It is your index into the export. It says, for example, that F2's edit-lock is drawn at
+B5a/b/c with three named deviations, that F8's history is drawn at S8e but without pinning,
+and that J1's surfaces are S2b plus S8a–d with the token step absent. Read all three tables
+before you open a single frame.
+
+Because `reconcile-designs.md` is a `record` and is never edited, ITS LINE NUMBERS ARE STABLE —
+you can cite them and they will still be right.
+
+YOUR WORK LIST PROPER is `reconcile-designs.md` §37.7, written 2026-08-27. It is a `record`
+and is NEVER EDITED.
+Read `reconcile-designs-decisions.md` §A4 beside it — that section re-verified §37.7 against
+the export on 2026-08-31 and is the delta.
+
+WHAT §A4 SAYS, IN SHORT: everything about missing editor surfaces, flows drawn on the wrong
+mechanism, and the four journeys STILL STANDS.
+
+  BUT ONE SENTENCE IN §A4 HAS GONE STALE, AND YOU MUST NOT TRUST IT. §A4 says "the S, B and M
+  screens were not touched by the design pass — verified against git". That was TRUE of pass one,
+  on 2026-08-31. FOUR MORE EXPORTS HAVE LANDED SINCE and they did touch those screens.
+  VERIFY IT YOURSELF THE SAME WAY §A4 DID:
+
+      git log --since=2026-08-31 --name-only --oneline -- \
+        '_bmad-output/planning-artifacts/design/claude-design-export/Inflozo'
+
+  One concrete instance, so you know the shape of it: the 1 September re-export silently put back
+  the library totals on M1, M4, M5, S12, S5 and B that had been made count-agnostic the day
+  before. It stood for two days because BOTH controls that existed to catch it were matching raw
+  HTML and missed a number split across two <span>s. It was repaired on 2026-09-02 and the
+  detector now lives in one place. THE LESSON FOR YOU: on the S, M and B screens, read what the
+  file says TODAY. A dated report about them is a hypothesis (standing rule 1). Two items are already fixed (the design totals
+printed on the marketing screens, and P0's mark allowlist) and both are now GATED rather than
+remembered. Four of the five P0 findings are resolved; the fifth is fixed too.
+
+SURFACES REPORTED AS HAVING NO FRAME. VERIFY EACH AGAINST THE EXPORT BEFORE EXTRAPOLATING — a
+keyword scan is inconclusive and several of these words appear on screens that are about
+something else. REPORT ANY YOU FIND ALREADY DRAWN.
+  the Paywall editor (FR-H6) · the backup gate consent checklist (BACKUP-GATE.md) · the
+  drift report (FR-J16) · the credit toggle (FR-J15) · FR-D21's page-2 preview · FR-D6's
+  auto-generated marker and the membership / Private canvases · FR-D7's project mode and
+  "Clear dark overrides" · the New project sheet (FR-B2) · the downgrade / over-limit sheet
+  (FR-L3) · FR-J10's first-deploy name confirm · FR-J8's partial-success state · FR-I1's
+  empty-custom-template warning · FR-D22's preview subject · the main-feed marker and
+  reassign · the Staff Access Token step AND ITS DECLINE PATH (FR-C1 — J1's core) ·
+  history pinning
+
+DRAWN, BUT ON THE WRONG MECHANISM. Keep the visual treatment, RE-SPECIFY THE SEMANTICS:
+  B19's template-binding checklist uses `page-{slug}.hbs`, which FR-I1 forbids
+  B12's snapshot fires on every deploy and counts against history; FR-J13 says first upload,
+     exempt
   B16's routes card blames integration-key permissions; FR-I4 says the Staff token
+  B13's exit sheet offers two of four remedies
+  B22's redesign proposals are per-section swaps, not FR-C7's starter × pack combinations
+  B11 draws a user Zoom; FR-D14 says none
+  B24's grace banner says deployed themes stop rendering; FR-L3 says never touched
+  S9 routes `/subscribe/` and `/`, which FR-I1 forbids
+  B17's Theme Settings lacks `posts_per_page` and would write Ghost's logo (P8)
+  B18's translation keys are flat; FR-Q6 says dotted
+  S4d offers tier-level View-as; FR-D16 says three states — and B9 contradicts S4d
 
-Your work list is reconcile-designs.md section 37.7, written 2026-08-27 — read section A4 of
-reconcile-designs-decisions.md beside it, which re-verified 37.7 against the current export on
-2026-08-31. Everything about missing editor surfaces, flows drawn on wrong semantics and the
-four journeys STILL STANDS; two items are already fixed (the design totals printed on the
-marketing screens, and P0's mark allowlist). reconcile-designs.md is a record and is never
-edited — the delta is why A4 exists.
+FLOW AND JOURNEY STATUS AS §37.7 FOUND IT:
+  F4 and F5 are RIGHT. F1, F2, F3 and F6 are drawn on WRONG SEMANTICS. F7 and F8 have NO
+  SURFACE. J2 and J3 HOLD. J1 LACKS THE TOKEN STEP. J4 HAS NO OVER-LIMIT FLOW.
 
-design/mockups/ is prompt 1's output and is SUPERSEDED for visual reference; prompt 2's export
-is later and wins. Consult the mockups only for intent, never for components.
+═══════════════════════════════════════════════════════════════════════════════
+7 · WHAT IS ALREADY RULED AND IS NOT YOURS TO RE-OPEN
+═══════════════════════════════════════════════════════════════════════════════
 
-Appendix H is the voice canon and governs every string you write.
+Seventy-three owner rulings (R-1 … R-73), thirty-eight architecture decisions (AD-1 … AD-38)
+and the approved decision set D1 … D39 are settled. FOUR APPROVED DECISIONS WERE REVERSED —
+D3, D17, D26, and D27 in half — so if you find a document citing one of those, check §B of
+`reconcile-designs-decisions.md` before you rely on it.
+
+Five that touch this step directly:
+
+  A GREYED CONTROL AND AN ABSENT CONTROL MEAN DIFFERENT THINGS, and the difference is
+  load-bearing. Greyed means "this exists here, and is unavailable right now" — and it always
+  shows the reason. Absent means "this never exists here". Use `P0-0 Greyed Control Pattern`
+  as drawn.
+
+  THE ACTIONS CONTROL WAS SPLIT on 2026-08-31. The old single value set (none / sign in /
+  subscribe / both) is retired; it is now two independent switches. `Actions Split -
+  Migration Record.md` in the export records exactly what moved.
+
+  R-73 (2026-09-02): A FRAME CAPTION IS A DESCRIPTION, NOT A SPECIFICATION. Some captions
+  still print retired vocabulary — `actions Both`, `padding`, `ground`. That is deliberate:
+  a caption records how a frame was drawn on the day it was drawn. DO NOT "fix" them and do
+  not treat them as a control table. The panels are the specification and they are current.
+
+  EVERY EMPTY STATE IS DESIGNED, not omitted. Ask what each surface in a flow shows when it
+  has nothing to show, and specify it.
+
+  A LIBRARY COUNT IS NOT THE SAME AS A PRODUCT LIMIT, AND ONLY ONE OF THEM IS BANNED. Write
+  "at most 10 stored versions on Pro and 3 on Free", "1 project · 1 site", "30 MB uploads" —
+  these are PRODUCT LIMITS, they are the requirement, and a flow that hides them is wrong (F8's
+  first rule is that the limit is STATED). What you must never write is a LIBRARY TOTAL — how
+  many designs, categories or free designs exist. Those move monthly by FR-J14's own commitment,
+  Appendix H forbids them in product copy, and every one of them in this project has gone stale.
+
+  COUNTS ARE DERIVED, NEVER RESTATED (standing rule 4). Every count in this project has gone
+  stale at least once. Do not write a library total, a category total or a free-design total
+  into DESIGN.md or EXPERIENCE.md. Appendix H already forbids a design total in product copy.
+  Where you need to express scale, word it so it cannot go stale ("every design", "the free
+  set"). If you genuinely need a figure for your own reasoning, derive it:
+      python3 tools/export-roster.py
+
+═══════════════════════════════════════════════════════════════════════════════
+8 · HOW TO HANDLE QUESTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+The owner is available, but he is not an engineer and he has asked more than once for LESS
+EXPLANATION AND MORE INSTRUCTION.
+
+  BEFORE YOU ASK ANYTHING, SEARCH THE PROJECT FOR THE ANSWER. Roughly a third of the
+  questions raised in this project's design passes turned out to be ALREADY ANSWERED
+  somewhere else — settled by a ruling made after the document you are reading was written.
+  Grep `reconcile-designs-decisions.md`, the PRD and the spine first.
+
+  BATCH YOUR QUESTIONS. Do not ask one at a time. Collect them and bring them together.
+
+  WHEN YOU DO ASK: numbered options, plain language, EXACTLY ONE marked (RECOMMENDED), and
+  say what each option costs.
+
+  WHERE IT IS A ROUTINE JUDGEMENT CALL, MAKE IT and say so in one line. Where the decision is
+  genuinely his, present it and WAIT — do not default it.
+
+  FLAG, DO NOT GUESS (standing rule 6). If two approved decisions contradict, or an
+  instruction cannot be followed without inventing a decision the owner never made, STOP AND
+  ASK. This project has been damaged more than once by a confident guess that looked
+  reasonable.
+
+═══════════════════════════════════════════════════════════════════════════════
+9 · THE GATE — AND THE TRAP THAT WILL CATCH YOU
+═══════════════════════════════════════════════════════════════════════════════
+
+    python3 tools/doc-audit.py --check      # must pass; exits non-zero on drift
+
+It is installed as a PRE-COMMIT HOOK, so a red gate blocks the commit.
+
+**THE TRAP.** The gate walks every `.md` `.html` `.sql` `.js` `.py` `.sh` file under
+`_bmad-output/planning-artifacts/` and fails with UNCATALOGUED for any it does not recognise.
+bmad-ux writes a whole new folder — `ux-designs/ux-Inflozo-<date>/` with `DESIGN.md`,
+`EXPERIENCE.md`, `.decision-log.md`, `.working/`, `imports/`, possibly `mockups/`,
+`wireframes/`, `review-*.md` and `reconcile-*.md`. EVERY ONE OF THOSE WILL TURN THE GATE RED
+until it is catalogued.
+
+  FIX: add ONE `GROUPS` entry in `tools/doc-audit.py` covering `ux-designs/`, plus explicit
+  `DOCS` entries for `DESIGN.md` and `EXPERIENCE.md` so they get their own briefs. TWO THINGS
+  ABOUT THAT FILE: `DOCS` is matched before `GROUPS` and both match on SUBSTRINGS, so give the
+  `DOCS` entries their full relative path rather than the bare filename — a bare `DESIGN.md`
+  would also claim any other file whose name ends that way. And `GROUPS` is FIRST MATCH WINS, so
+  order matters; a narrower fragment goes above a broader one. Then:
+      python3 tools/doc-audit.py --generate
+      python3 tools/doc-audit.py --check
+
+  A SECOND THING THAT LOOKS LIKE A BUG AND IS NOT: the gate's sub-tools REGENERATE ON
+  FAILURE. The first run right after any change reports FAIL and fixes itself; the second
+  passes. Run it twice before you believe it.
+
+  A THIRD THING: THE GATE DOES NOT VERIFY PROPAGATION. It passed for weeks while FR-G7 still
+  said 31 modules. A green gate is not evidence that a ruling reached the documents it names.
+
+THE REVIEWER GATE. bmad-ux offers an opt-in reviewer gate at Finalize, and it is expensive
+(parallel subagents). RECOMMENDED: run the rubric walker plus ONE accessibility lens, and skip the
+rest. This work is consumer-facing and the accessibility floor is a real obligation here; the other
+lenses would mostly re-check things the PRD already fixes.
+
+WHERE A NEW RULING GOES. If the owner rules on something during this step, it does not live in the
+chat — it goes into `reconcile-designs-decisions.md` as a NEW numbered section (§A10) with the next
+free R-number after R-73, and it names the documents it moves. That file is the project's memory of
+what was decided and when. A decision recorded only in a UX document will be missed.
+
+WHEN YOU FINISH, THE STEP-5 PROMPT IN `build-sequence.md` IS ITSELF STALE. Replace that section's
+prompt block with a completion record — what was produced, where it lives, and what step 6 now
+reads — the same shape steps 1 to 4 already use. `BUILD-BOARD.html` regenerates from
+`tools/build-board.py`; edit the generator, never the HTML.
+
+OTHER PROOFS THAT MUST STILL PASS WHEN YOU FINISH:
+    python3 tools/verify-design-pass.py
+    cd tools/stress && node test-ad36.js && node test-renderer-agreement.js
+
+═══════════════════════════════════════════════════════════════════════════════
+10 · GIT
+═══════════════════════════════════════════════════════════════════════════════
+
+Work directly on `main`. There are no feature branches and no pull-request review, so the
+gate is the only thing between a mistake and the live branch.
+
+Commit and push freely at sensible checkpoints, ALWAYS running the gate first and NEVER
+pushing a red gate. NEVER, without the owner asking in that moment: force-push, `reset
+--hard`, rebase, amend anything already pushed, delete a branch or tag, rewrite history, or
+delete a file you did not create.
+
+═══════════════════════════════════════════════════════════════════════════════
+11 · DONE WHEN
+═══════════════════════════════════════════════════════════════════════════════
+
+  - `DESIGN.md` and `EXPERIENCE.md` exist, both `status: final`.
+  - Every one of the four journeys and the eight flows is specified.
+  - EVERY surface named in them either points at an existing frame by filename, or names the
+    frame it extrapolates from AND has a Claude Design prompt in the appendix.
+  - Every surface from §6's frameless list has been VERIFIED against the export, and any
+    found already drawn is reported.
+  - Every "drawn on the wrong mechanism" item from §6 has its semantics re-specified with the
+    visual treatment kept.
+  - Nothing in either document contradicts `reconcile-designs-decisions.md`.
+  - No count is restated that could be derived.
+  - `python3 tools/doc-audit.py --check` passes, run twice.
+  - `build-sequence.md`, `HANDOVER.md` and the build board say step 5 is done and step 6 is
+    next. `BUILD-BOARD.html` is GENERATED — edit `tools/build-board.py`, never the HTML.
+  - You have written a short report for the owner: what you specified, which surfaces you had
+    to extrapolate and why, how many Claude Design prompts he now needs to run, what you
+    found already drawn that §37.7 said was missing, and anything you had to ask him about.
 ```
-
----
 
 # Step 6 — Epics and stories
 
