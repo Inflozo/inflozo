@@ -980,6 +980,42 @@ emitting a heading per panel, A33's gallery script having no registry entry, and
 
 ---
 
+## A6 · The open-questions sheet — eighteen answers, 2026-09-03
+
+`LIBRARY-QUESTIONS.html` put every question the 33 specs still left open to the owner, built from
+`tools/probe/report-template.html` — the pattern Round 4 used. **Eighteen items. Seventeen answered on
+the recommendation; one came back as a question and is answered below.** Six technical rulings about
+module authorship were deliberately kept off the sheet as the architect's.
+
+**Five needed no decision at all — they were already answered and the specs had not caught up.**
+C1 the pack colour tokens (`Appendix D` §D.0) · C2 the main-feed designation (FR-H2, AD-27) · C3 how a
+control declares a dependency (FR-F7) · C4 hand-picked order (R-47) · and **D9, found during this
+pass: FR-G7(2) has said since the merge that a design may declare more than one module**, so A24's
+question was answered before it was asked. Each is now confirmed and carries into the specs.
+
+| # | Ruling | Where it lands |
+|---|---|---|
+| **R-48** | **The width floor is EXCLUSIVE — and my first statement of it was wrong.** Three lines needs a column **above** 306 px; at exactly 306 it is already refused and falls to two. A17's shared floor and its disabled-control table had said so twice; my example sentence implied the opposite. **The session caught my error rather than copying it** | ✅ `Appendix C` |
+| **R-49** | **A24's Links row: four stands until the native-share redraw, and nothing inherits a maximum after it.** Two of the owner's own rulings touched one row and pointed different ways; the sequencing is the answer, and the redrawn row has one trigger so there is no count to cap | ⬜ A24 spec |
+| **R-50** | **Greying has no "but this is a mode" exception.** The shared Data-group panels HID controls where the rule greys them; the panels change and every category inherits it. A user cannot see which of the two they are looking at, and a vanished control teaches nothing either way | ✅ `Appendix C` · ⬜ P0·5, P0·3 |
+| **R-51** | **Image focus carries BOTH axes** — Centre · Top · Bottom **and** Centre · Left · Right. A wide photograph cropped tall loses its sides and a vertical-only control has nothing to say about which side survives | ✅ `Appendix C` · ⬜ A13 and every cropping design |
+| **R-52** | **No sort module, and that is a decision rather than an omission.** A gallery shows the order its owner arranged. A module for one design would also have to differ from its own no-JS state, which is a cost with no gain | ✅ research `§2` |
+| **R-53** | **One control name means one set of values, library-wide.** `rowDensity` carried five value sets in one category. A name is a promise about behaviour, not a label for whatever a design needed | ✅ `Appendix C` · ⬜ A17, A18 |
+| **R-54** | **The post card's four DOM-order exceptions and its one truncation exception move into the shared card definition**, not four design specs. The fifth exception would otherwise be recorded somewhere nobody looks | ⬜ the shared card |
+| **R-55** | **A24-5's picture-less band takes the page's own text colour** — the session invented it out of necessity and it is ratified. The rejected alternative would have made the design read as another design in its own category | ⬜ A24 spec |
+| **R-56** | **A link to a page Ghost does not publish is AUTHORED, never assumed.** *(The owner's own answer, in place of the two options offered.)* Ghost has no all-tags route, so the row is a **Text Field for the label plus a Link Picker for the destination** — both already in the vocabulary — and **it does not render until a destination is set**, so it cannot ship broken | ✅ **FR-F8** (new, owned by E4) |
+| **R-57** | **An author's post count may be shown, and a design may turn it off.** | ⬜ A26 spec |
+| **R-58** | **A14's locked-control test is DROPPED.** R-33's greyed-with-a-reason rule already does the job and is library-wide; two overlapping tests would be worse than one | ⬜ A14 spec |
+| **R-59** | **A24's seven carried items come back one at a time**, and only the ones that genuinely need the owner. Precedent: nine of the last set resolved against rulings he had already made | — mine |
+
+**The owner's answer to D11 is better than either option I offered**, and worth recording as such: I
+proposed dropping the link or pointing it at a page the owner must build. He asked for the label and
+the destination to be editable — which needs **no new mechanism at all**, since the Text Field and the
+Link Picker both already exist, and which generalises to every future link to a page Ghost does not
+guarantee.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

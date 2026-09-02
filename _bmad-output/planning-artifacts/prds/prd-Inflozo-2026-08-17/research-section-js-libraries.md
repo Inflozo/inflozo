@@ -110,6 +110,14 @@ Originally derived by walking every variant descriptor in `sections-inventory.md
 | 29 | **`nav-transform`** (Ghost prefix navigation — **D2**) | 18 | 16 | Every A1 header in prefix mode (16), A3-2, A3-11, A31-9. Ghost navigation is flat and Handlebars cannot strip a `+` / `−` / `\|` label prefix server-side. **JavaScript-required by owner ruling; no no-JS accommodation is built** |
 | 30 | **`contact-form`** (honest `mailto:` composition — **D28**) | 10 | 10 | **Declared by:** A16-1, A16-2, A16-3, A16-4, A16-5, A16-7, A16-11, A16-12, A16-14, A16-15. Every A16 contact design. |
 | 31 | **`group-headings`** (heading on a key change — **ruling R-1**) | 3 | 3 | **Declared by:** A18-5, A20-7, A21-10. A18-5 *Grouped*, A20-7 *Index* (group by initial), A21-10 *Directory* (group by letter). |
+> **No sort module exists, and that is a decision** *(owner's ruling, 2026-09-03)*. A14's *Index*
+> design invites sorting a gallery by name or by date, and nothing in this registry sorts anything.
+> **It stays that way: the order a gallery shows is the order its owner arranged.** Adding one would
+> mean a module to write, test and fit in the JS budget for a single design — and an honest answer for
+> a visitor with JavaScript off, who would get the arranged order anyway, so the two states would
+> differ for no gain. `filter-strip` is not a counter-example: it filters *Ghost-routed* collections
+> by linking to routes Ghost already publishes, which is why it degrades to plain links.
+
 ### 2.2 Things that look like modules and are not — the deletions
 
 The laziest win in this whole document is the list of behaviours that need **zero JS** once the baseline in §6 is fixed. Each of these is a module Inflozo does not have to write, test, ship, or fit in the budget.
