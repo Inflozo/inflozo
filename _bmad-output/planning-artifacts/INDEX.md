@@ -6,7 +6,7 @@ updated: 2026-09-02
 
 # Document index
 
-**99 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**100 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -103,6 +103,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Register probe · item 47](tools/probe/run-verify-47.py)**<br>`tools/probe/run-verify-47.py` | The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost. |
 | **[Register probe · the comment count](tools/probe/run-verify-comment-count.py)**<br>`tools/probe/run-verify-comment-count.py` | Whether {{comment_count}} substitutes a placeholder, and what it renders with JS off. Its FIRST control failed and that was the finding: the helper substitutes nothing server-side, so the probe could not tell `%` from {count} and refused to report a result. Re-shaped around the real contract — the count is PREPENDED client-side — which makes "% comment" render as "1 % comment". Confirms R-10 #8 and falsifies the reason appendix-h1 gave for the opposite. |
 | **[Register probes](tools/probe/run-verify-all.py)**<br>`tools/probe/run-verify-all.py` | Executes register items against real Ghosts. |
+| **[Serve the design export to a local browser](tools/view-designs.py)**<br>`tools/view-designs.py` | R-75's small utility — for SESSIONS eyeballing exported frames over HTTP (support.js loads React via fetch, which file:// blocks, so the two Index canvases' links and the mock interactions need a server). Explicitly NOT the owner's deliverable: his static view of the product is step 5b's prototype, which must open from a double-click with no server at all. |
 | **[Storage sanitizer probe](tools/probe/run-f8-storage.py)**<br>`tools/probe/run-f8-storage.py` | Proves the only sanitizer in the product is advisory — a client that skips it uploads raw bytes. |
 | **[Supabase reset](tools/probe/RESET-supabase.sql)**<br>`tools/probe/RESET-supabase.sql` | Clears the probe project for a clean schema apply. Deletes storage files through the dashboard first, because a SQL cascade removes the row and leaves the bytes billed. |
 | **[The compiler](tools/stress/compile.js)**<br>`tools/stress/compile.js` | Both emitters — canvas and theme — sharing one code path. The `users` parameter is the only difference between them, which is what makes "the canvas and the shipped theme agree by construction" a property of the code rather than a promise. |

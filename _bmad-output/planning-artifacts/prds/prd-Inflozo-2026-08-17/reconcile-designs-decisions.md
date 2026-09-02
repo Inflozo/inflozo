@@ -1118,6 +1118,41 @@ Recorded here so no later pass raises it again.
 
 ---
 
+## A10 · Two standing rulings from the owner, 2026-09-02 — design fidelity, and static before dynamic
+
+Ruled directly by the owner in the session that wrote step 5's prompt. Both are **process rulings
+binding until the project finishes** — they outlive step 5 and govern every remaining step.
+
+**R-74 — the Claude Design export is the design authority for every surface, for the remainder of
+the project.** The UX and the built product must match what Claude Design drew, to the maximum. A
+surface with no frame is **extrapolated from the nearest frame that exists** — same components,
+same tokens, drawn in the same Claude Design project — never invented beside it. Any session doing
+any design work refers to the export folder first. This elevates the 2026-08-31 standing note
+("the design export is the starting material, not a reference to consult") from step-5 guidance to
+a project-wide ruling: it binds step 6's stories and every implementation epic, each of which must
+name the frame its surface is built from.
+- Targets: `CLAUDE.md` (the design-export section states the ruling) · `build-sequence.md` steps 5,
+  5b and 6 · `STEP-5-PROMPT.txt` · at step 6, every story with a surface carries a "matches the
+  frame" acceptance criterion (owed when step 6 runs).
+
+**R-75 — the owner sees the product's own UI as static pages on his machine before it is built
+dynamically.** Clarified by the owner in the same session, and the clarification is the ruling:
+this is **not** about browsing the exported design frames — it is **Inflozo's own interface, as the
+final product will have it**, viewable statically in a local browser first. The mechanism: once
+step 5's spines are final, a **static clickable prototype** is built (step 5b — its prompt is in
+`build-sequence.md`): one plain HTML page per app surface, linked so the four journeys and the
+eight flows can be walked by clicking, built from the export's tokens and components only (R-74),
+and self-contained so a **double-click opens it** — no server, no install, no build step. **Step 6
+does not open until the owner has walked the prototype**; what reads wrong there is fixed in the
+spines and the prototype before a story is written, because a wrong screen is cheapest the moment
+before anyone builds it.
+- Targets: `build-sequence.md` gains step 5b with its prompt · `STEP-5-PROMPT.txt` notes the
+  hand-off and requires stable surface names the prototype can key off · `tools/view-designs.py`
+  (a small utility for *sessions* to eyeball export frames over HTTP — explicitly **not** the
+  owner's deliverable; his deliverable is the prototype).
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

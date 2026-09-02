@@ -121,8 +121,11 @@ All paths are relative to /home/ghost/Dev/Inflozo.
 2 · THE DESIGN EXPORT IS YOUR STARTING MATERIAL, NOT A REFERENCE TO CONSULT
 ═══════════════════════════════════════════════════════════════════════════════
 
-Owner's instruction, 2026-08-31, repeated since: **"I do not want that we have spent so much
-time and effort in Claude Design and that is lost."**
+Owner's instruction, 2026-08-31 — and since 2026-09-02 a RULING, R-74, binding until the
+project finishes: **the export is the design authority for every surface; a surface with no frame
+is extrapolated from the nearest one that exists; the UX and the built product match what Claude
+Design drew, to the maximum.** In his words: "I do not want that we have spent so much time and
+effort in Claude Design and that is lost." 
 
 Step 5 is the first step that could quietly throw that away — by specifying flows in prose
 that imply an interface nobody drew. It must not.
@@ -251,6 +254,17 @@ ACCESSIBILITY FLOOR. The skill's EXPERIENCE.md spine has an Accessibility Floor 
 content is NOT yours to invent: NFR-5 carries the accessibility scan and NFR-6 the render matrix
 and E2E gates. Specify the behavioural floor against those two, and note that visual contrast
 belongs to DESIGN.md.
+
+WHAT HAPPENS TO YOUR OUTPUT NEXT — RULING R-75, AND IT SHAPES HOW YOU WRITE. The owner has
+ruled (2026-09-02) that he sees INFLOZO'S OWN UI as static pages on his machine before anything is
+built dynamically. The step after you (step 5b in `build-sequence.md`) turns your EXPERIENCE.md
+into a static clickable prototype — one plain HTML page per surface, journeys walkable by clicking.
+Step 6 does not open until he has walked it. Two obligations that puts on you:
+  - GIVE EVERY SURFACE ONE STABLE NAME and use it everywhere — in the IA, in every journey step,
+    in every flow state. The prototype keys its pages off those names; a surface that goes by two
+    names becomes two half-pages.
+  - SPECIFY STATES CONCRETELY ENOUGH TO DRAW. "An error state exists" cannot be prototyped;
+    "the deploy card shows the gscan failure list with a Retry button, per S8b" can.
 
 Appendix H of the PRD is the VOICE CANON and governs every string you write.
 `appendix-h1-string-catalog.md` is the string catalog itself.
@@ -414,7 +428,9 @@ FLOW AND JOURNEY STATUS AS §37.7 FOUND IT:
 7 · WHAT IS ALREADY RULED AND IS NOT YOURS TO RE-OPEN
 ═══════════════════════════════════════════════════════════════════════════════
 
-Seventy-three owner rulings (R-1 … R-73), thirty-eight architecture decisions (AD-1 … AD-38)
+The owner rulings in `reconcile-designs-decisions.md` (R-1 upward — read the file for the
+current highest; §A10 was the latest when this prompt was written), thirty-eight architecture
+decisions (AD-1 … AD-38)
 and the approved decision set D1 … D39 are settled. FOUR APPROVED DECISIONS WERE REVERSED —
 D3, D17, D26, and D27 in half — so if you find a document citing one of those, check §B of
 `reconcile-designs-decisions.md` before you rely on it.
@@ -514,8 +530,9 @@ rest. This work is consumer-facing and the accessibility floor is a real obligat
 lenses would mostly re-check things the PRD already fixes.
 
 WHERE A NEW RULING GOES. If the owner rules on something during this step, it does not live in the
-chat — it goes into `reconcile-designs-decisions.md` as a NEW numbered section (§A10) with the next
-free R-number after R-73, and it names the documents it moves. That file is the project's memory of
+chat — it goes into `reconcile-designs-decisions.md` as a NEW numbered §A-section with the next
+free R-number (READ THE FILE for both; they have moved since any given prompt was written), and it
+names the documents it moves. That file is the project's memory of
 what was decided and when. A decision recorded only in a UX document will be missed.
 
 WHEN YOU FINISH, THE STEP-5 PROMPT IN `build-sequence.md` IS ITSELF STALE. Replace that section's
@@ -551,6 +568,8 @@ delete a file you did not create.
     found already drawn is reported.
   - Every "drawn on the wrong mechanism" item from §6 has its semantics re-specified with the
     visual treatment kept.
+  - Every surface has ONE stable name used identically in the IA, the journeys and the flows
+    (step 5b's prototype keys off them — ruling R-75).
   - Nothing in either document contradicts `reconcile-designs-decisions.md`.
   - No count is restated that could be derived.
   - `python3 tools/doc-audit.py --check` passes, run twice.

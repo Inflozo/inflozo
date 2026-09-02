@@ -51,6 +51,10 @@ a bare `{{ … }}` is a Claude Design value hole and renders **empty**.
 PRD decides what a surface *does*; the export decides what it is *built from*. A surface with no frame
 is **extrapolated from the nearest one that has** — same components, same tokens — and drawn in the
 same Claude Design project. Never invent a second interface vocabulary beside this one.
+**This is now a ruling, not a note — R-74 (owner, 2026-09-02), binding until the project
+finishes.** Its pair, **R-75**, gates the build: the owner sees Inflozo's own UI as a static,
+clickable prototype on his machine (step 5b in `build-sequence.md`) before anything is built
+dynamically. Both live in `reconcile-designs-decisions.md` §A10.
 
 ## The seven standing rules
 

@@ -675,7 +675,7 @@ argument it should run *first*: design artifacts are non-normative and the PRD w
 authored from the PRD is a better input to prompt 2 than the reverse. Raised as an option, not a
 change — the sequencing above is still the safe default.
 
-### ⓘ The design export is the starting material, not a reference to consult *(owner, 2026-08-31)*
+### ⓘ The design export is the starting material, not a reference to consult *(owner, 2026-08-31 — since 2026-09-02 ruling **R-74**, binding until the project finishes; its pair **R-75** adds step 5b's static prototype gate. Both: `reconcile-designs-decisions.md` §A10)*
 
 The largest single investment in this project so far is the Claude Design work, and step 5 is the
 first step that could quietly throw it away — by specifying flows in prose that imply an interface
@@ -868,8 +868,11 @@ All paths are relative to /home/ghost/Dev/Inflozo.
 2 · THE DESIGN EXPORT IS YOUR STARTING MATERIAL, NOT A REFERENCE TO CONSULT
 ═══════════════════════════════════════════════════════════════════════════════
 
-Owner's instruction, 2026-08-31, repeated since: **"I do not want that we have spent so much
-time and effort in Claude Design and that is lost."**
+Owner's instruction, 2026-08-31 — and since 2026-09-02 a RULING, R-74, binding until the
+project finishes: **the export is the design authority for every surface; a surface with no frame
+is extrapolated from the nearest one that exists; the UX and the built product match what Claude
+Design drew, to the maximum.** In his words: "I do not want that we have spent so much time and
+effort in Claude Design and that is lost." 
 
 Step 5 is the first step that could quietly throw that away — by specifying flows in prose
 that imply an interface nobody drew. It must not.
@@ -998,6 +1001,17 @@ ACCESSIBILITY FLOOR. The skill's EXPERIENCE.md spine has an Accessibility Floor 
 content is NOT yours to invent: NFR-5 carries the accessibility scan and NFR-6 the render matrix
 and E2E gates. Specify the behavioural floor against those two, and note that visual contrast
 belongs to DESIGN.md.
+
+WHAT HAPPENS TO YOUR OUTPUT NEXT — RULING R-75, AND IT SHAPES HOW YOU WRITE. The owner has
+ruled (2026-09-02) that he sees INFLOZO'S OWN UI as static pages on his machine before anything is
+built dynamically. The step after you (step 5b in `build-sequence.md`) turns your EXPERIENCE.md
+into a static clickable prototype — one plain HTML page per surface, journeys walkable by clicking.
+Step 6 does not open until he has walked it. Two obligations that puts on you:
+  - GIVE EVERY SURFACE ONE STABLE NAME and use it everywhere — in the IA, in every journey step,
+    in every flow state. The prototype keys its pages off those names; a surface that goes by two
+    names becomes two half-pages.
+  - SPECIFY STATES CONCRETELY ENOUGH TO DRAW. "An error state exists" cannot be prototyped;
+    "the deploy card shows the gscan failure list with a Retry button, per S8b" can.
 
 Appendix H of the PRD is the VOICE CANON and governs every string you write.
 `appendix-h1-string-catalog.md` is the string catalog itself.
@@ -1161,7 +1175,9 @@ FLOW AND JOURNEY STATUS AS §37.7 FOUND IT:
 7 · WHAT IS ALREADY RULED AND IS NOT YOURS TO RE-OPEN
 ═══════════════════════════════════════════════════════════════════════════════
 
-Seventy-three owner rulings (R-1 … R-73), thirty-eight architecture decisions (AD-1 … AD-38)
+The owner rulings in `reconcile-designs-decisions.md` (R-1 upward — read the file for the
+current highest; §A10 was the latest when this prompt was written), thirty-eight architecture
+decisions (AD-1 … AD-38)
 and the approved decision set D1 … D39 are settled. FOUR APPROVED DECISIONS WERE REVERSED —
 D3, D17, D26, and D27 in half — so if you find a document citing one of those, check §B of
 `reconcile-designs-decisions.md` before you rely on it.
@@ -1261,8 +1277,9 @@ rest. This work is consumer-facing and the accessibility floor is a real obligat
 lenses would mostly re-check things the PRD already fixes.
 
 WHERE A NEW RULING GOES. If the owner rules on something during this step, it does not live in the
-chat — it goes into `reconcile-designs-decisions.md` as a NEW numbered section (§A10) with the next
-free R-number after R-73, and it names the documents it moves. That file is the project's memory of
+chat — it goes into `reconcile-designs-decisions.md` as a NEW numbered §A-section with the next
+free R-number (READ THE FILE for both; they have moved since any given prompt was written), and it
+names the documents it moves. That file is the project's memory of
 what was decided and when. A decision recorded only in a UX document will be missed.
 
 WHEN YOU FINISH, THE STEP-5 PROMPT IN `build-sequence.md` IS ITSELF STALE. Replace that section's
@@ -1298,6 +1315,8 @@ delete a file you did not create.
     found already drawn is reported.
   - Every "drawn on the wrong mechanism" item from §6 has its semantics re-specified with the
     visual treatment kept.
+  - Every surface has ONE stable name used identically in the IA, the journeys and the flows
+    (step 5b's prototype keys off them — ruling R-75).
   - Nothing in either document contradicts `reconcile-designs-decisions.md`.
   - No count is restated that could be derived.
   - `python3 tools/doc-audit.py --check` passes, run twice.
@@ -1307,6 +1326,66 @@ delete a file you did not create.
     to extrapolate and why, how many Claude Design prompts he now needs to run, what you
     found already drawn that §37.7 said was missing, and anything you had to ask him about.
 ```
+
+# Step 5b — the static prototype *(owner's ruling R-75, 2026-09-02)*
+
+**Produces:** a clickable, static HTML prototype of Inflozo's own UI — the interface the final
+product will have — that the owner opens with a double-click and walks in his browser.
+**Needs from the owner:** walk it, and say what reads wrong. That is the whole ask.
+**Unblocks:** step 6. **Step 6 does not open until the owner has walked the prototype** — a wrong
+screen is cheapest the moment before anyone builds it.
+
+This step exists because of a clarified ruling: the owner does **not** want to review design-tool
+frames; he wants to see **the product itself**, statically, on his machine, before the dynamic
+build starts. The prototype is that artifact. It is built FROM step 5's spines and the design
+export, and it is disposable-by-design once the real app exists — its value is spent the day the
+dynamic UI matches it.
+
+### Prompt
+
+```
+Build the static prototype of Inflozo's own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
+
+INPUTS, IN ORDER:
+  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
+     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md's surface names, journeys,
+     flows and states are the content of this prototype.
+  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
+     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
+     `Calibration Set.dc.html`; reuse the drawn screens' construction. If a page of yours would
+     look wrong side by side with its frame, the page is wrong.
+  3. The PRD for behaviour, and its Appendix H for every string.
+
+OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
+  index.html                 the front door: the surface list, and the four journeys and eight
+                             flows each as a labelled, clickable trail
+  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
+  a shared stylesheet        the tokens transcribed once, from Calibration Set
+
+RULES:
+  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
+    build step. Google Fonts may be linked but every face carries a real fallback stack.
+    Navigation is plain <a> links. Light inline JS may toggle a mock state, but every page must
+    read complete with JavaScript off.
+  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project's fixture publication. Never lorem.
+  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
+    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
+  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
+    error state, a refusal state is a link or a toggle away, never omitted.
+  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
+    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
+    folder; verify rather than assume.
+  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
+    the requirement and MUST be shown.
+
+DONE WHEN the owner can double-click index.html and click through all four journeys and all
+eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
+in one short message: the file to double-click, and the two or three places you had to make a
+judgement call he should look at hardest.
+```
+
+---
 
 # Step 6 — Epics and stories
 
