@@ -945,23 +945,29 @@ six frames in EXPERIENCE.md's "drawn, but on the wrong mechanism" table, and the
 with Appendix F.1 on plan limits. R-74 gives the export the construction; `prd.md` keeps behaviour
 and strings.
 
-> ✅ **AND 5B IS CLICKABLE, under one constraint that comes from R-75 rather than from taste.**
-> R-75 says *"every page must read complete with JavaScript off"* — which is what makes 5b the
-> checking artifact, since a state you have to click to reach is a state you can forget to check.
-> So the interaction here is **additive only: nothing is hidden, nothing collapses.** Every drawn
-> frame's own controls go where they say they go (the `WIRING` table in `build.py`, keyed by frame
-> and region so it can be read against the export); segmented controls, tab rows and radio lists
-> pick, using the selected look the frame drew; and the export's own `style-hover` states work,
-> which they did not before because 5b had no script at all. `proto.js` is the whole layer.
+> ⚠️ **5B WAS MADE CLICKABLE AND THEN DELIBERATELY UNWIRED AGAIN. Do not re-wire it.**
+> Wiring the frames' own controls looked harmless and cost three things. It inserted **200
+> elements across 117 lifted frames**, so the markup whose unchanged-ness is 5b's entire claim
+> was no longer unchanged. It matched controls **by button text**, so a re-export that rewords
+> one would silently drop the link and nothing would notice. And the assertion meant to police
+> it — *every page's frames must respond to something* — **pressured the build into inventing a
+> link from the binding checklist to itself, purely to pass.** A check that can be satisfied by
+> fabrication is worse than no check, and that one was.
 >
-> **Two build-time assertions hold the line**, because both of these failed silently once already:
-> a page whose <b>lifted frames</b> contain no link and no pick group stops the build (scaffolding
-> links do not count — that is how 5c went inert while every link still resolved); and anything
-> hidden by default <b>outside</b> a lifted frame stops it too, which is the JS-off rule made
-> mechanical rather than remembered.
+> What replaced it is the assertion that was worth having: **every lifted region must be
+> byte-identical to the region in the `.dc.html`.** That makes "this page derives from S4a" a
+> claim a script settles rather than one a reader has to trust — and it is unfalsifiable the
+> moment anything is inserted into a frame.
 >
-> **This is why 5b and 5c behave differently and neither is a bug.** 5c hides and reveals because it
-> is the product. 5b never hides, because it is the proof.
+> **What 5b still does, and it is more than it did before.** `proto.js` replays `style-hover`
+> and `style-focus` — the behaviour **the export itself declares** and which 5b previously
+> lacked entirely, so this build is *more* faithful than the static one was. Navigation lives in
+> the scaffolding around each frame: the trail bars, the surface list, the index. And R-75's rule
+> still binds — nothing is hidden by default, enforced by its own assertion, so the page reads
+> complete with JavaScript off.
+>
+> **The clickable build is 5c, and that is the whole division.** 5c hides, reveals and navigates
+> because it is the product. 5b does none of those, because it is the proof.
 
 > ✅ **STEP 5B WAS REBUILT ON THE SAME LIFTER, in the same pass.** `frames.py` moved up to
 > `ux-designs/` so both generators share it. Every screen in the prototype is now a lifted frame with

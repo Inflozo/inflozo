@@ -8,11 +8,20 @@
    state, every annotation, all visible at once. That is what makes it the checking
    artifact, and it is not negotiable.
 
-   What that leaves is real all the same: the export's own hover states, controls that
-   pick, and frames whose actions go where they say they go.
+   IT ALSO TOUCHES NOTHING INSIDE A LIFTED FRAME. That is the second rule, and it was
+   learned by breaking it: wiring the frames' own controls inserted 200 elements across
+   117 frames, and an assertion that "every page's frames must respond" pressured the
+   build into a link from the binding checklist to itself, purely to pass. A check that
+   can be satisfied by fabrication is worse than no check. So the frames are lifted
+   byte-identical and stay that way — `build.py` asserts it — and navigation lives in the
+   scaffolding around them.
 
-   This is why 5b and 5c behave differently and neither is a bug. 5c hides and reveals
-   because it is the product. 5b never hides, because it is the proof. */
+   What is left is exactly the behaviour THE EXPORT ITSELF DECLARES: `style-hover` and
+   `style-focus`, which the export's own runtime applies and which 5b was missing
+   entirely. Replaying them makes this build MORE faithful, not less.
+
+   This is why 5b and 5c behave differently and neither is a bug. 5c hides, reveals and
+   navigates because it is the product. 5b does none of those, because it is the proof. */
 (function () {
   'use strict';
 
@@ -58,41 +67,6 @@
     }, true);
   });
 
-  /* ── picking, in the frame's own idiom ─────────────────────────────────────
-     A lifted control has its selected look in an INLINE style and no class to hook.
-     So picking swaps that inline style between siblings: the option the frame drew as
-     selected carries `data-picked`, and its style IS the group's selected look.
-     Additive — every option was already visible, and still is with JS off.
-
-     Groups are scoped to the frame they were lifted from, because 5b puts a dozen
-     frames on one page and several of them draw the same control. */
-  var PICKED = {};
-
-  function initPicks() {
-    $$('[data-picked]').forEach(function (el) {
-      var g = el.getAttribute('data-pick');
-      if (!g || PICKED[g]) return;
-      var sib = $$('[data-pick="' + g + '"]').filter(function (x) {
-        return !x.hasAttribute('data-picked');
-      })[0];
-      PICKED[g] = {
-        on: el.getAttribute('style') || '',
-        off: sib ? (sib.getAttribute('style') || '') : '',
-        el: el
-      };
-    });
-  }
-
-  document.addEventListener('click', function (e) {
-    var opt = e.target.closest('[data-pick]');
-    if (!opt) return;
-    var g = opt.getAttribute('data-pick'), st = PICKED[g];
-    if (!st || opt === st.el) return;
-    st.el.setAttribute('style', st.off);
-    opt.setAttribute('style', st.on);
-    st.el = opt;
-  });
-
   /* ── the surface list on each page jumps rather than reloads ───────────────
      Anchors already work with JS off; this only smooths them and marks where you
      landed, so a page with fifteen frames on it does not lose you. */
@@ -109,5 +83,4 @@
     setTimeout(function () { t.classList.remove('landed'); }, 1600);
   });
 
-  document.addEventListener('DOMContentLoaded', initPicks);
 })();
