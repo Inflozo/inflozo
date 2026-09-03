@@ -121,3 +121,97 @@ def attr(html_, find, extra):
     start = html_.rindex('<', 0, i)
     end = html_.index('>', start)
     return html_[:end] + ' ' + extra + html_[end:]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Making a lifted frame behave
+#
+# The export draws every control in one state, with its look in an inline style and
+# no class to hook. So the interaction cannot be bolted on with a stylesheet — it has
+# to be attached at lift time, to the element the frame already drew. These four
+# helpers are the whole vocabulary; `app.js` implements the other half.
+# ─────────────────────────────────────────────────────────────────────────────
+def _elem(html_, text, nth=0):
+    """(start, end) of the smallest element containing the nth occurrence of `text`."""
+    i, seen = -1, -1
+    while seen < nth:
+        i = html_.index(text, i + 1)
+        seen += 1
+    return _enclosing(html_, i)
+
+
+def overlay(html_, text, mid, kind='menu-lifted', nth=0):
+    """Turn something the frame drew OPEN into something that opens and closes.
+
+    The frames document dropdowns and sheets in their open state, because that is the
+    state worth drawing. In the product they are raised by a control, so the drawn
+    element keeps its look and gains an id, a class and a hidden default."""
+    a, b = _elem(html_, text, nth)
+    head_end = html_.index('>', a)
+    return (html_[:a + 4] + f' id="{mid}" class="overlay {kind}"' + html_[a + 4:head_end]
+            + html_[head_end:b] + html_[b:])
+
+
+def trigger(html_, text, mid, nth=0):
+    """The control that raises an overlay."""
+    a, _b = _elem(html_, text, nth)
+    end = html_.index('>', a)
+    return html_[:end] + f' data-open="{mid}" style="cursor:pointer"' + html_[end:]
+
+
+def pick(html_, group, *texts):
+    """A set of sibling options — a segmented control, a tab row, a radio list, a menu.
+
+    The frame draws one of them selected, with its selected look in an inline style.
+    `app.js` swaps that style between siblings on click, so the control responds the way
+    it was drawn to rather than the way a stylesheet would guess."""
+    for n, t in enumerate(texts):
+        a, _b = _elem(html_, t)
+        end = html_.index('>', a)
+        html_ = html_[:end] + f' data-pick="{group}"' + html_[end:]
+    return html_
+
+
+def picked(html_, text, nth=0):
+    """Mark which option the frame drew as the selected one."""
+    a, _b = _elem(html_, text, nth)
+    end = html_.index('>', a)
+    return html_[:end] + ' data-picked' + html_[end:]
+
+
+def part(frame, n=0, **kw):
+    """The nth top-level child of a region.
+
+    Several detail frames document a surface TWICE — the desktop popover beside the
+    mobile one, each under its own caption. That is right for a design document and
+    wrong for a walkthrough, which has to show the product and not the documentation.
+    This takes one of them."""
+    r = region(frame, **kw)
+    inner = r[r.index('>') + 1:r.rindex('</')]
+    depth, start, seen = 0, None, 0
+    for m in re.finditer(r'<(/?)div\b[^>]*?(/?)>', inner):
+        if m.group(2) == '/':
+            continue
+        if not m.group(1):
+            if depth == 0:
+                start = m.start()
+            depth += 1
+        else:
+            depth -= 1
+            if depth == 0:
+                if seen == n:
+                    return inner[start:m.end()]
+                seen += 1
+    raise IndexError('no child %d' % n)
+
+
+_CAP = re.compile(r"<div[^>]*JetBrains Mono[^>]*>[^<]{0,200}</div>\s*")
+
+
+def decap(html_):
+    """Drop the mono captions a frame carries.
+
+    A caption is documentation about the frame — "desktop — opens under the bell" — and
+    belongs in step 5b, which is about checking the drawing. In step 5c it would be a
+    label floating on the product, so it comes off."""
+    return _CAP.sub('', html_)

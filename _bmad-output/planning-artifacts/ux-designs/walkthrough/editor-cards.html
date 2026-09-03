@@ -38,18 +38,18 @@
       <div style="display:flex;flex-direction:column;gap:5px">
         <span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
-          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Base</span>
-          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Surface</span>
-          <span style="text-align:center;padding:5px 0;border:1px solid #FF5941;border-radius:7px;background:#FFEDE8;font-size:11px;font-weight:600;cursor:pointer">Tint</span>
-          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Accent</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer" data-pick="bg-role" data-picked>Base</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer" data-pick="bg-role">Surface</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #FF5941;border-radius:7px;background:#FFEDE8;font-size:11px;font-weight:600;cursor:pointer" data-pick="bg-role">Tint</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer" data-pick="bg-role">Accent</span>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji</span><span style="width:34px;height:20px;border-radius:12px;background:#C2381F;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF"></span></span></div>
       <div style="display:flex;flex-direction:column;gap:5px">
         <span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji size</span>
         <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
-          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer">Small</span>
-          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Large</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer" data-pick="emoji-size" data-picked>Small</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer" data-pick="emoji-size">Large</span>
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@
       <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Space around</span><span style="font-weight:500;color:#1C1B1A">Comfortable</span></span>
       <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Corners</span><span style="font-weight:500;color:#1C1B1A">Pack radius</span></span>
     </div>
-    <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;color:#C2381F;font-family:'Inter',sans-serif;cursor:pointer" style-hover="border-color:#C2381F">Reset to Ghost default</button>
+    <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;color:#C2381F;font-family:'Inter',sans-serif;cursor:pointer" style-hover="border-color:#C2381F" data-open="reset-card" style="cursor:pointer">Reset to Ghost default</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:10px;max-width:300px">
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">FOUR CONTROLS — INSIDE THE 4–7 NORM · NAMED VALUES ONLY, NO HEX AND NO PX ANYWHERE ON THIS SCREEN</span>
@@ -67,7 +67,24 @@
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">NO COLOUR CONTROLS FOR HEADER, SIGNUP AND CTA CARDS — THE POST AUTHOR SETS THOSE INLINE IN GHOST, AND A CONTROL THAT SILENTLY LOSES TO AN INLINE STYLE IS WORSE THAN NONE</span>
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE CUSTOMISED PILL IS THE PANEL'S ONLY STATUS; IT CLEARS WITH THE RESET</span>
   </div>
-</div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
+</div><div id="reset-card" class="overlay sheet-lifted"><section data-screen-label="S14c reset confirm" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:48px;align-items:flex-start">
+  <div style="width:520px;height:300px;flex-shrink:0;background:rgba(28,27,26,.35);border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;align-items:center;justify-content:center">
+    <div style="width:360px;background:#FFFFFF;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:20px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:15px;font-weight:600">Reset Callout to Ghost's default?</span>
+      <span style="font-size:13px;color:#6E6A64;line-height:1.55">Removes your 3 changes — colours, emoji and emoji size — everywhere callouts appear. Posts keep their content.</span>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+        <span style="height:32px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer">Cancel</span>
+        <span style="height:32px;display:inline-flex;align-items:center;padding:0 14px;background:#C2381F;color:#FFFFFF;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer">Reset card</span>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE SENTENCE NAMES THE COUNT AND THE CHANGED CONTROLS · "POSTS KEEP THEIR CONTENT" IS ALWAYS THE SECOND SENTENCE — THE FEAR TO ANSWER · RESET CLEARS THE CUSTOMISED BADGE IN THE DROPDOWN AND THE LEFT RAIL · UNDOABLE FROM THE EDITOR'S UNDO STACK, SO THE CONFIRM IS ONE STEP, NOT TWO</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">Reset is per card and scoped in words</strong> — the treatment choice and other cards' overrides are untouched. There is deliberately no "reset all cards": twenty decisions removed by one click is a footgun with no matching user intent.</p>
+</section></div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
 <script src="app.js"></script>
 
 </body>

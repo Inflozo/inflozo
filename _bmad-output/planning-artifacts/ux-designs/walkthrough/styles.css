@@ -676,3 +676,18 @@ body.product .wizbody > * { width: 100%; max-width: 760px; }
    documents it OPEN. In the product it opens from its button, so the class has to win. */
 .overlay.menu-lifted { display: none !important; }
 .overlay.menu-lifted.is-open { display: flex !important; }
+
+
+/* A lifted overlay keeps the frame's own inline look and gains only a hidden default.
+   `!important` is needed because the frame writes `display:flex` inline — it documents
+   the element OPEN, which is the state worth drawing. */
+.overlay.menu-lifted { display: none !important; }
+.overlay.menu-lifted.is-open { display: flex !important; }
+.overlay.sheet-lifted {
+  position: fixed; inset: 0; z-index: 200; background: var(--scrim);
+  align-items: flex-start; justify-content: center; padding: 6vh 24px; overflow: auto;
+  display: none !important;
+}
+.overlay.sheet-lifted.is-open { display: flex !important; }
+[data-pick] { cursor: pointer; }
+[data-open] { cursor: pointer; }

@@ -32,12 +32,12 @@
         <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#B8B0A4;margin-left:6px"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           <div style="display:flex;background:rgba(255,255,255,.08);border-radius:24px;padding:3px;gap:2px">
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;background:#F4EFE6;color:#232019">Anonymous</span>
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6">Free member</span>
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6">Paid member</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;background:#F4EFE6;color:#232019" data-pick="member" data-picked>Anonymous</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member">Free member</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member">Paid member</span>
           </div>
-          <button style="height:32px;padding:0 13px;background:transparent;border:1px solid #4A453D;color:#F4EFE6;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.08)">Back to post</button>
-          <button style="height:32px;padding:0 15px;background:#F4EFE6;color:#232019;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#FFFFFF">Ship update</button>
+          <a href="post-content.html" style="display:contents;color:inherit"><button style="height:32px;padding:0 13px;background:transparent;border:1px solid #4A453D;color:#F4EFE6;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.08)">Back to post</button></a>
+          <a href="deploy.html" style="display:contents;color:inherit"><button style="height:32px;padding:0 15px;background:#F4EFE6;color:#232019;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#FFFFFF">Ship update</button></a>
         </div>
       </div>
 
@@ -154,9 +154,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Preview treatment</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">None</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Fade</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Blur</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat" data-picked>None</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="treat">Fade</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat">Blur</span>
             </div>
             <div style="display:flex;gap:7px;background:#FFF4D6;border-radius:8px;padding:9px 10px">
               <span style="font-size:11px;color:#8A6100;font-weight:600;flex-shrink:0">⚑</span>
@@ -166,9 +166,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Tiers to show</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">All paid</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Cheapest</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">One I pick</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="tiers" data-picked>All paid</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers">Cheapest</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers">One I pick</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:7px">
@@ -187,9 +187,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Surface</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Page</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Tinted</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Inverted</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface" data-picked>Page</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="surface">Tinted</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface">Inverted</span>
             </div>
           </div>
           <div style="margin-top:auto;border-top:1px solid #E7E2DB;padding-top:12px;display:flex;align-items:center;gap:8px">

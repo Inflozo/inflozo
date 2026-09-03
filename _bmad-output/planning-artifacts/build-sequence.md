@@ -922,6 +922,17 @@ wrong, structurally:
 None of that survives a tag-stripper. It is exactly the failure `CLAUDE.md` warns about — *the whole
 directory, every time* — with a summary substituted for the source.
 
+> ⚠️ **AND THE LIFT REBUILD BROKE THE INTERACTION, WHICH IS 5C'S WHOLE POINT.** The first lift pass
+> kept the frames and dropped the wiring — the dashboard, deploy, billing and sites came out with
+> zero affordances, and the build reported success because every link still resolved. The owner asked
+> "there is no interaction?" and there was not. Two things fixed it. `frames.py` gained
+> `overlay/trigger/pick/picked`, which attach behaviour **to the element the frame already drew**
+> rather than to a class the frame does not have — so a lifted segmented control picks using the
+> selected look that was drawn, and a dropdown the frame documents OPEN keeps its look and gains a
+> trigger. And `build-app.py` now **fails the build on an inert screen**: any screen whose only
+> affordance is the scaffolding bar stops the build, because a walkthrough made of dead ends is a
+> slide deck. That assertion is the control; it would have caught this the moment it happened.
+
 **The second cut does not re-author the frames: it lifts them.** `frames.py` pulls each screen's
 markup out of the `.dc.html` verbatim, by `data-screen-label` or by the mono caption above it;
 `build-app.py` then patches what it must — links wired, behaviour hooks added, the fixed 1440×900

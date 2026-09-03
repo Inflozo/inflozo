@@ -500,6 +500,41 @@
     announce('Style Pack: ' + name);
   });
 
+  /* ── picking, in the frame's own idiom ─────────────────────────────────────
+     A lifted control has its selected look in an INLINE style and no class to hook,
+     because the export draws one state per element. So picking works by swapping that
+     inline style between siblings: the option the frame drew as selected carries
+     `data-picked`, and its style becomes the group's "on" look. Nothing is guessed —
+     the selected appearance is the one that was drawn. */
+  var PICKED = {};
+
+  function initPicks() {
+    $$('[data-picked]').forEach(function (el) {
+      var g = el.getAttribute('data-pick');
+      if (!g || PICKED[g]) return;
+      PICKED[g] = { on: el.getAttribute('style') || '', el: el };
+      // the resting look is whatever a sibling that is NOT picked carries
+      var sib = $$('[data-pick="' + g + '"]').filter(function (x) {
+        return !x.hasAttribute('data-picked');
+      })[0];
+      PICKED[g].off = sib ? (sib.getAttribute('style') || '') : '';
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var opt = e.target.closest('[data-pick]');
+    if (!opt) return;
+    var g = opt.getAttribute('data-pick'), state = PICKED[g];
+    if (!state || opt === state.el) return;
+    state.el.setAttribute('style', state.off);
+    opt.setAttribute('style', state.on);
+    state.el = opt;
+    var label = (opt.textContent || '').trim().slice(0, 60);
+    if (label) announce(label + ' selected');
+    var sets = opt.getAttribute('data-sets');
+    if (sets) setState(sets.split(':')[0], sets.split(':')[1]);
+  });
+
   /* ── style-hover / style-focus, as the export writes them ──────────────────
      The frames carry their hover and focus states as `style-hover="…"` attributes,
      which the export's own runtime applies. Screens here are LIFTED from those
@@ -549,6 +584,7 @@
       r.className = 'sr-only';
       document.body.appendChild(r);
     }
+    initPicks();
     syncBackupGate();
     var ring = $('[data-ring]');
     if (ring) setDesign(parseInt(ring.getAttribute('data-current') || '0', 10));

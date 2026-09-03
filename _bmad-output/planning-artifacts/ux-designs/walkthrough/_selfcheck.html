@@ -38,6 +38,15 @@
   <span data-gate-go id="go" class="btn coral off"></span>
   <span data-gate-reason id="reason"></span>
 
+  <!-- fixture: the lifted idiom — a pick group whose looks live in inline styles -->
+  <span data-pick="seg" data-picked id="opt-a" style="background:#FFFFFF;font-weight:600">A</span>
+  <span data-pick="seg" id="opt-b" style="background:none;font-weight:500">B</span>
+  <span data-pick="seg" id="opt-c" style="background:none;font-weight:500">C</span>
+
+  <!-- fixture: a lifted overlay, which carries the frame's own inline display:flex -->
+  <button data-open="lifted-menu" id="raise">open</button>
+  <div id="lifted-menu" class="overlay menu-lifted" style="display:flex">menu</div>
+
   <!-- fixture: the wizard -->
   <div data-wizard data-at="1" id="wiz">
     <span class="rstep" data-rail-step="1"><span class="n">1</span></span>
@@ -93,7 +102,25 @@ window.addEventListener('load', function () {
   check('untick a row and the master drops again', !$('#master').classList.contains('on'));
   check('and the button re-blocks', $('#go').classList.contains('off'));
 
-  // 5 · the wizard moves, and the rail marks what is done
+  // 5 · picking in the frames' idiom: the selected LOOK is the one that was drawn,
+  //     swapped between siblings — nothing is guessed from a stylesheet
+  check('the drawn selection starts on A', $('#opt-a').style.fontWeight === '600');
+  $('#opt-b').click();
+  check('B takes the drawn selected look', $('#opt-b').style.background === 'rgb(255, 255, 255)');
+  check('A drops back to the resting look', $('#opt-a').style.fontWeight === '500');
+  $('#opt-c').click();
+  check('and it moves on again', $('#opt-c').style.fontWeight === '600'
+        && $('#opt-b').style.fontWeight === '500');
+
+  // 6 · a lifted overlay is hidden despite the frame's own inline display:flex
+  var lm = $('#lifted-menu');
+  check('a lifted overlay starts closed', getComputedStyle(lm).display === 'none');
+  $('#raise').click();
+  check('its trigger opens it', getComputedStyle(lm).display === 'flex');
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  check('Esc closes it', getComputedStyle(lm).display === 'none');
+
+  // 7 · the wizard moves, and the rail marks what is done
   check('wizard boots on step 1', !$('[data-step="1"]').hidden && $('[data-step="2"]').hidden);
   $('#tostep2').click();
   check('it advances to step 2', !$('[data-step="2"]').hidden && $('[data-step="1"]').hidden);

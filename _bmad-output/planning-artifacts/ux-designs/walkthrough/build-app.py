@@ -39,6 +39,30 @@ _fspec = importlib.util.spec_from_file_location(
 frames = importlib.util.module_from_spec(_fspec)
 _fspec.loader.exec_module(frames)
 region, unbox, patch, link, attr = frames.region, frames.unbox, frames.patch, frames.link, frames.attr
+part, decap = frames.part, frames.decap
+overlay, trigger, pick, picked = frames.overlay, frames.trigger, frames.pick, frames.picked
+
+
+def wire(h, *pairs):
+    """Wire the affordances a frame happens to draw. Unlike patch(), a miss is allowed —
+    frames differ in what they show. The backstop is the inert-screen assertion in main(),
+    which fails the build if a screen ends up with nothing that responds."""
+    for text, href in pairs:
+        if text in h:
+            try:
+                h = link(h, (text, href))
+            except (KeyError, ValueError):
+                pass
+    return h
+
+
+def group(h, name, *texts):
+    """A pick group, skipping options this frame does not draw."""
+    present = [t for t in texts if t in h]
+    if len(present) < 2:
+        return h
+    h = pick(h, name, *present)
+    return picked(h, present[0])
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 KIT_PATH = os.path.join(os.path.dirname(OUT), 'prototype', 'build.py')
@@ -160,9 +184,18 @@ for name in ('Orbit Weekly', 'The Slow Web', 'Maya&#x27;s portfolio', 'Field Not
              'Launch page', 'Orbit Weekly — dark exp'):
     if name in dash:
         dash = link(dash, (name, 'editor.html'))
-# what's-new is drawn OPEN in S3a because that is the state the frame documents; in the product
-# it is a popover under the marigold button, so it opens and closes here
-dash = patch(dash, ("WHAT'S NEW", "WHAT&#x27;S NEW")) if "WHAT'S NEW" in dash else dash
+# S3a draws what's-new OPEN, because that is the state worth documenting. In the product it is a
+# popover raised by the marigold button, so the drawn element keeps its look and gains a trigger.
+dash = attr(dash, 'z-index:5', 'id="whatsnew" class="overlay menu-lifted"')
+dash = attr(dash, 'background:#FFF4D6;cursor:pointer', 'data-open="whatsnew" aria-label="What&#x27;s new"')
+# the bell and the account chip raise the two popovers S3d and S3e draw
+dash = attr(dash, 'cursor:pointer;position:relative;transition:all 160ms ease-out',
+            'data-open="notifs" aria-label="Notifications"')
+dash = attr(dash, 'margin-top:auto;display:flex', 'data-open="acct"')
+dash += ('<div id="notifs" class="overlay sheet-lifted">'
+         + decap(part('S3 Dashboard', 0, caption='S3e ·')) + '</div>'
+         + '<div id="acct" class="overlay sheet-lifted">'
+         + decap(part('S3 Dashboard', 0, caption='S3d ·')) + '</div>')
 page('dashboard', 'Projects', fill(dash))
 
 dfree = unbox(region('S3 Dashboard', label='S3c Dashboard free plan'))
@@ -178,31 +211,63 @@ page('dashboard-empty', 'Projects', fill(dempty))
 sites = unbox(region('S11 Sites', label='S11a Sites'))
 sites = app_links(sites)
 sites = link(sites, ('Manage API keys', 'manage-keys.html'))
+# S11a draws the ⋯ menu open. Give it a trigger, and hang S11b's connect modal off the button.
+sites = attr(sites, 'Re-check connection', 'x-menu')          # marks the row for the walk-up below
+_i = sites.index('x-menu')
+_start = sites.rindex('<div', 0, sites.rindex('<div', 0, _i))  # the menu is two levels above the row
+sites = sites[:_start + 4] + ' id="site-menu" class="overlay menu-lifted"' + sites[_start + 4:]
+sites = sites.replace(' x-menu', '', 1)
+sites = attr(sites, 'Connect site', 'data-open="connect-site"')
+sites += ('<div id="connect-site" class="overlay sheet-lifted">'
+          + decap(region('S11 Sites', caption='S11b ·')) + '</div>')
 page('sites', 'Sites', fill(sites))
 
 keys = unbox(region('S11 Sites', caption='S11d ·'))
+keys = wire(keys, ('Save &amp; re-check', 'sites.html'), ('Cancel', 'sites.html'),
+             ('Test connection', 'manage-keys.html'))
 page('manage-keys', 'Keys', fill(keys) + '<div class="stage-back"><a class="btn secondary" href="sites.html">← Sites</a></div>')
 
 assets = unbox(region('S10 Assets', label='S10a Asset library'))
 assets = app_links(assets)
+assets = trigger(assets, 'Upload', 'dropzone')
+assets = trigger(assets, 'hero-shot.jpg', 'asset-details')
+assets += ('<div id="dropzone" class="overlay sheet-lifted">'
+           + decap(region('S10 Assets', caption='S10b ·')) + '</div>'
+           + '<div id="asset-details" class="overlay sheet-lifted">'
+           + decap(region('S10 Assets', label='S10d Image details')) + '</div>'
+           + '<div id="delete-asset" class="overlay sheet-lifted">'
+           + decap(region('S10 Assets', caption='S10c ·')) + '</div>')
 page('assets', 'Assets', fill(assets))
 
-adet = unbox(region('S10 Assets', label='S10d Image details'))
-page('assets-details', 'hero-shot.jpg', fill(adet)
-     + '<div class="stage-back"><a class="btn secondary" href="assets.html">← Assets</a></div>')
+
+# S10d is the details panel Assets raises; it does not need a page of its own.
 
 bill = unbox(region('S12 Billing', caption='S12a ·'))
-bill = link(bill, ('View invoices', 'billing-invoices.html'), ('Delete account', 'billing-delete.html'))
+bill = trigger(bill, 'View invoices', 'invoices')
+bill = trigger(bill, 'Delete account', 'delete-acct', nth=1)   # the button, not the heading
+bill = trigger(bill, 'Cancel plan', 'upgrade-modal')
+bill += ('<div id="invoices" class="overlay sheet-lifted">'
+         + decap(region('S12 Billing', caption='S12d ·')) + '</div>'
+         + '<div id="delete-acct" class="overlay sheet-lifted">'
+         + decap(region('S12 Billing', caption='S12c ·')) + '</div>'
+         + '<div id="upgrade-modal" class="overlay sheet-lifted">'
+         + decap(region('S12 Billing', caption='S12b ·')) + '</div>')
 page('billing', 'Account & billing', fill(bill))
 
-page('billing-invoices', 'Invoices', fill(unbox(region('S12 Billing', caption='S12d ·')))
-     + '<div class="stage-back"><a class="btn secondary" href="billing.html">← Billing</a></div>')
-page('billing-delete', 'Delete account', fill(unbox(region('S12 Billing', caption='S12c ·')))
-     + '<div class="stage-back"><a class="btn secondary" href="billing.html">← Billing</a></div>')
-page('upgrade', 'Go Pro', fill(unbox(region('S12 Billing', caption='S12b ·')))
+# Invoices, Delete account and the upgrade modal are overlays on Billing now, raised by the
+# controls S12a draws for them. Upgrade keeps a page of its own because half the product links to it.
+up = unbox(region('S12 Billing', caption='S12b ·'))
+up = group(up, 'interval', 'Monthly', 'Yearly')
+up = wire(up, ('Go Pro — $15/mo', 'dashboard.html'))
+page('upgrade', 'Go Pro', fill(up)
      + '<div class="stage-back"><a class="btn secondary" href="dashboard.html">← Back</a></div>')
 
 sugg = unbox(region('S13 Suggestions', label='S13a Suggestions'))
+sugg = trigger(sugg, 'Suggest something', 'suggest')
+sugg = pick(sugg, 'tab', 'Top', 'New', 'Planned', 'Building', 'Shipped')
+sugg = picked(sugg, 'Top')
+sugg += ('<div id="suggest" class="overlay sheet-lifted">'
+         + decap(region('S13 Suggestions', caption='S13b ·')) + '</div>')
 page('suggestions', 'Suggestions', fill(sugg)
      + '<div class="stage-back"><a class="btn secondary" href="dashboard.html">← Projects</a></div>')
 
@@ -221,45 +286,112 @@ ed = link(ed, ('Ship it', 'deploy.html'))
 ed = link(ed, ('+ Add section', 'section-picker.html'))
 # every template row in the drawn menu goes somewhere real
 ed = link(ed, ('>Post<'[1:-1], 'post-content.html'))
-ed = attr(ed, 'Change</', 'data-open="packs"')
+ed = link(ed, ('Change', 'style-packs.html'))
+ed = attr(ed, '>View as<', 'data-open="viewas"')
+ed = pick(ed, 'device', 'Desktop', 'Tablet', 'Mobile') if 'Desktop' in ed else ed
+ed += ('<div id="viewas" class="overlay sheet-lifted">'
+       + decap(region('S4 Editor', caption='S4d ·')) + '</div>')
 page('editor', 'Orbit Weekly · Home', fill(ed), script="""
-document.body.setAttribute('data-editor-shell', '1');""")
+document.body.setAttribute('data-editor-shell', '1');
+// [ and ] walk the drawn design states: S4a rest -> S4b hover -> S4c selected.
+var STATES = ['editor.html', 'editor-hover.html', 'editor-selected.html'];
+document.addEventListener('keydown', function (e) {
+  if (e.key === ']') location.href = STATES[1];
+  if (e.key === 'p' || e.key === 'P') location.href = 'preview-mode.html';
+});""")
 
-page('editor-selected', 'Orbit Weekly · Home',
-     fill(unbox(region('S4 Editor', label='S4c Editor selected')))
+hov = unbox(region('S4 Editor', label='S4b Editor hover'))
+hov = wire(hov, ('Ship it', 'deploy.html'), ('+ Add section', 'section-picker.html'))
+page('editor-hover', 'Orbit Weekly · Home', fill(hov)
+     + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Rest</a>'
+       '<a class="btn coral" href="editor-selected.html">Select it →</a></div>')
+
+pv = unbox(region('B Missing Surfaces', caption='B3b ·'))
+pv = wire(pv, ('Back to editing', 'editor.html'))
+pv = group(pv, 'device', 'Desktop', 'Tablet', 'Mobile')
+page('preview-mode', 'Preview', fill(pv)
+     + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Back to editing</a></div>')
+
+sel = unbox(region('S4 Editor', label='S4c Editor selected'))
+sel = group(sel, 'align', 'Left', 'Centred', 'Center')
+sel = group(sel, 'height', 'Compact', 'Comfortable', 'Tall')
+sel = wire(sel, ('Ship it', 'deploy.html'), ('+ Add section', 'section-picker.html'))
+page('editor-selected', 'Orbit Weekly · Home', fill(sel)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Deselect</a></div>')
 
-pick = unbox(region('S5 Section Picker', label='S5a Section picker'))
-pick = link(pick, ('Add', 'editor.html'))
-page('section-picker', 'Add a section', fill(pick)
+picker = unbox(region('S5 Section Picker', label='S5a Section picker'))
+picker = link(picker, ('Add', 'editor.html'))
+picker = pick(picker, 'cat', 'Headers', 'Heroes', 'Post Grids', 'Footers')
+picker = picked(picker, 'Heroes')
+page('section-picker', 'Add a section', fill(picker)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">Esc — close</a></div>',
      script="document.addEventListener('keydown',function(e){if(e.key==='Escape')location.href='editor.html';});")
 
-page('variant-shuffle', 'Shuffle', fill(unbox(region('S6 Variant Shuffle', label='S6 Variant shuffle')))
+vs = unbox(region('S6 Variant Shuffle', label='S6 Variant shuffle'))
+vs = group(vs, 'density', 'Compact', 'Comfortable', 'Spacious')
+vs = wire(vs, ('Ship it', 'deploy.html'), ('+ Add section', 'section-picker.html'))
+page('variant-shuffle', 'Shuffle', fill(vs)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
 
 packs = unbox(region('S7 Style Packs', caption='S7b ·'))
+packs = group(packs, 'width', 'Narrow', 'Standard', 'Wide')
+packs = group(packs, 'corners', 'Sharp', 'Soft', 'Round')
+packs = group(packs, 'density', 'Compact', 'Comfortable', 'Spacious')
+packs = wire(packs, ('New pack', 'style-pack-edit.html'), ('Ship it', 'deploy.html'))
 page('style-packs', 'Style Packs', fill(packs)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('style-pack-edit', 'Edit pack', fill(unbox(region('S7 Style Packs', caption='S7c ·')))
+spe = unbox(region('S7 Style Packs', caption='S7c ·'))
+spe = group(spe, 'mode', 'Light', 'Dark')
+spe = wire(spe, ('Save pack', 'style-packs.html'), ('Cancel', 'style-packs.html'))
+page('style-pack-edit', 'Edit pack', fill(spe)
      + '<div class="stage-back"><a class="btn secondary" href="style-packs.html">← Packs</a></div>')
 
 routes = unbox(region('S9 Routes', label='S9a Routes manager'))
+routes = trigger(routes, '+ New collection', 'new-collection')
+routes = trigger(routes, '+ Custom route', 'new-route')
+routes = wire(routes, ('Ship update', 'deploy.html'))
+routes += ('<div id="new-collection" class="overlay sheet-lifted">'
+           + decap(region('S9 Routes', caption='S9c ·')) + '</div>'
+           + '<div id="new-route" class="overlay sheet-lifted">'
+           + decap(region('S9 Routes', caption='S9e ·')) + '</div>')
 page('routes-manager', 'Routes & Templates', fill(routes)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('routes-empty', 'Routes & Templates', fill(unbox(region('S9 Routes', label='S9d Routes empty')))
+rempty = unbox(region('S9 Routes', label='S9d Routes empty'))
+rempty = wire(rempty, ('+ New collection', 'routes-manager.html'))
+page('routes-empty', 'Routes & Templates', fill(rempty)
      + '<div class="stage-back"><a class="btn secondary" href="routes-manager.html">← Routes</a></div>')
 
-page('editor-cards', 'Editor cards', fill(unbox(region('S14 Editor Cards', caption='S14e ·')))
+cards = unbox(region('S14 Editor Cards', caption='S14e ·'))
+cards = group(cards, 'callout-col', 'Pack tokens', 'Ghost&#x27;s palette')
+cards = group(cards, 'emoji-size', 'Small', 'Large')
+cards = group(cards, 'bg-role', 'Base', 'Surface', 'Tint', 'Accent')
+cards = trigger(cards, 'Reset to Ghost default', 'reset-card')
+cards += ('<div id="reset-card" class="overlay sheet-lifted">'
+          + decap(region('S14 Editor Cards', label='S14c reset confirm')) + '</div>')
+page('editor-cards', 'Editor cards', fill(cards)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('post-content', 'Post template', fill(unbox(region('C Post Body', label='C2a Post content desktop')))
+post = unbox(region('C Post Body', label='C2a Post content desktop'))
+post = group(post, 'measure', 'Narrow', 'Comfortable', 'Wide')
+post = wire(post, ('Ship update', 'deploy.html'), ('Preview', 'preview-mode.html'))
+page('post-content', 'Post template', fill(post)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('paywall-editor', 'Paywall', fill(unbox(region('C Post Body', label='C3a Paywall editor')))
+pay = unbox(region('C Post Body', label='C3a Paywall editor'))
+pay = group(pay, 'treat', 'None', 'Fade', 'Blur')
+pay = group(pay, 'tiers', 'All paid', 'Cheapest', 'One I pick')
+pay = group(pay, 'surface', 'Page', 'Tinted', 'Inverted')
+pay = group(pay, 'member', 'Anonymous', 'Free member', 'Paid member')
+pay = wire(pay, ('Back to post', 'post-content.html'), ('Ship update', 'deploy.html'))
+page('paywall-editor', 'Paywall', fill(pay)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('style-guide', 'Style-guide article', fill(unbox(region('C Post Body', label='C4 Style-guide fixture')))
+sg = unbox(region('C Post Body', label='C4 Style-guide fixture'))
+sg = wire(sg, ('Swap to a real post from the content-source pill at any time', 'post-content.html'))
+page('style-guide', 'Style-guide article', fill(sg)
      + '<div class="stage-back"><a class="btn secondary" href="post-content.html">← Post template</a></div>')
 
 theme = unbox(region('B Missing Surfaces', caption='B17 ·'))
+theme = group(theme, 'settings-nav', 'Site basics', 'Navigation', 'Social accounts', 'Code injection')
+theme = wire(theme, ('Translations', 'theme-settings.html'), ('Promote', 'theme-settings.html'),
+             ('Ship update', 'deploy.html'))
 page('theme-settings', 'Theme settings', fill(theme)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
 
@@ -267,32 +399,44 @@ page('theme-settings', 'Theme settings', fill(theme)
 # ═════════════════════════════════════════════════════════════════════════════
 # SHIPPING — S8
 # ═════════════════════════════════════════════════════════════════════════════
+# The wizard is four drawn frames and ONE surface. Each becomes a step of the same page, so
+# it walks the way it will in the product — and each step is still the frame, untouched.
 d1 = unbox(region('S8 Deploy', label='S8a Ship step 1'))
-d1 = link(d1, ('Run checks', 'deploy-2-check.html'))
-page('deploy', 'Ship it · destination', fill(d1)
-     + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-
+d1 = pick(d1, 'dest', 'Deploy &amp; activate', 'Deploy only')
+d1 = picked(d1, 'Deploy &amp; activate')
+d1 = attr(d1, '>Run checks<', 'data-goto="2"')
 d2 = unbox(region('S8 Deploy', caption='S8b ·'))
-d2 = link(d2, ('Ship it', 'deploy-3-shipping.html'), ('Back', 'deploy.html'))
-page('deploy-2-check', 'Ship it · pre-flight', fill(d2))
-
+d2 = attr(d2, '>Ship it<', 'data-run="4" data-goto-first="3" data-run-host="ship3"')
+d2 = attr(d2, '>Back<', 'data-goto="1"')
 d3 = unbox(region('S8 Deploy', caption='S8c ·'))
-page('deploy-3-shipping', 'Shipping…', fill(d3),
-     script="setTimeout(function(){location.href='deploy-4-live.html';}, 2600);")
+d4 = unbox(region('S8 Deploy', caption='S8d ·'))
+d4 = link(d4, ('Done', 'editor.html'))
+d5 = unbox(region('S8 Deploy', caption='S8d′ ·'))
+d5 = link(d5, ('Reconnect site', 'manage-keys.html'))
 
-page('deploy-4-live', 'Live!', fill(unbox(region('S8 Deploy', caption='S8d ·')))
-     + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a>'
-       '<a class="btn secondary" href="deploy-failure.html">See the failure ending</a>'
-       '<a class="btn secondary" href="deploy-history.html">History</a></div>')
-page('deploy-failure', 'Deploy failed', fill(unbox(region('S8 Deploy', caption='S8d′ ·')))
-     + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
-page('deploy-preview-only', 'Preview-only', fill(unbox(region('S8 Deploy', caption='S8a′ ·')))
+page('deploy', 'Ship it', f'''<div class="stage" data-wizard data-at="1">
+  <div data-step="1">{d1}</div>
+  <div data-step="2" hidden>{d2}</div>
+  <div data-step="3" hidden id="ship3">{d3}</div>
+  <div data-step="4" hidden>{d4}</div>
+  <div data-step="5" hidden>{d5}</div>
+</div>
+<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a>
+  <button class="btn secondary" data-goto="5">See the failure ending</button>
+  <a class="btn secondary" href="deploy-history.html">History</a></div>''')
+po = unbox(region('S8 Deploy', caption='S8a′ ·'))
+po = wire(po, ('Download theme', 'sites.html'), ('Which Ghost plans work? ↗', 'pricing.html'))
+page('deploy-preview-only', 'Preview-only', fill(po)
      + '<div class="stage-back"><a class="btn secondary" href="sites.html">← Sites</a></div>')
-page('deploy-history', 'History', fill(unbox(region('S8 Deploy', label='S8e History drawer')))
+hist = unbox(region('S8 Deploy', label='S8e History drawer'))
+hist = wire(hist, ('View site', 'editor.html'), ('Cancel', 'deploy-history.html'))
+hist = group(hist, 'ver', 'v5', 'v4', 'v3')
+page('deploy-history', 'History', fill(hist)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>')
 
-page('pro-exit', 'Four Pro designs are in this site',
-     fill(unbox(region('B Missing Surfaces', caption='B13a ·')))
+pex = unbox(region('B Missing Surfaces', caption='B13a ·'))
+pex = wire(pex, ('Swap and ship free', 'deploy.html'), ('Go Pro and ship', 'upgrade.html'))
+page('pro-exit', 'Four Pro designs are in this site', fill(pex)
      + '<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a>'
        '<a class="btn secondary" href="upgrade.html">Go Pro</a></div>')
 
@@ -312,7 +456,10 @@ page('redesign-proposals', 'Redesign proposals', fill(prop)
      + '<div class="stage-back"><a class="btn secondary" href="starter-chooser.html">Show me the starters</a>'
        '<a class="btn secondary" href="editor.html?empty">Start from my site as-is</a></div>')
 
-page('pricing', 'Pricing', fill(unbox(region('M5 Pricing', label='M5 Pricing'))))
+mk = unbox(region('M5 Pricing', label='M5 Pricing'))
+mk = group(mk, 'interval', 'Monthly', 'Yearly')
+mk = wire(mk, ('Start free', 'index.html'), ('Go Pro', 'upgrade.html'), ('Sign in', 'index.html'))
+page('pricing', 'Pricing', fill(mk))
 
 
 # Surfaces this cut does NOT contain, and the honest reason. Every one of them has no frame in
@@ -351,7 +498,15 @@ def build_screens_index():
     <a href="index.html">index.html</a></b> and click through as a user would; come back here to skip ahead.</p>
   <p class="helper" style="margin-top:10px;max-width:74ch">Every screen below is <b>lifted from the
     Claude Design export</b> — the markup is the frame's own, not a re-drawing of it — and then wired up so
-    it navigates. If a screen looks wrong, the frame is what it looks like, and that is the point.</p>
+    it behaves. If a screen looks wrong, the frame is what it looks like, and that is the point.</p>
+  <p class="helper" style="margin-top:8px;max-width:74ch"><b>What responds.</b> Menus, popovers and sheets
+    open from the control that raises them and close on <span class="kbd">Esc</span> or a click outside —
+    the account chip, the bell, what's-new, the site ⋯, the connect modal, invoices, delete account, the
+    upload zone, image details, the suggestion sheet, the new-collection and new-route sheets, the card
+    reset. Segmented controls, tab rows and radio lists <b>pick</b>, and the selected look is the one the
+    frame drew rather than one a stylesheet guessed. The deploy wizard <b>walks</b> its four drawn steps
+    with progress that fills. Every screen links to the ones it reaches. The build refuses to write if any
+    screen ends up with nothing that responds.</p>
   <div class="idxgrid" style="margin-top:22px">{rows}</div>
   <h2 style="font-size:18px;margin:32px 0 6px">Not in this cut, and why</h2>
   <p class="helper" style="max-width:74ch;margin-bottom:12px">These surfaces <b>have no frame in the
@@ -402,7 +557,22 @@ def main():
     if bad:
         print('\n'.join(sorted(set(bad))))
         raise SystemExit(f'{len(set(bad))} dead links')
-    print(f'{len(PAGES)} screens lifted from the export · all links resolve')
+
+    # EVERY SCREEN MUST DO SOMETHING. This exists because the lift rebuild silently
+    # stripped the interaction out of a build whose whole purpose is to behave, and
+    # nothing caught it — the links resolved, so the build reported success. A screen
+    # with no affordance except the scaffolding bar is a dead end, and a walkthrough
+    # made of dead ends is a slide deck.
+    inert = []
+    for p in PAGES:
+        body = re.sub(r'<div class="stage-back">.*?</div>\s*$', '', p['body'], flags=re.S)
+        hooks = (len(re.findall(r'data-(open|goto|pick|run|close)=', body))
+                 + len(re.findall(r'href="[A-Za-z0-9_.-]+\.html', body)))
+        if hooks == 0:
+            inert.append(p['id'])
+    if inert:
+        raise SystemExit('inert screens — nothing on them responds: ' + ', '.join(sorted(inert)))
+    print(f'{len(PAGES)} screens lifted from the export · all links resolve · none inert')
 
 
 if __name__ == '__main__':
