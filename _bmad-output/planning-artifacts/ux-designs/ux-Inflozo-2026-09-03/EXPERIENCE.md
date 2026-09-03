@@ -173,11 +173,11 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Staff Token Offer** | → **A1** | step 2, first deploy to a site only | "One more step unlocks a safety net" — and its decline path (FR-C1) |
 | **Backup Gate** | → **A1** | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) |
 | **Pre-flight Check** | S8b *(extended)* | step 4 | gscan, templates, helpers, routes, and every warning the PRD names |
-| **Drift Report** | → **A3** | before Pre-flight, every deploy after the first | Which files changed, by layer name (FR-J16) |
+| **Drift Report** | → **A3** | inside Pre-flight, every deploy after the first | A passing row when nothing changed; **it stops the deploy** when something did, naming the files by layer name (FR-J16) |
 | **Library Update Notice** | B14a | project card | "Updates available" (FR-J14) |
 | **Library Update Confirm** | B14b *(re-specified)* | before compile, whenever the library has advanced | The mandatory consent step (FR-J14) |
 | **Pro Exit Sheet** | B13a *(re-specified)* | any blocked exit on Free | Four remedies, itemised (FR-L3) |
-| **Snapshot Gate** | B12a running · B12b degraded *(re-specified)* | step 5, first upload to a site | Inflozo's own archive of the live theme (FR-J13) |
+| **Snapshot Gate** | B12a running · B12b degraded *(re-specified)* | the first named stage of step 5, first upload to a site only | Inflozo's own archive of the live theme, before the upload begins (FR-J13) |
 | **Deploy Progress** | S8c | step 5 | Compiling → Checking → Uploading → Activating |
 | **Deploy Live** | S8d | step 6 | The product's one confetti moment |
 | **Deploy Failure** | S8d′ | step 5, on failure | A human sentence and the action that fixes it |
@@ -1099,6 +1099,12 @@ not a failure**, and six things follow:
 Seven prompts. **A1–A6 draw surfaces that do not exist**; **A7 corrects six frames whose mechanism
 changed.** Each is self-contained, names the frame it inherits from, and carries the warning below
 because a session that hand-edits a frame hits it every time.
+
+**Running any of these produces a new export, which replaces the repository's copy.** Two edits
+live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0's per-prop
+mark allowlist — and a re-export loses them by construction. **Follow the export runbook on the
+build board afterwards:** `tools/reapply-export-edits.py`, then `tools/verify-design-pass.py`, then
+the derivations, then `tools/doc-audit.py --check` twice.
 
 Every prompt in this appendix ends with, and every session must observe:
 
