@@ -11,19 +11,10 @@
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="stage"><section data-screen-label="C3a Paywall editor" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
-  <div style="display:flex;flex-direction:column;gap:7px;max-width:1100px">
-    <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#6E6A64">C.3 · THE PAYWALL EDITOR</span>
-    <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-0.02em">A canvas that is not a page</h2>
-    <p style="margin:0;font-size:15px;line-height:1.6;color:#3A3835;max-width:760px">Ghost renders the paywall where the author put the members-only marker, mid-article. That makes it a template surface rather than a placeable section: there is no page to drop it on, and no design picker in the sidebar can reach it. It gets its own canvas, and the canvas has to say so at a glance — the chrome above it is dark, the breadcrumb reads Paywall, and what it shows is a cut, not a page.</p>
-  </div>
-
-  <div style="display:flex;flex-direction:column;gap:12px">
-    <div style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#6E6A64">C3a · the paywall canvas · 1440</div>
-    <div style="width:1440px;height:1000px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="stage"><div style="background:#F7F5F2;overflow:hidden;display:flex;flex-direction:column">
       <div style="height:48px;background:#232019;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.08)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8B0A4" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
-        <span style="font-size:13px;font-weight:600;color:#F4EFE6">Orbit Weekly</span>
+        <a href="editor.html" style="display:contents;color:inherit"><span style="font-size:13px;font-weight:600;color:#F4EFE6" tabindex="0" role="link">Orbit Weekly</span></a>
         <span style="color:#9A9389;font-size:13px">/</span>
         <span style="font-size:13px;color:#B8B0A4">Template surfaces</span>
         <span style="color:#9A9389;font-size:13px">/</span>
@@ -32,9 +23,9 @@
         <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#B8B0A4;margin-left:6px"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           <div style="display:flex;background:rgba(255,255,255,.08);border-radius:24px;padding:3px;gap:2px">
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;background:#F4EFE6;color:#232019" data-pick="member" data-picked>Anonymous</span>
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member">Free member</span>
-            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member">Paid member</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;background:#F4EFE6;color:#232019" data-pick="member" role="tab" tabindex="0" aria-selected="true" data-picked="">Anonymous</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member" role="tab" tabindex="-1" aria-selected="false">Free member</span>
+            <span style="padding:5px 11px;border-radius:20px;font-size:12px;color:#B8B0A4;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#F4EFE6" data-pick="member" role="tab" tabindex="-1" aria-selected="false">Paid member</span>
           </div>
           <a href="post-content.html" style="display:contents;color:inherit"><button style="height:32px;padding:0 13px;background:transparent;border:1px solid #4A453D;color:#F4EFE6;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.08)">Back to post</button></a>
           <a href="deploy.html" style="display:contents;color:inherit"><button style="height:32px;padding:0 15px;background:#F4EFE6;color:#232019;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#FFFFFF">Ship update</button></a>
@@ -54,7 +45,7 @@
             <div style="display:flex;flex-direction:column;gap:2px">
               <div style="display:flex;align-items:center;gap:6px;padding:0 6px 3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M4 10h16"></path></svg><span style="font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">TEMPLATE SURFACES</span></div>
               <div style="display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:12.5px;font-weight:600;background:#232019;color:#F4EFE6">Paywall</div>
-              <div style="display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Cards</div>
+              <a href="editor-cards.html" style="display:contents;color:inherit"><div style="display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)" tabindex="0" role="link">Cards</div></a>
               <div style="display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Error pages</div>
             </div>
           </div>
@@ -154,9 +145,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Preview treatment</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat" data-picked>None</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="treat">Fade</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat">Blur</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat" role="tab" tabindex="-1" aria-selected="false">None</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="treat" role="tab" tabindex="0" aria-selected="true" data-picked="">Fade</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="treat" role="tab" tabindex="-1" aria-selected="false">Blur</span>
             </div>
             <div style="display:flex;gap:7px;background:#FFF4D6;border-radius:8px;padding:9px 10px">
               <span style="font-size:11px;color:#8A6100;font-weight:600;flex-shrink:0">⚑</span>
@@ -166,9 +157,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Tiers to show</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="tiers" data-picked>All paid</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers">Cheapest</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers">One I pick</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="tiers" role="tab" tabindex="0" aria-selected="true" data-picked="">All paid</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers" role="tab" tabindex="-1" aria-selected="false">Cheapest</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tiers" role="tab" tabindex="-1" aria-selected="false">One I pick</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:7px">
@@ -187,9 +178,9 @@
           <div style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:12px;font-weight:500;color:#6E6A64">Surface</span>
             <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px;gap:2px">
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface" data-picked>Page</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="surface">Tinted</span>
-              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface">Inverted</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface" role="tab" tabindex="-1" aria-selected="false">Page</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="surface" role="tab" tabindex="0" aria-selected="true" data-picked="">Tinted</span>
+              <span style="flex:1;text-align:center;padding:6px;border-radius:20px;font-size:12px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="surface" role="tab" tabindex="-1" aria-selected="false">Inverted</span>
             </div>
           </div>
           <div style="margin-top:auto;border-top:1px solid #E7E2DB;padding-top:12px;display:flex;align-items:center;gap:8px">
@@ -198,11 +189,7 @@
           </div>
         </div>
       </div>
-    </div>
-    <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3A3835;max-width:1440px"><strong style="font-weight:600">Notes.</strong> Four things mark this out as a different canvas: the chrome is ink rather than paper, the breadcrumb sits under Template surfaces with a mono chip saying so, the canvas mat is a colder grey than the page canvas, and the article above the cut is dimmed to 55% because it is context the user cannot edit here. The dashed coral line is the author's Public preview marker, with the honest warning beside it — everything below it is stripped server-side, which is why the Fade treatment is masked onto the last visible paragraph and nowhere else. <strong style="font-weight:600">View as</strong> stays in the chrome because switching to Paid member is the only way to check that the cut disappears entirely for someone who has paid.</p>
-  </div>
-</section></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
+    </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="editor.html">← Editor</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

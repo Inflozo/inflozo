@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Library Update Confirm
-  FRAME    : B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected
+  FRAME    : B Missing Surfaces.dc.html — B14b   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Library Update Confirm</span>
+  <h1 class="name">Library Update Confirm</h1>
   <span class="frame">B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#stale">The stale line</a><a href="#why">Why a confirm exists</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="dashboard.html#library-update">The notice, in the project card</a></span><span class="tstep">next: <a href="library-update-confirm.html#stale">Its one stale line</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#stale">The stale line<span class="k">FR-J13</span></a><a class="idxrow" href="#why">Why a confirm exists<span class="k">FR-J14</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="dashboard.html#library-update">The notice, in the project card</a></span><span class="tstep">next: <a href="library-update-confirm.html#stale">Its one stale line</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#stale">The stale line<span class="k">FR-J13</span></a><a class="idxrow" href="#why">Why a confirm exists<span class="k">FR-J14</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B14b · redeploy confirmation</p><div class="liftbox"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">B14b · redeploy confirmation</p><div class="liftbox" tabindex="0" role="region" aria-label="B14b · redeploy confirmation"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:24px 26px 16px;display:flex;flex-direction:column;gap:9px">
           <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.02em">Three designs have updates</h3>
           <span style="font-size:13.5px;line-height:1.6;color:#4A453D">Your settings are kept. These are fixes to the designs themselves, so the shapes may shift slightly.</span>
@@ -71,12 +73,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="stale"><h2>The one stale line</h2><p>B14b says <i>&ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo;</i> The snapshot is <b>first upload only</b> (FR-J13). What is true, and what the line should say: <b>the version you are on now stays in history and rolls back in one click</b> — every successful compile is stored as an artifact.</p></div><div class="section-head" id="why"><h2>Why a confirm exists at all</h2><p>Compiles always use the current library — a single live library, <b>no per-project pinning</b> — so any redeploy carries every library change since the last deploy, and <b>there is no way to redeploy without them</b>. Because the update is inseparable from the redeploy, the deploy flow makes it consensual instead. What makes that safe is the backward-compatibility contract: designs are never deleted, only <b>superseded</b>; schema changes are append-only or ship a migration map; catalog keys are never reworded in place.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

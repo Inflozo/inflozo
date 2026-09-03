@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body class="product">
+<body class="product" data-editor-shell data-keys="p:preview-mode.html">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
 <div class="stage"><div data-screen-label="S4b Editor hover" style="background:#F7F5F2;overflow:hidden;display:flex;flex-direction:column">
       <div style="height:48px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;position:relative;z-index:3">
@@ -116,8 +116,7 @@
           </div>
         </div>
       </div>
-    </div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Rest</a><a class="btn coral" href="editor-selected.html">Select it →</a></div>
+    </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="editor.html">← Rest</a><a class="wchip" href="editor-selected.html">Select it →</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

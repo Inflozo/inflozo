@@ -11,32 +11,28 @@
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="stage"><div style="width:680px;background:#F7F5F2;padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
-        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
-        <div style="width:540px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
+<div class="stage centre"><div style="width:540px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
           <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center">
             <span style="color:#FFB100;font-size:24px;line-height:1">✦</span>
             <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Everything, unlocked.</span>
             <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
-              <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="interval" data-picked>Monthly</span><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;color:#6E6A64;cursor:pointer" data-pick="interval">Yearly</span></div>
+              <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;color:#6E6A64;cursor:pointer" data-pick="interval" role="tab" tabindex="-1" aria-selected="false">Monthly</span><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="interval" role="tab" tabindex="0" aria-selected="true" data-picked="">Yearly</span></div>
               <span style="font-size:11px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:3px 10px">$150/yr — 2 months free</span>
             </div>
           </div>
           <div style="border:1px solid #E7E2DB;border-radius:12px;overflow:hidden">
             <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:9px 16px;font-size:12px;font-weight:600;color:#6E6A64"><span></span><span>Free</span><span style="color:#8A6100">✦ Pro</span></div>
-            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Projects</span><span>1</span><span style="font-weight:600">Unlimited</span></div>
-            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Connected sites</span><span>1</span><span style="font-weight:600">3</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Projects</span><span>1</span><span style="font-weight:600">25</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Connected sites</span><span>1</span><span style="font-weight:600">10</span></div>
             <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Sections</span><span>The free set</span><span style="font-weight:600">All</span></div>
             <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Asset uploads</span><span>10 MB / file</span><span style="font-weight:600">10 MB / file</span></div>
-            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px"><span style="color:#6E6A64">Deploy history</span><span>Last 2</span><span style="font-weight:600">Full</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px"><span style="color:#6E6A64">Deploy history</span><span>last 3</span><span style="font-weight:600">Full</span></div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
             <a href="dashboard.html" style="display:contents;color:inherit"><button style="height:44px;padding:0 30px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Go Pro — $15/mo</button></a>
             <span style="font-size:11px;color:#6E6A64">Cancel anytime · Taxes handled · Powered by Dodo</span>
           </div>
-        </div>
-      </div></div><div class="stage-back"><a class="btn secondary" href="dashboard.html">← Back</a></div>
+        </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="dashboard-free.html">← Back</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

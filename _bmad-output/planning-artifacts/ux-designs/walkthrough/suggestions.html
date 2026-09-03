@@ -16,16 +16,16 @@
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
         <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Suggestions</span>
         <span style="font-size:12px;color:#6E6A64">Built in the open — tell us what's next.</span>
-        <button style="margin-left:auto;height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12" data-open="suggest" style="cursor:pointer"></line></svg>Suggest something</button>
+        <button style="margin-left:auto;height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18" data-open="suggest" aria-haspopup="true" aria-expanded="false"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Suggest something</button>
       </div>
       <div style="flex:1;padding:24px 0;display:flex;flex-direction:column;gap:16px;overflow:hidden;max-width:860px;width:100%;margin:0 auto">
         <div style="display:flex;align-items:center;gap:14px">
           <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
-            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="tab" data-picked>Top</span>
-            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab">New</span>
-            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab">Planned</span>
-            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab">Building</span>
-            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab">Shipped</span>
+            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)" data-pick="tab" role="tab" tabindex="0" aria-selected="true" data-picked="">Top</span>
+            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab" role="tab" tabindex="-1" aria-selected="false">New</span>
+            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab" role="tab" tabindex="-1" aria-selected="false">Planned</span>
+            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab" role="tab" tabindex="-1" aria-selected="false">Building</span>
+            <span style="padding:5px 15px;border-radius:20px;font-size:12.5px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A" data-pick="tab" role="tab" tabindex="-1" aria-selected="false">Shipped</span>
           </div>
           <div style="margin-left:auto;display:flex;gap:6px">
             <span style="font-size:12px;font-weight:600;background:#1C1B1A;color:#F7F5F2;border-radius:24px;padding:4px 12px;cursor:pointer">All</span>
@@ -92,9 +92,7 @@
           </div>
         </div>
       </div>
-    </div><div id="suggest" class="overlay sheet-lifted"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
-        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
-        <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:16px;position:relative">
+    </div></div><div id="suggest" class="overlay sheet-lifted"><div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:16px;position:relative">
           <div style="display:flex;align-items:flex-start;justify-content:space-between">
             <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Suggest something.</span><span style="font-size:13px;color:#6E6A64">Big or small — if it would make Inflozo better, we want it.</span></div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
@@ -120,12 +118,10 @@
             <span style="font-size:12.5px;color:#6E6A64">Drop a screenshot or sketch <span style="color:#A8A29A">· optional</span></span>
           </div>
           <div style="display:flex;gap:10px;justify-content:flex-end">
-            <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+            <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)" data-close>Cancel</button>
             <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Submit</button>
           </div>
-        </div>
-      </div></div></div><div class="stage-back"><a class="btn secondary" href="dashboard.html">← Projects</a></div>
+        </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="dashboard.html">← Projects</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

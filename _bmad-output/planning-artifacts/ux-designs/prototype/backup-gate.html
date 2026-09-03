@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Backup Gate
-  FRAME    : NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b's checked-row list and B13a's itemised rows
+  FRAME    : S8 Deploy.dc.html — S8b   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b's checked-row list and the Pro Exit Sheet's itemised rows
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,21 +20,22 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Backup Gate</span>
-  <span class="frame">NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b's checked-row list and B13a's itemised rows</span>
+  <h1 class="name">Backup Gate</h1>
+  <span class="frame">NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b's checked-row list and the Pro Exit Sheet's itemised rows</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11</span>
-</div>
-<div class="proto-note"><b>What this is, and what it is not.</b> A <b>consent gate, not a technical control</b>. It moves responsibility; it does not reduce risk. A customer who ticks the box without having backed up still loses their theme — they simply had a fair chance not to. <b>No Ghost Admin menu path is hard-coded on it</b>: Ghost 5.130.6 carries Advanced, Labs, Import/Export and Export, and Ghost 6.58.0 carries none of them.</div>
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 11 of 15</span><span class="tstep">← <a href="staff-token-offer.html">Staff Token Offer · step 2</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check · step 4</a> →</span></div>
-<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 7 of 10</span><span class="tstep">← <a href="pricing.html">Pricing — the same terms, publicly</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check</a> →</span></div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#ghostpro">Backup Gate — Ghost(Pro)</a><a href="#inherits">The list it inherits</a></nav>
+</header>
+<aside class="proto-note"><b>What this is, and what it is not.</b> A <b>consent gate, not a technical control</b>. It moves responsibility; it does not reduce risk. A customer who ticks the box without having backed up still loses their theme — they simply had a fair chance not to. <b>No Ghost Admin menu path is hard-coded on it</b>: Ghost 5.130.6 carries Advanced, Labs, Import/Export and Export, and Ghost 6.58.0 carries none of them.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 11 of 15</span><span class="tstep">← <a href="staff-token-offer.html">Staff Token Offer · step 2</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check · step 4</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 8 of 11</span><span class="tstep">← <a href="deploy-destination.html">Into the wizard — step 1</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check</a> →</span></div>
 <div class="trail"><span class="tl">Flow F7 · The pre-deploy backup gate</span><span class="tstep">step 1 of 4</span><span class="tstep">next: <a href="backup-gate.html#ghostpro">Ghost(Pro) — the honest block</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#ghostpro">Backup Gate — Ghost(Pro)<span class="k">D1e</span></a><a class="idxrow" href="#inherits">The list it inherits<span class="k">S8b</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#ghostpro">Backup Gate — Ghost(Pro)<span class="k">D1e</span></a><a class="idxrow" href="#inherits">The list it inherits<span class="k">S8b</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>Backup Gate</h2><p>Step 3, and <b>it blocks the deploy button until confirmed</b>. Reading order is the design: <b>first</b> the modest truth — <i>Inflozo writes exactly two things to your Ghost site: your theme, and <span class="mono">routes.yaml</span></i> — <b>then</b> the recommendation with its reason, <b>then</b> the <span class="mono">ghost backup</span> shortcut whose tick checks every row below <b>and the rows stay visible</b>, <b>then</b> seven individual rows (Theme · routes.yaml · Content, which does NOT include images · Members · Redirects · Images, the gap most people miss · Database), and <b>last</b> the master confirm, disabled until every row is covered. <b>No frame anywhere in the export mentions a backup, <span class="mono">ghost backup</span>, or a consent checklist.</b></p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A1 (frames D1d, D1e)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="ghostpro"><h2>On Ghost(Pro), the shortcut does not exist and the gate says so</h2><p>This claim is <b>cited, not executed</b> — there is no Ghost(Pro) test server yet — so the copy says what Ghost Admin does and does not offer and points the customer at Ghost, rather than asserting a platform-wide impossibility in Inflozo&rsquo;s own voice. It closes: <b>&ldquo;This is not something Inflozo can fix, and we are not going to pretend otherwise.&rdquo;</b></p></div><div class="section-head" id="inherits"><h2>The checked-row list it inherits</h2><p class="frame-cap">S8b · step 2 · pre-flight check · 1440</p></div><div class="lifted"><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
+<div class="section-head"><h2>Backup Gate</h2><p>Step 3, and <b>it blocks the deploy button until confirmed</b>. Reading order is the design: <b>first</b> the modest truth — <i>Inflozo writes exactly two things to your Ghost site: your theme, and <span class="mono">routes.yaml</span></i> — <b>then</b> the recommendation with its reason, <b>then</b> the <span class="mono">ghost backup</span> shortcut whose tick checks every row below <b>and the rows stay visible</b>, <b>then</b> seven individual rows (Theme · routes.yaml · Content, which does NOT include images · Members · Redirects · Images, the gap most people miss · Database), and <b>last</b> the master confirm, disabled until every row is covered. <b>No frame anywhere in the export mentions a backup, <span class="mono">ghost backup</span>, or a consent checklist.</b></p></div><div class="nodraw owed"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A1 (frames D1d, D1e)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="ghostpro"><h2>On Ghost(Pro), the shortcut does not exist and the gate says so</h2><p>This claim is <b>cited, not executed</b> — there is no Ghost(Pro) test server yet — so the copy says what Ghost Admin does and does not offer and points the customer at Ghost, rather than asserting a platform-wide impossibility in Inflozo&rsquo;s own voice. It closes: <b>&ldquo;This is not something Inflozo can fix, and we are not going to pretend otherwise.&rdquo;</b></p></div><div class="section-head" id="inherits"><h2>The checked-row list it inherits</h2><p class="frame-cap">S8b · step 2 · pre-flight check · 1440</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="S8 Deploy — S8b ·"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
         <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
@@ -87,12 +89,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S8 Deploy.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

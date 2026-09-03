@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Sign In
-  FRAME    : S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt
+  FRAME    : S1 Sign In.dc.html — S1a Sign in default, S1c Passkey prompt, S1 mobile   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt
   IMPLEMENTS: EXPERIENCE.md § IA → Entry · § Responsive & Platform
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Sign In</span>
+  <h1 class="name">Sign In</h1>
   <span class="frame">S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Entry · § Responsive & Platform</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#passkey">Passkey Prompt</a><a href="#mobile">Sign In at 390</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 1 of 15</span><span class="tstep">next: <a href="magic-link-sent.html">Magic Link Sent</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#passkey">Passkey Prompt<span class="k">S1c</span></a><a class="idxrow" href="#mobile">Sign In at 390<span class="k">S1a mobile</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 1 of 15</span><span class="tstep">next: <a href="magic-link-sent.html">Magic Link Sent</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#passkey">Passkey Prompt<span class="k">S1c</span></a><a class="idxrow" href="#mobile">Sign In at 390<span class="k">S1a mobile</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S1a · sign in — default · 1440</p><div class="liftbox"><div data-screen-label="S1a Sign in default" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
+<div class="lifted"><p class="frame-cap">S1a · sign in — default · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S1a · sign in — default · 1440"><div data-screen-label="S1a Sign in default" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
         <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:380px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
           <div style="width:400px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:40px 36px;display:flex;flex-direction:column;gap:24px;position:relative">
@@ -61,7 +63,7 @@
         <div style="position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;gap:20px;font-size:13px;color:#6E6A64">
           <a href="#" style="color:#6E6A64">Terms</a><span style="color:#E7E2DB">·</span><a href="#" style="color:#6E6A64">Privacy</a>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head" id="passkey"><h2>Passkey Prompt</h2><p>The OS sheet. <b>Inflozo draws the page behind it and nothing of the sheet itself</b> — the sheet belongs to the operating system, and drawing a facsimile would be inventing a component the product does not own.</p></div><div class="lifted"><p class="frame-cap">S1c · passkey OS prompt · 1440</p><div class="liftbox"><div data-screen-label="S1c Passkey prompt" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
+      </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head" id="passkey"><h2>Passkey Prompt</h2><p>The OS sheet. <b>Inflozo draws the page behind it and nothing of the sheet itself</b> — the sheet belongs to the operating system, and drawing a facsimile would be inventing a component the product does not own.</p></div><div class="lifted"><p class="frame-cap">S1c · passkey OS prompt · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S1c · passkey OS prompt · 1440"><div data-screen-label="S1c Passkey prompt" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
         <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:380px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
           <div style="width:400px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:40px 36px;display:flex;flex-direction:column;gap:24px">
@@ -89,7 +91,7 @@
           </div>
         </div>
         <div style="position:absolute;bottom:20px;right:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">system sheet — OS UI placeholder</div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head" id="mobile"><h2>At 390</h2><p>Sign In carries a phone frame in the export, so the app floor does not apply to it (R-76).</p></div><div class="lifted"><p class="frame-cap">S1a · mobile · 390</p><div class="liftbox"><div data-screen-label="S1 mobile" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
+      </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head" id="mobile"><h2>At 390</h2><p>Sign In carries a phone frame in the export, so the app floor does not apply to it (R-76).</p></div><div class="lifted"><p class="frame-cap">S1a · mobile · 390</p><div class="liftbox" tabindex="0" role="region" aria-label="S1a · mobile · 390"><div data-screen-label="S1 mobile" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
         <div style="position:absolute;left:50%;top:110px;transform:translateX(-50%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:130px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px">
           <div style="width:100%;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px 24px;display:flex;flex-direction:column;gap:22px">
@@ -121,12 +123,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

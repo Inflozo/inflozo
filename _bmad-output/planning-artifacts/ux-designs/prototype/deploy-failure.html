@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Deploy Failure
-  FRAME    : S8 Deploy.dc.html — S8d′
+  FRAME    : S8 Deploy.dc.html — S8d′   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S8 Deploy.dc.html — S8d′
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · § Voice and Tone (errors are human and name the fix)
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Deploy Failure</span>
+  <h1 class="name">Deploy Failure</h1>
   <span class="frame">S8 Deploy.dc.html — S8d′</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · § Voice and Tone (errors are human and name the fix)</span>
-</div>
-<div class="proto-note">Never &ldquo;An error occurred.&rdquo; The sentence names what happened in the other party&rsquo;s terms and the button is the fix. A deploy failure is one of the five product emails (FR-P1), and it is the only deploy outcome that sends one — uploaded-not-live sends nothing, because nothing failed.</div>
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
+  
+</header>
+<aside class="proto-note">Never &ldquo;An error occurred.&rdquo; The sentence names what happened in the other party&rsquo;s terms and the button is the fix. <b>But the cause this frame names does not exist.</b> An Admin API key never expires — the <span class="mono">api_keys</span> table has no expiry column (read in source, Ghost 6.54.1 <span class="mono">core/server/data/schema/schema.js</span>) and docs.ghost.org/admin-api says the key can be regenerated any time; the only thing that expires is the five-minute JWT Inflozo signs with it. A key that was regenerated, or whose integration was deleted, answers <span class="mono">401 Unknown Admin API Key</span> (executed against T1 6.58.0 and T3 5.130.6, review 2026-09-03). The sentence becomes &ldquo;Ghost said no — this Admin API key no longer works. It was regenerated or removed in Ghost Admin. Paste the new key.&rdquo; The frame&rsquo;s text is prompt A7&rsquo;s; it stays as drawn here. A deploy failure is one of the five product emails (FR-P1), and it is the only deploy outcome that sends one — uploaded-not-live sends nothing, because nothing failed.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
 
 <main id="main">
-<div class="lifted"><p class="frame-cap">S8d′ · step 3 failure — human message + reconnect</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
+<div class="lifted"><p class="frame-cap">S8d′ · step 3 failure — human message + reconnect</p><div class="liftbox" tabindex="0" role="region" aria-label="S8d′ · step 3 failure — human message + reconnect"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
         <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
@@ -58,12 +60,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S8 Deploy.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

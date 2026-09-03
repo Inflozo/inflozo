@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Notifications
-  FRAME    : S3 Dashboard.dc.html S3e · B Missing Surfaces.dc.html B21
+  FRAME    : B Missing Surfaces.dc.html — B21 · S3 Dashboard.dc.html — S3e   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S3 Dashboard.dc.html S3e · B Missing Surfaces.dc.html B21
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Notifications · FR-B7 · F6 (the one nudge)
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Notifications</span>
+  <h1 class="name">Notifications</h1>
   <span class="frame">S3 Dashboard.dc.html S3e · B Missing Surfaces.dc.html B21</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Notifications · FR-B7 · F6 (the one nudge)</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#popover">Under the bell</a><a href="#empty">Notifications — empty</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 4 of 5</span><span class="tstep">← <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a></span><span class="tstep">next: <a href="editor.html#not-drawn">Empty Template Warning — not drawn</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#popover">Under the bell<span class="k">S3e</span></a><a class="idxrow" href="#empty">Notifications — empty<span class="k">not drawn</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 4 of 5</span><span class="tstep">← <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a></span><span class="tstep">next: <a href="editor.html#not-drawn">Empty Template Warning — not drawn</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#popover">Under the bell<span class="k">S3e</span></a><a class="idxrow" href="#empty">Notifications — empty<span class="k">not drawn</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B21 · notifications</p><div class="liftbox"><div style="width:400px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">B21 · notifications</p><div class="liftbox" tabindex="0" role="region" aria-label="B21 · notifications"><div style="width:400px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:13px 16px;border-bottom:1px solid #EFEAE2;display:flex;align-items:center;gap:9px">
           <span style="font-size:13.5px;font-weight:600;flex:1">Notifications</span>
           <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Mark all read</span>
@@ -77,7 +79,7 @@
         <div style="border-top:1px solid #EFEAE2;background:#FBF9F5;padding:11px 16px;display:flex;align-items:center;gap:9px">
           <span style="font-size:11.5px;color:#6E6A64;flex:1">Deploy outcomes always land here, even if you closed the tab.</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="popover"><h2>As it opens under the bell</h2><p class="frame-cap">S3e · notifications — desktop popover + mobile</p></div><div class="lifted"><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-start">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="popover"><h2>As it opens under the bell</h2><p class="frame-cap">S3e · notifications — desktop popover + mobile</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="S3 Dashboard — S3e ·"><div style="display:flex;gap:48px;align-items:flex-start">
       <div style="width:520px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
         <div style="position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(28,27,26,.05);position:absolute"><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
         <div style="position:absolute;top:58px;right:16px;width:380px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
@@ -174,14 +176,14 @@
         </div>
         <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — full-width under the bell</div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>&ldquo;Nothing yet. Deploy outcomes land here even if you closed the tab.&rdquo; — an ink line drawing with one coral accent shape, per the empty-state illustration rule. No frame draws it.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it; it is a state of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>&ldquo;Nothing yet. Deploy outcomes land here even if you closed the tab.&rdquo; — an ink line drawing with one coral accent shape, per the empty-state illustration rule. No frame draws it.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

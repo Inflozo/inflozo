@@ -1,8 +1,16 @@
 /* Inflozo static prototype — the shared stylesheet.
-   TOKENS ARE TRANSCRIBED, NOT CHOSEN. Source: the Claude Design export's
-   `Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`, via DESIGN.md's
-   frontmatter, which is itself a transcription (ruling R-74: on any disagreement
-   the export is right). Every value below appears verbatim in one of those files.
+   TOKENS ARE TRANSCRIBED, NOT CHOSEN. Source: the Claude Design export, via DESIGN.md's
+   frontmatter, which is itself a transcription (ruling R-74: on any disagreement the
+   export is right). Every colour, radius and shadow value below occurs verbatim in the
+   export — most in `Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`, and the
+   rest only in the app frames: --line-faint, --marigold, --sky, --sky-text, --danger and
+   --scrim in the S/B/C/M frames, --grey-field and --grey-border in P0-0, --sky-tint in the
+   Sidebar Kit's info banner, --danger-tint in B Missing Surfaces (F-110; the check is
+   `grep` over the export, run 2026-09-03). The four font stacks are DESIGN.md's — the
+   export names the families, not the fallback stacks. COMPUTED, not verbatim: only
+   --r-full, which was an invented 9999px and is now an alias of --r-pill (the export's
+   24px) kept solely because the walkthrough's _app.css still names it; drop it when that
+   reference moves to --r-pill.
    Component classes reproduce the construction of the S / B / C / M frames —
    the 220px dashboard rail, the 48px editor top bar, the 240px Layers panel,
    the 280–320px Controls sidebar, hairlines rather than borders, warm shadows. */
@@ -36,9 +44,9 @@
   --mint-tint: #E4F5EE;
   --sky: #4E7FFF;
   --sky-text: #2B5BD7;
-  --sky-tint: #E8EEFF;
+  --sky-tint: #EAF0FF;         /* Editor Sidebar Kit: the info banner's fill */
   --danger: #E5484D;
-  --danger-tint: #FDECEC;
+  --danger-tint: #FDECEC;      /* B Missing Surfaces (the frames' commoner #FDEBEC is S12's delete hover) */
   --scrim: rgba(28,27,26,.4);
   --grey-field: #F2EFEA;       /* P0-0: a greyed control's fill */
   --grey-border: #EAE5DD;      /* P0-0: a greyed control's border */
@@ -50,7 +58,8 @@
   --serif: Georgia, 'Times New Roman', serif;   /* the USER's site, never app chrome */
 
   /* shape */
-  --r-sm: 8px; --r-thumb: 10px; --r: 12px; --r-lg: 16px; --r-pill: 24px; --r-full: 9999px;
+  --r-sm: 8px; --r-thumb: 10px; --r: 12px; --r-lg: 16px; --r-pill: 24px;
+  --r-full: var(--r-pill);     /* computed alias, see the header (F-110) */
 
   /* elevation — warm, cast in the ink colour, never grey-blue */
   --sh-sm: 0 1px 2px rgba(28,27,26,.06);
@@ -80,7 +89,7 @@ svg { flex-shrink: 0; }
 .softaa { color: var(--ink-soft-aa); }
 .faint { color: var(--ink-faint); }
 .small { font-size: 12px; }
-.helper { font-size: 11px; color: var(--ink-soft); line-height: 1.4; }  /* the designed reason slot */
+.helper { font-size: 11px; color: var(--ink-soft-aa); line-height: 1.4; }  /* the designed reason slot; AA ink on the mat (F-057) */
 .panel-label { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
 .control-label { font-size: 12px; font-weight: 500; }
 .stack { display: flex; flex-direction: column; }
@@ -101,6 +110,8 @@ svg { flex-shrink: 0; }
 .proto .name { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
 .proto .frame { font-family: var(--mono); font-size: 11px; color: #B7AF9F; }
 .proto .spacer { margin-left: auto; }
+.proto .jump { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 11px; }  /* F-104 */
+.proto .jump span { color: #B7AF9F; }
 .proto-note {
   background: var(--paper-sunk); border-bottom: 1px solid var(--line);
   padding: 10px 20px; font-size: 12px; color: var(--ink-soft-aa);
@@ -114,6 +125,9 @@ svg { flex-shrink: 0; }
 .trail .tl { font-weight: 600; }
 .trail .tstep { color: var(--ink-soft); }
 .trail .tstep a { color: var(--coral-text); text-decoration: underline; text-underline-offset: 2px; }
+.proto-note a:not(.idxrow), .section-head a, .nodraw a, .annot a, .idx .card p a {
+  text-decoration: underline; text-underline-offset: 2px;   /* F-058: a non-colour cue, scaffolding only */
+}
 .skip {
   position: absolute; left: 8px; top: -60px; background: var(--surface);
   border: 1px solid var(--line); border-radius: var(--r); padding: 8px 14px;
@@ -122,7 +136,7 @@ svg { flex-shrink: 0; }
 .skip:focus { top: 8px; }
 main { display: block; }
 .frame-wrap { padding: 24px 20px 48px; }
-.frame-cap { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin: 0 0 10px; }
+.frame-cap { font-family: var(--mono); font-size: 12px; color: var(--ink-soft-aa); margin: 0 0 10px; }
 .screen {
   background: var(--paper); border-radius: var(--r-sm); box-shadow: var(--sh-lg);
   overflow: hidden; max-width: 1440px; margin: 0 auto 40px;
@@ -207,7 +221,7 @@ main { display: block; }
 .thumb { border-radius: var(--r-thumb); background: var(--paper-sunk); border: 1px solid var(--line); }
 
 /* ─────────────────────────────────────────────── badges, chips, banners */
-.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap; }
 .badge.pro { background: var(--marigold-tint); color: var(--marigold-text); }
 .badge.free { border: 1px solid var(--line); color: var(--ink-soft-aa); }
 .badge.live { color: var(--mint-text); background: var(--mint-tint); }
@@ -252,7 +266,7 @@ main { display: block; }
 .radio.on { border-color: var(--coral); box-shadow: inset 0 0 0 3px var(--coral); }
 .check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--line-strong); flex-shrink: 0; margin-top: 2px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--surface); }
 .check.on { background: var(--ink); border-color: var(--ink); }
-.toggle { width: 36px; height: 20px; border-radius: var(--r-full); background: var(--line-strong); position: relative; flex-shrink: 0; }
+.toggle { width: 36px; height: 20px; border-radius: var(--r-pill); background: var(--line-strong); position: relative; flex-shrink: 0; }
 .toggle.on { background: var(--coral); }
 .toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
 .toggle.on::after { left: 18px; }
@@ -368,7 +382,7 @@ main { display: block; }
 /* ──────────────────────────────────── tables */
 table.limits { border-collapse: collapse; width: 100%; font-size: 13px; }
 table.limits th, table.limits td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line-faint); }
-table.limits th { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+table.limits th { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft-aa); font-weight: 600; }
 table.limits td:not(:first-child) { font-variant-numeric: tabular-nums; }
 
 /* ──────────────────────────────────── modal / sheet, drawn in place */
@@ -384,7 +398,7 @@ table.limits td:not(:first-child) { font-variant-numeric: tabular-nums; }
 
 /* ──────────────────────────────────── the toggled mock states (JS optional) */
 .states { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 14px; max-width: 1440px; }
-.states a { font-size: 12px; padding: 6px 12px; border-radius: var(--r-full); background: var(--surface); border: 1px solid var(--line); }
+.states a { font-size: 12px; padding: 6px 12px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); }
 .states a:hover { border-color: var(--coral); color: var(--coral-text); }
 :target .screen { box-shadow: var(--sh-lg), 0 0 0 3px rgba(255,89,65,.35); }
 
@@ -393,7 +407,7 @@ table.limits td:not(:first-child) { font-variant-numeric: tabular-nums; }
 .idxgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
 .idxrow { display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line-faint); font-size: 13px; }
 .idxrow:hover { border-color: var(--coral); }
-.idxrow .k { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); margin-left: auto; }
+.idxrow .k { font-family: var(--mono); font-size: 11px; color: var(--ink-soft-aa); margin-left: auto; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 @media (max-width: 900px) {
@@ -409,13 +423,13 @@ table.limits td:not(:first-child) { font-variant-numeric: tabular-nums; }
    .dc.html and shows it at the width it was drawn at, on its own mat. The
    annotation lives around it — never inside it. Wide frames scroll in their own
    box rather than making the page scroll sideways. */
-.lifted { max-width: 1512px; margin: 0 auto 40px; }
+.lifted, .annot { max-width: 1512px; margin: 0 auto 40px; }   /* .annot: hand-written annotation on the same mat, never a lift (F-021) */
 .liftbox {
   overflow-x: auto; padding: 24px 0;
   background: var(--mat); border-radius: var(--r-sm);
 }
 .liftbox > * { margin: 0 auto; }
-.lift-src { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+.lift-src { font-family: var(--mono); font-size: 11px; color: var(--ink-soft-aa); margin-top: 6px; }
 .limits-wrap { overflow-x: auto; }
 
 /* A surface with NO frame says so, and shows nothing. Inventing a picture here

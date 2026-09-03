@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Sites
-  FRAME    : S11 Sites.dc.html — S11a with the ⋯ menu · S11b connect modal · S11c Free
+  FRAME    : S11 Sites.dc.html — S11a Sites, S11b, S11c   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S11 Sites.dc.html — S11a with the ⋯ menu · S11b connect modal · S11c Free
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Sites · J4 step 7
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,20 +20,21 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Sites</span>
+  <h1 class="name">Sites</h1>
   <span class="frame">S11 Sites.dc.html — S11a with the ⋯ menu · S11b connect modal · S11c Free</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Sites · J4 step 7</span>
-</div>
-<div class="proto-note"><b>The frame&rsquo;s Preview-only row says the wrong thing.</b> S11a offers &ldquo;download the theme and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see <a href="preview-only-notice.html">Preview-Only Notice</a>.</div>
-<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 5 of 8</span><span class="tstep">← <a href="over-limit-sheet.html">Over-Limit Sheet — the climax beat</a></span><span class="tstep">next: <a href="assets.html#over-quota">Assets — read-only until under</a> →</span></div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#connect-modal">Connect Site Modal</a><a href="#free">Sites — Free at one site</a><a href="#empty">Sites — empty, and disconnect</a></nav>
+</header>
+<aside class="proto-note"><b>The frame&rsquo;s Preview-only row says the wrong thing.</b> S11a offers &ldquo;download the theme and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see <a href="preview-only-notice.html">Preview-Only Notice</a>. <b>And its &ldquo;Admin key expired Aug 15&rdquo; chip names a cause Ghost never produces</b> — keys never expire; a regenerated or removed key answers 401 Unknown Admin API Key (see <a href="deploy-failure.html">Deploy Failure</a>). The chip becomes &ldquo;Key regenerated Aug 15&rdquo;; that is prompt A7&rsquo;s.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 5 of 8</span><span class="tstep">← <a href="over-limit-sheet.html">Over-Limit Sheet — the climax beat</a></span><span class="tstep">next: <a href="assets.html#over-quota">Assets — read-only until under</a> →</span></div>
 <div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 6 of 6</span><span class="tstep">← <a href="deploy-destination.html#preview-fix">And the copy that wastes an afternoon</a></span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#connect-modal">Connect Site Modal<span class="k">S11b</span></a><a class="idxrow" href="#free">Sites — Free at one site<span class="k">S11c</span></a><a class="idxrow" href="#empty">Sites — empty, and disconnect<span class="k">not drawn</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#connect-modal">Connect Site Modal<span class="k">S11b</span></a><a class="idxrow" href="#free">Sites — Free at one site<span class="k">S11c</span></a><a class="idxrow" href="#empty">Sites — empty, and disconnect<span class="k">not drawn</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S11a · sites &amp; connections — ⋯ menu open · 1440</p><div class="liftbox"><div data-screen-label="S11a Sites" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+<div class="lifted"><p class="frame-cap">S11a · sites &amp; connections — ⋯ menu open · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S11a · sites &amp; connections — ⋯ menu open · 1440"><div data-screen-label="S11a Sites" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
       <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
         <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
         <div style="display:flex;flex-direction:column;gap:2px">
@@ -130,7 +132,7 @@
           </div>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="connect-modal"><h2>Connect Site Modal</h2><p>S2&rsquo;s two connect steps, run as a modal.</p></div><div class="lifted"><p class="frame-cap">S11b · connect site — S2&rsquo;s flow as a modal</p><div class="liftbox"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+    </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="connect-modal"><h2>Connect Site Modal</h2><p>S2&rsquo;s two connect steps, run as a modal.</p></div><div class="lifted"><p class="frame-cap">S11b · connect site — S2&rsquo;s flow as a modal</p><div class="liftbox" tabindex="0" role="region" aria-label="S11b · connect site — S2&rsquo;s flow as a modal"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
         <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
         <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
           <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -155,7 +157,7 @@
             <button style="height:40px;padding:0 24px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Done — next</button>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at one site</h2><p>The frame says Pro connects up to 3. <b>Appendix F.1 says 10 and governs</b> — see <a href="billing.html#limits">the limits</a>.</p></div><div class="lifted"><p class="frame-cap">S11c · free plan — one site + upgrade ghost slot</p><div class="liftbox"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-content:start">
+      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at one site</h2><p>The frame says Pro connects up to 3. <b>Appendix F.1 says 10 and governs</b> — see <a href="billing.html#limits">the limits</a>.</p></div><div class="lifted"><p class="frame-cap">S11c · free plan — one site + upgrade ghost slot</p><div class="liftbox" tabindex="0" role="region" aria-label="S11c · free plan — one site + upgrade ghost slot"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-content:start">
         <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px">
           <div style="display:flex;align-items:flex-start;gap:12px">
             <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#2B5BD7;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">F</div>
@@ -178,14 +180,14 @@
           <span style="font-size:12px;color:#6E6A64;text-align:center;line-height:1.5">Free includes 1 site. Pro connects up to 3.</span>
           <span style="margin-top:2px;font-size:12px;font-weight:600;background:#FFF4D6;color:#8A6100;padding:5px 12px;border-radius:24px">Go Pro — $15/mo</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="empty"><h2>Sites with none, and disconnecting</h2><p>Sites with no connection shows the connect card as the whole page. Disconnecting keeps the site&rsquo;s <b>pre-Inflozo snapshot</b> — it is bound to the site record, not the URL, so it survives disconnect, reconnect and project deletion, and the backup gate re-fires on reconnect because consent is per site.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns them; they are states of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="empty"><h2>Sites with none, and disconnecting</h2><p>Sites with no connection shows the connect card as the whole page. Disconnecting keeps the site&rsquo;s <b>pre-Inflozo snapshot</b> — it is bound to the site record, not the URL, so it survives disconnect, reconnect and project deletion, and the backup gate re-fires on reconnect because consent is per site.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

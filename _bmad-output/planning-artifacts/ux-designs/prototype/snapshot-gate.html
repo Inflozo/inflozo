@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Snapshot Gate
-  FRAME    : B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified
+  FRAME    : B Missing Surfaces.dc.html — B12a, B12b   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F1 · FR-J13 · J1 step 13
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,21 +20,22 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Snapshot Gate</span>
+  <h1 class="name">Snapshot Gate</h1>
   <span class="frame">B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F1 · FR-J13 · J1 step 13</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#respec">The two wrong sentences</a><a href="#failed">Capture failed</a><a href="#respec-b12b">B12b’s wrong reason</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 13 of 15</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check · step 4</a></span><span class="tstep">next: <a href="deploy-progress.html">Deploy Progress · step 5</a> →</span></div>
-<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 9 of 10</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check</a></span><span class="tstep">next: <a href="deploy-live.html">Deploy Live</a> →</span></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 13 of 15</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check · step 4</a></span><span class="tstep">next: <a href="deploy-progress.html">Deploy Progress · step 5</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 10 of 11</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check</a></span><span class="tstep">next: <a href="deploy-live.html">Deploy Live</a> →</span></div>
 <div class="trail"><span class="tl">Flow F1 · Pre-deploy snapshot gate</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="snapshot-gate.html#respec">The two wrong sentences</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The two wrong sentences<span class="k">FR-J13</span></a><a class="idxrow" href="#failed">Capture failed<span class="k">B12b</span></a><a class="idxrow" href="#respec-b12b">B12b&amp;rsquo;s wrong reason<span class="k">MEASUREMENTS</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The two wrong sentences<span class="k">FR-J13</span></a><a class="idxrow" href="#failed">Capture failed<span class="k">B12b</span></a><a class="idxrow" href="#respec-b12b">B12b’s wrong reason<span class="k">MEASUREMENTS</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B12a · snapshot gate · running</p><div class="liftbox"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">B12a · snapshot gate · running</p><div class="liftbox" tabindex="0" role="region" aria-label="B12a · snapshot gate · running"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:24px 26px 18px;display:flex;flex-direction:column;gap:9px">
           <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.02em">Archiving your current theme first</h3>
           <span style="font-size:13.5px;line-height:1.6;color:#4A453D">If anything about the new theme is wrong, this is what we roll back to. It takes a few seconds and happens on every deploy.</span>
@@ -63,7 +65,7 @@
           <span style="font-size:12px;color:#6E6A64;flex:1">Snapshots count towards your history — Free keeps 3, Pro keeps 10.</span>
           <button style="height:36px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Cancel</button>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Two sentences on that frame are wrong and both are load-bearing</h2><p><b>&ldquo;It happens on every deploy&rdquo;</b> — it is the <b>first upload to a site</b>, deploy-only included, because manual activation in Ghost Admin must not bypass the safety net. <b>&ldquo;Snapshots count towards your history — Free keeps 3, Pro keeps 10&rdquo;</b> — the snapshot is <b>exempt from the history limit and never prunes</b>; it becomes &ldquo;Kept outside your version limit.&rdquo;</p></div><div class="section-head" id="failed"><h2>Capture failed</h2></div><div class="lifted"><p class="frame-cap">B12b · capture failed</p><div class="liftbox"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Two sentences on that frame are wrong and both are load-bearing</h2><p><b>&ldquo;It happens on every deploy&rdquo;</b> — it is the <b>first upload to a site</b>, deploy-only included, because manual activation in Ghost Admin must not bypass the safety net. <b>&ldquo;Snapshots count towards your history — Free keeps 3, Pro keeps 10&rdquo;</b> — the snapshot is <b>exempt from the history limit and never prunes</b>; it becomes &ldquo;Kept outside your version limit.&rdquo;</p></div><div class="section-head" id="failed"><h2>Capture failed</h2></div><div class="lifted"><p class="frame-cap">B12b · capture failed</p><div class="liftbox" tabindex="0" role="region" aria-label="B12b · capture failed"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:24px 26px 18px;display:flex;gap:14px;align-items:flex-start">
           <span style="width:36px;height:36px;border-radius:11px;background:#FDECEC;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C4383C" stroke-width="1.8" stroke-linecap="round"><path d="M12 8v5"></path><circle cx="12" cy="17" r="0.6" fill="#C4383C"></circle><path d="M10.3 3.9L2.6 17.4A2 2 0 004.3 20.4h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"></path></svg></span>
           <div style="flex:1;display:flex;flex-direction:column;gap:8px">
@@ -81,14 +83,14 @@
           <span style="flex:1"></span>
           <button style="height:38px;padding:0 15px;background:transparent;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7;color:#1C1B1A">Deploy without a snapshot</button>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec-b12b"><h2>B12b&amp;rsquo;s reason is the most expensive error in the export</h2><p>It says <i>&ldquo;your integration key may not have theme read permission … Check the key.&rdquo;</i> Ghost&rsquo;s <span class="mono">tokenPermissionCheck</span> allowlists only <span class="mono">themes: [POST, PUT]</span> for Custom Integration tokens, so <b>every</b> <span class="mono">GET /themes/*</span> made with an Admin API key returns 403 — on every version, every host. <b>There is no key to fix.</b> Telling a user to go and fix one sends them to spend an afternoon on something that cannot be done. The replacement names the real cause (no Staff Access Token), then what protects them anyway (<b>Ghost keeps the previous theme under Settings → Design</b>), then three real actions.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec-b12b"><h2>B12b’s reason is the most expensive error in the export</h2><p>It says <i>&ldquo;your integration key may not have theme read permission … Check the key.&rdquo;</i> Ghost&rsquo;s admin-API allowlist (<span class="mono">tokenPermissionCheck</span> in <span class="mono">core/server/web/api/endpoints/admin/middleware.js</span>, read in 6.54.1) lets a Custom Integration token reach <span class="mono">themes</span> only as POST and PUT, so <b>every</b> <span class="mono">GET /themes/*</span> made with an Admin API key is refused on every host — <b>403 on Ghost 6 and 501 on Ghost 5</b> (executed, MEASUREMENTS §15h and §21m; AD-24 must fold both into one Inflozo code). <b>There is no key to fix.</b> Telling a user to go and fix one sends them to spend an afternoon on something that cannot be done. The replacement names the real cause (no Staff Access Token), then what protects them anyway — <b>Ghost keeps the pre-Inflozo theme under Settings → Design</b>, which holds because this gate fires only at the first upload; later Inflozo versions replace each other under the frozen name (FR-J10) and live only in Inflozo&rsquo;s history — then three real actions.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body class="product">
+<body class="product" data-editor-shell data-esc="editor.html">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="stage"><div style="width:700px;height:470px;box-sizing:border-box;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column;position:relative">
+<div class="stage centre"><div style="width:700px;height:470px;box-sizing:border-box;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column;position:relative">
         <div style="background:#232019;padding:11px 20px;display:flex;align-items:center;gap:12px">
           <span style="font-size:13px;color:#F4EFE6;flex:1">Issue 118 goes out Thursday · <span style="font-weight:600">the paid archive opens then too</span></span>
           <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#FFD9CF">02 : 11 : 47</span>
@@ -28,7 +28,7 @@
         <div style="position:absolute;bottom:18px;left:112px;display:flex;align-items:center;gap:2px;background:#1C1B1A;border-radius:24px;padding:5px;box-shadow:0 12px 40px rgba(28,27,26,.24)">
           <span style="height:34px;border-radius:20px;display:flex;align-items:center;gap:8px;padding:0 15px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.12)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round"><path d="M4 4l16 16"></path><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path></svg>
-            <a href="editor.html" style="display:contents;color:inherit"><span style="font-size:13px;font-weight:600;color:#FFFFFF">Back to editing</span></a>
+            <a href="editor.html" style="display:contents;color:inherit"><span style="font-size:13px;font-weight:600;color:#FFFFFF" tabindex="0" role="link">Back to editing</span></a>
             <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;background:rgba(255,255,255,.16);border-radius:4px;padding:2px 6px;color:#FFFFFF">esc</span>
           </span>
           <span style="width:1px;height:20px;background:rgba(255,255,255,.18);margin:0 4px"></span>
@@ -36,8 +36,7 @@
           <span style="width:34px;height:34px;border-radius:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(255,255,255,.12)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round"><rect x="6" y="3" width="12" height="18" rx="2"></rect></svg></span>
           <span style="width:34px;height:34px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round"><rect x="8" y="2" width="8" height="20" rx="2"></rect></svg></span>
         </div>
-      </div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Back to editing</a></div>
+      </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="editor.html">Esc — back to editing</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

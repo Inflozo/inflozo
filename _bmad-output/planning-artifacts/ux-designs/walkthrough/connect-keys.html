@@ -30,29 +30,23 @@
             </div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <label style="font-size:13px;font-weight:500;color:#6E6A64">Admin API key</label>
-              <input type="text" placeholder="65a3f…:9c2b41d8e0f…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+              <input type="text" placeholder="65a3f…:9c2b41d8e0f…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)" autocomplete="off" spellcheck="false">
             </div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <label style="font-size:13px;font-weight:500;color:#6E6A64">Content API key</label>
-              <input type="text" placeholder="8d41c0a97b…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+              <input type="text" placeholder="8d41c0a97b…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)" autocomplete="off" spellcheck="false">
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
               <span style="font-size:13px;font-weight:500">Where do I find these?</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <a href="connect-integration.html" style="display:contents;color:inherit"><a href="#" style="font-size:14px;font-weight:500;color:#6E6A64">Back</a></a>
-              <button style="height:44px;padding:0 28px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E" id="go">Connect</button>
+              <a href="connect-integration.html" style="font-size:14px;font-weight:500;color:#6E6A64">Back</a>
+              <a href="auto-branding.html" style="display:contents;color:inherit"><button style="height:44px;padding:0 28px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Connect</button></a>
             </div>
           </div>
         </div>
       </div></div>
 <script src="app.js"></script>
-<script>
-var b = document.getElementById('go');
-if (b) b.addEventListener('click', function (e) {
-  e.preventDefault(); b.textContent = 'Connecting…';
-  setTimeout(function () { window.location.href = 'auto-branding.html'; }, 1100);
-});</script>
 </body>
 </html>

@@ -11,8 +11,7 @@
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="stage" data-wizard data-at="1">
-  <div data-step="1"><div data-screen-label="S8a Ship step 1" style="background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+<div data-wizard data-at="1"><div data-step="1" data-step-title="Ship it — step 1 of 4, destination" tabindex="-1"><div class="stage"><div data-screen-label="S8a Ship step 1" style="background:#F7F5F2;position:relative;min-height:900px;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
       <div style="position:absolute;inset:0;display:flex;flex-direction:column">
         <div style="height:48px;border-bottom:1px solid #E7E2DB"></div>
         <div style="flex:1;display:flex">
@@ -38,28 +37,26 @@
         </div>
         <div style="display:flex;align-items:center;gap:11px;border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px">
           <div style="width:34px;height:34px;flex-shrink:0;border-radius:8px;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16px">O</div>
-          <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:600">Orbit Weekly</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">orbitweekly.com</span></div>
+          <div style="display:flex;flex-direction:column;gap:1px"><a href="editor.html" style="display:contents;color:inherit"><span style="font-size:13px;font-weight:600" tabindex="0" role="link">Orbit Weekly</span></a><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">orbitweekly.com</span></div>
           <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Connected</span>
           <span style="font-size:12px;font-weight:500;color:#6E6A64;cursor:pointer;border-left:1px solid #E7E2DB;padding-left:11px;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Switch</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #FF5941;border-radius:10px;background:#FFF9F7;cursor:pointer">
             <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #FF5941;display:inline-flex;align-items:center;justify-content:center;margin-top:1px"><span style="width:8px;height:8px;border-radius:50%;background:#FF5941"></span></span>
-            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600" data-pick="dest" data-picked>Deploy &amp; activate</span><span style="font-size:12px;color:#6E6A64">v5 goes live the moment it's done.</span></div>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">Deploy &amp; activate</span><span style="font-size:12px;color:#6E6A64">v5 goes live the moment it's done.</span></div>
           </div>
           <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #E7E2DB;border-radius:10px;cursor:pointer;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">
             <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #C9C2B8;margin-top:1px"></span>
-            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600" data-pick="dest">Deploy only</span><span style="font-size:12px;color:#6E6A64">Upload v5, keep v4 active for now.</span></div>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">Deploy only</span><span style="font-size:12px;color:#6E6A64">Upload v5, keep v4 active for now.</span></div>
           </div>
         </div>
         <div style="display:flex;align-items:center">
           <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px">v4 → v5</span>
-          <button style="margin-left:auto;height:40px;padding:0 22px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#33312E" data-goto="2">Run checks<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+          <button style="margin-left:auto;height:40px;padding:0 22px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#33312E" data-open="library-update" aria-haspopup="true" aria-expanded="false">Run checks<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
         </div>
       </div>
-    </div></div>
-  <div data-step="2" hidden><div style="width:640px;background:#F7F5F2;padding:36px;display:flex;justify-content:center">
-        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
+    </div></div></div><div data-step="2" data-step-title="Step 2 of 4, pre-flight check" tabindex="-1" hidden><div class="stage centre"><div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
             <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
@@ -107,12 +104,9 @@
           <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:12px;color:#6E6A64">Warnings won't block your deploy.</span>
             <button style="margin-left:auto;height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)" data-goto="1">Back</button>
-            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg data-run="4" data-goto-first="3" data-run-host="ship3">Ship it</button>
+            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18" data-run="4" data-goto-first="3" data-run-host="ship3" data-run-gate="snapshot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg>Ship it</button>
           </div>
-        </div>
-      </div></div>
-  <div data-step="3" hidden id="ship3"><div style="width:640px;background:#F7F5F2;padding:36px;display:flex;justify-content:center">
-        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
+        </div></div></div><div data-step="3" data-step-title="Step 3 of 4, shipping" tabindex="-1" hidden><div id="ship3"><div class="stage centre"><div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
             <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
@@ -127,24 +121,21 @@
             <div style="display:flex;flex-direction:column;gap:8px">
               <div style="display:flex;align-items:center;gap:11px">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FFD9CF" stroke-width="2.5"></circle><path d="M12 3a9 9 0 0 1 9 9" stroke="#FF5941" stroke-width="2.5" stroke-linecap="round"></path></svg>
-                <span style="font-size:13px;font-weight:600">Uploading to Ghost</span>
+                <span style="font-size:13px;font-weight:600" data-progress-step="Uploading to Ghost">Uploading to Ghost</span>
                 <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1.1 of 2.4 MB</span>
               </div>
               <div style="margin-left:31px;height:5px;background:#EFECE7;border-radius:3px;overflow:hidden"><div style="width:46%;height:100%;background:#FF5941;border-radius:3px"></div></div>
             </div>
             <div style="display:flex;align-items:center;gap:11px;opacity:.45">
               <span style="width:20px;height:20px;border-radius:50%;border:1.5px solid #C9C2B8;flex-shrink:0"></span>
-              <span style="font-size:13px;font-weight:500">Activating v5</span>
+              <span style="font-size:13px;font-weight:500" data-progress-step="Activating v5">Activating v5</span>
             </div>
           </div>
           <div style="display:flex;align-items:center">
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">checks passed · 0 errors</span>
             <button style="margin-left:auto;height:36px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
           </div>
-        </div>
-      </div></div>
-  <div data-step="4" hidden><div style="width:640px;background:#F7F5F2;padding:36px;display:flex;justify-content:center">
-        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px 26px 32px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+        </div></div></div></div><div data-step="4" data-step-title="Step 4 of 4, live" tabindex="-1" hidden><div class="stage centre"><div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px 26px 32px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
             <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
@@ -172,14 +163,11 @@
               <div style="display:flex;align-items:center;gap:8px;justify-content:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px">v5</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:3px 9px">0 errors · 0 warnings</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">38s</span></div>
             </div>
             <div style="display:flex;gap:12px;align-items:center">
-              <button style="height:42px;padding:0 24px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18">View site<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></button>
+              <a href="editor.html" style="display:contents;color:inherit"><button style="height:42px;padding:0 24px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18">View site<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></button></a>
               <a href="editor.html" style="display:contents;color:inherit"><button style="height:42px;padding:0 18px;background:transparent;color:#6E6A64;border:none;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Done</button></a>
             </div>
           </div>
-        </div>
-      </div></div>
-  <div data-step="5" hidden><div style="width:640px;background:#F7F5F2;padding:36px;display:flex;justify-content:center">
-        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
+        </div></div></div><div data-step="5" data-step-title="Deploy failed" tabindex="-1" hidden><div class="stage centre"><div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
             <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
@@ -200,15 +188,95 @@
           </div>
           <div style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
             <button style="height:40px;padding:0 16px;background:transparent;color:#6E6A64;border:none;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Close</button>
-            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><a href="manage-keys.html" style="display:contents;color:inherit"><polyline points="21 3 21 9 15 9"></polyline></a></svg>Reconnect site</button>
+            <a href="manage-keys.html" style="display:contents;color:inherit"><button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>Reconnect site</button></a>
+          </div>
+        </div></div></div></div><div id="library-update" class="overlay sheet-lifted"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:24px 26px 16px;display:flex;flex-direction:column;gap:9px">
+          <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.02em">Three designs have updates</h3>
+          <span style="font-size:13.5px;line-height:1.6;color:#4A453D">Your settings are kept. These are fixes to the designs themselves, so the shapes may shift slightly.</span>
+        </div>
+        <div style="padding:0 26px;display:flex;flex-direction:column;gap:8px">
+          <div style="border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:11px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13px;font-weight:600">Split Form</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45">Form no longer overflows at 390 when the button label is long</span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10px;color:#6B6459;flex-shrink:0">v3 → v4</span>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:11px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13px;font-weight:600">Grid of Three</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45">Cards keep equal height when one post has no excerpt</span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10px;color:#6B6459;flex-shrink:0">v7 → v8</span>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:11px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13px;font-weight:600">Three Column footer</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.45">Focus ring visible on dark backgrounds</span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10px;color:#6B6459;flex-shrink:0">v2 → v3</span>
           </div>
         </div>
-      </div></div>
-</div>
-<div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a>
-  <button class="btn secondary" data-goto="5">See the failure ending</button>
-  <a class="btn secondary" href="deploy-history.html">History</a></div>
+        <div style="margin:16px 26px 0;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:9px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0"><path d="M4 4v6h6"></path><path d="M4 10a8 8 0 0113.6-2.6"></path></svg>
+          <span style="font-size:12px;color:#4A453D;line-height:1.5">We snapshot before redeploying, so this is reversible from history.</span>
+        </div>
+        <div style="padding:18px 26px 22px;display:flex;align-items:center;gap:10px">
+          <button style="height:38px;padding:0 19px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E" data-goto="2">Update and ship</button>
+          <button style="height:38px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2" data-close>Not now</button>
+          <span style="flex:1"></span>
+          <span style="font-size:12px;color:#6E6A64">Nothing changes until you ship.</span>
+        </div>
+      </div></div><div id="snapshot" class="overlay sheet-lifted"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:24px 26px 18px;display:flex;flex-direction:column;gap:9px">
+          <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.02em">Archiving your current theme first</h3>
+          <span style="font-size:13.5px;line-height:1.6;color:#4A453D">If anything about the new theme is wrong, this is what we roll back to. It takes a few seconds and happens on every deploy.</span>
+        </div>
+        <div style="padding:0 26px;display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="width:22px;height:22px;border-radius:50%;background:#E6F5EF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.6" stroke-linecap="round"><polyline points="5 13 10 18 19 6"></polyline></svg></span>
+            <span style="font-size:13px;flex:1">Reading the live theme from Ghost</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">casper 5.9.4</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:50%;background:#FF5941"></span></span>
+            <span style="font-size:13px;flex:1;font-weight:500">Writing the snapshot</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">2.1 MB</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;opacity:.5">
+            <span style="width:22px;height:22px;border-radius:50%;border:1px solid #E7E2DB;flex-shrink:0"></span>
+            <span style="font-size:13px;flex:1">Uploading the new theme</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;opacity:.5">
+            <span style="width:22px;height:22px;border-radius:50%;border:1px solid #E7E2DB;flex-shrink:0"></span>
+            <span style="font-size:13px;flex:1">Checking your theme (Ghost will love it)</span>
+          </div>
+        </div>
+        <div style="margin:20px 26px 0;height:4px;border-radius:2px;background:#EFECE7;overflow:hidden"><span style="display:block;width:46%;height:100%;background:#FF5941;border-radius:2px"></span></div>
+        <div style="padding:16px 26px 22px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;color:#6E6A64;flex:1">Snapshots count towards your history — Free keeps 3, Pro keeps 10.</span>
+          <button style="height:36px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2" data-close>Cancel</button>
+        </div>
+      </div></div><div id="snapshot-failed" class="overlay sheet-lifted"><div style="width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:24px 26px 18px;display:flex;gap:14px;align-items:flex-start">
+          <span style="width:36px;height:36px;border-radius:11px;background:#FDECEC;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C4383C" stroke-width="1.8" stroke-linecap="round"><path d="M12 8v5"></path><circle cx="12" cy="17" r="0.6" fill="#C4383C"></circle><path d="M10.3 3.9L2.6 17.4A2 2 0 004.3 20.4h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"></path></svg></span>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.02em">We could not archive your current theme</h3>
+            <span style="font-size:13.5px;line-height:1.6;color:#4A453D">Ghost returned a 403 when we asked for the active theme. Your integration key may not have theme read permission, which is also the permission we need to upload.</span>
+          </div>
+        </div>
+        <div style="margin:0 26px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:10px;padding:13px 15px;display:flex;flex-direction:column;gap:7px">
+          <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">GET /ghost/api/admin/themes/ → 403</span>
+          <span style="font-size:12.5px;color:#4A453D;line-height:1.5">Deploying without a snapshot means no one-click rollback. You would restore by re-uploading your old theme in Ghost by hand.</span>
+        </div>
+        <div style="padding:18px 26px 22px;display:flex;align-items:center;gap:10px">
+          <button style="height:38px;padding:0 15px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E" data-close>Check the key</button>
+          <button style="height:38px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2" data-close>Try again</button>
+          <span style="flex:1"></span>
+          <button style="height:38px;padding:0 15px;background:transparent;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7;color:#1C1B1A" data-close>Deploy without a snapshot</button>
+        </div>
+      </div></div><div class="stage-back" role="navigation" aria-label="Walkthrough"><span class="wlabel">Walkthrough ·</span><a class="wchip" href="editor.html">← Editor</a><button class="wchip" data-goto="5">Failure ending</button><button class="wchip" data-open="snapshot-failed" aria-haspopup="true" aria-expanded="false">No-token ending (F1)</button><a class="wchip" href="deploy-history.html">History</a></div>
 <script src="app.js"></script>
-
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Deploy Wizard
-  FRAME    : S8 Deploy.dc.html — S8a…S8d, S8d′, S8a′, S8e
+  FRAME    : no lift   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : index page — no lift; every step lifts its own frame on its own page
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · § Component Patterns → Wizard step rail · J1 steps 9–14 · J2 step 13 · J3 step 3
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Deploy Wizard</span>
-  <span class="frame">S8 Deploy.dc.html — S8a…S8d, S8d′, S8a′, S8e</span>
+  <h1 class="name">Deploy Wizard</h1>
+  <span class="frame">index page — no lift; every step lifts its own frame on its own page</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · § Component Patterns → Wizard step rail · J1 steps 9–14 · J2 step 13 · J3 step 3</span>
-</div>
+  
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J2 · Blank-canvas build</span><span class="tstep">step 14 of 14</span><span class="tstep">← <a href="editor.html#remix">Site Remix · ⇧R</a></span></div>
-</div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J2 · Blank-canvas build</span><span class="tstep">step 14 of 14</span><span class="tstep">← <a href="editor.html#remix">Site Remix · ⇧R</a></span></div>
+</nav>
 
 <main id="main">
-<div class="section-head"><h2>The rail grows, and that is the whole shape of this flow</h2><p>An ordinary deploy is four steps, which is what S8 draws. <b>The first deploy to a given site is six</b>, because two gates fire once per site and never again — the Staff Token Offer and the Backup Gate — and <b>neither is drawn anywhere in the export</b> (prompt A1).</p></div><div class="section-head"><h2>Every step, as a page you can walk</h2></div><div class="lifted"><div class="idxgrid">
+<div class="section-head"><h2>The rail grows, and that is the whole shape of this flow</h2><p>An ordinary deploy is four steps, which is what S8 draws. <b>The first deploy to a given site is six</b>, because two gates fire once per site and never again — the Staff Token Offer and the Backup Gate — and <b>neither is drawn anywhere in the export</b> (prompt A1).</p></div><div class="section-head"><h2>Every step, as a page you can walk</h2></div><div class="annot"><div class="idxgrid">
   <a class="idxrow" href="deploy-destination.html">1 · Deploy Destination<span class="k">S8a</span></a>
   <a class="idxrow" href="staff-token-offer.html">2 · Staff Token Offer<span class="k">not drawn · A1</span></a>
   <a class="idxrow" href="backup-gate.html">3 · Backup Gate<span class="k">not drawn · A1</span></a>
@@ -48,12 +50,12 @@
   <a class="idxrow" href="deploy-history.html">Deploy History<span class="k">S8e</span></a>
 </div></div><div class="section-head"><h2>What fires before step 1 even opens</h2><p>Two sheets sit in front of the wizard rather than inside it. The <a href="pro-exit-sheet.html">Pro Exit Sheet</a> fires on a Free plan with Pro designs in the site — the only moment money is mentioned. The <a href="library-update-confirm.html">Library Update Confirm</a> fires whenever the library has advanced since this project&rsquo;s last deploy, because a redeploy carries those changes whether or not anyone asked.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Staff Token Offer
-  FRAME    : NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8's step card and S2b·1's screenshotted step
+  FRAME    : S8 Deploy.dc.html — S8b   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b's step card and Connect · Integration's screenshotted step
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,20 +20,21 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Staff Token Offer</span>
-  <span class="frame">NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8's step card and S2b·1's screenshotted step</span>
+  <h1 class="name">Staff Token Offer</h1>
+  <span class="frame">NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b's step card and Connect · Integration's screenshotted step</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#declined">Declined</a><a href="#inherits">The step card it inherits</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 10 of 15</span><span class="tstep">← <a href="deploy-destination.html">Deploy Destination · step 1 of 6</a></span><span class="tstep">next: <a href="backup-gate.html">Backup Gate · step 3</a> →</span></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 10 of 15</span><span class="tstep">← <a href="deploy-destination.html">Deploy Destination · step 1 of 6</a></span><span class="tstep">next: <a href="backup-gate.html">Backup Gate · step 3</a> →</span></div>
 <div class="trail"><span class="tl">Flow F3 · The guided routes-upload card</span><span class="tstep">step 4 of 4</span><span class="tstep">← <a href="routes-fallback.html#menu-path">And its Ghost menu path is gone</a></span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#declined">Declined<span class="k">D1c</span></a><a class="idxrow" href="#inherits">The step card it inherits<span class="k">S8b</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#declined">Declined<span class="k">D1c</span></a><a class="idxrow" href="#inherits">The step card it inherits<span class="k">S8b</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>Staff Token Offer</h2><p>Step 2 of the six-step first deploy. <b>&ldquo;One more step unlocks a safety net — a copy of your current theme before we replace it, plus a check that nothing else has changed it.&rdquo;</b> Then, quieter: this is a full-Administrator credential and can only be created on the site Owner&rsquo;s own account. <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; and &ldquo;Not now&rdquo;. Not now is <b>not</b> a small link. <b>Zero occurrences of &ldquo;Staff Access Token&rdquo; exist anywhere in the export.</b></p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A1 (frames D1b, D1c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="declined"><h2>Declined — acknowledged once, then never raised again</h2><p>It names exactly three costs — no snapshot, no drift check, manual routes upload — and closes with &ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>cannot comply at all</b>: they are not the Owner. This is not a degradation for them, it is the path.</p></div><div class="section-head" id="inherits"><h2>The step card it inherits</h2><p class="frame-cap">S8b · the checked-row list · 1440</p></div><div class="lifted"><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
+<div class="section-head"><h2>Staff Token Offer</h2><p>Step 2 of the six-step first deploy. <b>&ldquo;One more step unlocks a safety net — a copy of your current theme before we replace it, plus a check that nothing else has changed it.&rdquo;</b> Then, quieter: this is a staff credential &mdash; <b>every staff user mints their own</b> from their profile page and it carries that user&rsquo;s role (read at docs.ghost.org/admin-api → Staff access tokens: &ldquo;Each user can create and refresh their own token&rdquo;). The safety net needs a role that can read themes and write settings: <b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, Ghost 6.54.1 fixtures.json roles_permissions: Administrator holds <span class="mono">theme: all</span> and <span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the role with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review 2026-09-03). The Owner-only wording in FR-C1/C3 and EXPERIENCE.md is owed the same correction (finding F-063). <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; and &ldquo;Not now&rdquo;. Not now is <b>not</b> a small link. <b>Zero occurrences of &ldquo;Staff Access Token&rdquo; exist anywhere in the export.</b></p></div><div class="nodraw owed"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A1 (frames D1b, D1c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="declined"><h2>Declined — acknowledged once, then never raised again</h2><p>It names exactly three costs — no snapshot, no drift check, manual routes upload — and closes with &ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>can comply when they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is not a degradation, it is the path.</p></div><div class="section-head" id="inherits"><h2>The step card it inherits</h2><p class="frame-cap">S8b · the checked-row list · 1440</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="S8 Deploy — S8b ·"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
         <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
@@ -86,12 +88,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S8 Deploy.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

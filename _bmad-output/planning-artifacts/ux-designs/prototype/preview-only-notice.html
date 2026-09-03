@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Preview-Only Notice
-  FRAME    : B Missing Surfaces.dc.html — B15 (right, apart from the plan name)
+  FRAME    : B Missing Surfaces.dc.html — B15   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B15 (right, apart from the plan name)
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F5 · § wrong mechanism → B15 · FR-C2
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Preview-Only Notice</span>
+  <h1 class="name">Preview-Only Notice</h1>
   <span class="frame">B Missing Surfaces.dc.html — B15 (right, apart from the plan name)</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F5 · § wrong mechanism → B15 · FR-C2</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#respec">The one wrong word</a><a href="#probe">Probed, and its five states</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 2 of 6</span><span class="tstep">← <a href="connect-keys.html#validation">Set at connect, by the probe</a></span><span class="tstep">next: <a href="preview-only-notice.html#probe">Who clears it, and when</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The one wrong word<span class="k">FR-C2</span></a><a class="idxrow" href="#probe">Probed, and its five states<span class="k">FR-C5</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 2 of 6</span><span class="tstep">← <a href="connect-keys.html#validation">Set at connect, by the probe</a></span><span class="tstep">next: <a href="preview-only-notice.html#probe">Who clears it, and when</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The one wrong word<span class="k">FR-C2</span></a><a class="idxrow" href="#probe">Probed, and its five states<span class="k">FR-C5</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B15 · preview-only connection</p><div class="liftbox"><div style="width:600px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:15px">
+<div class="lifted"><p class="frame-cap">B15 · preview-only connection</p><div class="liftbox" tabindex="0" role="region" aria-label="B15 · preview-only connection"><div style="width:600px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:15px">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:15px;font-weight:600;flex:1">Connection</span>
           <span style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:24px;padding:4px 11px">
@@ -68,14 +70,14 @@
           <span style="flex:1"></span>
           <span style="display:flex;align-items:center;gap:7px;opacity:.45"><span style="height:36px;padding:0 15px;background:#DDD6CB;border-radius:10px;font-size:12.5px;font-weight:600;display:flex;align-items:center;color:#6B6459">Ship it</span></span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One word on it is wrong</h2><p>B15 says upgrade to Ghost(Pro) <b>Creator</b>. Ghost&rsquo;s 2026 lineup is <b>Starter / Publisher / Business</b>, so it is <b>Publisher or higher</b>. Everything else on this frame is right, and S8a′ and S11a move to match <i>it</i> rather than the other way round.</p></div><div class="section-head" id="probe"><h2>Probed, never asked</h2><p>At connect, <span class="mono">hostSettings.limits.customThemes</span> reports whether the site permits custom theme upload; its absence means self-hosted and unlimited. <b>There is no user-declared-plan step in the happy path and no plan field in Manage Keys.</b> FR-C5&rsquo;s daily health check re-runs the probe, so the flag sets and clears without any user action — <b>clearing is not the user&rsquo;s job</b> — and a successful deploy clears it too. The one path with a question is the unreadable-<span class="mono">hostSettings</span> case.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One word on it is wrong</h2><p>B15 says upgrade to Ghost(Pro) <b>Creator</b>. Ghost&rsquo;s 2026 lineup is <b>Starter / Publisher / Business</b>, so it is <b>Publisher or higher</b> — read at ghost.org/pricing on 2026-09-03, a page read and not an executed probe, so VERIFY-AT-BUILD item 1 stays ⛔ until the Starter trial. Everything else on this frame is right, and S8a′ and S11a move to match <i>it</i> rather than the other way round.</p></div><div class="section-head" id="probe"><h2>Probed, never asked</h2><p>At connect, <span class="mono">hostSettings.limits.customThemes</span> is read. <b>It is a theme-name allowlist, not a yes/no flag</b>: <span class="mono">@tryghost/limit-service</span> declares <span class="mono">customThemes</span> as an allowlist limit and the upload endpoint asks <span class="mono">errorIfWouldGoOverLimit('customThemes', {value: themeName})</span> (read in source, Ghost 6.54.1 <span class="mono">core/server/api/endpoints/themes.js</span>). Its <b>absence</b> means self-hosted — <span class="mono">GET /admin/config/</span> carries no <span class="mono">hostSettings</span> key on 5.130.6 or 6.58.0 (executed, MEASUREMENTS §15h). <b>The Ghost(Pro) half is still ⛔</b> — VERIFY-AT-BUILD item 2, blocked on a Starter trial — so the probe must test Inflozo&rsquo;s frozen theme name against the list, and &ldquo;present&rdquo; is not the same as &ldquo;blocked&rdquo;. <b>There is no user-declared-plan step in the happy path and no plan field in Manage Keys.</b> FR-C5&rsquo;s daily health check re-runs the probe, so the flag sets and clears without any user action — <b>clearing is not the user&rsquo;s job</b> — and a successful deploy clears it too. The one path with a question is the unreadable-<span class="mono">hostSettings</span> case.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

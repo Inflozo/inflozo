@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Routes Manager
-  FRAME    : S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route
+  FRAME    : S9 Routes.dc.html — S9a Routes manager, S9b, S9c, S9e, S9d Routes empty   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · § wrong mechanism → S9 · § State Patterns → Routes Manager
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Routes Manager</span>
+  <h1 class="name">Routes Manager</h1>
   <span class="frame">S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · § wrong mechanism → S9 · § State Patterns → Routes Manager</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#respec">The two rows that go</a><a href="#error">Routes — YAML error</a><a href="#new-collection">New Collection Sheet</a><a href="#new-route">New Route Sheet</a><a href="#empty">Routes — empty</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The two rows that go<span class="k">FR-I1/I5</span></a><a class="idxrow" href="#error">Routes — YAML error<span class="k">S9b</span></a><a class="idxrow" href="#new-collection">New Collection Sheet<span class="k">S9c</span></a><a class="idxrow" href="#new-route">New Route Sheet<span class="k">S9e</span></a><a class="idxrow" href="#empty">Routes — empty<span class="k">S9d</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The two rows that go<span class="k">FR-I1/I5</span></a><a class="idxrow" href="#error">Routes — YAML error<span class="k">S9b</span></a><a class="idxrow" href="#new-collection">New Collection Sheet<span class="k">S9c</span></a><a class="idxrow" href="#new-route">New Route Sheet<span class="k">S9e</span></a><a class="idxrow" href="#empty">Routes — empty<span class="k">S9d</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S9a · routes &amp; templates · 1440</p><div class="liftbox"><div data-screen-label="S9a Routes manager" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">S9a · routes &amp; templates · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S9a · routes &amp; templates · 1440"><div data-screen-label="S9a Routes manager" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
       <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
         <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Routes &amp; Templates</span>
@@ -159,7 +161,7 @@
           </div>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="respec"><h2>Two rows the frame draws that have to go</h2><p>A membership page emits <b>no route</b> — it is <span class="mono">custom-{name}.hbs</span>, bound from Ghost&rsquo;s page editor, so <span class="mono">/subscribe/ : members-signup</span> goes. And <span class="mono">home.hbs</span> resolves for the root by itself; a <span class="mono">routes:</span> entry for <span class="mono">/</span> also removes the index collection, which breaks <span class="mono">/page/2/</span> — so that row goes too (FR-I1/I5).</p></div><div class="section-head" id="error"><h2>YAML error</h2><p>Line-numbered, and <b>deploys are blocked until routing is valid — the Ship button carries the reason</b> rather than failing later.</p></div><div class="lifted"><p class="frame-cap">S9b · yaml pane — validation error</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;flex-direction:column;gap:12px">
+    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="respec"><h2>Two rows the frame draws that have to go</h2><p>A membership page emits <b>no route</b> — it is <span class="mono">custom-{name}.hbs</span>, bound from Ghost&rsquo;s page editor, so <span class="mono">/subscribe/ : members-signup</span> goes. And <span class="mono">home.hbs</span> resolves for the root by itself; a <span class="mono">routes:</span> entry for <span class="mono">/</span> also removes the index collection, which breaks <span class="mono">/page/2/</span> — so that row goes too (FR-I1/I5).</p></div><div class="section-head" id="error"><h2>YAML error</h2><p>Line-numbered, and <b>deploys are blocked until routing is valid — the Ship button carries the reason</b> rather than failing later.</p></div><div class="lifted"><p class="frame-cap">S9b · yaml pane — validation error</p><div class="liftbox" tabindex="0" role="region" aria-label="S9b · yaml pane — validation error"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;align-items:center;gap:10px;background:#FDEBEC;border:1px solid #F5C6C9;border-radius:10px;padding:10px 14px">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E5484D"></circle><line x1="8.5" y1="8.5" x2="15.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line><line x1="15.5" y1="8.5" x2="8.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line></svg>
           <span style="font-size:13px;font-weight:500;color:#C63A3F">Line 15 — filters use a colon: did you mean <span style="font-family:'JetBrains Mono',monospace;font-size:12px">tag:tutorials</span>?</span>
@@ -177,7 +179,7 @@
           </div>
         </div>
         <span style="font-size:12px;color:#6E6A64">Deploys are blocked until routing is valid — the Ship button explains why.</span>
-      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-collection"><h2>New Collection Sheet</h2><p><b>Posts per page comes from Theme Settings</b>, and a collection&rsquo;s own <span class="mono">limit:</span> may override it for that route — the frame says it follows the home feed&rsquo;s Count control, which is not where that value lives. And the published-date field offers FR-I2&rsquo;s <b>relative</b> form first.</p></div><div class="lifted"><p class="frame-cap">S9c · &ldquo;+ New collection&rdquo; sheet</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px 28px 300px;display:flex;justify-content:center;position:relative;overflow:hidden">
+      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-collection"><h2>New Collection Sheet</h2><p><b>Posts per page comes from Theme Settings</b>, and a collection&rsquo;s own <span class="mono">limit:</span> may override it for that route — the frame says it follows the home feed&rsquo;s Count control, which is not where that value lives. That per-collection <span class="mono">limit:</span> is in Ghost&rsquo;s code, not its docs — read in source: 5.130.6 <span class="mono">core/frontend/services/routing/CollectionRouter.js:39</span> and <span class="mono">route-settings/validate.js:93</span>; 6.58.0 <span class="mono">route-settings/route-settings-parser.js:59,151</span>. docs.ghost.org/themes/routing lists permalink, template, filter, data, order and rss only, so this is re-read at every Ghost major. And the published-date field offers FR-I2&rsquo;s <b>relative</b> form first.</p></div><div class="lifted"><p class="frame-cap">S9c · &ldquo;+ New collection&rdquo; sheet</p><div class="liftbox" tabindex="0" role="region" aria-label="S9c · &ldquo;+ New collection&rdquo; sheet"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px 28px 300px;display:flex;justify-content:center;position:relative;overflow:hidden">
         <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
         <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
           <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -232,7 +234,7 @@
             <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Create collection</button>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-route"><h2>New Route Sheet</h2></div><div class="lifted"><p class="frame-cap">S9e · &ldquo;+ Custom route&rdquo; sheet</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center;position:relative;overflow:hidden">
+      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-route"><h2>New Route Sheet</h2></div><div class="lifted"><p class="frame-cap">S9e · &ldquo;+ Custom route&rdquo; sheet</p><div class="liftbox" tabindex="0" role="region" aria-label="S9e · &ldquo;+ Custom route&rdquo; sheet"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center;position:relative;overflow:hidden">
       <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
       <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
         <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -266,7 +268,7 @@
           <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Create route</button>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2></div><div class="lifted"><p class="frame-cap">S9d · routes — empty state · 1440</p><div class="liftbox"><div data-screen-label="S9d Routes empty" style="width:1440px;height:620px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2></div><div class="lifted"><p class="frame-cap">S9d · routes — empty state · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S9d · routes — empty state · 1440"><div data-screen-label="S9d Routes empty" style="width:1440px;height:620px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
       <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
         <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Routes &amp; Templates</span>
@@ -290,12 +292,12 @@
       </div>
     </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Paywall Editor
-  FRAME    : C Post Body.dc.html — C3a the paywall canvas, C3b the designs and the no-paid-tiers empty state
+  FRAME    : C Post Body.dc.html — C3a Paywall editor, C3b Paywall designs and empty state   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : C Post Body.dc.html — C3a the paywall canvas, C3b the designs and the no-paid-tiers empty state
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · § The three canvases that are not pages · § State Patterns → Paywall Editor · FR-H6
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Paywall Editor</span>
+  <h1 class="name">Paywall Editor</h1>
   <span class="frame">C Post Body.dc.html — C3a the paywall canvas, C3b the designs and the no-paid-tiers empty state</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · § The three canvases that are not pages · § State Patterns → Paywall Editor · FR-H6</span>
-</div>
-<div class="proto-note">This surface was reported as never drawn. <b>It is drawn</b> — C3a, at 1440, with its six controls, its &ldquo;how readers reach it&rdquo; explainer and the no-paid-tiers empty state — and it sits in a drawn left-nav group, <b>Template surfaces</b>.</div>
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#designs">The designs, and the empty case<span class="k">C3b</span></a></div></div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#designs">The designs, and the empty case</a></nav>
+</header>
+<aside class="proto-note">This surface was reported as never drawn. <b>It is drawn</b> — C3a, at 1440, with its six controls, its &ldquo;how readers reach it&rdquo; explainer and an empty state whose reason is wrong (below) — and it sits in a drawn left-nav group, <b>Template surfaces</b>.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#designs">The designs, and the empty case<span class="k">C3b</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">C3a · the paywall canvas · 1440</p><div class="liftbox"><section data-screen-label="C3a Paywall editor" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
+<div class="lifted"><p class="frame-cap">C3a · the paywall canvas · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="C3a · the paywall canvas · 1440"><section data-screen-label="C3a Paywall editor" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
   <div style="display:flex;flex-direction:column;gap:7px;max-width:1100px">
     <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#6E6A64">C.3 · THE PAYWALL EDITOR</span>
     <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-0.02em">A canvas that is not a page</h2>
@@ -221,7 +223,7 @@
     </div>
     <p style="margin:0;font-size:13.5px;line-height:1.6;color:#3A3835;max-width:1440px"><strong style="font-weight:600">Notes.</strong> Four things mark this out as a different canvas: the chrome is ink rather than paper, the breadcrumb sits under Template surfaces with a mono chip saying so, the canvas mat is a colder grey than the page canvas, and the article above the cut is dimmed to 55% because it is context the user cannot edit here. The dashed coral line is the author's Public preview marker, with the honest warning beside it — everything below it is stripped server-side, which is why the Fade treatment is masked onto the last visible paragraph and nowhere else. <strong style="font-weight:600">View as</strong> stays in the chrome because switching to Paid member is the only way to check that the cut disappears entirely for someone who has paid.</p>
   </div>
-</section></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div><div class="section-head" id="designs"><h2>Three of the twelve designs, and the empty case</h2><p>The empty state is <b>honest about Ghost, not about us</b>: with no paid tier Ghost&rsquo;s paywall never renders at all, so the design would be dead CSS.</p></div><div class="lifted"><p class="frame-cap">C3b · three designs and the empty state</p><div class="liftbox"><section data-screen-label="C3b Paywall designs and empty state" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
+</section></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div><div class="section-head" id="designs"><h2>Three of the twelve designs, and the empty case</h2><p>The frame&rsquo;s empty state says that with no paid tier Ghost&rsquo;s paywall never renders. <b>That is not what Ghost does.</b> The cut is gated on <i>access</i>, not on tiers: <span class="mono">core/frontend/helpers/content.js</span> returns the CTA whenever <span class="mono">this.access</span> is false, and Ghost&rsquo;s own <span class="mono">content-cta.hbs</span> carries a members-only branch — &ldquo;This post is for subscribers only&rdquo;, Subscribe / Sign in — inside the same <span class="mono">gh-post-upgrade-cta</span> block (read in source on 6.54.1 and 5.130.6; MEASUREMENTS §15b executed the override point this design replaces). So the paywall design applies to <b>any gated post</b> — members, paid or tiers — and the honest empty case is <b>members disabled on the site</b> (<span class="mono">members_signup_access = none</span>). The frame&rsquo;s empty-state copy is prompt A7&rsquo;s; the frame stays as drawn here.</p></div><div class="lifted"><p class="frame-cap">C3b · three designs and the empty state</p><div class="liftbox" tabindex="0" role="region" aria-label="C3b · three designs and the empty state"><section data-screen-label="C3b Paywall designs and empty state" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
   <div style="display:flex;flex-direction:column;gap:7px;max-width:1100px">
     <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#6E6A64">C.3 · THREE OF THE TWELVE, AND THE EMPTY CASE</span>
     <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-0.02em">Same two tiers, three arguments</h2>
@@ -355,12 +357,12 @@
   </div>
 </section></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Drift Report
-  FRAME    : NOT DRAWN → Appendix A prompt A3. Inherits S8b's step card and B7's Layers row for the file list
+  FRAME    : B Missing Surfaces.dc.html — B7   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7's Layers row for the file list
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · FR-J16
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Drift Report</span>
-  <span class="frame">NOT DRAWN → Appendix A prompt A3. Inherits S8b's step card and B7's Layers row for the file list</span>
+  <h1 class="name">Drift Report</h1>
+  <span class="frame">NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7's Layers row for the file list</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · FR-J16</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#fail-open">It fails open</a><a href="#rows">The row it inherits</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#fail-open">It fails open<span class="k">D3b</span></a><a class="idxrow" href="#rows">The row it inherits<span class="k">B7</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#fail-open">It fails open<span class="k">D3b</span></a><a class="idxrow" href="#rows">The row it inherits<span class="k">B7</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>Drift Report</h2><p>Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and compares it against what it last deployed there. If anything differs, <b>the deploy stops</b>. Rows are grouped Changed / Added / Removed and — critically — <b>each is named by the user&rsquo;s own layer name</b> ("Home hero", "Three Column footer") with the raw filename only as small mono text beneath. Never a raw path as the primary label. Two actions: <b>Download the live theme first</b> (offered before the destructive one) and <b>Overwrite and ship anyway</b> — ink, not danger, because it is a deliberate choice.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A3 (frames D3a, D3b, D3c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="fail-open"><h2>It fails open, and it never asserts drift without two manifests</h2><p>Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</p></div><div class="section-head" id="rows"><h2>The row component it inherits</h2><p class="frame-cap">B7 · layers rows</p></div><div class="lifted"><div class="liftbox"><div style="width:340px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px;display:flex;flex-direction:column;gap:12px">
+<div class="section-head"><h2>Drift Report</h2><p>Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and compares it against what it last deployed there. If anything differs, <b>the deploy stops</b>. Rows are grouped Changed / Added / Removed and — critically — <b>each is named by the user&rsquo;s own layer name</b> ("Home hero", "Three Column footer") with the raw filename only as small mono text beneath. Never a raw path as the primary label. Two actions: <b>Download the live theme first</b> (offered before the destructive one) and <b>Overwrite and ship anyway</b> — ink, not danger, because it is a deliberate choice.</p></div><div class="nodraw owed"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A3 (frames D3a, D3b, D3c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="fail-open"><h2>It fails open, and it never asserts drift without two manifests</h2><p>Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</p></div><div class="section-head" id="rows"><h2>The row component it inherits</h2><p class="frame-cap">B7 · layers rows</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="B Missing Surfaces — B7 · #7"><div style="width:340px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px;display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12.5px;font-weight:600">Layers</span>
         </div>
@@ -75,12 +77,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

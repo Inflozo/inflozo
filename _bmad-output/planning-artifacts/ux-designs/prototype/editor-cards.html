@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Editor Cards
-  FRAME    : S14 Editor Cards.dc.html — S14a card dropdown, S14b treatment dropdown, S14c reset confirm, S14d entry point, S14e callout selected · C Post Body C1a, C1c
+  FRAME    : S14 Editor Cards.dc.html — S14e callout selected, S14a Editor cards dropdown, S14b treatment picker, S14c reset confirm, S14d entry point · C Post Body.dc.html — C1a Cards home, C1c Card panels   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S14 Editor Cards.dc.html — S14a card dropdown, S14b treatment dropdown, S14c reset confirm, S14d entry point, S14e callout selected · C Post Body C1a, C1c
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · § The three canvases that are not pages · FR-Q7
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Editor Cards</span>
+  <h1 class="name">Editor Cards</h1>
   <span class="frame">S14 Editor Cards.dc.html — S14a card dropdown, S14b treatment dropdown, S14c reset confirm, S14d entry point, S14e callout selected · C Post Body C1a, C1c</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · § The three canvases that are not pages · FR-Q7</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#cards">Card dropdown</a><a href="#treatment">Treatment dropdown</a><a href="#reset">Reset confirm</a><a href="#entry">The entry point</a><a href="#home">Cards home, and the six with no panel</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#cards">Card dropdown<span class="k">S14a</span></a><a class="idxrow" href="#treatment">Treatment dropdown<span class="k">S14b</span></a><a class="idxrow" href="#reset">Reset confirm<span class="k">S14c</span></a><a class="idxrow" href="#entry">The entry point<span class="k">S14d</span></a><a class="idxrow" href="#home">Cards home, and the six with no panel<span class="k">C1a · C1c</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#cards">Card dropdown<span class="k">S14a</span></a><a class="idxrow" href="#treatment">Treatment dropdown<span class="k">S14b</span></a><a class="idxrow" href="#reset">Reset confirm<span class="k">S14c</span></a><a class="idxrow" href="#entry">The entry point<span class="k">S14d</span></a><a class="idxrow" href="#home">Cards home, and the six with no panel<span class="k">C1a · C1c</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S14e · a callout card selected · 1440</p><div class="liftbox"><section data-screen-label="S14e callout selected" style="padding:0 56px 56px;display:flex;flex-direction:column;gap:16px">
+<div class="lifted"><p class="frame-cap">S14e · a callout card selected · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S14e · a callout card selected · 1440"><section data-screen-label="S14e callout selected" style="padding:0 56px 56px;display:flex;flex-direction:column;gap:16px">
 <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14e · A CALLOUT CARD SELECTED — DROPDOWNS CLOSED, THE CARD'S OWN PANEL AT SIDEBAR WIDTH 280 · FOUR CONTROLS, NAMED VALUES ONLY</div>
 <div style="display:flex;gap:24px;align-items:flex-start">
   <div style="width:600px;flex-shrink:0;background:#EDEAE6;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center">
@@ -90,7 +92,7 @@
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE CUSTOMISED PILL IS THE PANEL'S ONLY STATUS; IT CLEARS WITH THE RESET</span>
   </div>
 </div>
-</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="cards"><h2>The card dropdown — every Koenig card, in Ghost&amp;rsquo;s order</h2><p><b>Colour controls are never offered for header, signup and CTA cards.</b> The post author sets those inline in Ghost&rsquo;s editor, and a control that silently loses to an inline style is worse than none.</p></div><div class="lifted"><p class="frame-cap">S14a · card-type dropdown open · 1440</p><div class="liftbox"><div data-screen-label="S14a Editor cards dropdown" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="cards"><h2>The card dropdown — every Koenig card, in Ghost’s order</h2><p><b>Colour controls are never offered for header, signup and CTA cards.</b> The post author sets those inline in Ghost&rsquo;s editor, and a control that silently loses to an inline style is worse than none.</p></div><div class="lifted"><p class="frame-cap">S14a · card-type dropdown open · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S14a · card-type dropdown open · 1440"><div data-screen-label="S14a Editor cards dropdown" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
   <div style="height:48px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;position:relative;z-index:4">
     <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
     <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
@@ -204,7 +206,7 @@
       </div>
     </div>
   </div>
-</div></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="treatment"><h2>The treatment dropdown</h2><p>Chosen first, once per project. A per-card override a new treatment claims is dropped <b>with a one-line notice</b> — never silently kept and outvoted.</p></div><div class="lifted"><p class="frame-cap">S14b · the treatment dropdown · 520</p><div class="liftbox"><section data-screen-label="S14b treatment picker" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+</div></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="treatment"><h2>The treatment dropdown</h2><p>Chosen first, once per project. A per-card override a new treatment claims is dropped <b>with a one-line notice</b> — never silently kept and outvoted.</p></div><div class="lifted"><p class="frame-cap">S14b · the treatment dropdown · 520</p><div class="liftbox" tabindex="0" role="region" aria-label="S14b · the treatment dropdown · 520"><section data-screen-label="S14b treatment picker" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
 <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14b · THE TREATMENT DROPDOWN — THE SIX A33 WHOLE-SET STYLES, ONE ACTIVE PER PROJECT · DETAIL 520</div>
 <div style="display:flex;gap:48px;align-items:flex-start">
   <div style="width:520px;height:420px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
@@ -228,7 +230,7 @@
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">A CARD OVERRIDE THAT A NEW TREATMENT CLAIMS (E.G. PLANE) IS DROPPED WITH A ONE-LINE NOTICE IN THE PANEL — NEVER SILENTLY KEPT AND OUTVOTED</span>
   </div>
 </div>
-</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="reset"><h2>Reset to Ghost&amp;rsquo;s default</h2><p>Per card, <b>never whole-set</b>: twenty decisions removed by one click is a footgun with no matching user intent.</p></div><div class="lifted"><p class="frame-cap">S14c · reset to Ghost default · 520</p><div class="liftbox"><section data-screen-label="S14c reset confirm" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="reset"><h2>Reset to Ghost’s default</h2><p>Per card, <b>never whole-set</b>: twenty decisions removed by one click is a footgun with no matching user intent.</p></div><div class="lifted"><p class="frame-cap">S14c · reset to Ghost default · 520</p><div class="liftbox" tabindex="0" role="region" aria-label="S14c · reset to Ghost default · 520"><section data-screen-label="S14c reset confirm" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
 <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14c · RESET TO GHOST DEFAULT — THE CONFIRM · PER CARD, NEVER WHOLE-SET · DETAIL 520</div>
 <div style="display:flex;gap:48px;align-items:flex-start">
   <div style="width:520px;height:300px;flex-shrink:0;background:rgba(28,27,26,.35);border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;align-items:center;justify-content:center">
@@ -246,7 +248,7 @@
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">Reset is per card and scoped in words</strong> — the treatment choice and other cards' overrides are untouched. There is deliberately no "reset all cards": twenty decisions removed by one click is a footgun with no matching user intent.</p>
-</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="entry"><h2>The entry point</h2><p>Surface links — Pages · Layers · Editor cards — sit in one group above the Layers list. Card styling is a project-level decision.</p></div><div class="lifted"><p class="frame-cap">S14d · the entry point in the editor&rsquo;s left nav · 560</p><div class="liftbox"><section data-screen-label="S14d entry point" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="entry"><h2>The entry point</h2><p>Surface links — Pages · Layers · Editor cards — sit in one group above the Layers list. Card styling is a project-level decision.</p></div><div class="lifted"><p class="frame-cap">S14d · the entry point in the editor&rsquo;s left nav · 560</p><div class="liftbox" tabindex="0" role="region" aria-label="S14d · the entry point in the editor&rsquo;s left nav · 560"><section data-screen-label="S14d entry point" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
 <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">S14d · THE ENTRY POINT — "EDITOR CARDS" IN THE S4 EDITOR'S LEFT NAVIGATION · SURFACE LINKS SIT ABOVE THE LAYERS LIST · DETAIL 560</div>
 <div style="display:flex;gap:48px;align-items:flex-start">
   <div style="width:560px;height:420px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
@@ -288,7 +290,7 @@
   </div>
 </div>
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">One nav item, one screen.</strong> Card styling is a project-level decision, so it lives beside Pages and Layers rather than inside any page's section list — a user who opens it from a post-detail page sees the same state as one who opens it from Theme Settings.</p>
-</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="home"><h2>The cards module&amp;rsquo;s home, and the six cards with no panel</h2><p>Six cards render nothing of their own — a GIF arrives as an image, markdown as headings and links, and the two email cards never leave the newsletter. Opening one says why, in one line, and offers the card it defers to.</p></div><div class="lifted"><p class="frame-cap">C1a · cards home — grouped by what a theme can reach · 1440</p><div class="liftbox"><div data-screen-label="C1a Cards home" style="width:1440px;height:1000px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+</section></div><p class="lift-src">lifted from <span class="mono">S14 Editor Cards.dc.html</span></p></div><div class="section-head" id="home"><h2>The cards module’s home, and the six cards with no panel</h2><p>Six cards render nothing of their own — a GIF arrives as an image, markdown as headings and links, and the two email cards never leave the newsletter. Opening one says why, in one line, and offers the card it defers to.</p></div><div class="lifted"><p class="frame-cap">C1a · cards home — grouped by what a theme can reach · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="C1a · cards home — grouped by what a theme can reach · 1440"><div data-screen-label="C1a Cards home" style="width:1440px;height:1000px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
       <div style="height:48px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
         <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
@@ -582,7 +584,7 @@
           </div>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div><div class="lifted"><p class="frame-cap">C1c · the card panels</p><div class="liftbox"><section data-screen-label="C1c Card panels" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
+    </div></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div><div class="lifted"><p class="frame-cap">C1c · the card panels</p><div class="liftbox" tabindex="0" role="region" aria-label="C1c · the card panels"><section data-screen-label="C1c Card panels" style="padding:0 56px 72px;display:flex;flex-direction:column;gap:24px">
   <div style="display:flex;flex-direction:column;gap:7px;max-width:1100px">
     <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:12px;color:#6E6A64">C.1 · THREE PANELS IN FULL</span>
     <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-0.02em">Simple, complex, structural</h2>
@@ -875,12 +877,12 @@
   </div>
 </section></div><p class="lift-src">lifted from <span class="mono">C Post Body.dc.html</span></p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

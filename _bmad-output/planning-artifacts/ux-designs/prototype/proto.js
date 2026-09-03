@@ -9,8 +9,8 @@
    artifact, and it is not negotiable.
 
    IT ALSO TOUCHES NOTHING INSIDE A LIFTED FRAME. That is the second rule, and it was
-   learned by breaking it: wiring the frames' own controls inserted 200 elements across
-   117 frames, and an assertion that "every page's frames must respond" pressured the
+   learned by breaking it: wiring the frames' own controls inserted elements into most of
+   the lifted frames, and an assertion that "every page's frames must respond" pressured the
    build into a link from the binding checklist to itself, purely to pass. A check that
    can be satisfied by fabrication is worse than no check. So the frames are lifted
    byte-identical and stay that way — `build.py` asserts it — and navigation lives in the

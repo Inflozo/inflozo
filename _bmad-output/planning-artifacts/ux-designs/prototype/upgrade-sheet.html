@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Upgrade Sheet
-  FRAME    : S12 Billing.dc.html — S12b, used app-wide
+  FRAME    : S12 Billing.dc.html — S12b   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S12 Billing.dc.html — S12b, used app-wide
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § Plan limits · J3 step 5b
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Upgrade Sheet</span>
+  <h1 class="name">Upgrade Sheet</h1>
   <span class="frame">S12 Billing.dc.html — S12b, used app-wide</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § Plan limits · J3 step 5b</span>
-</div>
-<div class="proto-note">On return from Dodo&rsquo;s hosted checkout the server verifies the subscription directly and grants Pro <b>without waiting for the webhook</b>.</div>
-<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 5 of 10</span><span class="tstep">← <a href="pro-exit-sheet.html">Pro Exit Sheet — the climax beat</a></span><span class="tstep">next: <a href="pricing.html">Pricing — the same terms, publicly</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#limits">The limit corrections<span class="k">Appendix F.1</span></a></div></div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#limits">The limit corrections</a></nav>
+</header>
+<aside class="proto-note">On return from Dodo&rsquo;s hosted checkout the server verifies the subscription directly and grants Pro <b>without waiting for the webhook</b>.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 5 of 11</span><span class="tstep">← <a href="pro-exit-sheet.html#remedies">Itemised — the four remedies</a></span><span class="tstep">next: <a href="pricing.html">Pricing — the same terms, publicly</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#limits">The limit corrections<span class="k">Appendix F.1</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S12b · upgrade modal — used app-wide</p><div class="liftbox"><div style="width:680px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+<div class="lifted"><p class="frame-cap">S12b · upgrade modal — used app-wide</p><div class="liftbox" tabindex="0" role="region" aria-label="S12b · upgrade modal — used app-wide"><div style="width:680px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
         <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
         <div style="width:540px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
           <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center">
@@ -57,12 +59,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S12 Billing.dc.html</span></p></div><div class="section-head" id="limits"><h2>Its limit column is wrong in two rows</h2><p>The frame says <b>3</b> connected sites and <b>Last 2</b> versions of history. Appendix F.1 says <b>10</b> sites, and <b>last 3 on Free / last 10 per project on Pro</b>. F.1 governs — the corrected table is on <a href="billing.html#limits">Billing</a>.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Theme Settings
-  FRAME    : B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6)
+  FRAME    : B Missing Surfaces.dc.html — B17, B18   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6) · B18 translations
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · § wrong mechanism → B17 · FR-Q1/Q2/Q3, FR-J15, FR-D7
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Theme Settings</span>
-  <span class="frame">B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6)</span>
+  <h1 class="name">Theme Settings</h1>
+  <span class="frame">B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6) · B18 translations</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · § wrong mechanism → B17 · FR-Q1/Q2/Q3, FR-J15, FR-D7</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#respec">The four corrections</a><a href="#additions">Custom Settings Builder — the additions</a><a href="#translations">Translations</a><a href="#translations-fix">Translations — the key shape</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The four corrections<span class="k">A6</span></a><a class="idxrow" href="#additions">Custom Settings Builder — the additions<span class="k">A6</span></a><a class="idxrow" href="#translations">Translations<span class="k">B18</span></a><a class="idxrow" href="#translations-fix">Translations — the key shape<span class="k">FR-Q6/Q8</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The four corrections<span class="k">A6</span></a><a class="idxrow" href="#additions">Custom Settings Builder — the additions<span class="k">A6</span></a><a class="idxrow" href="#translations">Translations<span class="k">B18</span></a><a class="idxrow" href="#translations-fix">Translations — the key shape<span class="k">FR-Q6/Q8</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B17 · theme settings, with the custom-settings builder · 1440</p><div class="liftbox"><div style="width:1440px;height:700px;box-sizing:border-box;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">B17 · theme settings, with the custom-settings builder · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="B17 · theme settings, with the custom-settings builder · 1440"><div style="width:1440px;height:700px;box-sizing:border-box;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
       <div style="height:46px;flex-shrink:0;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 14px;gap:10px">
         <span style="font-size:13px;font-weight:600">Orbit Weekly</span><span style="color:#C9C2B8;font-size:13px">/</span><span style="font-size:13px;font-weight:600">Theme settings</span>
         <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64;margin-left:6px"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
@@ -156,7 +158,7 @@
           </div>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Four corrections, and one of them is the surface&amp;rsquo;s own primary value</h2><p><b>1 · <span class="mono">posts_per_page</span> is missing entirely.</b> It is FR-Q1&rsquo;s first field and belongs at the top — every surface in the product that mentions posts per page links <i>here</i>, never into Ghost Admin, because Ghost has no such setting (ruling R-10 #13). <b>2 · The logo row loses its Replace button.</b> Ghost&rsquo;s logo is read, never written (AD-10&rsquo;s allowlist) — padlock it like the title, with a link out. <b>3 · The dark row is drawing the wrong thing.</b> &ldquo;Follows the reader&rsquo;s system setting&rdquo; is the <i>visitor&rsquo;s</i> moon toggle; this row is FR-D7&rsquo;s <b>project mode</b> — Light only / Light + Dark — plus a &ldquo;Clear dark overrides&rdquo; row. <b>4 · The meter reads 3 of 20 and should read 3 of 17</b>: three of Ghost&rsquo;s twenty slots are the dark built-ins every Inflozo project declares (FR-Q2).</p></div><div class="section-head" id="additions"><h2>And four additions to the builder</h2><p>The Ghost Admin <b>group</b>, a <b>visibility condition</b>, FR-Q3&rsquo;s text-prop confirm (&ldquo;Ghost&rsquo;s own settings are plain text, so the marks come off&rdquo;), the post-deploy key-immutability notice, and the pack-switch warning on a promoted accent. All prompt A6.</p></div><div class="section-head" id="translations"><h2>Translations</h2><p>Every chrome string the theme prints.</p></div><div class="lifted"><p class="frame-cap">B18 · translations · 940</p><div class="liftbox"><div style="width:940px;box-sizing:border-box;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column">
+    </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>Four corrections, and one of them is the surface’s own primary value</h2><p><b>1 · <span class="mono">posts_per_page</span> is missing entirely.</b> It is FR-Q1&rsquo;s first field and belongs at the top — every surface in the product that mentions posts per page links <i>here</i>, never into Ghost Admin, because Ghost has no such setting (ruling R-10 #13). <b>2 · The logo row loses its Replace button.</b> Ghost&rsquo;s logo is read, never written (AD-10&rsquo;s allowlist) — padlock it like the title, with a link out. <b>3 · The dark row is drawing the wrong thing.</b> &ldquo;Follows the reader&rsquo;s system setting&rdquo; is the <i>visitor&rsquo;s</i> moon toggle; this row is FR-D7&rsquo;s <b>project mode</b> — Light only / Light + Dark — plus a &ldquo;Clear dark overrides&rdquo; row. <b>4 · The meter reads 3 of 20 and should read 3 of 17</b>: three of Ghost&rsquo;s twenty slots are the dark built-ins every Inflozo project declares (FR-Q2).</p></div><div class="section-head" id="additions"><h2>And four additions to the builder</h2><p>The Ghost Admin <b>group</b>, a <b>visibility condition</b>, FR-Q3&rsquo;s text-prop confirm (&ldquo;Ghost&rsquo;s own settings are plain text, so the marks come off&rdquo;), the post-deploy key-immutability notice, and the pack-switch warning on a promoted accent. All prompt A6.</p></div><div class="section-head" id="translations"><h2>Translations</h2><p>Every chrome string the theme prints.</p></div><div class="lifted"><p class="frame-cap">B18 · translations · 940</p><div class="liftbox" tabindex="0" role="region" aria-label="B18 · translations · 940"><div style="width:940px;box-sizing:border-box;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:16px 18px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;gap:11px">
         <div style="display:flex;flex-direction:column;gap:3px;flex:1">
           <span style="font-size:15px;font-weight:600">Translations</span>
@@ -187,14 +189,14 @@
         </div>
         <span style="height:30px;background:#FFFFFF;border:1px solid #E8D9AE;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:11.5px;font-weight:600;color:#5C4200;cursor:pointer;flex-shrink:0">Understood</span>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="translations-fix"><h2>B18&amp;rsquo;s keys are the wrong shape</h2><p>The frame draws flat keys — <span class="mono">subscribe</span>, <span class="mono">read_more</span>. FR-Q6 makes them <b>dotted <span class="mono">namespace.name</span></b> — <span class="mono">member.signup_cta</span>, <span class="mono">post.reading_time</span>, <span class="mono">archive.empty_heading</span> — because a flat catalogue collides the moment two surfaces both want &ldquo;subscribe&rdquo;. FR-Q8 adds a <b>brace-refusal error state</b>: a malformed interpolation token is a whole-site 500. The RTL acknowledgement is right, and FR-Q6 requires it <b>repeated as a pre-deploy warning</b> on the Pre-flight Check.</p></div>
+    </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="translations-fix"><h2>B18’s keys are the wrong shape</h2><p>The frame draws flat keys — <span class="mono">subscribe</span>, <span class="mono">read_more</span>. FR-Q6 makes them <b>dotted <span class="mono">namespace.name</span></b> — <span class="mono">member.signup_cta</span>, <span class="mono">post.reading_time</span>, <span class="mono">archive.empty_heading</span> — because a flat catalogue collides the moment two surfaces both want &ldquo;subscribe&rdquo;. FR-Q8 adds a <b>brace-refusal error state</b>: a malformed interpolation token is a whole-site 500. The RTL acknowledgement is right, and FR-Q6 requires it <b>repeated as a pre-deploy warning</b> on the Pre-flight Check.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

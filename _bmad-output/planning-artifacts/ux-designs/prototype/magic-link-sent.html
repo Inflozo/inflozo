@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Magic Link Sent
-  FRAME    : S1 Sign In.dc.html — S1b
+  FRAME    : S1 Sign In.dc.html — S1b Magic link sent   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S1 Sign In.dc.html — S1b
   IMPLEMENTS: EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Magic Link Sent</span>
+  <h1 class="name">Magic Link Sent</h1>
   <span class="frame">S1 Sign In.dc.html — S1b</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits</span>
-</div>
-<div class="proto-note"><b>No password exists anywhere in the product</b> (FR-A1), so there is nothing to forget and no reset flow to draw.</div>
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 2 of 15</span><span class="tstep">← <a href="sign-in.html">Sign In</a></span><span class="tstep">next: <a href="first-run.html">First Run</a> →</span></div>
-</div>
+  
+</header>
+<aside class="proto-note"><b>No password exists anywhere in the product</b> (FR-A1), so there is nothing to forget and no reset flow to draw.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 2 of 15</span><span class="tstep">← <a href="sign-in.html">Sign In</a></span><span class="tstep">next: <a href="first-run.html">First Run</a> →</span></div>
+</nav>
 
 <main id="main">
-<div class="lifted"><p class="frame-cap">S1b · magic-link sent · 1440</p><div class="liftbox"><div data-screen-label="S1b Magic link sent" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
+<div class="lifted"><p class="frame-cap">S1b · magic-link sent · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S1b · magic-link sent · 1440"><div data-screen-label="S1b Magic link sent" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
         <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:380px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
           <div style="width:400px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:44px 36px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
@@ -55,12 +57,12 @@
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head"><h2>Why the countdown blocks nothing</h2><p>The resend countdown is the one clock on this surface and it is not a decision timer: the link is valid for 15 minutes and <b>&ldquo;Use a different email&rdquo; is always available</b>. The only timed interaction in the product is the edit-lock nudge — see <a href="edit-lock.html">Edit Lock</a>.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

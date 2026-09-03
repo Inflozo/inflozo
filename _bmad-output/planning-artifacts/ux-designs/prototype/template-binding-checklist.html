@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Template Binding Checklist
-  FRAME    : B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids
+  FRAME    : B Missing Surfaces.dc.html — B19   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F6 · FR-I6
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Template Binding Checklist</span>
+  <h1 class="name">Template Binding Checklist</h1>
   <span class="frame">B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F6 · FR-I6</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#corrections">What the frame gets wrong</a><a href="#where">Where it appears</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="deploy-live.html#binding">Deploy Live — &amp;ldquo;one step left&amp;rdquo;</a></span><span class="tstep">next: <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#corrections">What the frame gets wrong<span class="k">B19</span></a><a class="idxrow" href="#where">Where it appears<span class="k">F6</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="deploy-live.html#binding">Deploy Live — “one step left”</a></span><span class="tstep">next: <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#corrections">What the frame gets wrong<span class="k">B19</span></a><a class="idxrow" href="#where">Where it appears<span class="k">F6</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B19 · membership page binding</p><div class="liftbox"><div style="width:700px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
+<div class="lifted"><p class="frame-cap">B19 · membership page binding</p><div class="liftbox" tabindex="0" role="region" aria-label="B19 · membership page binding"><div style="width:700px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:18px 20px;border-bottom:1px solid #EFEAE2;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:15px;font-weight:600">Point a Ghost page at this template</span>
           <span style="font-size:12.5px;color:#4A453D;line-height:1.55">You designed <span style="font-weight:600">Membership</span>. Ghost decides which page uses it by matching the page's slug to the template's name — so the last step happens in Ghost, not here.</span>
@@ -86,13 +88,17 @@
           <span style="font-size:11.5px;color:#6E6A64;flex:1">We cannot create the Ghost page for you — page content belongs to your writers.</span>
           <span style="height:30px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:11.5px;font-weight:600;cursor:pointer">Open Ghost pages</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="corrections"><h2>Every step on that frame is on a mechanism the product forbids</h2><p>The components stay — the numbered steps and, above all, the small honest facsimile of Ghost&rsquo;s own page settings on the right. Everything they <i>say</i> changes.</p></div><div class="lifted"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
-  <tr><th>B19 says</th><th>The truth</th></tr>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="corrections"><h2>Every step on that frame is on a mechanism the product forbids</h2><p>The components stay — the numbered steps and, above all, the small honest facsimile of Ghost&rsquo;s own page settings on the right. Everything they <i>say</i> changes.</p></div><div class="annot"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
+  <tr><th scope="col">B19 says</th><th scope="col">The truth</th></tr>
   <tr><td><span class="mono">page-membership.hbs</span></td>
     <td><b><span class="mono">custom-membership.hbs</span>.</b> Inflozo <b>never</b> emits
       <span class="mono">page-{slug}.hbs</span>: that form is matched against the live slug at render time,
       <b>detaches silently the moment the user retitles the page</b>, and outranks the user&rsquo;s explicit
-      dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches.</td></tr>
+      dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches (read from the
+      admin bundle: <span class="mono">gh-psm-template-select.hbs</span> renders the select
+      <span class="mono">@disabled=matchedSlugTemplate</span> with &ldquo;Post URL matches {filename}&rdquo; —
+      <span class="mono">research-ghost-membership-pages.md</span>; MEASUREMENTS.md has no entry yet and is owed
+      one).</td></tr>
   <tr><td>&ldquo;Set its URL slug to <span class="mono">membership</span>&rdquo;</td>
     <td><b>Pick the template from Ghost&rsquo;s page-editor Template dropdown.</b> Ghost stores the chosen
       filename on the page&rsquo;s own row, so the binding survives a retitle, a slug change and a theme swap.</td></tr>
@@ -106,12 +112,12 @@
       themselves.</td></tr>
 </table></div></div><div class="section-head" id="where"><h2>Where it appears, and the one nudge</h2><p>On <a href="deploy-live.html#binding">Deploy Live</a>, as a &ldquo;one step left&rdquo; card — <b>not a modal that must be dismissed to reach the confetti</b>. A project whose deploy emitted no custom template never sees it. If it is still unopened a day later, Notifications raises it <b>once, and never again</b>.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

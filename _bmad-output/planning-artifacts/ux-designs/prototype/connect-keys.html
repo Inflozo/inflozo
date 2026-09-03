@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Connect · Keys
-  FRAME    : S2 Onboarding.dc.html — S2b·2
+  FRAME    : S2 Onboarding.dc.html — S2b Keys step   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S2 Onboarding.dc.html — S2b·2
   IMPLEMENTS: EXPERIENCE.md § IA → Onboarding · J1 steps 4–5 · § State Patterns → partially credentialed
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,20 +20,21 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Connect · Keys</span>
+  <h1 class="name">Connect · Keys</h1>
   <span class="frame">S2 Onboarding.dc.html — S2b·2</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Onboarding · J1 steps 4–5 · § State Patterns → partially credentialed</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#validation">Validation states</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 5 of 15</span><span class="tstep">← <a href="connect-integration.html">Connect · Integration</a></span><span class="tstep">next: <a href="auto-branding.html">Auto-Branding</a> →</span></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 5 of 15</span><span class="tstep">← <a href="connect-integration.html">Connect · Integration</a></span><span class="tstep">next: <a href="auto-branding.html">Auto-Branding</a> →</span></div>
 <div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 1 of 6</span><span class="tstep">next: <a href="preview-only-notice.html">The notice</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#validation">Validation states<span class="k">J1 step 5</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#validation">Validation states<span class="k">J1 step 5</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S2b·2 · connect — paste the keys · 1440</p><div class="liftbox"><div data-screen-label="S2b Keys step" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+<div class="lifted"><p class="frame-cap">S2b·2 · connect — paste the keys · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S2b·2 · connect — paste the keys · 1440"><div data-screen-label="S2b Keys step" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
         <div style="position:absolute;top:32px;left:40px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
           <div style="width:560px;background:#FFFFFF;border-radius:16px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:36px;display:flex;flex-direction:column;gap:22px">
@@ -67,14 +69,14 @@
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S2 Onboarding.dc.html</span></p></div><div class="section-head"><h2>Three fields, and the Staff Access Token is not among them</h2><p>That one is offered later, at the first deploy, as a safety net that can be declined — see <a href="staff-token-offer.html">Staff Token Offer</a> (FR-C1).</p></div><div class="section-head" id="validation"><h2>What validation decides, without asking</h2><p>J1 step 5. A server-side <span class="mono">GET /admin/config/</span> runs the moment Connect is pressed: Ghost 5.x and 6.x accepted and 4.x refused with &ldquo;please update Ghost&rdquo;; <span class="mono">hostSettings.limits.customThemes</span> decides <a href="preview-only-notice.html">Preview-only</a> without asking; <span class="mono">http://</span> is warned; code injection raises a one-time notice that the live page can legitimately differ from the canvas; Portal&rsquo;s floating-button state is read, or asked once, defaulting to on.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt — these are banner states of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S2 Onboarding.dc.html</span></p></div><div class="section-head"><h2>Three fields, and the Staff Access Token is not among them</h2><p>That one is offered later, at the first deploy, as a safety net that can be declined — see <a href="staff-token-offer.html">Staff Token Offer</a> (FR-C1).</p></div><div class="section-head" id="validation"><h2>What validation decides, without asking</h2><p>J1 step 5. A server-side <span class="mono">GET /admin/config/</span> runs the moment Connect is pressed: Ghost 5.x and 6.x accepted and 4.x refused with &ldquo;please update Ghost&rdquo;; a missing <span class="mono">hostSettings</span> key marks the site self-hosted (executed on 5.130.6 and 6.58.0, MEASUREMENTS §15h) and <span class="mono">hostSettings.limits.customThemes</span> &mdash; a theme-name allowlist, whose Ghost(Pro) shape is still ⛔ VERIFY-AT-BUILD item 2 &mdash; decides <a href="preview-only-notice.html">Preview-only</a> without asking; <span class="mono">http://</span> is warned; code injection raises a one-time notice that the live page can legitimately differ from the canvas; Portal&rsquo;s floating-button state is read, or asked once, defaulting to on.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

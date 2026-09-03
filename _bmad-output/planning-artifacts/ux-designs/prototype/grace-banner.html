@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Grace Banner
-  FRAME    : B Missing Surfaces.dc.html — B24 (consequence re-specified: FR-L3)
+  FRAME    : B Missing Surfaces.dc.html — B24   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B24 (consequence re-specified: FR-L3)
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · § wrong mechanism → B24 · J4 steps 1–2
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Grace Banner</span>
+  <h1 class="name">Grace Banner</h1>
   <span class="frame">B Missing Surfaces.dc.html — B24 (consequence re-specified: FR-L3)</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · § wrong mechanism → B24 · J4 steps 1–2</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#respec">The re-specification</a><a href="#kept">What is kept</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 1 of 8</span><span class="tstep">next: <a href="grace-banner.html#kept">During grace, nothing is withdrawn</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The re-specification<span class="k">FR-L3</span></a><a class="idxrow" href="#kept">What is kept<span class="k">F.1 third column</span></a></div></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 1 of 8</span><span class="tstep">next: <a href="grace-banner.html#kept">During grace, nothing is withdrawn</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The re-specification<span class="k">FR-L3</span></a><a class="idxrow" href="#kept">What is kept<span class="k">F.1 third column</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">B24 · past-due grace banner</p><div class="liftbox"><div style="width:820px;background:#FDECEC;border:1px solid #F5D5D6;border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:13px">
+<div class="lifted"><p class="frame-cap">B24 · past-due grace banner</p><div class="liftbox" tabindex="0" role="region" aria-label="B24 · past-due grace banner"><div style="width:820px;background:#FDECEC;border:1px solid #F5D5D6;border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:13px">
         <span style="width:32px;height:32px;border-radius:9px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A82D31" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg></span>
         <div style="flex:1;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:14px;font-weight:600;color:#8E2C30">Your payment did not go through</span>
@@ -46,14 +48,14 @@
           <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:19px;font-weight:500;color:#8E2C30">7</span>
           <span style="font-size:10.5px;color:#A85055;letter-spacing:0.02em">DAYS LEFT</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>The frame is wrong in the frightening half, and it has to change</h2><p>B24 says <i>&ldquo;after that, Pro designs stop rendering and your sites fall back to their Free replacements&rdquo;</i>. <b>FR-L3: existing deployed themes are never touched.</b> Grace expiry moves the account to Free and blocks the <i>exits</i> — deploy, export, code surfaces — until the user resolves what is over. The replacement sentence: <i>&ldquo;After that you go back to Free. Your live sites are never touched — what&rsquo;s shipped stays shipped. You&rsquo;d just need to sort out anything over the Free limits before you ship again.&rdquo;</i> M5&rsquo;s own FAQ already says the right thing, and B24 contradicted it.</p></div><div class="section-head" id="kept"><h2>What is kept during the grace, and it is everything</h2><p>Every Pro capability, for seven days, with <b>no per-row exception</b>. <span class="mono">pro_past_due</span> is internal and is <b>never shown as a plan</b>.</p></div><div class="limits-wrap"><table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table><p class="helper" style="margin-top:10px">Everything not in this table is on both plans — dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>The frame is wrong in the frightening half, and it has to change</h2><p>B24 says <i>&ldquo;after that, Pro designs stop rendering and your sites fall back to their Free replacements&rdquo;</i>. <b>FR-L3: existing deployed themes are never touched.</b> Grace expiry moves the account to Free and blocks the <i>exits</i> — deploy, export, code surfaces — until the user resolves what is over. The replacement sentence: <i>&ldquo;After that you go back to Free. Your live sites are never touched — what&rsquo;s shipped stays shipped. You&rsquo;d just need to sort out anything over the Free limits before you ship again.&rdquo;</i> M5&rsquo;s own FAQ already says the right thing, and B24 contradicted it.</p></div><div class="section-head" id="kept"><h2>What is kept during the grace, and it is everything</h2><p>Every Pro capability, for seven days, with <b>no per-row exception</b>. <span class="mono">pro_past_due</span> is internal and is <b>never shown as a plan</b>.</p></div><div class="limits-wrap"><table class="limits"><tr><th scope="col">Limit</th><th scope="col">Free</th><th scope="col">✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table><p class="helper" style="margin-top:10px">Everything not in this table is on both plans — dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

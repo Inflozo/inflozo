@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Edit Lock
-  FRAME    : B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal
+  FRAME    : B Missing Surfaces.dc.html — B5a, B5b, B5c   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,19 +20,20 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Edit Lock</span>
+  <h1 class="name">Edit Lock</h1>
   <span class="frame">B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2</span>
-</div>
-<div class="proto-note"><b>Rollback and snapshot restore never require the lock</b>, because they redeploy a stored artifact rather than the working document.</div>
-<div class="trails"><div class="trail"><span class="tl">Flow F2 · The three-party edit-lock choreography</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="edit-lock.html#holder">The holder</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reader">The reader<span class="k">B5a</span></a><a class="idxrow" href="#holder">The holder<span class="k">B5b</span></a><a class="idxrow" href="#takeover">The takeover<span class="k">B5c</span></a><a class="idxrow" href="#respec">The one deviation<span class="k">§AD2</span></a><a class="idxrow" href="#deploy-blocked">Deploy from a read-only session<span class="k">not drawn</span></a></div></div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#reader">The reader</a><a href="#holder">The holder</a><a href="#takeover">The takeover</a><a href="#respec">The one deviation</a><a href="#deploy-blocked">Deploy from a read-only session</a></nav>
+</header>
+<aside class="proto-note"><b>Rollback and snapshot restore never require the lock</b>, because they redeploy a stored artifact rather than the working document.</aside>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F2 · The three-party edit-lock choreography</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="edit-lock.html#holder">The holder</a> →</span></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reader">The reader<span class="k">B5a</span></a><a class="idxrow" href="#holder">The holder<span class="k">B5b</span></a><a class="idxrow" href="#takeover">The takeover<span class="k">B5c</span></a><a class="idxrow" href="#respec">The one deviation<span class="k">§AD2</span></a><a class="idxrow" href="#deploy-blocked">Deploy from a read-only session<span class="k">not drawn</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>One editing context per project — across tabs, browsers and devices</h2><p>The three frames escalate deliberately: <b>a bar, then a popover, then a modal with a danger fill</b>. The interruption grows only as the stakes do. That escalation is the design and it stands.</p></div><div class="section-head" id="reader"><h2>The reader</h2><p>The canvas stays fully legible; the sidebar dims to 55% so controls are <i>visible</i> but nothing responds. The bar names the person, not a role.</p></div><div class="lifted"><p class="frame-cap">B5a · read-only</p><div class="liftbox"><div style="width:560px;height:400px;box-sizing:border-box;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column">
+<div class="section-head"><h2>One editing context per project — across tabs, browsers and devices</h2><p>The three frames escalate deliberately: <b>a bar, then a popover, then a modal with a danger fill</b>. The interruption grows only as the stakes do. That escalation is the design and it stands.</p></div><div class="section-head" id="reader"><h2>The reader</h2><p>The canvas stays fully legible; the sidebar dims to 55% so controls are <i>visible</i> but nothing responds. The bar names the person, not a role.</p></div><div class="lifted"><p class="frame-cap">B5a · read-only</p><div class="liftbox" tabindex="0" role="region" aria-label="B5a · read-only"><div style="width:560px;height:400px;box-sizing:border-box;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column">
         <div style="height:38px;flex-shrink:0;background:#EFECE7;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:9px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path></svg>
           <span style="font-size:12px;color:#3A3835;flex:1"><span style="font-weight:600">Rosa</span> is editing this site — you are reading along</span>
@@ -47,7 +49,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between"><span style="height:8px;width:56%;background:#EFECE7;border-radius:2px"></span><span style="width:36px;height:20px;border-radius:10px;background:#E4DED4"></span></div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="holder"><h2>The holder — a popover, not a modal</h2><p>The holder is mid-sentence. It states the sync position <b>before</b> asking. <b>The countdown is a no-response timer and it stops the instant the holder interacts with the popover at all, focus included</b> — it only runs out when nobody is there. Announced <b>assertively</b>.</p></div><div class="lifted"><p class="frame-cap">B5b · request arrives for the holder</p><div class="liftbox"><div style="width:440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:13px">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="holder"><h2>The holder — a popover, not a modal</h2><p>The holder is mid-sentence. It states the sync position <b>before</b> asking. <b>The countdown is a no-response timer and it restarts the instant the holder interacts with the popover at all, focus included</b> — it only runs out when nobody is there. Announced <b>assertively</b>.</p></div><div class="lifted"><p class="frame-cap">B5b · request arrives for the holder</p><div class="liftbox" tabindex="0" role="region" aria-label="B5b · request arrives for the holder"><div style="width:440px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:13px">
         <div style="display:flex;align-items:flex-start;gap:11px">
           <span style="width:32px;height:32px;border-radius:50%;background:#2F4A3E;color:#F4EFE6;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">DM</span>
           <div style="flex:1;display:flex;flex-direction:column;gap:4px">
@@ -66,7 +68,7 @@
           <span style="flex:1"></span>
           <span style="font-size:11.5px;color:#6E6A64">Expires in 60s</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="takeover"><h2>The takeover</h2></div><div class="lifted"><p class="frame-cap">B5c · takeover with unsynced edits</p><div class="liftbox"><div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="takeover"><h2>The takeover</h2></div><div class="lifted"><p class="frame-cap">B5c · takeover with unsynced edits</p><div class="liftbox" tabindex="0" role="region" aria-label="B5c · takeover with unsynced edits"><div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:20px 22px 14px;display:flex;flex-direction:column;gap:8px">
           <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.02em">Take over from Rosa?</h3>
           <span style="font-size:13px;line-height:1.6;color:#4A453D">Rosa has not responded for 4 minutes. She has changes that never reached the server.</span>
@@ -88,14 +90,14 @@
           <span style="flex:1"></span>
           <span style="font-size:11.5px;color:#6E6A64">Or message Rosa</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One deviation from B5c, and it is not optional</h2><p>The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — three link labels · Post template — measure&rdquo;. <b>That detail does not exist.</b> The heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and its &ldquo;Or message Rosa&rdquo; escape, and its body becomes: <b>&ldquo;7 unsynced edits will be lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.</p></div><div class="section-head" id="deploy-blocked"><h2>Deploy and export from a read-only session</h2><p>Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. Drawn on no frame; it is added to B5&rsquo;s family.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it yet</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One deviation from B5c, and it is not optional</h2><p>The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — three link labels · Post template — measure&rdquo;. <b>That detail does not exist.</b> The heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and its &ldquo;Or message Rosa&rdquo; escape, and its body becomes: <b>&ldquo;7 unsynced edits will be lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.</p></div><div class="section-head" id="deploy-blocked"><h2>Deploy and export from a read-only session</h2><p>Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. Drawn on no frame; it is added to B5&rsquo;s family.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Dashboard
-  FRAME    : S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · B Missing Surfaces B25 sites strip · B14a update notice
+  FRAME    : S3 Dashboard.dc.html — S3a Dashboard rich, S3d, S3e, S3b Dashboard empty, S3c Dashboard free plan, S3 mobile, S3 mobile menu · B Missing Surfaces.dc.html — B25, B14a   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · S3 mobile · S3 mobile menu · B Missing Surfaces B25 sites strip · B14a update notice
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -19,20 +20,21 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">Dashboard</span>
-  <span class="frame">S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · B Missing Surfaces B25 sites strip · B14a update notice</span>
+  <h1 class="name">Dashboard</h1>
+  <span class="frame">S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · S3 mobile · S3 mobile menu · B Missing Surfaces B25 sites strip · B14a update notice</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1</span>
-</div>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#account-menu">Account Menu</a><a href="#notifications">Notifications</a><a href="#connected-sites">Connected Sites Strip</a><a href="#library-update">Library Update Notice</a><a href="#empty">Dashboard — empty</a><a href="#free">Dashboard — Free at the cap</a><a href="#mobile">Dashboard at 390</a><a href="#loading">Dashboard — loading</a></nav>
+</header>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 1 of 10</span><span class="tstep">next: <a href="editor.html#pro-badge">Editor — Pro designs placed</a> →</span></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 1 of 11</span><span class="tstep">next: <a href="editor.html#pro-badge">Editor — Pro designs placed</a> →</span></div>
 <div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="library-update-confirm.html">The confirm — mandatory before compile</a> →</span></div>
-</div>
-<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#account-menu">Account Menu<span class="k">S3d</span></a><a class="idxrow" href="#notifications">Notifications<span class="k">S3e</span></a><a class="idxrow" href="#connected-sites">Connected Sites Strip<span class="k">B25</span></a><a class="idxrow" href="#library-update">Library Update Notice<span class="k">B14a</span></a><a class="idxrow" href="#empty">Dashboard — empty<span class="k">S3b</span></a><a class="idxrow" href="#free">Dashboard — Free at the cap<span class="k">S3c</span></a><a class="idxrow" href="#mobile">Dashboard at 390<span class="k">S3 mobile</span></a><a class="idxrow" href="#loading">Dashboard — loading<span class="k">not drawn</span></a></div></div>
+</nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#account-menu">Account Menu<span class="k">S3d</span></a><a class="idxrow" href="#notifications">Notifications<span class="k">S3e</span></a><a class="idxrow" href="#connected-sites">Connected Sites Strip<span class="k">B25</span></a><a class="idxrow" href="#library-update">Library Update Notice<span class="k">B14a</span></a><a class="idxrow" href="#empty">Dashboard — empty<span class="k">S3b</span></a><a class="idxrow" href="#free">Dashboard — Free at the cap<span class="k">S3c</span></a><a class="idxrow" href="#mobile">Dashboard at 390<span class="k">S3 mobile</span></a><a class="idxrow" href="#loading">Dashboard — loading<span class="k">not drawn</span></a></div></nav>
 <main id="main">
-<div class="lifted"><p class="frame-cap">S3a · dashboard — rich (what&rsquo;s-new open) · 1440</p><div class="liftbox"><div data-screen-label="S3a Dashboard rich" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+<div class="lifted"><p class="frame-cap">S3a · dashboard — rich (what&rsquo;s-new open) · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S3a · dashboard — rich (what&rsquo;s-new open) · 1440"><div data-screen-label="S3a Dashboard rich" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
         <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
           <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
           <div style="display:flex;flex-direction:column;gap:2px">
@@ -140,7 +142,7 @@
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="account-menu"><h2>Account Menu</h2><p>Opens up from the account chip at the foot of the rail.</p></div><div class="lifted"><p class="frame-cap">S3d · account menu — desktop popover + mobile dropdown</p><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-end">
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="account-menu"><h2>Account Menu</h2><p>Opens up from the account chip at the foot of the rail.</p></div><div class="lifted"><p class="frame-cap">S3d · account menu — desktop popover + mobile dropdown</p><div class="liftbox" tabindex="0" role="region" aria-label="S3d · account menu — desktop popover + mobile dropdown"><div style="display:flex;gap:48px;align-items:flex-end">
       <div style="width:480px;height:420px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
         <div style="position:absolute;left:24px;bottom:88px;width:240px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
           <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
@@ -196,7 +198,7 @@
         </div>
         <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — avatar opens a dropdown under it</div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="notifications"><h2>Notifications</h2><p>Opens under the bell. Every row leads with the outcome; only the failure carries an action, because it is the only one that needs a decision.</p></div><div class="lifted"><p class="frame-cap">S3e · notifications — desktop popover + mobile</p><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-start">
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="notifications"><h2>Notifications</h2><p>Opens under the bell. Every row leads with the outcome; only the failure carries an action, because it is the only one that needs a decision.</p></div><div class="lifted"><p class="frame-cap">S3e · notifications — desktop popover + mobile</p><div class="liftbox" tabindex="0" role="region" aria-label="S3e · notifications — desktop popover + mobile"><div style="display:flex;gap:48px;align-items:flex-start">
       <div style="width:520px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
         <div style="position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(28,27,26,.05);position:absolute"><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
         <div style="position:absolute;top:58px;right:16px;width:380px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
@@ -293,7 +295,7 @@
         </div>
         <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — full-width under the bell</div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="connected-sites"><h2>Connected Sites Strip</h2><p>Health at a glance, and the count against the plan cap. The dot colour classifies before a word is read.</p></div><div class="lifted"><p class="frame-cap">B25 · connected-sites strip</p><div class="liftbox"><div style="width:820px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="connected-sites"><h2>Connected Sites Strip</h2><p>Health at a glance, and the count against the plan cap. The dot colour classifies before a word is read.</p></div><div class="lifted"><p class="frame-cap">B25 · connected-sites strip</p><div class="liftbox" tabindex="0" role="region" aria-label="B25 · connected-sites strip"><div style="width:820px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
         <div style="padding:14px 18px;border-bottom:1px solid #EFEAE2;display:flex;align-items:center;gap:10px">
           <span style="font-size:14px;font-weight:600;flex:1">Connected sites</span>
           <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:3px 9px">3 OF 10</span>
@@ -337,7 +339,7 @@
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="library-update"><h2>Library Update Notice</h2><p>It lives <b>inside</b> the project card rather than as a badge on it, because it needs a sentence and a button. Marigold is right: it is a nudge and it never blocks.</p></div><div class="lifted"><p class="frame-cap">B14a · update notice on the project card — flow F4 step 1</p><div class="liftbox"><div style="width:600px;background:#EDEAE6;border-radius:12px;padding:22px;display:flex;justify-content:center">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="library-update"><h2>Library Update Notice</h2><p>It lives <b>inside</b> the project card rather than as a badge on it, because it needs a sentence and a button. Marigold is right: it is a nudge and it never blocks.</p></div><div class="lifted"><p class="frame-cap">B14a · update notice on the project card — flow F4 step 1</p><div class="liftbox" tabindex="0" role="region" aria-label="B14a · update notice on the project card — flow F4 step 1"><div style="width:600px;background:#EDEAE6;border-radius:12px;padding:22px;display:flex;justify-content:center">
         <div style="width:340px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden">
           <div style="height:150px;background:#FBF9F5;border-bottom:1px solid #E7E2DB;padding:16px 18px 0;display:flex;flex-direction:column;gap:7px">
             <div style="height:5px;width:30%;background:#E4DED4;border-radius:2px"></div>
@@ -369,7 +371,7 @@
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>The canonical string, verbatim, and one affordance.</p></div><div class="lifted"><p class="frame-cap">S3b · dashboard — empty · 1440</p><div class="liftbox"><div data-screen-label="S3b Dashboard empty" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>The canonical string, verbatim, and one affordance.</p></div><div class="lifted"><p class="frame-cap">S3b · dashboard — empty · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S3b · dashboard — empty · 1440"><div data-screen-label="S3b Dashboard empty" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
         <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
           <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
           <div style="display:flex;flex-direction:column;gap:2px">
@@ -420,7 +422,7 @@
             <button style="height:44px;padding:0 26px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>New project</button>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at the cap</h2><p>One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is taken away. A second project opens the New Project Sheet on its at-the-cap state.</p></div><div class="lifted"><p class="frame-cap">S3c · dashboard — free plan (⋯ menu open) · 1440</p><div class="liftbox"><div data-screen-label="S3c Dashboard free plan" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at the cap</h2><p>One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is taken away. A second project opens the New Project Sheet on its at-the-cap state.</p></div><div class="lifted"><p class="frame-cap">S3c · dashboard — free plan (⋯ menu open) · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S3c · dashboard — free plan (⋯ menu open) · 1440"><div data-screen-label="S3c Dashboard free plan" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
       <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
         <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
         <div style="display:flex;flex-direction:column;gap:2px">
@@ -482,7 +484,7 @@
           </div>
         </div>
       </div>
-    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="mobile"><h2>At 390</h2><p>The Dashboard stays fully usable at 390, exactly as the export draws it (R-76).</p></div><div class="lifted"><p class="frame-cap">S3 · mobile · 390</p><div class="liftbox"><div data-screen-label="S3 mobile" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;flex-direction:column">
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="mobile"><h2>At 390</h2><p>The Dashboard stays fully usable at 390, exactly as the export draws it (R-76).</p></div><div class="lifted"><p class="frame-cap">S3 · mobile · 390</p><div class="liftbox" tabindex="0" role="region" aria-label="S3 · mobile · 390"><div data-screen-label="S3 mobile" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;flex-direction:column">
         <div style="height:60px;display:flex;align-items:center;gap:8px;padding:0 12px 0 6px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
           <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
           <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</div>
@@ -518,7 +520,7 @@
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="lifted"><p class="frame-cap">S3 · mobile — menu open · 390</p><div class="liftbox"><div data-screen-label="S3 mobile menu" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="lifted"><p class="frame-cap">S3 · mobile — menu open · 390</p><div class="liftbox" tabindex="0" role="region" aria-label="S3 · mobile — menu open · 390"><div data-screen-label="S3 mobile menu" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;opacity:.6">
           <div style="height:60px;border-bottom:1px solid #E7E2DB"></div>
           <div style="padding:16px 20px;display:flex;flex-direction:column;gap:16px">
@@ -551,14 +553,14 @@
             <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeleton cards in the shape of the project cards that are coming — never a spinner (DESIGN.md § Components → Loading). No frame draws the dashboard mid-load.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it; it is a state of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeleton cards in the shape of the project cards that are coming — never a spinner (DESIGN.md § Components → Loading). No frame draws the dashboard mid-load.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>

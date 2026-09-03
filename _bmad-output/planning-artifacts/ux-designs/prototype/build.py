@@ -42,11 +42,44 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
 
 PAGES, JOURNEYS, FLOWS = [], [], []
 SUB = lambda name, anchor, note='': (name, anchor, note)
+_PENDING = []      # lifts made since the last page() call — page() takes them (F-109, F-019)
+
+# A frame id as the declared FRAME strings write it: S8a′, B14a, S2b·1, P0-0, C3b, M5.
+_ID = re.compile(r"(?<![\w-])((?:S\d+|B\d+|C\d|M\d)|P0-\d)([a-e]?\d?′?)(?![\w-])")
+
+
+def _ids(text):
+    # 'S2b·1' names the S2b screen's first step: the ·N is a sub-step, not part of the id
+    return [(m.group(1), m.group(2)) for m in _ID.finditer(re.sub(r'(?<=[a-z])·\d', '', text))]
+
+
+def _covers(claim, lift):
+    # A claim is met by a lift at least as specific: S3 by S3a or 'S3 mobile'; S8a′ only by
+    # S8a′. Strict in this direction, so a bare 'S1 mobile' cannot stand in for a claimed S1c.
+    return claim[0] == lift[0] and lift[1].startswith(claim[1])
 
 
 def page(pid, title, group, frames_, exp, body, subs=(), note=''):
-    PAGES.append(dict(id=pid, title=title, group=group, frames=frames_,
-                      exp=exp, body=body, subs=list(subs), note=note))
+    lifts, _PENDING[:] = list(_PENDING), []
+    # F-109: the FRAME line is DERIVED from the lifts, so it cannot name a frame the page does
+    # not show. The declared string stays as the human summary, and it is checked both ways.
+    by_frame = {}
+    for l in lifts:
+        by_frame.setdefault(l['frame'], []).append(l['key'])
+    derived = ' · '.join(f"{f}.dc.html — {', '.join(ks)}" for f, ks in by_frame.items()) or 'no lift'
+    claimed, lifted = _ids(frames_), _ids(' '.join(l['key'] for l in lifts))
+    unclaimed = [k for k in lifted if not any(_covers(c, k) or _covers(k, c) for c in claimed)]
+    unlifted = [c for c in claimed if not any(_covers(c, k) for k in lifted)]
+    assert not unclaimed and not unlifted, (
+        f'{pid}: FRAME line disagrees with the lifts — lifted but not claimed {unclaimed}, '
+        f'claimed but not lifted {unlifted}')
+    keys = [(l['frame'], l['label'], l['caption']) for l in lifts]
+    assert len(keys) == len(set(keys)), f'{pid}: the same region is lifted twice'
+    # F-113: the group the index files a page under is the one its own IMPLEMENTS line names.
+    ia = re.search(r'§ IA → ([^·]+?)\s*(?:·|$)', exp)
+    assert ia and ia.group(1) == group, f'{pid}: group {group!r} vs IMPLEMENTS {exp!r}'
+    PAGES.append(dict(id=pid, title=title, group=group, frames=frames_, derived=derived,
+                      lifts=lifts, exp=exp, body=body, subs=list(subs), note=note))
 
 
 def journey(key, title, who, steps):
@@ -68,8 +101,8 @@ def lift(frame, label=None, caption=None, capt=None, anchor=None):
     byte-identical to the region in the `.dc.html`, which is what makes "this page derives
     from S4a" a claim you can mechanically check rather than one you have to believe.
 
-    That rule was learned by breaking it. Wiring the frames' own controls put 200 inserted
-    elements across 117 frames, made a re-export able to silently drop a link (they match
+    That rule was learned by breaking it. Wiring the frames' own controls inserted elements
+    into most of the lifted frames, made a re-export able to silently drop a link (they match
     by button text), and — worst — an assertion that "every page's frames must respond"
     pressured this file into a link from the binding checklist to itself, purely to pass.
     A check satisfiable by fabrication is worse than no check. Navigation in 5b lives in
@@ -80,36 +113,67 @@ def lift(frame, label=None, caption=None, capt=None, anchor=None):
     answered. It scrolls inside its own box on a narrow window.
     """
     inner = frames.region(frame, label=label, caption=caption)
+    box = liftbox(frame, label, caption, capt, inner)
+    # the key is what you grep the export for: the data-screen-label, or the caption's id
+    _PENDING.append(dict(frame=frame, label=label, caption=caption, capt=capt,
+                         key=label or caption.split(' ')[0], box=box))
     a = f' id="{anchor}"' if anchor else ''
     c = f'<p class="frame-cap">{capt}</p>' if capt else ''
-    return (f'<div{a} class="lifted">{c}<div class="liftbox">{inner}</div>'
-            f'<p class="lift-src">lifted from <span class="mono">{frame}.dc.html</span></p></div>')
+    return f'<div{a} class="lifted">{c}{box}</div>'
+
+
+def liftbox(frame, label, caption, capt, inner):
+    """The scaffolding box around a region. Built here AND in main()'s check, from a fresh
+    region(), so the check is an equality against the export and not a substring test (F-019).
+    F-059: the box scrolls sideways on a narrow window, so it is focusable and named."""
+    name = capt or f'{frame} — {label or caption}'
+    return (f'<div class="liftbox" tabindex="0" role="region" aria-label="{name}">{inner}</div>'
+            f'<p class="lift-src">lifted from <span class="mono">{frame}.dc.html</span></p>')
 
 
 def cap(text):
     return f'<p class="frame-cap">{text}</p>'
 
 
+def esc(s):
+    """Titles are written with named entities (&ldquo;…); escaping them again printed the
+    entity as text (R2-unopened-surfaces-2). Decode first, so each character is encoded once."""
+    return html.escape(html.unescape(s), quote=False)
+
+
 def head(title, blurb='', capt='', anchor=None):
     a = f' id="{anchor}"' if anchor else ''
-    return (f'<div class="section-head"{a}><h2>{html.escape(title)}</h2>'
+    return (f'<div class="section-head"{a}><h2>{esc(title)}</h2>'
             + (f'<p>{blurb}</p>' if blurb else '')
             + (cap(capt) if capt else '') + '</div>')
 
 
-def nodraw(title, blurb, prompt, anchor=None):
-    """A surface with NO frame. It says so in those words rather than pretending."""
+def nodraw(title, blurb, prompt=None, anchor=None):
+    """A surface with NO frame. It says so in those words rather than pretending.
+
+    `prompt` names the Appendix A prompt that owes the surface. None means no prompt owns it:
+    it is an undrawn STATE of a drawn surface, and the sentence says that instead (F-098).
+    The two cases carry different classes so the front door can count them apart (F-099)."""
     a = f' id="{anchor}"' if anchor else ''
-    return (f'<div class="section-head"{a}><h2>{html.escape(title)}</h2>'
+    if prompt:
+        assert prompt.startswith('Appendix A'), prompt
+        kind, sentence = 'owed', (f'This surface has no frame in the export. <b>{prompt}</b> will '
+                                  f'draw it; it has not been run.')
+        tail = ('What the prompt must produce is described below and in '
+                '<span class="mono">EXPERIENCE.md</span> Appendix A.')
+    else:
+        kind, sentence = 'state', ('<b>No prompt owns this state</b>; it is a state of a drawn surface, '
+                                   'and step 6 draws it from that surface&rsquo;s frame and '
+                                   '<span class="mono">DESIGN.md</span>&rsquo;s component rules.')
+        tail = 'What it must show is described below.'
+    return (f'<div class="section-head"{a}><h2>{esc(title)}</h2>'
             f'<p>{blurb}</p></div>'
-            f'<div class="nodraw"><div class="row gap10" style="margin-bottom:8px">'
+            f'<div class="nodraw {kind}"><div class="row gap10" style="margin-bottom:8px">'
             f'<span class="badge notice">Not drawn</span>'
-            f'<span class="helper">This surface has no frame in the export. '
-            f'<b>{prompt}</b> will draw it; it has not been run.</span></div>'
+            f'<span class="helper">{sentence}</span></div>'
             f'<p class="helper">Nothing is drawn here on purpose. A picture invented in this file '
             f'would be a second interface vocabulary beside the export&rsquo;s, which is the one thing '
-            f'R-74 forbids. What the prompt must produce is described below and in '
-            f'<span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>')
+            f'R-74 forbids. {tail}</p></div>')
 
 
 # The plan matrix. PRD Appendix F.1 is the SOLE definition of Free/Pro gating, and four drawn
@@ -136,7 +200,8 @@ def limits_table(note=True):
          'dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, '
          'the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, '
          'member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p>') if note else ''
-    return ('<div class="limits-wrap"><table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr>'
+    return ('<div class="limits-wrap"><table class="limits"><tr><th scope="col">Limit</th>'
+            '<th scope="col">Free</th><th scope="col">✦ Pro</th></tr>'
             + rows + '</table>' + n + '</div>')
 
 
@@ -160,31 +225,36 @@ def trails_for(pid):
 def shell(p):
     trail_html = ''
     for kind, t, i, prev, nxt in trails_for(p['id']):
-        bits = [f'<span class="tl">{kind} {t["key"]} · {html.escape(t["title"])}</span>',
+        bits = [f'<span class="tl">{kind} {t["key"]} · {esc(t["title"])}</span>',
                 f'<span class="tstep">step {i + 1} of {len(t["steps"])}</span>']
         if prev:
-            bits.append(f'<span class="tstep">← <a href="{prev[0]}">{html.escape(prev[1])}</a></span>')
+            bits.append(f'<span class="tstep">← <a href="{prev[0]}">{esc(prev[1])}</a></span>')
         if nxt:
-            bits.append(f'<span class="tstep">next: <a href="{nxt[0]}">{html.escape(nxt[1])}</a> →</span>')
+            bits.append(f'<span class="tstep">next: <a href="{nxt[0]}">{esc(nxt[1])}</a> →</span>')
         trail_html += '<div class="trail">' + ''.join(bits) + '</div>\n'
     if not trail_html:
         trail_html = ('<div class="trail"><span class="tl">Not a step in any journey or flow</span>'
                       '<span class="tstep">Reached from the surfaces that link to it, and from '
                       '<a href="index.html">the index</a>.</span></div>\n')
 
-    subs_html = ''
+    subs_html, jump = '', ''
     if p['subs']:
         rows = ''.join(
-            f'<a class="idxrow" href="#{a}">{html.escape(n)}'
-            + (f'<span class="k">{html.escape(note)}</span>' if note else '') + '</a>'
+            f'<a class="idxrow" href="#{a}">{esc(n)}'
+            + (f'<span class="k">{esc(note)}</span>' if note else '') + '</a>'
             for n, a, note in p['subs'])
-        subs_html = ('<div class="proto-note"><b>Also on this page</b> — surfaces and states that live '
-                     'over this one: <div class="idxgrid" style="margin-top:8px">' + rows + '</div></div>')
+        subs_html = ('<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — '
+                     'surfaces and states that live over this one: '
+                     '<div class="idxgrid" style="margin-top:8px">' + rows + '</div></nav>')
+        # F-104: a page can be twenty screens tall; the jump list rides in the sticky bar too.
+        jump = ('<nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span>'
+                + ''.join(f'<a href="#{a}">{esc(n)}</a>' for n, a, _k in p['subs']) + '</nav>')
 
     return f"""<!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : {p['title']}
-  FRAME    : {p['frames']}
+  FRAME    : {p['derived']}   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : {p['frames']}
   IMPLEMENTS: EXPERIENCE.md {p['exp']}
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -200,25 +270,26 @@ def shell(p):
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
+<header class="proto">
   <a href="index.html">← All surfaces</a>
-  <span class="name">{html.escape(p['title'])}</span>
+  <h1 class="name">{esc(p['title'])}</h1>
   <span class="frame">{p['frames']}</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md {p['exp']}</span>
-</div>
-{('<div class="proto-note">' + p['note'] + '</div>') if p['note'] else ''}
-<div class="trails">{trail_html}</div>
+  {jump}
+</header>
+{('<aside class="proto-note">' + p['note'] + '</aside>') if p['note'] else ''}
+<nav class="trails" aria-label="Journeys and flows through this surface">{trail_html}</nav>
 {subs_html}
 <main id="main">
 {p['body']}
 </main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>
@@ -293,12 +364,14 @@ page('connect-keys', 'Connect · Keys', 'Onboarding',
      + nodraw('What validation decides, without asking',
               'J1 step 5. A server-side <span class="mono">GET /admin/config/</span> runs the moment Connect '
               'is pressed: Ghost 5.x and 6.x accepted and 4.x refused with &ldquo;please update Ghost&rdquo;; '
-              '<span class="mono">hostSettings.limits.customThemes</span> decides '
+              'a missing <span class="mono">hostSettings</span> key marks the site self-hosted (executed on '
+              '5.130.6 and 6.58.0, MEASUREMENTS §15h) and <span class="mono">hostSettings.limits.customThemes</span> '
+              '&mdash; a theme-name allowlist, whose Ghost(Pro) shape is still ⛔ VERIFY-AT-BUILD item 2 &mdash; decides '
               '<a href="preview-only-notice.html">Preview-only</a> without asking; '
               '<span class="mono">http://</span> is warned; code injection raises a one-time notice that the '
               'live page can legitimately differ from the canvas; Portal&rsquo;s floating-button state is read, '
               'or asked once, defaulting to on.',
-              'No prompt — these are banner states of a drawn surface', anchor='validation'),
+              anchor='validation'),
      subs=[SUB('Validation states', 'validation', 'J1 step 5')])
 
 page('auto-branding', 'Auto-Branding', 'Onboarding',
@@ -350,7 +423,7 @@ page('redesign-proposals', 'Redesign Proposals', 'Onboarding',
 # ═══════════════════════════════════════════════════════════════════════════════
 page('dashboard', 'Dashboard', 'Dashboard and account',
      'S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · '
-     'B Missing Surfaces B25 sites strip · B14a update notice',
+     'S3 mobile · S3 mobile menu · B Missing Surfaces B25 sites strip · B14a update notice',
      '§ IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1',
      lift('S3 Dashboard', label='S3a Dashboard rich', capt='S3a · dashboard — rich (what&rsquo;s-new open) · 1440')
      + head('Account Menu', 'Opens up from the account chip at the foot of the rail.', anchor='account-menu')
@@ -376,7 +449,7 @@ page('dashboard', 'Dashboard', 'Dashboard and account',
      + lift('S3 Dashboard', label='S3 mobile menu', capt='S3 · mobile — menu open · 390')
      + nodraw('Loading', 'Skeleton cards in the shape of the project cards that are coming — never a spinner '
               '(DESIGN.md § Components → Loading). No frame draws the dashboard mid-load.',
-              'No prompt owns it; it is a state of a drawn surface', anchor='loading'),
+              anchor='loading'),
      subs=[SUB('Account Menu', 'account-menu', 'S3d'),
            SUB('Notifications', 'notifications', 'S3e'),
            SUB('Connected Sites Strip', 'connected-sites', 'B25'),
@@ -388,8 +461,8 @@ page('dashboard', 'Dashboard', 'Dashboard and account',
 
 
 page('new-project-sheet', 'New Project Sheet', 'Dashboard and account',
-     'NOT DRAWN → Appendix A prompt A4, frames D4a and D4b. Inherits S3 Dashboard, S2a\'s radio-card '
-     'doors and B23a\'s starter grid',
+     'NOT DRAWN → Appendix A prompt A4, frames D4a and D4b. Inherits S2a\'s radio-card doors and '
+     'P0-0\'s greyed pattern; its starter grid is the Starter Chooser\'s, drawn there',
      '§ IA → Dashboard and account · FR-B2',
      nodraw('New Project Sheet',
             'FR-B2&rsquo;s four paths over a dimmed dashboard: <b>Start from a starter</b> (opens the starter '
@@ -418,7 +491,7 @@ page('notifications', 'Notifications', 'Dashboard and account',
      + nodraw('Empty',
               '&ldquo;Nothing yet. Deploy outcomes land here even if you closed the tab.&rdquo; — an ink line '
               'drawing with one coral accent shape, per the empty-state illustration rule. No frame draws it.',
-              'No prompt owns it; it is a state of a drawn surface', anchor='empty'),
+              anchor='empty'),
      subs=[SUB('Under the bell', 'popover', 'S3e'), SUB('Notifications — empty', 'empty', 'not drawn')])
 
 page('sites', 'Sites', 'Dashboard and account',
@@ -435,14 +508,17 @@ page('sites', 'Sites', 'Dashboard and account',
               'site&rsquo;s <b>pre-Inflozo snapshot</b> — it is bound to the site record, not the URL, so it '
               'survives disconnect, reconnect and project deletion, and the backup gate re-fires on reconnect '
               'because consent is per site.',
-              'No prompt owns them; they are states of a drawn surface', anchor='empty'),
+              anchor='empty'),
      subs=[SUB('Connect Site Modal', 'connect-modal', 'S11b'),
            SUB('Sites — Free at one site', 'free', 'S11c'),
            SUB('Sites — empty, and disconnect', 'empty', 'not drawn')],
      note='<b>The frame&rsquo;s Preview-only row says the wrong thing.</b> S11a offers &ldquo;download the theme '
           'and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit '
           'forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see '
-          '<a href="preview-only-notice.html">Preview-Only Notice</a>.')
+          '<a href="preview-only-notice.html">Preview-Only Notice</a>. <b>And its &ldquo;Admin key expired Aug '
+          '15&rdquo; chip names a cause Ghost never produces</b> — keys never expire; a regenerated or removed key '
+          'answers 401 Unknown Admin API Key (see <a href="deploy-failure.html">Deploy Failure</a>). The chip '
+          'becomes &ldquo;Key regenerated Aug 15&rdquo;; that is prompt A7&rsquo;s.')
 
 page('manage-keys', 'Manage Keys', 'Dashboard and account',
      'S11 Sites.dc.html S11d + B Missing Surfaces.dc.html B20 — both re-specified (FR-C8)',
@@ -479,7 +555,7 @@ page('assets', 'Assets', 'Dashboard and account',
      + nodraw('Over quota',
               'The library goes <b>read-only</b>: existing files stay, uploads are blocked, until the user '
               'deletes below the cap. <b>Nothing is deleted by Inflozo, on any path.</b> No frame draws it.',
-              'No prompt owns it; it is a state of a drawn surface', anchor='over-quota'),
+              anchor='over-quota'),
      subs=[SUB('Drop zone', 'drop', 'S10b'),
            SUB('The two corrections it is owed', 'drop-fix', 'F.1 · D8d'),
            SUB('Delete in use', 'delete', 'S10c'),
@@ -506,7 +582,7 @@ page('billing', 'Billing', 'Dashboard and account',
               'the end of the paid period, then the account becomes Free — which is where the '
               '<a href="over-limit-sheet.html">Over-Limit Sheet</a> takes over. <b>Cancellation always completes '
               'in three clicks or fewer</b> and there are no retention dark patterns.',
-              'No prompt owns it', anchor='cancel'),
+              anchor='cancel'),
      subs=[SUB('Invoices', 'invoices', 'S12d'),
            SUB('Delete Account', 'delete', 'S12c'),
            SUB('The limits, plainly', 'limits', 'Appendix F.1'),
@@ -536,8 +612,8 @@ page('suggestions', 'Suggestions', 'Dashboard and account',
 
 
 page('over-limit-sheet', 'Over-Limit Sheet', 'Dashboard and account',
-     'NOT DRAWN → Appendix A prompt A4, frames D4c and D4d. Inherits B13a\'s itemised rows over a '
-     'dimmed dashboard',
+     'NOT DRAWN → Appendix A prompt A4, frames D4c and D4d. Inherits the Pro Exit Sheet\'s itemised '
+     'rows (B13 in the export\'s label) over a dimmed dashboard',
      '§ IA → Dashboard and account · FR-L3 · J4 steps 5, 6 and 10',
      nodraw('Over-Limit Sheet',
             'The climax of J4. It opens with <b>&ldquo;Nothing has been deleted, and nothing will be. Your live '
@@ -552,7 +628,7 @@ page('over-limit-sheet', 'Over-Limit Sheet', 'Dashboard and account',
      + lift('B Missing Surfaces', label='B13 Pro blocking sheet'),
      subs=[SUB('The row component it inherits', 'rows', 'B13a')])
 
-page('grace-banner', 'Grace Banner', 'Dashboard and account',
+page('grace-banner', 'Grace Banner', 'Deploy',
      'B Missing Surfaces.dc.html — B24 (consequence re-specified: FR-L3)',
      '§ IA → Deploy · § wrong mechanism → B24 · J4 steps 1–2',
      lift('B Missing Surfaces', caption='B24 · #24', capt='B24 · past-due grace banner')
@@ -613,6 +689,13 @@ page('editor', 'Editor', 'Editor',
      + lift('S4 Editor', label='S4c Editor selected', capt='S4c · editor — selected · 1440')
      + head('The top-bar dropdowns', 'Ship it ▾ and the member-state preview.', anchor='topbar')
      + lift('S4 Editor', caption='S4d ·', capt='S4d · top-bar dropdowns')
+     + head('The member-state preview draws tiers; FR-D16 has three states',
+            'S4d previews Orbit Supporter / Patron / Founding. <b>FR-D16: Anonymous / Free member / Paid '
+            'member</b>, and <span class="mono">comped</span> previews as Paid, differing in billing rather than '
+            'access. B9 already says so; S4d is the outlier. Two things neither frame draws: the '
+            '<b>unviewed-states marker</b> beside the toggle, and the <b>&ldquo;Gated content — shown with sample '
+            'text&rdquo;</b> indicator on a gated body. S4d&rsquo;s paid-tier rows are prompt A7&rsquo;s '
+            '(owner ruling, 2026-09-03); the frame stays as drawn here.', anchor='member-state')
      + head('Design Picker · Design Nav',
             'The most-used control in the product. Three ways to the same thing, and the counter names the '
             'unit — <b>Design</b>, never Layout. <span class="kbd">]</span> past the last returns to the first. '
@@ -639,6 +722,12 @@ page('editor', 'Editor', 'Editor',
      + lift('P0-1 Inline Text Toolbar', label='P0-1 plain-text-locked')
      + head('Link Entry', 'It searches the user&rsquo;s own posts and pages as you type.', anchor='link-entry')
      + lift('P0-1 Inline Text Toolbar', label='P0-1 link popover states')
+     + head('B4b, the part of B4 that P0-1 does not supersede',
+            'P0-1 supersedes B4a — exactly the four marks and Remove link, no block-type menu, because Inflozo '
+            'does not own the post body (FR-D4). <b>B4b&rsquo;s link entry is kept</b> and gains FR-D9&rsquo;s '
+            'new-tab and <span class="mono">rel</span> options, which neither frame draws.',
+            anchor='link-entry-b4b')
+     + lift('B Missing Surfaces', caption='B4b ·', capt='B4b · link entry')
      + head('At 390 the toolbar docks', '', anchor='toolbar-390')
      + lift('P0-1 Inline Text Toolbar', label='P0-1 mobile 390')
      + head('Layers', 'The Site-wide card is pinned above the page&rsquo;s own sections, with a page count, and '
@@ -651,7 +740,7 @@ page('editor', 'Editor', 'Editor',
      + lift('B Missing Surfaces', caption='B6 · #6', capt='B6 · persistence, four states')
      + head('And the fifth state FR-D10 requires',
             'The <b>no-local-storage fallback</b> — &ldquo;syncing every change to the cloud&rdquo; — because a '
-            'false &ldquo;Saved locally&rdquo; is the one thing this indicator must never say. Not drawn.',
+            'false &ldquo;Saved on this device&rdquo; is the one thing this indicator must never say. Not drawn.',
             anchor='persistence-fix')
      + head('Content Source Pill', 'It describes the canvas, so it sits over the canvas. Solid hairline with a '
             'mint dot when the content is real; dashed with grey when it is sample.', anchor='content-source')
@@ -692,11 +781,13 @@ page('editor', 'Editor', 'Editor',
               'Appendix A prompts A5 and A8', anchor='not-drawn'),
      subs=[SUB('Hover', 'hover', 'S4b'), SUB('Selected', 'selected', 'S4c'),
            SUB('Top-bar dropdowns', 'topbar', 'S4d'),
+           SUB('Member-state preview — three states', 'member-state', 'FR-D16 · A7'),
            SUB('Design Picker', 'design-picker', 'B1a'), SUB('Design Nav', 'design-nav', 'B1b'),
            SUB('Control Sidebar', 'control-sidebar', 'B2'),
            SUB('Greyed vs absent', 'greyed', 'P0-0'),
            SUB('Inline Toolbar', 'inline-toolbar', 'P0-1'),
            SUB('Link Entry', 'link-entry', 'P0-1'),
+           SUB('Link Entry — B4b', 'link-entry-b4b', 'B4b'),
            SUB('Inline Toolbar at 390', 'toolbar-390', 'P0-1'),
            SUB('Layers', 'layers', 'B7'), SUB('Layers — the unit is templates', 'layers-fix', 'FR-D6'),
            SUB('Persistence Indicator', 'persistence', 'B6'),
@@ -723,7 +814,7 @@ page('section-picker', 'Section Picker', 'Editor',
               '<b>never shown</b> — not greyed, not shown-and-refused (FR-D12). A second Post Content section '
               'is <b>refused at placement</b>, with the reason (ruling R-37). And a search with no matches keeps '
               'the category rail and says what was searched for.',
-              'No prompt owns them; they are states of a drawn surface', anchor='refusals'),
+              anchor='refusals'),
      subs=[SUB('Dark preview', 'dark', 'S5c'), SUB('Refusals and no-matches', 'refusals', 'FR-D12 · R-37')])
 
 page('variant-shuffle', 'Variant Shuffle', 'Editor',
@@ -769,7 +860,13 @@ page('routes-manager', 'Routes Manager', 'Editor',
      + lift('S9 Routes', caption='S9b ·', capt='S9b · yaml pane — validation error')
      + head('New Collection Sheet', '<b>Posts per page comes from Theme Settings</b>, and a collection&rsquo;s '
             'own <span class="mono">limit:</span> may override it for that route — the frame says it follows '
-            'the home feed&rsquo;s Count control, which is not where that value lives. And the published-date '
+            'the home feed&rsquo;s Count control, which is not where that value lives. That per-collection '
+            '<span class="mono">limit:</span> is in Ghost&rsquo;s code, not its docs — read in source: 5.130.6 '
+            '<span class="mono">core/frontend/services/routing/CollectionRouter.js:39</span> and '
+            '<span class="mono">route-settings/validate.js:93</span>; 6.58.0 '
+            '<span class="mono">route-settings/route-settings-parser.js:59,151</span>. '
+            'docs.ghost.org/themes/routing lists permalink, template, filter, data, order and rss only, so this '
+            'is re-read at every Ghost major. And the published-date '
             'field offers FR-I2&rsquo;s <b>relative</b> form first.', anchor='new-collection')
      + lift('S9 Routes', caption='S9c ·', capt='S9c · &ldquo;+ New collection&rdquo; sheet')
      + head('New Route Sheet', '', anchor='new-route')
@@ -783,7 +880,7 @@ page('routes-manager', 'Routes Manager', 'Editor',
            SUB('Routes — empty', 'empty', 'S9d')])
 
 page('theme-settings', 'Theme Settings', 'Editor',
-     'B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6)',
+     'B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6) · B18 translations',
      '§ IA → Editor · § wrong mechanism → B17 · FR-Q1/Q2/Q3, FR-J15, FR-D7',
      lift('B Missing Surfaces', caption='B17 · #17', capt='B17 · theme settings, with the custom-settings builder · 1440')
      + head('Four corrections, and one of them is the surface&rsquo;s own primary value',
@@ -824,13 +921,22 @@ page('paywall-editor', 'Paywall Editor', 'Editor',
      '§ IA → Editor · § The three canvases that are not pages · § State Patterns → Paywall Editor · FR-H6',
      lift('C Post Body', label='C3a Paywall editor', capt='C3a · the paywall canvas · 1440')
      + head('Three of the twelve designs, and the empty case',
-            'The empty state is <b>honest about Ghost, not about us</b>: with no paid tier Ghost&rsquo;s paywall '
-            'never renders at all, so the design would be dead CSS.', anchor='designs')
+            'The frame&rsquo;s empty state says that with no paid tier Ghost&rsquo;s paywall never renders. '
+            '<b>That is not what Ghost does.</b> The cut is gated on <i>access</i>, not on tiers: '
+            '<span class="mono">core/frontend/helpers/content.js</span> returns the CTA whenever '
+            '<span class="mono">this.access</span> is false, and Ghost&rsquo;s own '
+            '<span class="mono">content-cta.hbs</span> carries a members-only branch — &ldquo;This post is for '
+            'subscribers only&rdquo;, Subscribe / Sign in — inside the same '
+            '<span class="mono">gh-post-upgrade-cta</span> block (read in source on 6.54.1 and 5.130.6; '
+            'MEASUREMENTS §15b executed the override point this design replaces). So the paywall design applies '
+            'to <b>any gated post</b> — members, paid or tiers — and the honest empty case is <b>members disabled '
+            'on the site</b> (<span class="mono">members_signup_access = none</span>). The frame&rsquo;s '
+            'empty-state copy is prompt A7&rsquo;s; the frame stays as drawn here.', anchor='designs')
      + lift('C Post Body', label='C3b Paywall designs and empty state', capt='C3b · three designs and the empty state'),
      subs=[SUB('The designs, and the empty case', 'designs', 'C3b')],
      note='This surface was reported as never drawn. <b>It is drawn</b> — C3a, at 1440, with its six controls, '
-          'its &ldquo;how readers reach it&rdquo; explainer and the no-paid-tiers empty state — and it sits in '
-          'a drawn left-nav group, <b>Template surfaces</b>.')
+          'its &ldquo;how readers reach it&rdquo; explainer and an empty state whose reason is wrong (below) — '
+          'and it sits in a drawn left-nav group, <b>Template surfaces</b>.')
 
 page('editor-cards', 'Editor Cards', 'Editor',
      'S14 Editor Cards.dc.html — S14a card dropdown, S14b treatment dropdown, S14c reset confirm, '
@@ -879,15 +985,15 @@ page('post-content', 'Post Content', 'Editor',
 
 page('error-pages', 'Error Pages', 'Editor',
      'NOT DRAWN as a canvas. The A31 designs exist; the Template-surfaces left-nav group that hosts them '
-     'is drawn in C Post Body',
+     'is drawn in C Post Body C3a',
      '§ IA → Editor · § The three canvases that are not pages · FR-Q9',
      nodraw('Error Pages',
             '<span class="mono">error.hbs</span> ships on every project; <span class="mono">private.hbs</span> '
             'ships <b>only when a Private Site Gate section has been designed</b>. Both sit on the '
             'Template-surfaces canvas — ink chrome rather than paper, because a canvas that is not a page '
             'announces itself — with the A31 category&rsquo;s designs in the picker. This is also where '
-            'FR-Q9&rsquo;s fallback lands: a treatment whose host section is absent is still selected here.',
-            'No prompt draws the canvas; the A31 designs are drawn in their own category')
+            'FR-Q9&rsquo;s fallback lands: a treatment whose host section is absent is still selected here. '
+            'No prompt draws the canvas itself; the A31 designs are drawn in their own category.')
      + head('The Template-surfaces group that hosts it', 'Drawn in C Post Body, in ink chrome.',
             'C3a · the paywall canvas, showing the left-nav group · 1440', anchor='group')
      + lift('C Post Body', label='C3a Paywall editor'),
@@ -904,7 +1010,7 @@ page('edit-lock', 'Edit Lock', 'Editor',
      + lift('B Missing Surfaces', caption='B5a ·', capt='B5a · read-only')
      + head('The holder — a popover, not a modal',
             'The holder is mid-sentence. It states the sync position <b>before</b> asking. <b>The countdown is '
-            'a no-response timer and it stops the instant the holder interacts with the popover at all, focus '
+            'a no-response timer and it restarts the instant the holder interacts with the popover at all, focus '
             'included</b> — it only runs out when nobody is there. Announced <b>assertively</b>.', anchor='holder')
      + lift('B Missing Surfaces', caption='B5b ·', capt='B5b · request arrives for the holder')
      + head('The takeover', '', anchor='takeover')
@@ -921,7 +1027,7 @@ page('edit-lock', 'Edit Lock', 'Editor',
      + nodraw('Deploy and export from a read-only session',
               'Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist '
               'elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. Drawn on no frame; it '
-              'is added to B5&rsquo;s family.', 'No prompt owns it yet', anchor='deploy-blocked'),
+              'is added to B5&rsquo;s family.', anchor='deploy-blocked'),
      subs=[SUB('The reader', 'reader', 'B5a'), SUB('The holder', 'holder', 'B5b'),
            SUB('The takeover', 'takeover', 'B5c'), SUB('The one deviation', 'respec', '§AD2'),
            SUB('Deploy from a read-only session', 'deploy-blocked', 'not drawn')],
@@ -933,14 +1039,14 @@ page('edit-lock', 'Edit Lock', 'Editor',
 # DEPLOY
 # ═══════════════════════════════════════════════════════════════════════════════
 page('deploy-wizard', 'Deploy Wizard', 'Deploy',
-     'S8 Deploy.dc.html — S8a…S8d, S8d′, S8a′, S8e',
+     'index page — no lift; every step lifts its own frame on its own page',
      '§ IA → Deploy · § Component Patterns → Wizard step rail · J1 steps 9–14 · J2 step 13 · J3 step 3',
      head('The rail grows, and that is the whole shape of this flow',
           'An ordinary deploy is four steps, which is what S8 draws. <b>The first deploy to a given site is '
           'six</b>, because two gates fire once per site and never again — the Staff Token Offer and the '
           'Backup Gate — and <b>neither is drawn anywhere in the export</b> (prompt A1).')
      + head('Every step, as a page you can walk')
-     + """<div class="lifted"><div class="idxgrid">
+     + """<div class="annot"><div class="idxgrid">
   <a class="idxrow" href="deploy-destination.html">1 · Deploy Destination<span class="k">S8a</span></a>
   <a class="idxrow" href="staff-token-offer.html">2 · Staff Token Offer<span class="k">not drawn · A1</span></a>
   <a class="idxrow" href="backup-gate.html">3 · Backup Gate<span class="k">not drawn · A1</span></a>
@@ -986,22 +1092,30 @@ page('deploy-destination', 'Deploy Destination', 'Deploy',
            SUB('Its copy correction', 'preview-fix', 'FR-C2')])
 
 page('staff-token-offer', 'Staff Token Offer', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8\'s step card and S2b·1\'s '
-     'screenshotted step',
+     'NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b\'s step card and Connect · '
+     'Integration\'s screenshotted step',
      '§ IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H',
      nodraw('Staff Token Offer',
             'Step 2 of the six-step first deploy. <b>&ldquo;One more step unlocks a safety net — a copy of your '
             'current theme before we replace it, plus a check that nothing else has changed it.&rdquo;</b> Then, '
-            'quieter: this is a full-Administrator credential and can only be created on the site Owner&rsquo;s '
-            'own account. <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; '
+            'quieter: this is a staff credential &mdash; <b>every staff user mints their own</b> from their profile '
+            'page and it carries that user&rsquo;s role (read at docs.ghost.org/admin-api → Staff access tokens: '
+            '&ldquo;Each user can create and refresh their own token&rdquo;). The safety net needs a role that can '
+            'read themes and write settings: <b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, '
+            'Ghost 6.54.1 fixtures.json roles_permissions: Administrator holds <span class="mono">theme: all</span> '
+            'and <span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the '
+            'role with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review '
+            '2026-09-03). The Owner-only wording in FR-C1/C3 and EXPERIENCE.md is owed the same correction '
+            '(finding F-063). <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; '
             'and &ldquo;Not now&rdquo;. Not now is <b>not</b> a small link. '
             '<b>Zero occurrences of &ldquo;Staff Access Token&rdquo; exist anywhere in the export.</b>',
             'Appendix A prompt A1 (frames D1b, D1c)')
      + head('Declined — acknowledged once, then never raised again',
             'It names exactly three costs — no snapshot, no drift check, manual routes upload — and closes with '
             '&ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done '
-            'something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>cannot comply '
-            'at all</b>: they are not the Owner. This is not a degradation for them, it is the path.',
+            'something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>can comply when '
+            'they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is not a '
+            'degradation, it is the path.',
             anchor='declined')
      + head('The step card it inherits', '', 'S8b · the checked-row list · 1440', anchor='inherits')
      + lift('S8 Deploy', caption='S8b ·'),
@@ -1009,7 +1123,7 @@ page('staff-token-offer', 'Staff Token Offer', 'Deploy',
 
 page('backup-gate', 'Backup Gate', 'Deploy',
      'NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b\'s checked-row list and '
-     'B13a\'s itemised rows',
+     'the Pro Exit Sheet\'s itemised rows',
      '§ IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11',
      nodraw('Backup Gate',
             'Step 3, and <b>it blocks the deploy button until confirmed</b>. Reading order is the design: '
@@ -1047,8 +1161,18 @@ page('preflight-check', 'Pre-flight Check', 'Deploy',
             'FR-Q6 requires the <b>RTL acknowledgement repeated here as a pre-deploy warning</b> — it is where '
             'it bites. And FR-J16&rsquo;s <b>drift row</b> sits among these checks on every deploy after the '
             'first: a passing row when nothing changed, and a stop when something did. Neither is drawn '
-            '(prompt A3).', anchor='additions'),
-     subs=[SUB('The two rows it is owed', 'additions', 'FR-Q6 · A3')])
+            '(prompt A3).', anchor='additions')
+     + head('&ldquo;Required templates present (index, post, page)&rdquo; — two of those are Ghost&rsquo;s',
+            'gscan requires <span class="mono">index.hbs</span> and <span class="mono">post.hbs</span> '
+            '(<span class="mono">GS020-INDEX-REQ</span>, <span class="mono">GS020-POST-REQ</span>) and recommends '
+            '<span class="mono">default.hbs</span> (<span class="mono">GS020-DEF-REC</span>); <b>no rule requires '
+            '<span class="mono">page.hbs</span></b> — read in gscan 4.49.7 and 6.4.2 '
+            '<span class="mono">lib/specs</span>, the versions Ghost 5.130.6 and 6.58.0 bundle (VERIFY-AT-BUILD '
+            'item 31). <span class="mono">page</span> is Inflozo&rsquo;s own standard-set check (FR-I1), not '
+            'Ghost&rsquo;s. If the row is meant to read as Ghost&rsquo;s check, prompt A7 drops &ldquo;page&rdquo;.',
+            anchor='templates-row'),
+     subs=[SUB('The two rows it is owed', 'additions', 'FR-Q6 · A3'),
+           SUB('Which template rules are Ghost&rsquo;s', 'templates-row', 'GS020')])
 
 page('snapshot-gate', 'Snapshot Gate', 'Deploy',
      'B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified',
@@ -1064,13 +1188,17 @@ page('snapshot-gate', 'Snapshot Gate', 'Deploy',
      + lift('B Missing Surfaces', caption='B12b · #12', capt='B12b · capture failed')
      + head('B12b&rsquo;s reason is the most expensive error in the export',
             'It says <i>&ldquo;your integration key may not have theme read permission … Check the key.&rdquo;</i> '
-            'Ghost&rsquo;s <span class="mono">tokenPermissionCheck</span> allowlists only '
-            '<span class="mono">themes: [POST, PUT]</span> for Custom Integration tokens, so <b>every</b> '
-            '<span class="mono">GET /themes/*</span> made with an Admin API key returns 403 — on every version, '
-            'every host. <b>There is no key to fix.</b> Telling a user to go and fix one sends them to spend an '
-            'afternoon on something that cannot be done. The replacement names the real cause (no Staff Access '
-            'Token), then what protects them anyway (<b>Ghost keeps the previous theme under Settings → '
-            'Design</b>), then three real actions.', anchor='respec-b12b'),
+            'Ghost&rsquo;s admin-API allowlist (<span class="mono">tokenPermissionCheck</span> in '
+            '<span class="mono">core/server/web/api/endpoints/admin/middleware.js</span>, read in 6.54.1) lets a '
+            'Custom Integration token reach <span class="mono">themes</span> only as POST and PUT, so <b>every</b> '
+            '<span class="mono">GET /themes/*</span> made with an Admin API key is refused on every host — '
+            '<b>403 on Ghost 6 and 501 on Ghost 5</b> (executed, MEASUREMENTS §15h and §21m; AD-24 must fold both '
+            'into one Inflozo code). <b>There is no key to fix.</b> Telling a user to go and fix one sends them to '
+            'spend an afternoon on something that cannot be done. The replacement names the real cause (no Staff '
+            'Access Token), then what protects them anyway — <b>Ghost keeps the pre-Inflozo theme under Settings → '
+            'Design</b>, which holds because this gate fires only at the first upload; later Inflozo versions '
+            'replace each other under the frozen name (FR-J10) and live only in Inflozo&rsquo;s history — then '
+            'three real actions.', anchor='respec-b12b'),
      subs=[SUB('The two wrong sentences', 'respec', 'FR-J13'),
            SUB('Capture failed', 'failed', 'B12b'),
            SUB('B12b&rsquo;s wrong reason', 'respec-b12b', 'MEASUREMENTS')])
@@ -1103,7 +1231,15 @@ page('deploy-failure', 'Deploy Failure', 'Deploy',
      '§ IA → Deploy · § Voice and Tone (errors are human and name the fix)',
      lift('S8 Deploy', caption='S8d′ ·', capt='S8d′ · step 3 failure — human message + reconnect'),
      note='Never &ldquo;An error occurred.&rdquo; The sentence names what happened in the other party&rsquo;s '
-          'terms and the button is the fix. A deploy failure is one of the five product emails (FR-P1), and it '
+          'terms and the button is the fix. <b>But the cause this frame names does not exist.</b> An Admin API key '
+          'never expires — the <span class="mono">api_keys</span> table has no expiry column (read in source, Ghost '
+          '6.54.1 <span class="mono">core/server/data/schema/schema.js</span>) and docs.ghost.org/admin-api says '
+          'the key can be regenerated any time; the only thing that expires is the five-minute JWT Inflozo signs '
+          'with it. A key that was regenerated, or whose integration was deleted, answers <span class="mono">401 '
+          'Unknown Admin API Key</span> (executed against T1 6.58.0 and T3 5.130.6, review 2026-09-03). The '
+          'sentence becomes &ldquo;Ghost said no — this Admin API key no longer works. It was regenerated or '
+          'removed in Ghost Admin. Paste the new key.&rdquo; The frame&rsquo;s text is prompt A7&rsquo;s; it '
+          'stays as drawn here. A deploy failure is one of the five product emails (FR-P1), and it '
           'is the only deploy outcome that sends one — uploaded-not-live sends nothing, because nothing failed.')
 
 page('deploy-uploaded', 'Deploy Uploaded', 'Deploy',
@@ -1132,7 +1268,7 @@ page('partial-success', 'Partial Success', 'Deploy',
             'isn&rsquo;t live yet.&rdquo; The step rail shows Ship complete and Live incomplete.',
             'Appendix A prompt A2 (frames D2e, D2d)')
      + head('Six things follow from calling it a partial success', '', anchor='consequences')
-     + """<div class="lifted"><div class="stack gap10" style="max-width:760px;margin:0 auto;padding:20px">
+     + """<div class="annot"><div class="stack gap10" style="max-width:760px;margin:0 auto;padding:20px">
   <div class="checkrow"><span class="tick">1</span><span><b>The artifact is retained</b> like any successful
     compile, and appears in history without an active badge.</span></div>
   <div class="checkrow"><span class="tick">2</span><span><b>The theme name freezes</b>, because the name is
@@ -1148,7 +1284,7 @@ page('partial-success', 'Partial Success', 'Deploy',
      subs=[SUB('What follows', 'consequences', 'FR-J8')])
 
 page('drift-report', 'Drift Report', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A3. Inherits S8b\'s step card and B7\'s Layers row for the file list',
+     'NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7\'s Layers row for the file list',
      '§ IA → Deploy · FR-J16',
      nodraw('Drift Report',
             'Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and '
@@ -1171,7 +1307,8 @@ page('drift-report', 'Drift Report', 'Deploy',
 
 
 page('pro-exit-sheet', 'Pro Exit Sheet', 'Deploy',
-     'B Missing Surfaces.dc.html — B13a (four remedies, not two; the pairing-table note deleted)',
+     'B Missing Surfaces.dc.html — B13 Pro blocking sheet, the export\'s label for the sheet its caption '
+     'numbers 13a (four remedies, not two; the pairing-table note deleted)',
      '§ IA → Deploy · § wrong mechanism → B13 · J3 steps 3–5',
      lift('B Missing Surfaces', label='B13 Pro blocking sheet', capt='B13a · the sheet, over a dimmed editor · 1440')
      + head('Four remedies, because two was not enough',
@@ -1234,11 +1371,21 @@ page('preview-only-notice', 'Preview-Only Notice', 'Deploy',
      lift('B Missing Surfaces', caption='B15 · #15', capt='B15 · preview-only connection')
      + head('One word on it is wrong',
             'B15 says upgrade to Ghost(Pro) <b>Creator</b>. Ghost&rsquo;s 2026 lineup is <b>Starter / Publisher '
-            '/ Business</b>, so it is <b>Publisher or higher</b>. Everything else on this frame is right, and '
+            '/ Business</b>, so it is <b>Publisher or higher</b> — read at ghost.org/pricing on 2026-09-03, a page '
+            'read and not an executed probe, so VERIFY-AT-BUILD item 1 stays ⛔ until the Starter trial. '
+            'Everything else on this frame is right, and '
             'S8a′ and S11a move to match <i>it</i> rather than the other way round.', anchor='respec')
      + head('Probed, never asked',
-            'At connect, <span class="mono">hostSettings.limits.customThemes</span> reports whether the site '
-            'permits custom theme upload; its absence means self-hosted and unlimited. <b>There is no '
+            'At connect, <span class="mono">hostSettings.limits.customThemes</span> is read. <b>It is a '
+            'theme-name allowlist, not a yes/no flag</b>: <span class="mono">@tryghost/limit-service</span> declares '
+            '<span class="mono">customThemes</span> as an allowlist limit and the upload endpoint asks '
+            '<span class="mono">errorIfWouldGoOverLimit(\'customThemes\', {value: themeName})</span> (read in '
+            'source, Ghost 6.54.1 <span class="mono">core/server/api/endpoints/themes.js</span>). Its '
+            '<b>absence</b> means self-hosted — <span class="mono">GET /admin/config/</span> carries no '
+            '<span class="mono">hostSettings</span> key on 5.130.6 or 6.58.0 (executed, MEASUREMENTS §15h). '
+            '<b>The Ghost(Pro) half is still ⛔</b> — VERIFY-AT-BUILD item 2, blocked on a Starter trial — so the '
+            'probe must test Inflozo&rsquo;s frozen theme name against the list, and &ldquo;present&rdquo; is not '
+            'the same as &ldquo;blocked&rdquo;. <b>There is no '
             'user-declared-plan step in the happy path and no plan field in Manage Keys.</b> '
             'FR-C5&rsquo;s daily health check re-runs the probe, so the flag sets and clears without any user '
             'action — <b>clearing is not the user&rsquo;s job</b> — and a successful deploy clears it too. The '
@@ -1259,6 +1406,25 @@ page('routes-fallback', 'Routes Fallback Card', 'Deploy',
             'file needs the site Owner&rsquo;s Staff Access Token, and this project doesn&rsquo;t have '
             'one&rdquo;</b>, and &ldquo;Fix the key instead&rdquo; becomes <b>&ldquo;Add the token '
             'instead&rdquo;</b>.', anchor='respec')
+     + head('The three causes, and each names itself',
+            'EXPERIENCE.md F3 documents three causes with three messages and two button labels; the frame '
+            'draws only the first. Quoted from the spine:', anchor='causes')
+     + """<div class="annot"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
+  <tr><th scope="col">Cause</th><th scope="col">What the card says</th></tr>
+  <tr><td>No Staff Access Token was ever supplied</td>
+    <td>&ldquo;We normally upload this for you. Uploading a routing file needs the site Owner&rsquo;s Staff Access
+      Token, and this project doesn&rsquo;t have one — so this once, you&rsquo;ll do it by hand.&rdquo; +
+      <b>Add the token instead</b></td></tr>
+  <tr><td>The token was revoked or rotated</td>
+    <td>&ldquo;…your token has stopped working.&rdquo; + <b>Update the token</b></td></tr>
+  <tr><td>The connection is not the site Owner&rsquo;s</td>
+    <td>&ldquo;…this token belongs to a staff account that can&rsquo;t write settings. Only the site Owner&rsquo;s
+      token can.&rdquo; — no button</td></tr>
+</table><p class="helper" style="margin-top:10px">&ldquo;Owner&rdquo; in the first and third rows is the spine&rsquo;s
+  wording; every staff user has a token and an Administrator&rsquo;s carries <span class="mono">setting: all</span>
+  (read at docs.ghost.org/admin-api → Staff access tokens; Ghost 6.54.1 fixtures.json roles_permissions), so
+  those rows are owed the F-063 correction alongside FR-C1/C3 — see
+  <a href="staff-token-offer.html">Staff Token Offer</a>.</p></div></div>"""
      + head('And the hard-coded menu path has to go',
             'Step 2 says <b>Settings → Labs</b>. <b>Ghost 6.58.0 has no Labs page</b> — no '
             '<span class="mono">settings/advanced</span>, no <span class="mono">settings/labs</span>, and its '
@@ -1266,6 +1432,7 @@ page('routes-fallback', 'Routes Fallback Card', 'Deploy',
             '<b>describe what the customer is looking for and link to Ghost&rsquo;s own help for the version '
             'Inflozo detected at connect</b>.', anchor='menu-path'),
      subs=[SUB('The re-specified cause', 'respec', 'FR-I4'),
+           SUB('The three causes', 'causes', 'F3'),
            SUB('The hard-coded menu path', 'menu-path', 'MEASUREMENTS §33')],
      note='<b>It is not a warning toast.</b> It is a first-class surface, reachable afterwards from the site '
           'card and from the Routes Manager, and a project can sit in this state indefinitely without anything '
@@ -1278,13 +1445,17 @@ page('template-binding-checklist', 'Template Binding Checklist', 'Deploy',
      + head('Every step on that frame is on a mechanism the product forbids',
             'The components stay — the numbered steps and, above all, the small honest facsimile of Ghost&rsquo;s '
             'own page settings on the right. Everything they <i>say</i> changes.', anchor='corrections')
-     + """<div class="lifted"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
-  <tr><th>B19 says</th><th>The truth</th></tr>
+     + """<div class="annot"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
+  <tr><th scope="col">B19 says</th><th scope="col">The truth</th></tr>
   <tr><td><span class="mono">page-membership.hbs</span></td>
     <td><b><span class="mono">custom-membership.hbs</span>.</b> Inflozo <b>never</b> emits
       <span class="mono">page-{slug}.hbs</span>: that form is matched against the live slug at render time,
       <b>detaches silently the moment the user retitles the page</b>, and outranks the user&rsquo;s explicit
-      dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches.</td></tr>
+      dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches (read from the
+      admin bundle: <span class="mono">gh-psm-template-select.hbs</span> renders the select
+      <span class="mono">@disabled=matchedSlugTemplate</span> with &ldquo;Post URL matches {filename}&rdquo; —
+      <span class="mono">research-ghost-membership-pages.md</span>; MEASUREMENTS.md has no entry yet and is owed
+      one).</td></tr>
   <tr><td>&ldquo;Set its URL slug to <span class="mono">membership</span>&rdquo;</td>
     <td><b>Pick the template from Ghost&rsquo;s page-editor Template dropdown.</b> Ghost stores the chosen
       filename on the page&rsquo;s own row, so the binding survives a retitle, a slug change and a theme swap.</td></tr>
@@ -1336,8 +1507,10 @@ journey('J3', 'Free-plan ship',
         'The solo publisher, on Free, one project, one site. <b>Open canvas, gated exits</b> — enforcement '
         'happens only at deploy, export, and any surface exposing compiled theme code.',
         [('dashboard.html#free', 'Dashboard · Free'), ('editor.html#pro-badge', 'Editor — Pro designs placed'),
-         ('deploy-destination.html', 'Ship it'), ('pro-exit-sheet.html', 'Pro Exit Sheet — the climax beat'),
+         ('pro-exit-sheet.html', 'Ship it — the Pro Exit Sheet, before the wizard opens · the climax beat'),
+         ('pro-exit-sheet.html#remedies', 'Itemised — the four remedies'),
          ('upgrade-sheet.html', 'Upgrade Sheet — or she swaps'), ('pricing.html', 'Pricing — the same terms, publicly'),
+         ('deploy-destination.html', 'Into the wizard — step 1'),
          ('backup-gate.html', 'Backup Gate'), ('preflight-check.html', 'Pre-flight Check'),
          ('snapshot-gate.html', 'Snapshot Gate'), ('deploy-live.html', 'Deploy Live')])
 
@@ -1415,7 +1588,7 @@ GROUP_ORDER = ['Marketing', 'Entry', 'Onboarding', 'Dashboard and account', 'Edi
 
 def trail_block(t, kind):
     steps = ''.join(
-        f'<a class="idxrow" href="{href}"><span class="mono" style="color:var(--ink-faint)">{i}</span>'
+        f'<a class="idxrow" href="{href}"><span class="mono softaa">{i}</span>'
         f'<span>{label}</span></a>' for i, (href, label) in enumerate(t['steps'], 1))
     return (f'<div class="card" style="margin-bottom:12px"><div class="pad stack gap10">'
             f'<div class="row gap10"><span class="badge neutral mono">{t["key"]}</span>'
@@ -1427,19 +1600,20 @@ def trail_block(t, kind):
 def build_index():
     n_pages = len(PAGES)
     n_subs = sum(len(p['subs']) for p in PAGES)
-    n_lifts = sum(p['body'].count('class="lifted"') for p in PAGES)
-    n_nodraw = sum(p['body'].count('class="nodraw"') for p in PAGES)
+    n_lifts = sum(len(p['lifts']) for p in PAGES)
+    n_owed = sum(p['body'].count('class="nodraw owed"') for p in PAGES)
+    n_states = sum(p['body'].count('class="nodraw state"') for p in PAGES)
 
     ia = ''
     for g in GROUP_ORDER:
         rows = ''
         for p in sorted([x for x in PAGES if x['group'] == g], key=lambda x: x['title']):
-            rows += (f'<a class="idxrow" href="{p["id"]}.html"><b>{html.escape(p["title"])}</b>'
+            rows += (f'<a class="idxrow" href="{p["id"]}.html"><b>{esc(p["title"])}</b>'
                      f'<span class="k">page</span></a>')
             for name, anchor, note in p['subs']:
                 rows += (f'<a class="idxrow" href="{p["id"]}.html#{anchor}" style="padding-left:22px">'
                          f'<span class="soft">{name}</span>'
-                         f'<span class="k">on {html.escape(p["title"])}</span></a>')
+                         f'<span class="k">on {esc(p["title"])}</span></a>')
         ia += f'<div class="section-head"><h2>{g}</h2></div><div class="idxgrid">{rows}</div>'
 
     return f"""<!--
@@ -1459,15 +1633,18 @@ def build_index():
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="proto">
-  <span class="name">Inflozo — the static prototype</span>
+<header class="proto">
+  <h1 class="name">Inflozo — the static prototype</h1>
   <span class="frame">step 5b · ruling R-75</span>
   <span class="spacer"></span>
   <span class="frame">every screen lifted from the Claude Design export</span>
-</div>
+</header>
 <main id="main"><div class="idx">
   <div class="card" style="margin-bottom:24px"><div class="pad stack gap12">
-    <h1 style="font-size:32px">Inflozo, drawn.</h1>
+    <h2 style="font-size:32px">Inflozo, drawn.</h2>
+    <p style="font-size:14.5px;line-height:1.6;max-width:78ch"><b>A frame is one screen as Claude Design drew
+      it.</b> <b>Lifted</b> means that screen is copied here byte for byte, never redrawn — so what you see on a
+      page is the drawing itself, with our notes around it and never inside it.</p>
     <p style="font-size:14.5px;line-height:1.6;max-width:78ch">Every surface of Inflozo&rsquo;s own UI, with
       the frame it comes from named on the page and the part of <b>EXPERIENCE.md</b> it implements named
       beside it. <b>Every screen here is lifted out of the Claude Design export verbatim</b> — the markup is
@@ -1481,10 +1658,13 @@ def build_index():
       <span class="chip">{n_pages} pages</span>
       <span class="chip">{n_subs} surfaces and states</span>
       <span class="chip">{n_lifts} lifted frames</span>
-      <span class="chip">{n_nodraw} not drawn</span>
+      <span class="chip">{n_owed} surfaces owed to an Appendix A prompt</span>
+      <span class="chip">{n_states} undrawn states of drawn surfaces</span>
       <span class="chip">{len(JOURNEYS)} journeys</span>
       <span class="chip">{len(FLOWS)} flows</span></div>
-    <p class="helper">Counts derive from the registry at build time, not typed.</p>
+    <p class="helper">Counts derive from the registry at build time, not typed. Frames are 1440 wide, the width
+      they were designed at: on a narrower window each one scrolls sideways inside its own box, or zoom the
+      browser out.</p>
     <div class="banner info" style="margin-top:4px"><span class="ico">ⓘ</span><span>
       <b>Want to know what it will feel like rather than whether it is right?</b> That is step 5c, beside this
       one: the same product with all of this scaffolding taken off and the behaviour put on.
@@ -1506,11 +1686,11 @@ def build_index():
       everything indented under one is a state or a surface that only exists over it.</p></div>
   {ia}
 </div></main>
-<div class="proto" style="position:static">
+<footer class="proto" style="position:static">
   <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
   <span class="frame">Disposable by design, the day the dynamic UI matches it.</span>
-</div>
+</footer>
 <script src="proto.js"></script>
 </body>
 </html>
@@ -1525,15 +1705,8 @@ def main():
         seen.add(p['id'])
         bodies[p['id'] + '.html'] = shell(p)
     bodies['index.html'] = build_index()
-    for name, src in bodies.items():
-        open(os.path.join(OUT, name), 'w').write(src)
-
-    # A page dropped from the registry must leave the folder too.
-    import glob
-    for f in glob.glob(os.path.join(OUT, '*.html')):
-        if os.path.basename(f) not in bodies:
-            os.remove(f)
-            print('  removed stale', os.path.basename(f))
+    # F-018: nothing touches the disk until every check below has passed. A red run leaves the
+    # previous pages exactly as they were; "refuses to write" is then true rather than a slogan.
 
     files = set(bodies) | {'styles.css', '../walkthrough/index.html', '../walkthrough/_screens.html'}
     ids = {n: set(re.findall(r'id="([^"]+)"', s)) for n, s in bodies.items()}
@@ -1562,32 +1735,58 @@ def main():
         raise SystemExit(f'{len(set(bad))} broken links')
 
     # THE LIFTED MARKUP MUST BE THE EXPORT'S, UNCHANGED. This is the only claim 5b makes
-    # that a reader cannot check by eye, so it is the one worth asserting: every region
-    # this build emits has to appear byte-identical to the region in the .dc.html.
-    drifted = []
+    # that a reader cannot check by eye, so it is the one worth asserting. F-019: it is an
+    # EQUALITY — each box the page carries is rebuilt from a fresh region() and must occur in
+    # the emitted page exactly as many times as it was lifted — with a floor: as many boxes
+    # as lifts, no page's lifts skipped, no region implausibly small, and at least one lift
+    # in the build. A substring test passed a truncated, renamed or dropped lift; this cannot.
+    outside = {}
     for p in PAGES:
-        for m in re.finditer(r'<div class="liftbox">(.*?)</div>\s*<p class="lift-src">'
-                             r'lifted from <span class="mono">([^<]+)\.dc\.html</span>', p['body'], re.S):
-            if m.group(1) not in frames._src(m.group(2)):
-                drifted.append(f'{p["id"]} ← {m.group(2)}')
-    if drifted:
-        raise SystemExit('lifted markup no longer matches the export: ' + ', '.join(sorted(set(drifted))))
+        body, want = p['body'], {}
+        for l in p['lifts']:
+            fresh = frames.region(l['frame'], label=l['label'], caption=l['caption'])
+            assert len(fresh) > 200, f'{p["id"]}: implausibly small region {l["key"]!r} ({len(fresh)} chars)'
+            box = liftbox(l['frame'], l['label'], l['caption'], l['capt'], fresh)
+            assert box == l['box'], f'{p["id"]}: lift {l["key"]!r} is not the export\'s region any more'
+            want[box] = want.get(box, 0) + 1
+        for box, n in want.items():
+            if body.count(box) != n:
+                raise SystemExit(f'{p["id"]}: lifted markup no longer matches the export ({n} × box, '
+                                 f'{body.count(box)} found)')
+            body = body.replace(box, '')
+        assert '<div class="liftbox"' not in body, f'{p["id"]}: a lift box the registry does not know about'
+        # counted as literal strings, not through liftbox(), so an edit to that helper that
+        # dropped either half of the box would still be caught here
+        assert p['body'].count('<div class="liftbox"') == len(p['lifts']) == \
+            p['body'].count('<p class="lift-src">'), f'{p["id"]}: box or provenance line missing'
+        outside[p['id']] = body
+    assert sum(len(p['lifts']) for p in PAGES) > 0, 'no lift was checked'
 
     # R-75: "every page must read complete with JavaScript off." That is what separates this
     # build from 5c, and it is the reason the interaction here is additive only — links,
     # hover and picking, never hiding. So nothing OUTSIDE a lifted frame may be hidden by
-    # default. (Inside one it is the export's own markup and stays untouched.)
-    leaks = []
-    for p in PAGES:
-        outside = re.sub(r'<div class="liftbox">.*?</div>\s*<p class="lift-src"[^>]*>[^<]*</p>',
-                         '', p['body'], flags=re.S)
-        # the attribute inside a tag, not the word in a sentence
-        n = len(re.findall(r'<[^>]*\shidden[\s/>]', outside)) + outside.count('display:none')
-        if n:
-            leaks.append(f'{p["id"]} ({n})')
+    # default — by attribute, by inline style, by a closed <details>, or by the stylesheet.
+    # (Inside one it is the export's own markup and stays untouched.) F-020: `outside` above
+    # is the page with every checked box removed, so this really is the scaffolding only.
+    HIDER = re.compile(r'<[^>]*\shidden[\s/>]|display\s*:\s*none|visibility\s*:\s*hidden'
+                       r'|opacity\s*:\s*0(?![.\d])|<details(?![^>]*\bopen\b)|aria-hidden="true"')
+    leaks = [f'{pid} ({len(HIDER.findall(src))})' for pid, src in outside.items() if HIDER.search(src)]
+    leaks += ['index.html'] if HIDER.search(bodies['index.html']) else []
+    css = open(os.path.join(OUT, 'styles.css'), encoding='utf8').read()
+    if re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', css):
+        leaks.append('styles.css')
     if leaks:
         raise SystemExit('hidden by default, which breaks the JS-off rule: ' + ', '.join(leaks))
-    n_lifts = sum(p['body'].count('class="lifted"') for p in PAGES)
+
+    # Only now does anything reach the disk.
+    for name, src in bodies.items():
+        open(os.path.join(OUT, name), 'w').write(src)
+    import glob                          # a page dropped from the registry must leave the folder too
+    for f in glob.glob(os.path.join(OUT, '*.html')):
+        if os.path.basename(f) not in bodies:
+            os.remove(f)
+            print('  removed stale', os.path.basename(f))
+    n_lifts = sum(len(p['lifts']) for p in PAGES)
     print(f'{len(PAGES)} pages + index.html · {n_lifts} frames lifted · '
           f'all links resolve · every lift byte-identical to the export · nothing hidden')
 
