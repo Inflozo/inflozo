@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check your inbox · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="auth">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+
+<span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
+<div class="card authcard"><div class="pad" style="display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center">
+  <h1 style="font-size:24px">Check your inbox ✨</h1>
+  <p class="softaa" style="font-size:13.5px">We sent a magic link to <b class="mono">maya@orbitweekly.com</b><br>
+    It&rsquo;s good for 15 minutes.</p>
+  <p class="helper">Didn&rsquo;t get it? Resend in <span class="mono" id="countdown">0:27</span></p>
+  <a class="btn coral" href="first-run.html">Open the link</a>
+  <a class="btn ghost" href="index.html">Use a different email</a>
+</div></div>
+<div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
+
+<script src="app.js"></script>
+<script>
+var left = 27, el = document.getElementById('countdown');
+var t = setInterval(function () {
+  left--; if (left <= 0) { clearInterval(t); el.parentNode.innerHTML = '<a href="#">Resend the link</a>'; return; }
+  el.textContent = '0:' + (left < 10 ? '0' : '') + left;
+}, 1000);
+</script>
+</body>
+</html>

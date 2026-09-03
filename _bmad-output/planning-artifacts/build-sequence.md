@@ -2,7 +2,7 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
-updated: 2026-09-03 (eighth pass) — steps 1, 2, 3, 4, 5 and 5B COMPLETE. THE PROTOTYPE IS BUILT and sits at `ux-designs/prototype/index.html` — double-click it. WHAT IS OWED NOW IS THE OWNER'S WALK: step 6 does not open until he says he has walked it, and that sentence is his (R-75). The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
+updated: 2026-09-03 (ninth pass) — steps 1, 2, 3, 4, 5, 5B and 5C COMPLETE. TWO BUILDS EXIST AND NEITHER REPLACES THE OTHER: `ux-designs/prototype/index.html` is the ANNOTATED one (5b — checkable against the frames) and `ux-designs/walkthrough/index.html` is the PRODUCT one (5c — no scaffolding, it behaves; double-click this to see how it will feel). WHAT IS OWED NOW IS THE OWNER'S WALK: step 6 does not open until he says he has walked it, and that sentence is his (R-75). The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
 covers: the steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
@@ -25,9 +25,13 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 > `prds/…/reconcile-designs-decisions.md` on 2026-08-27, extended 2026-08-31.
 > **Register item 47 is CLOSED by execution** and refuted its own premise; there is no per-template
 > `{{#get}}` budget, so **R-20's cap was withdrawn — no hard cap, the panel warns past 25.**
-> **Step 5B IS BUILT (2026-09-03).** `ux-designs/prototype/index.html` — a double-click, no server —
-> is Inflozo's own UI as static pages: one per surface `EXPERIENCE.md` names, and the four journeys
-> and eight flows each as a clickable trail. Step 5 completed the same day:
+> **Steps 5B AND 5C ARE BUILT (2026-09-03), and they answer different questions.**
+> `ux-designs/prototype/index.html` (**5b**) is the **annotated** build: one page per surface
+> `EXPERIENCE.md` names, the four journeys and eight flows as clickable trails, and every page naming
+> the frame it derives from — that is how you check a screen is *right*.
+> `ux-designs/walkthrough/index.html` (**5c**) is the **product**: the same design with every
+> annotation removed and the behaviour put on, so you can find out whether it is any *good*.
+> Both open on a double-click. Step 5 completed the same day:
 > `ux-designs/ux-Inflozo-2026-09-03/` holds both spines, `status: final`.
 > **The critical path is now the OWNER'S WALK.** Step 6 stays shut until he has walked the prototype
 > and said so; the date of that sentence goes in step 5b and it is his to write (R-75). R-30 … R-38 were propagated on 2026-08-31 and step 4
@@ -61,6 +65,7 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | **The inventory merge** | ✅ **DONE.** The inventory is generated from the export and gated; A23 Search is deleted; every per-category `Content:` / `Controls:` / `Data:` union and both of research §7's design-list columns are re-derived from the export; `derived-fields-A1-A12.md` is retired. What is **not** done is the propagation of **R-30 … R-38** — see below |
 | Journeys & flows | ✅ **DONE 2026-09-03 — step 5.** `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and `EXPERIENCE.md`, both `status: final`. Four journeys, eight flows, every surface with one stable name and a named source frame; **Appendix A carries a Claude Design prompt per undrawn surface group** (eight at the time of writing; the headings are the count). Found the **Paywall editor already drawn** at `C Post Body` C3a, which §37.7 called missing; found a library total in `S3`'s product copy that both controls had been blind to for a third time. Four rulings in `reconcile-designs-decisions.md` §A11 (R-76…R-79); `prd.md` FR-D1, FR-J7 and FR-J9 moved |
 | Static prototype | ✅ **BUILT 2026-09-03 — step 5b** (owner's ruling R-75, 2026-09-02). `ux-designs/prototype/` — **double-click `index.html`**, no server and no build step. One page per surface `EXPERIENCE.md` names, every panel/pill/marker/sheet as a section of the page it lives on, and the four journeys and eight flows as labelled trails; every page's first HTML comment names the frame it derives from (R-74) and the section it implements. Built from the frames as they stood — **Appendix A's prompts had not been run**, so its extrapolated pages should be re-checked against the D-canvases once they exist. 🔵 **What is owed: the owner's walk, which gates step 6** |
+| Walkthrough | ✅ **BUILT 2026-09-03 — step 5c.** `ux-designs/walkthrough/` — **double-click `index.html`**, which opens on Sign In as a user would meet it. No scaffolding anywhere: the annotations that make 5b checkable are exactly what stop it feeling like the product, so this build drops them and adds the behaviour instead — menus and modals open, the design ring changes the canvas *and* its control panel, the backup gate blocks until every row is covered, the deploy wizard walks with progress that moves, and FR-D11's keyboard map works. `_screens.html` is the one file that is not a product screen. **It does not replace 5b** — a change to the design belongs in both |
 | Stories | ⬜ not started — **step 6**, and it does not open until the owner has walked the prototype (R-75) |
 
 ## The BMAD skill for each step
@@ -123,13 +128,14 @@ Steps 1 and 2 run **in parallel with the owner's design work (step 3)**, and tha
 ✅ Step 3 Design prompts 2 & 3 + the controls pass (owner) ─────────┘                                         │
    └─ prompt 2 is exported: step 5 is unblocked ────────────────────────────────────────┐           (probes, if any)
                                                                                         ▼                     ▼
-                                                                       ✅ Step 5 /bmad-ux ──► ✅ inventory merge ──► ✅ Step 5b prototype ──► 🔵 the owner's walk ──► Step 6 stories
+                                                                       ✅ Step 5 /bmad-ux ──► ✅ inventory merge ──► ✅ 5b prototype + ✅ 5c walkthrough ──► 🔵 the owner's walk ──► Step 6 stories
 ```
 
-**Everything up to and including step 5b is done.** Step 5 ran on 2026-09-03 and its spines are
-final; the prototype was built the same day and opens with a double-click. What remains on the
-critical path is **the walk itself** — a person opening `ux-designs/prototype/index.html` and saying
-what reads wrong — and then stories. See step 5b.
+**Everything up to and including step 5c is done.** Step 5 ran on 2026-09-03 and its spines are
+final; both builds were made the same day and both open with a double-click. What remains on the
+critical path is **the walk itself** — a person opening
+`ux-designs/walkthrough/index.html`, clicking through it, and saying what reads wrong — and then
+stories. See steps 5b and 5c.
 
 ---
 
@@ -842,6 +848,104 @@ product will have — that the owner opens with a double-click and walks in his 
 **Unblocks:** step 6. **Step 6 does not open until the owner has walked the prototype** — a wrong
 screen is cheapest the moment before anyone builds it.
 
+---
+
+# Step 5c — the walkthrough *(the owner's ask, 2026-09-03)*
+
+> ✅ **BUILT 2026-09-03.** It is at
+> **`_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html` — double-click it.**
+> It opens on Sign In, because that is the product's front door.
+
+**Why it exists, in the owner's own words:** he opened 5b's Sign In page and saw *"a lot of other text
+which will not be on the final Inflozo app"* — the frame reference, the journey trail, the surface
+list, the stacked 390 and passkey variants — and asked for **a proper screen that will look exactly
+like how the final product will be**, with linking, placeholder data and JavaScript where it is
+needed.
+
+**He was right, and there was no hidden clean mode.** 5b's annotations are not a wrapper that can be
+switched off: they are the point of it. A page that names the frame it derives from and the
+`EXPERIENCE.md` section it implements is a page you can hold up against the export and check — that
+is R-74 made operable. And the same page necessarily shows three states of Sign In stacked one under
+another, because 5b's job is to prove every state exists. Both properties are exactly what stop it
+feeling like the product.
+
+**So there are two builds, and neither replaces the other.**
+
+| | `prototype/` — step 5b | `walkthrough/` — step 5c |
+|---|---|---|
+| Answers | *is this screen right?* | *is this any good?* |
+| Carries | frame reference, journey trails, every state of a surface on one page | nothing but the product |
+| Behaves | no — it depicts | yes — menus, modals, the design ring, the wizard, the keyboard map |
+| Read with JavaScript off | completely | mostly; JS is the point of it |
+| Changed when the design changes | **yes** | **yes** — a change belongs in both |
+
+**Produces:** the product as a clickable application. One screen per screen; real navigation; real
+menus, popovers and sheets; fixture data throughout; and enough JavaScript that the parts of the
+product that only make sense in motion actually move.
+
+**What actually behaves**, because "add JS" is not a specification:
+
+- **The design ring.** `[` and `]` cycle a real ring of five hero designs — the canvas changes, the
+  counter changes, and **the control panel changes with it**, because a hero with no image offers no
+  image controls and says so. That is the model this whole product rests on, and it is the one thing
+  a static page cannot show.
+- **The canvas is sacred at rest.** No outline, no tag, no pill until you hover; click to select,
+  click text inside a selection to type, and a live selection raises exactly the four marks.
+- **The backup gate blocks.** The master confirm is disabled until every row is covered, the reason
+  line counts down what remains, and the deploy button follows it — the `ghost backup` shortcut ticks
+  every row and the rows stay visible.
+- **The deploy wizard walks**, six steps on a first deploy, with progress that fills, the declined-token
+  path, the no-snapshot degraded path, the failure ending and the uploaded-not-live ending all
+  reachable.
+- **FR-D11's keyboard map**, including **the WCAG 2.1.4 rule** that every single-character shortcut is
+  inert while a text field or a `contenteditable` has focus. That rule is invisible in a static build
+  and is exactly the kind of thing that gets dropped at implementation time.
+
+**Two files in there are not product screens, both prefixed `_`:** `_screens.html` is a jump list, so
+that nothing the owner is judging has to carry a navigation bar; `_selfcheck.html` drives the three
+pieces of `app.js` that are not one-liners — the ring, the gate and the wizard — and prints ALL PASS.
+
+**It cannot drift from 5b.** `build-app.py` imports 5b's builder as a module and reuses its tokens,
+its component vocabulary, its fixture site and its plan matrix; `styles.css` is generated as 5b's
+stylesheet plus `_app.css`. The tokens are still transcribed from the export exactly once, in one
+place (R-74).
+
+**Needs from the owner:** nothing new. It is the thing to walk.
+**Unblocks:** nothing on its own — **R-75's gate is still the walk**, and it is recorded in step 5b.
+
+### Prompt
+
+```
+Rebuild or extend the Inflozo walkthrough — step 5c.
+Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
+
+WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
+  build-app.py   the generator — it IMPORTS ../prototype/build.py and reuses its tokens,
+                 components, fixture site and plan matrix, so the two builds cannot drift
+  _app.css       the product-only additions, appended to 5b's stylesheet at build time
+  app.js         the mock interaction layer — plain script, no modules, no fetch
+  _screens.html  a jump list; the ONE file here that is not a product screen
+  _selfcheck.html drives the ring, the backup gate and the wizard; must print ALL PASS
+Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead.
+
+THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
+No frame captions, no journey trails, no notes, no two states of one surface stacked on one
+page. If a reader could tell it is a prototype without clicking anything, it is wrong.
+
+  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
+    vocabulary from the design export and nothing else (R-74).
+  - Fixture content throughout — Orbit Weekly. Never lorem.
+  - Double-click must work: relative links only, no CDN, no build step at read time.
+  - Product limits (Appendix F.1) are shown. A library total never is.
+  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
+
+A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
+frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
+generators, then `python3 tools/doc-audit.py --check` TWICE.
+```
+
+---
+
 ### The walk — the sentence that unlocks step 6
 
 **Owner walked the prototype on: _(not yet — this line is the owner's to write)_.**
@@ -997,7 +1101,7 @@ Two readiness conditions are specific to this project and are not the usual ones
 | ~~Step 4b — you in the room~~ | ✅ **DONE 2026-08-27**, and extended on 2026-08-31 when the design patch pass and the §F asks came back to you (R-30 … R-38) |
 | ~~Step 5 — journeys and flows~~ | ✅ **DONE 2026-09-03.** It asked you three questions and you ruled all three (R-76, R-77, R-78). Both spines are final |
 | **① Still owed — eight Claude Design prompts** | `EXPERIENCE.md` Appendix A, and its `### A` headings are the count if this line has gone stale. **Step 5b's prototype was built without them**, so its pages for undrawn surfaces are extrapolated from the frames the spine names; run these and those pages should be checked against the result. Six draw surfaces that were never drawn (the first-deploy gates · history with pinning · the drift report · the dashboard sheets · the canvas markers · Theme Settings completed) · **A7 corrects six frames whose mechanism changed** · **A8 draws the editor at 834 and 720**, which R-76 and the accessibility floor both need and the export has never drawn. They block nothing — run them before or after step 5b, whichever you prefer |
-| **② Then — walk step 5b's prototype. IT IS BUILT AND WAITING.** | Double-click `_bmad-output/planning-artifacts/ux-designs/prototype/index.html`. No server, no install. Start at the four journeys and the eight flows — each is a clickable trail — then use the surface list for anything you want to look at directly. **Step 6 does not open until you have walked it**, and saying you have is yours to say (R-75); the line it goes on is in step 5b |
+| **② Then — walk it. BOTH BUILDS ARE WAITING.** | **Start with 5c**, which is the one that answers "what will this feel like": double-click `_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html`. It opens on Sign In and everything is clickable; `_screens.html` beside it is a jump list if you want to skip ahead. Then use **5b** — `ux-designs/prototype/index.html` — when you want to check a specific screen against its frame, because that one carries the frame reference on every page. **Step 6 does not open until you have walked it**, and saying you have is yours to say (R-75); the line it goes on is in step 5b |
 | **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
 | ⛔ **Before the Live project takes real customer data** | **Put Live on the Supabase Pro plan** *(register 42)*. The **Free plan has NO automatic backups at all** — that gap, not the point-in-time question, is the real cliff, and AD-26 provisions Live as a **fresh project** at go-live, so this is a step someone must perform rather than inherit. The gate is: Pro active, daily backups visible in the dashboard, **and one real restore performed** using `RESTORE-RUNBOOK.md` — a backup nobody has restored from is a hypothesis, which is exactly how the first drill found two defects |

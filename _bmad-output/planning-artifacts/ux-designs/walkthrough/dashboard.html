@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="product">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+<div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <a class="meter" href="assets.html">
+      <div class="track"><div class="fill" style="width:6%"></div></div>
+      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span></a>
+  </div>
+  <div class="anchor" style="margin-top:auto">
+    <button class="acct" data-open="account-menu" aria-haspopup="true" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left">
+      <span class="avatar">M</span>
+      <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
+        <span class="helper">maya@orbitweekly.com</span></span>
+      <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
+    </button>
+    <div class="overlay menu up left" id="account-menu" role="menu">
+      <a class="mrow" href="billing.html">Account settings</a>
+      <a class="mrow" href="billing.html">Billing &amp; plan <span class="badge pro">✦ Pro</span></a>
+      <a class="mrow" href="suggestions.html">Suggestions</a>
+      <a class="mrow" href="pricing.html">Docs</a>
+      <a class="mrow" href="#" data-open="shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
+      <div class="msep"></div>
+      <a class="mrow" href="index.html">Sign out</a>
+    </div>
+  </div>
+</div><div class="appmain"><div class="topbar">
+  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+    <input data-filter=".project" data-filter-empty="#no-projects" placeholder="Search projects…" aria-label="Search projects…"
+      style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1;color:var(--ink)">
+    <span class="kbd">⌘K</span></label>
+  <div class="row gap10" style="margin-left:auto"><span class="anchor"><button class="iconbtn" data-open="notifications" aria-label="Notifications" style="border:none;background:none;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></button><div class="overlay menu wide" id="notifications" role="menu" style="width:400px">
+  <div class="row gap10" style="padding:4px 10px 8px"><span class="panel-label grow">Notifications</span>
+    <a class="small soft" href="#" data-close>Mark all read</a></div>
+  <div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;background:var(--coral-tint)"><span class="dot coral" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span><span class="helper">14 minutes ago · shipped by you</span></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span><span class="helper">Yesterday, 18:02</span><a class="small" href="deploy.html?failed" style="color:var(--danger-text)">See what failed →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span><span class="helper">2 days ago</span><a class="small" href="deploy.html" style="color:var(--sky-text)">Review →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span><span class="helper">2 days ago</span><a class="small" href="binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span><span class="helper">Last week</span></span></div>
+  <div class="msep"></div>
+  <p class="helper" style="padding:0 10px 6px">Deploy outcomes always land here, even if you closed the tab.</p>
+</div></span><button class="btn coral" data-open="new-project"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</button></div>
+</div><div class="appbody"><div class="stack gap20">
+  <div class="row gap16" style="align-items:flex-start">
+    <div class="grow stack gap12">
+      <div class="row gap10"><h2 style="font-size:20px">Projects</h2><span class="chip">6 of 25</span></div>
+      <div class="grid g3">
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">Orbit Weekly</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-orbitweekly" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-orbitweekly">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">orbitweekly.com</span>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v5</span></div><div style="margin-top:8px;background:var(--marigold-tint);border-radius:var(--r-sm);padding:10px 12px" class="stack gap6">
+    <div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Updates available</b></div>
+    <span class="helper" style="color:var(--marigold-text)">Three designs in this site were improved since you shipped.</span>
+    <a class="btn sm secondary" href="deploy.html?updates" style="align-self:flex-start">Review and redeploy</a></div>
+  </div></div>
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">The Slow Web</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-theslowweb" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-theslowweb">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">Sample content</span>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">Maya&rsquo;s portfolio</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-mayarsquosportfolio" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-mayarsquosportfolio">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">mayachen.studio</span>
+    <div class="row gap8"><span class="badge danger"><span class="dot danger"></span>Failed</span><a class="small" href="deploy.html?failed" style="color:var(--danger)">See what failed →</a></div>
+  </div></div>
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">Field Notes</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-fieldnotes" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-fieldnotes">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">Sample content</span>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">Launch page</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-launchpage" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-launchpage">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">orbitweekly.com</span>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v2</span></div>
+  </div></div>
+        <div class="card project"><a href="editor.html" style="display:block">
+    <div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><a href="editor.html"><b style="font-size:14px">Orbit Weekly — dark exp</b></a>
+      <span class="anchor" style="margin-left:auto">
+        <button class="soft" data-open="menu-orbitweeklydarkexp" aria-label="Project menu"
+          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0 4px">⋯</button>
+        <div class="overlay menu" id="menu-orbitweeklydarkexp">
+          <a class="mrow" href="editor.html">Open</a><a class="mrow" href="#" data-close>Rename</a>
+          <a class="mrow" href="#" data-close>Duplicate</a>
+          <a class="mrow" href="deploy-history.html">History</a>
+          <div class="msep"></div><a class="mrow danger" href="#" data-close>Delete</a>
+        </div></span></div>
+    <span class="helper">Sample content</span>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+      </div>
+      <div id="no-projects" hidden class="stack gap8" style="padding:40px;text-align:center">
+        <b style="font-size:15px">Nothing matches &ldquo;<span data-filter-echo></span>&rdquo;.</b>
+        <span class="helper">Try part of a project or site name.</span></div>
+    </div>
+    <div class="card" style="width:280px;flex-shrink:0"><div class="pad-tight stack gap10">
+      <span class="panel-label">What&rsquo;s new</span>
+      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span>
+          <b style="font-size:12.5px">Style Packs: 4 new font pairings</b></div>
+        <span class="helper">Aug 12</span></div>
+      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span>
+          <b style="font-size:12.5px">Variant Shuffle now works on footers</b></div>
+        <span class="helper">Aug 6</span></div>
+      <a class="small" href="#" style="color:var(--sky-text)">Changelog →</a>
+    </div></div>
+  </div>
+  <div class="card"><div class="pad stack gap14">
+    <div class="row gap10"><span class="panel-label grow">Connected sites</span><span class="chip">3 of 10</span>
+      <a class="btn sm secondary" href="sites.html">Manage</a></div>
+    <div class="grid g3">
+      <a class="stack gap6" href="sites.html" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+        <div class="row gap8"><span class="dot mint"></span><b style="font-size:13px">Orbit Weekly</b>
+          <span class="badge live" style="margin-left:auto">Live</span></div>
+        <span class="helper mono">orbitweekly.com</span>
+        <span class="helper">Keys working · Ghost 6.58 · Shipped 14 Aug</span></a>
+      <a class="stack gap6" href="sites.html" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+        <div class="row gap8"><span class="dot danger"></span><b style="font-size:13px">Maya&rsquo;s Studio</b>
+          <span class="badge danger" style="margin-left:auto">Deploy failed</span></div>
+        <span class="helper mono">mayachen.studio</span>
+        <span class="helper">Admin key expired Aug 15</span></a>
+      <a class="stack gap6" href="preview-only.html" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+        <div class="row gap8"><span class="dot sky"></span><b style="font-size:13px">Field Notes</b>
+          <span class="badge sky" style="margin-left:auto">Preview-only</span></div>
+        <span class="helper mono">fieldnotes.ghost.io</span>
+        <span class="helper">Keys working · Ghost(Pro) Starter</span></a>
+    </div></div></div>
+</div></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
+  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
+  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
+    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
+      you are typing.</p></div>
+  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div><div class="overlay sheet-wrap" id="new-project">
+  <div class="sheet"><div class="head"><h2 style="font-size:22px">New project</h2>
+    <p class="softaa" style="font-size:13px;margin-top:4px">Four ways in. You can change everything afterwards.</p></div>
+  <div class="body">
+    <a class="radiocard on" href="starter-chooser.html"><span class="radio on"></span>
+      <span class="stack"><span class="t">Start from a starter</span>
+        <span class="c">Ten full sites, ready to wear your brand.</span></span></a>
+    <a class="radiocard" href="editor.html?empty"><span class="radio"></span>
+      <span class="stack"><span class="t">Blank canvas</span>
+        <span class="c">An empty page and every design.</span></span></a>
+    <div class="radiocard"><span class="radio"></span>
+      <span class="stack grow"><span class="t">Duplicate an existing project</span>
+        <span class="c">Everything copies except the deploy history.</span>
+        <select class="input" style="max-width:300px;margin-top:8px"><option>Orbit Weekly</option>
+          <option>The Slow Web</option><option>Launch page</option></select></span></div>
+    <a class="radiocard" href="redesign-proposals.html"><span class="radio"></span>
+      <span class="stack"><span class="t">Redesign one of my sites</span>
+        <span class="c">We look at your posts and suggest whole-site designs.</span></span></a>
+    <div style="height:1px;background:var(--line-faint)"></div>
+    <div class="row gap12"><span class="control-label">Style Pack</span>
+      <span class="row gap8"><span class="thumb" style="width:44px;height:32px;display:flex;align-items:center;justify-content:center;font-family:var(--serif)">Ag</span>
+        <b style="font-size:13px">Paper</b></span>
+      <span class="helper" style="margin-left:auto">Change it any time from the editor.</span></div>
+  </div>
+  <div class="foot"><button class="btn secondary" data-close>Cancel</button>
+    <a class="btn coral" href="editor.html">Create project</a></div></div></div>
+<script src="app.js"></script>
+
+</body>
+</html>

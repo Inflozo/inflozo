@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Error pages · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="product">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+<div class="ed">
+  <div class="edbar ink">
+  <a class="row" href="editor.html" style="width:28px;height:28px;justify-content:center;color:#F0EAE0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly &nbsp;/&nbsp; Template surfaces &nbsp;/&nbsp; Error pages</span>
+  
+  <span class="row gap6 small" style="color:#A79E8F" data-persist><span class="dot mint"></span>Synced</span>
+  <div class="row gap8" style="margin-left:auto">
+    <span class="anchor"><button class="pickbtn" data-open="viewas-menu"
+      style="font-family:var(--ui);cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="overlay menu left" id="viewas-menu">
+  <div class="mlabel">View as</div>
+  <a class="mrow on" href="#" data-close>Anonymous<span style="margin-left:auto">✓</span></a>
+  <a class="mrow" href="#" data-close>Free member</a>
+  <a class="mrow" href="#" data-close>Paid member</a>
+  <div class="msep"></div>
+  <span class="helper" style="padding:0 10px 6px;display:block">Three states, and only three. A comped
+    member previews as Paid — it differs in billing, not in access.</span></div></span>
+    <span class="split"><a class="btn coral" href="deploy.html" data-ship>Ship update</a></span></div>
+</div>
+  <div class="edmid"><div class="layers" style="background:var(--ink-deep);border-right-color:#3A342B">
+  <div class="list" style="color:#F0EAE0">
+    <a class="row gap8" href="editor.html" style="padding:8px;color:#A79E8F;font-size:12px">← Back to Home</a>
+    <span class="panel-label" style="color:#A79E8F;padding:6px 8px">POST TEMPLATE</span>
+    <a class="lrow" href="post-content.html" style="color:#F0EAE0">Post content</a>
+    <div class="lrow" style="color:#F0EAE0">Post header</div>
+    <div class="lrow" style="color:#F0EAE0">Author card</div>
+    <div style="height:1px;background:#3A342B;margin:8px"></div>
+    <span class="panel-label" style="color:#A79E8F;padding:6px 8px">TEMPLATE SURFACES</span>
+    <a class="lrow" href="paywall-editor.html" style="color:#F0EAE0">Paywall</a>
+    <a class="lrow" href="editor-cards.html" style="color:#F0EAE0">Cards</a>
+    <a class="lrow" href="error-pages.html" style="color:#F0EAE0;background:rgba(255,255,255,.08)">Error pages</a>
+  </div></div>
+  <div class="canvasmat cold">
+    <div class="row gap10" style="max-width:880px;margin:0 auto 10px">
+      <span class="seg" data-tabs><span class="on" data-tab="e404">404</span><span data-tab="private">Private</span></span>
+      <span class="chip mono">error.hbs</span>
+      <span class="helper">Ghost serves this for any 404 and any server error. It ships on every project.</span></div>
+    <div data-panel="e404">
+      <div class="site" style="max-width:880px"><div class="stack gap16" style="padding:64px 32px;align-items:center;text-align:center">
+        <svg width="120" height="90" viewBox="0 0 120 90" fill="none" stroke="#232019" stroke-width="1.5">
+          <path d="M18 70l24-44 24 44z"/><path d="M42 40v14M42 60v2"/>
+          <circle cx="92" cy="42" r="14" fill="#FFEDE8" stroke="#FF5941"/><path d="M86 42h12" stroke="#FF5941"/></svg>
+        <span style="font-family:var(--serif);font-size:30px" data-editable>That page has moved on.</span>
+        <span class="ow-dek" style="max-width:420px" data-editable>Nothing here at this address. The archive is
+          still where you left it, and the search box below usually finds what you were after.</span>
+        <div class="row gap10"><span class="ow-sub">Back to Orbit Weekly</span>
+          <span class="ow-meta">Search the archive</span></div></div></div></div>
+    <div data-panel="private" hidden>
+      <div class="card" style="max-width:560px;margin:40px auto"><div class="pad stack gap12">
+        <div class="row gap8"><span class="chip mono">private.hbs</span><span class="badge neutral">not shipping</span></div>
+        <b style="font-size:15px">This template ships when you design a Private Site Gate.</b>
+        <p style="font-size:13.5px;line-height:1.55">Ghost serves it when the whole site is set to private in
+          Ghost Admin — a single password screen in front of everything. Design one and it starts shipping;
+          leave it and Ghost uses its own.</p>
+        <a class="btn secondary" href="section-picker.html" style="align-self:flex-start">Add a Private Site Gate</a></div></div></div>
+  </div>
+  <div class="sidebar">
+    <div class="row gap8"><b style="font-size:13px">404 page</b><span class="chip mono" style="margin-left:auto">2 / 6</span></div>
+    <div class="ctlgroup"><span class="panel-label">Design</span>
+      <div class="dstrip"><button class="dthumb" style="cursor:pointer"></button><button class="dthumb on" style="cursor:pointer"></button><button class="dthumb" style="cursor:pointer"></button><button class="dthumb" style="cursor:pointer"></button><button class="dthumb" style="cursor:pointer"></button><button class="dthumb" style="cursor:pointer"></button></div><span class="helper">Illustrated Apology — a line drawing and one way back</span></div>
+    <label class="ctlgroup"><span class="control-label">Heading</span>
+      <input class="input" value="That page has moved on."></label>
+    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
+      <span class="control-label grow">Show search</span></label></div>
+    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle"></span>
+      <span class="control-label grow">Show recent posts</span></label></div>
+    <div class="ctlgroup"><span class="control-label">Background role</span>
+      <span class="seg"><span class="on">Base</span><span>Surface</span><span>Contrast</span></span></div>
+  </div></div></div>
+<script src="app.js"></script>
+
+</body>
+</html>

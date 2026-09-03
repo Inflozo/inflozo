@@ -413,6 +413,20 @@ DOCS = [
 ]
 
 GROUPS = [
+ ('ux-designs/walkthrough/', 'live', "Step 5c — the walkthrough: the product, as it will feel",
+  'The owner read step 5b and asked for the other thing: a build with NO scaffolding on it — no frame '
+  'captions, no journey trails, no notes, no stacked state variants — that behaves rather than depicts. '
+  '**Double-click `index.html`** and it opens on Sign In, exactly as a user would meet it; walk from there. '
+  'Menus and modals open, the design ring changes the canvas and the control panel with it, the backup gate '
+  'blocks until every row is covered, the deploy wizard walks its six steps with progress that moves, and '
+  "FR-D11's keyboard map works (including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a "
+  'text field). `_screens.html` is the ONE file here that is not a product screen — a jump list, deliberately '
+  'its own page so nothing the owner is judging carries scaffolding. `_selfcheck.html` drives the three '
+  'pieces of `app.js` that are not one-liners and prints ALL PASS. `build-app.py` generates it and IMPORTS '
+  "step 5b's builder, so the tokens are transcribed exactly once and the two cannot drift into two different "
+  'products; `styles.css` is generated as 5b\'s stylesheet plus `_app.css`. '
+  '**NEITHER BUILD REPLACES THE OTHER:** 5b is how you check a screen is right, 5c is how you find out '
+  'whether it is any good, and a change to the design belongs in both.'),
  ('ux-designs/prototype/', 'live', "Step 5b — the static prototype of Inflozo's own UI",
   "Ruling R-75's deliverable: Inflozo's interface as static HTML the owner opens with a DOUBLE-CLICK and walks "
   '— no server, no build step, relative links only. Start at `index.html`: the surface list, the four journeys '

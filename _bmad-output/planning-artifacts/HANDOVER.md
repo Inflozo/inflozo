@@ -26,7 +26,7 @@ numbered options and one marked **(RECOMMENDED)**.
 
 ## Where the project is
 
-**Steps 1–5 and 5b are complete, and so is the inventory merge.** The architecture, the schema and its
+**Steps 1–5, 5b and 5c are complete, and so is the inventory merge.** The architecture, the schema and its
 runnable proof, both compiler emitters, four stress rounds, a reliability round and three propagation
 audits are all applied. Every design category is drawn, specified, patched twice and exported. The
 library inventory is now **generated from the design export** and gated, so it cannot drift.
@@ -45,6 +45,24 @@ python3 tools/doc-audit.py --check        # the documentation gate
 
 **The owner's walk of the step-5b prototype. It is not a build task, and no session can do it for
 him.** The critical path now runs through one person opening one file.
+
+**Two builds exist, they answer different questions, and neither replaces the other.**
+
+| | `ux-designs/prototype/` — step 5b | `ux-designs/walkthrough/` — step 5c |
+|---|---|---|
+| Answers | *is this screen right?* | *is this any good?* |
+| Carries | the frame reference, the journey trails, every state of a surface on one page | nothing but the product |
+| Behaves | no — it depicts | yes — menus, the design ring, the wizard, the keyboard map |
+| **A design change** | **belongs here** | **and here** |
+
+**Step 5c is BUILT — 2026-09-03.** `planning-artifacts/ux-designs/walkthrough/index.html` —
+**double-click it**, and it opens on Sign In as a user would meet it. The owner read 5b and said the
+true thing: its annotations are exactly what stop it feeling like the product. They are also the
+point of it, so 5c drops them and adds behaviour instead. `build-app.py` **imports 5b's builder**, so
+the tokens are transcribed from the export exactly once and the two cannot drift. Two files there are
+not product screens, both `_`-prefixed: `_screens.html` is a jump list, `_selfcheck.html` drives the
+three non-trivial pieces of `app.js` and must print ALL PASS. Rebuild with `python3 build-app.py`
+from inside that folder; never hand-edit the emitted `.html`.
 
 **Step 5b is BUILT — 2026-09-03.**
 `planning-artifacts/ux-designs/prototype/index.html` — **double-click it.** No server, no install,
@@ -135,10 +153,13 @@ prompt flagged as unsure, and bring anything genuinely open to the owner as a nu
   beside it. A `record`; never edit it.
 - **Step 5 (2026-09-03)** — `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and
   `EXPERIENCE.md`, both `status: final`. Both are `live` and are edited rather than superseded.
-- **Step 5b (2026-09-03)** — `planning-artifacts/ux-designs/prototype/`. The static prototype and
-  its generator. **Disposable by design** the day the dynamic UI matches it, and until then it is
-  the one place the whole product can be seen at once. Rebuild it with `python3 build.py` from
-  inside that folder after any edit to the registry; never hand-edit the emitted `.html`.
+- **Step 5b (2026-09-03)** — `planning-artifacts/ux-designs/prototype/`. The **annotated** static
+  prototype and its generator. **Disposable by design** the day the dynamic UI matches it, and until
+  then it is the one place the whole product can be seen at once. Rebuild it with `python3 build.py`
+  from inside that folder after any edit to the registry; never hand-edit the emitted `.html`.
+- **Step 5c (2026-09-03)** — `planning-artifacts/ux-designs/walkthrough/`. The **product** build: the
+  same design with the scaffolding off and the behaviour on. Its generator imports 5b's, so the two
+  share one transcription of the tokens. Also disposable once the real app exists.
 - **Step 4b, the Ghost Build Room (2026-08-27)** — `prds/…/reconcile-designs-decisions.md`. Extended
   2026-08-31 with §A2 (the design patch pass), §A3 (the §F asks) and §A4 (§37.7 re-verified);
   2026-09-02/03 with §A5–§A10 (the library review, the open-questions sheet, the architect rulings,

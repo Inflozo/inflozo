@@ -4125,6 +4125,14 @@ def build_index():
       <span class="chip">{len(FLOWS)} flows</span>
       <span class="chip">fixture: Orbit Weekly</span></div>
     <p class="helper">Counts on this line are derived from the page registry at build time, not typed.</p>
+    <div class="banner info" style="margin-top:4px"><span class="ico">ⓘ</span><span>
+      <b>Looking for what it will feel like rather than whether it is right?</b> That is step 5c, and it is a
+      different artifact: the same product with all of this scaffolding taken off and the behaviour put on —
+      menus that open, a design ring that changes the canvas, a wizard that walks. It is beside this one at
+      <a href="../walkthrough/index.html">../walkthrough/index.html</a>, and
+      <a href="../walkthrough/_screens.html">its screen list</a> lets you jump straight to any screen.
+      <b>Neither replaces the other:</b> this one is how you check a screen is right, that one is how you find
+      out whether it is any good.</span></div>
   </div></div>
 
   <div class="section-head"><h2>The four journeys</h2>
@@ -4180,7 +4188,8 @@ def main():
     # Every href in every emitted page must resolve to a file we wrote, and every anchor
     # to an id that exists on its target. A surface that cannot be reached by clicking has
     # not been built — and a link that 404s on a double-click is worse than no link.
-    files = {p['id'] + '.html' for p in PAGES} | {'index.html', 'styles.css'}
+    files = ({p['id'] + '.html' for p in PAGES} | {'index.html', 'styles.css'}
+             | {'../walkthrough/index.html', '../walkthrough/_screens.html'})
     bodies = {p['id'] + '.html': shell(p) for p in PAGES}
     bodies['index.html'] = build_index()
     ids = {name: set(re.findall(r'id="([^"]+)"', src)) for name, src in bodies.items()}

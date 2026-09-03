@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paste your keys · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="product">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+
+<div style="min-height:100vh;background:var(--paper);padding:48px;display:flex;flex-direction:column;gap:24px;align-items:center;justify-content:center">
+  <div class="row gap12" style="width:100%;max-width:620px">
+    <span style="font-family:var(--display);font-weight:800;font-size:20px">Inflozo</span>
+    <span class="chip" style="margin-left:auto">2/2</span></div>
+  <div class="card" style="width:100%;max-width:620px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+    <div class="stack gap6"><h1 style="font-size:24px">Now paste the three keys.</h1>
+      <p class="softaa" style="font-size:13.5px">They&rsquo;re right on the Inflozo integration you just made.</p></div>
+    <label class="field"><span class="control-label">API URL</span>
+      <input class="input mono" value="https://orbitweekly.com" aria-label="API URL"></label>
+    <label class="field"><span class="control-label">Admin API key</span>
+      <input class="input mono" value="65a3f0e1c9d24b1f:9c2e77b0d1a4" aria-label="Admin API key"></label>
+    <label class="field"><span class="control-label">Content API key</span>
+      <input class="input mono" value="8d41c0a97b3e5f22a1" aria-label="Content API key"></label>
+    <div id="checking" hidden><div class="banner info"><span class="ico">⋯</span>
+      <span>Talking to orbitweekly.com…</span></div></div>
+    <div id="found" hidden class="stack gap10">
+      <div class="banner success"><span class="ico">✓</span><span><b>Ghost 6.58 — connected.</b>
+        Your posts, pages, tags and authors are in.</span></div>
+      <div class="banner info"><span class="ico">ⓘ</span><span><b>This site has code injection.</b>
+        Your live pages can legitimately look different from the canvas, because that code runs on the
+        site and not here. We&rsquo;ll only say this once.</span></div></div>
+    <div class="row gap10"><a class="btn secondary" href="connect-integration.html">Back</a>
+      <button class="btn coral" id="go">Connect</button>
+      <a class="btn ghost" href="#">Where do I find these?</a></div>
+  </div></div>
+</div>
+<script src="app.js"></script>
+<script>
+document.getElementById('go').addEventListener('click', function (e) {
+  e.preventDefault(); var b = this;
+  document.getElementById('checking').hidden = false; b.classList.add('off'); b.textContent = 'Connecting…';
+  setTimeout(function () {
+    document.getElementById('checking').hidden = true;
+    document.getElementById('found').hidden = false;
+    b.classList.remove('off'); b.textContent = 'Continue';
+    window.announce('Connected to Ghost 6.58');
+    b.onclick = function () { window.location.href = 'auto-branding.html'; };
+  }, 1400);
+});
+</script>
+</body>
+</html>

@@ -100,7 +100,7 @@ footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:v
 drift apart.</p>
 
 <div class="rail">
-<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
+<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="done" href="#s5c"><span class="n">STEP 5c</span><span class="t">The walkthrough</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
 </div>
 
 <section class="runbook">
@@ -606,7 +606,67 @@ House rules for tonight:
   <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. It builds the RE-SPECIFICATION for the six frames drawn on the wrong mechanism, and its plan limits are Appendix F.1’s rather than the four frames that disagree with F.1. Appendix A’s Claude Design prompts had NOT been run when it was built, so its extrapolated pages should be re-checked once the D-canvases exist.</p>
   <dl><dt>Produces</dt><dd>A walkable static prototype of the product. &lt;b&gt;The owner walking it is what unlocks step 6&lt;/b&gt;, and that sentence is his to write — build-sequence.md step 5b holds the line it goes on.</dd>
   </dl>
-  <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+  <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Rebuild or extend the Inflozo walkthrough — step 5c.
+Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
+
+WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
+  build-app.py   the generator — it IMPORTS ../prototype/build.py and reuses its tokens,
+                 components, fixture site and plan matrix, so the two builds cannot drift
+  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
+  app.js         the mock interaction layer — plain script, no modules, no fetch
+  _screens.html  a jump list; the ONE file here that is not a product screen
+  _selfcheck.html drives the ring, the backup gate and the wizard; must print ALL PASS
+Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead.
+
+THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
+No frame captions, no journey trails, no notes, no two states of one surface stacked on one
+page. If a reader could tell it is a prototype without clicking anything, it is wrong.
+
+  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
+    vocabulary from the design export and nothing else (R-74).
+  - Fixture content throughout — Orbit Weekly. Never lorem.
+  - Double-click must work: relative links only, no CDN, no build step at read time.
+  - Product limits (Appendix F.1) are shown. A library total never is.
+  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
+
+A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
+frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
+generators, then `python3 tools/doc-audit.py --check` TWICE.">Copy prompt</button></div><pre>Rebuild or extend the Inflozo walkthrough — step 5c.
+Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
+
+WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
+  build-app.py   the generator — it IMPORTS ../prototype/build.py and reuses its tokens,
+                 components, fixture site and plan matrix, so the two builds cannot drift
+  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
+  app.js         the mock interaction layer — plain script, no modules, no fetch
+  _screens.html  a jump list; the ONE file here that is not a product screen
+  _selfcheck.html drives the ring, the backup gate and the wizard; must print ALL PASS
+Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead.
+
+THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
+No frame captions, no journey trails, no notes, no two states of one surface stacked on one
+page. If a reader could tell it is a prototype without clicking anything, it is wrong.
+
+  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
+    vocabulary from the design export and nothing else (R-74).
+  - Fixture content throughout — Orbit Weekly. Never lorem.
+  - Double-click must work: relative links only, no CDN, no build step at read time.
+  - Product limits (Appendix F.1) are shown. A library total never is.
+  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
+
+A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
+frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
+generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
+</section><section class="step done" id="s5c">
+  <div class="shead">
+    <span class="snum">5c</span>
+    <div class="stitle"><h2>The walkthrough</h2>
+      <span class="badge done">complete</span></div>
+  </div>
+  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html&lt;/code&gt;&lt;/b&gt; — it opens on Sign In, as a user would meet it, with no scaffolding on any screen. What behaves: the design ring (the canvas AND its control panel change together, which is the model the product rests on), the canvas at rest and on hover, inline editing with its four marks, the backup gate that blocks until every row is covered, the six-step deploy wizard with progress that moves, and FR-D11’s keyboard map including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a text field. &lt;code&gt;_screens.html&lt;/code&gt; is a jump list and the only file there that is not a product screen; &lt;code&gt;_selfcheck.html&lt;/code&gt; drives the three non-trivial pieces of app.js and prints ALL PASS.</p>
+  <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers &lt;b&gt;is this any good&lt;/b&gt;, where 5b answers &lt;b&gt;is this screen right&lt;/b&gt;. A change to the design belongs in both.</dd>
+  </dl>
+  <div class="prompt live"><div class="phead"><h4>The walkthrough</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
 INPUTS, IN ORDER:
@@ -666,7 +726,8 @@ AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
 build-sequence.md (this section and the step table) and in HANDOVER.md, and update
 tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
 the gate is the OWNER&#x27;S WALK, not the build. When he says he has walked it, record the date
-here in this section — that sentence is what unlocks step 6, and it is his to say.">Copy prompt</button></div><pre>Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+here in this section — that sentence is what unlocks step 6, and it is his to say.">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the walkthrough. It is already built — double-click
+  ux-designs/walkthrough/index.html to look at it.</p><pre>Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
 INPUTS, IN ORDER:

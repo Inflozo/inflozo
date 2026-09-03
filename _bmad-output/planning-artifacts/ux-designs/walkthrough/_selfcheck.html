@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>app.js self-check</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<!--
+  The one runnable check behind app.js. Open it in a browser (double-click) — it drives the
+  three pieces of logic that are not one-liners and would fail silently if they broke:
+  the design ring, the backup gate's master confirm, and the wizard's step rail.
+  Every product screen depends on all three. Not a test framework, on purpose.
+-->
+<body class="product" style="padding:32px;font-family:var(--ui)">
+<h1 style="font-size:22px;font-family:var(--display)">app.js self-check</h1>
+<p class="softaa" style="font-size:13px;margin:8px 0 20px">Drives the design ring, the backup gate and the
+  wizard rail against a minimal fixture. Green is pass.</p>
+<ol id="out" style="font-size:13px;line-height:1.9"></ol>
+
+<!-- fixture: the design ring -->
+<div hidden>
+  <div data-ring="Alpha|Beta|Gamma" data-current="0" id="ring">
+    <div data-design-view="0">A</div>
+    <div data-design-view="1" hidden>B</div>
+    <div data-design-view="2" hidden>C</div>
+  </div>
+  <span data-design-count></span><span data-design-name></span>
+  <button data-design-nav="1" id="next">next</button>
+  <button data-design-nav="-1" id="prev">prev</button>
+  <div data-design-panel="0">p0</div>
+  <div data-design-panel="1" hidden>p1</div>
+  <div data-design-panel="2" hidden>p2</div>
+
+  <!-- fixture: the backup gate -->
+  <label data-backup-row><span class="check" id="r1"></span></label>
+  <label data-backup-row><span class="check" id="r2"></span></label>
+  <span class="check" data-master id="master"></span>
+  <span data-gate-go id="go" class="btn coral off"></span>
+  <span data-gate-reason id="reason"></span>
+
+  <!-- fixture: the wizard -->
+  <div data-wizard data-at="1" id="wiz">
+    <span class="rstep" data-rail-step="1"><span class="n">1</span></span>
+    <span class="rstep" data-rail-step="2"><span class="n">2</span></span>
+    <div data-step="1">one</div>
+    <div data-step="2" hidden>two</div>
+    <button data-goto="2" id="tostep2">go</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('load', function () {
+  var out = document.getElementById('out'), fails = 0;
+  function check(name, ok) {
+    fails += ok ? 0 : 1;
+    out.insertAdjacentHTML('beforeend',
+      '<li style="color:' + (ok ? 'var(--mint-text)' : 'var(--danger)') + '">'
+      + (ok ? '✓ ' : '✕ ') + name + '</li>');
+  }
+  var $ = function (s) { return document.querySelector(s); };
+
+  // 1 · the ring starts at its declared position and shows one view
+  check('ring boots at 1 of 3', $('[data-design-count]').textContent === '1 of 3');
+  check('ring names the design', $('[data-design-name]').textContent === 'Alpha');
+  check('only design 0 is visible', !$('[data-design-view="0"]').hidden && $('[data-design-view="1"]').hidden);
+  check('only panel 0 is visible', !$('[data-design-panel="0"]').hidden && $('[data-design-panel="1"]').hidden);
+
+  // 2 · it advances, and the PANEL follows the design — the model this product is built on
+  $('#next').click();
+  check('] advances to 2 of 3', $('[data-design-count]').textContent === '2 of 3');
+  check('the view follows', !$('[data-design-view="1"]').hidden && $('[data-design-view="0"]').hidden);
+  check('the panel follows the design', !$('[data-design-panel="1"]').hidden);
+
+  // 3 · ] past the last returns to the first — a dead key at the end feels broken
+  $('#next').click(); $('#next').click();
+  check('] wraps to 1 of 3', $('[data-design-count]').textContent === '1 of 3');
+  $('#prev').click();
+  check('[ wraps backwards to 3 of 3', $('[data-design-count]').textContent === '3 of 3');
+
+  // 4 · the backup gate BLOCKS until every row is covered, and says how many remain
+  check('gate starts blocked', $('#go').classList.contains('off'));
+  check('the reason names the count', /2 rows still to tick/.test($('#reason').textContent));
+  $('#master').click();
+  check('the master refuses while rows remain', !$('#master').classList.contains('on'));
+  $('#r1').click();
+  check('one row left is counted singular', /1 row still to tick/.test($('#reason').textContent));
+  $('#r2').click();
+  $('#master').click();
+  check('the master accepts once every row is covered', $('#master').classList.contains('on'));
+  check('the deploy button unblocks', !$('#go').classList.contains('off'));
+  $('#r2').click();
+  check('untick a row and the master drops again', !$('#master').classList.contains('on'));
+  check('and the button re-blocks', $('#go').classList.contains('off'));
+
+  // 5 · the wizard moves, and the rail marks what is done
+  check('wizard boots on step 1', !$('[data-step="1"]').hidden && $('[data-step="2"]').hidden);
+  $('#tostep2').click();
+  check('it advances to step 2', !$('[data-step="2"]').hidden && $('[data-step="1"]').hidden);
+  check('the rail marks step 1 done', $('[data-rail-step="1"]').classList.contains('done'));
+  check('and step 2 current', $('[data-rail-step="2"]').classList.contains('on'));
+
+  document.title = fails ? fails + ' FAILED' : 'ALL PASS';
+  out.insertAdjacentHTML('afterend',
+    '<p style="margin-top:18px;font-weight:600;font-size:15px;color:'
+    + (fails ? 'var(--danger)' : 'var(--mint-text)') + '">' + document.title + '</p>');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a section · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="product">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+
+<div style="height:100vh;background:var(--paper);display:flex;flex-direction:column">
+  <div class="row gap12" style="padding:16px 24px;border-bottom:1px solid var(--line)">
+    <label class="search" style="width:420px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+      <input data-filter=".pick" data-filter-empty="#no-designs" placeholder="Find a section…"
+        aria-label="Find a section" autofocus
+        style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1"></label>
+    <a class="btn secondary sm" href="editor.html" style="margin-left:auto">Esc — close</a></div>
+  <div class="row" style="flex:1;min-height:0;align-items:stretch">
+    <div style="width:230px;border-right:1px solid var(--line);padding:12px 10px;overflow:auto">
+      <span class="panel-label" style="display:block;padding:4px 8px">All categories</span>
+      <button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Headers</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Announcement Bars</button><button class="mrow" style="width:100%;border:none;background:var(--coral-tint);cursor:pointer;font-family:var(--ui);font-weight:600">Heroes</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Post Grids</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Featured Posts</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Post Lists</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Archive Feeds</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Tag Pages</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Author Pages</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Post Headers</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Post Content</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Post Footers</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Related Posts</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Comments</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Newsletter Signup</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Membership Tiers</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Paywalls</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Account &amp; Portal</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">About</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Team</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Testimonials</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Logos &amp; Press</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Stats</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Features</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">FAQ</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Contact</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Pricing Tables</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">CTA Bands</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Galleries</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Video &amp; Audio</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Search</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Footers</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">Legal</button><button class="mrow" style="width:100%;border:none;background:none;cursor:pointer;font-family:var(--ui);font-weight:500">404 &amp; Empty</button>
+      <label class="row gap8" style="padding:10px 8px 4px;border-top:1px solid var(--line-faint);margin-top:8px;cursor:pointer">
+        <span class="toggle"></span><span class="small soft">Free only</span></label></div>
+    <div class="grow" style="padding:20px 24px;overflow:auto">
+      <div class="row gap10" style="margin-bottom:14px"><h2 style="font-size:18px">Heroes</h2>
+        <span class="helper">shown in your pack: Paper · with your real posts</span></div>
+      <div class="grid g3"><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">ISSUE 47 · ESSAYS<br><b>The slow return of the personal homepage</b><br><span style="font-size:10px">MAYA CHEN · AUG 14</span></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Split Editorial</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">ORBIT WEEKLY<br><b>Essays for the unhurried web</b><br><span style="font-size:10px">EVERY SUNDAY · FREE</span></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Editorial Stack</b>
+            <span class="badge pro">✦ Pro</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">FIELD NOTES<br><b>Notes from a quieter internet</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Full-bleed Cover</b>
+            <span class="badge pro">✦ Pro</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">SUNDAY ESSAYS<br><b>Orbit Weekly, issue by issue</b><br><span style="font-size:10px">One considered essay a week.</span></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Centred Classic</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden"><b>Read widely, scroll less</b><br><span style="font-size:10px">01 The case for blogrolls<br>02 Quiet software</span></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Magazine Duo</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden"><b>The web is a <i>garden</i>, not a feed.</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Big Serif Statement</b>
+            <span class="badge pro">✦ Pro</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden"><b>Sunday essays on the humane web</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Photo Ribbon</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">ORBIT WEEKLY<br><b>A homepage worth keeping</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Minimal Masthead</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">EVERY THURSDAY<br><b>Seven links from the quiet web</b><br><span style="font-size:10px">you@example.com</span></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Split Form</b>
+            <span class="badge free">Free</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">MEMBERS<br><b>Join 4,100 readers of the Sunday orbit</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Member Welcome</b>
+            <span class="badge pro">✦ Pro</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden">ISSUE 118<br><b>The four hundred domains that refuse to move</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Image Backdrop</b>
+            <span class="badge pro">✦ Pro</span></span></a><a class="card pick" href="editor.html">
+          <span class="thumb" style="display:block;height:150px;border-radius:12px 12px 0 0;border:none;
+            padding:16px;font-family:var(--serif);font-size:12px;line-height:1.4;color:var(--ink-deep);overflow:hidden"><b>The web did not get worse. It got busier.</b></span>
+          <span class="pad-tight row gap8"><b style="font-size:12.5px" class="grow">Big Type Manifesto</b>
+            <span class="badge free">Free</span></span></a></div>
+      <div id="no-designs" hidden style="padding:48px;text-align:center" class="stack gap10">
+        <b style="font-size:15px">Nothing matches &ldquo;<span data-filter-echo></span>&rdquo;.</b>
+        <span class="helper">Try a category on the left, or a plainer word — the designs are named for what
+          they look like, not for what you would put in them.</span></div>
+    </div></div></div>
+<script src="app.js"></script>
+<script>
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') window.location.href = 'editor.html';
+});</script>
+</body>
+</html>

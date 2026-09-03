@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Inflozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="auth">
+<div id="live-polite" aria-live="polite" class="sr-only"></div>
+
+<span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
+<div class="card authcard"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+  <div class="stack gap6"><h1 style="font-size:24px">Make something gorgeous.</h1>
+    <p class="softaa" style="font-size:13.5px">Sign in or create an account — no passwords, ever.</p></div>
+  <label class="field"><span class="control-label">Email</span>
+    <input class="input" type="email" value="maya@orbitweekly.com" aria-label="Email"></label>
+  <a class="btn coral lg" href="magic-link-sent.html" style="width:100%">Send magic link</a>
+  <div class="row gap10"><span style="flex:1;height:1px;background:var(--line)"></span>
+    <span class="helper">or</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+  <button class="btn secondary lg" data-open="passkey" style="width:100%">Sign in with a passkey</button>
+</div></div>
+<div class="row gap8 helper"><a href="pricing.html">Pricing</a><span>·</span><span>Terms</span><span>·</span><span>Privacy</span></div>
+<div class="overlay sheet-wrap" id="passkey" style="align-items:center">
+  <div class="sheet narrow" style="max-width:380px">
+    <div class="head"><h2 style="font-size:16px">Sign in to &ldquo;inflozo.app&rdquo;</h2></div>
+    <div class="body"><p class="softaa" style="font-size:13px">Use Touch ID to sign in with your saved passkey.</p></div>
+    <div class="foot"><button class="btn secondary" data-close>Cancel</button>
+      <a class="btn" href="dashboard.html" style="margin-left:auto">Use Touch ID</a></div></div></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Inflozo walkthrough — the product-only additions.
+   Step 5c. This file is APPENDED to the step-5b stylesheet at build time, so the
+   tokens are transcribed exactly once, in one place, from the design export.
+   Everything below exists because the walkthrough behaves and 5b only depicts:
+   overlays that open, modes that switch, a canvas that scrolls inside a device.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* The walkthrough fills the window — it is the product, not a frame on a mat.
+   NOTE the body class is `product`, not `app`: `.app` is the shell component in the
+   step-5b stylesheet, and putting it on <body> made every page a flex row. */
+body.product { background: var(--paper); }
+body.product .screen { max-width: none; margin: 0; border-radius: 0; box-shadow: none; }
+body.product .app { min-height: 100vh; }
+body.product .ed { height: 100vh; }
+
+/* ── overlays ─────────────────────────────────────────────────────────────── */
+.overlay { display: none; }
+.overlay.is-open { display: flex; }
+
+.overlay.sheet-wrap {
+  position: fixed; inset: 0; z-index: 200; background: var(--scrim);
+  align-items: flex-start; justify-content: center; padding: 6vh 24px;
+  overflow: auto; animation: fade 200ms ease-out;
+}
+.overlay.sheet-wrap > .sheet { animation: rise 200ms ease-out; }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes rise { from { opacity: 0; transform: scale(.98) } to { opacity: 1; transform: none } }
+
+/* A menu is anchored to what opened it, so it needs a positioned parent. */
+.anchor { position: relative; }
+.overlay.menu {
+  position: absolute; z-index: 150; top: calc(100% + 6px); right: 0;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); box-shadow: var(--sh-md); padding: 6px;
+  flex-direction: column; gap: 1px; min-width: 210px; animation: rise 160ms ease-out;
+}
+.overlay.menu.left { right: auto; left: 0; }
+.overlay.menu.up { top: auto; bottom: calc(100% + 6px); }
+.overlay.menu.wide { min-width: 320px; }
+.menu .mrow {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: var(--r-sm); font-size: 13px; font-weight: 500; color: var(--ink);
+  white-space: nowrap; cursor: pointer;
+}
+.menu .mrow:hover { background: var(--paper); color: var(--ink); }
+.menu .mrow.on { background: var(--coral-tint); font-weight: 600; }
+.menu .mrow.danger { color: var(--danger); }
+.menu .msep { height: 1px; background: var(--line); margin: 5px 8px; }
+.menu .mlabel { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-soft); padding: 8px 10px 4px; font-weight: 600; }
+
+/* A popover floats over the canvas rather than hanging off a bar. */
+.overlay.pop {
+  position: absolute; z-index: 160; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh-md);
+  padding: 14px; flex-direction: column; gap: 10px; width: 340px;
+  animation: rise 160ms ease-out;
+}
+
+/* ── the editor, as a real application window ─────────────────────────────── */
+.ed { position: relative; }
+.canvasmat { scroll-behavior: smooth; }
+.layers { transition: width 160ms ease-out, opacity 160ms ease-out; }
+body.layers-hidden .layers { width: 0; opacity: 0; overflow: hidden; border-right: none; }
+
+/* Preview Mode: everything runs, ALL editing chrome goes. */
+body.mode-preview .edbar,
+body.mode-preview .layers,
+body.mode-preview .sidebar,
+body.mode-preview .canvas-chrome { display: none !important; }
+body.mode-preview .canvasmat { padding: 0; background: var(--mat); }
+body.mode-preview .site { max-width: none; border-radius: 0; box-shadow: none; }
+body.mode-preview [data-section] { outline: none !important; }
+.preview-bar {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 120;
+  display: none; border-radius: var(--r-pill); padding: 6px 8px;
+}
+body.mode-preview .preview-bar { display: inline-flex; }
+
+/* The canvas is a VIEWPORT, not a column: both axes resize to a real device
+   size, so a sticky header sticks and the fold is where the fold is. There is
+   no user zoom — the only scale is fit-to-screen, and it is automatic. */
+.viewport { margin: 0 auto; transition: width 200ms ease-out, height 200ms ease-out; }
+body.device-desktop .viewport { width: 100%; max-width: 1100px; height: auto; }
+body.device-tablet  .viewport { width: 834px; height: 1112px; max-height: calc(100vh - 190px);
+  overflow: auto; box-shadow: var(--sh-lg); border-radius: 8px; }
+body.device-mobile  .viewport { width: 390px; height: 844px; max-height: calc(100vh - 190px);
+  overflow: auto; box-shadow: var(--sh-lg); border-radius: 8px; }
+body.device-tablet .viewport .site,
+body.device-mobile .viewport .site { max-width: none; border-radius: 0; box-shadow: none; }
+[data-size-chip] { display: none; }
+body.device-tablet [data-size-chip="tablet"],
+body.device-mobile [data-size-chip="mobile"],
+body.device-desktop [data-size-chip="desktop"] { display: inline-flex; }
+
+/* Dark preview. The app chrome stays light — there is no app dark mode in v1;
+   the canvas and the template surfaces are the only dark things in the product. */
+body.canvas-dark .site { background: #171511; color: #F0EAE0; }
+body.canvas-dark .ow-nav { border-color: #3A342B; }
+body.canvas-dark .ow-brand, body.canvas-dark .ow-h1 { color: #F0EAE0; }
+body.canvas-dark .ow-dek, body.canvas-dark .ow-meta { color: #A79E8F; }
+body.canvas-dark .site [style*="background:#FFFFFF"] { background: #1F1C17 !important; }
+body.canvas-dark .site [style*="background:#F4EFE6"] { background: #221E18 !important; }
+
+/* Style Pack crossfade — 300ms, and it becomes instant under reduced motion. */
+[data-site] { transition: opacity 300ms ease-out; }
+[data-site][data-packing] { opacity: .35; }
+[data-theme="tangerine"] { --ow-accent: #E8450A; --ow-ink: #2B1D12; --ow-paper: #FFF4EA; --ow-serif: 'Bricolage Grotesque', sans-serif; }
+[data-theme="ink"]       { --ow-accent: #7C5CFF; --ow-ink: #16161A; --ow-paper: #F5F5F7; --ow-serif: 'Bricolage Grotesque', sans-serif; }
+[data-theme="meadow"]    { --ow-accent: #2F7D4F; --ow-ink: #17231B; --ow-paper: #F2F7F0; --ow-serif: Georgia, serif; }
+[data-theme="berry"]     { --ow-accent: #B4306A; --ow-ink: #2A1420; --ow-paper: #FDF2F6; --ow-serif: Georgia, serif; }
+[data-theme] .site { background: var(--ow-paper); }
+[data-theme] .ow-brand, [data-theme] .ow-h1 { font-family: var(--ow-serif); color: var(--ow-ink); }
+[data-theme] .ow-eyebrow { color: var(--ow-accent); }
+[data-theme] .ow-sub { background: var(--ow-accent); }
+
+/* ── the canvas at rest is SACRED: chrome arrives on hover and leaves on exit ─ */
+[data-section] { position: relative; outline: 2px solid transparent; outline-offset: -2px;
+  transition: outline-color 120ms ease-out; }
+body:not(.mode-preview) [data-section]:hover { outline-color: var(--coral); outline-width: 1px; }
+body:not(.mode-preview) [data-section].is-selected { outline-color: var(--coral); outline-width: 2px; }
+.sec-chrome {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  z-index: 40; opacity: 0; pointer-events: none; transition: opacity 120ms ease-out;
+}
+body:not(.mode-preview) [data-section]:hover > .sec-chrome,
+body:not(.mode-preview) [data-section].is-selected > .sec-chrome { opacity: 1; pointer-events: auto; }
+.sec-tag {
+  position: absolute; top: -11px; left: 0; z-index: 40; opacity: 0;
+  background: var(--coral); color: #fff; font-size: 10.5px; font-weight: 600;
+  padding: 2px 7px; border-radius: 5px 5px 0 0; transition: opacity 120ms ease-out;
+  font-family: var(--ui);
+}
+body:not(.mode-preview) [data-section]:hover > .sec-tag,
+body:not(.mode-preview) [data-section].is-selected > .sec-tag { opacity: 1; }
+.addhere {
+  height: 0; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 120ms ease-out, height 120ms ease-out;
+}
+.canvasmat:hover .addhere { opacity: 1; height: 26px; }
+.addhere a {
+  font-size: 11px; background: var(--surface); border: 1px dashed var(--line-strong);
+  border-radius: var(--r-full); padding: 2px 12px; color: var(--ink-soft);
+}
+.addhere a:hover { border-color: var(--coral); color: var(--coral-text); }
+
+[data-editable] { border-radius: 3px; }
+body:not(.mode-preview) [data-editable]:hover { box-shadow: 0 0 0 1px var(--line-strong); }
+[data-editable].is-editing { outline: none; box-shadow: 0 0 0 2px rgba(255,89,65,.4); }
+[data-editable]::selection, [data-editable] *::selection { background: rgba(217,108,63,.28); }
+
+#inline-toolbar {
+  position: absolute; z-index: 170; display: none; align-items: center; gap: 2px;
+  background: var(--ink); border-radius: var(--r-thumb); padding: 4px;
+  box-shadow: var(--sh-lg);
+}
+#inline-toolbar.is-open { display: flex; }
+#inline-toolbar button {
+  min-width: 30px; height: 30px; border: none; background: transparent; color: #fff;
+  border-radius: 6px; cursor: pointer; font-size: 14px; font-family: var(--serif);
+}
+#inline-toolbar button:hover { background: rgba(255,255,255,.15); }
+#inline-toolbar button.is-pressed { background: rgba(255,255,255,.28); }
+#inline-toolbar button[disabled] { opacity: .35; cursor: default; background: transparent; }
+#inline-toolbar .sep { width: 1px; height: 18px; background: rgba(255,255,255,.25); margin: 0 4px; }
+
+/* ── progress that actually moves ─────────────────────────────────────────── */
+[data-progress-step] .bar { width: 0; transition: width 800ms linear; }
+[data-progress-step].pending { opacity: .45; }
+[data-progress-step].done .progress { display: none; }
+
+/* ── confetti: EXACTLY ONE in the product, and it respects reduced motion ─── */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 300; overflow: hidden; }
+.confetti i {
+  position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px;
+  animation: fall 2.6s linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(105vh) rotate(540deg); opacity: .1; }
+}
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
+
+/* ── the app floor. It is a DEVICE test, not a width test: a desktop at 200%
+   browser zoom keeps the editor and reflows, because browser zoom is the
+   reader's accessibility setting and defeating it fails WCAG 1.4.4. ──────── */
+.small-screen-only { display: none; }
+.small-screen-only.show { display: flex; }
+/* Paper is the default pack, so its roles must exist before any switch happens. */
+[data-theme="paper"] { --ow-accent: #D96C3F; --ow-ink: #232019; --ow-paper: #FBF9F5; --ow-serif: Georgia, serif; }
+@media (max-width: 1023px) and (pointer: coarse) {
+  body[data-editor-shell] .ed { display: none; }
+  body[data-editor-shell] .small-screen-only { display: flex; }
+}
+@media (max-width: 1100px) {
+  body[data-editor-shell] .layers { width: 56px; }
+  body[data-editor-shell] .layers .lrow span:not(.grow),
+  body[data-editor-shell] .layers .panel-label,
+  body[data-editor-shell] .layers .lrow .grow { display: none; }
+  body[data-editor-shell] .sidebar {
+    position: absolute; right: 0; top: 48px; bottom: 0; z-index: 60;
+    box-shadow: var(--sh-lg);
+  }
+}
+
+/* ── touch floor: 44px targets in the tablet range ───────────────────────── */
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .seg span, .seg a { min-height: 40px; display: inline-flex; align-items: center; }
+  .iconbtn, .menu .mrow { min-height: 44px; }
+}
+
+/* the walkthrough's own tiny escape hatch — one file, never on a product screen */
+.screens-index { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+body.product .appmain { height: 100vh; }
+body.product .appbody { flex: 1; overflow: auto; }
+body.auth { background: var(--paper); min-height: 100vh; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 48px 24px; }
+body.auth .authcard { width: 100%; max-width: 420px; }
+
+#remix-toast:not([hidden]) { display: flex; }
+
+.grid { align-items: start; }
+
+body.product .wizbody { align-items: center; }
+body.product .wizbody > * { width: 100%; max-width: 760px; }

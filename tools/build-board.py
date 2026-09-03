@@ -101,6 +101,21 @@ STEPS = [
   'A walkable static prototype of the product. <b>The owner walking it is what unlocks step 6</b>, '
   'and that sentence is his to write \u2014 build-sequence.md step 5b holds the line it goes on.',
   None),
+ ('s5c', '5c', 'The walkthrough', 'done',
+  "The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, "
+  'every state of a surface stacked on one page — are exactly what stop it feeling like the product. '
+  'They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. '
+  'BUILT 2026-09-03. <b>Double-click '
+  '<code>_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html</code></b> \u2014 it opens on '
+  'Sign In, as a user would meet it, with no scaffolding on any screen. What behaves: the design ring '
+  '(the canvas AND its control panel change together, which is the model the product rests on), the '
+  'canvas at rest and on hover, inline editing with its four marks, the backup gate that blocks until '
+  'every row is covered, the six-step deploy wizard with progress that moves, and FR-D11\u2019s keyboard '
+  'map including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a text field. '
+  '<code>_screens.html</code> is a jump list and the only file there that is not a product screen; '
+  '<code>_selfcheck.html</code> drives the three non-trivial pieces of app.js and prints ALL PASS.',
+  'The product as a clickable application \u2014 the artifact that answers <b>is this any good</b>, where '
+  '5b answers <b>is this screen right</b>. A change to the design belongs in both.', None),
  ('s6', '6', 'Epics and stories', 'later',
   'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS '
   'BUILT BUT THE GATE IS THE WALK, not the build \u2014 this step opens the day the owner says he '
@@ -127,6 +142,9 @@ PROMPTS = [
   'Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled '
   'item to you as a numbered decision.'),
  ('s5b', 'Static prototype', 'live', None),
+ ('s5c', 'The walkthrough', 'live',
+  'Run it only to REBUILD or extend the walkthrough. It is already built — double-click\n'
+  '  ux-designs/walkthrough/index.html to look at it.'),
  ('s6',  'Epics and stories', 'live', None),
  ('s6b', 'Readiness gate', 'live', None),
 ]
