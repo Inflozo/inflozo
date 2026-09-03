@@ -118,7 +118,7 @@ STEPS = [
   'selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and '
   'the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing '
   'the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: '
-  'the design ring and the backup gate (no frame \u2014 prompts A5 and A1), the six-step first deploy, '
+  'the on-section design nav and the backup gate (no frame \u2014 prompts A5 and A1), the six-step first deploy, '
   'the wrong-mechanism frames held out or shown as drawn until A7 runs (\u00a7A12 decision 6), and the '
   'states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
   'that are not product screens.',
