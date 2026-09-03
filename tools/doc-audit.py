@@ -450,7 +450,12 @@ GROUPS = [
   'checkable against the export. SECOND CUT: every screen is now LIFTED from the .dc.html verbatim via '
   '`../frames.py` and the annotation sits AROUND the frame, never in it; a surface with no frame says so and '
   'shows nothing, because inventing a picture there is the second interface vocabulary R-74 forbids. '
-  '`build.py` generates the lot from one registry — so the index cannot claim a '
+  'IT IS ALSO CLICKABLE, additively: every drawn frame\'s own controls navigate and its segmented '
+  'controls pick, but NOTHING IS HIDDEN — R-75 requires every page to read complete with JavaScript '
+  'off, and two build assertions enforce it (a page whose lifted frames respond to nothing fails; so '
+  'does anything hidden by default outside a frame). That is why 5b and 5c behave differently and '
+  'neither is a bug: 5c hides and reveals because it is the product, 5b never hides because it is the '
+  'proof. `build.py` generates the lot from one registry — so the index cannot claim a '
   'surface that does not exist, or miss one that does — and it refuses to write if any link or anchor is dead. '
   'It is DISPOSABLE BY DESIGN once the dynamic UI matches it. **Step 6 stays shut until the owner says he has '
   'walked it** (R-75); that sentence lives in `build-sequence.md` step 5b.'),

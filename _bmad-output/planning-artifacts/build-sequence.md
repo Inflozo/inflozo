@@ -945,6 +945,24 @@ six frames in EXPERIENCE.md's "drawn, but on the wrong mechanism" table, and the
 with Appendix F.1 on plan limits. R-74 gives the export the construction; `prd.md` keeps behaviour
 and strings.
 
+> ✅ **AND 5B IS CLICKABLE, under one constraint that comes from R-75 rather than from taste.**
+> R-75 says *"every page must read complete with JavaScript off"* — which is what makes 5b the
+> checking artifact, since a state you have to click to reach is a state you can forget to check.
+> So the interaction here is **additive only: nothing is hidden, nothing collapses.** Every drawn
+> frame's own controls go where they say they go (the `WIRING` table in `build.py`, keyed by frame
+> and region so it can be read against the export); segmented controls, tab rows and radio lists
+> pick, using the selected look the frame drew; and the export's own `style-hover` states work,
+> which they did not before because 5b had no script at all. `proto.js` is the whole layer.
+>
+> **Two build-time assertions hold the line**, because both of these failed silently once already:
+> a page whose <b>lifted frames</b> contain no link and no pick group stops the build (scaffolding
+> links do not count — that is how 5c went inert while every link still resolved); and anything
+> hidden by default <b>outside</b> a lifted frame stops it too, which is the JS-off rule made
+> mechanical rather than remembered.
+>
+> **This is why 5b and 5c behave differently and neither is a bug.** 5c hides and reveals because it
+> is the product. 5b never hides, because it is the proof.
+
 > ✅ **STEP 5B WAS REBUILT ON THE SAME LIFTER, in the same pass.** `frames.py` moved up to
 > `ux-designs/` so both generators share it. Every screen in the prototype is now a lifted frame with
 > the annotation *around* it rather than inside it — and where a surface **has no frame**, the page

@@ -60,13 +60,184 @@ def flow(key, title, why, steps):
 # ─────────────────────────────────────────────────────────────────────────────
 # A drawn screen, lifted. Never re-drawn.
 # ─────────────────────────────────────────────────────────────────────────────
-def lift(frame, label=None, caption=None, capt=None, anchor=None):
+# ─────────────────────────────────────────────────────────────────────────────
+# What each drawn frame's own controls do.
+#
+# Keyed by frame and region rather than applied at the call sites, because a page here
+# carries a dozen lifts and the table is easier to check against the export than sixty
+# scattered arguments. Everything in it is ADDITIVE — a link works with JavaScript off,
+# and a pick group's options were all visible before anyone clicked (R-75).
+# ─────────────────────────────────────────────────────────────────────────────
+WIRING = {
+ ('S1 Sign In', 'S1a Sign in default'): dict(links=[
+     ('Send magic link', 'magic-link-sent.html'), ('Sign in with a passkey', 'sign-in.html#passkey')]),
+ ('S1 Sign In', 'S1b Magic link sent'): dict(links=[('Use a different email', 'sign-in.html')]),
+ ('S2 Onboarding', 'S2a First run'): dict(links=[
+     ('Connect your Ghost site', 'connect-integration.html'),
+     ('Start from a starter', 'starter-chooser.html'), ('Blank canvas', 'editor.html')]),
+ ('S2 Onboarding', 'S2b1 Create integration'): dict(links=[
+     ('Done — next', 'connect-keys.html'), ('Back', 'first-run.html')]),
+ ('S2 Onboarding', 'S2b Keys step'): dict(links=[
+     ('Connect', 'auto-branding.html'), ('Back', 'connect-integration.html')]),
+ ('S2 Onboarding', 'S2c Auto branding'): dict(links=[
+     ('Use your brand', 'redesign-proposals.html'), ('Skip', 'redesign-proposals.html')]),
+ ('S2 Onboarding', 'S2d Choose starter'): dict(links=[('Back', 'first-run.html')]),
+ ('S3 Dashboard', 'S3a Dashboard rich'): dict(links=[
+     ('New project', 'new-project-sheet.html'), ('Orbit Weekly', 'editor.html'),
+     ('The Slow Web', 'editor.html'), ('Field Notes', 'editor.html'),
+     ('Launch page', 'editor.html'), ('Changelog →', 'notifications.html')]),
+ ('S3 Dashboard', 'S3b Dashboard empty'): dict(links=[('New project', 'new-project-sheet.html')]),
+ ('S3 Dashboard', 'S3c Dashboard free plan'): dict(links=[
+     ('Go Pro — $15/mo', 'upgrade-sheet.html'), ('Delete', 'dashboard.html')]),
+ ('S11 Sites', 'S11a Sites'): dict(links=[
+     ('Manage API keys', 'manage-keys.html'), ('Connect site', 'connect-integration.html'),
+     ('Reconnect', 'manage-keys.html')]),
+ ('S10 Assets', 'S10a Asset library'): dict(links=[('View', 'assets.html#details')]),
+ ('S13 Suggestions', 'S13a Suggestions'): dict(
+     links=[('Suggest something', 'suggestions.html#submit')],
+     picks=[('Top', 'New', 'Planned', 'Building', 'Shipped')]),
+ ('S4 Editor', 'S4a Editor rest'): dict(
+     links=[('Ship it', 'deploy-destination.html'), ('+ Add section', 'section-picker.html'),
+            ('Post', 'post-content.html'), ('Change', 'style-packs.html')]),
+ ('S4 Editor', 'S4b Editor hover'): dict(links=[
+     ('Ship it', 'deploy-destination.html'), ('+ Add section', 'section-picker.html')]),
+ ('S4 Editor', 'S4c Editor selected'): dict(
+     links=[('Ship it', 'deploy-destination.html'), ('+ Add section', 'section-picker.html')],
+     picks=[('Left', 'Right'), ('Compact', 'Comfortable', 'Tall')]),
+ ('S5 Section Picker', 'S5a Section picker'): dict(links=[('Add', 'editor.html')]),
+ ('S6 Variant Shuffle', 'S6 Variant shuffle'): dict(
+     links=[('Ship it', 'deploy-destination.html'), ('+ Add section', 'section-picker.html')],
+     picks=[('Compact', 'Comfortable', 'Spacious')]),
+ ('S7 Style Packs', 'S7a Style pack panel'): dict(
+     links=[('Ship it', 'deploy-destination.html'), ('New pack', 'style-packs.html#new')],
+     picks=[('Narrow', 'Standard', 'Wide'), ('Sharp', 'Soft', 'Round'),
+            ('Compact', 'Comfortable', 'Spacious'), ('Solid', 'Soft', 'Outline')]),
+ ('S7 Style Packs', 'S7c Edit pack'): dict(links=[
+     ('Save pack', 'style-packs.html'), ('Cancel', 'style-packs.html')]),
+ ('S7 Style Packs', 'S7d New pack'): dict(links=[
+     ('Save pack', 'style-packs.html'), ('Cancel', 'style-packs.html')]),
+ ('S8 Deploy', 'S8a Ship step 1'): dict(
+     links=[('Run checks', 'preflight-check.html'), ('Switch', 'sites.html')],
+     picks=[('Deploy &amp; activate', 'Deploy only')]),
+ ('S8 Deploy', 'S8e History drawer'): dict(links=[('Ship it', 'deploy-destination.html')]),
+ ('S9 Routes', 'S9a Routes manager'): dict(links=[('+ New collection', 'routes-manager.html#new-collection')]),
+ ('S9 Routes', 'S9d Routes empty'): dict(links=[('+ New collection', 'routes-manager.html#new-collection')]),
+ ('C Post Body', 'C2a Post content desktop'): dict(
+     links=[('Ship update', 'deploy-destination.html'), ('Preview', 'editor.html#preview')],
+     picks=[('Narrow', 'Comfortable', 'Wide')]),
+ ('C Post Body', 'C3a Paywall editor'): dict(
+     links=[('Ship update', 'deploy-destination.html'), ('Back to post', 'post-content.html')],
+     picks=[('None', 'Fade', 'Blur'), ('All paid', 'Cheapest', 'One I pick'),
+            ('Page', 'Tinted', 'Inverted'), ('Anonymous', 'Free member', 'Paid member')]),
+ ('S14 Editor Cards', 'S14e callout selected'): dict(
+     links=[('Reset to Ghost default', 'editor-cards.html#reset')],
+     picks=[('Pack tokens', 'Ghost&#x27;s palette'), ('Small', 'Large')]),
+ ('M5 Pricing', 'M5 Pricing'): dict(
+     links=[('Start free', 'sign-in.html'), ('Go Pro', 'upgrade-sheet.html'),
+            ('Sign in', 'sign-in.html')],
+     picks=[('Monthly', 'Yearly')]),
+ ('B Missing Surfaces', 'B23a Chooser'): dict(links=[
+     ('Start empty', 'editor.html'), ('Back', 'first-run.html')]),
+ ('B Missing Surfaces', 'B13 Pro blocking sheet'): dict(links=[
+     ('Swap and ship free', 'backup-gate.html'), ('Go Pro and ship', 'upgrade-sheet.html')]),
+ # frames addressed by caption rather than label
+ ('S3 Dashboard', 'S3d ·'): dict(links=[
+     ('Account settings', 'billing.html'), ('Billing &amp; plan', 'billing.html'),
+     ('Suggestions', 'suggestions.html'), ('Sign out', 'sign-in.html')]),
+ ('S3 Dashboard', 'S3e ·'): dict(links=[('Reconnect →', 'manage-keys.html')]),
+ ('S8 Deploy', 'S8b ·'): dict(links=[
+     ('Ship it', 'deploy-progress.html'), ('Back', 'deploy-destination.html'),
+     ('Fix in editor', 'editor.html')]),
+ ('S8 Deploy', 'S8c ·'): dict(links=[('Cancel', 'deploy-destination.html')]),
+ ('S8 Deploy', 'S8d ·'): dict(links=[('Done', 'editor.html'), ('View site', 'deploy-live.html')]),
+ ('S8 Deploy', 'S8d′ ·'): dict(links=[
+     ('Reconnect site', 'manage-keys.html'), ('Close', 'editor.html')]),
+ ('S8 Deploy', 'S8a′ ·'): dict(links=[
+     ('Download theme', 'preview-only-notice.html'),
+     ('Which Ghost plans work? ↗', 'preview-only-notice.html')]),
+ ('S11 Sites', 'S11b ·'): dict(links=[
+     ('Done — next', 'connect-keys.html'), ('Cancel', 'sites.html')]),
+ ('S11 Sites', 'S11c ·'): dict(links=[('Go Pro — $15/mo', 'upgrade-sheet.html')]),
+ ('S11 Sites', 'S11d ·'): dict(links=[('Cancel', 'sites.html')]),
+ ('S12 Billing', 'S12a ·'): dict(links=[
+     ('View invoices', 'billing.html#invoices'), ('Delete account', 'billing.html#delete'),
+     ('Cancel plan', 'billing.html#cancel'), ('Add a passkey', 'billing.html')]),
+ ('S12 Billing', 'S12b ·'): dict(links=[('Go Pro — $15/mo', 'dashboard.html')],
+                                 picks=[('Monthly', 'Yearly')]),
+ ('S12 Billing', 'S12c ·'): dict(links=[('Cancel', 'billing.html')]),
+ ('S12 Billing', 'S12d ·'): dict(links=[('Open the Dodo portal ↗', 'billing.html')]),
+ ('S13 Suggestions', 'S13b ·'): dict(links=[('Cancel', 'suggestions.html')]),
+ ('S13 Suggestions', 'S13c ·'): dict(links=[('Suggest something', 'suggestions.html#submit')]),
+ ('S9 Routes', 'S9c ·'): dict(links=[('Cancel', 'routes-manager.html')]),
+ ('S9 Routes', 'S9e ·'): dict(links=[('Cancel', 'routes-manager.html')]),
+ ('S10 Assets', 'S10c ·'): dict(links=[('Cancel', 'assets.html')]),
+ ('S10 Assets', 'S10d Image details'): dict(links=[('Delete', 'assets.html#delete')]),
+ ('S14 Editor Cards', 'S14c reset confirm'): dict(links=[('Cancel', 'editor-cards.html')]),
+ ('B Missing Surfaces', 'B14a · #14'): dict(links=[
+     ('Review and redeploy', 'library-update-confirm.html')]),
+ ('B Missing Surfaces', 'B14b · #14'): dict(links=[
+     ('Update and ship', 'deploy-progress.html'), ('Not now', 'editor.html')]),
+ ('B Missing Surfaces', 'B15 · #15'): dict(links=[
+     ('Export theme zip', 'deploy-destination.html#preview-only'),
+     ('Re-check plan', 'preview-only-notice.html')]),
+ ('B Missing Surfaces', 'B16 · #16'): dict(links=[
+     ('Verify upload', 'routes-fallback.html'), ('Fix the key instead', 'staff-token-offer.html')]),
+ ('B Missing Surfaces', 'B17 · #17'): dict(links=[
+     ('Translations', 'theme-settings.html#translations'), ('Ship update', 'deploy-destination.html'),
+     ('Promote', 'theme-settings.html')]),
+ ('B Missing Surfaces', 'B21 · #21'): dict(links=[('See what failed →', 'deploy-failure.html')]),
+ ('B Missing Surfaces', 'B22 · #22'): dict(links=[
+     ('Apply all four', 'editor.html'), ('Start from my site as-is', 'editor.html')]),
+ ('B Missing Surfaces', 'B24 · #24'): dict(links=[
+     ('Update card', 'billing.html'), ('See the invoice', 'billing.html#invoices')]),
+ ('B Missing Surfaces', 'B25 · #25'): dict(links=[
+     ('Connect another', 'connect-integration.html'), ('See what failed →', 'deploy-failure.html'),
+     ('Why no deploy? →', 'preview-only-notice.html')]),
+ ('B Missing Surfaces', 'B12b · #12'): dict(links=[('Check the key', 'manage-keys.html')]),
+ ('B Missing Surfaces', 'B8 · #8'): dict(links=[('Remix', 'variant-shuffle.html')]),
+ ('B Missing Surfaces', 'B5a ·'): dict(links=[('Request editing', 'edit-lock.html#holder')]),
+ ('B Missing Surfaces', 'B7 · #7'): dict(links=[('Announcement', 'editor.html#layers')]),
+ ('B Missing Surfaces', 'B19 · #19'): dict(links=[('Open Ghost pages', 'template-binding-checklist.html')]),
+ ('S3 Dashboard', 'S3 mobile'): dict(links=[('+ New project', 'new-project-sheet.html')]),
+ ('B Missing Surfaces', 'B5b ·'): dict(links=[
+     ('Hand over', 'edit-lock.html#reader'), ('Keep editing', 'editor.html')]),
+ ('B Missing Surfaces', 'B5c ·'): dict(links=[
+     ('Take over anyway', 'editor.html'), ('Wait', 'edit-lock.html#holder')]),
+ ('B Missing Surfaces', 'B3b ·'): dict(links=[('Back to editing', 'editor.html')]),
+}
+
+_GROUP_N = [0]
+
+
+def lift(frame, label=None, caption=None, capt=None, anchor=None, links=(), picks=()):
     """One region of the export, exactly as it was drawn, on its own mat.
 
     The frame keeps its 1440px width on purpose — that is the width it was designed at,
     and shrinking it here would be a second answer to a question the export has already
-    answered. It scrolls inside its own box on a narrow window."""
+    answered. It scrolls inside its own box on a narrow window.
+
+    `links` and `picks` wire THIS region and no other. 5b puts a dozen frames on one page
+    and several of them draw the same control, so a page-wide find-and-wire would reach
+    into the wrong frame. Both are additive: a link works with JavaScript off, and a pick
+    group's options were all visible before anyone clicked.
+    """
     inner = frames.region(frame, label=label, caption=caption)
+    w = WIRING.get((frame, label or caption), {})
+    links = tuple(links) + tuple(w.get('links', ()))
+    picks = tuple(picks) + tuple(w.get('picks', ()))
+    for text, href in links:
+        if text in inner:
+            try:
+                inner = frames.link(inner, (text, href))
+            except (KeyError, ValueError):
+                pass
+    for opts in picks:
+        present = [t for t in opts if t in inner]
+        if len(present) > 1:
+            _GROUP_N[0] += 1
+            g = 'g%d' % _GROUP_N[0]
+            inner = frames.pick(inner, g, *present)
+            inner = frames.picked(inner, present[0])
     a = f' id="{anchor}"' if anchor else ''
     c = f'<p class="frame-cap">{capt}</p>' if capt else ''
     return (f'<div{a} class="lifted">{c}<div class="liftbox">{inner}</div>'
@@ -206,6 +377,7 @@ def shell(p):
   <span class="spacer"></span>
   <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
+<script src="proto.js"></script>
 </body>
 </html>
 """
@@ -1497,6 +1669,7 @@ def build_index():
   <span class="spacer"></span>
   <span class="frame">Disposable by design, the day the dynamic UI matches it.</span>
 </div>
+<script src="proto.js"></script>
 </body>
 </html>
 """
@@ -1545,8 +1718,39 @@ def main():
     if bad:
         print('\n'.join(sorted(set(bad))))
         raise SystemExit(f'{len(set(bad))} broken links')
+
+    # THE FRAMES THEMSELVES MUST BE CLICKABLE, not just the scaffolding around them.
+    # A page whose only links are its trail bar and its surface list is a page where the
+    # product does not respond — which is how the walkthrough silently went inert, and it
+    # would go unnoticed here for the same reason: every link still resolves.
+    # Pages made only of `nodraw` panels are exempt: there is nothing drawn to click.
+    inert = []
+    for p in PAGES:
+        boxes = re.findall(r'<div class="liftbox">(.*?)</div>\s*<p class="lift-src"', p['body'], re.S)
+        if not boxes:
+            continue
+        if not any('<a href=' in b or 'data-pick=' in b for b in boxes):
+            inert.append(p['id'])
+    if inert:
+        raise SystemExit('frames on these pages do not respond to anything: ' + ', '.join(sorted(inert)))
+
+    # R-75: "every page must read complete with JavaScript off." That is what separates this
+    # build from 5c, and it is the reason the interaction here is additive only — links,
+    # hover and picking, never hiding. So nothing OUTSIDE a lifted frame may be hidden by
+    # default. (Inside one it is the export's own markup and stays untouched.)
+    leaks = []
+    for p in PAGES:
+        outside = re.sub(r'<div class="liftbox">.*?</div>\s*<p class="lift-src"[^>]*>[^<]*</p>',
+                         '', p['body'], flags=re.S)
+        # the attribute inside a tag, not the word in a sentence
+        n = len(re.findall(r'<[^>]*\shidden[\s/>]', outside)) + outside.count('display:none')
+        if n:
+            leaks.append(f'{p["id"]} ({n})')
+    if leaks:
+        raise SystemExit('hidden by default, which breaks the JS-off rule: ' + ', '.join(leaks))
     n_lifts = sum(p['body'].count('class="lifted"') for p in PAGES)
-    print(f'{len(PAGES)} pages + index.html · {n_lifts} frames lifted from the export · all links resolve')
+    print(f'{len(PAGES)} pages + index.html · {n_lifts} frames lifted · '
+          f'all links resolve · frames respond · nothing hidden')
 
 
 if __name__ == '__main__':
