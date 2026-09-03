@@ -1,0 +1,246 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Dashboard
+  FRAME    : S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · B Missing Surfaces B25 sites strip · B14a update notice
+  IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Dashboard</span>
+  <span class="frame">S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · B Missing Surfaces B25 sites strip · B14a update notice</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 1 of 10</span><span class="tstep">next: <a href="editor.html#pro-badge">Editor — four Pro designs placed</a> →</span></div>
+<div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 1 of 4</span><span class="tstep">next: <a href="library-update-confirm.html">Library Update Confirm — mandatory before compile</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#account-menu">Account Menu<span class="k">S3d</span></a><a class="idxrow" href="#connected-sites">Connected Sites Strip<span class="k">B25</span></a><a class="idxrow" href="#library-update">Library Update Notice<span class="k">B14a</span></a><a class="idxrow" href="#empty">Dashboard — empty<span class="k">S3b</span></a><a class="idxrow" href="#free">Dashboard — Free at the cap<span class="k">S3c</span></a><a class="idxrow" href="#loading">Dashboard — loading<span class="k">skeletons</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S3a · dashboard — rich (what&rsquo;s-new open) · 1440</p><div class="screen "><div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <div class="meter">
+      <div class="track"><div class="fill" style="width:6%"></div></div>
+      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
+    </div>
+  </div>
+  <a class="acct" href="billing.html">
+    <span class="avatar">M</span>
+    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
+      <span class="helper">maya@orbitweekly.com</span></span>
+    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
+  </a>
+</div><div class="appmain"><div class="topbar">
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
+  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
+</div><div class="appbody"><div class="stack gap20">
+  <div class="row gap16" style="align-items:flex-start">
+    <div class="grow stack gap12">
+      <div class="row gap10"><h2 style="font-size:20px">Projects</h2><span class="chip">6 of 25</span></div>
+      <div class="grid g3">
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Orbit Weekly</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v5</span></div><div id="library-update-notice" style="margin-top:8px;background:var(--marigold-tint);border-radius:var(--r-sm);padding:10px 12px" class="stack gap6">
+    <div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Updates available</b></div>
+    <span class="helper" style="color:var(--marigold-text)">Three designs in this site were improved since you shipped.</span>
+    <a class="btn sm secondary" href="library-update-confirm.html" style="align-self:flex-start">Review and redeploy</a></div>
+  </div></div>
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">The Slow Web</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">Sample content</span></div>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Maya&rsquo;s portfolio</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">mayachen.studio</span></div>
+    <div class="row gap8"><span class="badge danger"><span class="dot danger"></span>Failed</span><a class="small" href="deploy-failure.html" style="color:var(--danger)">See what failed →</a></div>
+  </div></div>
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Field Notes</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">Sample content</span></div>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Launch page</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v2</span></div>
+  </div></div>
+        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Orbit Weekly — dark exp</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">Sample content</span></div>
+    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
+  </div></div>
+      </div>
+    </div>
+    <div class="card" style="width:280px;flex-shrink:0"><div class="pad-tight stack gap10">
+      <span class="panel-label">What&rsquo;s new</span>
+      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Style Packs: 4 new font pairings</b></div><span class="helper">Aug 12</span></div>
+      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Variant Shuffle now works on footers</b></div><span class="helper">Aug 6</span></div>
+      <a class="small" href="notifications.html" style="color:var(--sky-text)">Changelog →</a>
+    </div></div>
+  </div>
+</div></div></div></div></div></div><div class="section-head" id="connected-sites"><h2>Connected Sites Strip</h2><p>Health at a glance, and the count against the plan cap. Three sites, three health states — the dot colour classifies before a word is read, and each site carries the same three checks in the same order so they compare down the row.</p><p class="frame-cap">B25 · connected-sites strip</p></div><div><div class="screen "><div style="padding:24px;background:var(--paper)"><div class="card"><div class="pad stack gap14">
+  <div class="row gap10"><span class="panel-label">Connected sites</span><span class="chip">3 of 10</span>
+    <a class="btn sm secondary" href="sites.html#connect-modal" style="margin-left:auto">Connect another</a></div>
+  <div class="grid g3">
+    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+      <div class="row gap8"><span class="dot mint"></span><b style="font-size:13px">Orbit Weekly</b><span class="badge live" style="margin-left:auto">Live</span></div>
+      <span class="helper mono">orbitweekly.com</span>
+      <span class="helper">Keys working · Ghost 6.58 · Shipped 14 Aug</span></div>
+    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+      <div class="row gap8"><span class="dot danger"></span><b style="font-size:13px">Maya&rsquo;s Studio</b><span class="badge danger" style="margin-left:auto">Deploy failed</span></div>
+      <span class="helper mono">mayachen.studio</span>
+      <span class="helper">Admin key expired Aug 15</span>
+      <a class="small" href="deploy-failure.html" style="color:var(--danger)">See what failed →</a></div>
+    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
+      <div class="row gap8"><span class="dot sky"></span><b style="font-size:13px">Field Notes</b><span class="badge sky" style="margin-left:auto">Preview-only</span></div>
+      <span class="helper mono">fieldnotes.ghost.io</span>
+      <span class="helper">Keys working · Ghost(Pro) Starter</span>
+      <a class="small" href="preview-only-notice.html" style="color:var(--sky-text)">Why no deploy? →</a></div>
+  </div></div></div></div></div></div><div class="section-head" id="library-update"><h2>Library Update Notice</h2><p>It lives <b>inside</b> the project card rather than as a badge on it, because it needs a sentence and a button. Marigold is right: it is a nudge and it never blocks.</p><p class="frame-cap">B14a · update notice on the project card — flow F4 step 1</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);max-width:340px"><div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Orbit Weekly</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v5</span></div><div id="library-update-notice" style="margin-top:8px;background:var(--marigold-tint);border-radius:var(--r-sm);padding:10px 12px" class="stack gap6">
+    <div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Updates available</b></div>
+    <span class="helper" style="color:var(--marigold-text)">Three designs in this site were improved since you shipped.</span>
+    <a class="btn sm secondary" href="library-update-confirm.html" style="align-self:flex-start">Review and redeploy</a></div>
+  </div></div></div></div></div><div class="section-head" id="account-menu"><h2>Account Menu</h2><p>Opens up from the account chip at the foot of the rail.</p><p class="frame-cap">S3d · account menu</p></div><div><div class="screen detail"><div class="sheetwrap" style="padding:24px;justify-content:flex-start">
+  <div class="card" style="width:260px"><div class="pad-tight stack gap2">
+    <div class="row gap10" style="padding:6px 8px 10px"><span class="avatar">M</span>
+      <span class="stack"><b style="font-size:13px">Maya Chen</b><span class="helper">maya@orbitweekly.com</span></span></div>
+    <div style="height:1px;background:var(--line);margin:2px 0 6px"></div>
+    <a class="idxrow" style="border:none;background:transparent" href="billing.html">Account settings</a>
+    <a class="idxrow" style="border:none;background:transparent" href="billing.html">Billing &amp; plan<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
+    <a class="idxrow" style="border:none;background:transparent" href="suggestions.html">Suggestions</a>
+    <a class="idxrow" style="border:none;background:transparent" href="pricing.html">Docs</a>
+    <a class="idxrow" style="border:none;background:transparent" href="editor.html#shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
+    <div style="height:1px;background:var(--line);margin:6px 0"></div>
+    <a class="idxrow" style="border:none;background:transparent" href="sign-in.html">Sign out</a>
+  </div></div></div></div></div><div class="section-head" id="empty"><h2>Empty</h2><p>The canonical string, verbatim, and one affordance. Never an apology.</p><p class="frame-cap">S3b · dashboard — empty · 1440</p></div><div><div class="screen "><div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <div class="meter">
+      <div class="track"><div class="fill" style="width:0%"></div></div>
+      <span class="helper"><span class="mono">0 MB</span> used</span>
+    </div>
+  </div>
+  <a class="acct" href="billing.html">
+    <span class="avatar sam">S</span>
+    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
+      <span class="helper">sam@fieldnotes.blog</span></span>
+    <span style="margin-left:auto"><span class="badge free">Free</span></span>
+  </a>
+</div><div class="appmain"><div class="topbar">
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
+  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
+</div><div class="appbody"><div style="min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center">
+  <svg width="120" height="88" viewBox="0 0 120 88" fill="none" stroke="#1C1B1A" stroke-width="1.5">
+    <rect x="10" y="14" width="100" height="62" rx="6"/><path d="M10 30h100"/><circle cx="19" cy="22" r="2"/><circle cx="27" cy="22" r="2"/>
+    <rect x="22" y="40" width="34" height="24" rx="3" fill="#FFEDE8" stroke="#FF5941"/><path d="M66 44h32M66 52h24M66 60h32"/></svg>
+  <div class="stack gap6"><h2 style="font-size:24px">Every great site starts somewhere.</h2>
+    <p class="softaa">Yours starts with hundreds of gorgeous sections.</p></div>
+  <a class="btn coral lg" href="new-project-sheet.html">New project</a></div></div></div></div></div></div><div class="section-head" id="free"><h2>Free, at the cap</h2><p>One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is taken away. A second project opens the New Project Sheet on its at-the-cap state, with the limit stated.</p><p class="frame-cap">S3c · dashboard — free plan · 1440</p></div><div><div class="screen "><div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <div class="meter">
+      <div class="track"><div class="fill" style="width:48%"></div></div>
+      <span class="helper"><span class="mono">48 MB</span> of 100 MB</span>
+    </div>
+  </div>
+  <a class="acct" href="billing.html">
+    <span class="avatar sam">S</span>
+    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
+      <span class="helper">sam@fieldnotes.blog</span></span>
+    <span style="margin-left:auto"><span class="badge free">Free</span></span>
+  </a>
+</div><div class="appmain"><div class="topbar">
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
+  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
+</div><div class="appbody"><div class="stack gap20">
+  <div class="row gap10"><h2 style="font-size:20px">Projects</h2><span class="chip">1 of 1</span></div>
+  <div class="grid g3"><div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
+  <div class="pad-tight stack gap8">
+    <div class="row gap8"><b style="font-size:14px">Field Notes</b><span class="soft" style="margin-left:auto">⋯</span></div>
+    <div class="row gap8"><span class="helper">fieldnotes.blog</span></div>
+    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v1</span></div>
+  </div></div>
+    <a class="card" href="new-project-sheet.html#at-cap" style="border:1px dashed var(--line-strong);box-shadow:none;display:flex;align-items:center;justify-content:center;min-height:230px">
+      <div class="stack gap8" style="align-items:center;text-align:center;padding:20px">
+        <span class="badge pro">✦</span><b style="font-size:13.5px">Upgrade to add more</b>
+        <span class="helper">Free includes 1 project. Pro gives you 25.</span>
+        <span class="btn marigold sm">Go Pro — $15/mo</span></div></a></div>
+</div></div></div></div></div></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeletons matching the shape that is coming. Never a spinner.</p></div><div><div class="screen "><div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <div class="meter">
+      <div class="track"><div class="fill" style="width:6%"></div></div>
+      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
+    </div>
+  </div>
+  <a class="acct" href="billing.html">
+    <span class="avatar">M</span>
+    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
+      <span class="helper">maya@orbitweekly.com</span></span>
+    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
+  </a>
+</div><div class="appmain"><div class="topbar">
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
+  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
+</div><div class="appbody"><div class="stack gap20"><div class="row gap10"><h2 style="font-size:20px">Projects</h2></div>
+  <div class="grid g3"><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
+    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
+      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div></div></div></div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

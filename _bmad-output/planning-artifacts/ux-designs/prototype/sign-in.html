@@ -1,0 +1,78 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Sign In
+  FRAME    : S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt
+  IMPLEMENTS: EXPERIENCE.md § IA → Entry · § Responsive & Platform (drawn at 390, 834 and 1440)
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign In — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Sign In</span>
+  <span class="frame">S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Entry · § Responsive & Platform (drawn at 390, 834 and 1440)</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 1 of 15</span><span class="tstep">next: <a href="magic-link-sent.html">Magic Link Sent</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#passkey">Passkey Prompt<span class="k">S1c</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S1a · sign in — default · 1440</p><div class="screen "><div style="min-height:640px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:28px">
+  <span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
+  <div class="card" style="width:100%;max-width:420px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+    <div class="stack gap6"><h1 style="font-size:24px">Make something gorgeous.</h1>
+      <p class="softaa" style="font-size:13.5px">Sign in or create an account — no passwords, ever.</p></div>
+    <label class="field"><span class="control-label">Email</span>
+      <input class="input" type="email" value="maya@orbitweekly.com" aria-label="Email"></label>
+    <a class="btn coral lg" href="magic-link-sent.html" style="width:100%">Send magic link</a>
+    <div class="row gap10"><span style="flex:1;height:1px;background:var(--line)"></span><span class="helper">or</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+    <a class="btn secondary lg" href="sign-in.html#passkey" style="width:100%">Sign in with a passkey</a>
+  </div></div>
+  <div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
+</div></div></div><div class="section-head" id="passkey"><h2>Passkey Prompt</h2><p>The OS sheet. <b>Inflozo draws the page behind it and nothing of the sheet itself</b> — the sheet is the operating system's, and drawing a facsimile of it would be inventing a component the product does not own.</p><p class="frame-cap">S1c · passkey OS prompt · 1440</p></div><div><div class="screen "><div style="min-height:640px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:28px">
+  <span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
+  <div class="card" style="width:100%;max-width:420px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+    <div class="stack gap6"><h1 style="font-size:24px">Make something gorgeous.</h1>
+      <p class="softaa" style="font-size:13.5px">Sign in or create an account — no passwords, ever.</p></div>
+    <label class="field"><span class="control-label">Email</span>
+      <input class="input" type="email" value="maya@orbitweekly.com" aria-label="Email"></label>
+    <a class="btn coral lg" href="magic-link-sent.html" style="width:100%">Send magic link</a>
+    <div class="row gap10"><span style="flex:1;height:1px;background:var(--line)"></span><span class="helper">or</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+    <a class="btn secondary lg" href="sign-in.html#passkey" style="width:100%">Sign in with a passkey</a>
+  </div></div>
+  <div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
+</div><div class="sheetwrap" style="margin-top:-200px;position:relative"><div class="sheet narrow"><div class="head"><h2 style="font-size:16px">Sign in to &ldquo;inflozo.app&rdquo;</h2></div><div class="body"><p class="softaa" style="font-size:13px">Use Touch ID to sign in with your saved passkey.</p><p class="frame-cap" style="margin:0">system sheet — OS UI placeholder, not an Inflozo component</p></div><div class="foot"><span class="btn secondary">Cancel</span></div></div></div></div></div><div class="section-head"><h2>At 390</h2><p>Sign In carries a phone frame in the export, so the app floor does not apply to it (R-76). The card becomes the page.</p><p class="frame-cap">S1a · mobile · 390</p></div><div><div class="screen phone"><div style="min-height:640px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:28px">
+  <span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
+  <div class="card" style="width:100%;max-width:420px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+    <div class="stack gap6"><h1 style="font-size:24px">Make something gorgeous.</h1>
+      <p class="softaa" style="font-size:13.5px">Sign in or create an account — no passwords, ever.</p></div>
+    <label class="field"><span class="control-label">Email</span>
+      <input class="input" type="email" value="maya@orbitweekly.com" aria-label="Email"></label>
+    <a class="btn coral lg" href="magic-link-sent.html" style="width:100%">Send magic link</a>
+    <div class="row gap10"><span style="flex:1;height:1px;background:var(--line)"></span><span class="helper">or</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+    <a class="btn secondary lg" href="sign-in.html#passkey" style="width:100%">Sign in with a passkey</a>
+  </div></div>
+  <div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
+</div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

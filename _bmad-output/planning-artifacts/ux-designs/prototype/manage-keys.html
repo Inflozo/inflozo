@@ -1,0 +1,75 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Manage Keys
+  FRAME    : S11 Sites.dc.html S11d + B Missing Surfaces.dc.html B20 — both re-specified (FR-C8)
+  IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § wrong mechanism → B20 / S11d · § State Patterns → partially credentialed
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage Keys — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Manage Keys</span>
+  <span class="frame">S11 Sites.dc.html S11d + B Missing Surfaces.dc.html B20 — both re-specified (FR-C8)</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § wrong mechanism → B20 / S11d · § State Patterns → partially credentialed</span>
+</div>
+<div class="proto-note"><b>Three things the frames got wrong, corrected here.</b> B20 invents grantable scopes — Ghost fixes them and they cannot be granted. S11d draws the API URL as an editable field — the site URL is immutable, so the affordance is <b>absent</b> rather than present-and-refusing. And both draw two credentials where FR-C8 needs three, with the Staff Access Token addable and removable at any time.</div>
+<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</div>
+
+<main id="main">
+<div><p class="frame-cap">S11d + B20 · manage keys — three credentials, present or absent with what each enables</p><div class="screen "><div class="sheetwrap"><div class="sheet"><div class="head">
+    <h2 style="font-size:20px">Keys — Orbit Weekly</h2>
+    <p class="softaa" style="font-size:13px;margin-top:4px">From the Inflozo integration in your Ghost admin.
+      We never see your Ghost password. <b>Three credentials, and each one buys something different.</b></p></div>
+  <div class="body">
+    <div class="itemrow"><span class="dot mint"></span><div class="stack gap4 grow">
+        <div class="row gap8"><b style="font-size:13.5px">Admin API key</b><span class="badge live">Present</span></div>
+        <span class="helper mono">6a4f2e91b7c8d3 ·············· 4e2a</span>
+        <span class="helper">Uploads and activates your theme. This is the one that ships your site.</span></div>
+      <a class="btn sm secondary" href="manage-keys.html">Replace</a></div>
+    <div class="itemrow"><span class="dot mint"></span><div class="stack gap4 grow">
+        <div class="row gap8"><b style="font-size:13.5px">Content API key</b><span class="badge live">Present</span></div>
+        <span class="helper mono">c19d7f ·············· 8b31</span>
+        <span class="helper">Reads your posts, pages, tags and authors, so the canvas shows your real content.</span></div>
+      <a class="btn sm secondary" href="manage-keys.html">Replace</a></div>
+    <div class="itemrow"><span class="dot grey"></span><div class="stack gap4 grow">
+        <div class="row gap8"><b style="font-size:13.5px">Staff Access Token</b><span class="badge neutral">Not added</span></div>
+        <span class="helper">Without it: no copy of your current theme before we replace it, no check that the live theme
+          changed since we last shipped, and <span class="mono">routes.yaml</span> uploads by hand.</span>
+        <span class="helper">It is a full-Administrator credential and <b>can only be created on the site Owner&rsquo;s own
+          account</b>. Adding it enables the snapshot <b>from that point forward</b> — it cannot reconstruct a copy of a
+          theme that has already been replaced, and we will not pretend otherwise.</span></div>
+      <a class="btn secondary" href="staff-token-offer.html">Add the token</a></div>
+    <div class="banner info"><span class="ico">ⓘ</span><span><b>There is no permission to grant here.</b>
+      Ghost fixes what a Custom Integration token may do, and reading a theme or writing settings is not on that list on
+      any version or any host. The missing capability is the token, not a scope.</span></div>
+    <div class="stack gap6"><span class="control-label">Site URL</span>
+      <span class="chip mono" style="align-self:flex-start;padding:6px 10px">https://orbitweekly.com</span>
+      <span class="helper">Permanent for this connection. Moving to a new domain is a disconnect and a reconnect —
+        so there is no field here to edit, rather than a field that refuses.</span></div>
+  </div>
+  <div class="foot"><a class="btn secondary" href="sites.html">Done</a>
+    <a class="btn ghost" href="manage-keys.html">Test connection</a>
+    <span class="helper" style="margin-left:auto">Passed · 2 min ago</span></div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

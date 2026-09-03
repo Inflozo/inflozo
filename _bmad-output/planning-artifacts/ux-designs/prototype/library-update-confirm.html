@@ -1,0 +1,76 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Library Update Confirm
+  FRAME    : B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library Update Confirm — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Library Update Confirm</span>
+  <span class="frame">B Missing Surfaces.dc.html — B14b, with its one stale sentence corrected</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · flow F4 · FR-J14</span>
+</div>
+<div class="proto-note"><b>One stale sentence corrected.</b> B14b says &ldquo;We snapshot before redeploying, so this is reversible from history.&rdquo; The snapshot is <b>first upload only</b> (FR-J13). What is true, and what the line now says, is that the version you are on stays in history and rolls back in one click.</div>
+<div class="trails"><div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 2 of 4</span><span class="tstep">← <a href="dashboard.html#library-update">Library Update Notice, in the project card</a></span><span class="tstep">next: <a href="library-update-confirm.html#why">Why a confirm exists, and the contract that makes it safe</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#why">Why a confirm exists<span class="k">FR-J14</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">B14b · redeploy confirmation — a mandatory step before compile proceeds</p><div class="screen "><div class="sheetwrap"><div class="sheet"><div class="head">
+    <h2 style="font-size:22px">Three designs have updates</h2>
+    <p style="font-size:13.5px;line-height:1.6;margin-top:8px">Your settings are kept. These are fixes to the designs
+      themselves, so the shapes may shift slightly.</p></div>
+  <div class="body">
+    <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13.5px">Split Form</b>
+        <span class="helper">Form no longer overflows at 390 when the button label is long</span></div>
+      <span class="chip mono">v3 → v4</span></div>
+    <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13.5px">Grid of Three</b>
+        <span class="helper">Cards keep equal height when one post has no excerpt</span></div>
+      <span class="chip mono">v7 → v8</span></div>
+    <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13.5px">Three Column footer</b>
+        <span class="helper">Focus ring visible on dark backgrounds</span></div>
+      <span class="chip mono">v2 → v3</span></div>
+    <div class="banner info"><span class="ico">ⓘ</span><span><b>The version you are on now stays in history and rolls back
+      in one click.</b> Every successful compile is stored as an artifact — see
+      <a href="deploy-history.html">Deploy History</a>.</span></div>
+    <p class="helper">Each update says what was actually fixed, in the language of the problem it solved, because a user
+      deciding whether to redeploy needs to recognise their own bug.</p>
+  </div>
+  <div class="foot"><b style="font-size:13px" class="grow">Nothing changes until you ship.</b>
+    <a class="btn secondary" href="editor.html">Not now</a>
+    <a class="btn coral" href="preflight-check.html">Update and ship</a></div></div></div></div></div><div class="section-head" id="why"><h2>Why a confirm exists at all</h2><p>Compiles always use the current library — a single live library, <b>no per-project pinning</b> — so any redeploy carries every library change since the project&rsquo;s last deploy, and <b>there is no way to redeploy without them</b>. Because the update is inseparable from the redeploy, the deploy flow makes it consensual instead.</p></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><div class="stack gap10" style="max-width:760px;margin:0 auto">
+  <div class="banner success"><span class="ico">✓</span><span><b>Designs are never deleted, only superseded</b> — hidden
+    from the picker, while placed instances keep rendering.</span></div>
+  <div class="banner success"><span class="ico">✓</span><span><b>Schema changes are append-only or ship a migration
+    map</b>, and catalog keys are never reworded in place.</span></div>
+  <div class="banner notice"><span class="ico">!</span><span>So a placed section can fail to resolve in exactly one case —
+    a failed schema migration — and <b>only</b> that case degrades to the nearest current design,
+    <b>with a visible notice</b>. Never a silent re-render, never a failed load, and no deletion path to build.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>One exemption, and it is narrow.</b> FR-C5&rsquo;s
+    compatibility redeploy re-ships a design that already ran and skips this confirm — carrying <b>only</b> the
+    compatibility fix. It never picks up a pending library advance, a Style Pack change or an unconfirmed design update
+    that happens to be waiting. That narrowness is what keeps &ldquo;nothing changes without your say-so&rdquo; true.</span></div>
+</div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

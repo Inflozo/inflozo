@@ -1,0 +1,86 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Backup Gate
+  FRAME    : Extrapolated → Appendix A prompt A1, frames D1d (self-hosted) and D1e (Ghost(Pro)). Inherits S8b&rsquo;s checked-row list and B13a&rsquo;s itemised rows, both verbatim
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backup Gate — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Backup Gate</span>
+  <span class="frame">Extrapolated → Appendix A prompt A1, frames D1d (self-hosted) and D1e (Ghost(Pro)). Inherits S8b&rsquo;s checked-row list and B13a&rsquo;s itemised rows, both verbatim</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11</span>
+</div>
+<div class="proto-note"><b>What this is, and what it is not.</b> It is a <b>consent gate, not a technical control</b>. It moves responsibility; it does not reduce risk. A customer who ticks the box without having backed up still loses their theme — they simply had a fair chance not to. That is a deliberate trade, recorded as a decision rather than left to be discovered as a side effect. <b>No Ghost Admin menu path is hard-coded anywhere on it</b>: Ghost 5.130.6 carries Advanced, Labs, Import/Export and Export, and Ghost 6.58.0 carries none of them.</div>
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 11 of 15</span><span class="tstep">← <a href="staff-token-offer.html">Staff Token Offer · step 2</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check · step 4</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 7 of 10</span><span class="tstep">← <a href="pricing.html">Pricing — the same terms, publicly</a></span><span class="tstep">next: <a href="preflight-check.html">Pre-flight Check</a> →</span></div>
+<div class="trail"><span class="tl">Flow F7 · The pre-deploy backup gate</span><span class="tstep">step 1 of 4</span><span class="tstep">next: <a href="backup-gate.html#ticked">Ticked — the deploy button turns on</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#ticked">Ticked — the button turns on</a><a class="idxrow" href="#ghostpro">Backup Gate — Ghost(Pro)<span class="k">D1e</span></a><a class="idxrow" href="#confirmed">Confirmed</a></div></div>
+<main id="main">
+<div><p class="frame-cap">D1d · backup gate · self-hosted (step 3 of 6) — it BLOCKS the deploy button · 1440</p><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Safety net</span><span class="rsep"></span><span class="rstep on"><span class="n">3</span>Backup</span><span class="rsep"></span><span class="rstep "><span class="n">4</span>Check</span><span class="rsep"></span><span class="rstep "><span class="n">5</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">6</span>Live</span></div><div class="wizbody"><div class="wizcard wide"><div class="stack gap16">
+    <h2 style="font-size:20px">Before we replace your theme</h2>
+    <div style="border:1px solid var(--line-strong);border-radius:var(--r);padding:16px;background:var(--paper-raised)">
+      <p style="font-size:14px;line-height:1.6"><b>Inflozo writes exactly two things to your Ghost site: your theme, and
+        <span class="mono">routes.yaml</span>.</b> It never writes posts, pages, members, tags, settings or redirects.</p></div>
+    <p style="font-size:13.5px;line-height:1.6">A full backup is still the right thing, and here is the reason rather than
+      the instruction: a theme change is reversible only if you can put the old theme back, and the cheapest insurance
+      against every other surprise is the backup you already have.</p>
+    <div style="background:var(--mint-tint);border-radius:var(--r);padding:14px">
+      <div class="checkrow" style="border:none"><span class="check"></span>
+        <span class="stack gap4 grow"><b>I have run <span class="mono">ghost backup</span> and saved the archive somewhere
+          off the server.</b>
+        <span class="helper">One archive: content, members, every installed theme, images, files, media, routes and
+          redirects. Ticking this checks every row below — <b>and the rows stay visible</b>, so you can see what you now hold.</span></span></div></div>
+    <div class="stack"><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Theme</b><span class="badge notice">Inflozo replaces this</span></span><span class="helper"><b>The one thing that makes rollback possible.</b></span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>routes.yaml</b><span class="badge notice">Inflozo may overwrite this</span></span><span class="helper">Inflozo&rsquo;s routes manager replaces the whole file.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Content — posts, pages, tags, settings, staff</b></span><span class="helper"><b>Does NOT include your images.</b> See the images row.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Members</b></span><span class="helper">Includes <span class="mono">stripe_customer_id</span>, so it round-trips to another Ghost.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Redirects</b></span><span class="helper">Inflozo never touches this. Listed because losing redirects breaks existing links.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Images, files and media</b></span><span class="helper"><b>The gap most people miss.</b> The content export does not carry them.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check"></span><span class="stack gap2 grow"><span class="row gap8"><b>Database</b></span><span class="helper">Ghost&rsquo;s own docs: for disaster recovery, back up the database and content folder directly — the JSON export is for moving content, not for restoring a site.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div></div>
+    <div style="height:1px;background:var(--line-strong)"></div>
+    <div class="checkrow" style="border:none"><span class="check"></span>
+      <span><b>I confirm I have a complete backup of my site and understand Inflozo will replace my theme.</b></span></div>
+    <div class="wizfoot"><a class="btn secondary" href="staff-token-offer.html">Back</a>
+      <span class="btn coral off">Continue to checks</span>
+      <span class="reason">7 rows still to tick, or run <span class="mono">ghost backup</span> and tick the shortcut.</span></div>
+  </div></div></div></div></div></div><div class="section-head" id="ticked"><h2>Ticked, and the deploy button turns on</h2><p>The master confirm becoming available is <b>announced politely</b> — a button silently turning on is invisible without it.</p></div><div><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Safety net</span><span class="rsep"></span><span class="rstep on"><span class="n">3</span>Backup</span><span class="rsep"></span><span class="rstep "><span class="n">4</span>Check</span><span class="rsep"></span><span class="rstep "><span class="n">5</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">6</span>Live</span></div><div class="wizbody"><div class="wizcard wide"><div class="stack gap16">
+    <div style="background:var(--mint-tint);border-radius:var(--r);padding:14px">
+      <div class="checkrow" style="border:none"><span class="check on">✓</span>
+        <span><b>I have run <span class="mono">ghost backup</span> and saved the archive somewhere off the server.</b></span></div></div>
+    <div class="stack"><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Theme</b><span class="badge notice">Inflozo replaces this</span></span><span class="helper"><b>The one thing that makes rollback possible.</b></span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>routes.yaml</b><span class="badge notice">Inflozo may overwrite this</span></span><span class="helper">Inflozo&rsquo;s routes manager replaces the whole file.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Content — posts, pages, tags, settings, staff</b></span><span class="helper"><b>Does NOT include your images.</b> See the images row.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Members</b></span><span class="helper">Includes <span class="mono">stripe_customer_id</span>, so it round-trips to another Ghost.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Redirects</b></span><span class="helper">Inflozo never touches this. Listed because losing redirects breaks existing links.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Images, files and media</b></span><span class="helper"><b>The gap most people miss.</b> The content export does not carry them.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div><div class="checkrow"><span class="check on">✓</span><span class="stack gap2 grow"><span class="row gap8"><b>Database</b></span><span class="helper">Ghost&rsquo;s own docs: for disaster recovery, back up the database and content folder directly — the JSON export is for moving content, not for restoring a site.</span><span class="helper">Find it in Ghost Admin under your version&rsquo;s export screens — <a href="backup-gate.html">show me where for Ghost 6.58 ↗</a></span></span></div></div>
+    <div style="height:1px;background:var(--line-strong)"></div>
+    <div class="checkrow" style="border:none"><span class="check on">✓</span>
+      <span><b>I confirm I have a complete backup of my site and understand Inflozo will replace my theme.</b></span></div>
+    <div class="wizfoot"><a class="btn secondary" href="staff-token-offer.html">Back</a>
+      <a class="btn coral" href="preflight-check.html">Continue to checks</a></div>
+  </div></div></div></div></div></div><div class="section-head" id="ghostpro"><h2>On Ghost(Pro), the shortcut does not exist and the gate says so</h2><p>This claim is <b>cited, not executed</b>: Ghost&rsquo;s own documentation offers no route and says to contact your host, and there is no Ghost(Pro) test server yet. So the copy says what Ghost Admin does and does not offer and points the customer at Ghost, rather than asserting a platform-wide impossibility in Inflozo&rsquo;s own voice.</p><p class="frame-cap">D1e · backup gate · Ghost(Pro) · 940</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="stack gap14">
+    <div class="banner info"><span class="ico">ⓘ</span><span>On Ghost(Pro), themes, content, members, routes and
+      redirects all download from Ghost Admin. <b>Images and media do not</b> — Ghost Admin has no bulk export for them,
+      and there is no server to copy them from. Ghost&rsquo;s own documentation points you at your host&rsquo;s support
+      for this. Ghost(Pro) also takes its own platform backups; that is a Ghost service, not an Inflozo one, and it is
+      worth confirming with Ghost what it covers and how to request a restore.</span></div>
+    <p style="font-size:14px;line-height:1.6"><b>This is not something Inflozo can fix, and we are not going to pretend
+      otherwise.</b></p>
+    <span class="helper">Unknown host? Both paths are offered and neither is assumed.</span></div></div></div></div></div><div class="section-head" id="confirmed"><h2>Confirmed</h2><p>The gate collapses to one line for the rest of the wizard, and <b>never fires again for this site</b> — unless the site is disconnected and reconnected, because consent is per site.</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="banner success" style="max-width:620px"><span class="ico">✓</span>
+    <span>Backup confirmed for orbitweekly.com. We won&rsquo;t ask again for this site.</span></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

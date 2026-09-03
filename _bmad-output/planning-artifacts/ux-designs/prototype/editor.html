@@ -1,0 +1,971 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Editor
+  FRAME    : S4 Editor.dc.html — S4a rest, S4b hover, S4c selected · B Missing Surfaces B1, B2, B3, B4, B6, B7, B9, B10 · P0-0 Greyed Control Pattern · P0-1 Inline Text Toolbar · extrapolated markers → prompt A5 (D5a–D5f) · narrow widths and the floor affordances → prompt A8 (D8a–D8f)
+  IMPLEMENTS: EXPERIENCE.md § IA → Editor · § State Patterns → Editor and Control Sidebar · § Accessibility Floor · § Interaction Primitives
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Editor</span>
+  <span class="frame">S4 Editor.dc.html — S4a rest, S4b hover, S4c selected · B Missing Surfaces B1, B2, B3, B4, B6, B7, B9, B10 · P0-0 Greyed Control Pattern · P0-1 Inline Text Toolbar · extrapolated markers → prompt A5 (D5a–D5f) · narrow widths and the floor affordances → prompt A8 (D8a–D8f)</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Editor · § State Patterns → Editor and Control Sidebar · § Accessibility Floor · § Interaction Primitives</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 8 of 15</span><span class="tstep">← <a href="redesign-proposals.html">Redesign Proposals</a></span><span class="tstep">next: <a href="deploy-destination.html">Deploy Destination · step 1 of 6</a> →</span></div>
+<div class="trail"><span class="tl">Journey J2 · Blank-canvas build</span><span class="tstep">step 2 of 14</span><span class="tstep">← <a href="first-run.html">First Run — Blank canvas</a></span><span class="tstep">next: <a href="section-picker.html">Section Picker · ⌘K</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 2 of 10</span><span class="tstep">← <a href="dashboard.html#free">Dashboard · Free</a></span><span class="tstep">next: <a href="deploy-destination.html">Ship it</a> →</span></div>
+<div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 5 of 5</span><span class="tstep">← <a href="notifications.html">One nudge, once, a day later</a></span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#selected">Hover and selection<span class="k">S4b · S4c</span></a><a class="idxrow" href="#design-picker">Design Picker<span class="k">B1a</span></a><a class="idxrow" href="#design-nav">Design Nav<span class="k">B1b</span></a><a class="idxrow" href="#control-sidebar">Control Sidebar<span class="k">B2 · P0-0</span></a><a class="idxrow" href="#inline-toolbar">Inline Toolbar<span class="k">P0-1</span></a><a class="idxrow" href="#link-entry">Link Entry<span class="k">B4b</span></a><a class="idxrow" href="#template-switcher">Template Switcher<span class="k">D5b</span></a><a class="idxrow" href="#layers">Layers<span class="k">B7</span></a><a class="idxrow" href="#layers-focused">Layers row, focused<span class="k">D8e</span></a><a class="idxrow" href="#persistence">Persistence Indicator<span class="k">B6</span></a><a class="idxrow" href="#content-source">Content Source Pill<span class="k">B9</span></a><a class="idxrow" href="#preview-subject">Preview Subject Picker<span class="k">D5e</span></a><a class="idxrow" href="#member-state">Member State Preview<span class="k">S4d</span></a><a class="idxrow" href="#pro-badge">Pro Design Badge<span class="k">B10</span></a><a class="idxrow" href="#auto-generated">Auto-Generated Marker<span class="k">D5a</span></a><a class="idxrow" href="#main-feed">Main Feed Marker<span class="k">D5c</span></a><a class="idxrow" href="#page2">Page 2 Preview<span class="k">D5d</span></a><a class="idxrow" href="#empty-template-warning">Empty Template Warning<span class="k">D5f</span></a><a class="idxrow" href="#empty">Editor — empty canvas<span class="k">S4a</span></a><a class="idxrow" href="#loading">Editor — loading<span class="k">skeletons</span></a><a class="idxrow" href="#error">Editor — content unreachable<span class="k">FR-H4</span></a><a class="idxrow" href="#read-only-limit">Read-only — over limit<span class="k">D4e</span></a><a class="idxrow" href="#read-only-session">Read-only — someone else editing<span class="k">B5a</span></a><a class="idxrow" href="#empty-renders">Empty renders<span class="k">R-36 · R-41</span></a><a class="idxrow" href="#floor">Below the floor<span class="k">R-76</span></a><a class="idxrow" href="#at-834">Editor at 834<span class="k">D8a</span></a><a class="idxrow" href="#at-720">Editor at 720<span class="k">D8b</span></a><a class="idxrow" href="#skip-link">Skip the canvas<span class="k">D8c</span></a><a class="idxrow" href="#destructive-focus">Destructive confirm focus<span class="k">D8f</span></a><a class="idxrow" href="#shortcuts">Keyboard shortcuts<span class="k">FR-D11</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S4a · editor — at rest. The canvas is sacred: no grid, no outline, no badge until you touch it</p><div class="screen "><div class="ed"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div><div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div><div class="canvasmat"><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div><div class="sidebar">
+  <div class="stack gap8" style="margin:auto;text-align:center;padding:24px">
+    <b style="font-size:13.5px">Nothing selected</b>
+    <span class="helper">Click any section on the canvas — its controls appear here.</span></div></div></div></div></div></div><div class="section-head" id="selected"><h2>Hover, and then selection</h2><p>Hover gives a 1px outline, the name tag, the ◀ ▶ design arrows, duplicate, delete, the drag handle and a &ldquo;+&rdquo; between sections. Click gives a persistent outline and the sidebar. Click text inside a selection and you are typing. <span class="kbd">Esc</span> steps outward one level per press.</p><p class="frame-cap">S4b hover · S4c selected</p></div><div><div class="screen "><div class="ed"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div><div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div>
+   <div class="canvasmat"><div class="row" style="max-width:864px;margin:0 auto 6px"><span class="pill"><span class="mono">7 / 18</span><a href="editor.html#design-nav">◀</a><a href="editor.html#design-nav">▶</a><a href="variant-shuffle.html">Shuffle</a><a href="editor.html">Duplicate</a><a href="editor.html">Delete</a></span></div><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32 outline-sel" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div>
+   <div class="sidebar">
+  <div class="row gap8"><b style="font-size:13px">Home hero</b><span class="chip mono" style="margin-left:auto">7 / 18</span></div>
+  <div class="ctlgroup"><span class="panel-label">Design</span>
+    <div class="row gap8"><span class="mono" style="font-size:13px">7 of 18</span>
+      <span class="row gap4" style="margin-left:auto"><span class="kbd">[</span><span class="kbd">]</span></span></div>
+    <div class="dstrip"><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb on"></span><span class="dthumb"></span><span class="dthumb">✦</span><span class="dthumb"></span><span class="dthumb"></span>
+      <span class="dthumb">+6</span></div>
+    <span class="helper">Split Form · copy left, signup right</span></div>
+  <div class="ctlgroup"><span class="control-label">Copy side</span>
+    <span class="seg"><span class="on">Left</span><span>Right</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Height</span>
+    <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Form fields</span>
+    <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
+  <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Reader count</span><span class="toggle on"></span></div></div>
+  <div class="stack gap6"><span class="panel-label">No image controls</span>
+    <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div>
+</div></div></div></div></div><div class="section-head" id="design-picker"><h2>Design Picker · Design Nav</h2><p>The most-used control in the product. Three ways to the same thing: <span class="kbd">[</span> <span class="kbd">]</span>, the arrows beside the counter, and the thumbnail strip. The counter is mono so the number does not shift width, and it names the unit — <b>Design</b>, never Layout. The strip shows twelve and then a <span class="mono">+N</span> tile rather than scrolling. <span class="kbd">]</span> past the last returns to the first. <b>Switching carries, parks and defaults</b>: a control in both designs carries its value, one only in the design being left is parked against it, one only in the design being entered takes its default — which is why three presses of <span class="kbd">[</span> put you back exactly where you started.</p><p class="frame-cap">B1a in the sidebar · B1b on the section itself</p></div><div><div class="screen "><div style="padding:24px;background:var(--paper);display:flex;gap:24px;justify-content:center;align-items:flex-start"><div style="width:320px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)"><div class="sidebar">
+  <div class="row gap8"><b style="font-size:13px">Home hero</b><span class="chip mono" style="margin-left:auto">7 / 18</span></div>
+  <div class="ctlgroup"><span class="panel-label">Design</span>
+    <div class="row gap8"><span class="mono" style="font-size:13px">7 of 18</span>
+      <span class="row gap4" style="margin-left:auto"><span class="kbd">[</span><span class="kbd">]</span></span></div>
+    <div class="dstrip"><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb on"></span><span class="dthumb"></span><span class="dthumb">✦</span><span class="dthumb"></span><span class="dthumb"></span>
+      <span class="dthumb">+6</span></div>
+    <span class="helper">Split Form · copy left, signup right</span></div>
+  <div class="ctlgroup"><span class="control-label">Copy side</span>
+    <span class="seg"><span class="on">Left</span><span>Right</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Height</span>
+    <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Form fields</span>
+    <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
+  <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Reader count</span><span class="toggle on"></span></div></div>
+  <div class="stack gap6"><span class="panel-label">No image controls</span>
+    <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div>
+</div></div><div class="stack gap10" id="design-nav"><span class="frame-cap">B1b · the same counter, riding on the section</span><span class="pill"><span class="mono">7 / 18</span><a href="editor.html#design-picker">◀</a><a href="editor.html#design-picker">▶</a><a href="variant-shuffle.html">Shuffle</a></span><span class="helper" style="max-width:280px">Direct manipulation first — a user never has to look right to change a design. Both this pill and the outline appear on hover and vanish on exit.</span></div></div></div></div><div class="section-head" id="control-sidebar"><h2>Control Sidebar</h2><p>Four to seven controls, and they are <b>this design&rsquo;s</b>. A control that could never do anything in this design is <b>absent</b>, with the panel saying why; a control that could act but cannot right now is <b>greyed with its reason in the helper slot</b>. The two mean different things and a user must be able to tell them apart (rulings R-33, R-68).</p><p class="frame-cap">B2 · Editor Sidebar Kit · P0-0</p></div><div><div class="screen "><div style="padding:24px;background:var(--paper);display:flex;gap:20px;justify-content:center;align-items:flex-start">
+  <div style="width:300px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)"><div class="sidebar">
+    <span class="frame-cap">absent — could never act here</span>
+    <div class="ctlgroup"><span class="control-label">Type size</span>
+      <span class="seg"><span>Large</span><span class="on">Huge</span><span>Absurd</span></span></div>
+    <div class="ctlgroup"><span class="control-label">Alignment</span>
+      <span class="seg"><span class="on">Left</span><span>Centred</span></span></div>
+    <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Show the byline</span><span class="toggle on"></span></div></div>
+    <div class="stack gap6"><span class="panel-label">No image controls</span>
+      <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div>
+    <span class="helper">Big Type Manifesto — three controls, and the panel says so. Padding it out to match its siblings
+      would invent decisions the design does not have.</span></div></div>
+  <div style="width:300px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)"><div class="sidebar">
+    <span class="frame-cap">greyed — could act, not now</span>
+    <div class="ctlgroup"><span class="control-label">Media</span>
+      <span class="seg"><span class="on">Accent colour</span><span>Photograph</span></span></div>
+    <div class="ctlgroup greyed"><span class="control-label">Overlay tint</span>
+      <span class="seg"><span class="on">Soft dark</span><span>None</span><span>Strong</span></span>
+      <span class="reason">Not available while the media uses the accent colour.</span></div>
+    <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Caption</span><span class="toggle"></span></div></div>
+    <span class="helper">The row never moves and never disappears; the panel grows by the height of one sentence. The
+      sentence names the control that switched it off, so the cause is one move away. Never a tooltip.</span></div></div>
+</div></div></div><div class="section-head" id="inline-toolbar"><h2>Inline Toolbar</h2><p>Exactly four marks — bold, italic, underline, link — plus Remove link, which renders always and disables when the selection carries no link. <b>A mark a field does not permit is absent, not greyed</b>: a floating bar has no room for a sentence and the mark never returns for that field. <span class="kbd">⌥F10</span> moves focus into the toolbar, ← → move between marks, and <span class="kbd">Esc</span> dismisses it and restores that exact selection, caret and all.</p><p class="frame-cap">P0-1 Inline Text Toolbar (supersedes B4a — no block-type menu; Inflozo does not own the post body)</p></div><div><div class="screen "><div style="padding:32px;background:var(--mat);display:flex;flex-direction:column;gap:24px;align-items:center">
+  <div class="stack gap10" style="max-width:620px">
+    <span class="pill" style="align-self:center"><span style="font-family:var(--serif);font-weight:700">B</span>
+      <span style="font-family:var(--serif);font-style:italic">I</span>
+      <span style="font-family:var(--serif);text-decoration:underline">U</span>
+      <span style="border-left:1px solid rgba(255,255,255,.25);padding-left:10px">🔗</span>
+      <span style="opacity:.35">⛔</span></span>
+    <p style="font-family:var(--serif);font-size:17px;line-height:1.6;background:var(--paper-raised);padding:20px;border-radius:8px">
+      The web used to point outward. A blogroll was <span style="background:rgba(217,108,63,.25)">a list of other
+      people&rsquo;s homes</span>, kept in public, updated by hand — and reading one felt like being handed a map.</p>
+    <span class="helper" style="text-align:center">Five slots, always the same width. Remove link is disabled at 35% when
+      the selection carries no link.</span></div>
+  <div class="stack gap10" style="max-width:620px" id="link-entry">
+    <span class="frame-cap">B4b + P0-1 · the link popover, search state</span>
+    <div class="card" style="width:340px;align-self:center"><div class="pad-tight stack gap8">
+      <input class="input" value="arch" aria-label="Link target">
+      <span class="panel-label" style="font-size:10.5px">PAGES</span>
+      <div class="row gap8"><span style="font-size:13px">The <b>arch</b>ive</span><span class="helper mono" style="margin-left:auto">/archive/</span></div>
+      <span class="panel-label" style="font-size:10.5px">POSTS</span>
+      <div class="row gap8"><span style="font-size:13px">Notes on a 30-year-old <b>arch</b>ive</span><span class="helper" style="margin-left:auto">Jul 28</span></div>
+      <div class="row gap8"><span style="font-size:13px">The <b>arch</b>itecture of a quiet web</span><span class="helper" style="margin-left:auto">Jun 12</span></div>
+      <span class="panel-label" style="font-size:10.5px">TAGS</span>
+      <div class="row gap8"><span style="font-size:13px"><b>Arch</b>ive</span><span class="helper" style="margin-left:auto">41 posts</span></div>
+      <span class="panel-label" style="font-size:10.5px">PORTAL ACTIONS</span>
+      <div class="row gap6 wrap"><span class="chip">Sign up</span><span class="chip">Sign in</span><span class="chip">Account</span><span class="chip">Upgrade</span></div>
+      <span class="panel-label" style="font-size:10.5px">SITE</span>
+      <div class="row gap6"><span class="chip">Ghost search</span></div>
+      <span class="helper">Paste a URL or type an email address to link outside the site.</span></div></div>
+    <div class="card" style="width:340px;align-self:center"><div class="pad-tight stack gap8">
+      <span class="frame-cap" style="margin:0">filled state — editing re-opens the same popover, pre-filled</span>
+      <div class="row gap8"><span style="font-size:13px">What we lost when blogrolls died</span>
+        <a class="small" href="editor.html#link-entry" style="margin-left:auto">Change</a></div>
+      <span class="helper mono">POST · /blogrolls/</span>
+      <div class="row gap8"><span class="check"></span><span style="font-size:12.5px">Open in new tab</span></div>
+      <div class="row gap8"><span class="control-label">REL</span><span class="chip">nofollow</span><span class="chip">noreferrer</span><span class="chip">sponsored</span></div>
+      <div class="row gap8"><a class="btn sm ghost" href="editor.html">Remove link</a><a class="btn sm secondary" href="editor.html" style="margin-left:auto">Done</a></div>
+    </div></div></div>
+</div></div></div><div class="section-head" id="template-switcher"><h2>Template Switcher</h2><p>The full set. Membership is a <b>group with three children</b> — Signup, Signin, Member home — and Private appears only when a Private Site Gate section has been designed. A template that has never been designed shows a hollow dot <b>labelled &ldquo;Auto-generated&rdquo;</b>: a shape alone is the same failure as a colour alone, and this menu is where a user decides which template to open.</p><p class="frame-cap">S4a&rsquo;s dropdown, completed → prompt A5 frame D5b (FR-D6)</p></div><div><div class="screen tiny"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="card" style="width:280px"><div class="pad-tight stack gap2">
+    <div class="row gap8" style="padding:7px 10px;border-radius:8px;background:var(--coral-tint);font-size:13px;font-weight:600">Home<span style="margin-left:auto">✓</span></div>
+    <a class="row gap8" href="post-content.html" style="padding:7px 10px;font-size:13px">Post</a>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px">Page</div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px">Tag<span class="row gap6" style="margin-left:auto"><span style="width:7px;height:7px;border-radius:50%;border:1px solid var(--line-strong)"></span><span class="helper">Auto-generated</span></span></div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px">Author<span class="row gap6" style="margin-left:auto"><span style="width:7px;height:7px;border-radius:50%;border:1px solid var(--line-strong)"></span><span class="helper">Auto-generated</span></span></div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px;color:var(--ink-soft)">Membership</div>
+    <div class="row gap8" style="padding:6px 10px 6px 24px;font-size:13px">Signup</div>
+    <div class="row gap8" style="padding:6px 10px 6px 24px;font-size:13px">Signin</div>
+    <div class="row gap8" style="padding:6px 10px 6px 24px;font-size:13px">Member home</div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px">404<span class="row gap6" style="margin-left:auto"><span style="width:7px;height:7px;border-radius:50%;border:1px solid var(--line-strong)"></span><span class="helper">Auto-generated</span></span></div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px;color:var(--ink-faint)">Private<span class="helper" style="margin-left:auto">shown once a Private Gate is designed</span></div>
+    <div style="height:1px;background:var(--line);margin:4px 8px"></div>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px">Reading List<span class="helper mono" style="margin-left:auto">custom</span></div>
+    <div style="height:1px;background:var(--line);margin:4px 8px"></div>
+    <a class="row gap8" href="routes-manager.html" style="padding:7px 10px;font-size:13px;color:var(--ink-soft)">Manage routes…</a>
+    <div class="row gap8" style="padding:7px 10px;font-size:13px;color:var(--ink-soft)">+ New template</div>
+  </div></div></div></div></div><div class="section-head" id="layers"><h2>Layers</h2><p>The Site-wide card is pinned above the page&rsquo;s own sections, with a page count, and it cannot be reordered against them. Editing a site-wide section changes it on every template, and the product says so the first time and then stops. <b>The unit is templates</b> — a project has roughly seven to ten of them, not the 26 pages the frame printed.</p><p class="frame-cap">B7 · unit corrected to templates (FR-D6)</p></div><div><div class="screen tiny"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center"><div style="width:260px;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);overflow:hidden"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div></div></div></div></div><div class="section-head" id="layers-focused"><h2>A Layers row with keyboard focus</h2><p><span class="kbd">↑</span> <span class="kbd">↓</span> move focus between rows; <b><span class="kbd">⌥↑</span> <span class="kbd">⌥↓</span> move the section itself</b>, with the canvas following and the move announced; <span class="kbd">Enter</span> selects, <span class="kbd">Space</span> toggles visibility. The focus ring is drawn <b>over</b> the row&rsquo;s existing state, so focused-and-selected is legible as both. <b>A drag with no keyboard equivalent is a defect.</b></p><p class="frame-cap">B7&rsquo;s three row states plus the fourth → prompt A8 frame D8e</p></div><div><div class="screen tiny"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div style="width:280px" class="stack gap6">
+    <div class="lrow focused"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    <div class="lrow" style="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    <div class="lrow on focused"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    <div class="row gap8 wrap" style="margin-top:8px"><span class="kbd">↑</span><span class="kbd">↓</span><span class="helper">move focus</span>
+      <span class="kbd">⌥↑</span><span class="kbd">⌥↓</span><span class="helper">move the section</span></div>
+  </div></div></div></div><div class="section-head" id="persistence"><h2>Persistence Indicator</h2><p>Four labels, one dot, <b>never a spinner</b>. The expanded panel appears only on Retrying, and its first sentence is the reassurance, because the user&rsquo;s real question is whether they have lost work. The fifth state is FR-D10&rsquo;s no-local-storage fallback, and it exists because a false &ldquo;Saved locally&rdquo; is the one thing this indicator must never say.</p><p class="frame-cap">B6, plus the fallback state FR-D10 requires</p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto">
+  <div class="row gap10"><span class="dot grey"></span><b style="font-size:13px">Saved on this device</b><span class="helper">Written locally, not yet sent. The resting state while typing.</span></div>
+  <div class="row gap10"><span class="dot coral"></span><b style="font-size:13px">Syncing</b><span class="helper">In flight — the only one that is happening rather than being true.</span></div>
+  <div class="row gap10"><span class="dot mint"></span><b style="font-size:13px">Synced</b><span class="helper">Safe on the server. Fades back to the resting label.</span></div>
+  <div class="row gap10"><span class="dot danger"></span><b style="font-size:13px">Retrying · <span class="mono">12s</span></b><span class="helper">Counts down, so waiting feels finite.</span></div>
+  <div class="row gap10"><span class="dot sky"></span><b style="font-size:13px">Syncing every change to the cloud</b><span class="helper">This browser has no local storage, so nothing is held here.</span></div>
+  <div class="card"><div class="pad-tight stack gap8"><b style="font-size:13px">Retrying, third attempt</b>
+    <span class="helper">Your work is safe on this device. Nothing is lost if you close the tab — we will send it when the
+      connection returns.</span>
+    <div class="row gap8"><a class="btn sm secondary" href="editor.html">Retry now</a><a class="btn sm ghost" href="editor.html">Download a copy</a></div></div></div>
+  <p class="helper">Nothing blocks on a save. Every change writes locally and asynchronously; cloud sync runs every three
+    minutes, on tab close, on lock release, and before any deploy or export.</p>
+</div></div></div><div class="section-head" id="content-source"><h2>Content Source Pill · Preview Subject Picker</h2><p>The pill describes the canvas, so it sits above the canvas rather than in the sidebar. Solid hairline with a mint dot when the content is real; dashed with grey when it is sample. Opening it reveals the <b>subject</b> — which post, page, tag or author this canvas renders — because a post with a feature image and one without are different shapes.</p><p class="frame-cap">B9 · the subject list → prompt A5 frame D5e (FR-D22)</p></div><div><div class="screen "><div style="padding:32px;background:var(--mat);display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
+  <div class="stack gap10" style="align-items:center">
+    <span class="pill"><span class="dot mint"></span><span>Previewing with: <b>Orbit Weekly</b></span></span>
+    <span class="helper" style="max-width:230px;text-align:center">Real posts, real authors, real tags. What you see is what a reader sees.</span></div>
+  <div class="stack gap10" style="align-items:center">
+    <span class="pill dashed"><span class="dot grey"></span><span>Previewing with: <b>Sample content</b></span></span>
+    <span class="helper" style="max-width:230px;text-align:center">Nothing here is yours yet. Connect a site and every frame refills.</span></div>
+  <div class="card" style="width:340px" id="preview-subject"><div class="pad-tight stack gap8">
+    <span class="frame-cap" style="margin:0">D5e · the pill, opened</span>
+    <span class="panel-label" style="font-size:10.5px">SOURCE</span>
+    <div class="row gap8" style="font-size:13px">Orbit Weekly<span style="margin-left:auto">✓</span></div>
+    <div class="row gap8" style="font-size:13px;color:var(--ink-soft)">Sample content</div>
+    <div style="height:1px;background:var(--line)"></div>
+    <span class="panel-label" style="font-size:10.5px">SUBJECT</span>
+    <input class="input" placeholder="Search your posts…" aria-label="Search posts">
+    <div class="row gap8" style="font-size:13px"><span>Style-guide article</span><span style="margin-left:auto">✓</span></div>
+    <span class="helper" style="margin-top:-4px">the one every post design is designed against</span>
+    <div class="row gap8" style="font-size:13px"><span>The slow return of the personal homepage</span>
+      <span class="chip" style="margin-left:auto">has image</span></div>
+    <span class="helper" style="margin-top:-4px">Aug 14</span>
+    <div class="row gap8" style="font-size:13px"><span>What we lost when blogrolls died</span>
+      <span class="chip" style="margin-left:auto">has image</span></div>
+    <span class="helper" style="margin-top:-4px">Aug 10</span>
+    <div class="row gap8" style="font-size:13px"><span>A field guide to quiet software</span></div>
+    <span class="helper" style="margin-top:-4px">Aug 7 · no feature image</span>
+    <span class="helper" style="border-top:1px solid var(--line-faint);padding-top:8px">This canvas renders one post. Which
+      one changes what you see, because a post with a feature image and one without are different shapes.</span>
+  </div></div>
+</div></div></div><div class="section-head" id="member-state"><h2>Member State Preview</h2><p><b>Three states, and only three</b> — Anonymous, Free member, Paid member. <span class="mono">comped</span> previews as Paid, because it differs in billing rather than in access. Beside the toggle is the unviewed-states marker, and on a gated body the canvas prints <b>&ldquo;Gated content — shown with sample text&rdquo;</b>.</p><p class="frame-cap">S4d re-specified to FR-D16 (B9 already says &ldquo;only&rdquo; and agrees with the PRD; S4d is the outlier)</p></div><div><div class="screen detail"><div style="padding:32px;background:var(--mat);display:flex;flex-direction:column;gap:18px;align-items:center">
+  <div class="row gap10"><span class="seg"><span class="on">Anonymous</span><span>Free member</span><span>Paid member</span></span>
+    <span class="badge notice">2 states not yet viewed</span></div>
+  <div class="pill"><span>Gated content — shown with sample text</span></div>
+  <span class="helper" style="max-width:520px;text-align:center">S4d drew tier-level previews — Orbit Supporter $5, Patron
+    $12, Founding $120. FR-D16 has three states, not a tier list, so the tiers move to the
+    <a href="paywall-editor.html">Paywall Editor</a> where they belong.</span></div></div></div><div class="section-head" id="pro-badge"><h2>Pro Design Badge</h2><p><b>A price tag, not a lock.</b> Marigold, in the corner, on selection only — and <b>nothing happens when you click it, ever</b>. That is the <a href="pro-exit-sheet.html">Pro Exit Sheet</a>&rsquo;s job, once, at the exit.</p><p class="frame-cap">B10</p></div><div><div class="screen detail"><div style="padding:32px;background:var(--mat);display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
+  <div class="stack gap10" style="align-items:center">
+    <span class="pill"><span class="badge pro">✦ Pro</span><span>Collage Grid</span></span>
+    <span class="helper" style="max-width:260px;text-align:center">Placed, editable, shuffleable, exportable to the canvas
+      — and shipping-blocked only at deploy. Nothing about it is disabled.</span></div>
+  <div class="card" style="max-width:360px"><div class="pad-tight stack gap8">
+    <b style="font-size:13px">What the badge does and does not mean</b>
+    <span class="helper">✓ Edit it, restyle it, shuffle it, preview it, keep it</span>
+    <span class="helper">✓ See it in the design strip with the same mark</span>
+    <span class="helper">✕ No upgrade sheet on click, ever</span>
+    <span class="helper">The word <b>Pro</b> is part of the badge, never the glyph alone — a shape may not carry a signal
+      on its own any more than a colour may.</span></div></div></div></div></div><div class="section-head" id="auto-generated"><h2>Auto-Generated Marker</h2><p>The same sentence in two places — a chip in the top bar beside the template name, and a row at the head of Layers. Informational, never apologetic: the canvas is telling the user what they are looking at, not excusing it. Both vanish on the first edit.</p><p class="frame-cap">Extrapolated → prompt A5 frame D5a (FR-D6, Appendix H)</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Tag<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto"><span class="badge notice">Auto-generated — edit anything to make it yours</span>
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div>
+  <div class="edmid"><div class="layers">
+  <div class="list">
+    <div class="row gap8" style="padding:8px;background:var(--marigold-tint);border-radius:8px;margin-bottom:6px"><span class="helper" style="color:var(--marigold-text)">Auto-generated — edit anything to make it yours</span></div>
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS TEMPLATE · TAG</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div>
+  <div class="canvasmat"><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div><div class="sidebar">
+  <div class="stack gap8" style="margin:auto;text-align:center;padding:24px">
+    <b style="font-size:13.5px">Nothing selected</b>
+    <span class="helper">Click any section on the canvas — its controls appear here.</span></div></div></div></div></div></div><div class="section-head" id="main-feed"><h2>Main Feed Marker</h2><p>Which feed is the paginated one, said on the canvas outline and on the Layers row. Its Count control is <b>greyed with the reason</b> — the value in force is not its own — and it links to where the value actually lives. <b>Never into Ghost Admin: Ghost has no posts-per-page setting</b> (ruling R-10 #13). The second feed&rsquo;s ⋯ menu carries &ldquo;Make this the main feed&rdquo;.</p><p class="frame-cap">Extrapolated → prompt A5 frame D5c (FR-H2, FR-Q1)</p></div><div><div class="screen "><div style="padding:24px;background:var(--paper);display:flex;gap:20px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
+  <div class="stack gap10" style="align-items:center"><span class="pill"><span class="mono">MAIN FEED</span></span>
+    <span class="helper" style="max-width:200px;text-align:center">on the canvas outline and on the Layers row</span></div>
+  <div style="width:300px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)"><div class="sidebar">
+    <div class="row gap8"><b style="font-size:13px">Latest issues</b><span class="chip mono" style="margin-left:auto">MAIN FEED</span></div>
+    <div class="ctlgroup greyed"><span class="control-label">Count</span>
+      <span class="stepper"><span>−</span><span class="v">12</span><span>+</span></span>
+      <span class="reason">This feed is sized by your theme&rsquo;s Posts per page.
+        <a href="theme-settings.html">Change it in Theme settings.</a></span></div>
+    <div class="ctlgroup"><span class="control-label">Pagination</span>
+      <span class="seg"><span class="on">Numbered</span><span>Load more</span><span>Infinite</span></span>
+      <span class="helper">Only the main feed has this control.</span>
+      <a class="btn sm secondary" href="editor.html#page2" style="align-self:flex-start;margin-top:6px">Preview page 2</a></div>
+  </div></div>
+  <div class="card" style="width:250px"><div class="pad-tight stack gap2">
+    <span class="frame-cap" style="margin:0">the second feed&rsquo;s ⋯ menu</span>
+    <div class="row gap8" style="padding:7px 8px;font-size:13px">Duplicate</div>
+    <div class="row gap8" style="padding:7px 8px;font-size:13px">Make this the main feed</div>
+    <div class="row gap8" style="padding:7px 8px;font-size:13px;color:var(--danger)">Delete</div></div></div>
+</div></div></div><div class="section-head" id="page2"><h2>Page 2 Preview</h2><p>The only state in which a numbered pagination treatment shows what it is. Reached by clicking the Pagination control — <b>deliberately no keyboard shortcut</b>: states added after FR-D11&rsquo;s map carry none, and that rule governs new <i>global</i> bindings only.</p><p class="frame-cap">Extrapolated → prompt A5 frame D5d (FR-D21, Appendix H)</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--mat);display:flex;flex-direction:column;gap:14px;align-items:center">
+  <span class="pill"><span>Page 2</span><a href="editor.html#main-feed">Back to page 1</a></span>
+  <div class="site" style="max-width:640px"><div style="padding:24px 32px" class="stack gap16">
+    <div class="stack gap4"><span style="font-family:var(--serif);font-size:18px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+    <div class="stack gap4"><span style="font-family:var(--serif);font-size:18px">The renewal arithmetic</span><span class="ow-meta">ROSA MENENDEZ · JUL 21</span></div>
+    <div class="stack gap4"><span style="font-family:var(--serif);font-size:18px">Quiet software, revisited</span><span class="ow-meta">PRIYA NAIR · JUL 14</span></div>
+    <div class="row gap10" style="justify-content:center;padding-top:12px;border-top:1px solid #EBE5DB;font-family:var(--ui);font-size:12px">
+      <span>← Previous</span><span class="chip">1</span><span class="chip ink">2</span><span class="chip">3</span><span class="chip">4</span><span>Next →</span></div>
+  </div></div></div></div></div><div class="section-head" id="empty-template-warning"><h2>Empty Template Warning</h2><p>Fires <b>before</b> it takes effect, when the last section of a designed custom template is removed. Notice colour, not danger — nothing breaks. Ghost falls back silently on its side, which is exactly why Inflozo is not silent on its own.</p><p class="frame-cap">Extrapolated → prompt A5 frame D5f (FR-I1) · flow F6</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Remove the last section from Membership?</h2></div>
+  <div class="body"><div class="banner notice"><span class="ico">!</span><span>This template stops shipping. Any Ghost page
+    still pointing at <span class="mono">custom-membership.hbs</span> will still load — it will just wear your ordinary
+    page design instead. <b>Ghost won&rsquo;t warn anyone, which is why we are.</b></span></div></div>
+  <div class="foot"><a class="btn secondary" href="editor.html" style="box-shadow:var(--focus)">Keep it</a>
+    <a class="btn danger-out" href="editor.html">Remove it</a></div></div></div></div></div><div class="section-head" id="empty"><h2>The blank canvas</h2><p>One affordance and nothing else. <b>The canvas is sacred</b>: no grid, no placeholder, no dotted rectangle pretending to be a section.</p><p class="frame-cap">S4a, empty</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div><div class="edmid">
+  <div class="layers"><div class="list"><span class="panel-label" style="padding:6px 8px">Layers</span>
+    <div class="sitewide"><div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span></div></div>
+    <span class="helper" style="padding:8px">This template has no sections yet.</span></div>
+    <div style="border-top:1px solid var(--line);padding:10px"><a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div></div>
+  <div class="canvasmat" style="display:flex;align-items:center;justify-content:center">
+    <a class="btn dashed lg" href="section-picker.html">+ Add section</a></div><div class="sidebar">
+  <div class="stack gap8" style="margin:auto;text-align:center;padding:24px">
+    <b style="font-size:13.5px">Nothing selected</b>
+    <span class="helper">Click any section on the canvas — its controls appear here.</span></div></div></div></div></div></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeleton section blocks, matching the shape that is coming.</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div><div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div>
+  <div class="canvasmat"><div class="site"><div class="stack gap12" style="padding:24px">
+    <div class="thumb" style="height:60px"></div><div class="thumb" style="height:180px"></div>
+    <div class="thumb" style="height:140px"></div><div class="thumb" style="height:100px"></div></div></div></div>
+  <div class="sidebar">
+  <div class="stack gap8" style="margin:auto;text-align:center;padding:24px">
+    <b style="font-size:13.5px">Nothing selected</b>
+    <span class="helper">Click any section on the canvas — its controls appear here.</span></div></div></div></div></div></div><div class="section-head" id="error"><h2>When the Content API cannot be reached</h2><p>The canvas falls back to sample content <b>and names the cause</b> — never a silent switch, because a designer judging a layout needs to know whose words they are looking at.</p><p class="frame-cap">FR-H4</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div><div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div>
+  <div class="canvasmat"><div style="max-width:864px;margin:0 auto 10px">
+    <div class="banner notice"><span class="ico">!</span><span><b>We couldn&rsquo;t reach orbitweekly.com just now, so the
+      canvas is showing sample content.</b> Your project is untouched — this is a reading problem, not a writing one.
+      <a href="sites.html">Re-check the connection</a></span></div></div>
+    <div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div><div class="sidebar">
+  <div class="stack gap8" style="margin:auto;text-align:center;padding:24px">
+    <b style="font-size:13.5px">Nothing selected</b>
+    <span class="helper">Click any section on the canvas — its controls appear here.</span></div></div></div></div></div></div><div class="section-head" id="read-only-limit"><h2>Read-only — over the Free limit</h2><p>Canvas fully legible, sidebar dimmed to 55%, controls visible but inert. <b>Export is not disabled.</b> Read-only means not editable; it never means locked in (FR-J12).</p><p class="frame-cap">Extrapolated → prompt A4 frame D4e, on B5a&rsquo;s read-only treatment · J4 step 6</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="over-limit-sheet.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div>
+  <div style="background:var(--marigold-tint);padding:10px 16px" class="row gap12">
+    <b style="font-size:13px">Read-only — this project is over your Free plan&rsquo;s limit.</b>
+    <a class="btn sm secondary" href="over-limit-sheet.html#which-project">Make this the editable one</a>
+    <a class="btn sm secondary" href="deploy-destination.html">Export theme zip</a></div>
+  <div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div><div class="canvasmat"><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div>
+  <div class="sidebar dim">
+  <div class="row gap8"><b style="font-size:13px">Home hero</b><span class="chip mono" style="margin-left:auto">7 / 18</span></div>
+  <div class="ctlgroup"><span class="panel-label">Design</span>
+    <div class="row gap8"><span class="mono" style="font-size:13px">7 of 18</span>
+      <span class="row gap4" style="margin-left:auto"><span class="kbd">[</span><span class="kbd">]</span></span></div>
+    <div class="dstrip"><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb on"></span><span class="dthumb"></span><span class="dthumb">✦</span><span class="dthumb"></span><span class="dthumb"></span>
+      <span class="dthumb">+6</span></div>
+    <span class="helper">Split Form · copy left, signup right</span></div>
+  <div class="ctlgroup"><span class="control-label">Copy side</span>
+    <span class="seg"><span class="on">Left</span><span>Right</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Height</span>
+    <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Form fields</span>
+    <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
+  <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Reader count</span><span class="toggle on"></span></div></div>
+  <div class="stack gap6"><span class="panel-label">No image controls</span>
+    <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div>
+</div></div></div></div></div><div class="section-head" id="read-only-session"><h2>Read-only — someone else holds the lock</h2><p>The same treatment, a different banner. The whole three-party choreography is on its own page: <a href="edit-lock.html">Edit Lock</a>.</p><p class="frame-cap">B5a</p></div><div><div class="screen "><div class="ed short"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div>
+  <div style="background:var(--sky-tint);padding:10px 16px" class="row gap12">
+    <b style="font-size:13px">Rosa is editing this site — you are reading along.</b>
+    <a class="btn sm secondary" href="edit-lock.html">Request editing</a></div>
+  <div class="edmid"><div class="layers">
+  <div class="list">
+    
+    <a class="panel-label" href="editor.html#layers" style="padding:6px 8px">Layers</a>
+    <div class="sitewide">
+      <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
+        <span class="helper" style="margin-left:auto">on 9 templates</span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Announcement</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      <div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+    </div>
+    <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span><span class="helper" style="margin-left:auto">5</span></div>
+    <div class="lrow on"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">The list, teased</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">Signup</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="lrow"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><div class="lthumb"></div><span class="grow">About, short</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+  </div>
+  <div style="border-top:1px solid var(--line);padding:10px">
+    <a class="btn dashed" href="section-picker.html" style="width:100%">+ Add section</a></div>
+</div><div class="canvasmat"><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div>
+  <div class="sidebar dim">
+  <div class="row gap8"><b style="font-size:13px">Home hero</b><span class="chip mono" style="margin-left:auto">7 / 18</span></div>
+  <div class="ctlgroup"><span class="panel-label">Design</span>
+    <div class="row gap8"><span class="mono" style="font-size:13px">7 of 18</span>
+      <span class="row gap4" style="margin-left:auto"><span class="kbd">[</span><span class="kbd">]</span></span></div>
+    <div class="dstrip"><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb"></span><span class="dthumb on"></span><span class="dthumb"></span><span class="dthumb">✦</span><span class="dthumb"></span><span class="dthumb"></span>
+      <span class="dthumb">+6</span></div>
+    <span class="helper">Split Form · copy left, signup right</span></div>
+  <div class="ctlgroup"><span class="control-label">Copy side</span>
+    <span class="seg"><span class="on">Left</span><span>Right</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Height</span>
+    <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
+  <div class="ctlgroup"><span class="control-label">Form fields</span>
+    <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
+  <div class="ctlgroup"><div class="row gap10"><span class="control-label grow">Reader count</span><span class="toggle on"></span></div></div>
+  <div class="stack gap6"><span class="panel-label">No image controls</span>
+    <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div>
+</div></div></div></div></div><div class="section-head" id="empty-renders"><h2>Three empty states that render nothing at all, deliberately</h2><p>Each is a rule about the site being built rather than about the editor, and each was ruled once so no category has to decide it again.</p></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><div class="stack gap10" style="max-width:780px;margin:0 auto">
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>The main feed at zero posts</b> shows the designated feed
+    design&rsquo;s <b>own declared empty state</b> — never a back-filled one borrowed from somewhere else.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>A secondary feed at zero</b> renders nothing at all —
+    heading and container together. An empty box with a heading over it is worse than no box.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>A section whose items the user typed</b> renders nothing at
+    zero. An editor who has typed no steps is mid-build, not looking at an error.</span></div>
+</div></div></div></div><div class="section-head" id="floor"><h2>Below the floor, on a phone</h2><p>Opening a project on a coarse pointer at a small viewport lands on <a href="small-screen-notice.html">Small Screen Notice</a> — a designed surface, not a broken layout. At 200% browser zoom on a desktop it lands <a href="editor.html#at-720">here</a> instead.</p></div><div class="section-head" id="at-834"><h2>The editor at 834 — tablet, touch</h2><p>The same four parts, rearranged rather than redesigned. Layers collapses to an icon rail and expands as an overlay; the Controls sidebar becomes an overlay panel anchored right, over the canvas, with a scrim; the canvas does not resize under it. <b>Every target is at least 44px</b> — the one thing this width changes about the controls themselves.</p><p class="frame-cap">Extrapolated → prompt A8 frame D8a (ruling R-76)</p></div><div><div class="screen detail"><div class="ed short" style="max-width:834px;margin:0 auto"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto"><a class="iconbtn" href="editor.html">⋯</a>
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div>
+  <div class="edmid">
+    <div style="width:56px;border-right:1px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      <div class="lthumb" style="width:40px;height:30px"></div><div class="lthumb" style="width:40px;height:30px"></div>
+      <div class="lthumb" style="width:40px;height:30px"></div><div class="lthumb" style="width:40px;height:30px"></div>
+      <span class="helper" style="text-align:center">L</span></div>
+    <div class="canvasmat" style="position:relative;padding:16px">
+      <div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32 outline-sel" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div>
+      <div style="position:absolute;inset:0;background:var(--scrim)"></div>
+      <div style="position:absolute;top:0;right:0;bottom:0;width:300px;background:var(--surface);box-shadow:var(--sh-lg)">
+        <div class="sidebar" style="border-left:none">
+          <div class="row gap8"><b style="font-size:13px">Home hero</b><a style="margin-left:auto" href="editor.html#at-834">✕</a></div>
+          <div class="ctlgroup"><span class="control-label">Copy side</span>
+            <span class="seg" style="height:44px;align-items:center"><span class="on">Left</span><span>Right</span></span></div>
+          <div class="ctlgroup"><span class="control-label">Height</span>
+            <span class="seg" style="height:44px;align-items:center"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
+          <span class="helper">44px targets throughout, and hover affordances also appear on tap-and-hold.</span></div></div>
+    </div></div></div></div></div><div class="section-head" id="at-720"><h2>The editor at 720 — a desktop display at 200% browser zoom</h2><p>The <b>same</b> collapse as 834, but with a fine pointer: targets stay at their desktop sizes and hover still works. This frame is what proves the <a href="small-screen-notice.html">Small Screen Notice</a> does not fire here. Browser zoom is the reader&rsquo;s own accessibility setting and Inflozo may not defeat it (WCAG 1.4.4) — which is a different thing entirely from FR-D14&rsquo;s canvas scale.</p><p class="frame-cap">Extrapolated → prompt A8 frame D8b</p></div><div><div class="screen detail"><div class="ed short" style="max-width:720px;margin:0 auto"><div class="edbar">
+  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+  <a class="row gap6 small soft" href="editor.html#persistence"><span class="dot mint"></span>Saved</a>
+  <div class="centre">
+    <a class="pickbtn" href="editor.html#template-switcher"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+    <a class="pickbtn" href="editor.html#member-state"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></a>
+  </div>
+  <div class="row gap8" style="margin-left:auto">
+    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
+    <span class="split"><a class="btn coral" href="deploy-destination.html">Ship it</a><a class="btn coral caret" href="deploy-history.html">▾</a></span>
+  </div>
+</div>
+  <div class="edmid">
+    <div style="width:48px;border-right:1px solid var(--line);padding:10px 6px;display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+      <div class="lthumb" style="width:34px;height:24px"></div><div class="lthumb" style="width:34px;height:24px"></div>
+      <div class="lthumb" style="width:34px;height:24px"></div></div>
+    <div class="canvasmat" style="padding:14px"><div class="site">
+  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
+    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
+    <span class="ow-sub">Subscribe</span></div>
+  <div class="row gap32" style="padding:38px 32px;align-items:center">
+    <div class="stack gap12" style="flex:1.1">
+      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
+      <span class="ow-h1">The slow return of the personal homepage</span>
+      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
+      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
+    </div>
+    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
+  </div>
+  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+    <div class="row" style="justify-content:space-between;margin-bottom:18px">
+      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
+      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+    <div class="row gap32" style="align-items:flex-start">
+      <div class="stack gap10" style="flex:1.2">
+        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
+        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
+        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
+        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
+      <div class="stack gap16" style="flex:1">
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
+        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
+      </div></div></div>
+  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
+    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
+    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
+    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
+  </div>
+  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
+    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
+      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
+  </div>
+</div></div></div></div></div></div><div class="section-head" id="skip-link"><h2>The skip link</h2><p>The <b>first focusable thing in the editor shell</b>, and the reason it exists is structural: the canvas renders the <i>user&rsquo;s own site</i>, so tabbing through it means tabbing through every link that site emits — a twelve-section homepage is dozens of stops before the sidebar.</p><p class="frame-cap">Extrapolated → prompt A8 frame D8c</p></div><div><div class="screen detail"><div style="padding:32px;background:var(--paper);display:flex;flex-direction:column;gap:16px;align-items:center">
+  <div class="row gap16"><span class="btn secondary sm" style="box-shadow:var(--focus)">Skip the canvas</span>
+    <span class="helper">focused</span></div>
+  <div class="row gap16"><span class="btn secondary sm" style="opacity:.25">Skip the canvas</span>
+    <span class="helper">at rest — where it sits when nobody has focused it</span></div>
+  <p class="helper" style="max-width:520px;text-align:center">The canvas container offers the same on focus.
+    <span class="kbd">Esc</span> steps outward one level per press and announces where it landed: inline editing → the
+    section stays selected; section selected → deselects, focus rests on the canvas container; canvas container → focus
+    leaves for the editor chrome. Focus is never trapped and holding <span class="kbd">Esc</span> is never required.</p>
+</div></div></div><div class="section-head" id="destructive-focus"><h2>A destructive confirm, as it opens</h2><p><b>Focus opens on the cancelling action</b>, never on the danger-fill button. Stated as a rule rather than a list, because the list would go stale — it already covers Take over anyway, Delete account, Roll back, project delete, delete-in-use assets and &ldquo;Overwrite and ship anyway&rdquo;, and it covers whatever is added next.</p><p class="frame-cap">Extrapolated → prompt A8 frame D8f</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Take over from Rosa?</h2></div>
+  <div class="body"><p style="font-size:13px;line-height:1.55">Rosa has not responded for 4 minutes.</p>
+    <div class="banner error"><span class="ico">!</span><span><b>7 unsynced edits will be lost.</b> They exist only in
+      Rosa&rsquo;s browser. We cannot retrieve them from here.</span></div></div>
+  <div class="foot"><a class="btn secondary" href="edit-lock.html" style="box-shadow:var(--focus)">Wait</a>
+    <a class="btn danger" href="edit-lock.html">Take over anyway</a>
+    <a class="btn ghost" href="edit-lock.html">Or message Rosa</a></div></div></div></div></div><div class="section-head" id="shortcuts"><h2>The shortcuts, and the rule that keeps them WCAG-clean</h2><p>FR-D11&rsquo;s map is the complete set of <b>global</b> shortcuts. Standard within-component keyboard behaviour — arrows through a list, <span class="kbd">Enter</span> to select, <span class="kbd">⌥</span>-arrow to move a row, <span class="kbd">⌥F10</span> into a toolbar — is not a shortcut in that sense and is <b>required</b>.</p><p class="frame-cap">Editor Sidebar Kit · shortcut rows</p></div><div><div class="screen "><div style="padding:24px;background:var(--surface)">
+  <div class="grid g3 gap12"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Dark toggle</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)">
+      <span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
+  </div>
+  <div class="banner info" style="margin-top:16px"><span class="ico">ⓘ</span><span>
+    <b>Every single-character shortcut is live only while the editor shell holds focus</b>, and never while a text field or
+    a contenteditable has it — WCAG 2.1.4 Character Key Shortcuts. Without that rule, a speech-input user saying a word
+    near the canvas fires Preview Mode or a Site Remix. <span class="mono">⌘</span>-modified shortcuts are unaffected.
+    <b>axe-core cannot see this</b>, which is exactly why it is written down.</span></div>
+  <div class="banner info" style="margin-top:10px"><span class="ico">ⓘ</span><span>
+    Undo is 100 <b>edits</b>, not operations, and it survives a reload because it is the journal tail. One gesture is one
+    edit: a Variant Shuffle rewrites every prop of a section and is <b>one</b> undo step.
+    <b>No operation count is ever surfaced anywhere in the product.</b></span></div>
+</div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

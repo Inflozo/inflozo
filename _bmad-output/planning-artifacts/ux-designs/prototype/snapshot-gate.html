@@ -1,0 +1,79 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Snapshot Gate
+  FRAME    : B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified; visual treatment kept
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F1 · FR-J13 · J1 step 13
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snapshot Gate — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Snapshot Gate</span>
+  <span class="frame">B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified; visual treatment kept</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · flow F1 · FR-J13 · J1 step 13</span>
+</div>
+<div class="proto-note"><b>Two sentences from the frame are deleted, and both were load-bearing mistakes.</b> &ldquo;It happens on every deploy&rdquo; — it is the <b>first upload to a site</b>, deploy-only included, because manual activation in Ghost Admin must not bypass the safety net. And &ldquo;Snapshots count towards your history&rdquo; — they are exempt from the limit and never prune. <b>B12b&rsquo;s reason was the most expensive error:</b> it told the user to fix a key permission. Ghost allowlists only <span class="mono">themes: [POST, PUT]</span> for integration tokens, so every <span class="mono">GET /themes/*</span> with an Admin API key returns 403 on every version and every host. There is no key to fix, and sending someone to fix one costs them an afternoon.</div>
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 13 of 15</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check · step 4</a></span><span class="tstep">next: <a href="deploy-progress.html">Deploy Progress · step 5</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 9 of 10</span><span class="tstep">← <a href="preflight-check.html">Pre-flight Check</a></span><span class="tstep">next: <a href="deploy-live.html">Deploy Live</a> →</span></div>
+<div class="trail"><span class="tl">Flow F1 · Pre-deploy snapshot gate</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="snapshot-gate.html#captured">Captured</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#no-token">No Staff Access Token<span class="k">B12b</span></a><a class="idxrow" href="#failed">Capture failed otherwise</a><a class="idxrow" href="#captured">Captured</a></div></div>
+<main id="main">
+<div><p class="frame-cap">B12a · snapshot gate · running (step 5 of 6) — minus the two sentences that were wrong</p><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Safety net</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Backup</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Check</span><span class="rsep"></span><span class="rstep on"><span class="n">5</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">6</span>Live</span></div><div class="wizbody"><div class="wizcard"><div class="stack gap16">
+    <h2 style="font-size:20px">Archiving your current theme first</h2>
+    <p style="font-size:13.5px;line-height:1.6">If anything about the new theme is wrong, this is what we roll back to.
+      It takes a few seconds, and it happens <b>once — at our first upload to this site</b>.</p>
+    <div class="stack">
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">Reading the live theme from Ghost</span><span class="chip mono">casper 5.9.4</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">Writing the snapshot</span><span class="chip mono">2.1 MB</span></div>
+      <div class="checkrow"><span class="dot coral"></span><span class="grow">Uploading the new theme</span>
+        <div class="progress" style="width:160px"><div class="bar" style="width:46%"></div></div></div>
+      <div class="checkrow"><span class="faint">○</span><span class="grow faint">Checking your theme (Ghost will love it)</span></div>
+    </div>
+    <p class="helper"><b>Kept outside your version limit.</b> The snapshot is exempt from history retention and never
+      prunes — it is not one of your 10 stored versions.</p>
+    <div class="wizfoot"><a class="btn secondary" href="deploy-progress.html">Cancel</a></div></div></div></div></div></div></div><div class="section-head" id="no-token"><h2>No Staff Access Token — the designed degraded path, not an error</h2><p>Not danger, not a failure. It names the honest reason, then names what protects the user anyway, then offers three real actions.</p><p class="frame-cap">B12b, re-specified</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="stack gap14">
+    <h2 style="font-size:19px">We could not archive your current theme</h2>
+    <p style="font-size:13.5px;line-height:1.6"><b>Reading your live theme needs the site Owner&rsquo;s Staff Access Token,
+      and this project doesn&rsquo;t have one.</b> That&rsquo;s how Ghost works on every version and every host — there&rsquo;s
+      no permission to switch on.</p>
+    <div class="banner info"><span class="ico">ⓘ</span><span>Ghost keeps your previous theme under
+      <b>Settings → Design</b>, so you can put it back yourself if you need to.</span></div>
+    <div class="wizfoot"><a class="btn" href="staff-token-offer.html">Add the token</a>
+      <a class="btn secondary" href="deploy-progress.html">Deploy without a snapshot</a>
+      <a class="btn ghost" href="deploy-destination.html">Cancel</a></div></div></div></div></div></div><div class="section-head" id="failed"><h2>Capture failed for another reason</h2><p>The request and the status code, because a person can act on a specific failure. Same three actions.</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="stack gap14">
+    <h2 style="font-size:19px">We could not archive your current theme</h2>
+    <p style="font-size:13.5px;line-height:1.6">Ghost returned a 502 while we were reading it. That is a Ghost-side
+      problem rather than a permission one, and it usually clears on its own.</p>
+    <span class="chip mono" style="align-self:flex-start;padding:6px 10px">GET /ghost/api/admin/themes/ → 502</span>
+    <div class="wizfoot"><a class="btn" href="snapshot-gate.html">Try again</a>
+      <a class="btn secondary" href="deploy-progress.html">Deploy without a snapshot</a>
+      <a class="btn ghost" href="deploy-destination.html">Cancel</a></div></div></div></div></div></div><div class="section-head" id="captured"><h2>Captured</h2><p>The step list completes and the wizard moves on. <b>No celebration — this is plumbing.</b></p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="banner info" style="max-width:620px"><span class="ico">ⓘ</span>
+    <span>Archived <span class="mono">casper 5.9.4</span> · 2.1 MB. It sits in
+      <a href="deploy-history.html">Deploy History</a> as <b>Your original theme</b>, above the version list and outside
+      the count.</span></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

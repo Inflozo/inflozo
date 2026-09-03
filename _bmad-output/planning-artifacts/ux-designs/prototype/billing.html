@@ -1,0 +1,133 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Billing
+  FRAME    : S12 Billing.dc.html — S12a plan · S12c delete account · S12d invoices. Every limit shown is Appendix F.1&rsquo;s, which governs over the frame
+  IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § Plan limits · J4 step 3
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billing — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Billing</span>
+  <span class="frame">S12 Billing.dc.html — S12a plan · S12c delete account · S12d invoices. Every limit shown is Appendix F.1&rsquo;s, which governs over the frame</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § Plan limits · J4 step 3</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 3 of 10</span><span class="tstep">← <a href="grace-banner.html#kept">During grace, nothing is withdrawn</a></span><span class="tstep">next: <a href="grace-banner.html#expiry">Grace expires</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#limits">The limits, plainly<span class="k">Appendix F.1</span></a><a class="idxrow" href="#invoices">Invoices<span class="k">S12d</span></a><a class="idxrow" href="#delete">Delete Account<span class="k">S12c</span></a><a class="idxrow" href="#cancel">Cancel plan<span class="k">Appendix F.2</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S12a · account &amp; billing — Pro · 1440</p><div class="screen "><div class="app"><div class="rail">
+  <a class="word" href="dashboard.html">Inflozo</a>
+  <div class="stack gap4">
+    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
+    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
+    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
+    <div class="meter">
+      <div class="track"><div class="fill" style="width:6%"></div></div>
+      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
+    </div>
+  </div>
+  <a class="acct" href="billing.html">
+    <span class="avatar">M</span>
+    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
+      <span class="helper">maya@orbitweekly.com</span></span>
+    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
+  </a>
+</div><div class="appmain"><div class="topbar">
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
+  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
+</div><div class="appbody"><div class="stack gap16" style="max-width:760px">
+  <h2 style="font-size:22px">Account &amp; Billing</h2>
+  <div class="card"><div class="pad stack gap14">
+    <div class="row gap12"><span class="avatar">M</span>
+      <div class="stack gap2 grow"><div class="row gap8"><b style="font-size:15px">Pro</b><span class="badge live">✦ Active</span></div>
+        <span class="helper">Renews Sep 17, 2026 · $15/mo</span></div>
+      <span style="font-family:var(--display);font-size:24px;font-weight:700">$15<span class="soft" style="font-size:13px">/mo</span></span></div>
+    <div style="height:1px;background:var(--line-faint)"></div>
+    <div class="grid g4 gap12">
+      <div class="stack gap2"><span class="control-label soft">Projects</span><b class="mono">6 of 25</b></div>
+      <div class="stack gap2"><span class="control-label soft">Connected sites</span><b class="mono">2 of 10</b></div>
+      <div class="stack gap2"><span class="control-label soft">Asset storage</span><b class="mono">312 MB of 5 GB</b></div>
+      <div class="stack gap2"><span class="control-label soft">Deploy history</span><b class="mono">last 10 per project</b></div>
+    </div>
+    <div class="row gap10"><a class="btn secondary" href="billing.html">Manage in Dodo portal</a>
+      <a class="btn ghost" href="billing.html#cancel">Cancel plan</a>
+      <span class="helper" style="margin-left:auto">Cancelling always takes three clicks or fewer. No retention screens.</span></div>
+  </div></div>
+  <div class="card"><div class="pad row gap12"><div class="stack gap2 grow"><b style="font-size:13.5px">Invoices</b>
+      <span class="helper">Monthly receipts from Dodo</span></div>
+    <a class="btn sm secondary" href="billing.html#invoices">View invoices</a></div></div>
+  <div class="card"><div class="pad stack gap12">
+    <b style="font-size:13.5px">Email</b>
+    <div class="row gap10"><span class="mono" style="font-size:13px">maya@orbitweekly.com</span>
+      <span class="helper">Magic links land here</span>
+      <a class="btn sm secondary" style="margin-left:auto" href="billing.html">Change email</a></div>
+    <div style="height:1px;background:var(--line-faint)"></div>
+    <b style="font-size:13.5px">Passkeys</b>
+    <div class="stack gap8">
+      <div class="row gap10"><span style="font-size:13px">MacBook Pro — Touch ID</span><span class="helper">added Aug 2, 2026</span>
+        <a class="small soft" style="margin-left:auto" href="billing.html">Remove</a></div>
+      <div class="row gap10"><span style="font-size:13px">iPhone — Face ID</span><span class="helper">added Aug 3, 2026</span>
+        <a class="small soft" style="margin-left:auto" href="billing.html">Remove</a></div></div>
+    <a class="btn sm secondary" href="billing.html" style="align-self:flex-start">Add a passkey</a>
+    <div style="height:1px;background:var(--line-faint)"></div>
+    <b style="font-size:13.5px">Autosave</b>
+    <div class="row gap10"><span class="toggle on"></span><div class="stack gap2 grow">
+        <span style="font-size:13px">Sync to the cloud every three minutes</span>
+        <span class="helper">Turning this off means your work stays on this device until you press ⌘S, close the tab or
+          ship. If the device is lost, so is that work.</span></div></div>
+  </div></div>
+  <div class="card" style="border-color:var(--danger)"><div class="pad stack gap10">
+    <b style="font-size:13.5px;color:var(--danger)">Danger zone</b>
+    <div class="row gap12"><div class="stack gap2 grow"><b style="font-size:13px">Delete account</b>
+        <span class="helper">Removes every project, version and asset. Your live Ghost sites stay up — we never touch them.</span></div>
+      <a class="btn danger-out" href="billing.html#delete">Delete account</a></div></div></div>
+</div></div></div></div></div></div><div class="section-head" id="limits"><h2>The limits, plainly</h2><p>Appendix F.1 is the sole definition of Free/Pro gating, and the frames disagree with it in four places — S11c&rsquo;s &ldquo;3 sites&rdquo;, S12a&rsquo;s &ldquo;unlimited projects&rdquo;, S12b and M5&rsquo;s &ldquo;last 2 versions&rdquo;, S10b&rsquo;s &ldquo;30 MB&rdquo;. <b>F.1 governs every one of them.</b> These are product limits, so they are shown rather than implied.</p></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table><p class="helper" style="margin-top:10px">Everything not in this table is on both plans — dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p></div></div></div><div class="section-head" id="invoices"><h2>Invoices</h2><p class="frame-cap">S12d · invoices</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Invoices</h2></div>
+  <div class="body stack gap2"><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
+    <span style="font-size:13px">Aug 17, 2026</span><span class="helper">Pro · monthly</span>
+    <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span><a class="small" href="billing.html">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
+    <span style="font-size:13px">Jul 17, 2026</span><span class="helper">Pro · monthly</span>
+    <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span><a class="small" href="billing.html">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
+    <span style="font-size:13px">Jun 17, 2026</span><span class="helper">Pro · monthly</span>
+    <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span><a class="small" href="billing.html">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
+    <span style="font-size:13px">May 17, 2026</span><span class="helper">Pro · monthly</span>
+    <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span><a class="small" href="billing.html">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
+    <span style="font-size:13px">Apr 17, 2026</span><span class="helper">Pro · monthly</span>
+    <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span><a class="small" href="billing.html">PDF</a></div>
+  <p class="helper" style="padding-top:10px">Need older ones? <a href="billing.html">Open the Dodo portal ↗</a></p></div>
+  <div class="foot"><a class="btn secondary" href="billing.html">Close</a></div></div></div></div></div><div class="section-head" id="delete"><h2>Delete Account</h2><p>Typed confirm, serious voice, and no wit anywhere near it.</p><p class="frame-cap">S12c · delete account</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Delete your account?</h2></div>
+  <div class="body"><p style="font-size:13px;line-height:1.55">All 6 projects, their full version history and 48 assets
+    will be permanently deleted. <b>Your live Ghost sites stay online.</b> This cannot be undone.</p>
+  <label class="field"><span class="control-label">Type <b class="mono">delete my account</b> to confirm</span>
+    <input class="input mono" aria-label="Type delete my account to confirm" placeholder="delete my account"></label></div>
+  <div class="foot"><a class="btn secondary" href="billing.html" style="box-shadow:var(--focus)">Cancel</a>
+    <a class="btn danger off" href="billing.html">Delete account</a></div></div></div></div></div><div class="section-head" id="cancel"><h2>Cancelling</h2><p>No refunds and no mid-cycle cancellation (Appendix F.2). Access continues to the end of the paid period and then downgrades to Free — which is where the <a href="over-limit-sheet.html">Over-Limit Sheet</a> takes over.</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Cancel Pro?</h2></div>
+  <div class="body"><p style="font-size:13px;line-height:1.55">Auto-renew stops. <b>You keep Pro until Sep 17, 2026</b>,
+    the end of the period you have paid for, and then the account becomes Free.</p>
+  <p style="font-size:13px;line-height:1.55">Nothing is deleted at that point, on any path. If you are over the Free
+    limits we will show you exactly what is over and by how much, and you decide what changes.</p></div>
+  <div class="foot"><a class="btn secondary" href="billing.html" style="box-shadow:var(--focus)">Keep Pro</a>
+    <a class="btn danger-out" href="billing.html">Cancel Pro</a></div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

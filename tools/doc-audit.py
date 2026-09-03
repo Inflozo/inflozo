@@ -413,11 +413,24 @@ DOCS = [
 ]
 
 GROUPS = [
+ ('ux-designs/prototype/', 'live', "Step 5b — the static prototype of Inflozo's own UI",
+  "Ruling R-75's deliverable: Inflozo's interface as static HTML the owner opens with a DOUBLE-CLICK and walks "
+  '— no server, no build step, relative links only. Start at `index.html`: the surface list, the four journeys '
+  'and the eight flows, each as a labelled clickable trail. One page per surface EXPERIENCE.md names, filed by '
+  'its stable surface name; a panel, pill, marker, popover or sheet that only exists over another surface gets '
+  "a section on its host page instead, and the index lists every one. EVERY PAGE'S FIRST HTML COMMENT NAMES THE "
+  'FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, which is what makes fidelity '
+  'checkable against the export. `build.py` generates the lot from one registry — so the index cannot claim a '
+  'surface that does not exist, or miss one that does — and it refuses to write if any link or anchor is dead. '
+  'It is DISPOSABLE BY DESIGN once the dynamic UI matches it. **Step 6 stays shut until the owner says he has '
+  'walked it** (R-75); that sentence lives in `build-sequence.md` step 5b.'),
  ('ux-designs/', 'live', 'Step 5 — the UX workspace',
   "bmad-ux's run folder: the two spines (catalogued individually above), the memlog that records "
   'every decision taken during the pass, and the working / imports directories the skill creates. '
   'Nothing here is a second answer to a question the design export already answers — no mocks and '
-  'no wireframes were produced, deliberately (see EXPERIENCE.md § Finalize notes).'),
+  'no wireframes were produced, deliberately (see EXPERIENCE.md § Finalize notes). Step 5b\'s '
+  'prototype sits beside it in `prototype/` and is not that second answer either: it restates the one '
+  'answer in walkable form, page by page, naming its source frame on every page.'),
  ('design/claude-design-export/InflozoOld/', 'retired', 'Design export — the 2026-08-31 issue',
   'The export as it stood BEFORE the pass-two re-export of 2026-09-01, kept by the owner as '
   'provenance. Superseded wholesale by Inflozo/ beside it — nothing derives from this directory, '

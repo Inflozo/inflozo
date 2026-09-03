@@ -28,8 +28,12 @@ OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
 #
 # IT MOVES WITH THE CRITICAL PATH. On 2026-09-03 step 5 completed, its prompt block was replaced by
 # a completion record, and STEP-5-PROMPT.txt lost its source — so the two constants below moved to
-# step 5b and the old file was removed. When 5b completes, move them again rather than leaving a
-# generated file with nothing behind it.
+# step 5b and the old file was removed.
+#
+# THEY STAY ON 5B EVEN THOUGH 5B IS BUILT, and that is deliberate rather than an oversight. The
+# owner's next action is a WALK, not a paste, and it has no prompt of its own; moving these to step 6
+# would put step 6's prompt under his cursor before the gate that guards it (R-75). Move them when he
+# has walked the prototype and step 6 actually opens — and delete this paragraph then.
 PASTE = os.path.join(PLAN, 'STEP-5B-PROMPT.txt')
 PASTE_ID = 'Build the static prototype'   # the block this file mirrors, matched on its first line
 
@@ -82,20 +86,26 @@ STEPS = [
   'count). A8 came out of the step\u2019s own stress test: the export draws the editor at 1440 and '
   'NOWHERE ELSE, so R-76\u2019s tablet half and the 200%-zoom floor were both prose with no frame '
   'behind them.', None),
- ('s5b', '5b', 'Static prototype', 'next',
-  "THE CRITICAL PATH, and blocked by nothing — both step-5 spines are final. The owner's ruling "
-  "R-75 (2026-09-02): he sees INFLOZO'S OWN UI — not the design frames — as static, clickable pages "
-  'on his machine before anything is built dynamically. Built from EXPERIENCE.md\u2019s surface '
-  'names and the design export (R-74); opens from a double-click, no server, no install. The seven '
-  'Claude Design prompts do NOT block it — EXPERIENCE.md specifies every undrawn surface concretely '
-  'enough to build.',
-  'A walkable static prototype of the product. The owner walking it is what unlocks step 6.',
+ ('s5b', '5b', 'Static prototype', 'done',
+  'BUILT 2026-09-03. <b>Double-click '
+  '<code>_bmad-output/planning-artifacts/ux-designs/prototype/index.html</code></b> \u2014 no server, '
+  'no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; '
+  'every panel, pill, marker, popover and sheet that only exists over another surface is a section of '
+  'that page, linked from it and listed on the index. The four journeys and eight flows are each a '
+  'labelled, clickable trail. EVERY PAGE\u2019S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM '
+  '(R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. '
+  'It builds the RE-SPECIFICATION for the six frames drawn on the wrong mechanism, and its plan '
+  'limits are Appendix F.1\u2019s rather than the four frames that disagree with F.1. '
+  'Appendix A\u2019s Claude Design prompts had NOT been run when it was built, so its extrapolated '
+  'pages should be re-checked once the D-canvases exist.',
+  'A walkable static prototype of the product. <b>The owner walking it is what unlocks step 6</b>, '
+  'and that sentence is his to write \u2014 build-sequence.md step 5b holds the line it goes on.',
   None),
  ('s6', '6', 'Epics and stories', 'later',
-  'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: it does not open '
-  'until the owner has walked the step-5b prototype, and per R-74 every story with a surface '
-  'names the frame it is built from.',
-  'The story breakdown.', 'step 5b — the walked prototype'),
+  'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS '
+  'BUILT BUT THE GATE IS THE WALK, not the build \u2014 this step opens the day the owner says he '
+  'has walked it, and per R-74 every story with a surface names the frame it is built from.',
+  'The story breakdown.', "the owner's walk of the step-5b prototype"),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),

@@ -1,0 +1,75 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Preview-Only Notice
+  FRAME    : B Missing Surfaces.dc.html — B15 (right, apart from the plan name). S8a′ and S11a move to match it
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F5 · § wrong mechanism → B15 · FR-C2
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview-Only Notice — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Preview-Only Notice</span>
+  <span class="frame">B Missing Surfaces.dc.html — B15 (right, apart from the plan name). S8a′ and S11a move to match it</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · flow F5 · § wrong mechanism → B15 · FR-C2</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="connect-keys.html#validation">Set at connect, by the probe</a></span><span class="tstep">next: <a href="preview-only-notice.html#probe">The five states, and who clears them</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#probe">Probed, and its five states<span class="k">FR-C2 · FR-C5</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">B15 · preview-only connection — sky, not danger</p><div class="screen "><div style="padding:32px;background:var(--paper);display:flex;justify-content:center">
+  <div class="card" style="max-width:640px"><div class="pad stack gap14">
+    <div class="row gap10"><span class="panel-label grow">Connection</span>
+      <span class="badge sky"><span class="dot sky"></span>Preview-only</span></div>
+    <div class="stack gap2"><b style="font-size:14px">fieldnotes.ghost.io</b>
+      <span class="helper">Ghost(Pro) · Starter plan · connected 6 Aug</span></div>
+    <div class="banner info"><span class="ico">ⓘ</span><span><b>Ghost(Pro) Starter does not allow custom themes.</b>
+      Ghost restricts theme uploads on Starter, so we cannot deploy to this site. You can design and preview everything
+      here, and export a theme zip whenever you want.</span></div>
+    <div class="stack gap8"><span class="panel-label">What clears this</span>
+      <div class="checkrow"><span class="tick">1</span><span>Upgrade the site to <b>Ghost(Pro) Publisher or higher</b>,
+        then it clears on its own.</span></div>
+      <div class="checkrow"><span class="tick">2</span><span>Or move the site to <b>self-hosted Ghost</b>, where theme
+        upload is always available.</span></div></div>
+    <div class="banner notice"><span class="ico">!</span><span>Your zip downloads on every plan, but
+      <b>Starter forbids custom themes in Ghost Admin too</b> — this is a plan limit, not an API limit, so uploading it by
+      hand is not a route either. It installs on a self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes.</span></div>
+    <div class="row gap10"><a class="btn coral" href="deploy-destination.html#preview-only">Export theme zip</a>
+      <a class="btn secondary" href="preview-only-notice.html">Re-check plan</a>
+      <span class="btn off">Ship it</span></div>
+    <span class="reason">Ghost(Pro) Starter doesn&rsquo;t accept custom themes over the API or in Ghost Admin.</span>
+  </div></div></div></div></div><div class="section-head" id="probe"><h2>Probed, never asked</h2><p>At connect, <span class="mono">hostSettings.limits.customThemes</span> reports whether the site permits custom theme upload; its absence means self-hosted and unlimited. <b>There is no user-declared-plan step in the happy path and no plan field in <a href="manage-keys.html">Manage Keys</a>.</b></p></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><div class="stack gap10" style="max-width:760px;margin:0 auto">
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>Set at connect</b> — the probe read the plan.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>Set by a rejected deploy</b> — a friendly explanation, a
+    &ldquo;check or upgrade your Ghost(Pro) plan (Publisher or higher)&rdquo; prompt and a docs link. The deploy error is
+    authoritative over the probe, in both directions.</span></div>
+  <div class="banner success"><span class="ico">✓</span><span><b>Cleared by the daily probe.</b> The health check re-runs
+    it, so the flag sets and clears with no user action at all. <b>Clearing is not the user&rsquo;s job.</b></span></div>
+  <div class="banner success"><span class="ico">✓</span><span><b>Cleared by a successful deploy.</b></span></div>
+  <div class="banner notice"><span class="ico">!</span><span><b>Asked</b> — the one path where a question exists. The
+    <span class="mono">hostSettings</span> shape is undocumented and host-controlled, so where it is present but
+    unreadable, the flow asks once: which plan is this site on? That question exists <b>only</b> on that path.</span></div>
+  <p class="helper">The Re-check button stays regardless, because a user who has just upgraded should not have to wait a day.</p>
+</div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Drift Report
+  FRAME    : Extrapolated → Appendix A prompt A3, frames D3a, D3b and D3c. Inherits S8b&rsquo;s step card and checked-row list, and B7&rsquo;s Layers row for the file list
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · FR-J16
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drift Report — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Drift Report</span>
+  <span class="frame">Extrapolated → Appendix A prompt A3, frames D3a, D3b and D3c. Inherits S8b&rsquo;s step card and checked-row list, and B7&rsquo;s Layers row for the file list</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · FR-J16</span>
+</div>
+<div class="proto-note"><b>It is skipped on the first deploy</b> — there is nothing to compare against — and it runs before every deploy after that. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</div>
+<div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#pass">No drift<span class="k">D3c</span></a><a class="idxrow" href="#unverified">Could not verify<span class="k">D3b</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">D3a · drift found — the deploy stops. Rows are named by YOUR layer name; the raw path is beneath it</p><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep on"><span class="n">2</span>Check</span><span class="rsep"></span><span class="rstep "><span class="n">3</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">4</span>Live</span></div><div class="wizbody"><div class="wizcard wide"><div class="stack gap16">
+    <h2 style="font-size:20px">Something changed on your site since we last shipped.</h2>
+    <p style="font-size:13.5px;line-height:1.6">We compare what&rsquo;s live against what we put there. These files are
+      different — someone edited the theme in Ghost, or another tool did.</p>
+    <div class="stack gap10">
+      <span class="panel-label">Changed</span>
+      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Home hero</b>
+          <span class="helper mono">partials/section-home-hero.hbs</span></div></div>
+      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Three Column footer</b>
+          <span class="helper mono">partials/section-footer-three-column.hbs</span></div></div>
+      <span class="panel-label">Added</span>
+      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">A file we did not ship</b>
+          <span class="helper mono">assets/custom-tweaks.css</span></div></div>
+      <span class="panel-label">Removed</span>
+      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Latest issues</b>
+          <span class="helper mono">partials/section-latest-issues.hbs</span></div></div></div>
+    <div class="wizfoot"><a class="btn secondary" href="deploy-history.html">Download the live theme first</a>
+      <a class="btn" href="deploy-progress.html">Overwrite and ship anyway</a>
+      <a class="btn ghost" href="editor.html">Cancel</a></div>
+    <span class="helper">The destructive action is ink, not danger — this is a deliberate choice, not an accident. The
+      safe one is offered first.</span></div></div></div></div></div></div><div class="section-head" id="pass"><h2>No drift</h2><p>One passing row in the pre-flight list, identical in weight to every other pass.</p><p class="frame-cap">D3c · no drift · 620</p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="checkrow" style="border:none"><span class="tick">✓</span>
+    <span class="grow">Nothing changed on your site since v4</span><span class="helper">pass</span></div></div></div></div></div><div class="section-head" id="unverified"><h2>Could not verify — and it proceeds</h2><p>A single sky information row <b>inside</b> the pre-flight list, not a blocking state. <b>Drift is never asserted without two manifests in hand</b>, so this fails open.</p><p class="frame-cap">D3b · could not verify · 720</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="stack gap10">
+    <div class="checkrow"><span class="tick">✓</span><span class="grow">Ghost 6.x compatible</span><span class="helper">pass</span></div>
+    <div class="checkrow"><span style="color:var(--sky-text)">ⓘ</span>
+      <span class="stack gap2 grow"><b>Couldn&rsquo;t check whether your live theme changed.</b>
+        <span class="helper">We need the site Owner&rsquo;s Staff Access Token to read the live theme, and this project
+          doesn&rsquo;t have one. Shipping anyway.</span>
+        <a class="small" href="staff-token-offer.html" style="color:var(--sky-text)">Add the token</a></span></div>
+    <div class="checkrow"><span class="tick">✓</span><span class="grow"><span class="mono">routes.yaml</span> is valid</span><span class="helper">pass</span></div>
+  </div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

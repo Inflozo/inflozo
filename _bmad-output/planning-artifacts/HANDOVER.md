@@ -26,7 +26,7 @@ numbered options and one marked **(RECOMMENDED)**.
 
 ## Where the project is
 
-**Steps 1–5 are complete, and so is the inventory merge.** The architecture, the schema and its
+**Steps 1–5 and 5b are complete, and so is the inventory merge.** The architecture, the schema and its
 runnable proof, both compiler emitters, four stress rounds, a reliability round and three propagation
 audits are all applied. Every design category is drawn, specified, patched twice and exported. The
 library inventory is now **generated from the design export** and gated, so it cannot drift.
@@ -43,14 +43,28 @@ python3 tools/doc-audit.py --check        # the documentation gate
 
 ## The immediate task
 
-**Step 5b — the static prototype.** It is the critical path and it is blocked by nothing. The prompt
-is `STEP-5B-PROMPT.txt` and inside `build-sequence.md` step 5b. It turns step 5's `EXPERIENCE.md`
-into one plain HTML page per surface, linked so the four journeys and the eight flows can be walked
-by clicking, built from the design export's tokens and components only, and self-contained enough
-that a **double-click opens it** — no server, no install, no build step.
+**The owner's walk of the step-5b prototype. It is not a build task, and no session can do it for
+him.** The critical path now runs through one person opening one file.
+
+**Step 5b is BUILT — 2026-09-03.**
+`planning-artifacts/ux-designs/prototype/index.html` — **double-click it.** No server, no install,
+no build step, and it reads complete with JavaScript off. It holds one page per surface
+`EXPERIENCE.md`'s IA names; every panel, pill, marker, popover and sheet that only exists over
+another surface is a section of that page, linked from it and listed on the index; and the four
+journeys and the eight flows are each a labelled, clickable trail. **Every page's first HTML comment
+names the frame it derives from (R-74) and the `EXPERIENCE.md` section it implements**, which is what
+makes fidelity checkable rather than asserted. `build.py` beside it generates the lot from one
+registry and refuses to write if any link or anchor is dead.
+
+Three things a session picking this up should know about how it was built, all recorded on the pages
+themselves: it builds the **re-specification** rather than the frame for the six frames drawn on the
+wrong mechanism; its plan limits are **Appendix F.1's**, not the four frames that disagree with F.1;
+and **Appendix A's Claude Design prompts had not been run**, so the pages for surfaces with no frame
+are extrapolated exactly as the spine describes and should be re-checked once the D-canvases exist.
 
 **Step 6 does not open until the owner has walked it** (ruling **R-75**), and saying he has walked
-it is his to say. A wrong screen is cheapest the moment before anyone builds it.
+it is his to say — the line it goes on is in `build-sequence.md` step 5b, under *The walk*. **The
+gate is the walk, not the build.** A wrong screen is cheapest the moment before anyone builds it.
 
 **Step 5 is done — 2026-09-03.** `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/` holds
 `DESIGN.md` (the visual spine — a **transcription** of the Claude Design export; on any disagreement
@@ -72,7 +86,8 @@ things it found are worth knowing before you touch a UI task:
 - **Eight Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A. Six draw surfaces that
   were never drawn; **A7** corrects six frames whose mechanism changed; **A8** draws the editor at
   834 and 720 — which R-76's tablet half and the accessibility floor both need, and which the export
-  has never drawn at any width but 1440. **They block nothing** — not step 5b, not step 6.
+  has never drawn at any width but 1440. **They block nothing** — and step 5b was built without
+  them, so once they have run, its extrapolated pages should be checked against the new frames.
 
 **Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
 and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
@@ -120,6 +135,10 @@ prompt flagged as unsure, and bring anything genuinely open to the owner as a nu
   beside it. A `record`; never edit it.
 - **Step 5 (2026-09-03)** — `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and
   `EXPERIENCE.md`, both `status: final`. Both are `live` and are edited rather than superseded.
+- **Step 5b (2026-09-03)** — `planning-artifacts/ux-designs/prototype/`. The static prototype and
+  its generator. **Disposable by design** the day the dynamic UI matches it, and until then it is
+  the one place the whole product can be seen at once. Rebuild it with `python3 build.py` from
+  inside that folder after any edit to the registry; never hand-edit the emitted `.html`.
 - **Step 4b, the Ghost Build Room (2026-08-27)** — `prds/…/reconcile-designs-decisions.md`. Extended
   2026-08-31 with §A2 (the design patch pass), §A3 (the §F asks) and §A4 (§37.7 re-verified);
   2026-09-02/03 with §A5–§A10 (the library review, the open-questions sheet, the architect rulings,

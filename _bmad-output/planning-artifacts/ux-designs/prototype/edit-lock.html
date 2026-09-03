@@ -1,0 +1,73 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Edit Lock
+  FRAME    : B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal. The escalation is kept exactly as drawn; B5c&rsquo;s itemised loss is deleted
+  IMPLEMENTS: EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Lock — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Edit Lock</span>
+  <span class="frame">B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal. The escalation is kept exactly as drawn; B5c&rsquo;s itemised loss is deleted</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2</span>
+</div>
+<div class="proto-note"><b>One deviation from B5c, and it is not optional.</b> The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — three link labels&rdquo;. <b>That detail does not exist.</b> The heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and its &ldquo;Or message Rosa&rdquo; escape. Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b> — the field name, the heartbeat, the FR&rsquo;s prose and every user-visible string. <b>Rollback and snapshot restore never require the lock</b>, because they redeploy a stored artifact rather than the working document.</div>
+<div class="trails"><div class="trail"><span class="tl">Flow F2 · The three-party edit-lock choreography</span><span class="tstep">step 1 of 6</span><span class="tstep">next: <a href="edit-lock.html#holder">The holder</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reader">The reader<span class="k">B5a</span></a><a class="idxrow" href="#holder">The holder<span class="k">B5b</span></a><a class="idxrow" href="#unanswered">Unanswered</a><a class="idxrow" href="#takeover">The takeover<span class="k">B5c</span></a><a class="idxrow" href="#revived">The revived holder</a><a class="idxrow" href="#deploy-blocked">Deploy from a read-only session<span class="k">new</span></a></div></div>
+<main id="main">
+<div class="section-head"><h2>One editing context per project — across tabs, browsers and devices</h2><p>The three frames escalate deliberately: <b>a bar, then a popover, then a modal with a danger fill</b>. The interruption grows only as the stakes do. That escalation is the design and it stands.</p></div><div class="section-head" id="reader"><h2>1 · The reader — Editor, read-only</h2><p>The canvas stays fully legible; the sidebar dims to 55% so controls are <i>visible</i> but nothing responds. The bar names the person, not a role, and the request is a button because asking is the expected action here.</p><p class="frame-cap">B5a</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper)">
+  <div class="row gap12" style="background:var(--sky-tint);padding:12px 16px;border-radius:var(--r);max-width:820px;margin:0 auto">
+    <b style="font-size:13.5px">Rosa is editing this site — you are reading along.</b>
+    <a class="btn sm secondary" style="margin-left:auto" href="edit-lock.html#holder">Request editing</a></div></div></div></div><div class="section-head" id="holder"><h2>2 · The holder — a popover, not a modal</h2><p>The holder is mid-sentence. It states the sync position <b>before</b> asking, so handing over is not a gamble. <b>The countdown is a no-response timer and it stops the instant the holder interacts with the popover at all, focus included</b> — it only runs out when nobody is there, so a present holder is never hurried into a decision that loses someone else&rsquo;s work. It is announced <b>assertively</b>, because a request that arrives silently is a request a screen-reader user answers by not answering.</p><p class="frame-cap">B5b</p></div><div><div class="screen tiny"><div style="padding:32px;background:var(--paper);display:flex;justify-content:center">
+  <div class="card" style="max-width:360px;box-shadow:var(--sh-md)"><div class="pad stack gap12">
+    <div class="row gap10"><span class="avatar" style="background:#3A4A5F">DM</span>
+      <b style="font-size:14px">Dai wants to edit</b></div>
+    <p style="font-size:13px;line-height:1.55">If you hand over, your unsynced changes are sent first. You keep reading along.</p>
+    <div class="banner success"><span class="ico">✓</span><span><b>All your changes are synced</b> · 0 pending</span></div>
+    <div class="row gap10"><a class="btn" href="edit-lock.html#reader">Hand over</a>
+      <a class="btn secondary" href="editor.html">Keep editing</a>
+      <span class="helper" style="margin-left:auto">Expires in 60s</span></div>
+    <span class="helper">Touch it — even focus it — and the countdown stops.</span></div></div></div></div></div><div class="section-head" id="unanswered"><h2>3 · The requester, unanswered</h2></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="row gap12" style="background:var(--marigold-tint);padding:12px 16px;border-radius:var(--r);max-width:760px">
+    <b style="font-size:13.5px">No response; that session has 7 unsaved edits.</b>
+    <a class="btn sm secondary" style="margin-left:auto" href="edit-lock.html#takeover">Take over anyway</a></div></div></div></div><div class="section-head" id="takeover"><h2>4 · The takeover — B5c, and three things about it are decided</h2><p><b>A takeover is allowed.</b> It is not a wall. <b>The count is edits, never operations</b> — a Variant Shuffle is several operations and one edit, and the number appears verbatim in the string that tells a person what they lost. And <b>the message is honest rather than reassuring</b>: work that had not synced is genuinely gone. The losing device&rsquo;s journal is cleared unconditionally on its next hydrate, there is no merge path, and orphaned edits are never recovered.</p><p class="frame-cap">B5c</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Take over from Rosa?</h2></div>
+  <div class="body"><p style="font-size:13px;line-height:1.55">Rosa has not responded for 4 minutes. She has changes that
+    never reached the server.</p>
+    <div class="banner error"><span class="ico">!</span><span><b>7 unsynced edits will be lost.</b>
+      They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.</span></div></div>
+  <div class="foot"><a class="btn secondary" href="editor.html" style="box-shadow:var(--focus)">Wait</a>
+    <a class="btn danger" href="edit-lock.html#revived">Take over anyway</a>
+    <a class="btn ghost" href="edit-lock.html">Or message Rosa</a></div></div></div></div></div><div class="section-head" id="revived"><h2>5 · The revived former holder</h2><p>It flips to read-only and its local journal is cleared. Announced <b>assertively</b>, because this is work that is already gone.</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="row gap12" style="background:var(--danger-tint);padding:12px 16px;border-radius:var(--r);max-width:760px">
+    <b style="font-size:13.5px">That session had 14 unsaved edits; they were not included.</b>
+    <span class="helper">Dai is editing this site now — you are reading along.</span></div></div></div></div><div class="section-head" id="deploy-blocked"><h2>Deploy and export require the lock</h2><p>From a read-only session, Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. This state is drawn on no frame and is added to B5&rsquo;s family here.</p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="card" style="max-width:520px"><div class="pad stack gap10">
+    <b style="font-size:14px">Rosa is editing this site.</b>
+    <p style="font-size:13px;line-height:1.55">Shipping from here would send what the server has, and
+      <b>7 unsaved edits exist elsewhere</b>. Take over first, or ask Rosa to ship it.</p>
+    <div class="row gap10"><a class="btn secondary" href="edit-lock.html#takeover">Take over first</a>
+      <a class="btn ghost" href="edit-lock.html">Ask Rosa</a></div></div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

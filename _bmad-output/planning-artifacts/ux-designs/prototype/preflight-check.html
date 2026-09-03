@@ -1,0 +1,81 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Pre-flight Check
+  FRAME    : S8 Deploy.dc.html — S8b, extended with the drift row and the RTL pre-deploy warning
+  IMPLEMENTS: EXPERIENCE.md § IA → Deploy · J1 step 12 · FR-Q6, FR-J16
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-flight Check — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Pre-flight Check</span>
+  <span class="frame">S8 Deploy.dc.html — S8b, extended with the drift row and the RTL pre-deploy warning</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Deploy · J1 step 12 · FR-Q6, FR-J16</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 12 of 15</span><span class="tstep">← <a href="backup-gate.html">Backup Gate · step 3</a></span><span class="tstep">next: <a href="snapshot-gate.html">Snapshot Gate · step 5</a> →</span></div>
+<div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 8 of 10</span><span class="tstep">← <a href="backup-gate.html">Backup Gate</a></span><span class="tstep">next: <a href="snapshot-gate.html">Snapshot Gate</a> →</span></div>
+<div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 4 of 4</span><span class="tstep">← <a href="library-update-confirm.html#why">Why a confirm exists, and the contract that makes it safe</a></span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#blocked">Pre-flight — blocked by a gscan error<span class="k">S8b</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S8b · pre-flight check — one warning expanded (step 4 of 6) · 1440</p><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Safety net</span><span class="rsep"></span><span class="rstep done"><span class="n">✓</span>Backup</span><span class="rsep"></span><span class="rstep on"><span class="n">4</span>Check</span><span class="rsep"></span><span class="rstep "><span class="n">5</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">6</span>Live</span></div><div class="wizbody"><div class="wizcard wide"><div class="stack gap14">
+    <h2 style="font-size:20px">Pre-flight check.</h2>
+    <p class="softaa" style="font-size:13px">We compile and test everything before it touches your site.</p>
+    <div class="stack">
+      <div class="checkrow"><span class="tick">✓</span><span class="grow"><b>Theme compiled</b></span><span class="chip mono">1.4s · 2.4 MB</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow"><b>Checking your theme (Ghost will love it)</b></span>
+        <span class="chip mono">0 · 2</span><span class="helper">0 errors · 2 warnings</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">Ghost 6.x compatible</span><span class="helper">pass</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">Required templates present (index, post, page)</span><span class="helper">pass</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">No deprecated helpers</span><span class="helper">pass</span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow"><span class="mono">routes.yaml</span> is valid</span><span class="helper">pass</span></div>
+      <div class="checkrow"><span style="color:var(--marigold-text)">!</span>
+        <span class="stack gap2 grow"><b>hero.jpg is 2.1 MB</b>
+          <span class="helper">Big images slow readers down. We&rsquo;ll convert it to WebP on upload — about 240 KB.</span></span></div>
+      <div class="checkrow"><span style="color:var(--marigold-text)">!</span>
+        <span class="stack gap2 grow"><b>Footer has no navigation links yet</b></span>
+        <a class="btn sm secondary" href="editor.html">Fix in editor</a></div>
+      <div class="checkrow"><span style="color:var(--marigold-text)">!</span>
+        <span class="stack gap2 grow"><b>Your Spanish locale ships, and the layouts do not mirror</b>
+          <span class="helper">Right-to-left languages are not supported yet — this is the pre-deploy repeat of the notice
+            in <a href="translations.html">Translations</a>, said here because this is where it bites.</span></span></div>
+      <div class="checkrow"><span class="tick">✓</span><span class="grow">Nothing changed on your site since v4</span>
+        <span class="helper">pass · <a href="drift-report.html">what this checks</a></span></div>
+    </div>
+    <p class="helper">Warnings won&rsquo;t block your deploy.</p>
+    <div class="wizfoot"><a class="btn secondary" href="backup-gate.html">Back</a>
+      <a class="btn coral" href="snapshot-gate.html">Ship it</a></div></div></div></div></div></div></div><div class="section-head" id="blocked"><h2>When gscan finds an error rather than a warning</h2><p>Errors block. The row names the file and the rule, because a person can act on a specific failure and cannot act on &ldquo;something went wrong&rdquo;.</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
+  <div class="wizcard"><div class="stack gap12">
+    <div class="row gap8"><b style="font-size:15px">Ghost would reject this theme</b><span class="badge danger">1 · 2</span></div>
+    <div class="checkrow"><span style="color:var(--danger)">✕</span>
+      <span class="stack gap2 grow"><b>GS010-PST-IMG — <span class="mono">post.hbs</span></b>
+        <span class="helper">A post template must render the feature image or explicitly opt out. Your Post header design
+          hides it; turn the image on, or pick a design that does not need it.</span></span>
+      <a class="btn sm secondary" href="editor.html">Open Post header</a></div>
+    <div class="wizfoot"><a class="btn secondary" href="deploy-destination.html">Back</a>
+      <span class="btn coral off">Ship it</span>
+      <span class="reason">gscan found one error. Ghost would refuse the upload, so we stop here rather than there.</span></div>
+  </div></div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

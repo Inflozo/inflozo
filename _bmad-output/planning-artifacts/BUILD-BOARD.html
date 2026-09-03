@@ -100,7 +100,7 @@ footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:v
 drift apart.</p>
 
 <div class="rail">
-<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="next" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
+<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
 </div>
 
 <section class="runbook">
@@ -597,14 +597,14 @@ House rules for tonight:
   <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per undrawn surface group in EXPERIENCE.md Appendix A (eight of them; its ### A headings are the count). A8 came out of the step’s own stress test: the export draws the editor at 1440 and NOWHERE ELSE, so R-76’s tablet half and the 200%-zoom floor were both prose with no frame behind them.</dd>
   </dl>
   
-</section><section class="step next" id="s5b">
+</section><section class="step done" id="s5b">
   <div class="shead">
     <span class="snum">5b</span>
     <div class="stitle"><h2>Static prototype</h2>
-      <span class="badge next">next up</span></div>
+      <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">THE CRITICAL PATH, and blocked by nothing — both step-5 spines are final. The owner&#x27;s ruling R-75 (2026-09-02): he sees INFLOZO&#x27;S OWN UI — not the design frames — as static, clickable pages on his machine before anything is built dynamically. Built from EXPERIENCE.md’s surface names and the design export (R-74); opens from a double-click, no server, no install. The seven Claude Design prompts do NOT block it — EXPERIENCE.md specifies every undrawn surface concretely enough to build.</p>
-  <dl><dt>Produces</dt><dd>A walkable static prototype of the product. The owner walking it is what unlocks step 6.</dd>
+  <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. It builds the RE-SPECIFICATION for the six frames drawn on the wrong mechanism, and its plan limits are Appendix F.1’s rather than the four frames that disagree with F.1. Appendix A’s Claude Design prompts had NOT been run when it was built, so its extrapolated pages should be re-checked once the D-canvases exist.</p>
+  <dl><dt>Produces</dt><dd>A walkable static prototype of the product. &lt;b&gt;The owner walking it is what unlocks step 6&lt;/b&gt;, and that sentence is his to write — build-sequence.md step 5b holds the line it goes on.</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
@@ -733,9 +733,9 @@ here in this section — that sentence is what unlocks step 6, and it is his to 
     <div class="stitle"><h2>Epics and stories</h2>
       <span class="badge later">later</span></div>
   </div>
-  <p class="stands">Expands section 8 into stories. It does not re-plan anything. R-75 gates it: it does not open until the owner has walked the step-5b prototype, and per R-74 every story with a surface names the frame it is built from.</p>
+  <p class="stands">Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS BUILT BUT THE GATE IS THE WALK, not the build — this step opens the day the owner says he has walked it, and per R-74 every story with a surface names the frame it is built from.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
-  <dt>Waiting on</dt><dd>step 5b — the walked prototype</dd></dl>
+  <dt>Waiting on</dt><dd>the owner&#x27;s walk of the step-5b prototype</dd></dl>
   <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.

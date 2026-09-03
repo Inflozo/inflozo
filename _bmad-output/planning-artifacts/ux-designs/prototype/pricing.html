@@ -1,0 +1,95 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Pricing
+  FRAME    : M5 Pricing.dc.html — M5 desktop and M5 mobile. Its limit table corrected to Appendix F.1
+  IMPLEMENTS: EXPERIENCE.md § IA → Marketing · § Plan limits · J3 step 5b · J4 step 3
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Pricing</span>
+  <span class="frame">M5 Pricing.dc.html — M5 desktop and M5 mobile. Its limit table corrected to Appendix F.1</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Marketing · § Plan limits · J3 step 5b · J4 step 3</span>
+</div>
+<div class="proto-note"><b>Two purchasable plans, and only two.</b> <span class="mono">pro_past_due</span> is an internal state of a Pro subscription and is never listed here as a plan — what a past-due customer sees is the <a href="grace-banner.html">Grace Banner</a>. And no page of the marketing site prints a library total: &ldquo;hundreds of gorgeous sections&rdquo; is the canonical phrasing, because the library grows monthly.</div>
+<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 6 of 10</span><span class="tstep">← <a href="upgrade-sheet.html">Upgrade Sheet — or she swaps</a></span><span class="tstep">next: <a href="backup-gate.html">Backup Gate</a> →</span></div>
+</div>
+
+<main id="main">
+<div><p class="frame-cap">M5 · pricing · 1440</p><div class="screen "><div class="mk"><div class="mknav"><a class="word" href="index.html" style="font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.02em">Inflozo</a><div class="row gap24" style="margin-left:20px"><a href="pricing.html" style="color:var(--ink-soft)">Features</a><a href="pricing.html" style="color:var(--ink-soft)">How it works</a><a href="pricing.html" style="color:var(--ink-soft)">Sections</a><a href="pricing.html" style="font-weight:600">Pricing</a><a href="pricing.html" style="color:var(--ink-soft)">Docs</a></div><div class="row gap12" style="margin-left:auto"><a href="sign-in.html">Sign in</a><a class="btn coral sm" href="sign-in.html">Start free</a></div></div>
+  <div class="mkbody stack gap40">
+    <div class="stack gap8" style="text-align:center;align-items:center">
+      <span class="panel-label">Pricing</span>
+      <h1 style="font-size:44px">Free to play. $15 to ship it all.</h1>
+      <div class="row gap10" style="margin-top:8px"><span class="seg"><span>Monthly</span><span class="on">Yearly</span></span>
+        <span class="badge notice">$150/yr — 2 months free</span></div></div>
+    <div class="grid g2 gap24" style="margin-top:32px">
+      <div class="card"><div class="pad stack gap14">
+        <div class="row gap8"><b style="font-size:16px">Free</b></div>
+        <span style="font-family:var(--display);font-size:36px;font-weight:700">$0<span class="soft" style="font-size:14px"> forever</span></span>
+        <p class="softaa" style="font-size:13px">Everything you need to build and ship one gorgeous site.</p>
+        <div class="stack gap8" style="font-size:13px">
+          <span>✓ 1 project · 1 connected site</span>
+          <span>✓ Every design on the canvas</span>
+          <span>✓ Every Style Pack, each with a hand-paired dark palette</span>
+          <span>✓ One-click deploy with gscan</span>
+          <span>✓ Ship the free set · last 3 versions kept</span>
+          <span>✓ 100 MB assets · 10 MB per file</span></div>
+        <a class="btn secondary lg" href="sign-in.html">Start free</a></div></div>
+      <div class="card" style="border:1px solid var(--marigold)"><div class="pad stack gap14">
+        <div class="row gap8"><b style="font-size:16px">Pro</b><span class="badge pro">✦</span>
+          <span class="badge notice" style="margin-left:auto">Everything, unlocked</span></div>
+        <span style="font-family:var(--display);font-size:36px;font-weight:700">$15<span class="soft" style="font-size:14px">/mo</span></span>
+        <p class="softaa" style="font-size:13px">For publishers who ship often and want every section.</p>
+        <div class="stack gap8" style="font-size:13px">
+          <span>✓ 25 projects · 10 sites</span>
+          <span>✓ Every design, at every exit</span>
+          <span>✓ Custom Style Packs, saved and named</span>
+          <span>✓ Last 10 versions per project, with rollback</span>
+          <span>✓ 5 GB assets, auto-optimized</span>
+          <span>✓ Remove the &ldquo;Built with Inflozo&rdquo; credit</span></div>
+        <a class="btn coral lg" href="upgrade-sheet.html">Go Pro</a></div></div>
+    </div>
+    <p class="helper" style="text-align:center">Cancel anytime · Taxes handled · Powered by Dodo</p>
+    <div class="section-head" style="margin-top:40px"><h2>The limits, plainly</h2></div>
+    <table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table><p class="helper" style="margin-top:10px">Everything not in this table is on both plans — dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p>
+    <div class="section-head" style="margin-top:40px"><h2>Pricing FAQ</h2><p>Money questions, answered.</p></div>
+    <div class="stack gap12">
+      <div class="card"><div class="pad stack gap6"><b style="font-size:14px">What happens to my site if I cancel?</b>
+        <span class="softaa" style="font-size:13px">Nothing. Your deployed theme is a normal Ghost theme — it stays live on
+          your site forever. You just can&rsquo;t push new versions from Inflozo until you are back under the Free limits.</span></div></div>
+      <div class="card"><div class="pad row gap6"><b style="font-size:14px" class="grow">Is the Free plan actually free?</b><span class="soft">+</span></div></div>
+      <div class="card"><div class="pad row gap6"><b style="font-size:14px" class="grow">Do you handle VAT and sales tax?</b><span class="soft">+</span></div></div>
+      <div class="card"><div class="pad row gap6"><b style="font-size:14px" class="grow">Can I switch between monthly and yearly?</b><span class="soft">+</span></div></div>
+    </div>
+  </div><div class="mkfoot">
+  <div class="stack gap6" style="max-width:280px"><b style="font-family:var(--display);font-size:16px">Inflozo</b>
+    <span>The visual builder for Ghost. Building a beautiful site should feel like play.</span></div>
+  <div class="stack gap4"><b>Product</b><a href="pricing.html">Pricing</a><a href="suggestions.html">Suggestions</a></div>
+  <div class="stack gap4"><b>Learn</b><a href="connect-integration.html">Connect your site</a></div>
+  <div class="stack gap4"><b>Company</b><span>Terms</span><span>Privacy</span></div>
+  <div class="stack gap4" style="margin-left:auto"><span>hello@inflozo.com</span><span>© 2026 Inflozo</span><span>made for Ghost 6.x</span></div>
+</div></div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>

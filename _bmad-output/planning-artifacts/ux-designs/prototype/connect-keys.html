@@ -1,0 +1,73 @@
+<!--
+  INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
+  SURFACE  : Connect · Keys
+  FRAME    : S2 Onboarding.dc.html — S2b·2
+  IMPLEMENTS: EXPERIENCE.md § IA → Onboarding · J1 steps 4–5 · § State Patterns → partially credentialed
+  Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
+  Visual vocabulary is the design export's and nothing else (R-74).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect · Keys — Inflozo prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="proto">
+  <a href="index.html">← All surfaces</a>
+  <span class="name">Connect · Keys</span>
+  <span class="frame">S2 Onboarding.dc.html — S2b·2</span>
+  <span class="spacer"></span>
+  <span class="frame">EXPERIENCE.md § IA → Onboarding · J1 steps 4–5 · § State Patterns → partially credentialed</span>
+</div>
+
+<div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 5 of 15</span><span class="tstep">← <a href="connect-integration.html">Connect · Integration</a></span><span class="tstep">next: <a href="auto-branding.html">Auto-Branding</a> →</span></div>
+<div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="preview-only-notice.html">Preview-Only Notice</a> →</span></div>
+</div>
+<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#validation">Validation states<span class="k">J1 step 5</span></a></div></div>
+<main id="main">
+<div><p class="frame-cap">S2b·2 · connect — paste the keys · 1440</p><div class="screen "><div style="min-height:620px;background:var(--paper);padding:48px;display:flex;flex-direction:column;gap:24px;align-items:center">
+  <div class="row gap12" style="width:100%;max-width:620px"><span style="font-family:var(--display);font-weight:800;font-size:20px">Inflozo</span>
+    <span class="chip" style="margin-left:auto">2/2</span></div>
+  <div class="card" style="width:100%;max-width:620px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
+    <div class="stack gap6"><h1 style="font-size:24px">Now paste the three keys.</h1>
+      <p class="softaa" style="font-size:13.5px">They&rsquo;re right on the Inflozo integration you just made — copy each one across.</p></div>
+    <label class="field"><span class="control-label">API URL</span><input class="input mono" value="https://orbitweekly.com" aria-label="API URL"></label>
+    <label class="field"><span class="control-label">Admin API key</span><input class="input mono" value="65a3f0e1c9d24b…" aria-label="Admin API key"></label>
+    <label class="field"><span class="control-label">Content API key</span><input class="input mono" value="8d41c0a97b…" aria-label="Content API key"></label>
+    <div class="banner info"><span class="ico">ⓘ</span><span><b>Three fields, and the Staff Access Token is not among them.</b>
+      That one is offered later, at your first deploy, as a safety net you can decline — see
+      <a href="staff-token-offer.html">Staff Token Offer</a> (FR-C1).</span></div>
+    <div class="row gap10"><a class="btn secondary" href="connect-integration.html">Back</a>
+      <a class="btn coral" href="auto-branding.html">Connect</a>
+      <a class="btn ghost" href="connect-keys.html#validation">Where do I find these?</a></div>
+  </div></div>
+</div></div></div><div class="section-head" id="validation"><h2>What validation does with them, and what it decides without asking</h2><p>J1 step 5. A server-side <span class="mono">GET /admin/config/</span> runs the moment Connect is pressed. Every outcome below is a designed state, not an error dialogue.</p></div><div><div class="screen "><div class="stack gap12" style="padding:24px;background:var(--paper)">
+  <div class="banner success"><span class="ico">✓</span><span><b>Ghost 6.58 — connected.</b> Ghost 5.x and 6.x are both accepted.</span></div>
+  <div class="banner error"><span class="ico">✕</span><span><b>This site runs Ghost 4.9 — please update Ghost.</b>
+    Inflozo needs Ghost 5 or newer. Nothing has been changed on your site.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>This site is on Ghost(Pro) Starter, which doesn&rsquo;t accept custom themes.</b>
+    We read that from your plan rather than asking — the site connects as
+    <a href="preview-only-notice.html">Preview-only</a> and everything except deploying works.</span></div>
+  <div class="banner notice"><span class="ico">!</span><span><b>That address starts with <span class="mono">http://</span>.</b>
+    Keys travel in the clear over plain HTTP. We&rsquo;ll connect, but your Ghost site should be on HTTPS.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>This site has code injection.</b>
+    Your live pages can legitimately look different from the canvas, because that code runs on the site and not here.
+    Said once, at connect, and not again.</span></div>
+  <div class="banner info"><span class="ico">ⓘ</span><span><b>Portal&rsquo;s floating button is on.</b>
+    We read the setting where Ghost exposes it, and ask once where it does not. Defaults to on.</span></div>
+</div></div></div>
+</main>
+<div class="proto" style="position:static">
+  <a href="index.html">← All surfaces</a>
+  <span class="spacer"></span>
+  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+</div>
+</body>
+</html>
