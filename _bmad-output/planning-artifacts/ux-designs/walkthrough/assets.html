@@ -8,144 +8,81 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav on" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <a class="meter" href="assets.html">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span></a>
-  </div>
-  <div class="anchor" style="margin-top:auto">
-    <button class="acct" data-open="account-menu" aria-haspopup="true" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left">
-      <span class="avatar">M</span>
-      <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-        <span class="helper">maya@orbitweekly.com</span></span>
-      <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-    </button>
-    <div class="overlay menu up left" id="account-menu" role="menu">
-      <a class="mrow" href="billing.html">Account settings</a>
-      <a class="mrow" href="billing.html">Billing &amp; plan <span class="badge pro">✦ Pro</span></a>
-      <a class="mrow" href="suggestions.html">Suggestions</a>
-      <a class="mrow" href="pricing.html">Docs</a>
-      <a class="mrow" href="#" data-open="shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
-      <div class="msep"></div>
-      <a class="mrow" href="index.html">Sign out</a>
-    </div>
-  </div>
-</div><div class="appmain"><div class="topbar">
-  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-    <input data-filter=".asset" data-filter-empty="#no-assets" placeholder="Search assets…" aria-label="Search assets…"
-      style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1;color:var(--ink)">
-    <span class="kbd">⌘K</span></label>
-  <div class="row gap10" style="margin-left:auto"><span class="anchor"><button class="iconbtn" data-open="notifications" aria-label="Notifications" style="border:none;background:none;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></button><div class="overlay menu wide" id="notifications" role="menu" style="width:400px">
-  <div class="row gap10" style="padding:4px 10px 8px"><span class="panel-label grow">Notifications</span>
-    <a class="small soft" href="#" data-close>Mark all read</a></div>
-  <div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;background:var(--coral-tint)"><span class="dot coral" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span><span class="helper">14 minutes ago · shipped by you</span></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span><span class="helper">Yesterday, 18:02</span><a class="small" href="deploy.html?failed" style="color:var(--danger-text)">See what failed →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span><span class="helper">2 days ago</span><a class="small" href="deploy.html" style="color:var(--sky-text)">Review →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span><span class="helper">2 days ago</span><a class="small" href="binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span><span class="helper">Last week</span></span></div>
-  <div class="msep"></div>
-  <p class="helper" style="padding:0 10px 6px">Deploy outcomes always land here, even if you closed the tab.</p>
-</div></span></div>
-</div><div class="appbody"><div class="stack gap16">
-  <div class="row gap10"><h2 style="font-size:20px">Assets</h2>
-    <span class="chip">48 files · 312 MB of 5 GB</span>
-    <button class="btn coral" data-open="upload" style="margin-left:auto">Upload</button></div>
-  <div class="row gap8"><span class="seg"><span class="on">All · 48</span><span>Photos</span>
-      <span>Logos</span><span>Illustrations</span></span>
-    <span class="seg" style="margin-left:auto"><span class="on">Newest</span><span>Largest</span></span></div>
-  <div class="grid g5"><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB · used in 3 projects</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">orbit-wordmark.svg</b><span class="helper">4 KB · used in 2</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">issue-47-cover.jpg</b><span class="helper">410 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">maya-portrait.jpg</b><span class="helper">220 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">blogrolls.jpg</b><span class="helper">360 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">quiet-software.jpg</b><span class="helper">298 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">archive-1998.png</b><span class="helper">512 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">field-notes-mark.svg</b><span class="helper">3 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">lisbon-desk.jpg</b><span class="helper">440 KB</span></span>
-    </button><button class="card asset" data-open="asset-details" style="border:none;padding:0;text-align:left;
-      cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="display:block;height:110px;border-radius:12px 12px 0 0;border:none"></span>
-      <span class="pad-tight stack gap4"><b style="font-size:12.5px">renewal-chart.png</b><span class="helper">180 KB</span></span>
-    </button></div>
-  <div id="no-assets" hidden style="padding:40px;text-align:center" class="stack gap8">
-    <b style="font-size:15px">Nothing matches &ldquo;<span data-filter-echo></span>&rdquo;.</b></div>
-</div></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
-  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
-  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
-    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
-      you are typing.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="upload"><div class="sheet"><div class="body">
-  <div style="border:2px dashed var(--coral);border-radius:var(--r-lg);background:var(--coral-tint);
-    padding:56px;display:flex;flex-direction:column;align-items:center;gap:14px">
-    <b style="font-size:18px;font-family:var(--display)">Drop images — we&rsquo;ll optimize them ✨</b>
-    <button class="btn secondary">Choose files</button>
-    <span class="helper">JPG, PNG, SVG or WebP · up to 10 MB each</span></div></div>
-  <div class="foot"><button class="btn secondary" data-close>Cancel</button></div></div></div>
-<div class="overlay sheet-wrap" id="asset-details"><div class="sheet"><div class="body row gap24" style="align-items:flex-start">
-  <div class="thumb" style="width:300px;height:200px"></div>
-  <div class="stack gap12 grow"><h2 style="font-size:18px">hero-shot.jpg</h2>
-    <div class="grid g2 gap12">
-      <div class="stack gap2"><span class="control-label soft">Format</span><b style="font-size:13px">WebP</b>
-        <span class="helper">optimized from JPG</span></div>
-      <div class="stack gap2"><span class="control-label soft">Size</span><b style="font-size:13px">380 KB</b>
-        <span class="helper">from 4.2 MB</span></div>
-      <div class="stack gap2"><span class="control-label soft">Dimensions</span><b style="font-size:13px">2400 × 1600</b></div>
-      <div class="stack gap2"><span class="control-label soft">Uploaded</span><b style="font-size:13px">Aug 12, 2026</b>
-        <span class="helper">by Maya</span></div></div>
-    <div class="stack gap6"><span class="control-label soft">Used in 3 projects</span>
-      <span class="helper">Orbit Weekly · Hero, Post Header</span>
-      <span class="helper">Launch page · Hero</span><span class="helper">Field Notes · Newsletter</span></div>
-    <div class="row gap8"><button class="btn sm secondary" data-close>Copy URL</button>
-      <button class="btn sm secondary" data-close>Download</button>
-      <button class="btn sm secondary" data-close>Replace</button>
-      <button class="btn sm danger-out" data-open="delete-asset">Delete</button></div></div></div>
-  <div class="foot"><button class="btn secondary" data-close style="margin-left:auto">Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="delete-asset"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Delete hero-shot.jpg?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">This image is used in 3 projects. Those spots
-    will show an empty placeholder until you replace it. This can&rsquo;t be undone.</p>
-    <div class="stack gap8">
-      <div class="row gap8"><span class="avatar" style="width:22px;height:22px;font-size:10px">O</span>
-        <b style="font-size:12.5px">Orbit Weekly</b><span class="helper">Hero · Post Header</span></div>
-      <div class="row gap8"><span class="avatar" style="width:22px;height:22px;font-size:10px">O</span>
-        <b style="font-size:12.5px">Launch page</b><span class="helper">Hero</span></div>
-      <div class="row gap8"><span class="avatar sam" style="width:22px;height:22px;font-size:10px">F</span>
-        <b style="font-size:12.5px">Field Notes</b><span class="helper">Newsletter</span></div></div></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn danger" data-close>Delete image</button></div></div></div>
+<div class="stage"><div data-screen-label="S10a Asset library" style="background:#F7F5F2;position:relative;overflow:hidden;display:flex">
+      <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><a href="dashboard.html" style="display:contents;color:inherit"><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></a></svg>Projects</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><a href="sites.html" style="display:contents;color:inherit"><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></a></svg>Sites</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><a href="assets.html" style="display:contents;color:inherit"><path d="M21 15l-5-5L5 21"></path></a></svg>Assets</div>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+            <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+            <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">312 MB</span> of 5 GB</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <span style="font-size:13px;font-weight:600">Maya Chen</span>
+            <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+          </div>
+          <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
+          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+            <span style="font-size:13px;color:#A8A29A;flex:1">Search assets…</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+            <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Upload</button>
+          </div>
+        </div>
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12.5px;font-weight:600;background:#1C1B1A;color:#F7F5F2;border-radius:24px;padding:5px 14px;cursor:pointer">All · 48</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Photos</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Logos</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Illustrations</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:32px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;background:#FFFFFF;cursor:pointer;font-size:12.5px;font-weight:500;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">Newest<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 10px,#DCCFD5 10px 20px);cursor:pointer;position:relative;box-shadow:0 4px 16px rgba(28,27,26,.14)">
+              <div style="position:absolute;inset:0;border-radius:10px;background:linear-gradient(to top,rgba(28,27,26,.74),rgba(28,27,26,0) 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;gap:5px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#FFFFFF">hero-shot.jpg</span><span style="color:#FFFFFF;letter-spacing:2px;font-weight:600;cursor:pointer">⋯</span></div>
+                <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap">2.1 MB</span><span style="margin-left:auto;font-size:10px;font-weight:500;color:#FFFFFF;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:24px;padding:1px 7px;white-space:nowrap">Used in 3 projects</span></div>
+              </div>
+            </div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:#FFFFFF;border:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"><span style="width:44px;height:44px;border-radius:10px;background:#2F4A3E;color:#F4EFE6;display:inline-flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px">O</span></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#DFE5E8 0 10px,#D4DCE0 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#4A443C 0 10px,#3E3931 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EAE2D2 0 10px,#E2D7C2 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E3E8DD 0 10px,#D9E0D1 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:#FFFFFF;border:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E8DFE0 0 10px,#DFD3D5 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E5E1D8 0 10px,#DBD6CA 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#DCE3E1 0 10px,#D1DAD7 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EFE6D6 0 10px,#E8DCC4 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E2DEE8 0 10px,#D6D1DF 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E9E4DA 0 10px,#E0D9CB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:24px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:9px 16px;z-index:5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+          <span style="font-size:13px;font-weight:500">Optimized: <span style="font-family:'JetBrains Mono',monospace;font-size:12px">4.2 MB → 380 KB</span></span>
+          <div style="width:1px;height:14px;background:#E7E2DB"></div>
+          <span style="font-size:13px;font-weight:600;color:#C2381F;cursor:pointer">View</span>
+        </div>
+      </div>
+    </div></div>
 <script src="app.js"></script>
 
 </body>

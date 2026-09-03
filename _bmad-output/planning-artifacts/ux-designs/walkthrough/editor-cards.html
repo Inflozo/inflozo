@@ -8,99 +8,66 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="ed">
-  <div class="edbar ink">
-  <a class="row" href="editor.html" style="width:28px;height:28px;justify-content:center;color:#F0EAE0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
-  <span style="font-size:13px;font-weight:600">Orbit Weekly &nbsp;/&nbsp; Template surfaces &nbsp;/&nbsp; Cards</span>
-  
-  <span class="row gap6 small" style="color:#A79E8F" data-persist><span class="dot mint"></span>Synced</span>
-  <div class="row gap8" style="margin-left:auto">
-    <span class="anchor"><button class="pickbtn" data-open="viewas-menu"
-      style="font-family:var(--ui);cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="overlay menu left" id="viewas-menu">
-  <div class="mlabel">View as</div>
-  <a class="mrow on" href="#" data-close>Anonymous<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="#" data-close>Free member</a>
-  <a class="mrow" href="#" data-close>Paid member</a>
-  <div class="msep"></div>
-  <span class="helper" style="padding:0 10px 6px;display:block">Three states, and only three. A comped
-    member previews as Paid — it differs in billing, not in access.</span></div></span>
-    <span class="split"><a class="btn coral" href="deploy.html" data-ship>Ship update</a></span></div>
-</div>
-  <div class="edmid"><div class="layers" style="background:var(--ink-deep);border-right-color:#3A342B">
-  <div class="list" style="color:#F0EAE0">
-    <a class="row gap8" href="editor.html" style="padding:8px;color:#A79E8F;font-size:12px">← Back to Home</a>
-    <span class="panel-label" style="color:#A79E8F;padding:6px 8px">POST TEMPLATE</span>
-    <a class="lrow" href="post-content.html" style="color:#F0EAE0">Post content</a>
-    <div class="lrow" style="color:#F0EAE0">Post header</div>
-    <div class="lrow" style="color:#F0EAE0">Author card</div>
-    <div style="height:1px;background:#3A342B;margin:8px"></div>
-    <span class="panel-label" style="color:#A79E8F;padding:6px 8px">TEMPLATE SURFACES</span>
-    <a class="lrow" href="paywall-editor.html" style="color:#F0EAE0">Paywall</a>
-    <a class="lrow" href="editor-cards.html" style="color:#F0EAE0;background:rgba(255,255,255,.08)">Cards</a>
-    <a class="lrow" href="error-pages.html" style="color:#F0EAE0">Error pages</a>
-  </div></div>
-  <div class="canvasmat cold">
-    <div class="row gap10" style="max-width:880px;margin:0 auto 10px">
-      <span class="anchor"><button class="pickbtn" data-open="treatment-menu"
-        style="font-family:var(--ui);cursor:pointer"><span class="lab">Treatment</span>Card<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-        <div class="overlay menu left" id="treatment-menu">
-          <div class="mlabel">Whole set · one active per project</div>
-          <a class="mrow" href="#" data-close>Plain<span class="badge free" style="margin-left:auto">Free</span></a>
-          <a class="mrow on" href="#" data-close>Card<span class="badge free" style="margin-left:auto">Free</span></a>
-          <a class="mrow" href="#" data-close>Panel<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
-          <a class="mrow" href="#" data-close>Wide<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
-          <a class="mrow" href="#" data-close>Full Bleed<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
-          <a class="mrow" href="#" data-close>Contrast Band<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
-        </div></span>
-      <span class="anchor"><button class="pickbtn" data-open="card-menu"
-        style="font-family:var(--ui);cursor:pointer"><span class="lab">Card</span>Callout<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-        <div class="overlay menu left" id="card-menu" style="max-height:420px;overflow:auto">
-          <div class="mlabel">Every Koenig card · Ghost&rsquo;s order</div><a class="mrow" href="#" data-close>Image</a><a class="mrow" href="#" data-close>Markdown</a><a class="mrow" href="#" data-close>HTML</a><a class="mrow" href="#" data-close>Gallery<span class="badge notice" style="margin-left:auto">customised</span></a><a class="mrow" href="#" data-close>Divider</a><a class="mrow" href="#" data-close>Bookmark</a><a class="mrow" href="#" data-close>Email content</a><a class="mrow" href="#" data-close>Call to action<span class="helper" style="margin-left:auto">no colour ctls</span></a><a class="mrow" href="#" data-close>Public preview</a><a class="mrow" href="#" data-close>Button</a><a class="mrow on" href="#" data-close>Callout<span class="badge notice" style="margin-left:auto">customised</span></a><a class="mrow" href="#" data-close>GIF</a><a class="mrow" href="#" data-close>Toggle</a><a class="mrow" href="#" data-close>Audio</a><a class="mrow" href="#" data-close>Video</a><a class="mrow" href="#" data-close>File</a><a class="mrow" href="#" data-close>Product</a><a class="mrow" href="#" data-close>Header<span class="helper" style="margin-left:auto">no colour ctls</span></a><a class="mrow" href="#" data-close>Embeds</a><a class="mrow" href="#" data-close>Signup<span class="helper" style="margin-left:auto">no colour ctls</span></a>
-        </div></span>
-      <span class="helper" style="margin-left:auto">Cards are styled once, site-wide. 18 cards are on Ghost defaults.</span></div>
-    <div class="site" style="max-width:880px"><div class="stack gap16" style="padding:32px;max-width:680px;margin:0 auto">
-      <span style="font-family:var(--serif);font-size:26px;line-height:1.2">The slow return of the personal homepage</span>
-      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
-      <p style="font-family:var(--serif);font-size:16px;line-height:1.7">The web used to point outward. A
-        blogroll was a list of other people&rsquo;s homes, kept in public and updated by hand — reading one
-        felt like being handed a map.</p>
-      <div class="row gap12 outline-sel" style="background:#F4EFE6;padding:16px;border-radius:10px;align-items:flex-start">
-        <span style="font-size:18px">💡</span>
-        <span style="font-family:var(--serif);font-size:15px;line-height:1.6">Every essay in this series is free
-          to read. The print annual collects them each October.</span></div>
-      <p style="font-family:var(--serif);font-size:16px;line-height:1.7">What replaced it was a feed that points
-        inward, and the difference is the whole story.</p>
-      <p class="helper">Every other card in the set renders below in the same fixture, so a change is judged in context.</p>
-    </div></div></div>
-  <div class="sidebar">
-    <div class="row gap8"><b style="font-size:13px">Callout</b>
-      <span class="badge notice" style="margin-left:auto">CUSTOMISED</span></div>
-    <div class="ctlgroup"><span class="control-label">Callout colours</span>
-      <span class="seg"><span class="on">Pack tokens</span><span>Ghost&rsquo;s palette</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Background role</span>
-      <span class="seg"><span>Base</span><span>Surface</span><span class="on">Tint</span><span>Accent</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Emoji</span></label></div>
-    <div class="ctlgroup"><span class="control-label">Emoji size</span>
-      <span class="seg"><span class="on">Small</span><span>Large</span></span></div>
-    <div class="stack gap6"><span class="panel-label">From the Card treatment</span>
-      <div class="row gap8"><span class="control-label soft grow">Plane</span><span class="small">Surface</span></div>
-      <div class="row gap8"><span class="control-label soft grow">Space around</span><span class="small">Comfortable</span></div>
-      <div class="row gap8"><span class="control-label soft grow">Corners</span><span class="small">Pack radius</span></div>
-      <span class="helper">Treatment-decided, shown read-only. Change them on the Treatment, not per card.</span></div>
-    <button class="btn secondary sm" data-open="reset-card">Reset to Ghost default</button>
-  </div></div></div>
-<div class="overlay sheet-wrap" id="reset-card"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Reset Callout to Ghost&rsquo;s default?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Removes your 3 changes — colours, emoji and emoji
-    size — everywhere callouts appear. <b>Posts keep their content.</b></p></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn danger-out" data-close>Reset card</button></div></div></div>
+<div class="stage"><div style="display:flex;gap:24px;align-items:flex-start">
+  <div style="width:600px;flex-shrink:0;background:#EDEAE6;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center">
+    <div style="width:100%;max-width:460px;background:#FBF9F5;border-radius:6px;box-shadow:0 4px 16px rgba(28,27,26,.10);padding:26px 30px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A;letter-spacing:0.04em">STYLE-GUIDE POST · READING WIDTH</span>
+      <span style="font-family:Georgia,serif;font-size:21px;font-weight:700;color:#232019;line-height:1.25">What the reading experience owes the reader</span>
+      <p style="margin:0;font-family:Georgia,serif;font-size:14px;line-height:1.65;color:#3A3835">Ghost's editor writes cards into the post body. The theme decides how they land on the page, which is why they are styled here once rather than in every post.</p>
+      <div style="position:relative;border-left:3px solid #C2381F;background:#FFEDE8;border-radius:8px;padding:14px 16px;display:flex;gap:11px;align-items:flex-start;box-shadow:0 0 0 2px rgba(255,89,65,.35)">
+        <span style="font-size:17px;line-height:1.2">💡</span>
+        <p style="margin:0;font-family:Georgia,serif;font-size:13.5px;line-height:1.6;color:#3A3835">Callouts inherit the Card treatment's plane and corners; only the four controls in the panel are this card's own.</p>
+        <span style="position:absolute;top:-11px;left:-3px;display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:5px;background:#FF5941;color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.04em">CALLOUT</span>
+      </div>
+      <p style="margin:0;font-family:Georgia,serif;font-size:14px;line-height:1.65;color:#3A3835">Every other card in the set renders below in the same fixture, so a change is judged in context.</p>
+    </div>
+  </div>
+  <div style="width:280px;flex-shrink:0;border:1px solid #E7E2DB;background:#F7F5F2;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Callout</span><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:5px;background:#F7C948;font-size:10px;font-weight:600;color:#3B2E05">CUSTOMISED</span></div>
+    <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Callout colours</span>
+        <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer">Pack tokens</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Ghost's palette</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Base</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Surface</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #FF5941;border-radius:7px;background:#FFEDE8;font-size:11px;font-weight:600;cursor:pointer">Tint</span>
+          <span style="text-align:center;padding:5px 0;border:1px solid #E7E2DB;border-radius:7px;background:#FFFFFF;font-size:11px;font-weight:500;cursor:pointer">Accent</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji</span><span style="width:34px;height:20px;border-radius:12px;background:#C2381F;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF"></span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Emoji size</span>
+        <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px">
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);cursor:pointer">Small</span>
+          <span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Large</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">From the Card treatment</span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Plane</span><span style="font-weight:500;color:#1C1B1A">Surface</span></span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Space around</span><span style="font-weight:500;color:#1C1B1A">Comfortable</span></span>
+      <span style="display:flex;justify-content:space-between;font-size:11.5px;color:#6E6A64"><span>Corners</span><span style="font-weight:500;color:#1C1B1A">Pack radius</span></span>
+    </div>
+    <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:12.5px;font-weight:500;color:#C2381F;font-family:'Inter',sans-serif;cursor:pointer" style-hover="border-color:#C2381F">Reset to Ghost default</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:300px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">FOUR CONTROLS — INSIDE THE 4–7 NORM · NAMED VALUES ONLY, NO HEX AND NO PX ANYWHERE ON THIS SCREEN</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">SELECTION IS THE CANVAS'S OWN 2 PX ACCENT RING PLUS THE CARD-NAME TAG — THE SAME SELECTION CHROME SECTIONS USE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">NO COLOUR CONTROLS FOR HEADER, SIGNUP AND CTA CARDS — THE POST AUTHOR SETS THOSE INLINE IN GHOST, AND A CONTROL THAT SILENTLY LOSES TO AN INLINE STYLE IS WORSE THAN NONE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE CUSTOMISED PILL IS THE PANEL'S ONLY STATUS; IT CLEARS WITH THE RESET</span>
+  </div>
+</div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
 <script src="app.js"></script>
 
 </body>

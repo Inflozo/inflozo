@@ -8,27 +8,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-
-<div style="min-height:100vh;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:6vh 24px">
-  <div class="sheet"><div class="head" style="text-align:center">
-    <span class="badge pro">✦</span>
-    <h2 style="font-size:24px;margin-top:8px">Everything, unlocked.</h2></div>
-  <div class="body">
-    <div class="row gap10" style="justify-content:center">
-      <span class="seg"><span>Monthly</span><span class="on">Yearly</span></span>
-      <span class="badge notice">$150/yr — 2 months free</span></div>
-    <table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table>
-    <div class="banner info"><span class="ico">ⓘ</span><span>Every design is on your canvas on both plans.
-      Pro is about the <b>exits</b> — deploying, exporting and the compiled theme code.</span></div></div>
-  <div class="foot" style="justify-content:center;flex-direction:column;gap:8px">
-    <a class="btn coral lg" href="dashboard.html" style="width:280px">Go Pro — $15/mo</a>
-    <a class="btn ghost" href="dashboard.html">Not now</a>
-    <span class="helper">Cancel anytime · Taxes handled · Powered by Dodo</span></div></div>
-</div>
+<div class="stage"><div style="width:680px;background:#F7F5F2;padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="width:540px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center">
+            <span style="color:#FFB100;font-size:24px;line-height:1">✦</span>
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Everything, unlocked.</span>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+              <div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Monthly</span><span style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;color:#6E6A64;cursor:pointer">Yearly</span></div>
+              <span style="font-size:11px;font-weight:600;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:3px 10px">$150/yr — 2 months free</span>
+            </div>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:9px 16px;font-size:12px;font-weight:600;color:#6E6A64"><span></span><span>Free</span><span style="color:#8A6100">✦ Pro</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Projects</span><span>1</span><span style="font-weight:600">Unlimited</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Connected sites</span><span>1</span><span style="font-weight:600">3</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Sections</span><span>The free set</span><span style="font-weight:600">All</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px;border-bottom:1px solid #E7E2DB"><span style="color:#6E6A64">Asset uploads</span><span>10 MB / file</span><span style="font-weight:600">10 MB / file</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;padding:9px 16px;font-size:13px"><span style="color:#6E6A64">Deploy history</span><span>Last 2</span><span style="font-weight:600">Full</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+            <button style="height:44px;padding:0 30px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Go Pro — $15/mo</button>
+            <span style="font-size:11px;color:#6E6A64">Cancel anytime · Taxes handled · Powered by Dodo</span>
+          </div>
+        </div>
+      </div></div><div class="stage-back"><a class="btn secondary" href="dashboard.html">← Back</a></div>
 <script src="app.js"></script>
 
 </body>

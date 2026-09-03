@@ -8,75 +8,55 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-
-<div style="min-height:100vh;background:var(--paper);padding:48px;display:flex;flex-direction:column;gap:24px;align-items:center;justify-content:center">
-  <span style="font-family:var(--display);font-weight:800;font-size:20px">Inflozo</span>
-  <div class="stack gap6" style="text-align:center"><h1 style="font-size:28px">Nice site. Want to keep the vibe?</h1>
-    <p class="softaa">We pulled these from orbitweekly.com — your call.</p></div>
-  <div class="row gap24" style="width:100%;max-width:1000px;align-items:stretch">
-    <div class="card grow"><div class="pad stack gap14">
-      <span class="panel-label">Your site today</span>
-      <div class="row gap10"><span class="avatar" style="background:#3B382F">O</span>
-        <span class="stack"><b>Orbit Weekly</b><span class="helper">orbitweekly.com</span></span></div>
-      <div class="stack gap6"><span class="control-label">Accent colour</span>
-        <div class="row gap8"><span class="sw" style="background:#D96C3F"></span><span class="small">Burnt orange</span></div></div>
-      <div class="stack gap6"><span class="control-label">Navigation</span>
-        <div class="row gap8 wrap"><span class="chip">Essays</span><span class="chip">Notes</span>
-          <span class="chip">Archive</span><span class="chip">About</span></div></div>
-      <div class="stack gap6"><span class="control-label">Logo</span>
-        <div class="row gap8"><span class="chip mono">orbit-wordmark.svg</span><span class="helper">SVG · 4 KB</span></div></div>
-      <p class="helper">Fonts stay yours — pick a pairing once you&rsquo;re in the editor.</p></div></div>
-    <div class="card" style="flex:1.3"><div class="pad stack gap10">
-      <span class="panel-label">Your homepage, already wearing your brand</span>
-      <div style="border-radius:10px;overflow:hidden;border:1px solid var(--line)"><div class="site">
-  <div class="ow-nav"><span class="ow-brand">Orbit Weekly</span>
-    <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
-    <span class="ow-sub">Subscribe</span></div>
-  <div class="row gap32" style="padding:38px 32px;align-items:center">
-    <div class="stack gap12" style="flex:1.1">
-      <span class="ow-eyebrow">ISSUE 47 · ESSAYS</span>
-      <span class="ow-h1">The slow return of the personal homepage</span>
-      <span class="ow-dek">Why writers are leaving the feed — and coming home to a page of their own.</span>
-      <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span>
-    </div>
-    <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div>
-  </div>
-  <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
-    <div class="row" style="justify-content:space-between;margin-bottom:18px">
-      <span style="font-family:var(--serif);font-size:19px">Latest essays</span>
-      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
-    <div class="row gap32" style="align-items:flex-start">
-      <div class="stack gap10" style="flex:1.2">
-        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
-        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
-        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
-        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
-      <div class="stack gap16" style="flex:1">
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
-      </div></div></div>
-  <div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
-    <span style="font-family:var(--serif);font-size:22px">The Sunday orbit.</span>
-    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
-    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span><span class="ow-sub">Sign up</span></div>
-  </div>
-  <div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
-    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
-      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
-  </div>
-</div></div></div></div>
-  </div>
-  <div class="row gap10"><a class="btn coral lg" href="redesign-proposals.html">Use your brand</a>
-    <a class="btn secondary lg" href="redesign-proposals.html">Skip</a></div>
-</div>
+<div class="stage"><div data-screen-label="S2c Auto branding" style="background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      <div style="position:absolute;top:32px;left:40px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:36px;letter-spacing:-0.02em">Nice site. Want to keep the vibe?</div>
+          <div style="font-size:15px;color:#6E6A64">We pulled these from orbitweekly.com — your call.</div>
+        </div>
+        <div style="width:760px;background:#FFFFFF;border-radius:16px;box-shadow:0 4px 16px rgba(28,27,26,.08);display:flex;overflow:hidden">
+          <div style="flex:1;padding:32px;display:flex;flex-direction:column;gap:24px;border-right:1px solid #E7E2DB">
+            <div style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Your site today</div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:48px;height:48px;border-radius:10px;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px">O</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-weight:600;font-size:16px">Orbit Weekly</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">orbitweekly.com</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;color:#6E6A64">Accent color</div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:28px;height:28px;border-radius:50%;background:#D96C3F;box-shadow:inset 0 0 0 1px rgba(28,27,26,.1)"></div>
+                <span style="font-size:14px;font-weight:500">Burnt orange</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;color:#6E6A64">Navigation</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px"><span style="font-size:12px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px;background:#FFFFFF">Essays</span><span style="font-size:12px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px;background:#FFFFFF">Notes</span><span style="font-size:12px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px;background:#FFFFFF">Archive</span><span style="font-size:12px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:3px 10px;background:#FFFFFF">About</span></div>
+              <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Fonts stay yours — pick a pairing once you're in the editor.</span>
+            </div>
+          </div>
+          <div style="flex:1;padding:32px;display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:center;background:#F7F5F2">
+            <div style="width:250px;height:170px;background:#FFFFFF;border-radius:10px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:16px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div style="width:34px;height:8px;background:#1C1B1A;border-radius:2px"></div><div style="display:flex;gap:4px"><div style="width:16px;height:5px;background:#C9C2B8;border-radius:2px"></div><div style="width:16px;height:5px;background:#C9C2B8;border-radius:2px"></div></div></div>
+              <div style="height:26px;width:80%;background:#1C1B1A;border-radius:3px;margin-top:10px"></div>
+              <div style="height:8px;width:60%;background:#C9C2B8;border-radius:2px"></div>
+              <div style="width:74px;height:20px;background:#D96C3F;border-radius:5px;margin-top:8px"></div>
+            </div>
+            <div style="font-size:13px;color:#6E6A64;text-align:center">Your homepage, already wearing your brand.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center">
+          <a href="redesign-proposals.html" style="display:contents;color:inherit"><button style="height:44px;padding:0 30px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Use your brand</button></a>
+          <a href="editor.html" style="display:contents;color:inherit"><button style="height:44px;padding:0 22px;background:transparent;color:#6E6A64;border:none;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Skip</button></a>
+        </div>
+      </div>
+    </div></div>
 <script src="app.js"></script>
 
 </body>

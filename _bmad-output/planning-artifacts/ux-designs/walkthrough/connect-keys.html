@@ -8,50 +8,51 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-
-<div style="min-height:100vh;background:var(--paper);padding:48px;display:flex;flex-direction:column;gap:24px;align-items:center;justify-content:center">
-  <div class="row gap12" style="width:100%;max-width:620px">
-    <span style="font-family:var(--display);font-weight:800;font-size:20px">Inflozo</span>
-    <span class="chip" style="margin-left:auto">2/2</span></div>
-  <div class="card" style="width:100%;max-width:620px"><div class="pad" style="display:flex;flex-direction:column;gap:18px">
-    <div class="stack gap6"><h1 style="font-size:24px">Now paste the three keys.</h1>
-      <p class="softaa" style="font-size:13.5px">They&rsquo;re right on the Inflozo integration you just made.</p></div>
-    <label class="field"><span class="control-label">API URL</span>
-      <input class="input mono" value="https://orbitweekly.com" aria-label="API URL"></label>
-    <label class="field"><span class="control-label">Admin API key</span>
-      <input class="input mono" value="65a3f0e1c9d24b1f:9c2e77b0d1a4" aria-label="Admin API key"></label>
-    <label class="field"><span class="control-label">Content API key</span>
-      <input class="input mono" value="8d41c0a97b3e5f22a1" aria-label="Content API key"></label>
-    <div id="checking" hidden><div class="banner info"><span class="ico">⋯</span>
-      <span>Talking to orbitweekly.com…</span></div></div>
-    <div id="found" hidden class="stack gap10">
-      <div class="banner success"><span class="ico">✓</span><span><b>Ghost 6.58 — connected.</b>
-        Your posts, pages, tags and authors are in.</span></div>
-      <div class="banner info"><span class="ico">ⓘ</span><span><b>This site has code injection.</b>
-        Your live pages can legitimately look different from the canvas, because that code runs on the
-        site and not here. We&rsquo;ll only say this once.</span></div></div>
-    <div class="row gap10"><a class="btn secondary" href="connect-integration.html">Back</a>
-      <button class="btn coral" id="go">Connect</button>
-      <a class="btn ghost" href="#">Where do I find these?</a></div>
-  </div></div>
-</div>
+<div class="stage"><div data-screen-label="S2b Keys step" style="background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+        <div style="position:absolute;top:32px;left:40px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <div style="width:560px;background:#FFFFFF;border-radius:16px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:36px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="height:4px;flex:1;background:#FF5941;border-radius:2px"></div>
+              <div style="height:4px;flex:1;background:#FF5941;border-radius:2px"></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64;margin-left:8px">2/2</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.01em">Now paste the three keys.</div>
+              <div style="font-size:14px;color:#6E6A64;line-height:1.5">They're right on the Inflozo integration you just made — copy each one across.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:13px;font-weight:500;color:#6E6A64">API URL</label>
+              <input type="text" placeholder="https://orbitweekly.com" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:13px;font-weight:500;color:#6E6A64">Admin API key</label>
+              <input type="text" placeholder="65a3f…:9c2b41d8e0f…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:13px;font-weight:500;color:#6E6A64">Content API key</label>
+              <input type="text" placeholder="8d41c0a97b…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+              <span style="font-size:13px;font-weight:500">Where do I find these?</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <a href="connect-integration.html" style="display:contents;color:inherit"><a href="#" style="font-size:14px;font-weight:500;color:#6E6A64">Back</a></a>
+              <button style="height:44px;padding:0 28px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E" id="go">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
 <script src="app.js"></script>
 <script>
-document.getElementById('go').addEventListener('click', function (e) {
-  e.preventDefault(); var b = this;
-  document.getElementById('checking').hidden = false; b.classList.add('off'); b.textContent = 'Connecting…';
-  setTimeout(function () {
-    document.getElementById('checking').hidden = true;
-    document.getElementById('found').hidden = false;
-    b.classList.remove('off'); b.textContent = 'Continue';
-    window.announce('Connected to Ghost 6.58');
-    b.onclick = function () { window.location.href = 'auto-branding.html'; };
-  }, 1400);
-});
-</script>
+var b = document.getElementById('go');
+if (b) b.addEventListener('click', function (e) {
+  e.preventDefault(); b.textContent = 'Connecting…';
+  setTimeout(function () { window.location.href = 'auto-branding.html'; }, 1100);
+});</script>
 </body>
 </html>

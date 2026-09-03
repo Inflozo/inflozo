@@ -8,162 +8,135 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="ed"><div class="edbar">
-  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"
-     aria-label="Back to projects"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
-  <span style="font-size:13px;font-weight:600" data-editable>Orbit Weekly</span>
-  <span class="row gap6 small soft" data-persist><span class="dot grey"></span>Saved on this device</span>
-  <div class="centre">
-    <span class="anchor"><button class="pickbtn" data-open="template-menu"
-        style="font-family:var(--ui);cursor:pointer"><span class="lab">Template</span>Theme settings<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="overlay menu left" id="template-menu" style="min-width:260px">
-  <a class="mrow on" href="editor.html">Home<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="post-content.html">Post</a>
-  <a class="mrow" href="editor.html">Page</a>
-  <a class="mrow" href="editor.html">Tag<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <a class="mrow" href="editor.html">Author<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <div class="mlabel">Membership</div>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Signup</a>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Signin</a>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Member home</a>
-  <a class="mrow" href="error-pages.html">404<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <div class="msep"></div>
-  <div class="mlabel">Template surfaces</div>
-  <a class="mrow" href="paywall-editor.html">Paywall</a>
-  <a class="mrow" href="editor-cards.html">Editor cards</a>
-  <a class="mrow" href="error-pages.html">Error pages</a>
-  <div class="msep"></div>
-  <a class="mrow" href="routes-manager.html">Manage routes…</a>
-  <a class="mrow" href="theme-settings.html">Theme settings…</a>
-  <a class="mrow" href="#" data-close>+ New template</a></div></span>
-    <span class="anchor"><button class="pickbtn" data-open="viewas-menu"
-        style="font-family:var(--ui);cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="overlay menu left" id="viewas-menu">
-  <div class="mlabel">View as</div>
-  <a class="mrow on" href="#" data-close>Anonymous<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="#" data-close>Free member</a>
-  <a class="mrow" href="#" data-close>Paid member</a>
-  <div class="msep"></div>
-  <span class="helper" style="padding:0 10px 6px;display:block">Three states, and only three. A comped
-    member previews as Paid — it differs in billing, not in access.</span></div></span>
-  </div>
-  <div class="row gap8" style="margin-left:auto">
-    <button class="iconbtn" data-open="packs" aria-label="Style Packs" title="Style Packs"
-      style="border:none;background:none;cursor:pointer;width:28px;height:28px">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5">
-        <circle cx="12" cy="12" r="9"/><circle cx="9" cy="9.5" r="1.3" fill="#6E6A64"/>
-        <circle cx="14.5" cy="9" r="1.3" fill="#6E6A64"/><circle cx="16" cy="14" r="1.3" fill="#6E6A64"/>
-        <path d="M12 21a3 3 0 0 1 0-6 2 2 0 0 0 0-4"/></svg></button>
-    <span class="seg" data-sets="device">
-      <span class="on" data-value="desktop" title="Desktop — 1" aria-label="Desktop">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
-      <span data-value="tablet" title="Tablet — 2" aria-label="Tablet">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="5" y="3" width="14" height="18" rx="2"/></svg></span>
-      <span data-value="mobile" title="Mobile — 3" aria-label="Mobile">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="8" y="3" width="8" height="18" rx="2"/></svg></span></span>
-    <button class="btn sm secondary" data-set="mode:preview">Preview<span class="kbd">P</span></button>
-    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
-    <span class="split"><a class="btn coral" href="deploy.html" data-ship>Ship update</a>
-      <span class="anchor"><button class="btn coral caret" data-open="ship-menu"
-        style="height:32px;border-radius:0;font-family:var(--ui);cursor:pointer">▾</button>
-        <div class="overlay menu" id="ship-menu">
-          <a class="mrow" href="deploy.html">Ship update</a>
-          <a class="mrow" href="deploy-history.html">History</a>
-          <a class="mrow" href="deploy.html?export">Export theme zip</a>
-          <a class="mrow" href="binding-checklist.html">Template binding</a></div></span></span>
-  </div>
-</div>
-  <div class="edmid">
-  <div class="layers"><div class="list">
-    <a class="row gap8" href="editor.html" style="padding:8px;color:var(--ink-soft);font-size:12px">← Back to Home</a>
-    <span class="panel-label" style="padding:6px 8px">SETTINGS</span>
-    <div class="lrow on"><span class="grow">Site basics</span></div>
-    <div class="lrow"><span class="grow">Navigation</span></div>
-    <div class="lrow"><span class="grow">Social accounts</span></div>
-    <a class="lrow" href="translations.html"><span class="grow">Translations</span></a>
-    <a class="lrow" href="editor-cards.html"><span class="grow">Editor cards</span></a>
-    <div class="lrow"><span class="grow">Code injection</span></div>
-  </div></div>
-  <div class="canvasmat" style="background:var(--paper)">
-    <div style="max-width:820px;margin:0 auto" class="stack gap16">
-      <div class="card"><div class="pad stack gap12">
-        <span class="panel-label">Posts per page</span>
-        <div class="row gap12"><span class="stepper"><span>−</span><span class="v">12</span><span>+</span></span>
-          <span class="helper" style="max-width:420px">How many posts your archives show before paginating.
-            <b>Your theme owns this — Ghost has no setting for it</b>, which is why every surface in the product
-            that mentions posts per page links here and never into Ghost Admin.</span></div></div></div>
-      <div class="card"><div class="pad stack gap14">
-        <span class="panel-label">Site basics</span>
-        <span class="helper">Ghost owns the title, the logo and the accent — we read them and never write them.</span>
-        <div class="row gap12"><span class="control-label" style="width:110px">Site title</span>
-          <span class="input greyed" style="max-width:280px;display:flex;align-items:center;color:var(--ink-faint)">🔒 Orbit Weekly</span>
-          <a class="small" href="#">Change this in Ghost ↗</a></div>
-        <div class="row gap12"><span class="control-label" style="width:110px">Logo</span>
-          <span class="row gap8"><span class="chip mono">orbit-wordmark.svg</span><span class="helper">SVG · 4 KB</span></span>
-          <a class="small" href="#">Change this in Ghost ↗</a></div>
-        <div class="row gap12"><span class="control-label" style="width:110px">Accent colour</span>
-          <span class="row gap8"><span class="sw" style="background:#D96C3F"></span><span class="small">Burnt orange</span>
-            <span class="chip">from Ghost</span></span></div></div></div>
-      <div class="card"><div class="pad stack gap12">
-        <span class="panel-label">This project</span>
-        <div class="row gap12"><span class="control-label" style="width:110px">Colour scheme</span>
-          <span class="seg"><span>Light only</span><span class="on">Light + Dark</span></span>
-          <span class="helper" style="max-width:340px">Every Style Pack ships a hand-paired dark palette, so
-            dark is already paid for.</span></div>
-        <div class="row gap12" style="padding-top:8px;border-top:1px solid var(--line-faint)">
-          <span class="control-label" style="width:110px">Clear dark overrides</span>
-          <span class="row gap8"><span class="badge neutral" title="Dark override">🌙 Dark override</span>
-            <span class="small">3 sections carry a dark override</span></span>
-          <button class="btn sm secondary" style="margin-left:auto" data-close>Clear them</button></div></div></div>
-      <div class="card"><div class="pad stack gap12">
-        <span class="panel-label">Credits</span>
-        <label class="row gap12" style="cursor:pointer"><span class="toggle on"></span>
-          <span class="stack gap2 grow"><b style="font-size:13px">Show &ldquo;Built with Inflozo&rdquo;</b>
-            <span class="helper">Appears in two places: the theme footer, and the README inside the exported zip.</span></span></label></div></div>
-      <div class="card"><div class="pad stack gap14">
-        <div class="row gap10"><span class="panel-label grow">Custom settings</span><span class="chip mono">3 OF 17</span></div>
-        <span class="helper">Ghost allows twenty custom settings per theme. <b>Three of them are the dark-mode
-          built-ins every Inflozo project declares</b>, so seventeen are yours. Promoted controls appear under
-          Design in Ghost admin after your next deploy.</span>
-        <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13px">Show reader count</b>
-            <span class="helper">Home hero · Split Form</span></div>
-          <span class="chip mono">show_reader_count</span><span class="badge neutral">boolean</span></div>
-        <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13px">Posts on the home feed</b>
-            <span class="helper">Latest issues · Count</span></div>
-          <span class="chip mono">home_post_count</span><span class="badge neutral">select</span></div>
-        <div class="itemrow"><div class="stack gap2 grow"><b style="font-size:13px">Announcement text</b>
-            <span class="helper">Site-wide · Announcement</span></div>
-          <span class="chip mono">announcement_text</span><span class="badge neutral">text</span></div>
-        <div style="height:1px;background:var(--line-faint)"></div>
-        <span class="panel-label">Promote a control</span>
-        <div class="grid g2 gap12">
-          <label class="field"><span class="control-label">Which control</span>
-            <select class="input"><option>Post template · Measure</option><option>Home hero · Height</option></select></label>
-          <label class="field"><span class="control-label">Label in Ghost</span>
-            <input class="input" value="Article width"></label>
-          <label class="field"><span class="control-label">Group in Ghost</span>
-            <select class="input"><option>Site wide</option><option>Homepage</option><option>Post</option></select></label>
-          <div class="field"><span class="control-label">Key</span>
-            <span class="input mono greyed" style="display:flex;align-items:center;color:var(--ink-faint)">article_width</span></div></div>
-        <div class="banner notice"><span class="ico">!</span><span><b>Keys freeze once you deploy or export</b> —
-          pick them like you mean it. And promoting your accent means switching Style Packs changes what that
-          Ghost setting points at.</span></div>
-        <button class="btn coral sm" style="align-self:flex-start" data-open="promote-text">Promote</button></div></div>
-    </div></div></div></div>
-<div class="overlay sheet-wrap" id="promote-text"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Promote &ldquo;Announcement text&rdquo;?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Ghost&rsquo;s own settings are plain text, so
-    <b>bold, italic, underline and links will be removed from this field while it stays promoted.</b>
-    The words are kept.</p></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn coral" data-close>Promote it</button></div></div></div>
+<div class="stage"><div style="box-sizing:border-box;background:#F7F5F2;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:46px;flex-shrink:0;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 14px;gap:10px">
+        <span style="font-size:13px;font-weight:600">Orbit Weekly</span><span style="color:#C9C2B8;font-size:13px">/</span><span style="font-size:13px;font-weight:600">Theme settings</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64;margin-left:6px"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button style="height:30px;padding:0 13px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Preview</button>
+          <button style="height:30px;padding:0 15px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer">Ship update</button>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="width:204px;flex-shrink:0;border-right:1px solid #E7E2DB;padding:15px 10px;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.04em;padding:0 8px 6px">SETTINGS</span>
+          <div style="padding:7px 9px;border-radius:8px;font-size:12.5px;font-weight:600;background:#FFEDE8;color:#C2381F">Site basics</div>
+          <div style="padding:7px 9px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Navigation</div>
+          <div style="padding:7px 9px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Social accounts</div>
+          <div style="padding:7px 9px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Translations</div>
+          <div style="padding:7px 9px;border-radius:8px;font-size:12.5px;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">Code injection</div>
+        </div>
+
+        <div style="flex:1;min-width:0;padding:20px 24px;display:flex;gap:24px;overflow:hidden">
+          <div style="flex:1;display:flex;flex-direction:column;gap:15px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;letter-spacing:-0.015em">Site basics</span>
+              <span style="font-size:12.5px;color:#6E6A64">Ghost owns the title and the accent — we read them.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6A64">Site title</span>
+              <div style="height:38px;border:1px solid #E7E2DB;border-radius:8px;background:#F1EDE7;display:flex;align-items:center;padding:0 12px;gap:8px">
+                <span style="font-size:13px;color:#4A453D;flex:1">Orbit Weekly</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path></svg>
+              </div>
+              <span style="font-size:11.5px;color:#6E6A64">Change this in Ghost — it appears in email too</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6A64">Logo</span>
+              <div style="border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:11px;display:flex;align-items:center;gap:11px">
+                <span style="width:44px;height:32px;border-radius:5px;background:repeating-linear-gradient(45deg,#E7E9E2 0 8px,#DDE0D6 8px 16px);flex-shrink:0"></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;font-weight:500">orbit-wordmark.svg</span><span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">SVG · 4 KB</span></div>
+                <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer">Replace</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:500;color:#6E6A64">Accent colour</span>
+              <div style="display:flex;align-items:center;gap:9px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:9px 11px">
+                <span style="width:22px;height:22px;border-radius:6px;background:#D96C3F;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);flex-shrink:0"></span>
+                <span style="font-size:12.5px;flex:1">Burnt orange</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">from Ghost</span>
+              </div>
+              <span style="font-size:11.5px;color:#6E6A64;line-height:1.45">Feeds <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:11px">--ghost-accent-color</span>, which your Style Pack maps to its accent role.</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #EFEAE2;padding-top:13px">
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;font-weight:500">Dark mode</span><span style="font-size:11px;color:#6E6A64">Follows the reader's system setting</span></div>
+              <div style="width:36px;height:20px;border-radius:10px;background:#FF5941;position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div>
+            </div>
+          </div>
+
+          <div style="width:1px;background:#EFEAE2"></div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:14px;font-weight:600;flex:1">Custom settings</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px;background:#FFFFFF">3 OF 20</span>
+              </div>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.5">Promote one of your controls and it becomes a Ghost theme setting — editable in Ghost's own Design panel, without opening Inflozo.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="border:1px solid #E7E2DB;border-radius:10px;background:#FFFFFF;padding:10px 12px;display:flex;align-items:center;gap:11px">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:12.5px;font-weight:600">Show reader count</span>
+                  <span style="font-size:11px;color:#6B6459">Home hero · Split Form → <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px">show_reader_count</span></span>
+                </div>
+                <span style="font-size:10px;font-weight:600;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:2px 7px;flex-shrink:0">boolean</span>
+              </div>
+              <div style="border:1px solid #E7E2DB;border-radius:10px;background:#FFFFFF;padding:10px 12px;display:flex;align-items:center;gap:11px">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:12.5px;font-weight:600">Posts on the home feed</span>
+                  <span style="font-size:11px;color:#6B6459">Latest issues · Count → <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px">home_post_count</span></span>
+                </div>
+                <span style="font-size:10px;font-weight:600;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:2px 7px;flex-shrink:0">select</span>
+              </div>
+              <div style="border:1px solid #E7E2DB;border-radius:10px;background:#FFFFFF;padding:10px 12px;display:flex;align-items:center;gap:11px">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:12.5px;font-weight:600">Announcement text</span>
+                  <span style="font-size:11px;color:#6B6459">Site-wide · Announcement → <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px">announcement_text</span></span>
+                </div>
+                <span style="font-size:10px;font-weight:600;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:2px 7px;flex-shrink:0">text</span>
+              </div>
+            </div>
+            <div style="border:1px dashed #D8D2C7;border-radius:10px;background:#FBF9F5;padding:12px;display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:12.5px;font-weight:600">Promote a control</span>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:11px;color:#6E6A64">Which control</span>
+                <div style="height:34px;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;padding:0 11px;gap:8px;cursor:pointer">
+                  <span style="font-size:12px;flex:1">Post template · Measure</span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:11px;color:#6E6A64">Label in Ghost</span>
+                  <div style="height:34px;border:1px solid #FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4);border-radius:8px;background:#FFFFFF;display:flex;align-items:center;padding:0 11px;gap:2px">
+                    <span style="font-size:12px">Article width</span>
+                    <span style="width:1.5px;height:15px;background:#FF5941"></span>
+                  </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:11px;color:#6E6A64">Key</span>
+                  <div style="height:34px;border:1px solid #E7E2DB;border-radius:8px;background:#F1EDE7;display:flex;align-items:center;padding:0 11px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:11px;color:#4A453D">article_width</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px">
+                <button style="height:32px;padding:0 13px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:9px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Promote</button>
+                <span style="font-size:11px;color:#6E6A64;line-height:1.45;flex:1">Named values only — Ghost's panel will show Narrow, Comfortable, Wide.</span>
+              </div>
+            </div>
+            <div style="background:#EAF0FF;border-radius:10px;padding:10px 12px;display:flex;gap:9px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2B5BD7" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><circle cx="12" cy="8" r="0.6" fill="#2B5BD7"></circle></svg>
+              <span style="font-size:11.5px;color:#2B4585;line-height:1.5">Ghost allows twenty custom settings per theme. Promoted controls appear under Design in Ghost admin after your next deploy.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
 <script src="app.js"></script>
 
 </body>

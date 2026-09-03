@@ -8,468 +8,117 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
-<style>[data-ring]{}</style>
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="small-screen-only" style="padding:24px;flex-direction:column;
-  gap:20px;align-items:center;justify-content:center;min-height:100vh;max-width:390px;margin:0 auto">
-  <svg width="120" height="96" viewBox="0 0 120 96" fill="none" stroke="#1C1B1A" stroke-width="1.5">
-    <rect x="8" y="12" width="64" height="46" rx="4"/><path d="M8 50h64"/><path d="M28 66h24M34 58v8"/>
-    <rect x="82" y="26" width="26" height="46" rx="4" fill="#FFEDE8" stroke="#FF5941"/></svg>
-  <div class="stack gap8" style="text-align:center"><h1 style="font-size:22px">The editor needs a bigger screen.</h1>
-    <p class="softaa" style="font-size:13.5px">Dragging sections and a 300-pixel control panel don&rsquo;t fit
-      on a phone yet. Open this project on a laptop or tablet.</p></div>
-  <div class="row gap10"><a class="btn secondary" href="deploy-history.html">Deploy history</a>
-    <a class="btn secondary" href="sites.html">Your sites</a></div></div>
-<div class="ed"><div class="edbar">
-  <a class="row" href="dashboard.html" style="width:28px;height:28px;justify-content:center"
-     aria-label="Back to projects"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
-  <span style="font-size:13px;font-weight:600" data-editable>Orbit Weekly</span>
-  <span class="row gap6 small soft" data-persist><span class="dot grey"></span>Saved on this device</span>
-  <div class="centre">
-    <span class="anchor"><button class="pickbtn" data-open="template-menu"
-        style="font-family:var(--ui);cursor:pointer"><span class="lab">Template</span>Home<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="overlay menu left" id="template-menu" style="min-width:260px">
-  <a class="mrow on" href="editor.html">Home<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="post-content.html">Post</a>
-  <a class="mrow" href="editor.html">Page</a>
-  <a class="mrow" href="editor.html">Tag<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <a class="mrow" href="editor.html">Author<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <div class="mlabel">Membership</div>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Signup</a>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Signin</a>
-  <a class="mrow" href="editor.html" style="padding-left:22px">Member home</a>
-  <a class="mrow" href="error-pages.html">404<span class="helper" style="margin-left:auto">Auto-generated</span></a>
-  <div class="msep"></div>
-  <div class="mlabel">Template surfaces</div>
-  <a class="mrow" href="paywall-editor.html">Paywall</a>
-  <a class="mrow" href="editor-cards.html">Editor cards</a>
-  <a class="mrow" href="error-pages.html">Error pages</a>
-  <div class="msep"></div>
-  <a class="mrow" href="routes-manager.html">Manage routes…</a>
-  <a class="mrow" href="theme-settings.html">Theme settings…</a>
-  <a class="mrow" href="#" data-close>+ New template</a></div></span>
-    <span class="anchor"><button class="pickbtn" data-open="viewas-menu"
-        style="font-family:var(--ui);cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span class="lab">View as</span>Anonymous<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="overlay menu left" id="viewas-menu">
-  <div class="mlabel">View as</div>
-  <a class="mrow on" href="#" data-close>Anonymous<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="#" data-close>Free member</a>
-  <a class="mrow" href="#" data-close>Paid member</a>
-  <div class="msep"></div>
-  <span class="helper" style="padding:0 10px 6px;display:block">Three states, and only three. A comped
-    member previews as Paid — it differs in billing, not in access.</span></div></span>
-  </div>
-  <div class="row gap8" style="margin-left:auto">
-    <button class="iconbtn" data-open="packs" aria-label="Style Packs" title="Style Packs"
-      style="border:none;background:none;cursor:pointer;width:28px;height:28px">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5">
-        <circle cx="12" cy="12" r="9"/><circle cx="9" cy="9.5" r="1.3" fill="#6E6A64"/>
-        <circle cx="14.5" cy="9" r="1.3" fill="#6E6A64"/><circle cx="16" cy="14" r="1.3" fill="#6E6A64"/>
-        <path d="M12 21a3 3 0 0 1 0-6 2 2 0 0 0 0-4"/></svg></button>
-    <span class="seg" data-sets="device">
-      <span class="on" data-value="desktop" title="Desktop — 1" aria-label="Desktop">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
-      <span data-value="tablet" title="Tablet — 2" aria-label="Tablet">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="5" y="3" width="14" height="18" rx="2"/></svg></span>
-      <span data-value="mobile" title="Mobile — 3" aria-label="Mobile">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="8" y="3" width="8" height="18" rx="2"/></svg></span></span>
-    <button class="btn sm secondary" data-set="mode:preview">Preview<span class="kbd">P</span></button>
-    <a class="iconbtn" href="deploy-history.html" aria-label="Deploy history"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></a>
-    <span class="split"><a class="btn coral" href="deploy.html" data-ship>Ship update</a>
-      <span class="anchor"><button class="btn coral caret" data-open="ship-menu"
-        style="height:32px;border-radius:0;font-family:var(--ui);cursor:pointer">▾</button>
-        <div class="overlay menu" id="ship-menu">
-          <a class="mrow" href="deploy.html">Ship update</a>
-          <a class="mrow" href="deploy-history.html">History</a>
-          <a class="mrow" href="deploy.html?export">Export theme zip</a>
-          <a class="mrow" href="binding-checklist.html">Template binding</a></div></span></span>
-  </div>
-</div>
-  <div class="edmid"><div class="layers"><div class="list">
-  <div class="row gap8" style="padding:8px"><span class="panel-label grow">Layers</span>
-    <span class="kbd">L</span></div>
-  <div class="sitewide">
-    <div class="row gap8" style="padding:2px 6px 6px"><span class="panel-label" style="font-size:11px">SITE-WIDE</span>
-      <span class="helper" style="margin-left:auto">on 9 templates</span></div>
-    <button class="lrow" data-layer="header" data-section-pick="header" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><span class="lthumb"></span><span class="grow">Header</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
-    <button class="lrow" data-layer="footer" data-section-pick="footer" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><span class="lthumb"></span><span class="grow">Footer</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
-  </div>
-  <div class="row" style="padding:6px 8px"><span class="panel-label" style="font-size:11px">THIS PAGE · HOME</span>
-    <span class="helper" style="margin-left:auto">4</span></div>
-  <button class="lrow" data-layer="hero" data-section-pick="hero" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><span class="lthumb"></span><span class="grow">Home hero</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
-  <button class="lrow" data-layer="feed" data-section-pick="feed" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><span class="lthumb"></span><span class="grow">Latest issues</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
-  <button class="lrow" data-layer="newsletter" data-section-pick="newsletter" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg><span class="lthumb"></span><span class="grow">The list, teased</span><span class="badge pro">✦ Pro</span><span class="faint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></button>
-</div>
-<div style="border-top:1px solid var(--line);padding:10px">
-  <a class="btn dashed" href="section-picker.html" id="section-picker-link" style="width:100%">+ Add section</a></div></div>
-    <div class="canvasmat" data-deselect>
-      <div class="row gap10 canvas-chrome" style="max-width:1100px;margin:0 auto 10px;justify-content:center">
-        <span class="anchor"><button class="pill" data-open="source-menu"
-            style="border:none;cursor:pointer;font-family:var(--ui)">
-            <span class="dot mint"></span><span>Previewing with:&nbsp;<b>Orbit Weekly</b></span></button>
-          <div class="overlay menu left" id="source-menu" style="width:340px">
-  <div class="mlabel">Source</div>
-  <a class="mrow on" href="#" data-close>Orbit Weekly<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="#" data-close>Sample content</a>
-  <div class="msep"></div>
-  <div class="mlabel">Subject</div>
-  <a class="mrow" href="#" data-close>Style-guide article<span style="margin-left:auto">✓</span></a>
-  <a class="mrow" href="#" data-close>The slow return of the personal homepage
-    <span class="chip" style="margin-left:auto">has image</span></a>
-  <a class="mrow" href="#" data-close>What we lost when blogrolls died
-    <span class="chip" style="margin-left:auto">has image</span></a>
-  <a class="mrow" href="#" data-close>A field guide to quiet software</a>
-  <span class="helper" style="padding:6px 10px;display:block">This canvas renders one post. Which one changes
-    what you see, because a post with a feature image and one without are different shapes.</span></div></span>
-        <span class="chip mono" data-size-chip="desktop">FIT TO SCREEN</span>
-        <span class="chip mono" data-size-chip="tablet">VIEWPORT 834 × 1112</span>
-        <span class="chip mono" data-size-chip="mobile">VIEWPORT 390 × 844</span>
+<div class="stage"><div data-screen-label="S4a Editor rest" style="background:#F7F5F2;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:48px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;position:relative;z-index:3">
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+        <span style="font-size:13px;font-weight:600;border-bottom:1px dashed transparent;cursor:text;transition:all 160ms ease-out" style-hover="border-bottom:1px dashed #C9C2B8">Orbit Weekly</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px"><div style="display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12px;font-weight:500;color:#6E6A64" data-open="template-menu">Template</span><span style="font-size:12.5px;font-weight:600">Home</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg><span style="font-size:12px;font-weight:500;color:#6E6A64">View as</span><span style="font-size:12.5px;font-weight:600">Anonymous</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div id="template-menu" class="overlay menu-lifted" style="position:absolute;left:calc(50% - 115px);top:44px;transform:translateX(-50%);width:210px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;gap:1px;z-index:9"><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;background:#FFEDE8;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Home<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div><a href="post-content.html" style="display:contents;color:inherit"><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Post</div></a><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Page</div><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Tag</div><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Author</div><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Members</div><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2">404</div><div style="height:1px;background:#E7E2DB;margin:4px 8px"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;font-weight:500;color:#6E6A64;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">+ New template</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+          <div style="display:flex;background:#EFECE7;border-radius:8px;padding:2px">
+            <div style="width:28px;height:26px;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5"><rect x="2" y="4" width="20" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></div>
+            <div style="width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"></rect></svg></div>
+            <div style="width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="8" y="3" width="8" height="18" rx="2"></rect></svg></div>
+          </div>
+          <div style="display:flex;gap:2px">
+            <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg></div>
+            <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:.35"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M15 14l5-5-5-5"></path><path d="M20 9H9a5 5 0 0 0 0 10h3"></path></svg></div>
+          </div>
+          <div style="display:flex;height:32px;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+            <a href="deploy.html" style="display:contents;color:inherit"><button style="padding:0 16px;background:#C2381F;color:#FFFFFF;border:none;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Ship it</button></a>
+            <button style="width:26px;background:#C2381F;color:#FFFFFF;border:none;border-left:1px solid rgba(255,255,255,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 160ms ease-out;font-family:'Inter',sans-serif" style-hover="background:#A82D18"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          </div>
+        </div>
       </div>
-      <div class="viewport"><div class="site" data-site data-theme="paper" data-ring="Split Editorial|Split Form|Image Backdrop|Big Type Manifesto|Centred Classic" data-current="0">
-  <div data-section="header"><span class="sec-tag">Header · site-wide</span><span class="sec-chrome"><span class="pill"><a href="#">Duplicate</a><a href="#">Delete</a><a href="section-picker.html">Replace</a></span></span><div class="ow-nav"><span class="ow-brand" data-editable>Orbit Weekly</span>
-      <span class="ow-links"><span>Essays</span><span>Notes</span><span>About</span></span>
-      <span class="ow-sub">Subscribe</span></div></div><div class="addhere"><a href="section-picker.html">+ Add section</a></div>
-  <div data-section="hero"><span class="sec-tag">Home hero</span><span class="sec-chrome"><span class="pill"><span class="mono" data-design-slash>1 / 5</span><a href="#" data-design-nav="-1" aria-label="Previous design">◀</a><a href="#" data-design-nav="1" aria-label="Next design">▶</a><a href="#" data-open="remix">Shuffle</a><a href="#">Duplicate</a><a href="#">Delete</a></span></span><div data-design-view="0"><div class="row gap32" style="padding:44px 36px;align-items:center">
-      <div class="stack gap12" style="flex:1.1">
-        <span class="ow-eyebrow" data-editable>ISSUE 47 · ESSAYS</span>
-        <span class="ow-h1" data-editable>The slow return of the personal homepage</span>
-        <span class="ow-dek" data-editable>Why writers are leaving the feed — and coming home to a page of their own.</span>
-        <span class="ow-meta">Maya Chen · Aug 14 · 9 min read</span></div>
-      <div class="ow-photo" style="flex:1;aspect-ratio:4/3"><span>feature photo</span></div></div></div><div data-design-view="1" hidden><div class="row gap32" style="padding:44px 36px;align-items:center">
-      <div class="stack gap12" style="flex:1.1">
-        <span class="ow-eyebrow" data-editable>EVERY THURSDAY</span>
-        <span class="ow-h1" data-editable>Seven links from the quiet web</span>
-        <span class="ow-dek" data-editable>Checked by hand, sent on Thursdays. No tracking pixels, because I never got round to adding any.</span></div>
-      <div class="stack gap10" style="flex:1;background:#F4EFE6;padding:24px;border-radius:10px">
-        <span class="ow-meta">JOIN 4,100 READERS</span>
-        <span class="input" style="background:#fff;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span>
-        <span class="ow-sub" style="text-align:center;padding:10px">Subscribe</span></div></div></div><div data-design-view="2" hidden><div style="position:relative;min-height:340px;display:flex;align-items:flex-end;
-      background:repeating-linear-gradient(45deg,#5A5148 0 12px,#4E463D 12px 24px)">
-      <div style="position:absolute;inset:0;background:linear-gradient(transparent,rgba(20,17,14,.82))"></div>
-      <div class="stack gap10" style="position:relative;padding:36px;color:#F4EFE6">
-        <span class="ow-eyebrow" style="color:#E8B08A" data-editable>ISSUE 118</span>
-        <span class="ow-h1" style="color:#F4EFE6;max-width:640px" data-editable>The four hundred domains that refuse to move</span>
-        <span class="ow-dek" style="color:#D8CEC2" data-editable>Every October, a few hundred people renew an address nobody visits.</span></div></div></div><div data-design-view="3" hidden><div class="stack gap16" style="padding:72px 36px">
-      <span class="ow-h1" style="font-size:52px;line-height:1.05;max-width:820px" data-editable>The web did not get worse. It got busier.</span>
-      <span class="ow-meta">ORBIT WEEKLY · SINCE 2019</span></div></div><div data-design-view="4" hidden><div class="stack gap14" style="padding:60px 36px;align-items:center;text-align:center">
-      <span class="ow-eyebrow" data-editable>SUNDAY ESSAYS</span>
-      <span class="ow-h1" style="max-width:620px" data-editable>Orbit Weekly, issue by issue</span>
-      <span class="ow-dek" style="max-width:520px" data-editable>One considered essay a week. No feed, no noise.</span>
-      <span class="ow-sub" style="padding:10px 22px">Start reading</span></div></div></div><div class="addhere"><a href="section-picker.html">+ Add section</a></div>
-  <div data-section="feed"><span class="sec-tag">Latest issues · MAIN FEED</span><span class="sec-chrome"><span class="pill"><a href="#">Duplicate</a><a href="#">Delete</a><a href="section-picker.html">Replace</a></span></span><div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
-    <div class="row" style="justify-content:space-between;margin-bottom:18px">
-      <span style="font-family:var(--serif);font-size:19px" data-editable>Latest essays</span>
-      <span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
-    <div class="row gap32" style="align-items:flex-start">
-      <div class="stack gap10" style="flex:1.2">
-        <div class="ow-photo" style="aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px)"><span>essay photo</span></div>
-        <span style="font-family:var(--serif);font-size:19px;line-height:1.2">What we lost when blogrolls died</span>
-        <span class="ow-dek">The web used to point outward. A short history of the link as a gift.</span>
-        <span class="ow-meta">SAM OKAFOR · AUG 10 · 12 MIN</span></div>
-      <div class="stack gap16" style="flex:1">
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">A field guide to quiet software</span><span class="ow-meta">PRIYA NAIR · AUG 7</span></div>
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Reading the web at human speed</span><span class="ow-meta">MAYA CHEN · AUG 3</span></div>
-        <div class="stack gap4"><span style="font-family:var(--serif);font-size:15px">Notes on a 30-year-old homepage</span><span class="ow-meta">TOMÁS RIVERA · JUL 28</span></div>
-      </div></div></div></div><div class="addhere"><a href="section-picker.html">+ Add section</a></div>
-  <div data-section="newsletter"><span class="sec-tag">The list, teased</span><span class="sec-chrome"><span class="pill"><a href="#">Duplicate</a><a href="#">Delete</a><a href="section-picker.html">Replace</a></span></span><span class="badge pro" style="position:absolute;top:8px;right:8px;z-index:41">✦ Pro</span><div class="stack gap10" style="padding:30px 32px;background:#F4EFE6">
-    <span style="font-family:var(--serif);font-size:22px" data-editable>The Sunday orbit.</span>
-    <span class="ow-dek">One essay, every Sunday · No algorithm, no feed · Free forever</span>
-    <div class="row gap8"><span class="input" style="max-width:260px;display:flex;align-items:center;color:var(--ink-faint)">you@example.com</span>
-      <span class="ow-sub">Sign up</span></div></div></div><div class="addhere"><a href="section-picker.html">+ Add section</a></div>
-  <div data-section="footer"><span class="sec-tag">Footer · site-wide</span><span class="sec-chrome"><span class="pill"><a href="#">Duplicate</a><a href="#">Delete</a><a href="section-picker.html">Replace</a></span></span><div class="row gap32" style="padding:26px 32px;background:#3B382F;color:#E8E2D6;align-items:flex-start">
-    <div class="stack gap6" style="flex:1.4"><span style="font-family:var(--serif);font-size:15px">Orbit Weekly</span>
-      <span style="font-size:11px;opacity:.72;font-family:var(--ui)">Essays on the humane web, published every Sunday from Lisbon.</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>READ</b><span>Essays</span><span>Notes</span><span>Archive</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MEMBERS</b><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
-    <div class="stack gap4" style="font-size:11px;font-family:var(--ui);opacity:.8"><b>MORE</b><span>About</span><span>RSS</span><span>Contact</span></div>
-  </div></div><div class="addhere"><a href="section-picker.html">+ Add section</a></div>
-</div></div>
-    </div>
-    <div class="sidebar">
-  <div data-panel-empty class="stack gap8" style="margin:auto;text-align:center;padding:24px">
-    <b style="font-size:13.5px">Nothing selected</b>
-    <span class="helper">Click any section on the canvas — its controls appear here.</span></div>
-
-  <div data-panel-for="hero" hidden>
-    <div class="row gap8" style="margin-bottom:12px"><b style="font-size:13px">Home hero</b>
-      <span class="chip mono" style="margin-left:auto" data-design-slash></span></div>
-    <div class="ctlgroup"><span class="panel-label">Design</span>
-      <div class="row gap8"><span class="mono" style="font-size:13px" data-design-count></span>
-        <span class="row gap4" style="margin-left:auto">
-          <button class="kbd" data-design-nav="-1" style="cursor:pointer">[</button>
-          <button class="kbd" data-design-nav="1" style="cursor:pointer">]</button></span></div>
-      <div class="dstrip"><button class="dthumb on" data-design-index="0" aria-label="Split Editorial" style="cursor:pointer"></button><button class="dthumb" data-design-index="1" aria-label="Split Form" style="cursor:pointer"></button><button class="dthumb" data-design-index="2" aria-label="Image Backdrop" style="cursor:pointer"></button><button class="dthumb" data-design-index="3" aria-label="Big Type Manifesto" style="cursor:pointer"></button><button class="dthumb" data-design-index="4" aria-label="Centred Classic" style="cursor:pointer"></button></div>
-      <span class="helper" data-design-name></span></div>
-    <div data-design-panel="0"><div class="ctlgroup"><span class="control-label">Image side</span>
-      <span class="seg"><span>Left</span><span class="on">Right</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Height</span>
-      <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Image scrim</span>
-      <span class="seg"><span class="on">None</span><span>Soft</span><span>Strong</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Show the meta row</span></label></div></div><div data-design-panel="1" hidden><div class="ctlgroup"><span class="control-label">Copy side</span>
-      <span class="seg"><span class="on">Left</span><span>Right</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Height</span>
-      <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Form fields</span>
-      <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Reader count</span></label></div>
-    <div class="stack gap6"><span class="panel-label">No image controls</span>
-      <span class="reason">This design has no image. Nothing to crop, position or scrim.</span></div></div><div data-design-panel="2" hidden><div class="ctlgroup"><span class="control-label">Text position</span>
-      <span class="seg"><span>Top</span><span>Centre</span><span class="on">Bottom</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Scrim</span>
-      <span class="seg"><span>None</span><span class="on">Gradient</span><span>Solid</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Image focus</span>
-      <span class="seg"><span class="on">Centre</span><span>Top</span><span>Bottom</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Height</span>
-      <span class="seg"><span class="on">Comfortable</span><span>Tall</span><span>Full screen</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Eyebrow</span>
-      <span class="seg"><span class="on">Shown</span><span>Hidden</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle"></span>
-      <span class="control-label grow">Dark mode override</span>
-      <span class="badge neutral" title="Dark override">🌙</span></label></div></div><div data-design-panel="3" hidden><div class="ctlgroup"><span class="control-label">Type size</span>
-      <span class="seg"><span>Large</span><span class="on">Huge</span><span>Absurd</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Alignment</span>
-      <span class="seg"><span class="on">Left</span><span>Centred</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Show the byline</span></label></div>
-    <div class="stack gap6"><span class="panel-label">Three controls is the answer</span>
-      <span class="reason">The design is one sentence at one size. Adding height or scrim controls would
-        invent decisions it does not have.</span></div></div><div data-design-panel="4" hidden><div class="ctlgroup greyed"><span class="control-label">Alignment</span>
-      <span class="seg"><span>Left</span><span class="on">Centred</span></span>
-      <span class="reason">This design is centred by construction.</span></div>
-    <div class="ctlgroup"><span class="control-label">Height</span>
-      <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Tall</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Button</span>
-      <span class="seg"><span class="on">Solid</span><span>Soft</span><span>Outline</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Eyebrow</span>
-      <span class="seg"><span class="on">Shown</span><span>Hidden</span></span></div></div>
-  </div>
-
-  <div data-panel-for="header" hidden><div class="row gap8"><b style="font-size:13px">Header · site-wide</b></div>
-    <div class="banner info" style="margin-bottom:10px"><span class="ico">ⓘ</span>
-      <span>Editing this changes it on all 9 templates. We say so the first time, then stop.</span></div>
-    <div class="ctlgroup"><span class="control-label">Layout</span>
-      <span class="seg"><span class="on">Left mark</span><span>Centred</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Sticky</span>
-      <span class="seg"><span>Never</span><span class="on">On scroll up</span><span>Always</span></span></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Subscribe button</span></label></div></div>
-
-  <div data-panel-for="feed" hidden><div class="row gap8"><b style="font-size:13px">Latest issues</b></div>
-    <span class="chip mono" style="margin-bottom:10px;display:inline-flex">MAIN FEED</span>
-    <div class="ctlgroup greyed"><span class="control-label">Count</span>
-      <span class="stepper"><span>−</span><span class="v">12</span><span>+</span></span>
-      <span class="reason">This feed is sized by your theme&rsquo;s Posts per page.
-        <a href="theme-settings.html">Change it in Theme settings.</a></span></div>
-    <div class="ctlgroup"><span class="control-label">Pagination</span>
-      <span class="seg"><span class="on">Numbered</span><span>Load more</span><span>Infinite</span></span>
-      <span class="helper">Only the main feed has this control.</span></div>
-    <div class="ctlgroup"><span class="control-label">Lead item</span>
-      <span class="seg"><span class="on">Large</span><span>Equal</span></span></div></div>
-
-  <div data-panel-for="newsletter" hidden><div class="row gap8"><b style="font-size:13px">The list, teased</b></div>
-    <div class="row gap8" style="margin-bottom:10px"><span class="badge pro">✦ Pro</span>
-      <span class="helper">A price tag, not a lock. Nothing happens when you click it.</span></div>
-    <div class="ctlgroup"><span class="control-label">Form fields</span>
-      <span class="seg"><span class="on">Email</span><span>Email + name</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Background role</span>
-      <div class="swatches"><span class="sw" style="background:#FBF9F5"></span>
-        <span class="sw on" style="background:#F4EFE6"></span>
-        <span class="sw" style="background:#D96C3F"></span>
-        <span class="sw" style="background:#3B382F"></span></div></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Show the disclaimer</span></label></div></div>
-
-  <div data-panel-for="footer" hidden><div class="row gap8"><b style="font-size:13px">Footer · site-wide</b></div>
-    <div class="ctlgroup"><span class="control-label">Columns</span>
-      <span class="seg"><span>Two</span><span class="on">Three</span><span>Four</span></span></div>
-    <div class="ctlgroup"><span class="control-label">Background role</span>
-      <div class="swatches"><span class="sw" style="background:#FBF9F5"></span>
-        <span class="sw" style="background:#F4EFE6"></span>
-        <span class="sw on" style="background:#3B382F"></span></div></div>
-    <div class="ctlgroup"><label class="row gap10" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="control-label grow">Show the RSS link</span></label></div>
-    <div class="stack gap6"><span class="panel-label">No dark-mode switch</span>
-      <span class="reason">There is no dark-mode switch for visitors. This project&rsquo;s colour scheme is
-        pinned in its Style Pack, so a visitor&rsquo;s browser preference does not change it.</span></div></div>
-</div>
-  </div>
-</div>
-<div class="overlay pop" id="packs" style="right:16px;top:56px;width:320px">
-  <div class="row gap8"><span class="panel-label grow">Style Pack</span>
-    <button class="soft" data-close style="border:none;background:none;cursor:pointer">✕</button></div>
-  <div class="grid g3 gap8"><button data-pack="Paper" class="stack gap4 on" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Paper</span></button><button data-pack="Tangerine" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Tangerine</span></button><button data-pack="Ink" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Ink</span></button><button data-pack="Meadow" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Meadow</span></button><button data-pack="Harbor" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Harbor</span></button><button data-pack="Dune" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Dune</span></button><button data-pack="Neon Dusk" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Neon Dusk</span></button><button data-pack="Cocoa" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Cocoa</span></button><button data-pack="Mist" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Mist</span></button><button data-pack="Berry" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Berry</span></button><button data-pack="Slate" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Slate</span></button><button data-pack="Butter" class="stack gap4" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)"><span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px">Ag</span><span class="helper">Butter</span></button>
-    <button class="stack gap4" data-open="edit-pack" style="align-items:center;border:none;background:none;cursor:pointer;font-family:var(--ui)">
-      <span class="thumb" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;border-style:dashed">+</span>
-      <span class="helper">New pack</span></button></div>
-  <div class="ctlgroup"><span class="control-label">Title font</span>
-    <div class="row gap8"><span style="font-family:var(--serif);font-size:16px">Aa</span>
-      <span style="font-size:13px">Georgia</span></div></div>
-  <div class="ctlgroup"><span class="control-label">Site width</span>
-    <span class="seg"><span>Narrow</span><span class="on">Standard</span><span>Wide</span></span></div>
-  <div class="ctlgroup"><span class="control-label">Corners</span>
-    <span class="seg"><span>Sharp</span><span class="on">Soft</span><span>Round</span></span></div>
-  <div class="ctlgroup"><span class="control-label">Density</span>
-    <span class="seg"><span>Compact</span><span class="on">Comfortable</span><span>Spacious</span></span></div>
-  <button class="btn secondary sm" data-open="edit-pack">Edit this pack</button>
-</div>
-<div class="overlay sheet-wrap" id="edit-pack"><div class="sheet"><div class="head">
-    <h2 style="font-size:20px">Edit pack</h2>
-    <p class="softaa" style="font-size:13px;margin-top:4px">Seven roles per mode. Tap any swatch to change it —
-      dark is tuned separately, never just inverted.</p></div>
-  <div class="body">
-    <label class="field"><span class="control-label">Pack name</span>
-      <input class="input" value="Maya&rsquo;s Warm" aria-label="Pack name"></label>
-    <div class="stack gap8"><span class="panel-label">Light</span><div class="row gap12 wrap"><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#F7F5F2;width:32px;height:32px"></span><span class="helper">Background</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#FFFFFF;width:32px;height:32px"></span><span class="helper">Surface</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#232019;width:32px;height:32px"></span><span class="helper">Text</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#6B6459;width:32px;height:32px"></span><span class="helper">Muted</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#E7E2DB;width:32px;height:32px"></span><span class="helper">Border</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#D96C3F;width:32px;height:32px"></span><span class="helper">Accent</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#3B382F;width:32px;height:32px"></span><span class="helper">Contrast</span></div></div></div>
-    <div class="stack gap8"><span class="panel-label">Dark</span><div class="row gap12 wrap"><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#171511;width:32px;height:32px"></span><span class="helper">Background</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#1F1C17;width:32px;height:32px"></span><span class="helper">Surface</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#F0EAE0;width:32px;height:32px"></span><span class="helper">Text</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#A79E8F;width:32px;height:32px"></span><span class="helper">Muted</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#3A342B;width:32px;height:32px"></span><span class="helper">Border</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#E0805A;width:32px;height:32px"></span><span class="helper">Accent</span></div><div class="stack gap4" style="align-items:center"><span class="sw" style="background:#F4EFE6;width:32px;height:32px"></span><span class="helper">Contrast</span></div></div></div>
-    <div class="banner notice"><span class="ico">!</span><span><b>Muted on Background is 3.8:1 — under 4.5:1.</b>
-      Body text in that role would be hard to read. We are warning rather than blocking: it is your pack,
-      and this is the warning that makes the choice fair.</span></div>
-    <p class="helper">This is the one place in the product with a raw colour picker. Section controls carry
-      named values only — never px, hex or CSS.</p></div>
-  <div class="foot"><button class="btn ghost" data-close>Reset to defaults</button>
-    <button class="btn secondary" data-close style="margin-left:auto">Cancel</button>
-    <button class="btn coral" data-close>Save pack</button></div></div></div><div class="overlay sheet-wrap" id="remix"><div class="sheet"><div class="head">
-    <div class="row gap10"><h2 style="font-size:22px">Remix this site</h2>
-      <span class="kbd" style="margin-left:auto">⇧R</span></div>
-    <p class="softaa" style="font-size:13px;margin-top:6px">Re-rolls every section to a different design in its
-      own category. Your text, images and settings stay — only the arrangements change.</p></div>
-  <div class="body">
-    <div class="stack gap8"><span class="panel-label">What gets re-rolled</span>
-      <label class="radiocard on"><span class="radio on"></span><span class="stack"><span class="t">Designs</span>
-        <span class="c">Every section gets a different design in its own category.</span></span></label>
-      <label class="radiocard"><span class="radio"></span><span class="stack"><span class="t">Style Pack</span>
-        <span class="c">Same designs, a different palette, type and shape.</span></span></label>
-      <label class="radiocard"><span class="radio"></span><span class="stack"><span class="t">Both</span>
-        <span class="c">A different site wearing the same words.</span></span></label></div>
-    <div class="stack gap8"><span class="panel-label">How far it reaches</span>
-      <label class="radiocard on"><span class="radio on"></span><span class="stack"><span class="t">This page only</span>
-        <span class="c">4 sections on Home.</span></span></label>
-      <label class="radiocard"><span class="radio"></span><span class="stack"><span class="t">Every template</span>
-        <span class="c">9 templates, 41 sections.</span></span></label>
-      <label class="radiocard"><span class="radio"></span><span class="stack"><span class="t">Header and footer too</span>
-        <span class="c">Includes the site-wide sections, on every template at once.</span></span></label></div>
-    <div class="banner info"><span class="ico">ⓘ</span><span>Remix always re-rolls from the whole library.
-      If it lands a Pro design on a Free plan, the Pro exit sheet catches it once, at the exit — which is the
-      only place money is ever mentioned.</span></div></div>
-  <div class="foot"><button class="btn secondary" data-close>Cancel</button>
-    <button class="btn coral" id="do-remix">Remix</button></div></div></div>
-<div class="toast" id="remix-toast" hidden style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  z-index:210;background:var(--ink);color:#fff;border-radius:var(--r-pill);padding:10px 18px;
-  align-items:center;gap:12px;box-shadow:var(--sh-lg);font-size:13px">
-  <span>Remixed 4 sections on Home.</span>
-  <button id="undo-remix" style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-family:var(--ui);font-size:13px">Undo</button>
-  <span class="kbd" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff">⌘Z</span></div><div id="inline-toolbar">
-  <button data-mark="bold" style="font-weight:700">B</button>
-  <button data-mark="italic" style="font-style:italic">I</button>
-  <button data-mark="underline" style="text-decoration:underline">U</button>
-  <span class="sep"></span>
-  <button data-open="link-entry" aria-label="Link">🔗</button>
-  <button disabled aria-label="Remove link" title="Remove link">⛔</button></div>
-<div class="overlay sheet-wrap" id="link-entry"><div class="sheet narrow" style="max-width:380px">
-  <div class="body"><input class="input" placeholder="Paste a URL, or search your posts…" aria-label="Link target">
-    <div class="mlabel">PAGES</div>
-    <div class="mrow">The archive<span class="helper mono" style="margin-left:auto">/archive/</span></div>
-    <div class="mlabel">POSTS</div>
-    <div class="mrow">What we lost when blogrolls died<span class="helper" style="margin-left:auto">Aug 10</span></div>
-    <div class="mrow">Notes on a 30-year-old archive<span class="helper" style="margin-left:auto">Jul 28</span></div>
-    <div class="mlabel">PORTAL ACTIONS</div>
-    <div class="row gap6 wrap" style="padding:0 10px"><span class="chip">Sign up</span><span class="chip">Sign in</span>
-      <span class="chip">Account</span><span class="chip">Upgrade</span></div>
-    <div class="row gap8" style="padding:8px 10px 0"><span class="check"></span>
-      <span style="font-size:12.5px">Open in new tab</span></div></div>
-  <div class="foot"><button class="btn secondary" data-close>Cancel</button>
-    <button class="btn coral" data-close>Link it</button></div></div></div><span class="pill preview-bar">
-  <a href="#" data-set="mode:">Back to editing</a>
-  <span class="kbd" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff">esc</span>
-  <a href="#" data-set="device:desktop">Desktop</a>
-  <a href="#" data-set="device:tablet">Tablet</a>
-  <a href="#" data-set="device:mobile">Mobile</a></span><div class="overlay sheet-wrap" id="lock-request">
-  <div class="sheet narrow" style="max-width:360px"><div class="body">
-    <div class="row gap10"><span class="avatar" style="background:#3A4A5F">DM</span>
-      <b style="font-size:14px">Ask Rosa to hand over?</b></div>
-    <p style="font-size:13px;line-height:1.55">She keeps editing until she answers. If she hands over, her
-      unsynced changes are sent first.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Cancel</button>
-    <button class="btn coral" data-open="lock-waiting">Request editing</button></div></div></div>
-<div class="overlay sheet-wrap" id="lock-waiting"><div class="sheet narrow" style="max-width:400px">
-  <div class="body"><div class="banner notice"><span class="ico">!</span>
-    <span><b>No response; that session has 7 unsaved edits.</b></span></div>
-  <p style="font-size:13px;line-height:1.55">You can take over anyway. It is allowed, and it is not a wall —
-    but the work that had not synced is genuinely gone.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Keep waiting</button>
-    <button class="btn danger-out" data-open="lock-takeover">Take over anyway</button></div></div></div>
-<div class="overlay sheet-wrap" id="lock-takeover"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Take over from Rosa?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Rosa has not responded for 4 minutes.
-    She has changes that never reached the server.</p>
-    <div class="banner error"><span class="ico">!</span><span><b>7 unsynced edits will be lost.</b>
-      They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.</span></div></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Wait</button>
-    <a class="btn danger" href="editor.html">Take over anyway</a>
-    <button class="btn ghost" data-close>Or message Rosa</button></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
-  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
-  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
-    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
-      you are typing.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="width:240px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;flex-shrink:0;background:#F7F5F2">
+          <div style="flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;align-items:center;padding:3px;gap:2px"><div style="width:8px;height:3px;background:#C9C2B8;border-radius:1px"></div><div style="margin-left:auto;width:6px;height:3px;background:#FF5941;border-radius:1px"></div></div><span style="font-size:13px;font-weight:500;flex:1">Header</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px"><div style="flex:1;display:flex;flex-direction:column;gap:2px;justify-content:center"><div style="height:3px;background:#1C1B1A;border-radius:1px"></div><div style="height:2px;width:70%;background:#C9C2B8;border-radius:1px"></div></div><div style="width:10px;background:#FF5941;opacity:.7;border-radius:2px"></div></div><span style="font-size:13px;font-weight:500;flex:1">Hero — Split Editorial</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px"><div style="flex:1.4;background:#E7E2DB;border-radius:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="flex:1;background:#E7E2DB;border-radius:1px"></div><div style="flex:1;background:#E7E2DB;border-radius:1px"></div></div></div><span style="font-size:13px;font-weight:500;flex:1">Post Grid — Magazine</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px;align-items:center"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:2px;background:#C9C2B8;border-radius:1px"></div><div style="height:2px;background:#C9C2B8;border-radius:1px"></div></div><div style="width:9px;height:6px;background:#FF5941;opacity:.7;border-radius:1px"></div></div><span style="font-size:13px;font-weight:500;flex:1">Newsletter — Split</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#3B382F;padding:3px;display:flex;gap:2px"><div style="flex:1;background:#6E6A64;border-radius:1px;height:3px"></div><div style="flex:1;background:#6E6A64;border-radius:1px;height:3px"></div><div style="flex:1;background:#6E6A64;border-radius:1px;height:3px"></div></div><span style="font-size:13px;font-weight:500;flex:1">Footer — Mega Grid</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+          </div>
+          <div style="border-top:1px solid #E7E2DB;padding:10px"><a href="section-picker.html" style="display:contents;color:inherit"><button style="width:100%;height:32px;background:transparent;border:1px dashed #C9C2B8;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#E84B34;border-color:#FF5941">+ Add section</button></a></div>
+        </div>
+        <div style="flex:1;background:#EDEAE6;overflow:hidden;padding:24px 28px 0;min-width:0">
+          <div style="max-width:864px;margin:0 auto;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10);overflow:hidden;height:100%">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid #EBE5DB">
+              <span style="font-family:Georgia,serif;font-weight:700;font-size:16px;color:#232019">Orbit Weekly</span>
+              <div style="display:flex;gap:18px;font-size:12px;color:#6B6459"><span>Essays</span><span>Notes</span><span>About</span></div>
+              <span style="background:#D96C3F;color:#FFF;font-size:11px;font-weight:600;padding:6px 13px;border-radius:7px">Subscribe</span>
+            </div>
+            <div style="display:flex;gap:32px;padding:38px 32px;align-items:center">
+              <div style="flex:1.1;display:flex;flex-direction:column;gap:12px">
+                <span style="font-size:10px;font-weight:600;letter-spacing:0.12em;color:#D96C3F">ISSUE 47 · ESSAYS</span>
+                <span style="font-family:Georgia,serif;font-size:32px;line-height:1.12;color:#232019">The slow return of the personal homepage</span>
+                <span style="font-size:13px;line-height:1.5;color:#6B6459">Why writers are leaving the feed — and coming home to a page of their own.</span>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">M</span><span style="font-size:11px;color:#6B6459">Maya Chen · Aug 14 · 9 min read</span></div>
+              </div>
+              <div style="flex:1;aspect-ratio:4/3;border-radius:8px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);display:flex;align-items:center;justify-content:center"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;background:rgba(251,249,245,.85);padding:2px 7px;border-radius:5px">feature photo</span></div>
+            </div>
+            <div style="padding:30px 32px;background:#FFFFFF;border-top:1px solid #EBE5DB">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px"><span style="font-family:Georgia,serif;font-size:19px;color:#232019">Latest essays</span><span style="font-size:11px;font-weight:600;color:#D96C3F">All essays →</span></div>
+              <div style="display:flex;gap:28px">
+                <div style="flex:1.2;display:flex;flex-direction:column;gap:10px">
+                  <div style="aspect-ratio:16/9;border-radius:8px;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px);display:flex;align-items:center;justify-content:center"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;background:rgba(255,255,255,.85);padding:2px 7px;border-radius:5px">essay photo</span></div>
+                  <span style="font-family:Georgia,serif;font-size:19px;line-height:1.2;color:#232019">What we lost when blogrolls died</span>
+                  <span style="font-size:12px;line-height:1.5;color:#6B6459">The web used to point outward. A short history of the link as a gift.</span>
+                  <span style="font-size:10px;color:#6B6459">SAM OKAFOR · AUG 10 · 12 MIN</span>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;gap:12px;align-items:center"><div style="width:72px;height:52px;flex-shrink:0;border-radius:6px;background:repeating-linear-gradient(45deg,#EDE4D8 0 8px,#E5DACB 8px 16px)"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Georgia,serif;font-size:13px;line-height:1.25;color:#232019">A field guide to quiet software</span><span style="font-size:10px;color:#6B6459">PRIYA NAIR · AUG 7</span></div></div>
+                  <div style="height:1px;background:#EBE5DB"></div>
+                  <div style="display:flex;gap:12px;align-items:center"><div style="width:72px;height:52px;flex-shrink:0;border-radius:6px;background:repeating-linear-gradient(45deg,#E7E9E2 0 8px,#DDE0D6 8px 16px)"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Georgia,serif;font-size:13px;line-height:1.25;color:#232019">Reading the web at human speed</span><span style="font-size:10px;color:#6B6459">MAYA CHEN · AUG 3</span></div></div>
+                  <div style="height:1px;background:#EBE5DB"></div>
+                  <div style="display:flex;gap:12px;align-items:center"><div style="width:72px;height:52px;flex-shrink:0;border-radius:6px;background:repeating-linear-gradient(45deg,#EDE4D8 0 8px,#E5DACB 8px 16px)"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Georgia,serif;font-size:13px;line-height:1.25;color:#232019">Notes on a 30-year-old homepage</span><span style="font-size:10px;color:#6B6459">TOMÁS RIVERA · JUL 28</span></div></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:28px;padding:30px 32px;background:#F4EEE4;align-items:center">
+              <div style="flex:1;display:flex;flex-direction:column;gap:9px">
+                <span style="font-family:Georgia,serif;font-size:19px;color:#232019">The Sunday orbit.</span>
+                <span style="display:flex;align-items:center;gap:7px;font-size:12px;color:#6B6459"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>One essay, every Sunday</span>
+                <span style="display:flex;align-items:center;gap:7px;font-size:12px;color:#6B6459"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>No algorithm, no feed</span>
+                <span style="display:flex;align-items:center;gap:7px;font-size:12px;color:#6B6459"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Free forever</span>
+              </div>
+              <div style="flex:1;display:flex;gap:8px"><div style="flex:1;height:38px;background:#FFFFFF;border:1px solid #DDD5C7;border-radius:7px;display:flex;align-items:center;padding:0 12px;font-size:12px;color:#A79E8F">you@example.com</div><span style="height:38px;display:inline-flex;align-items:center;background:#D96C3F;color:#FFF;font-size:12px;font-weight:600;padding:0 16px;border-radius:7px">Sign up</span></div>
+            </div>
+            <div style="background:#232019;padding:30px 32px;display:flex;gap:44px">
+              <div style="display:flex;flex-direction:column;gap:7px;flex:1.2"><span style="font-family:Georgia,serif;font-size:15px;color:#F4EEE4">Orbit Weekly</span><span style="font-size:11px;line-height:1.5;color:#A79E8F">Essays on the humane web, published every Sunday from Lisbon.</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:#A79E8F"><span style="color:#F4EEE4;font-weight:600;font-size:10px;letter-spacing:0.08em">READ</span><span>Essays</span><span>Notes</span><span>Archive</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:#A79E8F"><span style="color:#F4EEE4;font-weight:600;font-size:10px;letter-spacing:0.08em">MEMBERS</span><span>Sign in</span><span>Upgrade</span><span>Gift</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:#A79E8F"><span style="color:#F4EEE4;font-weight:600;font-size:10px;letter-spacing:0.08em">MORE</span><span>About</span><span>RSS</span><span>Contact</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="width:280px;border-left:1px solid #E7E2DB;background:#F7F5F2;flex-shrink:0;padding:16px;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Page</span>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-family:Georgia,serif;font-size:26px;color:#232019">Ag</span>
+              <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:600">Paper</span><span style="font-size:11px;color:#6E6A64">Georgia · Inter</span></div>
+            </div>
+            <div style="display:flex;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:#FBF9F5;box-shadow:inset 0 0 0 1px rgba(28,27,26,.15)"></span><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12)"></span><span style="width:16px;height:16px;border-radius:50%;background:#D96C3F"></span><span style="width:16px;height:16px;border-radius:50%;background:#232019"></span><span style="width:16px;height:16px;border-radius:50%;background:#F4EEE4;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12)"></span><span style="width:16px;height:16px;border-radius:50%;background:#2F4A3E"></span></div>
+            <button style="height:32px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2" data-open="packs">Change</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:500">Dark mode</span><span style="font-size:11px;color:#6E6A64">Readers get a moon toggle</span></div>
+            <div style="width:36px;height:20px;border-radius:10px;background:#FF5941;position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#F7F5F2;border-radius:8px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+            <span style="font-size:12px;color:#6E6A64;line-height:1.5">Posts per page follows the home feed's <strong style="font-weight:600;color:#1C1B1A">Count</strong> control.</span>
+          </div>
+        </div>
+      </div>
+    </div></div>
 <script src="app.js"></script>
 <script>
-document.body.setAttribute('data-editor-shell', '1');
-document.body.classList.add('device-desktop');
-var ring = document.querySelector('[data-ring]');
-// A blank canvas is one affordance and nothing else — the canvas is sacred.
-if (location.search.indexOf('empty') > -1) {
-  document.querySelectorAll('[data-section]:not([data-section="header"]):not([data-section="footer"]), .addhere')
-    .forEach(function (n) { n.remove(); });
-  var site = document.querySelector('[data-site]');
-  var slot = document.createElement('div');
-  slot.style.cssText = 'padding:120px 24px;display:flex;justify-content:center;background:var(--paper-raised)';
-  slot.innerHTML = '<a class="btn dashed lg" href="section-picker.html">+ Add section</a>';
-  site.insertBefore(slot, site.lastElementChild);
-}
-if (location.search.indexOf('readonly') > -1) {
-  document.querySelector('.sidebar').classList.add('dim');
-  var bar = document.createElement('div');
-  bar.className = 'row gap12';
-  bar.style.cssText = 'background:var(--marigold-tint);padding:10px 16px';
-  bar.innerHTML = '<b style="font-size:13px">Read-only — this project is over your Free plan&rsquo;s limit.</b>'
-    + '<a class="btn sm secondary" href="over-limit.html">Make this the editable one</a>'
-    + '<a class="btn sm secondary" href="deploy.html?export">Export theme zip</a>';
-  document.querySelector('.ed').insertBefore(bar, document.querySelector('.edmid'));
-}
-if (location.search.indexOf('locked') > -1) {
-  document.querySelector('.sidebar').classList.add('dim');
-  var b2 = document.createElement('div');
-  b2.className = 'row gap12';
-  b2.style.cssText = 'background:var(--sky-tint);padding:10px 16px';
-  b2.innerHTML = '<b style="font-size:13px">Rosa is editing this site — you are reading along.</b>'
-    + '<button class="btn sm secondary" data-open="lock-request">Request editing</button>';
-  document.querySelector('.ed').insertBefore(b2, document.querySelector('.edmid'));
-}
-document.getElementById('do-remix').addEventListener('click', function () {
-  document.querySelectorAll('.overlay.is-open').forEach(function (o) { o.classList.remove('is-open'); });
-  document.body.classList.remove('has-overlay');
-  var n = Math.floor(Math.random() * 4) + 1;   // a re-roll is one edit, not several operations
-  window.setState('mode', null);
-  var t = document.getElementById('remix-toast');
-  t.hidden = false; window.announce('Remixed 4 sections on Home.');
-  setTimeout(function () { t.hidden = true; }, 6000);
-  document.querySelectorAll('[data-design-nav="1"]')[0].click();
-});
-document.getElementById('undo-remix').addEventListener('click', function () {
-  document.getElementById('remix-toast').hidden = true;
-  document.querySelectorAll('[data-design-nav="-1"]')[0].click();
-  window.announce('Undone.');
-});
-</script>
+document.body.setAttribute('data-editor-shell', '1');</script>
 </body>
 </html>

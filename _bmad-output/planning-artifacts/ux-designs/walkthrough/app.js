@@ -500,6 +500,46 @@
     announce('Style Pack: ' + name);
   });
 
+  /* ── style-hover / style-focus, as the export writes them ──────────────────
+     The frames carry their hover and focus states as `style-hover="…"` attributes,
+     which the export's own runtime applies. Screens here are LIFTED from those
+     frames verbatim, so the same attribute has to mean the same thing — otherwise a
+     lifted screen is the drawing with its interactions quietly removed. */
+  function applyInline(el, css, store) {
+    var prev = {};
+    css.split(';').forEach(function (d) {
+      var i = d.indexOf(':');
+      if (i < 0) return;
+      var k = d.slice(0, i).trim(), v = d.slice(i + 1).trim();
+      if (!k) return;
+      prev[k] = el.style.getPropertyValue(k);
+      el.style.setProperty(k, v, 'important');
+    });
+    el[store] = prev;
+  }
+
+  function restoreInline(el, store) {
+    var prev = el[store];
+    if (!prev) return;
+    Object.keys(prev).forEach(function (k) {
+      if (prev[k]) el.style.setProperty(k, prev[k]);
+      else el.style.removeProperty(k);
+    });
+    el[store] = null;
+  }
+
+  ['mouseover', 'mouseout', 'focusin', 'focusout'].forEach(function (type) {
+    var enter = type === 'mouseover' || type === 'focusin';
+    var a = (type[0] === 'm') ? 'style-hover' : 'style-focus';
+    var store = (type[0] === 'm') ? '_h' : '_f';
+    document.addEventListener(type, function (e) {
+      var el = e.target.closest ? e.target.closest('[' + a + ']') : null;
+      if (!el) return;
+      if (enter) applyInline(el, el.getAttribute(a), store);
+      else restoreInline(el, store);
+    }, true);
+  });
+
   /* ── boot ──────────────────────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
     if (!$('#live-polite')) {

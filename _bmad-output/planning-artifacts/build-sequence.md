@@ -905,10 +905,48 @@ product that only make sense in motion actually move.
 that nothing the owner is judging has to carry a navigation bar; `_selfcheck.html` drives the three
 pieces of `app.js` that are not one-liners — the ring, the gate and the wizard — and prints ALL PASS.
 
-**It cannot drift from 5b.** `build-app.py` imports 5b's builder as a module and reuses its tokens,
-its component vocabulary, its fixture site and its plan matrix; `styles.css` is generated as 5b's
-stylesheet plus `_app.css`. The tokens are still transcribed from the export exactly once, in one
-place (R-74).
+### The first cut was wrong, and how it was wrong is worth keeping
+
+**The owner opened it and said it did not match the export. He was right.** Both 5b and the first
+cut of 5c were authored from a **text extraction** of the frames — a tag-stripping pass that yields
+every frame's copy and none of its composition. The words came out right and the screens came out
+wrong, structurally:
+
+| The export draws | The first cut drew |
+|---|---|
+| `S1a` — an ink primary, on a card with a 380px ghosted wordmark behind it | a coral primary, no wordmark |
+| `S3a` — real miniature renderings on every project card; what's-new as a **popover** under a marigold button | blank thumbnails; what's-new as a column |
+| `S4a` — a resting right sidebar that is the **Page** panel: the Style Pack cell, Ag / Paper / Georgia · Inter / Change, and a Dark mode toggle | an empty "Nothing selected" panel |
+| `S4a` — Layers as a flat list of **design** names, no site-wide group | B7's grouping and B7's layer names |
+
+None of that survives a tag-stripper. It is exactly the failure `CLAUDE.md` warns about — *the whole
+directory, every time* — with a summary substituted for the source.
+
+**The second cut does not re-author the frames: it lifts them.** `frames.py` pulls each screen's
+markup out of the `.dc.html` verbatim, by `data-screen-label` or by the mono caption above it;
+`build-app.py` then patches what it must — links wired, behaviour hooks added, the fixed 1440×900
+frame box removed so it fills a window. **`patch()` raises if a target is missing**, so a lift cannot
+quietly stop matching its frame. `app.js` implements the export's own `style-hover` / `style-focus`
+attributes, so a lifted screen keeps the hover states it was drawn with.
+
+**Where the PRD still overrides the frame it is a short list, and each patch names its ruling:** the
+six frames in EXPERIENCE.md's "drawn, but on the wrong mechanism" table, and the four that disagree
+with Appendix F.1 on plan limits. R-74 gives the export the construction; `prd.md` keeps behaviour
+and strings.
+
+> ⚠️ **STEP 5B HAS THE SAME DEFECT AND HAS NOT HAD THE SAME PASS.** Its pages describe each surface
+> correctly and name the right frame, but they *render* it from the text extraction — so its promise
+> that a page can be held against its frame is weaker than it reads. Rebuilding `prototype/build.py`
+> on `frames.py` is owed, and it is the next thing to do to that folder.
+
+**What is NOT in the second cut, deliberately.** Every surface with no frame in the export — the
+backup gates, history pinning, the drift report, the dashboard sheets, the canvas markers, the editor
+below 1440. Appendix A carries a Claude Design prompt for each and **none has been run**, so they are
+held out rather than mixed in, and `_screens.html` lists them with the reason. Step 5b has them all.
+
+**It cannot drift from 5b.** `build-app.py` imports 5b's builder for the tokens, the plan matrix and
+the icon set; `styles.css` is generated as 5b's stylesheet plus `_app.css`. The tokens are
+transcribed from the export exactly once, in one place (R-74).
 
 **Needs from the owner:** nothing new. It is the thing to walk.
 **Unblocks:** nothing on its own — **R-75's gate is still the walk**, and it is recorded in step 5b.

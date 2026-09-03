@@ -8,29 +8,37 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-
-<div style="min-height:100vh;background:var(--paper);padding:48px;display:flex;flex-direction:column;gap:24px;align-items:center;justify-content:center">
-  <div class="row gap12" style="width:100%;max-width:880px">
-    <span style="font-family:var(--display);font-weight:800;font-size:20px">Inflozo</span>
-    <span class="chip" style="margin-left:auto">1/2</span></div>
-  <div class="card" style="width:100%;max-width:880px"><div class="pad" style="display:flex;gap:32px">
-    <div class="stack gap16 grow">
-      <div class="stack gap6"><h1 style="font-size:24px">First, a quick handshake.</h1>
-        <p class="softaa" style="font-size:13.5px">Inflozo talks to Ghost through a custom integration. Takes about a minute.</p></div>
-      <ol class="stack gap12" style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.5">
-        <li>Open <b>Ghost Admin → Settings → Integrations</b></li>
-        <li>Click <b>Add custom integration</b></li>
-        <li>Name it <b>Inflozo</b> and save — it shows three things: an API URL and two keys</li></ol>
-      <div class="row gap10"><a class="btn secondary" href="first-run.html">Back</a>
-        <a class="btn coral" href="connect-keys.html">Done — next</a></div></div>
-    <div class="thumb" style="width:340px;height:230px;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px">
-      <span class="helper">Ghost Admin → Settings → Integrations → Add custom integration</span></div>
-  </div></div>
-</div>
+<div class="stage"><div data-screen-label="S2b1 Create integration" style="background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+        <div style="position:absolute;top:32px;left:40px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:36px;display:flex;flex-direction:column;gap:24px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="height:4px;flex:1;background:#FF5941;border-radius:2px"></div>
+              <div style="height:4px;flex:1;background:#E7E2DB;border-radius:2px"></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64;margin-left:8px">1/2</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.01em">First, a quick handshake.</div>
+              <div style="font-size:14px;color:#6E6A64;line-height:1.5">Inflozo talks to Ghost through a custom integration. Takes about a minute.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">1</div><div style="font-size:14px;line-height:1.5">Open <strong style="font-weight:600">Ghost Admin → Settings → Integrations</strong></div></div>
+              <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">2</div><div style="font-size:14px;line-height:1.5">Click <strong style="font-weight:600">Add custom integration</strong></div></div>
+              <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">3</div><div style="font-size:14px;line-height:1.5">Name it <span style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:6px;padding:2px 6px">Inflozo</span> and save — it shows three things: an API URL and two keys</div></div>
+            </div>
+            <div style="height:150px;border-radius:10px;background:repeating-linear-gradient(45deg,#F1EDE7 0 10px,#EAE5DE 10px 20px);position:relative;overflow:hidden">
+              <div style="position:absolute;top:12px;left:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;background:#FFFFFF;padding:3px 8px;border-radius:6px">screenshot: Ghost Admin → Settings → Integrations → Add custom integration</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <a href="first-run.html" style="display:contents;color:inherit"><a href="#" style="font-size:14px;font-weight:500;color:#6E6A64">Back</a></a>
+              <a href="connect-keys.html" style="display:contents;color:inherit"><button style="height:44px;padding:0 28px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Done — next</button></a>
+            </div>
+          </div>
+        </div>
+      </div></div>
 <script src="app.js"></script>
 
 </body>

@@ -8,143 +8,97 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <a class="meter" href="assets.html">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span></a>
-  </div>
-  <div class="anchor" style="margin-top:auto">
-    <button class="acct" data-open="account-menu" aria-haspopup="true" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left">
-      <span class="avatar">M</span>
-      <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-        <span class="helper">maya@orbitweekly.com</span></span>
-      <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-    </button>
-    <div class="overlay menu up left" id="account-menu" role="menu">
-      <a class="mrow" href="billing.html">Account settings</a>
-      <a class="mrow" href="billing.html">Billing &amp; plan <span class="badge pro">✦ Pro</span></a>
-      <a class="mrow" href="suggestions.html">Suggestions</a>
-      <a class="mrow" href="pricing.html">Docs</a>
-      <a class="mrow" href="#" data-open="shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
-      <div class="msep"></div>
-      <a class="mrow" href="index.html">Sign out</a>
-    </div>
-  </div>
-</div><div class="appmain"><div class="topbar">
-  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-    <input placeholder="Search projects…" aria-label="Search projects…"
-      style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1;color:var(--ink)">
-    <span class="kbd">⌘K</span></label>
-  <div class="row gap10" style="margin-left:auto"><span class="anchor"><button class="iconbtn" data-open="notifications" aria-label="Notifications" style="border:none;background:none;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></button><div class="overlay menu wide" id="notifications" role="menu" style="width:400px">
-  <div class="row gap10" style="padding:4px 10px 8px"><span class="panel-label grow">Notifications</span>
-    <a class="small soft" href="#" data-close>Mark all read</a></div>
-  <div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;background:var(--coral-tint)"><span class="dot coral" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span><span class="helper">14 minutes ago · shipped by you</span></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span><span class="helper">Yesterday, 18:02</span><a class="small" href="deploy.html?failed" style="color:var(--danger-text)">See what failed →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span><span class="helper">2 days ago</span><a class="small" href="deploy.html" style="color:var(--sky-text)">Review →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span><span class="helper">2 days ago</span><a class="small" href="binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span><span class="helper">Last week</span></span></div>
-  <div class="msep"></div>
-  <p class="helper" style="padding:0 10px 6px">Deploy outcomes always land here, even if you closed the tab.</p>
-</div></span><button class="btn coral" data-open="new-project"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</button></div>
-</div><div class="appbody"><div class="stack gap16" style="max-width:760px">
-  <h2 style="font-size:22px">Account &amp; Billing</h2>
-  <div class="card"><div class="pad stack gap14">
-    <div class="row gap12"><span class="avatar">M</span>
-      <div class="stack gap2 grow"><div class="row gap8"><b style="font-size:15px">Pro</b>
-          <span class="badge live">✦ Active</span></div>
-        <span class="helper">Renews Sep 17, 2026 · $15/mo</span></div>
-      <span style="font-family:var(--display);font-size:24px;font-weight:700">$15<span class="soft" style="font-size:13px">/mo</span></span></div>
-    <div style="height:1px;background:var(--line-faint)"></div>
-    <div class="grid g4 gap12">
-      <div class="stack gap2"><span class="control-label soft">Projects</span><b class="mono">6 of 25</b></div>
-      <div class="stack gap2"><span class="control-label soft">Connected sites</span><b class="mono">2 of 10</b></div>
-      <div class="stack gap2"><span class="control-label soft">Asset storage</span><b class="mono">312 MB of 5 GB</b></div>
-      <div class="stack gap2"><span class="control-label soft">Deploy history</span><b class="mono">last 10 per project</b></div></div>
-    <div class="row gap10"><button class="btn secondary" data-close>Manage in Dodo portal</button>
-      <button class="btn ghost" data-open="cancel">Cancel plan</button>
-      <span class="helper" style="margin-left:auto">Cancelling always takes three clicks or fewer. No retention screens.</span></div>
-  </div></div>
-  <div class="card"><div class="pad row gap12"><div class="stack gap2 grow">
-      <b style="font-size:13.5px">Invoices</b><span class="helper">Monthly receipts from Dodo</span></div>
-    <button class="btn sm secondary" data-open="invoices">View invoices</button></div></div>
-  <div class="card"><div class="pad stack gap12">
-    <b style="font-size:13.5px">Email</b>
-    <div class="row gap10"><span class="mono" style="font-size:13px">maya@orbitweekly.com</span>
-      <span class="helper">Magic links land here</span>
-      <button class="btn sm secondary" style="margin-left:auto" data-close>Change email</button></div>
-    <div style="height:1px;background:var(--line-faint)"></div>
-    <b style="font-size:13.5px">Passkeys</b>
-    <div class="stack gap8">
-      <div class="row gap10"><span style="font-size:13px">MacBook Pro — Touch ID</span>
-        <span class="helper">added Aug 2, 2026</span>
-        <button class="btn ghost sm" style="margin-left:auto" data-close>Remove</button></div>
-      <div class="row gap10"><span style="font-size:13px">iPhone — Face ID</span>
-        <span class="helper">added Aug 3, 2026</span>
-        <button class="btn ghost sm" style="margin-left:auto" data-close>Remove</button></div></div>
-    <button class="btn sm secondary" style="align-self:flex-start" data-close>Add a passkey</button>
-    <div style="height:1px;background:var(--line-faint)"></div>
-    <b style="font-size:13.5px">Autosave</b>
-    <label class="row gap12" style="cursor:pointer"><span class="toggle on"></span>
-      <span class="stack gap2 grow"><span style="font-size:13px">Sync to the cloud every three minutes</span>
-        <span class="helper">Turning this off means your work stays on this device until you press ⌘S, close
-          the tab or ship. If the device is lost, so is that work.</span></span></label>
-  </div></div>
-  <div class="card"><div class="pad stack gap10">
-    <b style="font-size:13.5px">The limits, plainly</b><table class="limits"><tr><th></th><th>Free</th><th>✦ Pro</th></tr><tr><td>Projects</td><td>1</td><td>25</td></tr><tr><td>Site connections</td><td>1</td><td>10</td></tr><tr><td>Section library</td><td>canvas: the whole library<br><span class="helper">deploy and export: the free set only</span></td><td>The whole library</td></tr><tr><td>Asset storage</td><td>100 MB</td><td>5 GB</td></tr><tr><td>Per-upload cap</td><td>10 MB</td><td>10 MB</td></tr><tr><td>Deploy history</td><td>last 3</td><td>last 10 per project</td></tr><tr><td>Theme ZIP export</td><td>✓ with credits, free designs only</td><td>✓</td></tr><tr><td>Credit removal</td><td>—</td><td>✓</td></tr></table><p class="helper" style="margin-top:10px">Everything not in this table is on both plans — dark-mode authoring, the Routes Manager, Style Pack editing, Theme Settings, Translations, the Paywall editor, Post Content, card treatments, pagination styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore, rollback and the suggestions board.</p></div></div>
-  <div class="card" style="border-color:var(--danger)"><div class="pad stack gap10">
-    <b style="font-size:13.5px;color:var(--danger)">Danger zone</b>
-    <div class="row gap12"><div class="stack gap2 grow"><b style="font-size:13px">Delete account</b>
-        <span class="helper">Removes every project, version and asset. Your live Ghost sites stay up — we
-          never touch them.</span></div>
-      <button class="btn danger-out" data-open="delete-account">Delete account</button></div></div></div>
-</div></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
-  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
-  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
-    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
-      you are typing.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="invoices"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Invoices</h2></div>
-  <div class="body stack gap2"><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
-      <span style="font-size:13px">Aug 17, 2026</span><span class="helper">Pro · monthly</span>
-      <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span>
-      <a class="small" href="#">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
-      <span style="font-size:13px">Jul 17, 2026</span><span class="helper">Pro · monthly</span>
-      <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span>
-      <a class="small" href="#">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
-      <span style="font-size:13px">Jun 17, 2026</span><span class="helper">Pro · monthly</span>
-      <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span>
-      <a class="small" href="#">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
-      <span style="font-size:13px">May 17, 2026</span><span class="helper">Pro · monthly</span>
-      <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span>
-      <a class="small" href="#">PDF</a></div><div class="row gap10" style="padding:9px 0;border-bottom:1px solid var(--line-faint)">
-      <span style="font-size:13px">Apr 17, 2026</span><span class="helper">Pro · monthly</span>
-      <span class="mono" style="margin-left:auto;font-size:13px">$15.00</span>
-      <a class="small" href="#">PDF</a></div>
-    <p class="helper" style="padding-top:10px">Need older ones? <a href="#">Open the Dodo portal ↗</a></p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="cancel"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Cancel Pro?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Auto-renew stops. <b>You keep Pro until
-    Sep 17, 2026</b>, the end of the period you have paid for, and then the account becomes Free.</p>
-    <p style="font-size:13px;line-height:1.55">Nothing is deleted at that point, on any path. If you are
-      over the Free limits we will show you exactly what is over and by how much, and you decide what changes.</p></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Keep Pro</button>
-    <a class="btn danger-out" href="over-limit.html">Cancel Pro</a></div></div></div>
-<div class="overlay sheet-wrap" id="delete-account"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Delete your account?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">All 6 projects, their full version history and
-    48 assets will be permanently deleted. <b>Your live Ghost sites stay online.</b> This cannot be undone.</p>
-    <label class="field"><span class="control-label">Type <b class="mono">delete my account</b> to confirm</span>
-      <input class="input mono" data-typed="delete my account" data-typed-target="#really-delete"
-        placeholder="delete my account" aria-label="Type delete my account to confirm"></label></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn danger off" id="really-delete">Delete account</button></div></div></div>
+<div class="stage"><div data-screen-label="S12a Billing" style="background:#F7F5F2;overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Account &amp; Billing</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;gap:24px;padding:28px 32px;min-height:0">
+        <div style="width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:16px">
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:24px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <span style="display:flex;align-items:center;gap:8px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Pro</span><span style="background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 9px;border-radius:24px">✦ Active</span></span>
+                <span style="font-size:13px;color:#6E6A64">Renews Sep 17, 2026 · <span style="font-family:'JetBrains Mono',monospace;font-size:12px">$15/mo</span></span>
+              </div>
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em">$15<span style="font-size:14px;color:#6E6A64;font-weight:500">/mo</span></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Projects</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">6 · unlimited</span></div>
+                <div style="height:4px;background:#EFECE7;border-radius:2px;overflow:hidden"><div style="width:12%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Connected sites</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">2 of 3</span></div>
+                <div style="height:4px;background:#EFECE7;border-radius:2px;overflow:hidden"><div style="width:67%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Asset storage</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">312 MB of 5 GB</span></div>
+                <div style="height:4px;background:#EFECE7;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Deploy history</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#157A58">full history</span></div>
+                <div style="height:4px;background:#E4F5EE;border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;border-top:1px solid #E7E2DB;padding-top:16px">
+              <button style="height:36px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#F7F5F2">Manage in Dodo portal<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></button>
+              <button style="margin-left:auto;height:36px;padding:0 12px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel plan</button>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px 24px;display:flex;align-items:center;gap:12px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>
+            <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:600">Invoices</span><span style="font-size:12px;color:#6E6A64">Monthly receipts from Dodo</span></div>
+            <a href="billing-invoices.html" style="display:contents;color:inherit"><button style="margin-left:auto;height:34px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:background 160ms ease-out" style-hover="background:#F7F5F2">View invoices</button></a>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Email</span>
+            <div style="display:flex;align-items:center;gap:12px;padding:2px 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 7l-10 6L2 7"></path></svg>
+              <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:500">maya@orbitweekly.com</span><span style="font-size:11px;color:#6E6A64">Magic links land here</span></div>
+              <button style="margin-left:auto;height:30px;padding:0 13px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2">Change email</button>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px 24px;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Passkeys</span>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F1EDE7">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="2" y="4" width="20" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:500">MacBook Pro — Touch ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">added Aug 2, 2026</span></div>
+                <div style="margin-left:auto;display:flex;gap:2px">
+                  <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Rename" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg></div>
+                  <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Revoke" style-hover="background:#FDEBEC"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg></div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F1EDE7">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 19h2"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:500">iPhone — Face ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">added Aug 3, 2026</span></div>
+                <div style="margin-left:auto;display:flex;gap:2px">
+                  <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Rename" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg></div>
+                  <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Revoke" style-hover="background:#FDEBEC"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg></div>
+                </div>
+              </div>
+            </div>
+            <button style="align-self:flex-start;height:34px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#F7F5F2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path><path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"></path><path d="M2 12a10 10 0 0 1 18-6"></path><path d="M2 16h.01"></path><path d="M21.8 16c.2-2 .131-5.354 0-6"></path><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"></path><path d="M8.65 22c.21-.66.45-1.32.57-2"></path><path d="M9 6.8a6 6 0 0 1 9 5.2v2"></path></svg>Add a passkey</button>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #F5C6C9;border-radius:16px;padding:20px 24px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:600;color:#C63A3F;text-transform:uppercase;letter-spacing:0.04em">Danger zone</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:2px"><a href="billing-delete.html" style="display:contents;color:inherit"><span style="font-size:13px;font-weight:500">Delete account</span></a><span style="font-size:12px;color:#6E6A64;line-height:1.5">Removes every project, version and asset. Your live Ghost sites stay up — we never touch them.</span></div>
+              <button style="margin-left:auto;flex-shrink:0;height:34px;padding:0 15px;background:#FFFFFF;border:1px solid #F5C6C9;color:#C4383C;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#FDEBEC">Delete account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
 <script src="app.js"></script>
 
 </body>

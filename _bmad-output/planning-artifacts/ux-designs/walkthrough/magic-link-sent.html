@@ -8,29 +8,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
-<body class="auth">
+<body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-
-<span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
-<div class="card authcard"><div class="pad" style="display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center">
-  <h1 style="font-size:24px">Check your inbox ✨</h1>
-  <p class="softaa" style="font-size:13.5px">We sent a magic link to <b class="mono">maya@orbitweekly.com</b><br>
-    It&rsquo;s good for 15 minutes.</p>
-  <p class="helper">Didn&rsquo;t get it? Resend in <span class="mono" id="countdown">0:27</span></p>
-  <a class="btn coral" href="first-run.html">Open the link</a>
-  <a class="btn ghost" href="index.html">Use a different email</a>
-</div></div>
-<div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
-
+<div class="stage"><div data-screen-label="S1b Magic link sent" style="background:#F7F5F2;position:relative;overflow:hidden;">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:380px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <div style="width:400px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:44px 36px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
+            <svg width="88" height="66" viewBox="0 0 88 66" fill="none">
+              <rect x="8" y="14" width="72" height="46" rx="6" stroke="#1C1B1A" stroke-width="1.5"></rect>
+              <path d="M11 18l33 23 33-23" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M71 2l1.7 4.6L77.3 8.3l-4.6 1.7L71 14.6l-1.7-4.6-4.6-1.7 4.6-1.7z" fill="#FF5941"></path>
+            </svg>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em">Check your inbox ✨</div><a href="first-run.html" style="display:none" id="open-link">x</a><div style="display:none"></div>
+              <div style="font-size:14px;color:#6E6A64;line-height:1.55">We sent a magic link to<br><strong style="color:#1C1B1A;font-weight:600">maya@orbitweekly.com</strong><br>It's good for 15 minutes.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%">
+              <div style="font-size:13px;color:#6E6A64">Didn't get it? Resend in <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#1C1B1A">0:27</span></div>
+              <a href="index.html" style="display:contents;color:inherit"><a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;text-decoration:underline;text-underline-offset:3px">Use a different email</a></a>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;gap:20px;font-size:13px;color:#6E6A64">
+          <a href="#" style="color:#6E6A64">Terms</a><span style="color:#E7E2DB">·</span><a href="#" style="color:#6E6A64">Privacy</a>
+        </div>
+      </div></div>
+<div style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:120">
+  <a class="btn coral" href="first-run.html">Open the link (this is a walkthrough)</a></div>
 <script src="app.js"></script>
-<script>
-var left = 27, el = document.getElementById('countdown');
-var t = setInterval(function () {
-  left--; if (left <= 0) { clearInterval(t); el.parentNode.innerHTML = '<a href="#">Resend the link</a>'; return; }
-  el.textContent = '0:' + (left < 10 ? '0' : '') + left;
-}, 1000);
-</script>
+
 </body>
 </html>

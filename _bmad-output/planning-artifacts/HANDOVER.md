@@ -55,8 +55,22 @@ him.** The critical path now runs through one person opening one file.
 | Behaves | no — it depicts | yes — menus, the design ring, the wizard, the keyboard map |
 | **A design change** | **belongs here** | **and here** |
 
-**Step 5c is BUILT — 2026-09-03.** `planning-artifacts/ux-designs/walkthrough/index.html` —
-**double-click it**, and it opens on Sign In as a user would meet it. The owner read 5b and said the
+> ⚠️ **READ THIS BEFORE TOUCHING EITHER BUILD.** The first cut of both was authored from a **text
+> extraction** of the design export — a tag-stripping pass that gives every frame's copy and none of
+> its composition. The owner opened it and said it did not match the export, and he was right:
+> `S1a`'s primary is ink, not coral, on a card with a ghosted 380px wordmark behind it; `S3a`'s
+> project cards carry real miniature renderings and what's-new is a popover, not a column; `S4a`'s
+> resting sidebar is the **Page** panel with the Style Pack cell, not an empty one; `S4a`'s Layers is
+> a flat list of design names with no site-wide group. **5c has since been rebuilt to LIFT the
+> frames' own markup** (`walkthrough/frames.py`), and its `patch()` raises rather than silently
+> missing. **5b has NOT had that pass and still renders from the text extraction** — rebuilding
+> `prototype/build.py` on `frames.py` is owed. Never author a screen from a stripped-tag reading of
+> a frame again; the frames are HTML, so read them as HTML.
+
+**Step 5c is BUILT — 2026-09-03, rebuilt the same day.**
+`planning-artifacts/ux-designs/walkthrough/index.html` — **double-click it**, and it opens on Sign In
+as a user would meet it. Every screen in it is **lifted from the export verbatim** and then wired up;
+surfaces with no frame are held out and listed in `_screens.html` with the reason. The owner read 5b and said the
 true thing: its annotations are exactly what stop it feeling like the product. They are also the
 point of it, so 5c drops them and adds behaviour instead. `build-app.py` **imports 5b's builder**, so
 the tokens are transcribed from the export exactly once and the two cannot drift. Two files there are

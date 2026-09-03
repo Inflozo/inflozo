@@ -415,6 +415,10 @@ DOCS = [
 GROUPS = [
  ('ux-designs/walkthrough/', 'live', "Step 5c — the walkthrough: the product, as it will feel",
   'The owner read step 5b and asked for the other thing: a build with NO scaffolding on it — no frame '
+  '(SECOND CUT: the first was authored from a TEXT EXTRACTION of the frames and did not match the '
+  'export — the owner caught it. It now LIFTS each screen\'s markup out of the .dc.html verbatim via '
+  '`frames.py` and patches it; `patch()` raises rather than missing silently. **STEP 5B STILL HAS THE '
+  'ORIGINAL DEFECT** and is owed the same pass.) '
   'captions, no journey trails, no notes, no stacked state variants — that behaves rather than depicts. '
   '**Double-click `index.html`** and it opens on Sign In, exactly as a user would meet it; walk from there. '
   'Menus and modals open, the design ring changes the canvas and the control panel with it, the backup gate '

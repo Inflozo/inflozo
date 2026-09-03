@@ -8,119 +8,90 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <a class="meter" href="assets.html">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span></a>
-  </div>
-  <div class="anchor" style="margin-top:auto">
-    <button class="acct" data-open="account-menu" aria-haspopup="true" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left">
-      <span class="avatar">M</span>
-      <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-        <span class="helper">maya@orbitweekly.com</span></span>
-      <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-    </button>
-    <div class="overlay menu up left" id="account-menu" role="menu">
-      <a class="mrow" href="billing.html">Account settings</a>
-      <a class="mrow" href="billing.html">Billing &amp; plan <span class="badge pro">✦ Pro</span></a>
-      <a class="mrow" href="suggestions.html">Suggestions</a>
-      <a class="mrow" href="pricing.html">Docs</a>
-      <a class="mrow" href="#" data-open="shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
-      <div class="msep"></div>
-      <a class="mrow" href="index.html">Sign out</a>
-    </div>
-  </div>
-</div><div class="appmain"><div class="topbar">
-  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-    <input placeholder="Search projects…" aria-label="Search projects…"
-      style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1;color:var(--ink)">
-    <span class="kbd">⌘K</span></label>
-  <div class="row gap10" style="margin-left:auto"><span class="anchor"><button class="iconbtn" data-open="notifications" aria-label="Notifications" style="border:none;background:none;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></button><div class="overlay menu wide" id="notifications" role="menu" style="width:400px">
-  <div class="row gap10" style="padding:4px 10px 8px"><span class="panel-label grow">Notifications</span>
-    <a class="small soft" href="#" data-close>Mark all read</a></div>
-  <div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;background:var(--coral-tint)"><span class="dot coral" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span><span class="helper">14 minutes ago · shipped by you</span></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span><span class="helper">Yesterday, 18:02</span><a class="small" href="deploy.html?failed" style="color:var(--danger-text)">See what failed →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span><span class="helper">2 days ago</span><a class="small" href="deploy.html" style="color:var(--sky-text)">Review →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span><span class="helper">2 days ago</span><a class="small" href="binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span><span class="helper">Last week</span></span></div>
-  <div class="msep"></div>
-  <p class="helper" style="padding:0 10px 6px">Deploy outcomes always land here, even if you closed the tab.</p>
-</div></span><button class="btn coral" data-open="new-project"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</button></div>
-</div><div class="appbody"><div class="stack gap12" style="max-width:880px">
-  <div class="row gap10"><a href="editor.html">←</a><h2 style="font-size:20px">History — Orbit Weekly</h2></div>
-  <div class="itemrow" style="background:var(--paper-sunk)"><span style="font-size:16px">🗄️</span>
-    <div class="stack gap2 grow"><b style="font-size:13.5px">Your original theme</b>
-      <span class="helper">Archived 6 Aug, before our first upload</span></div>
-    <span class="chip mono">casper 5.9.4</span>
-    <button class="btn sm secondary" data-open="restore">Restore original</button></div>
-  <p class="helper">Kept outside your version limit. Ghost checks every theme on the way in, so a very old theme
-    can be refused — we&rsquo;ll offer the zip if that happens.</p>
-  <div style="height:1px;background:var(--line-strong)"></div>
-  <div class="itemrow"><span class="chip mono">v5</span><span class="badge live"><span class="dot mint"></span>Live</span><div class="stack gap2 grow"><span class="helper">Today · 2:14 PM · by Maya</span><span class="helper">Changed: Hero, Footer · Pack: Paper → Tangerine</span></div><span class="chip mono">0 · 0</span><button class="soft" style="border:none;background:none;cursor:pointer" data-pin aria-label="Pin this version">📌</button></div>
-  <div class="itemrow done"><span class="chip mono">v4</span><div class="stack gap2 grow"><span class="helper">Aug 14 · 9:02 AM · by Maya</span><span class="helper">Changed: Post Grid, Newsletter</span></div><span class="chip mono">0 · 0</span><button class="badge notice" style="border:none;cursor:pointer" data-pin>📌 Pinned</button><button class="btn sm secondary" data-open="rollback">Roll back</button></div>
-  <div class="itemrow"><span class="chip mono">v3</span><div class="stack gap2 grow"><span class="helper">Aug 10 · 6:40 PM · by Maya</span><span class="helper">Changed: Header · added 404 template</span></div><span class="chip mono">0 · 2</span><button class="soft" style="border:none;background:none;cursor:pointer" data-pin aria-label="Pin this version">📌</button><button class="btn sm secondary" data-open="rollback">Roll back</button></div>
-  <div class="itemrow"><span class="chip mono">v2b</span><span class="badge sky">Uploaded, not live</span>
-    <div class="stack gap2 grow"><span class="helper">Aug 8 · 4:12 PM · by Maya</span>
-      <span class="helper">Your theme is on your site but isn&rsquo;t live yet.</span></div>
-    <span class="chip mono">0 · 0</span>
-    <button class="soft" style="border:none;background:none;cursor:pointer" data-pin>📌</button>
-    <a class="btn sm coral" href="deploy.html">Re-activate</a></div>
-  <div class="itemrow done"><span class="chip mono">v2</span><div class="stack gap2 grow"><span class="helper">Aug 6 · 11:18 AM · by Maya</span><span class="helper">Changed: Hero</span></div><span class="chip mono">0 · 0</span><button class="badge notice" style="border:none;cursor:pointer" data-pin>📌 Pinned</button><button class="btn sm secondary" data-open="rollback">Roll back</button></div>
-  <div class="itemrow"><span class="chip mono">v1</span><div class="stack gap2 grow"><span class="helper">Aug 2 · 4:51 PM · by Maya</span><span class="helper">First deploy</span></div><span class="chip mono">0 · 0</span><button class="soft" style="border:none;background:none;cursor:pointer" data-pin aria-label="Pin this version">📌</button><button class="btn sm secondary" data-open="rollback">Roll back</button></div>
-  <p class="helper" style="border-top:1px solid var(--line-faint);padding-top:10px">
-    <b>Pro keeps the last 10 versions. Free keeps the last 3.</b> Older versions are removed, not hidden —
-    an Inflozo theme can&rsquo;t be rebuilt later, so this is how far back you can go.</p>
-</div></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
-  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
-  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
-    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
-      you are typing.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="rollback"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Roll back to v4?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Your live site switches to v4 instantly.
-    <b>v5 stays in history — nothing is lost.</b></p></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn danger-out" data-close>Roll back</button></div></div></div>
-<div class="overlay sheet-wrap" id="restore"><div class="sheet narrow"><div class="head">
-    <h2 style="font-size:18px">Restore your original theme?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">orbitweekly.com goes back to
-    <span class="mono">casper 5.9.4</span>, exactly as it was before Inflozo touched it. Your Inflozo versions
-    all stay in history.</p>
-    <div class="banner notice"><span class="ico">!</span><span><b>Ghost checks every theme on the way in.</b>
-      A very old theme can be refused — if that happens we offer you the zip and point you at Settings → Design,
-      where Ghost still holds it.</span></div></div>
-  <div class="foot"><button class="btn secondary" data-close autofocus>Cancel</button>
-    <button class="btn danger-out" data-close>Restore original</button></div></div></div>
-<div class="overlay menu" id="pin-refusal" style="position:fixed;right:auto;left:50%;top:auto;bottom:24px;
-  transform:translateX(-50%);width:340px;padding:14px">
-  <div class="banner notice"><span class="ico">📌</span><span><b>One version has to stay unpinned so your next
-    deploy has somewhere to go.</b> Unpin another first.</span></div>
-  <button class="btn secondary sm" data-close style="margin-top:10px">Got it</button></div>
+<div class="stage"><div data-screen-label="S8e History drawer" style="background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="height:48px;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:10px">
+          <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+          <span style="font-size:13px;font-weight:600">Orbit Weekly</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6E6A64"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Saved</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div style="display:flex;gap:2px">
+              <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg></div>
+              <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:.35"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M15 14l5-5-5-5"></path><path d="M20 9H9a5 5 0 0 0 0 10h3"></path></svg></div>
+            </div>
+            <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#FFEDE8;position:relative">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
+              <div style="position:absolute;top:34px;right:0;background:#1C1B1A;color:#FFFFFF;font-size:11px;font-weight:500;padding:4px 9px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 16px rgba(28,27,26,.2);z-index:9">History — every version, one click back</div>
+            </div>
+            <div style="display:flex;height:32px;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)">
+              <span style="display:inline-flex;align-items:center;gap:7px;padding:0 16px;background:#C2381F;color:#FFFFFF;font-size:13px;font-weight:600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg>Ship it</span>
+              <span style="width:26px;background:#C2381F;border-left:1px solid rgba(255,255,255,.25);color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex">
+          <div style="width:240px;border-right:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div></div>
+          <div style="flex:1;background:#EDEAE6;padding:24px 28px 0"><div style="max-width:864px;margin:0 auto;height:100%;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10)"></div></div>
+        </div>
+      </div>
+      <div style="position:absolute;top:48px;left:0;right:0;bottom:0;background:rgba(28,27,26,.25)"></div>
+      <div style="position:absolute;top:48px;right:0;bottom:0;width:420px;background:#FFFFFF;box-shadow:0 12px 40px rgba(28,27,26,.25);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #E7E2DB">
+          <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">History — Orbit Weekly</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </div>
+        <div style="flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+          <div style="border:1px solid #BFE7D6;border-radius:12px;padding:13px 14px;display:flex;gap:12px;background:#F7FDF9">
+            <div style="width:64px;height:44px;flex-shrink:0;border:1px solid #E7E2DB;border-radius:6px;background:#FBF9F5;padding:5px;display:flex;flex-direction:column;gap:2px"><div style="height:4px;width:60%;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:40%;background:#C9C2B8;border-radius:1px"></div><div style="display:flex;gap:2px;margin-top:2px"><div style="flex:1;height:10px;background:#E7E2DB;border-radius:2px"></div><div style="width:14px;height:10px;background:#E8450A;border-radius:2px"></div></div></div>
+            <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px;background:#FFFFFF">v5</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Today · 2:14 PM</span></div>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Changed: Hero, Footer · Pack: Paper → Tangerine</span>
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">0 · 0</span><span style="font-size:11px;color:#6E6A64">by Maya</span></div>
+            </div>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:13px 14px;display:flex;gap:12px;position:relative;box-shadow:0 4px 16px rgba(28,27,26,.08)">
+            <div style="width:64px;height:44px;flex-shrink:0;border:1px solid #E7E2DB;border-radius:6px;background:#FBF9F5;padding:5px;display:flex;flex-direction:column;gap:2px"><div style="height:4px;width:60%;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:40%;background:#C9C2B8;border-radius:1px"></div><div style="display:flex;gap:2px;margin-top:2px"><div style="flex:1;height:10px;background:#E7E2DB;border-radius:2px"></div><div style="width:14px;height:10px;background:#D96C3F;border-radius:2px"></div></div></div>
+            <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">v4</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Aug 14 · 9:02 AM</span></div>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Changed: Post Grid, Newsletter</span>
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">0 · 0</span><span style="font-size:11px;color:#6E6A64">by Maya</span><button style="margin-left:auto;height:26px;padding:0 11px;background:#FFFFFF;border:1px solid #FF5941;color:#C2381F;border-radius:10px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline></svg>Roll back</button></div>
+            </div>
+            </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:13px 14px;display:flex;gap:12px">
+            <div style="width:64px;height:44px;flex-shrink:0;border:1px solid #E7E2DB;border-radius:6px;background:#FBF9F5;padding:5px;display:flex;flex-direction:column;gap:2px"><div style="height:4px;width:50%;background:#1C1B1A;border-radius:1px"></div><div style="display:flex;gap:2px;margin-top:4px"><div style="flex:1;height:12px;background:#E7E2DB;border-radius:2px"></div><div style="flex:1;height:12px;background:#E7E2DB;border-radius:2px"></div></div></div>
+            <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">v3</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Aug 10 · 6:40 PM</span></div>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Changed: Header · added 404 template</span>
+              <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:1px 7px">0 · 2</span><span style="font-size:11px;color:#6E6A64">by Maya</span><button style="margin-left:auto;height:26px;padding:0 11px;background:#FFFFFF;border:1px solid #E7E2DB;color:#6E6A64;border-radius:10px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 160ms ease-out" style-hover="border-color:#FF5941;color:#E84B34"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline></svg>Roll back</button></div>
+            </div>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:8px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">v2</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">0 · 0</span>
+            <span style="margin-left:auto;font-size:11px;color:#6E6A64">Aug 6 · 11:18 AM</span>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:8px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">v1</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">0 · 0</span>
+            <span style="margin-left:auto;font-size:11px;color:#6E6A64">Aug 2 · 4:51 PM</span>
+          </div>
+          <div style="margin-top:auto;padding:6px 4px;font-size:11px;color:#6E6A64;line-height:1.5">Pro keeps the last 10 versions. Free keeps the last 3.</div>
+        </div>
+      </div>
+<div style="position:absolute;inset:0;background:rgba(28,27,26,.4);z-index:8"></div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:410px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:24px;display:flex;flex-direction:column;gap:16px;z-index:9">
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.01em">Roll back to v4?</span><span style="font-size:13px;color:#6E6A64;line-height:1.5">Your live site switches to v4 instantly. v5 stays in history — nothing is lost.</span></div>
+        <div style="display:flex;align-items:center;gap:8px;border:1px solid #E7E2DB;border-radius:10px;padding:9px 12px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;border:1px solid #E7E2DB;border-radius:24px;padding:1px 8px">v4</span><span style="font-size:12px;color:#6E6A64">Aug 14 · 9:02 AM · by Maya</span><span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">0 · 0</span></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+          <button style="height:38px;padding:0 18px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 160ms ease-out" style-hover="background:#33312E"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline></svg>Roll back</button>
+        </div>
+      </div>
+    </div></div><div class="stage-back"><a class="btn secondary" href="editor.html">← Editor</a></div>
 <script src="app.js"></script>
-<script>
-document.addEventListener('click', function (e) {
-  var p = e.target.closest('[data-pin]');
-  if (!p) return;
-  var pinned = document.querySelectorAll('.itemrow.done').length;
-  var rows = document.querySelectorAll('.itemrow .chip.mono').length;
-  var row = p.closest('.itemrow');
-  if (row.classList.contains('done')) {          // unpinning is ALWAYS allowed, by design
-    row.classList.remove('done');
-    p.outerHTML = '<button class="soft" style="border:none;background:none;cursor:pointer" data-pin>📌</button>';
-    return;
-  }
-  if (pinned >= 5) {                              // at most N−1 pinned; one must stay free
-    document.getElementById('pin-refusal').classList.add('is-open');
-    return;
-  }
-  row.classList.add('done');
-  p.outerHTML = '<button class="badge notice" style="border:none;cursor:pointer" data-pin>📌 Pinned</button>';
-});</script>
+
 </body>
 </html>

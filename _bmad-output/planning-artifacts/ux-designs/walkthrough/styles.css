@@ -637,3 +637,18 @@ body.auth .authcard { width: 100%; max-width: 420px; }
 
 body.product .wizbody { align-items: center; }
 body.product .wizbody > * { width: 100%; max-width: 760px; }
+
+/* ── a lifted screen fills the window ─────────────────────────────────────────
+   The frames are drawn as 1440x900 cards on a mat. `unbox()` removes that box;
+   this centres what is left and lets tall screens scroll. */
+.stage { min-height: 100vh; background: var(--paper); display: flex; flex-direction: column; }
+.stage > * { flex: 1; min-height: 0; }
+.stage-back {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 130;
+  display: flex; gap: 8px; background: rgba(255,255,255,.92); padding: 6px;
+  border-radius: var(--r-pill); box-shadow: var(--sh-lg); backdrop-filter: blur(6px);
+}
+/* A lifted dropdown carries the frame's own inline `display:flex`, because the frame
+   documents it OPEN. In the product it opens from its button, so the class has to win. */
+.overlay.menu-lifted { display: none !important; }
+.overlay.menu-lifted.is-open { display: flex !important; }

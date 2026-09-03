@@ -8,96 +8,57 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-
 </head>
 <body class="product">
 <div id="live-polite" aria-live="polite" class="sr-only"></div>
-<div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav on" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <a class="meter" href="assets.html">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span></a>
-  </div>
-  <div class="anchor" style="margin-top:auto">
-    <button class="acct" data-open="account-menu" aria-haspopup="true" style="width:100%;border:none;background:none;font-family:var(--ui);cursor:pointer;text-align:left">
-      <span class="avatar">M</span>
-      <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-        <span class="helper">maya@orbitweekly.com</span></span>
-      <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-    </button>
-    <div class="overlay menu up left" id="account-menu" role="menu">
-      <a class="mrow" href="billing.html">Account settings</a>
-      <a class="mrow" href="billing.html">Billing &amp; plan <span class="badge pro">✦ Pro</span></a>
-      <a class="mrow" href="suggestions.html">Suggestions</a>
-      <a class="mrow" href="pricing.html">Docs</a>
-      <a class="mrow" href="#" data-open="shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
-      <div class="msep"></div>
-      <a class="mrow" href="index.html">Sign out</a>
-    </div>
-  </div>
-</div><div class="appmain"><div class="topbar">
-  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-    <input placeholder="Search sites…" aria-label="Search sites…"
-      style="border:none;background:none;outline:none;font-family:var(--ui);font-size:13px;flex:1;color:var(--ink)">
-    <span class="kbd">⌘K</span></label>
-  <div class="row gap10" style="margin-left:auto"><span class="anchor"><button class="iconbtn" data-open="notifications" aria-label="Notifications" style="border:none;background:none;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></button><div class="overlay menu wide" id="notifications" role="menu" style="width:400px">
-  <div class="row gap10" style="padding:4px 10px 8px"><span class="panel-label grow">Notifications</span>
-    <a class="small soft" href="#" data-close>Mark all read</a></div>
-  <div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;background:var(--coral-tint)"><span class="dot coral" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span><span class="helper">14 minutes ago · shipped by you</span></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span><span class="helper">Yesterday, 18:02</span><a class="small" href="deploy.html?failed" style="color:var(--danger-text)">See what failed →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span><span class="helper">2 days ago</span><a class="small" href="deploy.html" style="color:var(--sky-text)">Review →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span><span class="helper">2 days ago</span><a class="small" href="binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div><div class="row gap10" style="padding:11px 10px;align-items:flex-start;border-radius:8px;"><span class="dot grey" style="margin-top:6px"></span><span class="stack gap2 grow"><span style="font-size:13px;line-height:1.45"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span><span class="helper">Last week</span></span></div>
-  <div class="msep"></div>
-  <p class="helper" style="padding:0 10px 6px">Deploy outcomes always land here, even if you closed the tab.</p>
-</div></span></div>
-</div><div class="appbody"><div class="stack gap16" style="max-width:760px">
-  <div class="row gap10"><a href="sites.html">←</a><h2 style="font-size:20px">Keys — Orbit Weekly</h2></div>
-  <p class="softaa" style="font-size:13px">From the Inflozo integration in your Ghost admin. We never see
-    your Ghost password. <b>Three credentials, and each one buys something different.</b></p>
-  <div class="itemrow"><span class="dot mint"></span><div class="stack gap4 grow">
-      <div class="row gap8"><b style="font-size:13.5px">Admin API key</b><span class="badge live">Present</span></div>
-      <span class="helper mono">6a4f2e91b7c8d3 ·············· 4e2a</span>
-      <span class="helper">Uploads and activates your theme. This is the one that ships your site.</span></div>
-    <button class="btn sm secondary" data-close>Replace</button></div>
-  <div class="itemrow"><span class="dot mint"></span><div class="stack gap4 grow">
-      <div class="row gap8"><b style="font-size:13.5px">Content API key</b><span class="badge live">Present</span></div>
-      <span class="helper mono">c19d7f ·············· 8b31</span>
-      <span class="helper">Reads your posts, pages, tags and authors, so the canvas shows your real content.</span></div>
-    <button class="btn sm secondary" data-close>Replace</button></div>
-  <div class="itemrow"><span class="dot grey"></span><div class="stack gap4 grow">
-      <div class="row gap8"><b style="font-size:13.5px">Staff Access Token</b><span class="badge neutral">Not added</span></div>
-      <span class="helper">Without it: no copy of your current theme before we replace it, no check that the
-        live theme changed since we last shipped, and <span class="mono">routes.yaml</span> uploads by hand.</span>
-      <span class="helper">It is a full-Administrator credential and <b>can only be created on the site
-        Owner&rsquo;s own account</b>. Adding it enables the snapshot <b>from that point forward</b> — it
-        cannot reconstruct a copy of a theme that has already been replaced.</span></div>
-    <button class="btn secondary" data-open="add-token">Add the token</button></div>
-  <div class="banner info"><span class="ico">ⓘ</span><span><b>There is no permission to grant here.</b>
-    Ghost fixes what a Custom Integration token may do, and reading a theme or writing settings is not on
-    that list on any version or any host. The missing capability is the token, not a scope.</span></div>
-  <div class="stack gap6"><span class="control-label">Site URL</span>
-    <span class="chip mono" style="align-self:flex-start;padding:6px 10px">https://orbitweekly.com</span>
-    <span class="helper">Permanent for this connection. Moving to a new domain is a disconnect and a
-      reconnect — so there is no field here to edit, rather than a field that refuses.</span></div>
-  <div class="row gap10"><a class="btn secondary" href="sites.html">Done</a>
-    <button class="btn ghost" data-close>Test connection</button>
-    <span class="helper" style="margin-left:auto">Passed · 2 min ago</span></div>
-</div></div></div></div><div class="overlay sheet-wrap" id="shortcuts">
-  <div class="sheet narrow"><div class="head"><h2 style="font-size:20px">Keyboard shortcuts</h2></div>
-  <div class="body"><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Insert section</span><span class="kbd">⌘K</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Previous / next design</span><span class="kbd">[</span><span class="kbd">]</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Duplicate</span><span class="kbd">⌘D</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Delete</span><span class="kbd">Del</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Undo / redo</span><span class="kbd">⌘Z</span><span class="kbd">⇧⌘Z</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Save now</span><span class="kbd">⌘S</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Device preview</span><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Layers</span><span class="kbd">L</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Dark preview</span><span class="kbd">.</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Deselect</span><span class="kbd">Esc</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Preview Mode</span><span class="kbd">P</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Site Remix</span><span class="kbd">⇧R</span></div><div class="row gap10" style="padding:8px 0;border-bottom:1px solid var(--line-faint)"><span style="font-size:13px" class="grow">Ship it</span><span class="kbd">⌘⏎</span></div>
-    <p class="helper">Single-key shortcuts are live only while the editor has focus, and never while
-      you are typing.</p></div>
-  <div class="foot"><button class="btn secondary" data-close>Close</button></div></div></div>
-<div class="overlay sheet-wrap" id="add-token"><div class="sheet"><div class="head">
-    <h2 style="font-size:20px">Add a Staff Access Token</h2></div>
-  <div class="body"><p style="font-size:13.5px;line-height:1.6">It is created on <b>your own Ghost profile
-    page</b>, not on the integration — and only the site Owner can make one. It is a full-Administrator
-    credential; we are saying so plainly rather than softening it.</p>
-    <label class="field"><span class="control-label">Staff Access Token</span>
-      <input class="input mono" placeholder="paste it here" aria-label="Staff Access Token"></label></div>
-  <div class="foot"><button class="btn secondary" data-close>Cancel</button>
-    <button class="btn coral" data-close>Add the token</button></div></div></div>
+<div class="stage"><div style="width:660px;background:#F7F5F2;padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:18px;position:relative">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">API keys — Orbit Weekly</span>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.5">Rolled your keys in Ghost Admin? Paste the new ones here — they take effect right away.</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:#6E6A64">API URL</label>
+          <div style="display:flex;align-items:center;gap:8px;height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;background:#F7F5F2">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6E6A64;flex:1">https://orbitweekly.com</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:12px;font-weight:500;color:#6E6A64">Admin API key</label>
+            <div style="display:flex;align-items:center;gap:8px;height:40px;border:1px solid #FF5941;border-radius:8px;padding:0 12px;box-shadow:0 0 0 2px rgba(255,89,65,.4);background:#FFFFFF">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#1C1B1A;flex:1">65a3f0e1c9d24b…<span style="letter-spacing:2px">••••••••••</span></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer" title="Show"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer;border-left:1px solid #E7E2DB;padding-left:10px">Paste new</span>
+            </div>
+          </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:12px;font-weight:500;color:#6E6A64">Content API key</label>
+            <div style="display:flex;align-items:center;gap:8px;height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;background:#FFFFFF">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#1C1B1A;flex:1">8d41c0a97b<span style="letter-spacing:2px">••••••••••</span></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="cursor:pointer" title="Show"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer;border-left:1px solid #E7E2DB;padding-left:10px">Paste new</span>
+            </div>
+          </div>
+        <div style="display:flex;align-items:center;gap:9px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:10px;padding:10px 13px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+          <span style="font-size:12px;color:#6E6A64;line-height:1.5">To roll keys: Ghost Admin → Settings → Integrations → Inflozo → <strong style="font-weight:600;color:#1C1B1A">Regenerate</strong>. Old keys stop working the moment you regenerate.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding-top:2px">
+          <button style="height:36px;padding:0 14px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background 160ms ease-out" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>Test connection</button>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#157A58;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Passed · 2 min ago</span>
+        </div>
+        <div style="height:1px;background:#E7E2DB"></div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px">
+          <button style="height:38px;padding:0 16px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+          <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:background 160ms ease-out" style-hover="background:#33312E">Save &amp; re-check</button>
+        </div>
+      </div>
+    </div></div><div class="stage-back"><a class="btn secondary" href="sites.html">← Sites</a></div>
 <script src="app.js"></script>
 
 </body>
