@@ -44,7 +44,7 @@ DOCS = [
   'Step 5. The information architecture, the state patterns, the accessibility floor, the four '
   'journeys and the eight flows. EVERY SURFACE HAS ONE STABLE NAME and either points at a drawn '
   'frame by filename or names the frame it extrapolates from — step 5b keys its prototype pages off '
-  'those names (R-75). Its Appendix A carries seven Claude Design prompts for what is not drawn. '
+  'those names (R-75). Its Appendix A carries one Claude Design prompt per undrawn surface group. '
   'Also the record of §37.7 re-verified against the export: the Paywall editor turned out to be '
   'drawn at C Post Body C3a.'),
  # ── the spine and its runnable companions ────────────────────────────────────

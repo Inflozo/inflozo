@@ -77,8 +77,11 @@ STEPS = [
   'a library total in S3\u2019s product copy that both controls had been blind to for a THIRD time. '
   'Four rulings in \u00a7A11 of the decisions file (R-76 \u2026 R-79); prd.md FR-D1, FR-J7 and FR-J9 '
   'moved.',
-  'Four journeys and eight flows, authored rather than verified — plus SEVEN Claude Design prompts '
-  'in EXPERIENCE.md Appendix A for the surfaces nobody drew.', None),
+  'Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per '
+  'undrawn surface group in EXPERIENCE.md Appendix A (eight of them; its ### A headings are the '
+  'count). A8 came out of the step\u2019s own stress test: the export draws the editor at 1440 and '
+  'NOWHERE ELSE, so R-76\u2019s tablet half and the 200%-zoom floor were both prose with no frame '
+  'behind them.', None),
  ('s5b', '5b', 'Static prototype', 'next',
   "THE CRITICAL PATH, and blocked by nothing — both step-5 spines are final. The owner's ruling "
   "R-75 (2026-09-02): he sees INFLOZO'S OWN UI — not the design frames — as static, clickable pages "

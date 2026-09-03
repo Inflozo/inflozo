@@ -1161,7 +1161,7 @@ owner because neither the PRD nor the export settled them; one is architectural.
 
 | # | Ruling | Where it lands |
 |---|---|---|
-| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** Below 1024 px a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ step 5b draws **Small Screen Notice** |
+| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ step 5b draws **Small Screen Notice** |
 | **R-77** | **Site Remix drops the drawn "Keep Free designs only" tick-box.** Remix always re-rolls from the whole library; FR-L3's exit sheet catches Pro designs at the exits, which is the mechanism the product already has. `B8` drew an affordance no requirement carries, and the owner declined to adopt it | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-D17 is unaffected** · ⬜ `B8` loses the row (prompt **A7**, item 6's canvas) |
 | **R-78** | **Redesign proposals build FR-C7 as written** — 2–3 **whole-site** starter × Style Pack combinations on the user's real content, which must differ in layout structure. **`B22`'s card, its NOW / PROPOSED pairing and above all its argued-from-your-own-data sentence are kept**, one per combination instead of one per section. Its per-section swap model is not built | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-C7 is confirmed as written** |
 | **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ step 5b draws the pin and its refusal |
@@ -1209,6 +1209,33 @@ and **Last 2 / Full** history; Free's 100 MB storage cap appears on no screen at
 sole definition of Free/Pro gating" and `EXPERIENCE.md` restates it once, as the product limits it
 is required to show. The frames are not hand-edited for this — step 5b's prototype renders the
 correct figures, and prompt **A7** is where a Claude Design pass would catch the frames up.
+
+**AND THE STRESS TEST AFTER IT FOUND THAT THE FIX HAD BROKEN A RULE OF ITS OWN.** The owner asked
+whether any accessibility fix changes the design. **Three did**, and one of them was a straight R-74
+breach committed while closing a WCAG failure:
+
+- **The export draws the editor at 1440 and at NO OTHER WIDTH** — verified frame by frame, not
+  assumed. So **R-76's *tablet* half was asserted with no frame behind it** the moment it was
+  written, and the accessibility fix then widened the hole: an editor that must survive 200 % browser
+  zoom has to work at roughly 720 CSS px. **Two layouts described in prose that nobody has drawn**,
+  which is precisely what R-74 forbids. Both now go back to Claude Design as prompt **A8**, with the
+  spine saying plainly that until it runs they are specification without a frame.
+- **The skip link and the Assets keyboard path are new visible elements**, and the Layers focus state
+  and a destructive confirm's opening focus are states no frame shows. All four joined **A8** rather
+  than staying prose.
+- **R-76 was left stated three ways and two of them stale.** The device-test refinement landed in
+  `EXPERIENCE.md` only; `prd.md` FR-D1 and this section still said a bare "below 1024 px", which is
+  the version that fails WCAG 1.4.4. **Propagate, never localise — and a fix propagates no better
+  than a feature does.** All three now agree.
+
+**Four more defects the stress test found, none of them accessibility:** the **deploy-only** path was
+named on the destination card and specified nowhere, so the wizard had one ending where FR-J8 gives
+it two (fixed, and the confetti question it raised is settled by Appendix H's own string — the toast
+says *Live*, so it fires on the first deploy that makes the site live); **`S10b`'s "up to 30 MB
+each"** was missing from the plan-drift list where `Appendix F.1` caps uploads at 10 MB on both
+plans; **browser zoom and canvas zoom** sat four lines apart with nothing distinguishing them; and
+**prompt A7 could be read as licence to edit the frame captions**, which **R-73** forbids — it now
+says so.
 
 **THE REVIEWER GATE FOUND A SCOPE MISS, AND IT IS THE ONE WORTH REMEMBERING.** One accessibility
 lens ran over the spines at Finalize. It found eight real defects, six of them in the spine, and the

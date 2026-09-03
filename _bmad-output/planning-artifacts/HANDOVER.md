@@ -69,9 +69,10 @@ things it found are worth knowing before you touch a UI task:
   `S3 Dashboard` read "Yours starts with 485 gorgeous designs". The detector required the noun to
   **abut** the number, so one adjective walked past it. Fixed in `tools/reapply-export-edits.py`,
   where it now lives in one place.
-- **Seven Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A. Six draw surfaces that
-  were never drawn; the seventh corrects six frames whose mechanism changed. **They block nothing** —
-  not step 5b, not step 6.
+- **Eight Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A. Six draw surfaces that
+  were never drawn; **A7** corrects six frames whose mechanism changed; **A8** draws the editor at
+  834 and 720 — which R-76's tablet half and the accessibility floor both need, and which the export
+  has never drawn at any width but 1440. **They block nothing** — not step 5b, not step 6.
 
 **Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
 and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
@@ -103,8 +104,8 @@ the owner's instruction to clear them before step 5, and R-29's long-outstanding
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **What is owed now is step 5's seven prompts**, in
-`EXPERIENCE.md` Appendix A, and they block nothing.
+record and every structural check passes. **What is owed now is step 5's Claude Design prompts** — eight
+of them, in `EXPERIENCE.md` Appendix A, whose `### A` headings are the count. They block nothing.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive

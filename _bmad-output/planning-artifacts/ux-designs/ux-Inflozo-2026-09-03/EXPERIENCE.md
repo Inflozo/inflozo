@@ -57,6 +57,10 @@ drew them:
 | **Phone, tablet and desktop** | 390 · 834 · 1440 | Sign In · Magic Link Sent · Dashboard · Account Menu · Notifications · Billing · Suggestions · every marketing page |
 | **Tablet and desktop only** | 834 · 1440 | Editor and everything it contains · Section Picker · Variant Shuffle · Style Packs · Deploy Wizard · Deploy History · Routes Manager · Theme Settings · Translations · Assets · Sites · Editor Cards · Paywall Editor · Post Content · Error Pages |
 
+**Every one of those is drawn at 1440 and at no other width.** The 834 column is the owner's ruling,
+not the export's evidence — **prompt A8 is what makes it true**, and it draws 720 beside it for the
+200%-zoom case. Said plainly here because R-74 forbids a surface that exists only in prose.
+
 Below **1024px**, opening a project lands on **Small Screen Notice** — a designed surface, not a
 broken layout — which says the editor needs a wider screen and offers what does work from a phone:
 the project's deploy history, a one-tap rollback, the sites list and billing. The Dashboard itself
@@ -179,7 +183,8 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Pro Exit Sheet** | B13a *(re-specified)* | any blocked exit on Free | Four remedies, itemised (FR-L3) |
 | **Snapshot Gate** | B12a running · B12b degraded *(re-specified)* | the first named stage of step 5, first upload to a site only | Inflozo's own archive of the live theme, before the upload begins (FR-J13) |
 | **Deploy Progress** | S8c | step 5 | Compiling → Checking → Uploading → Activating |
-| **Deploy Live** | S8d | step 6 | The product's one confetti moment |
+| **Deploy Live** | S8d | step 6, when the deploy activated | The product's one confetti moment |
+| **Deploy Uploaded** | → **A2** | step 6, when the user chose **Deploy only** | The other ending. Uploaded on purpose, not live, with Activate one click away |
 | **Deploy Failure** | S8d′ | step 5, on failure | A human sentence and the action that fixes it |
 | **Partial Success** | → **A2** | upload succeeded, activation failed | "Your theme is on your site but isn't live yet" (FR-J8) |
 | **Preview-Only Destination** | S8a′ *(re-specified)* | step 1, Preview-only site | Export instead of deploy |
@@ -371,6 +376,7 @@ documents each hold their own focus and selection.
   through it means tabbing through every link and control that site emits — a 12-section homepage is
   dozens of stops before the sidebar. **The first focusable element in the editor shell is a skip
   link — "Skip the canvas"** — and the canvas container itself offers the same on focus.
+  *(No frame draws it → **A8**.)*
 - **Escapable, by one key with a defined ladder rather than a second key to learn.** `Esc` steps
   outward, one level per press, and announces where it landed: *inside inline editing* → leaves text
   editing, the section stays selected · *section selected* → deselects, focus rests on the canvas
@@ -403,11 +409,11 @@ shortcut" rule — that rule is about *new global bindings*. So:
 
 | Where | Keys |
 |---|---|
-| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility |
+| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility. B7 draws three row states and not the focused one *(→ **A8**)* |
 | **Item list** (P0-3) | the same pattern — the Add, Remove and drag affordances each have a focusable control, and drag has the `⌥`-arrow equivalent |
 | **Section Picker** | ↑ ↓ ← → across the grid, `Enter` places, `Esc` closes and returns focus to the invoking position |
 | **Design picker** | ← → across the thumbnail strip, mirroring `[` and `]` |
-| **Assets** | the drop zone is **also a file input** — a drag-and-drop-only upload has no keyboard path |
+| **Assets** | the drop zone is **also a file input**, with a visible "Choose files" button — a drag-and-drop-only upload has no keyboard path *(→ **A8**)* |
 | **Every menu, popover and sheet** | focus moves in on open, is trapped while open, and returns to the invoking control on close |
 
 **A drag that has no keyboard equivalent is a defect**, and every drag surface in this document has
@@ -449,7 +455,7 @@ nothing: the link itself is valid for 15 minutes and "Use a different email" is 
 
 ### Destructive confirms
 
-**A confirm whose primary action is irreversible opens with focus on the cancelling action.** Stated
+**A confirm whose primary action is irreversible opens with focus on the cancelling action** *(→ **A8**)*. Stated
 as a rule rather than a list, because the list would go stale — it already covers Take over anyway,
 Delete account, Roll back, project delete, delete-in-use assets and "Overwrite and ship anyway", and
 it covers whatever is added next.
@@ -506,14 +512,27 @@ Layers panel collapses first. Below it, **Small Screen Notice**.
 > Resize Text (AA)** failure and the opposite of what R-76 was for — the owner ruled about *phones*.
 > So **Small Screen Notice fires on a coarse pointer at a small viewport**, and **the editor stays
 > usable at 200% browser zoom on a desktop-class device**, reflowing rather than redirecting: the
-> Layers panel collapses, the Controls sidebar becomes an overlay panel, the canvas keeps its own
-> scroll. `DESIGN.md`'s `app-floor` token is that device threshold, not a zoom threshold.
+> Layers panel collapses to an icon rail, the Controls sidebar becomes an overlay panel, the canvas
+> keeps its own scroll. `DESIGN.md`'s `app-floor` token is that device threshold, not a zoom
+> threshold.
+>
+> **And the export draws none of this** — the editor exists at 1440 and nowhere else, so R-76's
+> tablet half and this zoom rule are both prose until they are drawn. **Prompt A8** draws the editor
+> at 834 and at 720; until it has run, this paragraph is a specification with no frame behind it,
+> and step 5b builds it from A8's description rather than inventing a third answer.
 
 **The canvas is a viewport, not a column** (FR-D8, AD-21, B11a/b). Device preview resizes it in
 **both** axes to a real device size — 390 × 844 for mobile, not a 390-wide column of infinite
 height — so a sticky header sticks and a full-screen hero fills. **There is no user zoom** (FR-D14,
 AD-21): the only scale is fit-to-screen, stated in a mono chip alongside the true size — "viewport
 390 × 844 · shown at 55%".
+
+> **Two different things are called zoom and they must not be confused.** FR-D14's "no zoom" is
+> **canvas scale** — how large the previewed site is drawn inside the editor, which is automatic and
+> has no user control. **Browser zoom** is the reader's own accessibility setting and Inflozo neither
+> owns it nor may defeat it (WCAG 1.4.4). The editor holds at 200% browser zoom; the canvas still
+> offers no zoom control of its own. Nothing above reintroduces the control B11 drew and R-74's
+> re-specification removed.
 
 > **B11's Zoom control is re-specified.** The frame draws a user-driven "Fit / 55%" picker. FR-D14
 > says no zoom in v1 and AD-21 says the only scale is fit-to-screen, never user-driven. **Keep the
@@ -584,8 +603,9 @@ Each of these keeps its frame's components, layout, colour and density. Only wha
 ### Plan limits — Appendix F.1 is the sole definition, and several frames disagree with it
 
 `S11c` says Pro connects up to **3**; `S12a` says **unlimited** projects and **full** history;
-`S12b` and `M5` say **1 / 3** sites and **Last 2 / Full** history; Free's storage cap appears
-nowhere. **Appendix F.1 governs every one of them**, and these are product limits, so they are shown
+`S12b` and `M5` say **1 / 3** sites and **Last 2 / Full** history; **`S10b` says uploads may be
+"up to 30 MB each"** where F.1 caps them at 10 MB on both plans; and Free's 100 MB storage cap
+appears nowhere. **Appendix F.1 governs every one of them**, and these are product limits, so they are shown
 rather than implied:
 
 | | Free | Pro |
@@ -650,6 +670,19 @@ token step**, which is what makes it reachable.
 | 12 | **Pre-flight Check** | Step 4. gscan, templates, helpers, routes — and every warning the PRD names |
 | 13 | **Snapshot Gate** → **Deploy Progress** | Step 5. Flow **F1**, then Compiling → Checking → Uploading → Activating |
 | 14 | **Deploy Live** | Step 6. **"Live! Your site just got gorgeous."** The product's one confetti moment |
+
+**Step 1 has two endings too, and only one of them is Live.** "Deploy & activate" and "Deploy only"
+are distinct buttons (FR-J8), and a deploy-only never makes the site live — so it ends on **Deploy
+Uploaded**, not on Deploy Live. **The confetti fires on the first deploy that makes the site live**,
+which is what Appendix H's own string settles: "Live! Your site just got gorgeous" would be false on
+a theme nobody is serving. A deploy-only that is later activated gets it then. *Routine judgement,
+made here rather than carried to the owner: the canonical string decided it.*
+
+**Deploy Uploaded and Partial Success are the same state reached two ways**, and the history row is
+identical for both — `uploaded`, `activated` false, no active badge, **Re-activate**. Only the cause
+differs, so only the sentence differs: *"Uploaded. You chose not to make it live yet."* against
+*"Your theme is on your site but isn't live yet."* Neither is an error, and **neither sends a
+deploy-failure email** (FR-P1 email 5).
 
 **Ending A — the token was given.** The snapshot captured her live theme; it sits in **Deploy
 History** as a restorable row that never prunes. Later deploys run the **Drift Report** first. Routes
@@ -1224,9 +1257,17 @@ not a failure**, and six things follow:
 
 ## Appendix A — Claude Design prompts
 
-Seven prompts. **A1–A6 draw surfaces that do not exist**; **A7 corrects six frames whose mechanism
-changed.** Each is self-contained, names the frame it inherits from, and carries the warning below
-because a session that hand-edits a frame hits it every time.
+Eight prompts. **A1–A6 draw surfaces that do not exist** · **A7 corrects six frames whose mechanism
+changed** · **A8 draws the editor below 1440 and the affordances the accessibility floor needs.**
+Each is self-contained, names the frame it inherits from, and carries the warning below because a
+session that hand-edits a frame hits it every time.
+
+> **A8 exists because this pass asserted something the export does not draw**, and found it in its
+> own stress test rather than downstream. R-76 says the editor is a **desktop and tablet** surface —
+> and **no frame draws it at 834**, only at 1440. The accessibility floor then widened the gap: an
+> editor that must hold at 200% browser zoom has to work at roughly 720 CSS px on a desktop display.
+> Both are layouts described in prose that nobody has drawn, which is exactly the failure R-74
+> exists to prevent, so they go back to Claude Design like every other undrawn surface.
 
 **Running any of these produces a new export, which replaces the repository's copy.** Two edits
 live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0's per-prop
@@ -1358,11 +1399,20 @@ live" and a primary "Re-activate" button in place of Roll back. One helper line:
 on your site but isn't live yet."
 
 FRAME 5 — D2e · PARTIAL SUCCESS · IN THE WIZARD, 1440.
-S8's step 3 card after an upload that succeeded and an activation that failed. NOT the S8d′
-failure treatment — sky, not danger. Heading: "Your theme is on your site but isn't live yet."
-Body: "v5 uploaded cleanly. Ghost didn't switch to it, so orbitweekly.com is still serving v4 —
-nothing on your site changed." The step rail shows Ship complete and Live incomplete.
-Buttons: "Re-activate v5" (primary) and "Leave it for now" (secondary).
+The final step after an upload that succeeded and an activation that FAILED. NOT the S8d′ failure
+treatment — sky, not danger. Heading: "Your theme is on your site but isn't live yet." Body:
+"v5 uploaded cleanly. Ghost didn't switch to it, so orbitweekly.com is still serving v4 — nothing
+on your site changed." The step rail shows Ship complete and Live incomplete. Buttons:
+"Re-activate v5" (primary) and "Leave it for now" (secondary). NO CONFETTI.
+
+FRAME 6 — D2f · DEPLOY ONLY · THE OTHER ENDING, 1440.
+The SAME card, reached deliberately: the user picked "Deploy only" at step 1. Same sky treatment,
+same rail state, same two buttons — only the sentence changes, because only the cause changed.
+Heading: "Uploaded. Not live yet." Body: "v5 is on orbitweekly.com and v4 is still what readers
+see. Make it live whenever you are ready." NO CONFETTI HERE EITHER: the one confetti moment is the
+first deploy that makes the site LIVE, and this one deliberately did not.
+Draw these two side by side, because they are ONE state with two causes — a reader of the frames
+should see at once that the history row for both is identical.
 
 COUNTS: 10 and 3 stored versions ARE product limits and MUST be printed. Never print a total of
 designs, categories or free designs.
@@ -1474,7 +1524,10 @@ plan's limit." Two buttons in the bar: "Make this the editable one" and "Export 
 Export is NOT disabled. Read-only means not editable; it never means locked in.
 
 FRAME 6 — D4f · SMALL SCREEN NOTICE, 390.
-What a user sees when they open a project on a phone. NOT an error page. A calm centred card:
+What a user sees when they open a project on a phone. NOT an error page.
+IT FIRES ON A COARSE POINTER AT A SMALL VIEWPORT, NOT ON WIDTH ALONE — a desktop user at 200%
+browser zoom sees a ~720px viewport and must get the EDITOR, not this card (prompt A8 draws that).
+Caption the frame with that condition so nobody builds it as a width test. A calm centred card:
 "The editor needs a bigger screen." Body: "Dragging sections and a 300-pixel control panel don't
 fit on a phone yet. Open this project on a laptop or tablet." Then, as a list of real
 affordances that DO work here: the project's deploy history with a one-tap "Roll back to v4",
@@ -1685,6 +1738,12 @@ and what they DO changes. Do not redesign any of them.
    facts — "VIEWPORT 390 × 844 · SHOWN AT 55%" — and keep the Desktop / Tablet / Mobile
    segmented control, which is the only thing the user operates here.
 
+DO NOT TOUCH THE FRAME CAPTIONS. Each frame carries a settings snapshot in its caption —
+"drawn at padding Comfortable 96, ground Background, actions Both". Those are RETIRED control
+names and they stay exactly as they are: a caption records how a frame was drawn on the day it was
+drawn, and correcting one value inside it produces a caption that reads as current and is not
+(ruling R-73). Change the surfaces' own copy and behaviour, nothing else.
+
 VOICE: PRD Appendix H. Errors are human and name the fix. Billing stays serious.
 COUNTS: never print a total of designs, categories or free designs.
 
@@ -1693,6 +1752,79 @@ A literal Ghost Handlebars expression must be written with zero-width entities. 
 ```
 
 ---
+
+---
+
+### A8 · The editor below 1440, and the affordances the floor needs
+
+```
+Add one canvas to the Inflozo design project: D8 · THE EDITOR BELOW 1440, AND SIX AFFORDANCES.
+
+INHERIT FROM: `S4 Editor.dc.html` (the whole editor shell — top bar, Layers, canvas, Controls
+sidebar), `B Missing Surfaces.dc.html` B7 (Layers rows and their three states), B13a (a confirm
+over a dimmed surface) and `S10 Assets.dc.html` (the drop zone). Tokens and components from
+`Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`. DO NOT INVENT A COMPONENT — every
+frame here is the existing editor rearranged or an existing control gaining a state.
+
+WHY THIS CANVAS EXISTS. The editor is drawn at 1440 and at no other width. Two things need it
+narrower and neither is a phone: TABLET (834, touch) is in scope by the owner's ruling, and a
+DESKTOP USER AT 200% BROWSER ZOOM sees roughly a 720 CSS px viewport — throwing them out would
+fail WCAG 1.4.4, so the editor has to hold. Below that the product shows a designed notice
+instead, which is drawn separately (prompt A4, frame D4f).
+
+FRAME 1 — D8a · THE EDITOR AT 834 · TABLET, TOUCH, 834 × 1112.
+The same four parts, rearranged rather than redesigned:
+  - The Layers panel COLLAPSES TO AN ICON RAIL at the left edge — the layer mini-thumbnails
+    only, no names — and expands as an overlay over the canvas when tapped. `L` still toggles it.
+  - The Controls sidebar becomes an OVERLAY PANEL anchored to the right edge, over the canvas,
+    at its usual 280–320px, with a scrim behind it. It opens on selection and has a close
+    affordance. The canvas does not resize under it.
+  - The top bar keeps the template switcher, View as and Ship it; anything that does not fit
+    moves into a single overflow menu rather than shrinking.
+  - EVERY TARGET IS AT LEAST 44px. That is the one thing this width changes about the controls
+    themselves, and it is why the frame is needed rather than assumed.
+
+FRAME 2 — D8b · THE EDITOR AT 720 · A DESKTOP AT 200% ZOOM, 720 × 900.
+The SAME collapse as D8a — icon rail, overlay sidebar — but with a fine pointer, so targets stay
+at their desktop sizes and hover affordances still work. Caption it explicitly as "1440 display
+at 200% browser zoom", because a reader will otherwise assume it is a small device and apply the
+touch rules. This frame is what proves the notice does not fire here.
+
+FRAME 3 — D8c · THE SKIP LINK, detail at 620.
+Two states of ONE element: hidden at rest, and visible on keyboard focus. It is the FIRST
+focusable thing in the editor shell, sitting over the top bar's left edge — a surface pill,
+12 radius, sm shadow, coral focus ring — reading "Skip the canvas". Draw the focused state with
+the ring, and a second, dimmed copy showing where it sits when nobody has focused it.
+WHY: the canvas renders the USER'S OWN SITE, so tabbing through it means tabbing through every
+link that site emits — dozens of stops before the sidebar.
+
+FRAME 4 — D8d · THE ASSETS DROP ZONE, WITH A KEYBOARD PATH, detail at 720.
+`S10 Assets`'s drop zone as drawn, plus a secondary button inside it reading "Choose files",
+below the existing "Drop images — we'll optimize them ✨" line and above "JPG, PNG, SVG or WebP".
+A drop zone with no button cannot be reached by keyboard at all. Keep the sparkle and the tone.
+NOTE FOR THE SESSION: the size line on that frame currently reads "up to 30 MB each" and the
+product limit is 10 MB per file on BOTH plans — correct it to "up to 10 MB each" while you are
+in there.
+
+FRAME 5 — D8e · A LAYERS ROW, FOCUSED, detail at 520.
+B7's layers rows currently have three states: rest, hover (a wash), selected (coral tint). Draw
+the FOURTH: keyboard focus — the coral 2px ring at 40%, drawn OVER the row's existing state so
+focused-and-selected is legible as both. Show three rows: rest+focused, hover, selected+focused.
+Beside them, a small caption naming the keys, in the kbd-chip style: ↑ ↓ move focus, ⌥↑ ⌥↓ move
+the section itself.
+
+FRAME 6 — D8f · A DESTRUCTIVE CONFIRM, OPENED, detail at 620.
+Any of the product's irreversible confirms — use "Take over from Rosa?" (B5c) as the subject.
+Draw it AS IT OPENS: the focus ring is on the CANCELLING action ("Wait"), not on the danger-fill
+button. This is a rule rather than a list — the same treatment governs Delete account, Roll back,
+project delete, delete-in-use assets and "Overwrite and ship anyway" — so caption it as the rule.
+
+COUNTS: 10 MB per file is a PRODUCT LIMIT and must be printed. Never print a total of designs,
+categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.
+```
 
 ## Finalize notes
 
