@@ -3,8 +3,8 @@
   SURFACE  : Routes Fallback Card
   FRAME    : B Missing Surfaces.dc.html — B16 (cause re-specified; the hard-coded Ghost menu path deleted)
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F3 · § wrong mechanism → B16 · FR-I4
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -26,58 +26,55 @@
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F3 · § wrong mechanism → B16 · FR-I4</span>
 </div>
-<div class="proto-note"><b>The frame sends people to fix something that cannot be fixed.</b> B16 says &ldquo;your integration key is missing the settings permission … Fix the key.&rdquo; Integration tokens never carry <span class="mono">setting: edit</span> — Ghost&rsquo;s allowlist binds them and there is nothing to grant. A <i>staff</i> token carries a <span class="mono">user_id</span>, skips the allowlist entirely, and an Administrator or Owner holds <span class="mono">setting: all</span>. <b>It is not a warning toast</b> — it is a first-class surface, reachable afterwards from the site card and from the <a href="routes-manager.html">Routes Manager</a>, and a project can sit in this state indefinitely without anything degrading except the automation.</div>
-<div class="trails"><div class="trail"><span class="tl">Flow F3 · The guided routes-upload card</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="routes-fallback.html#causes">The three causes</a> →</span></div>
+<div class="proto-note"><b>It is not a warning toast.</b> It is a first-class surface, reachable afterwards from the site card and from the Routes Manager, and a project can sit in this state indefinitely without anything degrading except the automation.</div>
+<div class="trails"><div class="trail"><span class="tl">Flow F3 · The guided routes-upload card</span><span class="tstep">step 1 of 4</span><span class="tstep">next: <a href="routes-fallback.html#respec">Its cause is wrong</a> →</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#causes">The three causes<span class="k">F3</span></a><a class="idxrow" href="#verified">Uploaded and verified</a><a class="idxrow" href="#unverified">Could not verify<span class="k">NE-S-1</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The re-specified cause<span class="k">FR-I4</span></a><a class="idxrow" href="#menu-path">The hard-coded menu path<span class="k">MEASUREMENTS §33</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">B16 · routes fallback card — needed</p><div class="screen "><div style="padding:32px;background:var(--paper);display:flex;justify-content:center">
-  <div class="card" style="max-width:700px"><div class="pad stack gap14">
-    <h2 style="font-size:19px">Upload <span class="mono">routes.yaml</span> yourself</h2>
-    <p style="font-size:13.5px;line-height:1.6">We normally upload this for you. <b>Uploading a routing file needs the
-      site Owner&rsquo;s Staff Access Token, and this project doesn&rsquo;t have one</b> — so this once, you&rsquo;ll do
-      it by hand. It takes about a minute.</p>
-    <div class="stack gap10">
-      <div class="checkrow"><span class="tick">1</span>
-        <span class="stack gap4 grow"><b>Download the file we generated</b>
-          <span class="row gap8"><span class="chip mono">routes.yaml</span><span class="helper">1.4 KB</span>
-            <a class="btn sm secondary" href="routes-fallback.html">Download</a></span></span></div>
-      <div class="checkrow"><span class="tick">2</span>
-        <span class="stack gap4 grow"><b>In Ghost, find the routes upload for your version</b>
-          <span class="helper">We detected <b>Ghost 6.58</b> at connect. Ghost moves this screen between versions, so we
-            describe what you are looking for rather than naming clicks that are already wrong for some customers.</span>
-          <a class="small" href="routes-fallback.html" style="color:var(--sky-text)">Show me where ↗</a></span></div>
-      <div class="checkrow"><span class="tick">3</span>
-        <span class="stack gap4 grow"><b>Come back and press Verify</b>
-          <span class="helper">We re-read your routing through the Content API where we can, and otherwise say we could
-            not confirm. We will not claim success we cannot see.</span></span></div></div>
-    <div class="row gap10"><a class="btn coral" href="routes-fallback.html#verified">Verify upload</a>
-      <a class="btn secondary" href="staff-token-offer.html">Add the token instead</a></div>
-    <span class="helper">Adding the token makes this automatic from now on.</span>
-  </div></div></div></div></div><div class="section-head" id="causes"><h2>The three causes, and each names itself</h2></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><div class="stack gap12" style="max-width:760px;margin:0 auto">
-  <div class="card"><div class="pad-tight stack gap4"><b style="font-size:13px">No Staff Access Token was ever supplied</b>
-    <span class="helper">&ldquo;We normally upload this for you. Uploading a routing file needs the site Owner&rsquo;s
-      Staff Access Token, and this project doesn&rsquo;t have one — so this once, you&rsquo;ll do it by hand.&rdquo;
-      + <b>Add the token instead</b></span></div></div>
-  <div class="card"><div class="pad-tight stack gap4"><b style="font-size:13px">The token was revoked or rotated</b>
-    <span class="helper">&ldquo;…your token has stopped working.&rdquo; + <b>Update the token</b></span></div></div>
-  <div class="card"><div class="pad-tight stack gap4"><b style="font-size:13px">The connection is not the site Owner&rsquo;s</b>
-    <span class="helper">&ldquo;…this token belongs to a staff account that can&rsquo;t write settings. Only the site
-      Owner&rsquo;s token can.&rdquo;</span></div></div>
-</div></div></div></div><div class="section-head" id="verified"><h2>Uploaded and verified</h2><p>The card resolves to a single confirming line and does not return.</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
-  <div class="banner success" style="max-width:620px"><span class="ico">✓</span>
-    <span><b>Your routing is live.</b> We read it back and your collections resolve.</span></div></div></div></div><div class="section-head" id="unverified"><h2>Could not verify</h2><p>The file was uploaded and the read-back failed. <b>Say so, and offer Verify again — never claim success.</b></p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
-  <div class="card" style="max-width:620px"><div class="pad stack gap10">
-    <div class="banner notice"><span class="ico">!</span><span><b>We couldn&rsquo;t confirm it landed.</b>
-      Your upload may well have worked — we just cannot see the routing file from here without the token, and we are not
-      going to tell you it is fine when we do not know.</span></div>
-    <div class="row gap10"><a class="btn secondary" href="routes-fallback.html#verified">Verify again</a>
-      <a class="btn ghost" href="staff-token-offer.html">Add the token instead</a></div></div></div></div></div></div>
+<div class="lifted"><p class="frame-cap">B16 · routes fallback card</p><div class="liftbox"><div style="width:600px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:18px 20px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid #EFEAE2">
+          <span style="width:32px;height:32px;border-radius:9px;background:#F1EDE7;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><path d="M12 16V8"></path><polyline points="8 12 12 8 16 12"></polyline><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg></span>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:15px;font-weight:600">Upload routes.yaml yourself</span>
+            <span style="font-size:12.5px;line-height:1.55;color:#4A453D">We normally upload this for you. Your integration key is missing the settings permission, so this once you will need to do it by hand — it takes about a minute.</span>
+          </div>
+        </div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:13px">
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:13px;color:#3A3835;line-height:1.5">Download the file we generated</span>
+                <div style="display:flex;align-items:center;gap:10px;background:#FBF9F5;border:1px solid #E7E2DB;border-radius:9px;padding:9px 11px">
+                  <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:11px;color:#3A3835;flex:1">routes.yaml</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10px;color:#6B6459">1.4 KB</span>
+                  <span style="width:24px;height:24px;border-radius:7px;background:#FFFFFF;border:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F1EDE7"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round"><polyline points="8 13 12 17 16 13"></polyline><line x1="12" y1="6" x2="12" y2="17"></line></svg></span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</span>
+              <span style="font-size:13px;color:#3A3835;line-height:1.5;flex:1">In Ghost, open <span style="font-weight:600">Settings → Labs</span> and use <span style="font-weight:600">Upload routes YAML</span></span>
+            </div>
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</span>
+              <span style="font-size:13px;color:#3A3835;line-height:1.5;flex:1">Come back and press Verify — we check that your collections resolve</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;border-top:1px solid #EFEAE2;padding-top:14px">
+            <button style="height:36px;padding:0 15px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Verify upload</button>
+            <button style="height:36px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Fix the key instead</button>
+            <span style="flex:1"></span>
+            <span style="font-size:11.5px;color:#6E6A64">Fixing the key makes this automatic again</span>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>The frame sends people to fix something that cannot be fixed</h2><p>B16 says <i>&ldquo;your integration key is missing the settings permission … Fix the key.&rdquo;</i> <b>Integration tokens never carry <span class="mono">setting: edit</span></b> — Ghost&rsquo;s allowlist binds them and there is nothing to grant. A <i>staff</i> token carries a <span class="mono">user_id</span>, skips the allowlist entirely, and an Administrator or Owner holds <span class="mono">setting: all</span>. So the cause becomes <b>&ldquo;Uploading a routing file needs the site Owner&rsquo;s Staff Access Token, and this project doesn&rsquo;t have one&rdquo;</b>, and &ldquo;Fix the key instead&rdquo; becomes <b>&ldquo;Add the token instead&rdquo;</b>.</p></div><div class="section-head" id="menu-path"><h2>And the hard-coded menu path has to go</h2><p>Step 2 says <b>Settings → Labs</b>. <b>Ghost 6.58.0 has no Labs page</b> — no <span class="mono">settings/advanced</span>, no <span class="mono">settings/labs</span>, and its export UI sits behind a lab flag (MEASUREMENTS §33, executed 2026-08-31). The card must <b>describe what the customer is looking for and link to Ghost&rsquo;s own help for the version Inflozo detected at connect</b>.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

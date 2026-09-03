@@ -934,15 +934,20 @@ six frames in EXPERIENCE.md's "drawn, but on the wrong mechanism" table, and the
 with Appendix F.1 on plan limits. R-74 gives the export the construction; `prd.md` keeps behaviour
 and strings.
 
-> ⚠️ **STEP 5B HAS THE SAME DEFECT AND HAS NOT HAD THE SAME PASS.** Its pages describe each surface
-> correctly and name the right frame, but they *render* it from the text extraction — so its promise
-> that a page can be held against its frame is weaker than it reads. Rebuilding `prototype/build.py`
-> on `frames.py` is owed, and it is the next thing to do to that folder.
+> ✅ **STEP 5B WAS REBUILT ON THE SAME LIFTER, in the same pass.** `frames.py` moved up to
+> `ux-designs/` so both generators share it. Every screen in the prototype is now a lifted frame with
+> the annotation *around* it rather than inside it — and where a surface **has no frame**, the page
+> says so in those words and **shows nothing**. That last part matters: inventing a picture for an
+> undrawn surface is the second interface vocabulary R-74 exists to forbid, and the first cut did
+> exactly that on every one of them. The pages that say "not drawn" name the Appendix A prompt that
+> will draw it, and describe what it must produce.
 
 **What is NOT in the second cut, deliberately.** Every surface with no frame in the export — the
 backup gates, history pinning, the drift report, the dashboard sheets, the canvas markers, the editor
 below 1440. Appendix A carries a Claude Design prompt for each and **none has been run**, so they are
-held out rather than mixed in, and `_screens.html` lists them with the reason. Step 5b has them all.
+held out rather than mixed in, and `_screens.html` lists them with the reason. **Step 5b names every
+one of them on its own page**, describes what its prompt must draw, and shows the frames it will
+inherit from — which is the honest form of "not drawn yet".
 
 **It cannot drift from 5b.** `build-app.py` imports 5b's builder for the tokens, the plan matrix and
 the icon set; `styles.css` is generated as 5b's stylesheet plus `_app.css`. The tokens are

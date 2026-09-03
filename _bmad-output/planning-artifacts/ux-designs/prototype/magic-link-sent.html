@@ -2,9 +2,9 @@
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Magic Link Sent
   FRAME    : S1 Sign In.dc.html — S1b
-  IMPLEMENTS: EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits (the countdown blocks nothing)
+  IMPLEMENTS: EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -24,28 +24,42 @@
   <span class="name">Magic Link Sent</span>
   <span class="frame">S1 Sign In.dc.html — S1b</span>
   <span class="spacer"></span>
-  <span class="frame">EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits (the countdown blocks nothing)</span>
+  <span class="frame">EXPERIENCE.md § IA → Entry · § Accessibility Floor → Time limits</span>
 </div>
 <div class="proto-note"><b>No password exists anywhere in the product</b> (FR-A1), so there is nothing to forget and no reset flow to draw.</div>
 <div class="trails"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 2 of 15</span><span class="tstep">← <a href="sign-in.html">Sign In</a></span><span class="tstep">next: <a href="first-run.html">First Run</a> →</span></div>
 </div>
 
 <main id="main">
-<div><p class="frame-cap">S1b · magic-link sent · 1440</p><div class="screen "><div style="min-height:640px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:28px">
-  <span style="font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em">Inflozo</span>
-  <div class="card" style="width:100%;max-width:420px"><div class="pad" style="display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center">
-    <h1 style="font-size:24px">Check your inbox ✨</h1>
-    <p class="softaa" style="font-size:13.5px">We sent a magic link to <b class="mono">maya@orbitweekly.com</b><br>It&rsquo;s good for 15 minutes.</p>
-    <p class="helper">Didn&rsquo;t get it? Resend in <span class="mono">0:27</span></p>
-    <a class="btn secondary" href="sign-in.html">Use a different email</a>
-  </div></div>
-  <div class="row gap8 helper"><span>Terms</span><span>·</span><span>Privacy</span></div>
-</div></div></div><div class="section-head"><h2>Why the countdown blocks nothing</h2><p>The resend countdown is the one clock on this surface and it is not a decision timer: the link itself is valid for 15 minutes and <b>&ldquo;Use a different email&rdquo; is always available</b>. The only timed interaction in the whole product is the edit-lock nudge — see <a href="edit-lock.html">Edit Lock</a>.</p></div>
+<div class="lifted"><p class="frame-cap">S1b · magic-link sent · 1440</p><div class="liftbox"><div data-screen-label="S1b Magic link sent" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);flex-shrink:0">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:380px;letter-spacing:-0.05em;color:#EFECE7;white-space:nowrap;user-select:none">Inflozo</div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <div style="width:400px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:44px 36px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
+            <svg width="88" height="66" viewBox="0 0 88 66" fill="none">
+              <rect x="8" y="14" width="72" height="46" rx="6" stroke="#1C1B1A" stroke-width="1.5"></rect>
+              <path d="M11 18l33 23 33-23" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M71 2l1.7 4.6L77.3 8.3l-4.6 1.7L71 14.6l-1.7-4.6-4.6-1.7 4.6-1.7z" fill="#FF5941"></path>
+            </svg>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em">Check your inbox ✨</div>
+              <div style="font-size:14px;color:#6E6A64;line-height:1.55">We sent a magic link to<br><strong style="color:#1C1B1A;font-weight:600">maya@orbitweekly.com</strong><br>It's good for 15 minutes.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%">
+              <div style="font-size:13px;color:#6E6A64">Didn't get it? Resend in <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#1C1B1A">0:27</span></div>
+              <a href="#" style="font-size:13px;font-weight:500;color:#6E6A64;text-decoration:underline;text-underline-offset:3px">Use a different email</a>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;gap:20px;font-size:13px;color:#6E6A64">
+          <a href="#" style="color:#6E6A64">Terms</a><span style="color:#E7E2DB">·</span><a href="#" style="color:#6E6A64">Privacy</a>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S1 Sign In.dc.html</span></p></div><div class="section-head"><h2>Why the countdown blocks nothing</h2><p>The resend countdown is the one clock on this surface and it is not a decision timer: the link is valid for 15 minutes and <b>&ldquo;Use a different email&rdquo; is always available</b>. The only timed interaction in the product is the edit-lock nudge — see <a href="edit-lock.html">Edit Lock</a>.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

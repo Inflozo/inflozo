@@ -413,12 +413,21 @@ DOCS = [
 ]
 
 GROUPS = [
+ ('ux-designs/frames.py', 'tool', 'The frame lifter — shared by both step-5 builds',
+  'Pulls a region of the Claude Design export out of its `.dc.html` VERBATIM, by `data-screen-label` '
+  'or by the mono caption above it, and hands it to a builder to patch. It exists because the first cut '
+  'of steps 5b and 5c was authored from a TEXT EXTRACTION of the frames — a tag-stripping pass that '
+  'yields every frame\'s copy and none of its composition — and the owner opened it and said it did not '
+  'match the export. It did not: S1a\'s primary is ink not coral, S3a\'s cards carry real miniature '
+  'renderings, S4a\'s resting sidebar is the Page panel, S4a\'s Layers is a flat list of design names. '
+  'THE FRAMES ARE HTML. Read them as HTML. `patch()` raises when a target is missing, so a lifted screen '
+  'cannot quietly stop matching its frame.'),
  ('ux-designs/walkthrough/', 'live', "Step 5c — the walkthrough: the product, as it will feel",
   'The owner read step 5b and asked for the other thing: a build with NO scaffolding on it — no frame '
   '(SECOND CUT: the first was authored from a TEXT EXTRACTION of the frames and did not match the '
   'export — the owner caught it. It now LIFTS each screen\'s markup out of the .dc.html verbatim via '
-  '`frames.py` and patches it; `patch()` raises rather than missing silently. **STEP 5B STILL HAS THE '
-  'ORIGINAL DEFECT** and is owed the same pass.) '
+  'the shared `../frames.py` and patches it; `patch()` raises rather than missing silently. '
+  'Step 5b was rebuilt on the same lifter in the same pass.) '
   'captions, no journey trails, no notes, no stacked state variants — that behaves rather than depicts. '
   '**Double-click `index.html`** and it opens on Sign In, exactly as a user would meet it; walk from there. '
   'Menus and modals open, the design ring changes the canvas and the control panel with it, the backup gate '
@@ -438,7 +447,10 @@ GROUPS = [
   'its stable surface name; a panel, pill, marker, popover or sheet that only exists over another surface gets '
   "a section on its host page instead, and the index lists every one. EVERY PAGE'S FIRST HTML COMMENT NAMES THE "
   'FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, which is what makes fidelity '
-  'checkable against the export. `build.py` generates the lot from one registry — so the index cannot claim a '
+  'checkable against the export. SECOND CUT: every screen is now LIFTED from the .dc.html verbatim via '
+  '`../frames.py` and the annotation sits AROUND the frame, never in it; a surface with no frame says so and '
+  'shows nothing, because inventing a picture there is the second interface vocabulary R-74 forbids. '
+  '`build.py` generates the lot from one registry — so the index cannot claim a '
   'surface that does not exist, or miss one that does — and it refuses to write if any link or anchor is dead. '
   'It is DISPOSABLE BY DESIGN once the dynamic UI matches it. **Step 6 stays shut until the owner says he has '
   'walked it** (R-75); that sentence lives in `build-sequence.md` step 5b.'),

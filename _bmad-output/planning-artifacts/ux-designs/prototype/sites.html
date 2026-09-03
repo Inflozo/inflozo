@@ -3,8 +3,8 @@
   SURFACE  : Sites
   FRAME    : S11 Sites.dc.html — S11a with the ⋯ menu · S11b connect modal · S11c Free
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Sites · J4 step 7
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -26,150 +26,165 @@
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Sites · J4 step 7</span>
 </div>
-
-<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 7 of 10</span><span class="tstep">← <a href="over-limit-sheet.html#which-project">Which project stays editable</a></span><span class="tstep">next: <a href="assets.html#over-quota">Assets — read-only until under</a> →</span></div>
-<div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 5 of 5</span><span class="tstep">← <a href="deploy-destination.html#preview-only">Preview-Only Destination — export instead of deploy</a></span></div>
+<div class="proto-note"><b>The frame&rsquo;s Preview-only row says the wrong thing.</b> S11a offers &ldquo;download the theme and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see <a href="preview-only-notice.html">Preview-Only Notice</a>.</div>
+<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 5 of 8</span><span class="tstep">← <a href="over-limit-sheet.html">Over-Limit Sheet — the climax beat</a></span><span class="tstep">next: <a href="assets.html#over-quota">Assets — read-only until under</a> →</span></div>
+<div class="trail"><span class="tl">Flow F5 · The Preview-only explanation, and its clearing conditions</span><span class="tstep">step 6 of 6</span><span class="tstep">← <a href="deploy-destination.html#preview-fix">And the copy that wastes an afternoon</a></span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#checking">Sites — checking</a><a class="idxrow" href="#connect-modal">Connect Site Modal<span class="k">S11b</span></a><a class="idxrow" href="#menu">Site ⋯ menu<span class="k">S11a</span></a><a class="idxrow" href="#disconnect">Disconnect</a><a class="idxrow" href="#empty">Sites — empty</a><a class="idxrow" href="#free">Sites — Free at one site<span class="k">S11c</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#connect-modal">Connect Site Modal<span class="k">S11b</span></a><a class="idxrow" href="#free">Sites — Free at one site<span class="k">S11c</span></a><a class="idxrow" href="#empty">Sites — empty, and disconnect<span class="k">not drawn</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">S11a · sites &amp; connections · 1440</p><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav on" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar">M</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-      <span class="helper">maya@orbitweekly.com</span></span>
-    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search sites…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a></div>
-</div><div class="appbody"><div class="stack gap16">
-  <div class="row gap10"><h2 style="font-size:20px">Sites</h2><span class="chip">3 of 10</span>
-    <a class="btn coral" href="sites.html#connect-modal" style="margin-left:auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Connect site</a></div>
-  <div class="card"><div class="pad row gap14" style="align-items:flex-start">
-  <span class="avatar" style="background:#3B382F">O</span>
-  <div class="stack gap6 grow"><div class="row gap8"><b style="font-size:14px">Orbit Weekly</b>
-      <span class="badge live"><span class="dot mint"></span>Connected</span></div>
-    <span class="helper mono">orbitweekly.com</span><span class="helper">Ghost 6.58 · 2 projects · checked 2 minutes ago</span></div>
-  <a class="soft" href="manage-keys.html">⋯</a></div></div>
-  <div class="card"><div class="pad row gap14" style="align-items:flex-start">
-  <span class="avatar" style="background:#3B382F">M</span>
-  <div class="stack gap6 grow"><div class="row gap8"><b style="font-size:14px">Maya&rsquo;s Studio</b>
-      <span class="badge danger"><span class="dot danger"></span>Reconnect needed</span></div>
-    <span class="helper mono">mayachen.studio</span><span class="helper">Ghost 5.130 · 1 project · Admin key expired Aug 15</span><a class="btn sm secondary" href="manage-keys.html" style="align-self:flex-start;margin-top:4px">Reconnect</a></div>
-  <a class="soft" href="manage-keys.html">⋯</a></div></div>
-  <div class="card"><div class="pad row gap14" style="align-items:flex-start">
-  <span class="avatar" style="background:#3B382F">F</span>
-  <div class="stack gap6 grow"><div class="row gap8"><b style="font-size:14px">Field Notes</b>
-      <span class="badge sky"><span class="dot sky"></span>Preview-only</span></div>
-    <span class="helper mono">fieldnotes.ghost.io</span><span class="helper">Ghost(Pro) Starter · 1 project · keys working</span><a class="small" href="preview-only-notice.html" style="color:var(--sky-text)">What Preview-only means, and what clears it →</a></div>
-  <a class="soft" href="manage-keys.html">⋯</a></div></div>
-</div></div></div></div></div></div><div class="section-head" id="menu"><h2>The ⋯ menu</h2><p class="frame-cap">S11a · ⋯ menu open</p></div><div><div class="screen tiny"><div class="sheetwrap" style="padding:24px;justify-content:flex-start"><div class="card" style="width:240px">
-  <div class="pad-tight stack gap2">
-    <a class="idxrow" style="border:none;background:transparent" href="sites.html">Re-check connection</a>
-    <a class="idxrow" style="border:none;background:transparent" href="manage-keys.html">Reconnect</a>
-    <a class="idxrow" style="border:none;background:transparent" href="manage-keys.html">Manage keys</a>
-    <a class="idxrow" style="border:none;background:transparent" href="routes-fallback.html">Upload routes by hand</a>
-    <div style="height:1px;background:var(--line);margin:6px 0"></div>
-    <a class="idxrow" style="border:none;background:transparent;color:var(--danger)" href="sites.html#disconnect">Disconnect</a>
-  </div></div></div></div></div><div class="section-head" id="checking"><h2>Checking</h2><p>The health check runs daily and on demand. <b>The pending state lives on the badge and nowhere else</b> — the card stays readable while it runs.</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
-  <div class="card" style="max-width:520px"><div class="pad row gap14" style="align-items:flex-start">
-    <span class="avatar" style="background:#3B382F">O</span>
-    <div class="stack gap6 grow"><div class="row gap8"><b style="font-size:14px">Orbit Weekly</b>
-        <span class="badge neutral"><span class="dot grey"></span>Checking…</span></div>
-      <span class="helper mono">orbitweekly.com</span>
-      <span class="helper">Ghost 6.58 · 2 projects</span></div></div></div></div></div></div><div class="section-head" id="connect-modal"><h2>Connect Site Modal</h2><p>S2&rsquo;s two connect steps, run as a modal.</p><p class="frame-cap">S11b · connect site — the modal</p></div><div><div class="screen "><div class="sheetwrap"><div class="sheet"><div class="head">
-    <div class="row gap10"><h2 style="font-size:20px">Connect your Ghost site</h2><span class="chip" style="margin-left:auto">1/2</span></div>
-    <p class="softaa" style="font-size:13px;margin-top:4px">Same quick handshake as onboarding.</p></div>
-  <div class="body"><div class="row gap24" style="align-items:flex-start">
-    <ol class="stack gap12 grow" style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.5">
-      <li>Open <b>Ghost Admin → Settings → Integrations</b></li>
-      <li>Click <b>Add custom integration</b></li>
-      <li>Name it <b>Inflozo</b> and save — it shows an API URL and two keys</li></ol>
-    <div class="thumb" style="width:280px;height:180px;display:flex;align-items:center;justify-content:center;padding:16px">
-      <span class="helper" style="text-align:center">screenshot: Ghost Admin → Settings → Integrations</span></div></div></div>
-  <div class="foot"><a class="btn secondary" href="sites.html">Cancel</a>
-    <a class="btn coral" href="connect-keys.html">Done — next</a></div></div></div></div></div><div class="section-head" id="disconnect"><h2>Disconnecting</h2><p>A site&rsquo;s <b>pre-Inflozo snapshot is bound to the site record, not to the URL</b>, so it survives disconnect, reconnect and project deletion. The backup gate re-fires on reconnect, because consent is per site and this is a new one as far as consent goes.</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Disconnect Field Notes?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">Inflozo stops talking to fieldnotes.ghost.io. <b>The site
-    itself is untouched</b> — the theme we shipped stays live and keeps serving readers. Your projects for it become
-    preview-only until you reconnect.</p>
-  <div class="banner info"><span class="ico">ⓘ</span><span>We keep this site&rsquo;s original theme archive. It is bound to the
-    site, not the address, so reconnecting later finds it again.</span></div></div>
-  <div class="foot"><a class="btn secondary" href="sites.html">Cancel</a><a class="btn danger-out" href="sites.html">Disconnect</a></div>
-  </div></div></div></div><div class="section-head" id="empty"><h2>Sites with none</h2><p>The connect card as the whole page.</p><p class="frame-cap">S11 · empty</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav on" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:0%"></div></div>
-      <span class="helper"><span class="mono">0 MB</span> used</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar sam">S</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
-      <span class="helper">sam@fieldnotes.blog</span></span>
-    <span style="margin-left:auto"><span class="badge free">Free</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search sites…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a></div>
-</div><div class="appbody"><div style="min-height:380px;display:flex;align-items:center;justify-content:center">
-  <div class="card" style="max-width:460px"><div class="pad stack gap12" style="align-items:center;text-align:center">
-    <svg width="96" height="72" viewBox="0 0 96 72" fill="none" stroke="#1C1B1A" stroke-width="1.5">
-      <circle cx="34" cy="36" r="22"/><path d="M12 36h44M34 14a30 30 0 0 1 0 44M34 14a30 30 0 0 0 0 44"/>
-      <path d="M62 36h20" stroke="#FF5941"/><path d="M74 28l8 8-8 8" stroke="#FF5941"/></svg>
-    <b style="font-size:16px">No Ghost site connected yet.</b>
-    <span class="helper">Connect one and every canvas fills with your real posts, authors and tags.</span>
-    <a class="btn coral" href="connect-integration.html">Connect a Ghost site</a></div></div></div></div></div></div></div></div><div class="section-head" id="free"><h2>Free, at one site</h2><p>S11c&rsquo;s ghost slot. The frame says Pro connects up to 3; <b>Appendix F.1 says 10 and governs</b> — EXPERIENCE.md § Plan limits.</p><p class="frame-cap">S11c · free plan — one site + upgrade ghost slot</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav on" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:48%"></div></div>
-      <span class="helper"><span class="mono">48 MB</span> of 100 MB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar sam">S</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
-      <span class="helper">sam@fieldnotes.blog</span></span>
-    <span style="margin-left:auto"><span class="badge free">Free</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search sites…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a></div>
-</div><div class="appbody"><div class="stack gap16">
-  <div class="row gap10"><h2 style="font-size:20px">Sites</h2><span class="chip">1 of 1</span></div>
-  <div class="card"><div class="pad row gap14" style="align-items:flex-start">
-  <span class="avatar" style="background:#3B382F">F</span>
-  <div class="stack gap6 grow"><div class="row gap8"><b style="font-size:14px">Field Notes</b>
-      <span class="badge live"><span class="dot mint"></span>Connected</span></div>
-    <span class="helper mono">fieldnotes.blog</span><span class="helper">Ghost 6.58 · 1 project · checked 1 hour ago</span></div>
-  <a class="soft" href="manage-keys.html">⋯</a></div></div>
-  <div class="card" style="border:1px dashed var(--line-strong);box-shadow:none"><div class="pad row gap12">
-    <span class="badge pro">✦</span><div class="stack gap2 grow"><b style="font-size:13.5px">Upgrade to connect more</b>
-      <span class="helper">Free includes 1 site. Pro connects up to 10.</span></div>
-    <a class="btn marigold sm" href="upgrade-sheet.html">Go Pro — $15/mo</a></div></div>
-</div></div></div></div></div></div>
+<div class="lifted"><p class="frame-cap">S11a · sites &amp; connections — ⋯ menu open · 1440</p><div class="liftbox"><div data-screen-label="S11a Sites" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+      <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+            <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+            <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">312 MB</span> of 5 GB</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <span style="font-size:13px;font-weight:600">Maya Chen</span>
+            <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+          </div>
+          <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
+          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+            <span style="font-size:13px;color:#A8A29A;flex:1">Search sites…</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+            <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Connect site</button>
+          </div>
+        </div>
+        <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-content:start;position:relative">
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 4px 16px rgba(28,27,26,.08);padding:18px;display:flex;flex-direction:column;gap:14px;position:relative">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">O</div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font-size:14px;font-weight:600">Orbit Weekly</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">orbitweekly.com</span>
+              </div>
+              <span style="margin-left:auto;color:#1C1B1A;letter-spacing:2px;font-weight:600;cursor:pointer">⋯</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:7px;height:7px;border-radius:50%;background:#1FA97A"></span>Connected</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Ghost 6.2</span>
+              <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">2 projects</span>
+            </div>
+            <span style="font-size:11px;color:#6E6A64">Checked 2 minutes ago</span>
+          </div>
+          <div style="position:absolute;top:64px;left:298px;width:196px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;gap:1px;z-index:6">
+            <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>Re-check connection</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>Reconnect</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15 8m-2 2l4-4m0 0l3 3 3-3-3-3"></path></svg>Manage API keys</div>
+            <div style="height:1px;background:#E7E2DB;margin:4px 8px"></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;color:#C4383C;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#FDEBEC"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><path d="M18.4 12.6l1.1-1.1a5 5 0 0 0-7-7l-1.1 1.1"></path><path d="M5.6 11.4l-1.1 1.1a5 5 0 0 0 7 7l1.1-1.1"></path><line x1="4" y1="4" x2="20" y2="20"></line></svg>Disconnect</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#1C1B1A;color:#F7F5F2;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">M</div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font-size:14px;font-weight:600">Maya Chen — Studio</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mayachen.studio</span>
+              </div>
+              <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8A6100"><span style="width:7px;height:7px;border-radius:50%;background:#FFB100"></span>Reconnect needed</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Ghost 5.82</span>
+              <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">1 project</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button style="height:32px;padding:0 14px;background:#FFFFFF;border:1px solid #FF5941;color:#C2381F;border-radius:10px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 160ms ease-out" style-hover="background:#FFF9F7"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>Reconnect</button>
+              <span style="font-size:11px;color:#6E6A64">Admin key expired Aug 15</span>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#2B5BD7;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">F</div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font-size:14px;font-weight:600">Field Notes</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">fieldnotes.ghost.io</span>
+              </div>
+              <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8A6100"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#B87A00"></circle></svg>Preview-only</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Ghost(Pro) Starter</span>
+              <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">1 project</span>
+            </div>
+            <span style="font-size:11px;color:#6E6A64;line-height:1.5">Starter plans can't take API uploads — download the theme and upload it in Ghost Admin.</span>
+          </div>
+          <div style="border:1.5px dashed #C9C2B8;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;cursor:pointer;transition:border-color 160ms ease-out" style-hover="border-color:#FF5941">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span style="font-size:13px;font-weight:600;color:#6E6A64">Connect site</span>
+          </div>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="connect-modal"><h2>Connect Site Modal</h2><p>S2&rsquo;s two connect steps, run as a modal.</p></div><div class="lifted"><p class="frame-cap">S11b · connect site — S2&rsquo;s flow as a modal</p><div class="liftbox"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:flex;justify-content:center;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:28px;display:flex;flex-direction:column;gap:20px;position:relative">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Connect your Ghost site</span><span style="font-size:13px;color:#6E6A64">Same quick handshake as onboarding.</span></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="height:4px;flex:1;background:#FF5941;border-radius:2px"></div>
+            <div style="height:4px;flex:1;background:#E7E2DB;border-radius:2px"></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64;margin-left:8px">1/2</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">1</div><div style="font-size:14px;line-height:1.5">Open <strong style="font-weight:600">Ghost Admin → Settings → Integrations</strong></div></div>
+            <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">2</div><div style="font-size:14px;line-height:1.5">Click <strong style="font-weight:600">Add custom integration</strong></div></div>
+            <div style="display:flex;gap:12px;align-items:baseline"><div style="width:22px;height:22px;border-radius:50%;background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(3px)">3</div><div style="font-size:14px;line-height:1.5">Name it <span style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:6px;padding:2px 6px">Inflozo</span> and save — it shows an API URL and two keys</div></div>
+          </div>
+          <div style="height:130px;border-radius:10px;background:repeating-linear-gradient(45deg,#F1EDE7 0 10px,#EAE5DE 10px 20px);position:relative;overflow:hidden">
+            <div style="position:absolute;top:12px;left:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;background:#FFFFFF;padding:3px 8px;border-radius:6px">screenshot: Ghost Admin → Settings → Integrations</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+            <button style="height:40px;padding:0 24px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Done — next</button>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at one site</h2><p>The frame says Pro connects up to 3. <b>Appendix F.1 says 10 and governs</b> — see <a href="billing.html#limits">the limits</a>.</p></div><div class="lifted"><p class="frame-cap">S11c · free plan — one site + upgrade ghost slot</p><div class="liftbox"><div style="width:660px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-content:start">
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#2B5BD7;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">F</div>
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span style="font-size:14px;font-weight:600">Field Notes</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">fieldnotes.blog</span>
+            </div>
+            <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:7px;height:7px;border-radius:50%;background:#1FA97A"></span>Connected</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">Ghost 6.2</span>
+            <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px">1 project</span>
+          </div>
+          <span style="font-size:11px;color:#6E6A64">Checked 1 hour ago</span>
+        </div>
+        <div style="border:1.5px dashed #C9C2B8;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;cursor:pointer;transition:border-color 160ms ease-out" style-hover="border-color:#FFB100">
+          <span style="color:#8A6100;font-size:18px">✦</span>
+          <span style="font-size:13px;font-weight:600">Upgrade to connect more</span>
+          <span style="font-size:12px;color:#6E6A64;text-align:center;line-height:1.5">Free includes 1 site. Pro connects up to 3.</span>
+          <span style="margin-top:2px;font-size:12px;font-weight:600;background:#FFF4D6;color:#8A6100;padding:5px 12px;border-radius:24px">Go Pro — $15/mo</span>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S11 Sites.dc.html</span></p></div><div class="section-head" id="empty"><h2>Sites with none, and disconnecting</h2><p>Sites with no connection shows the connect card as the whole page. Disconnecting keeps the site&rsquo;s <b>pre-Inflozo snapshot</b> — it is bound to the site record, not the URL, so it survives disconnect, reconnect and project deletion, and the backup gate re-fires on reconnect because consent is per site.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns them; they are states of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lift regions of the Claude Design export, verbatim.
+"""Lift regions of the Claude Design export, verbatim. SHARED BY BOTH STEP-5 BUILDS.
 
 WHY THIS FILE EXISTS, AND IT IS A CORRECTION.
 
@@ -21,7 +21,7 @@ removed so it fills a window. Nothing is retyped, so nothing can drift in the re
 import os, re
 
 EXPORT = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', 'design', 'claude-design-export', 'Inflozo'))
+    os.path.dirname(__file__), '..', 'design', 'claude-design-export', 'Inflozo'))
 
 _cache = {}
 
@@ -33,15 +33,17 @@ def _src(name):
 
 
 def _balanced(s, start):
-    """The div beginning at `start`, up to its matching close."""
+    """The element beginning at `start`, up to its matching close. Generic over the tag,
+    because the export labels sections and divs alike."""
+    tag = re.match(r'<([a-zA-Z0-9-]+)', s[start:]).group(1)
     depth = 0
-    for m in re.finditer(r'<(/?)div\b[^>]*?(/?)>', s[start:]):
+    for m in re.finditer(r'<(/?)%s\b[^>]*?(/?)>' % re.escape(tag), s[start:]):
         if m.group(2) == '/':
             continue
         depth += -1 if m.group(1) else 1
         if depth == 0:
             return s[start:start + m.end()]
-    raise ValueError('unbalanced div at %d' % start)
+    raise ValueError('unbalanced <%s> at %d' % (tag, start))
 
 
 def region(frame, label=None, caption=None):
@@ -49,12 +51,12 @@ def region(frame, label=None, caption=None):
     s = _src(frame)
     if label:
         i = s.index('data-screen-label="%s"' % label)
-        return _balanced(s, s.rindex('<div', 0, i))
+        return _balanced(s, s.rindex('<', 0, i))
     # The unlabelled frames are announced by a mono caption immediately above them.
     m = re.search(r'>[^<>]*' + re.escape(caption) + r'[^<>]*</[a-zA-Z0-9]+>\s*', s)
     if not m:
         raise KeyError('no caption %r in %s' % (caption, frame))
-    return _balanced(s, s.index('<div', m.end()))
+    return _balanced(s, s.index('<', m.end()))
 
 
 # ─────────────────────────────────────────────────────────────────────────────

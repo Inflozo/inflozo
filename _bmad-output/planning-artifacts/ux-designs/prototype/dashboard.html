@@ -1,10 +1,10 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Dashboard
-  FRAME    : S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · B Missing Surfaces B25 sites strip · B14a update notice
+  FRAME    : S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · B Missing Surfaces B25 sites strip · B14a update notice
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -22,225 +22,542 @@
 <div class="proto">
   <a href="index.html">← All surfaces</a>
   <span class="name">Dashboard</span>
-  <span class="frame">S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · B Missing Surfaces B25 sites strip · B14a update notice</span>
+  <span class="frame">S3 Dashboard.dc.html — S3a rich · S3b empty · S3c Free · S3d account menu · S3e notifications · B Missing Surfaces B25 sites strip · B14a update notice</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Dashboard · J3 step 1 · F4 step 1</span>
 </div>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 1 of 10</span><span class="tstep">next: <a href="editor.html#pro-badge">Editor — four Pro designs placed</a> →</span></div>
-<div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 1 of 4</span><span class="tstep">next: <a href="library-update-confirm.html">Library Update Confirm — mandatory before compile</a> →</span></div>
+<div class="trails"><div class="trail"><span class="tl">Journey J3 · Free-plan ship</span><span class="tstep">step 1 of 10</span><span class="tstep">next: <a href="editor.html#pro-badge">Editor — Pro designs placed</a> →</span></div>
+<div class="trail"><span class="tl">Flow F4 · The library-update confirm</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="library-update-confirm.html">The confirm — mandatory before compile</a> →</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#account-menu">Account Menu<span class="k">S3d</span></a><a class="idxrow" href="#connected-sites">Connected Sites Strip<span class="k">B25</span></a><a class="idxrow" href="#library-update">Library Update Notice<span class="k">B14a</span></a><a class="idxrow" href="#empty">Dashboard — empty<span class="k">S3b</span></a><a class="idxrow" href="#free">Dashboard — Free at the cap<span class="k">S3c</span></a><a class="idxrow" href="#loading">Dashboard — loading<span class="k">skeletons</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#account-menu">Account Menu<span class="k">S3d</span></a><a class="idxrow" href="#notifications">Notifications<span class="k">S3e</span></a><a class="idxrow" href="#connected-sites">Connected Sites Strip<span class="k">B25</span></a><a class="idxrow" href="#library-update">Library Update Notice<span class="k">B14a</span></a><a class="idxrow" href="#empty">Dashboard — empty<span class="k">S3b</span></a><a class="idxrow" href="#free">Dashboard — Free at the cap<span class="k">S3c</span></a><a class="idxrow" href="#mobile">Dashboard at 390<span class="k">S3 mobile</span></a><a class="idxrow" href="#loading">Dashboard — loading<span class="k">not drawn</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">S3a · dashboard — rich (what&rsquo;s-new open) · 1440</p><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar">M</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-      <span class="helper">maya@orbitweekly.com</span></span>
-    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
-</div><div class="appbody"><div class="stack gap20">
-  <div class="row gap16" style="align-items:flex-start">
-    <div class="grow stack gap12">
-      <div class="row gap10"><h2 style="font-size:20px">Projects</h2><span class="chip">6 of 25</span></div>
-      <div class="grid g3">
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Orbit Weekly</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
-    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v5</span></div><div id="library-update-notice" style="margin-top:8px;background:var(--marigold-tint);border-radius:var(--r-sm);padding:10px 12px" class="stack gap6">
-    <div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Updates available</b></div>
-    <span class="helper" style="color:var(--marigold-text)">Three designs in this site were improved since you shipped.</span>
-    <a class="btn sm secondary" href="library-update-confirm.html" style="align-self:flex-start">Review and redeploy</a></div>
-  </div></div>
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">The Slow Web</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">Sample content</span></div>
-    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
-  </div></div>
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Maya&rsquo;s portfolio</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">mayachen.studio</span></div>
-    <div class="row gap8"><span class="badge danger"><span class="dot danger"></span>Failed</span><a class="small" href="deploy-failure.html" style="color:var(--danger)">See what failed →</a></div>
-  </div></div>
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Field Notes</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">Sample content</span></div>
-    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
-  </div></div>
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Launch page</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
-    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v2</span></div>
-  </div></div>
-        <div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Orbit Weekly — dark exp</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">Sample content</span></div>
-    <div class="row gap8"><span class="badge neutral">Never deployed</span></div>
-  </div></div>
+<div class="lifted"><p class="frame-cap">S3a · dashboard — rich (what&rsquo;s-new open) · 1440</p><div class="liftbox"><div data-screen-label="S3a Dashboard rich" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+        <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+              <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">312 MB</span> of 5 GB</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">
+            <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+            <div style="display:flex;flex-direction:column">
+              <span style="font-size:13px;font-weight:600">Maya Chen</span>
+              <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+            </div>
+            <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+          <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB;position:relative">
+            <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+              <span style="font-size:13px;color:#A8A29A;flex:1">Search projects…</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span></div>
+              <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#FFF4D6;cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"></path><path d="M19 3l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"></path></svg></div>
+              <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>New project</button>
+            </div>
+            <div style="position:absolute;top:58px;right:150px;width:320px;background:#FFFFFF;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);border:1px solid #E7E2DB;padding:18px;display:flex;flex-direction:column;gap:14px;z-index:5">
+              <div style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">What's new</div>
+              <div style="display:flex;gap:10px"><span style="color:#8A6100;font-size:14px;line-height:1.4">✦</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:500;line-height:1.4">Style Packs: 4 new font pairings</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">Aug 12</span></div></div>
+              <div style="display:flex;gap:10px"><span style="color:#8A6100;font-size:14px;line-height:1.4">✦</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:500;line-height:1.4">Variant Shuffle now works on footers</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">Aug 6</span></div></div>
+              <a href="#" style="font-size:13px;font-weight:500;color:#C2381F">Changelog →</a>
+            </div>
+          </div>
+          <div style="padding:24px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between"><div style="width:30px;height:6px;background:#1C1B1A;border-radius:2px"></div><div style="display:flex;gap:4px"><div style="width:14px;height:5px;background:#D8D2C9;border-radius:2px"></div><div style="width:14px;height:5px;background:#D8D2C9;border-radius:2px"></div></div></div><div style="width:65%;height:16px;background:#1C1B1A;border-radius:3px;margin-top:10px"></div><div style="width:45%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="display:flex;gap:8px;margin-top:10px"><div style="width:60px;height:18px;background:#FF5941;border-radius:4px"></div><div style="width:60px;height:18px;border:1px solid #C9C2B8;border-radius:4px"></div></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Orbit Weekly</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:16px;height:16px;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>
+                    <span style="font-size:12px;color:#6E6A64">orbitweekly.com</span>
+                    <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live <span style="font-family:'JetBrains Mono',monospace;font-size:11px">v4</span></span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;gap:8px;align-items:center"><div style="width:40%;height:14px;background:#1C1B1A;border-radius:3px;margin-top:14px"></div><div style="width:55%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="display:flex;gap:8px;width:100%;margin-top:12px"><div style="flex:1;height:44px;background:#E7E2DB;border-radius:5px"></div><div style="flex:1;height:44px;background:#FF5941;opacity:.85;border-radius:5px"></div><div style="flex:1;height:44px;background:#E7E2DB;border-radius:5px"></div></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">The Slow Web</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Sample content</span>
+                    <span style="margin-left:auto;font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Never deployed</span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="display:flex;flex-direction:column;gap:6px;justify-content:center"><div style="width:80%;height:13px;background:#1C1B1A;border-radius:3px"></div><div style="width:60%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="width:52px;height:16px;background:#FF5941;border-radius:8px;margin-top:6px"></div></div><div style="background:#E7E2DB;border-radius:6px"></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Maya's portfolio</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:16px;height:16px;border-radius:4px;background:#1C1B1A;color:#F7F5F2;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">M</span>
+                    <span style="font-size:12px;color:#6E6A64">mayachen.studio</span>
+                    <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#C4383C"><span style="width:6px;height:6px;border-radius:50%;background:#E5484D"></span>Failed</span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;gap:8px"><div style="width:30%;height:12px;background:#1C1B1A;border-radius:3px"></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px"><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Field Notes</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Sample content</span>
+                    <span style="margin-left:auto;font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Never deployed</span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center"><div style="width:58%;height:15px;background:#1C1B1A;border-radius:3px"></div><div style="width:40%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="width:120px;height:24px;background:#FF5941;border-radius:12px;margin-top:8px"></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Launch page</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:16px;height:16px;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>
+                    <span style="font-size:12px;color:#6E6A64">orbitweekly.com</span>
+                    <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live <span style="font-family:'JetBrains Mono',monospace;font-size:11px">v2</span></span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;cursor:pointer;transition:box-shadow 160ms ease-out,transform 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08);transform:translateY(-1px)">
+                <div style="aspect-ratio:16/10;background:#1C1B1A;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;gap:8px"><div style="width:30px;height:6px;background:#4a4845;border-radius:2px"></div><div style="width:60%;height:15px;background:#F7F5F2;border-radius:3px;margin-top:12px"></div><div style="width:42%;height:7px;background:#6E6A64;border-radius:2px"></div><div style="width:64px;height:18px;background:#FF5941;border-radius:4px;margin-top:10px"></div></div>
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Orbit Weekly — dark exp</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Sample content</span>
+                    <span style="margin-left:auto;font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Never deployed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="account-menu"><h2>Account Menu</h2><p>Opens up from the account chip at the foot of the rail.</p></div><div class="lifted"><p class="frame-cap">S3d · account menu — desktop popover + mobile dropdown</p><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-end">
+      <div style="width:480px;height:420px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;left:24px;bottom:88px;width:240px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">M</div>
+            <div style="display:flex;flex-direction:column;min-width:0">
+              <span style="font-size:13px;font-weight:600">Maya Chen</span>
+              <span style="font-size:11px;color:#6E6A64;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Account settings</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg>Billing &amp; plan<span style="margin-left:auto;flex-shrink:0;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:1px 7px;border-radius:24px">✦ Pro</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.6.5-1 1.5-1 2.5H9c0-1-.4-2-1-2.5A6 6 0 0 1 12 3z"></path></svg>Suggestions</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"></path><path d="M12 6v14"></path></svg>Docs</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg>Keyboard shortcuts<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">?</span></div>
+          <div style="height:1px;background:#E7E2DB;margin:4px 8px"></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Sign out</div>
+        </div>
+        <div style="position:absolute;left:16px;bottom:16px;width:256px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(28,27,26,.04)">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <span style="font-size:13px;font-weight:600">Maya Chen</span>
+            <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+          </div>
+          <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+        </div>
+        <div style="position:absolute;top:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">desktop — opens up from the account chip</div>
       </div>
-    </div>
-    <div class="card" style="width:280px;flex-shrink:0"><div class="pad-tight stack gap10">
-      <span class="panel-label">What&rsquo;s new</span>
-      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Style Packs: 4 new font pairings</b></div><span class="helper">Aug 12</span></div>
-      <div class="stack gap4"><div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Variant Shuffle now works on footers</b></div><span class="helper">Aug 6</span></div>
-      <a class="small" href="notifications.html" style="color:var(--sky-text)">Changelog →</a>
-    </div></div>
-  </div>
-</div></div></div></div></div></div><div class="section-head" id="connected-sites"><h2>Connected Sites Strip</h2><p>Health at a glance, and the count against the plan cap. Three sites, three health states — the dot colour classifies before a word is read, and each site carries the same three checks in the same order so they compare down the row.</p><p class="frame-cap">B25 · connected-sites strip</p></div><div><div class="screen "><div style="padding:24px;background:var(--paper)"><div class="card"><div class="pad stack gap14">
-  <div class="row gap10"><span class="panel-label">Connected sites</span><span class="chip">3 of 10</span>
-    <a class="btn sm secondary" href="sites.html#connect-modal" style="margin-left:auto">Connect another</a></div>
-  <div class="grid g3">
-    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
-      <div class="row gap8"><span class="dot mint"></span><b style="font-size:13px">Orbit Weekly</b><span class="badge live" style="margin-left:auto">Live</span></div>
-      <span class="helper mono">orbitweekly.com</span>
-      <span class="helper">Keys working · Ghost 6.58 · Shipped 14 Aug</span></div>
-    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
-      <div class="row gap8"><span class="dot danger"></span><b style="font-size:13px">Maya&rsquo;s Studio</b><span class="badge danger" style="margin-left:auto">Deploy failed</span></div>
-      <span class="helper mono">mayachen.studio</span>
-      <span class="helper">Admin key expired Aug 15</span>
-      <a class="small" href="deploy-failure.html" style="color:var(--danger)">See what failed →</a></div>
-    <div class="stack gap6" style="padding:12px;border:1px solid var(--line);border-radius:var(--r)">
-      <div class="row gap8"><span class="dot sky"></span><b style="font-size:13px">Field Notes</b><span class="badge sky" style="margin-left:auto">Preview-only</span></div>
-      <span class="helper mono">fieldnotes.ghost.io</span>
-      <span class="helper">Keys working · Ghost(Pro) Starter</span>
-      <a class="small" href="preview-only-notice.html" style="color:var(--sky-text)">Why no deploy? →</a></div>
-  </div></div></div></div></div></div><div class="section-head" id="library-update"><h2>Library Update Notice</h2><p>It lives <b>inside</b> the project card rather than as a badge on it, because it needs a sentence and a button. Marigold is right: it is a nudge and it never blocks.</p><p class="frame-cap">B14a · update notice on the project card — flow F4 step 1</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);max-width:340px"><div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Orbit Weekly</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">orbitweekly.com</span></div>
-    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v5</span></div><div id="library-update-notice" style="margin-top:8px;background:var(--marigold-tint);border-radius:var(--r-sm);padding:10px 12px" class="stack gap6">
-    <div class="row gap6"><span class="badge pro">✦</span><b style="font-size:12.5px">Updates available</b></div>
-    <span class="helper" style="color:var(--marigold-text)">Three designs in this site were improved since you shipped.</span>
-    <a class="btn sm secondary" href="library-update-confirm.html" style="align-self:flex-start">Review and redeploy</a></div>
-  </div></div></div></div></div><div class="section-head" id="account-menu"><h2>Account Menu</h2><p>Opens up from the account chip at the foot of the rail.</p><p class="frame-cap">S3d · account menu</p></div><div><div class="screen detail"><div class="sheetwrap" style="padding:24px;justify-content:flex-start">
-  <div class="card" style="width:260px"><div class="pad-tight stack gap2">
-    <div class="row gap10" style="padding:6px 8px 10px"><span class="avatar">M</span>
-      <span class="stack"><b style="font-size:13px">Maya Chen</b><span class="helper">maya@orbitweekly.com</span></span></div>
-    <div style="height:1px;background:var(--line);margin:2px 0 6px"></div>
-    <a class="idxrow" style="border:none;background:transparent" href="billing.html">Account settings</a>
-    <a class="idxrow" style="border:none;background:transparent" href="billing.html">Billing &amp; plan<span class="badge pro" style="margin-left:auto">✦ Pro</span></a>
-    <a class="idxrow" style="border:none;background:transparent" href="suggestions.html">Suggestions</a>
-    <a class="idxrow" style="border:none;background:transparent" href="pricing.html">Docs</a>
-    <a class="idxrow" style="border:none;background:transparent" href="editor.html#shortcuts">Keyboard shortcuts<span class="kbd" style="margin-left:auto">?</span></a>
-    <div style="height:1px;background:var(--line);margin:6px 0"></div>
-    <a class="idxrow" style="border:none;background:transparent" href="sign-in.html">Sign out</a>
-  </div></div></div></div></div><div class="section-head" id="empty"><h2>Empty</h2><p>The canonical string, verbatim, and one affordance. Never an apology.</p><p class="frame-cap">S3b · dashboard — empty · 1440</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:0%"></div></div>
-      <span class="helper"><span class="mono">0 MB</span> used</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar sam">S</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
-      <span class="helper">sam@fieldnotes.blog</span></span>
-    <span style="margin-left:auto"><span class="badge free">Free</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
-</div><div class="appbody"><div style="min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center">
-  <svg width="120" height="88" viewBox="0 0 120 88" fill="none" stroke="#1C1B1A" stroke-width="1.5">
-    <rect x="10" y="14" width="100" height="62" rx="6"/><path d="M10 30h100"/><circle cx="19" cy="22" r="2"/><circle cx="27" cy="22" r="2"/>
-    <rect x="22" y="40" width="34" height="24" rx="3" fill="#FFEDE8" stroke="#FF5941"/><path d="M66 44h32M66 52h24M66 60h32"/></svg>
-  <div class="stack gap6"><h2 style="font-size:24px">Every great site starts somewhere.</h2>
-    <p class="softaa">Yours starts with hundreds of gorgeous sections.</p></div>
-  <a class="btn coral lg" href="new-project-sheet.html">New project</a></div></div></div></div></div></div><div class="section-head" id="free"><h2>Free, at the cap</h2><p>One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is taken away. A second project opens the New Project Sheet on its at-the-cap state, with the limit stated.</p><p class="frame-cap">S3c · dashboard — free plan · 1440</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:48%"></div></div>
-      <span class="helper"><span class="mono">48 MB</span> of 100 MB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar sam">S</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
-      <span class="helper">sam@fieldnotes.blog</span></span>
-    <span style="margin-left:auto"><span class="badge free">Free</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
-</div><div class="appbody"><div class="stack gap20">
-  <div class="row gap10"><h2 style="font-size:20px">Projects</h2><span class="chip">1 of 1</span></div>
-  <div class="grid g3"><div class="card"><a href="editor.html" style="display:block"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div></a>
-  <div class="pad-tight stack gap8">
-    <div class="row gap8"><b style="font-size:14px">Field Notes</b><span class="soft" style="margin-left:auto">⋯</span></div>
-    <div class="row gap8"><span class="helper">fieldnotes.blog</span></div>
-    <div class="row gap8"><span class="badge live"><span class="dot mint"></span>Live</span><span class="chip mono">v1</span></div>
-  </div></div>
-    <a class="card" href="new-project-sheet.html#at-cap" style="border:1px dashed var(--line-strong);box-shadow:none;display:flex;align-items:center;justify-content:center;min-height:230px">
-      <div class="stack gap8" style="align-items:center;text-align:center;padding:20px">
-        <span class="badge pro">✦</span><b style="font-size:13.5px">Upgrade to add more</b>
-        <span class="helper">Free includes 1 project. Pro gives you 25.</span>
-        <span class="btn marigold sm">Go Pro — $15/mo</span></div></a></div>
-</div></div></div></div></div></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeletons matching the shape that is coming. Never a spinner.</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar">M</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-      <span class="helper">maya@orbitweekly.com</span></span>
-    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
-</div><div class="appbody"><div class="stack gap20"><div class="row gap10"><h2 style="font-size:20px">Projects</h2></div>
-  <div class="grid g3"><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div><div class="card"><div class="thumb" style="height:130px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap8"><div class="thumb" style="height:12px;width:60%"></div>
-      <div class="thumb" style="height:10px;width:40%"></div><div class="thumb" style="height:18px;width:70px;border-radius:24px"></div></div></div></div></div></div></div></div></div></div>
+      <div style="width:390px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;gap:8px;padding:0 12px 0 6px;border-bottom:1px solid #E7E2DB">
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg></div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;box-shadow:0 0 0 2px rgba(255,89,65,.4);margin-right:6px">M</div>
+          </div>
+        </div>
+        <div style="position:absolute;top:64px;right:10px;width:280px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid #E7E2DB;margin-bottom:6px">
+            <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600">M</div>
+            <div style="display:flex;flex-direction:column;min-width:0">
+              <span style="font-size:15px;font-weight:600">Maya Chen</span>
+              <span style="font-size:12px;color:#6E6A64;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+            </div>
+            <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 12px;font-size:15px;font-weight:500;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Account settings</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 12px;font-size:15px;font-weight:500;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg>Billing &amp; plan</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 12px;font-size:15px;font-weight:500;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.6.5-1 1.5-1 2.5H9c0-1-.4-2-1-2.5A6 6 0 0 1 12 3z"></path></svg>Suggestions</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 12px;font-size:15px;font-weight:500;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"></path><path d="M12 6v14"></path></svg>Docs</div>
+          <div style="height:1px;background:#E7E2DB;margin:4px 8px"></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 12px;font-size:15px;font-weight:500;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Sign out</div>
+        </div>
+        <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — avatar opens a dropdown under it</div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="notifications"><h2>Notifications</h2><p>Opens under the bell. Every row leads with the outcome; only the failure carries an action, because it is the only one that needs a decision.</p></div><div class="lifted"><p class="frame-cap">S3e · notifications — desktop popover + mobile</p><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-start">
+      <div style="width:520px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(28,27,26,.05);position:absolute"><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+        <div style="position:absolute;top:58px;right:16px;width:380px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Notifications</span>
+            <a href="#" style="font-size:12px;font-weight:500;color:#C2381F">Mark all read</a>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#157A58" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">orbitweekly.com is live</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Deploy v4 finished clean — 0 errors, 0 warnings.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">2h</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.5" fill="#E5484D"></circle></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Deploy failed on mayachen.studio</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Ghost said no — your Admin key expired.</span>
+              <a href="#" style="font-size:12px;font-weight:600;color:#C2381F;margin-top:2px">Reconnect →</a>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1d</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FFF4D6;display:flex;align-items:center;justify-content:center"><span style="color:#8A6100;font-size:13px">✦</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Style Packs: 4 new font pairings</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Fresh in the Style Pack panel — try one on.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">5d</span>
+              
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;top:22px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">desktop — opens under the bell</div>
+      </div>
+      <div style="width:390px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;gap:8px;padding:0 12px 0 6px;border-bottom:1px solid #E7E2DB">
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg></div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;position:relative;border-radius:8px;background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span></div>
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;margin-right:6px">M</div>
+          </div>
+        </div>
+        <div style="position:absolute;top:64px;left:10px;right:10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Notifications</span>
+            <a href="#" style="font-size:12px;font-weight:500;color:#C2381F">Mark all read</a>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#157A58" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">orbitweekly.com is live</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Deploy v4 finished clean — 0 errors, 0 warnings.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">2h</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.5" fill="#E5484D"></circle></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Deploy failed on mayachen.studio</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Ghost said no — your Admin key expired.</span>
+              <a href="#" style="font-size:12px;font-weight:600;color:#C2381F;margin-top:2px">Reconnect →</a>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1d</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FFF4D6;display:flex;align-items:center;justify-content:center"><span style="color:#8A6100;font-size:13px">✦</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Style Packs: 4 new font pairings</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Fresh in the Style Pack panel — try one on.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">5d</span>
+              
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — full-width under the bell</div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="connected-sites"><h2>Connected Sites Strip</h2><p>Health at a glance, and the count against the plan cap. The dot colour classifies before a word is read.</p></div><div class="lifted"><p class="frame-cap">B25 · connected-sites strip</p><div class="liftbox"><div style="width:820px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:14px 18px;border-bottom:1px solid #EFEAE2;display:flex;align-items:center;gap:10px">
+          <span style="font-size:14px;font-weight:600;flex:1">Connected sites</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459;border:1px solid #E7E2DB;border-radius:24px;padding:3px 9px">3 OF 10</span>
+          <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Connect another</span>
+        </div>
+        <div style="display:flex">
+          <div style="flex:1;padding:15px 18px;border-right:1px solid #EFEAE2;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13px;font-weight:600;flex:1">Orbit Weekly</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span><span style="font-size:11px;color:#6B6459">Live</span></span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">orbitweekly.com</span>
+            <div style="display:flex;flex-direction:column;gap:5px;border-top:1px solid #F4F1EC;padding-top:9px">
+              <div style="display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:11.5px;color:#3A3835;flex:1">Keys working</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:11.5px;color:#3A3835;flex:1">Ghost 6.4</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:11px;display:flex;justify-content:center;flex-shrink:0"><span style="width:5px;height:5px;border-radius:50%;background:#C9C2B8"></span></span><span style="font-size:11.5px;color:#6B6459;flex:1">Shipped 6 Aug</span></div>
+            </div>
+          </div>
+          <div style="flex:1;padding:15px 18px;border-right:1px solid #EFEAE2;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13px;font-weight:600;flex:1">The Quiet Web</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C4383C"></span><span style="font-size:11px;color:#8E2C30;font-weight:500">Deploy failed</span></span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">quietweb.blog</span>
+            <div style="display:flex;flex-direction:column;gap:5px;border-top:1px solid #F4F1EC;padding-top:9px">
+              <div style="display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:11.5px;color:#3A3835;flex:1">Keys working</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8A6100" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg><span style="font-size:11.5px;color:#3A3835;flex:1">gscan: 1 error</span></div>
+              <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">See what failed →</span>
+            </div>
+          </div>
+          <div style="flex:1;padding:15px 18px;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13px;font-weight:600;flex:1">Field Notes</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#4E7FFF"></span><span style="font-size:11px;color:#2B4585;font-weight:500">Preview-only</span></span>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">fieldnotes.ghost.io</span>
+            <div style="display:flex;flex-direction:column;gap:5px;border-top:1px solid #F4F1EC;padding-top:9px">
+              <div style="display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#146F50" stroke-width="2.6" stroke-linecap="round" style="flex-shrink:0"><polyline points="5 13 10 18 19 6"></polyline></svg><span style="font-size:11.5px;color:#3A3835;flex:1">Keys working</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:11px;display:flex;justify-content:center;flex-shrink:0"><span style="width:5px;height:5px;border-radius:50%;background:#C9C2B8"></span></span><span style="font-size:11.5px;color:#6B6459;flex:1">Ghost(Pro) Starter</span></div>
+              <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Why no deploy? →</span>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="library-update"><h2>Library Update Notice</h2><p>It lives <b>inside</b> the project card rather than as a badge on it, because it needs a sentence and a button. Marigold is right: it is a nudge and it never blocks.</p></div><div class="lifted"><p class="frame-cap">B14a · update notice on the project card — flow F4 step 1</p><div class="liftbox"><div style="width:600px;background:#EDEAE6;border-radius:12px;padding:22px;display:flex;justify-content:center">
+        <div style="width:340px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden">
+          <div style="height:150px;background:#FBF9F5;border-bottom:1px solid #E7E2DB;padding:16px 18px 0;display:flex;flex-direction:column;gap:7px">
+            <div style="height:5px;width:30%;background:#E4DED4;border-radius:2px"></div>
+            <div style="height:13px;width:76%;background:#DDD6CB;border-radius:3px;margin-top:5px"></div>
+            <div style="display:flex;gap:7px;margin-top:9px">
+              <div style="flex:1;height:52px;background:#EFEAE2;border-radius:4px"></div>
+              <div style="flex:1;height:52px;background:#EFEAE2;border-radius:4px"></div>
+            </div>
+          </div>
+          <div style="padding:15px 17px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px">Orbit Weekly</span>
+              <span style="display:flex;align-items:center;gap:5px;margin-left:auto"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span><span style="font-size:11.5px;color:#6B6459">Live</span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">orbitweekly.com</span>
+              <span style="width:3px;height:3px;border-radius:50%;background:#C9C2B8"></span>
+              <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10.5px;color:#6B6459">shipped 6 Aug</span>
+            </div>
+            <div style="background:#FFF4D6;border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-size:11px;color:#8A6100;flex-shrink:0;padding-top:1px">✦</span>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:12.5px;font-weight:600;color:#5C4200">Updates available</span>
+                  <span style="font-size:11.5px;color:#8A6100;line-height:1.45">Three designs in this site were improved since you shipped.</span>
+                </div>
+              </div>
+              <button style="height:32px;background:#FFFFFF;border:1px solid #E8D9AE;border-radius:9px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;color:#5C4200;transition:all 160ms ease-out" style-hover="background:#FFFAEE">Review and redeploy</button>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>The canonical string, verbatim, and one affordance.</p></div><div class="lifted"><p class="frame-cap">S3b · dashboard — empty · 1440</p><div class="liftbox"><div data-screen-label="S3b Dashboard empty" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+        <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+              <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:0%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">0 MB</span> used</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px">
+            <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2B5BD7;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">S</div>
+            <div style="display:flex;flex-direction:column">
+              <span style="font-size:13px;font-weight:600">Sam Okafor</span>
+              <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">sam@fieldnotes.blog</span>
+            </div>
+            <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;border:1px solid #E7E2DB;color:#6E6A64;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">Free</span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
+            <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+              <span style="font-size:13px;color:#A8A29A;flex:1">Search projects…</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+              <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"></path><path d="M19 3l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"></path></svg></div>
+              <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>New project</button>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+            <svg width="160" height="120" viewBox="0 0 160 120" fill="none">
+              <rect x="24" y="18" width="112" height="76" rx="8" stroke="#1C1B1A" stroke-width="1.5" stroke-dasharray="5 5"></rect>
+              <line x1="24" y1="42" x2="136" y2="42" stroke="#1C1B1A" stroke-width="1.5" opacity=".25"></line>
+              <rect x="38" y="54" width="46" height="8" rx="3" fill="#E7E2DB"></rect>
+              <rect x="38" y="68" width="30" height="12" rx="4" fill="#FF5941"></rect>
+              <path d="M128 6l2.2 6.2L136.4 14.4l-6.2 2.2-2.2 6.2-2.2-6.2-6.2-2.2 6.2-2.2z" fill="#FFB100"></path>
+              <circle cx="30" cy="106" r="3" stroke="#1C1B1A" stroke-width="1.5"></circle>
+              <path d="M44 108c14 4 58 4 74-4" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round" opacity=".4"></path>
+            </svg>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.01em">Every great site starts somewhere.</div>
+              <div style="font-size:15px;color:#6E6A64">Yours starts with hundreds of gorgeous sections.</div>
+            </div>
+            <button style="height:44px;padding:0 26px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>New project</button>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="free"><h2>Free, at the cap</h2><p>One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is taken away. A second project opens the New Project Sheet on its at-the-cap state.</p></div><div class="lifted"><p class="frame-cap">S3c · dashboard — free plan (⋯ menu open) · 1440</p><div class="liftbox"><div data-screen-label="S3c Dashboard free plan" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+      <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+              <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:10%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">48 MB</span> used</span>
+            </div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2B5BD7;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">S</div>
+          <div style="display:flex;flex-direction:column">
+            <span style="font-size:13px;font-weight:600">Sam Okafor</span>
+            <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">sam@fieldnotes.blog</span>
+          </div>
+          <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;border:1px solid #E7E2DB;color:#6E6A64;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">Free</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
+          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+            <span style="font-size:13px;color:#A8A29A;flex:1">Search projects…</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"></path><path d="M19 3l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"></path></svg></div>
+            <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>New project</button>
+          </div>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;position:relative">
+            <div style="position:absolute;left:302px;top:300px;width:160px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;z-index:5">
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg>Rename</div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Duplicate</div>
+              <div style="height:1px;background:#E7E2DB;margin:4px 8px"></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;font-weight:500;color:#C4383C;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#FDEBEC"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg>Delete</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;position:relative">
+              <div style="aspect-ratio:16/10;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:18px 24px;display:flex;flex-direction:column;gap:8px"><div style="width:30%;height:12px;background:#1C1B1A;border-radius:3px"></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px"><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:38px;background:#E7E2DB;border-radius:5px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div><div style="height:6px;background:#C9C2B8;border-radius:2px"></div></div></div>
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Field Notes</span><span style="color:#1C1B1A;letter-spacing:2px;font-weight:600;cursor:pointer">⋯</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="width:16px;height:16px;border-radius:4px;background:#2B5BD7;color:#FFFFFF;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">F</span>
+                  <span style="font-size:12px;color:#6E6A64">fieldnotes.blog</span>
+                  <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live <span style="font-family:'JetBrains Mono',monospace;font-size:11px">v1</span></span>
+                </div>
+              </div>
+            </div>
+            <div style="border:1.5px dashed #C9C2B8;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:280px;cursor:pointer;transition:border-color 160ms ease-out" style-hover="border-color:#FFB100">
+              <span style="color:#8A6100;font-size:20px">✦</span>
+              <span style="font-size:14px;font-weight:600">Upgrade to add more</span>
+              <span style="font-size:13px;color:#6E6A64;text-align:center;max-width:200px;line-height:1.5">Free includes 1 project. Pro gives you 25.</span>
+              <span style="margin-top:4px;font-size:13px;font-weight:600;background:#FFF4D6;color:#8A6100;padding:6px 14px;border-radius:24px">Go Pro — $15/mo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="mobile"><h2>At 390</h2><p>The Dashboard stays fully usable at 390, exactly as the export draws it (R-76).</p></div><div class="lifted"><p class="frame-cap">S3 · mobile · 390</p><div class="liftbox"><div data-screen-label="S3 mobile" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;flex-direction:column">
+        <div style="height:60px;display:flex;align-items:center;gap:8px;padding:0 12px 0 6px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg></div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;position:relative"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span></div>
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">M</div>
+          </div>
+        </div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:16px;overflow:hidden">
+          <button style="height:48px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer">+ New project</button>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden">
+              <div style="height:150px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:16px 22px;display:flex;flex-direction:column;gap:7px"><div style="width:30px;height:6px;background:#1C1B1A;border-radius:2px"></div><div style="width:60%;height:14px;background:#1C1B1A;border-radius:3px;margin-top:8px"></div><div style="width:44%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="width:58px;height:17px;background:#FF5941;border-radius:4px;margin-top:8px"></div></div>
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:15px;font-weight:600">Orbit Weekly</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600">⋯</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="width:16px;height:16px;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>
+                  <span style="font-size:12px;color:#6E6A64">orbitweekly.com</span>
+                  <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live <span style="font-family:'JetBrains Mono',monospace;font-size:11px">v4</span></span>
+                </div>
+              </div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden">
+              <div style="height:150px;background:#F7F5F2;border-bottom:1px solid #E7E2DB;padding:16px 22px;display:flex;flex-direction:column;align-items:center;gap:7px"><div style="width:44%;height:13px;background:#1C1B1A;border-radius:3px;margin-top:12px"></div><div style="width:58%;height:7px;background:#C9C2B8;border-radius:2px"></div><div style="display:flex;gap:7px;width:100%;margin-top:10px"><div style="flex:1;height:40px;background:#E7E2DB;border-radius:5px"></div><div style="flex:1;height:40px;background:#FF5941;opacity:.85;border-radius:5px"></div><div style="flex:1;height:40px;background:#E7E2DB;border-radius:5px"></div></div></div>
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:15px;font-weight:600">The Slow Web</span><span style="color:#6E6A64;letter-spacing:2px;font-weight:600">⋯</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Sample content</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">Never deployed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="lifted"><p class="frame-cap">S3 · mobile — menu open · 390</p><div class="liftbox"><div data-screen-label="S3 mobile menu" style="width:390px;height:844px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;opacity:.6">
+          <div style="height:60px;border-bottom:1px solid #E7E2DB"></div>
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="height:48px;background:#FF5941;border-radius:12px"></div>
+            <div style="height:220px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div>
+            <div style="height:220px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div>
+          </div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="position:absolute;top:0;bottom:0;left:0;width:300px;background:#FFFFFF;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex;flex-direction:column;padding:20px 14px 16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 10px 20px">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;margin:-10px -12px 0 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;font-size:15px;font-weight:600;color:#1C1B1A;background:#F7F5F2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;font-size:15px;font-weight:500;color:#6E6A64;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;font-size:15px;font-weight:500;color:#6E6A64;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+              <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+              <span style="font-size:12px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">312 MB</span> of 5 GB</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 10px;border-top:1px solid #E7E2DB">
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">M</div>
+            <div style="display:flex;flex-direction:column">
+              <span style="font-size:14px;font-weight:600">Maya Chen</span>
+              <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+            </div>
+            <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="loading"><h2>Loading</h2><p>Skeleton cards in the shape of the project cards that are coming — never a spinner (DESIGN.md § Components → Loading). No frame draws the dashboard mid-load.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it; it is a state of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

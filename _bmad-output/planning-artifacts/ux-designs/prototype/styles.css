@@ -402,3 +402,27 @@ table.limits td:not(:first-child) { font-variant-numeric: tabular-nums; }
   .ed { height: auto; }
   .mkbody, .mknav, .mkfoot { padding-left: 20px; padding-right: 20px; }
 }
+
+
+/* ── a lifted frame, presented as the export presents it ─────────────────────
+   Step 5b's second cut does not redraw a frame; it lifts the region out of the
+   .dc.html and shows it at the width it was drawn at, on its own mat. The
+   annotation lives around it — never inside it. Wide frames scroll in their own
+   box rather than making the page scroll sideways. */
+.lifted { max-width: 1512px; margin: 0 auto 40px; }
+.liftbox {
+  overflow-x: auto; padding: 24px 0;
+  background: var(--mat); border-radius: var(--r-sm);
+}
+.liftbox > * { margin: 0 auto; }
+.lift-src { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+.limits-wrap { overflow-x: auto; }
+
+/* A surface with NO frame says so, and shows nothing. Inventing a picture here
+   would be a second interface vocabulary beside the export's — R-74's one refusal. */
+.nodraw {
+  max-width: 1000px; margin: 0 auto 40px; padding: 20px 22px;
+  border: 1px dashed var(--line-strong); border-radius: var(--r);
+  background: repeating-linear-gradient(135deg, var(--paper) 0 10px, var(--paper-sunk) 10px 20px);
+}
+.nodraw .helper { max-width: 78ch; }

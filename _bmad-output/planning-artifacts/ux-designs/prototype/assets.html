@@ -1,10 +1,10 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Assets
-  FRAME    : S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details. Drop zone gains its keyboard path per Appendix A prompt A8 frame D8d
-  IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · § Accessibility Floor → keyboard completeness · J4 step 8
+  FRAME    : S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details
+  IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · J4 step 8
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -22,127 +22,169 @@
 <div class="proto">
   <a href="index.html">← All surfaces</a>
   <span class="name">Assets</span>
-  <span class="frame">S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details. Drop zone gains its keyboard path per Appendix A prompt A8 frame D8d</span>
+  <span class="frame">S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details</span>
   <span class="spacer"></span>
-  <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · § Accessibility Floor → keyboard completeness · J4 step 8</span>
+  <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · J4 step 8</span>
 </div>
 
-<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 8 of 10</span><span class="tstep">← <a href="sites.html">Sites — disconnect down to one</a></span><span class="tstep">next: <a href="deploy-history.html">Deploy History — retained, never pruned</a> →</span></div>
+<div class="trails"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 6 of 8</span><span class="tstep">← <a href="sites.html">Sites — disconnect down to one</a></span><span class="tstep">next: <a href="deploy-history.html">Deploy History — retained, never pruned</a> →</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#drop">Drop zone (+ keyboard path)<span class="k">S10b · D8d</span></a><a class="idxrow" href="#uploading">Uploading</a><a class="idxrow" href="#over-quota">Assets — over quota<span class="k">J4 step 8</span></a><a class="idxrow" href="#delete">Delete in use<span class="k">S10c</span></a><a class="idxrow" href="#details">Image details<span class="k">S10d</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#drop">Drop zone<span class="k">S10b</span></a><a class="idxrow" href="#drop-fix">The two corrections it is owed<span class="k">F.1 · D8d</span></a><a class="idxrow" href="#delete">Delete in use<span class="k">S10c</span></a><a class="idxrow" href="#details">Image details<span class="k">S10d</span></a><a class="idxrow" href="#over-quota">Assets — over quota<span class="k">not drawn</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">S10a · asset library · 1440</p><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav on" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar">M</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-      <span class="helper">maya@orbitweekly.com</span></span>
-    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search assets…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a></div>
-</div><div class="appbody"><div class="stack gap16">
-  <div class="row gap10"><h2 style="font-size:20px">Assets</h2><span class="chip">48 files · 312 MB of 5 GB</span>
-    <a class="btn coral" style="margin-left:auto" href="assets.html#drop">Upload</a></div>
-  <div class="row gap8"><span class="seg"><span class="on">All · 48</span><span>Photos</span><span>Logos</span><span>Illustrations</span></span>
-    <span class="seg" style="margin-left:auto"><span class="on">Newest</span><span>Largest</span></span></div>
-  <div class="grid g5"><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB · used in 3 projects</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">orbit-wordmark.svg</b><span class="helper">4 KB · used in 2</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">issue-47-cover.jpg</b><span class="helper">410 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">maya-portrait.jpg</b><span class="helper">220 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">blogrolls.jpg</b><span class="helper">360 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">quiet-software.jpg</b><span class="helper">298 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">archive-1998.png</b><span class="helper">512 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">field-notes-mark.svg</b><span class="helper">3 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">lisbon-desk.jpg</b><span class="helper">440 KB</span></div></a><a class="card" href="assets.html#details"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">renewal-chart.png</b><span class="helper">180 KB</span></div></a></div>
-  <div class="row gap10" style="background:var(--ink);color:var(--surface);border-radius:var(--r-pill);padding:8px 16px;align-self:center">
-    <span style="font-size:12.5px">Optimized: <span class="mono">4.2 MB → 380 KB</span></span>
-    <a href="assets.html#details" style="color:var(--surface);text-decoration:underline">View</a></div>
-</div></div></div></div></div></div><div class="section-head" id="drop"><h2>The drop zone, and its keyboard path</h2><p>A drag-and-drop-only upload has no keyboard path at all, so the zone is <b>also a file input with a visible &ldquo;Choose files&rdquo; button</b>. And the size line is corrected: the frame reads &ldquo;up to 30 MB each&rdquo;; Appendix F.1 caps uploads at <b>10 MB per file on both plans</b>.</p><p class="frame-cap">S10b + D8d · drag-over — full-surface drop zone</p></div><div><div class="screen detail"><div style="padding:40px;background:var(--paper)">
-  <div style="border:2px dashed var(--coral);border-radius:var(--r-lg);background:var(--coral-tint);padding:56px;display:flex;flex-direction:column;align-items:center;gap:14px">
-    <b style="font-size:18px;font-family:var(--display)">Drop images — we&rsquo;ll optimize them ✨</b>
-    <a class="btn secondary" href="assets.html">Choose files</a>
-    <span class="helper">JPG, PNG, SVG or WebP · up to 10 MB each</span></div></div></div></div><div class="section-head" id="uploading"><h2>Per-file progress, with a real byte count</h2><p>Skeletons and progress bars, never a spinner.</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper);display:flex;flex-direction:column;gap:12px">
-  <div class="card"><div class="pad-tight stack gap6"><div class="row gap8"><b style="font-size:13px">issue-48-cover.jpg</b>
-      <span class="helper mono" style="margin-left:auto">1.4 of 3.1 MB</span></div>
-    <div class="progress"><div class="bar" style="width:45%"></div></div></div></div>
-  <div class="card"><div class="pad-tight stack gap6"><div class="row gap8"><b style="font-size:13px">desk-2026.jpg</b>
-      <span class="helper mono" style="margin-left:auto">queued</span></div>
-    <div class="progress"><div class="bar" style="width:0"></div></div></div></div></div></div></div><div class="section-head" id="over-quota"><h2>Over quota</h2><p>The library goes <b>read-only</b>: existing files stay, uploads are blocked, until the user deletes below the cap. Nothing is deleted by Inflozo, on any path.</p><p class="frame-cap">S10 · over quota — J4 step 8</p></div><div><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav on" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter over">
-      <div class="track"><div class="fill" style="width:100%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 100 MB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar sam">S</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Sam Okafor</span>
-      <span class="helper">sam@fieldnotes.blog</span></span>
-    <span style="margin-left:auto"><span class="badge free">Free</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search assets…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a></div>
-</div><div class="appbody"><div class="stack gap16">
-  <div class="banner error"><span class="ico">!</span><span><b>312 MB of the 100 MB the Free plan includes.</b>
-    Your files are all still here and nothing will be deleted. Uploads are paused until you are back under 100 MB —
-    or go Pro, which lifts it to 5 GB.</span></div>
-  <div class="row gap10"><h2 style="font-size:20px">Assets</h2><span class="badge danger">Uploads paused</span>
-    <span class="btn coral off" style="margin-left:auto">Upload</span></div>
-  <p class="reason">Uploading is paused while you are over the storage limit.</p>
-  <div class="grid g5"><div class="card"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB</span></div></div><div class="card"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB</span></div></div><div class="card"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB</span></div></div><div class="card"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB</span></div></div><div class="card"><div class="thumb" style="height:110px;border-radius:12px 12px 0 0;border:none"></div>
-    <div class="pad-tight stack gap4"><b style="font-size:12.5px">hero-shot.jpg</b><span class="helper">380 KB</span></div></div></div>
-</div></div></div></div></div></div><div class="section-head" id="delete"><h2>Delete in use</h2><p>Serious voice, and it names every place the image is used.</p><p class="frame-cap">S10c · delete-in-use</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:18px">Delete hero-shot.jpg?</h2></div>
-  <div class="body"><p style="font-size:13px;line-height:1.55">This image is used in 3 projects. Those spots will show an
-    empty placeholder until you replace it. This can&rsquo;t be undone.</p>
-  <div class="stack gap8">
-    <div class="row gap8"><span class="avatar" style="width:22px;height:22px;font-size:10px">O</span><b style="font-size:12.5px">Orbit Weekly</b><span class="helper">Hero · Post Header</span></div>
-    <div class="row gap8"><span class="avatar" style="width:22px;height:22px;font-size:10px">O</span><b style="font-size:12.5px">Launch page</b><span class="helper">Hero</span></div>
-    <div class="row gap8"><span class="avatar sam" style="width:22px;height:22px;font-size:10px">F</span><b style="font-size:12.5px">Field Notes</b><span class="helper">Newsletter</span></div>
-  </div></div>
-  <div class="foot"><a class="btn secondary" href="assets.html" style="box-shadow:var(--focus)">Cancel</a>
-    <a class="btn danger" href="assets.html">Delete image</a>
-    <span class="helper" style="margin-left:auto">Focus opens on Cancel — the rule for every irreversible confirm.</span></div>
-  </div></div></div></div><div class="section-head" id="details"><h2>Image details</h2><p class="frame-cap">S10d · image details</p></div><div><div class="screen "><div class="sheetwrap"><div class="sheet"><div class="body row gap24" style="align-items:flex-start">
-  <div class="thumb" style="width:300px;height:200px"></div>
-  <div class="stack gap12 grow"><h2 style="font-size:18px">hero-shot.jpg</h2>
-    <div class="grid g2 gap12">
-      <div class="stack gap2"><span class="control-label soft">Format</span><b style="font-size:13px">WebP</b><span class="helper">optimized from JPG</span></div>
-      <div class="stack gap2"><span class="control-label soft">Size</span><b style="font-size:13px">380 KB</b><span class="helper">from 4.2 MB</span></div>
-      <div class="stack gap2"><span class="control-label soft">Dimensions</span><b style="font-size:13px">2400 × 1600</b></div>
-      <div class="stack gap2"><span class="control-label soft">Uploaded</span><b style="font-size:13px">Aug 12, 2026</b><span class="helper">by Maya</span></div>
-    </div>
-    <div class="row gap8"><a class="btn sm secondary" href="assets.html">Copy URL</a>
-      <a class="btn sm secondary" href="assets.html">Download</a>
-      <a class="btn sm secondary" href="assets.html">Replace</a>
-      <a class="btn sm danger-out" href="assets.html#delete">Delete</a></div>
-  </div></div></div></div></div></div>
+<div class="lifted"><p class="frame-cap">S10a · asset library — one card hovered, WebP toast · 1440</p><div class="liftbox"><div data-screen-label="S10a Asset library" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
+      <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;padding:0 12px 24px">Inflozo</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Projects</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>Sites</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:#1C1B1A;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg>Assets</div>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:8px 12px 4px">
+            <div style="width:100%;height:4px;background:#E7E2DB;border-radius:2px;overflow:hidden"><div style="width:6%;height:100%;background:#1C1B1A;border-radius:2px"></div></div>
+            <span style="font-size:11px;color:#6E6A64"><span style="font-family:'JetBrains Mono',monospace">312 MB</span> of 5 GB</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)">
+          <div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">M</div>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <span style="font-size:13px;font-weight:600">Maya Chen</span>
+            <span style="font-size:11px;color:#6E6A64;display:block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">maya@orbitweekly.com</span>
+          </div>
+          <span style="margin-left:auto;flex-shrink:0;white-space:nowrap;background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 8px;border-radius:24px">✦ Pro</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
+        <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
+          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+            <span style="font-size:13px;color:#A8A29A;flex:1">Search assets…</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+            <button style="height:36px;padding:0 18px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Upload</button>
+          </div>
+        </div>
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12.5px;font-weight:600;background:#1C1B1A;color:#F7F5F2;border-radius:24px;padding:5px 14px;cursor:pointer">All · 48</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Photos</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Logos</span>
+            <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Illustrations</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:32px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;background:#FFFFFF;cursor:pointer;font-size:12.5px;font-weight:500;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">Newest<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 10px,#DCCFD5 10px 20px);cursor:pointer;position:relative;box-shadow:0 4px 16px rgba(28,27,26,.14)">
+              <div style="position:absolute;inset:0;border-radius:10px;background:linear-gradient(to top,rgba(28,27,26,.74),rgba(28,27,26,0) 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;gap:5px">
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:600;color:#FFFFFF">hero-shot.jpg</span><span style="color:#FFFFFF;letter-spacing:2px;font-weight:600;cursor:pointer">⋯</span></div>
+                <div style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap">2.1 MB</span><span style="margin-left:auto;font-size:10px;font-weight:500;color:#FFFFFF;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:24px;padding:1px 7px;white-space:nowrap">Used in 3 projects</span></div>
+              </div>
+            </div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:#FFFFFF;border:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"><span style="width:44px;height:44px;border-radius:10px;background:#2F4A3E;color:#F4EFE6;display:inline-flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px">O</span></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#DFE5E8 0 10px,#D4DCE0 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#4A443C 0 10px,#3E3931 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EAE2D2 0 10px,#E2D7C2 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E3E8DD 0 10px,#D9E0D1 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:#FFFFFF;border:1px solid #E7E2DB;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D96C3F" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E8DFE0 0 10px,#DFD3D5 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E5E1D8 0 10px,#DBD6CA 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#DCE3E1 0 10px,#D1DAD7 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EFE6D6 0 10px,#E8DCC4 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E2DEE8 0 10px,#D6D1DF 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+            <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E9E4DA 0 10px,#E0D9CB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:24px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:9px 16px;z-index:5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+          <span style="font-size:13px;font-weight:500">Optimized: <span style="font-family:'JetBrains Mono',monospace;font-size:12px">4.2 MB → 380 KB</span></span>
+          <div style="width:1px;height:14px;background:#E7E2DB"></div>
+          <span style="font-size:13px;font-weight:600;color:#C2381F;cursor:pointer">View</span>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="drop"><h2>The drop zone</h2><p class="frame-cap">S10b · drag-over — full-surface drop zone</p></div><div class="lifted"><div class="liftbox"><div style="width:760px;height:520px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex">
+        <div style="width:170px;border-right:1px solid #E7E2DB;padding:16px 10px;display:flex;flex-direction:column;gap:7px;opacity:.5"><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px"></div></div>
+        <div style="flex:1;padding:14px">
+          <div style="width:100%;height:100%;border:2px dashed #FF5941;border-radius:16px;background:rgba(255,237,232,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Drop images — we'll optimize them ✨</span>
+              <span style="font-size:13px;color:#6E6A64">JPG, PNG, SVG or WebP · up to 30 MB each</span>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="drop-fix"><h2>Two corrections the frame is owed</h2><p><b>The size line says &ldquo;up to 30 MB each&rdquo;. Appendix F.1 caps uploads at 10 MB per file on both plans.</b> And a drop zone with no button cannot be reached by keyboard at all, so it needs a visible <b>&ldquo;Choose files&rdquo;</b> button inside it — both are Appendix A prompt A8, frame D8d, which has not been run.</p></div><div class="section-head" id="delete"><h2>Delete in use</h2><p>Serious voice, and it names every place the image is used.</p></div><div class="lifted"><p class="frame-cap">S10c · delete-in-use — serious, no puns</p><div class="liftbox"><div style="width:600px;height:520px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:38px;height:38px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg></div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;letter-spacing:-0.01em">Delete hero-shot.jpg?</span>
+              <span style="font-size:13px;color:#6E6A64;line-height:1.5">This image is used in 3 projects. Those spots will show an empty placeholder until you replace it. This can't be undone.</span>
+            </div>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:10px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid #E7E2DB">
+              <span style="width:18px;height:18px;flex-shrink:0;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>
+              <span style="font-size:13px;font-weight:500">Orbit Weekly</span>
+              <span style="margin-left:auto;font-size:11px;color:#6E6A64">Hero · Post Header</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid #E7E2DB">
+              <span style="width:18px;height:18px;flex-shrink:0;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>
+              <span style="font-size:13px;font-weight:500">Launch page</span>
+              <span style="margin-left:auto;font-size:11px;color:#6E6A64">Hero</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px">
+              <span style="width:18px;height:18px;flex-shrink:0;border-radius:4px;background:#2B5BD7;color:#FFFFFF;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">F</span>
+              <span style="font-size:13px;font-weight:500">Field Notes</span>
+              <span style="margin-left:auto;font-size:11px;color:#6E6A64">Newsletter</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button style="height:38px;padding:0 16px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2">Cancel</button>
+            <button style="height:38px;padding:0 18px;background:#C4383C;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#C63A3F">Delete image</button>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="details"><h2>Image details</h2></div><div class="lifted"><p class="frame-cap">S10d · image details — click any asset</p><div class="liftbox"><div data-screen-label="S10d Image details" style="width:1000px;height:600px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      <div style="width:820px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);display:flex;overflow:hidden;position:relative">
+        <div style="flex:1.15;background:#EDEAE6;padding:22px;display:flex;align-items:center;justify-content:center">
+          <div style="width:100%;aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 12px,#DCCFD5 12px 24px);box-shadow:0 4px 16px rgba(28,27,26,.12);display:flex;align-items:center;justify-content:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459;background:rgba(255,255,255,.85);padding:2px 8px;border-radius:5px">hero-shot.jpg</span></div>
+        </div>
+        <div style="flex:1;padding:22px 24px;display:flex;flex-direction:column;gap:14px;min-width:0">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <span style="display:flex;align-items:center;gap:6px;min-width:0"><span style="font-size:15px;font-weight:600;border-bottom:1px dashed #C9C2B8;cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">hero-shot.jpg</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0;margin-top:2px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid #F1EDE7"><span style="font-size:12px;color:#6E6A64;width:86px;flex-shrink:0">Format</span><span style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px">WebP</span><span style="font-size:11px;color:#157A58;background:#E4F5EE;border-radius:24px;padding:1px 7px;font-weight:500">optimized from JPG</span></span></div>
+            <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid #F1EDE7"><span style="font-size:12px;color:#6E6A64;width:86px;flex-shrink:0">Size</span><span style="display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px">380 KB</span><span style="font-size:11px;color:#6E6A64;text-decoration:line-through">4.2 MB</span></span></div>
+            <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid #F1EDE7"><span style="font-size:12px;color:#6E6A64;width:86px;flex-shrink:0">Dimensions</span><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px">2400 × 1600</span></div>
+            <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid #F1EDE7"><span style="font-size:12px;color:#6E6A64;width:86px;flex-shrink:0">Uploaded</span><span style="font-size:12.5px">Aug 12, 2026 · by Maya</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:11.5px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Used in 3 projects</span>
+            <div style="display:flex;flex-direction:column;margin:0 -11px">
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="width:17px;height:17px;flex-shrink:0;border-radius:4px;background:#2F4A3E;color:#FFFFFF;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-size:12.5px;font-weight:500">Orbit Weekly</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Hero · Post Header</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="width:17px;height:17px;flex-shrink:0;border-radius:4px;background:#2F4A3E;color:#FFFFFF;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span><span style="font-size:12.5px;font-weight:500">Launch page</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Hero</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="width:17px;height:17px;flex-shrink:0;border-radius:4px;background:#2B5BD7;color:#FFFFFF;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">F</span><span style="font-size:12.5px;font-weight:500">Field Notes</span><span style="margin-left:auto;font-size:11px;color:#6E6A64">Newsletter</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:8px;flex-wrap:wrap">
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #E7E2DB;color:#1C1B1A;border-radius:10px;font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy URL</button>
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #E7E2DB;color:#1C1B1A;border-radius:10px;font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Download</button>
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #E7E2DB;color:#1C1B1A;border-radius:10px;font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>Replace</button>
+            <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #F5C6C9;color:#C4383C;border-radius:10px;font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#FDEBEC"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg>Delete</button>
+          </div>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="over-quota"><h2>Over quota</h2><p>The library goes <b>read-only</b>: existing files stay, uploads are blocked, until the user deletes below the cap. <b>Nothing is deleted by Inflozo, on any path.</b> No frame draws it.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it; it is a state of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

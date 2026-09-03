@@ -3,8 +3,8 @@
   SURFACE  : Notifications
   FRAME    : S3 Dashboard.dc.html S3e · B Missing Surfaces.dc.html B21
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Notifications · FR-B7 · F6 (the one nudge)
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -27,67 +27,160 @@
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Notifications · FR-B7 · F6 (the one nudge)</span>
 </div>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 4 of 5</span><span class="tstep">← <a href="template-binding-checklist.html#corrections">What the frame got wrong</a></span><span class="tstep">next: <a href="editor.html#empty-template-warning">Empty Template Warning — the paired case</a> →</span></div>
+<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 4 of 5</span><span class="tstep">← <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a></span><span class="tstep">next: <a href="editor.html#not-drawn">Empty Template Warning — not drawn</a> →</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#empty">Notifications — empty<span class="k">S3e</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#popover">Under the bell<span class="k">S3e</span></a><a class="idxrow" href="#empty">Notifications — empty<span class="k">not drawn</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">S3e + B21 · notifications — opens under the bell</p><div class="screen "><div class="app"><div class="rail">
-  <a class="word" href="dashboard.html">Inflozo</a>
-  <div class="stack gap4">
-    <a class="nav on" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Projects</a>
-    <a class="nav" href="sites.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Sites</a>
-    <a class="nav" href="assets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Assets</a>
-    <div class="meter">
-      <div class="track"><div class="fill" style="width:6%"></div></div>
-      <span class="helper"><span class="mono">312 MB</span> of 5 GB</span>
-    </div>
-  </div>
-  <a class="acct" href="billing.html">
-    <span class="avatar">M</span>
-    <span class="stack"><span style="font-size:13px;font-weight:600">Maya Chen</span>
-      <span class="helper">maya@orbitweekly.com</span></span>
-    <span style="margin-left:auto"><span class="badge pro">✦ Pro</span></span>
-  </a>
-</div><div class="appmain"><div class="topbar">
-  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span class="grow">Search projects…</span><span class="kbd">⌘K</span></div>
-  <div class="row gap10" style="margin-left:auto"><a class="iconbtn" href="notifications.html" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot-new"></span></a><a class="btn coral" href="new-project-sheet.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</a></div>
-</div><div class="appbody"><div class="card" style="max-width:640px"><div class="pad stack gap4">
-  <div class="row gap10" style="padding-bottom:8px"><span class="panel-label">Notifications</span>
-    <a class="small soft" style="margin-left:auto" href="notifications.html">Mark all read</a></div>
-  <div class="row gap10" style="padding:12px;background:var(--coral-tint);border-radius:var(--r-sm);align-items:flex-start">
-    <span class="dot coral" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>Orbit Weekly is live.</b> Your site just got gorgeous.</span>
-      <span class="helper">14 minutes ago · shipped by you</span></span></div>
-  <div class="row gap10" style="padding:12px;align-items:flex-start"><span class="dot grey" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>Deploy failed on Maya&rsquo;s Studio.</b> Ghost said no — your Admin key expired.</span>
-      <span class="helper">Yesterday, 18:02</span>
-      <a class="small" href="deploy-failure.html" style="color:var(--danger)">See what failed →</a></span></div>
-  <div class="row gap10" style="padding:12px;align-items:flex-start"><span class="dot grey" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>Three designs in Orbit Weekly were improved.</b> Redeploy when you are ready.</span>
-      <span class="helper">2 days ago</span><a class="small" href="library-update-confirm.html" style="color:var(--sky-text)">Review →</a></span></div>
-  <div class="row gap10" style="padding:12px;align-items:flex-start"><span class="dot grey" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>One step left on Orbit Weekly.</b> Three templates shipped that a Ghost page still has to point at.</span>
-      <span class="helper">2 days ago · raised once, and never again</span>
-      <a class="small" href="template-binding-checklist.html" style="color:var(--sky-text)">Open the checklist →</a></span></div>
-  <div class="row gap10" style="padding:12px;align-items:flex-start"><span class="dot grey" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>Ghost card designs are here.</b> Every editor card is yours to style.</span>
-      <span class="helper">Last week · what&rsquo;s new</span></span></div>
-  <div class="row gap10" style="padding:12px;align-items:flex-start"><span class="dot grey" style="margin-top:6px"></span>
-    <span class="stack gap2 grow"><span style="font-size:13px"><b>Dai took over editing on The Quiet Web.</b></span>
-      <span class="helper">Last week</span><a class="small" href="edit-lock.html" style="color:var(--sky-text)">What happened →</a></span></div>
-  <p class="helper" style="padding:10px 12px 0;border-top:1px solid var(--line-faint)">Deploy outcomes always land here, even if you closed the tab.</p>
-</div></div></div></div></div></div></div><div class="section-head" id="empty"><h2>Empty</h2></div><div><div class="screen narrow"><div style="padding:40px;background:var(--paper);display:flex;justify-content:center">
-  <div class="card" style="max-width:460px"><div class="pad stack gap10" style="align-items:center;text-align:center">
-    <svg width="90" height="70" viewBox="0 0 90 70" fill="none" stroke="#1C1B1A" stroke-width="1.5">
-      <path d="M25 30a20 20 0 0 1 40 0c0 20 8 24 8 24H17s8-4 8-24"/><path d="M39 58a6 6 0 0 0 12 0"/>
-      <circle cx="66" cy="20" r="6" fill="#FFEDE8" stroke="#FF5941"/></svg>
-    <b style="font-size:15px">Nothing yet.</b>
-    <span class="helper">Deploy outcomes land here even if you closed the tab.</span></div></div></div></div></div>
+<div class="lifted"><p class="frame-cap">B21 · notifications</p><div class="liftbox"><div style="width:400px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:13px 16px;border-bottom:1px solid #EFEAE2;display:flex;align-items:center;gap:9px">
+          <span style="font-size:13.5px;font-weight:600;flex:1">Notifications</span>
+          <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">Mark all read</span>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <div style="padding:13px 16px;border-bottom:1px solid #F4F1EC;display:flex;gap:11px;background:#FFF9F7">
+            <span style="width:7px;height:7px;border-radius:50%;background:#FF5941;flex-shrink:0;margin-top:5px"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:12.5px;line-height:1.5"><span style="font-weight:600">Orbit Weekly is live.</span> Your site just got gorgeous.</span>
+              <span style="font-size:11px;color:#6B6459">14 minutes ago · shipped by you</span>
+            </div>
+          </div>
+          <div style="padding:13px 16px;border-bottom:1px solid #F4F1EC;display:flex;gap:11px;background:#FFF9F7">
+            <span style="width:7px;height:7px;border-radius:50%;background:#FF5941;flex-shrink:0;margin-top:5px"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+              <span style="font-size:12.5px;line-height:1.5"><span style="font-weight:600">Deploy failed on The Quiet Web.</span> Ghost rejected the theme — gscan found one error.</span>
+              <span style="font-size:11px;color:#6B6459">Yesterday, 18:02</span>
+              <span style="font-size:11.5px;font-weight:600;color:#C2381F;cursor:pointer">See what failed →</span>
+            </div>
+          </div>
+          <div style="padding:13px 16px;border-bottom:1px solid #F4F1EC;display:flex;gap:11px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#EFECE7;flex-shrink:0;margin-top:5px"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:12.5px;line-height:1.5;color:#3A3835">Three designs in <span style="font-weight:600">Orbit Weekly</span> were improved. Redeploy when you are ready.</span>
+              <span style="font-size:11px;color:#6B6459">2 days ago</span>
+            </div>
+          </div>
+          <div style="padding:13px 16px;border-bottom:1px solid #F4F1EC;display:flex;gap:11px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#EFECE7;flex-shrink:0;margin-top:5px"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:12.5px;line-height:1.5;color:#3A3835"><span style="font-weight:600">Ghost card designs</span> are here. Every editor card is yours to style.</span>
+              <span style="font-size:11px;color:#6B6459">Last week · what's new</span>
+            </div>
+          </div>
+          <div style="padding:13px 16px;display:flex;gap:11px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#EFECE7;flex-shrink:0;margin-top:5px"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:12.5px;line-height:1.5;color:#3A3835">Dai took over editing on <span style="font-weight:600">The Quiet Web</span>.</span>
+              <span style="font-size:11px;color:#6B6459">Last week</span>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #EFEAE2;background:#FBF9F5;padding:11px 16px;display:flex;align-items:center;gap:9px">
+          <span style="font-size:11.5px;color:#6E6A64;flex:1">Deploy outcomes always land here, even if you closed the tab.</span>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="popover"><h2>As it opens under the bell</h2><p class="frame-cap">S3e · notifications — desktop popover + mobile</p></div><div class="lifted"><div class="liftbox"><div style="display:flex;gap:48px;align-items:flex-start">
+      <div style="width:520px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(28,27,26,.05);position:absolute"><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></div>
+        <div style="position:absolute;top:58px;right:16px;width:380px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Notifications</span>
+            <a href="#" style="font-size:12px;font-weight:500;color:#C2381F">Mark all read</a>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#157A58" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">orbitweekly.com is live</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Deploy v4 finished clean — 0 errors, 0 warnings.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">2h</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.5" fill="#E5484D"></circle></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Deploy failed on mayachen.studio</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Ghost said no — your Admin key expired.</span>
+              <a href="#" style="font-size:12px;font-weight:600;color:#C2381F;margin-top:2px">Reconnect →</a>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1d</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FFF4D6;display:flex;align-items:center;justify-content:center"><span style="color:#8A6100;font-size:13px">✦</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Style Packs: 4 new font pairings</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Fresh in the Style Pack panel — try one on.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">5d</span>
+              
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;top:22px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">desktop — opens under the bell</div>
+      </div>
+      <div style="width:390px;height:470px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;gap:8px;padding:0 12px 0 6px;border-bottom:1px solid #E7E2DB">
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg></div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;position:relative;border-radius:8px;background:rgba(28,27,26,.05)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:#FF5941;border:1.5px solid #F7F5F2"></span></div>
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:#2F4A3E;color:#F4EFE6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;margin-right:6px">M</div>
+          </div>
+        </div>
+        <div style="position:absolute;top:64px;left:10px;right:10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid #E7E2DB;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Notifications</span>
+            <a href="#" style="font-size:12px;font-weight:500;color:#C2381F">Mark all read</a>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#157A58" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">orbitweekly.com is live</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Deploy v4 finished clean — 0 errors, 0 warnings.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">2h</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.5" fill="#E5484D"></circle></svg></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Deploy failed on mayachen.studio</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Ghost said no — your Admin key expired.</span>
+              <a href="#" style="font-size:12px;font-weight:600;color:#C2381F;margin-top:2px">Reconnect →</a>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1d</span>
+              <span style="width:7px;height:7px;border-radius:50%;background:#FF5941"></span>
+            </div>
+          </div><div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:#FFF4D6;display:flex;align-items:center;justify-content:center"><span style="color:#8A6100;font-size:13px">✦</span></div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:600;line-height:1.4">Style Packs: 4 new font pairings</span>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.45">Fresh in the Style Pack panel — try one on.</span>
+              
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">5d</span>
+              
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">mobile — full-width under the bell</div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S3 Dashboard.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2><p>&ldquo;Nothing yet. Deploy outcomes land here even if you closed the tab.&rdquo; — an ink line drawing with one coral accent shape, per the empty-state illustration rule. No frame draws it.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>No prompt owns it; it is a state of a drawn surface</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

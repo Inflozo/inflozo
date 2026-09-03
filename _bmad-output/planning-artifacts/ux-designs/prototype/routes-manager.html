@@ -1,10 +1,10 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Routes Manager
-  FRAME    : S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route (the drawn route rows re-specified: FR-I1/I5)
+  FRAME    : S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · § wrong mechanism → S9 · § State Patterns → Routes Manager
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -22,144 +22,279 @@
 <div class="proto">
   <a href="index.html">← All surfaces</a>
   <span class="name">Routes Manager</span>
-  <span class="frame">S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route (the drawn route rows re-specified: FR-I1/I5)</span>
+  <span class="frame">S9 Routes.dc.html — S9a manager, S9b YAML error, S9c new collection, S9d empty, S9e new route</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · § wrong mechanism → S9 · § State Patterns → Routes Manager</span>
 </div>
 
 <div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#new-collection">New Collection Sheet<span class="k">S9c</span></a><a class="idxrow" href="#new-route">New Route Sheet<span class="k">S9e</span></a><a class="idxrow" href="#error">Routes — YAML error<span class="k">S9b</span></a><a class="idxrow" href="#naming">Naming refusals<span class="k">FR-I3</span></a><a class="idxrow" href="#empty">Routes — empty<span class="k">S9d</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#respec">The two rows that go<span class="k">FR-I1/I5</span></a><a class="idxrow" href="#error">Routes — YAML error<span class="k">S9b</span></a><a class="idxrow" href="#new-collection">New Collection Sheet<span class="k">S9c</span></a><a class="idxrow" href="#new-route">New Route Sheet<span class="k">S9e</span></a><a class="idxrow" href="#empty">Routes — empty<span class="k">S9d</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">S9a · routes &amp; templates · 1440</p><div class="screen "><div style="min-height:820px;background:var(--paper);display:flex;flex-direction:column">
-  <div class="row gap12" style="padding:16px 24px;border-bottom:1px solid var(--line)">
-    <a href="editor.html">←</a><h2 style="font-size:18px">Routes &amp; Templates</h2>
-    <span class="chip">O Orbit Weekly</span>
-    <a class="btn secondary sm" style="margin-left:auto" href="editor.html">Done</a></div>
-  <div class="row" style="flex:1;align-items:stretch">
-    <div class="grow stack gap16" style="padding:24px;overflow:auto">
-      <div class="stack gap8"><span class="panel-label">Collections</span>
-        <p class="helper">Your homepage is a template built from sections — it lists posts only if you add a posts section.
-          Collections are dedicated post listings, like Articles.</p>
-        <div class="itemrow"><span class="chip mono">/articles/</span><div class="stack gap2 grow">
-            <b style="font-size:13px">Articles</b><span class="helper">All posts, in one place · <span class="mono">type:post</span></span></div>
-          <span class="badge neutral">Articles</span><span class="chip mono">12 / page</span><span class="soft">⋯</span></div>
-        <div class="itemrow"><span class="chip mono">/tutorials/</span><div class="stack gap2 grow">
-            <b style="font-size:13px">Tutorials</b><span class="helper">Guides &amp; how-tos · <span class="mono">tag:tutorials</span></span></div>
-          <span class="badge neutral">Post Grid</span><span class="chip mono">10 / page</span><span class="soft">⋯</span></div>
-        <div class="itemrow"><span class="chip mono">/notes/</span><div class="stack gap2 grow">
-            <b style="font-size:13px">Notes</b><span class="helper">Short posts, no images · <span class="mono">tag:notes</span></span></div>
-          <span class="badge neutral">Minimal List</span><span class="chip mono">20 / page</span><span class="soft">⋯</span></div>
-        <a class="btn dashed sm" href="routes-manager.html#new-collection" style="align-self:flex-start">+ New collection</a>
-        <p class="helper">A post lives in the first collection it matches — drag to reorder if posts land in the wrong place.</p></div>
-      <div class="stack gap8"><span class="panel-label">Custom routes</span>
-        <div class="itemrow"><span class="chip mono">/reading-list/</span><div class="stack gap2 grow">
-            <b style="font-size:13px">Reading List</b><span class="helper">A channel — a filtered stream with its own RSS</span></div>
-          <span class="soft">⋯</span></div>
-        <a class="btn dashed sm" href="routes-manager.html#new-route" style="align-self:flex-start">+ Custom route</a>
-        <div class="banner info"><span class="ico">ⓘ</span><span><b>Two rows the frame drew are gone, and both had to go.</b>
-          A membership page emits <b>no route</b> — it is <span class="mono">custom-membership.hbs</span>, bound from
-          Ghost&rsquo;s page editor (see the <a href="template-binding-checklist.html">binding checklist</a>). And
-          <span class="mono">home.hbs</span> resolves for the root by itself; a <span class="mono">routes:</span> entry for
-          <span class="mono">/</span> also removes the index collection, which breaks <span class="mono">/page/2/</span>.</span></div></div>
-      <div class="stack gap8"><span class="panel-label">Taxonomies</span>
-        <div class="itemrow"><b style="font-size:13px" class="grow">Tags</b><span class="chip mono">/topic/{slug}/</span><span class="badge neutral">Tag template</span></div>
-        <div class="itemrow"><b style="font-size:13px" class="grow">Authors</b><span class="chip mono">/writer/{slug}/</span><span class="badge neutral">Author template</span></div></div>
-    </div>
-    <div style="width:420px;border-left:1px solid var(--line);background:var(--paper-sunk);padding:20px;overflow:auto" class="stack gap10">
-      <div class="row gap8"><span class="panel-label grow">routes.yaml</span><span class="badge live">Valid</span></div>
-      <span class="helper">generated live, ships with every deploy</span>
-      <pre class="mono" style="font-size:12px;line-height:1.7;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;margin:0;overflow:auto">collections:
-  /articles/:
-    permalink: /articles/{slug}/
-    template: articles
-    filter: type:post
-  /tutorials/:
-    permalink: /tutorials/{slug}/
-    template: post-grid
-    filter: tag:tutorials
-    limit: 10
-  /notes/:
-    permalink: /notes/{slug}/
-    template: minimal-list
-    filter: tag:notes
-    limit: 20
-
-routes:
-  /reading-list/:
-    controller: channel
-    filter: tag:reading
-
-taxonomies:
-  tag: /topic/{slug}/
-  author: /writer/{slug}/</pre>
-      <span class="helper">Ghost will accept this routing.</span></div>
-  </div></div></div></div><div class="section-head" id="error"><h2>YAML error</h2><p>Line-numbered, and <b>deploys are blocked until routing is valid — the Ship button carries the reason</b> rather than failing later.</p><p class="frame-cap">S9b · validation error</p></div><div><div class="screen detail"><div style="padding:24px;background:var(--paper-sunk)"><div class="stack gap10" style="max-width:520px;margin:0 auto">
-  <div class="row gap8"><span class="panel-label grow">routes.yaml</span><span class="badge danger">1 error</span></div>
-  <div class="banner error"><span class="ico">✕</span><span><b>Line 15</b> — filters use a colon: did you mean
-    <span class="mono">tag:tutorials</span>?</span></div>
-  <pre class="mono" style="font-size:12px;line-height:1.8;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;margin:0">13    permalink: /tutorials/{slug}/
-14    template: post-grid
-<span style="background:var(--danger-tint);display:inline-block;width:100%">15    filter: tag=tutorials</span>
-16  /notes/:</pre>
-  <div class="row gap10"><span class="btn coral off">Ship it</span>
-    <span class="reason">Your routing file has an error on line 15. Fix it and this unlocks.</span></div></div></div></div></div><div class="section-head" id="new-collection"><h2>New Collection Sheet</h2><p>Ghost&rsquo;s NQL, as condition rows. <b>Posts per page comes from Theme Settings</b>, and a collection&rsquo;s own <span class="mono">limit:</span> may override it for that route — the frame said it follows the home feed&rsquo;s Count control, which is not where that value lives. And the published-date field offers FR-I2&rsquo;s <b>relative</b> form first.</p><p class="frame-cap">S9c · new collection</p></div><div><div class="screen "><div class="sheetwrap"><div class="sheet"><div class="head"><h2 style="font-size:20px">New collection.</h2>
-    <p class="softaa" style="font-size:13px;margin-top:4px">A section of your site with its own URL and layout.</p></div>
-  <div class="body">
-    <label class="field"><span class="control-label">Path</span><input class="input mono" value="/travel/" aria-label="Path"></label>
-    <div class="stack gap8"><div class="row gap10"><span class="control-label">Show posts that match</span>
-        <span class="seg" style="margin-left:auto"><span class="on">All conditions</span><span>Any</span></span></div>
-      <div class="row gap8"><span class="input" style="max-width:130px;display:flex;align-items:center">Tag</span>
-        <span class="input" style="max-width:120px;display:flex;align-items:center">is any of</span>
-        <span class="row gap6 grow"><span class="chip">Travel</span><span class="chip">Trains</span><span class="helper">add…</span></span></div>
-      <div class="row gap8"><span class="input" style="max-width:130px;display:flex;align-items:center">Published</span>
-        <span class="input" style="max-width:120px;display:flex;align-items:center">after</span>
-        <span class="input mono" style="max-width:180px;display:flex;align-items:center">now-30d</span>
-        <span class="helper">or an exact date</span></div>
-      <div class="row gap8"><span class="input" style="max-width:130px;display:flex;align-items:center">Visibility</span>
-        <span class="input" style="max-width:120px;display:flex;align-items:center">is</span>
-        <span class="input" style="max-width:180px;display:flex;align-items:center">Public</span></div>
-      <span class="helper">Fields: tag · author · primary tag · primary author · featured · visibility · published date ·
-        has feature image.</span></div>
-    <div class="row gap12"><span class="control-label" style="width:130px">Template</span>
-      <span class="input" style="max-width:220px;display:flex;align-items:center">Post Grid</span></div>
-    <div class="row gap12"><span class="control-label" style="width:130px">Posts per page</span>
-      <span class="stepper"><span>−</span><span class="v">12</span><span>+</span></span>
-      <span class="helper">Follows <a href="theme-settings.html">Theme settings</a>. Change it here to override it for
-        this route only.</span></div></div>
-  <div class="foot"><a class="btn secondary" href="routes-manager.html">Cancel</a>
-    <a class="btn coral" href="routes-manager.html">Create collection</a></div></div></div></div></div><div class="section-head" id="new-route"><h2>New Route Sheet</h2><p>A template, or a channel.</p><p class="frame-cap">S9e · new route</p></div><div><div class="screen narrow"><div class="sheetwrap"><div class="sheet narrow"><div class="head"><h2 style="font-size:20px">New route.</h2>
-    <p class="softaa" style="font-size:13px;margin-top:4px">A URL on your site that shows exactly what you choose.</p></div>
-  <div class="body"><label class="field"><span class="control-label">Path</span><input class="input mono" value="/reading-list/" aria-label="Path"></label>
-    <div class="stack gap8"><span class="control-label">What should it show?</span>
-      <label class="radiocard"><span class="radio"></span><span class="stack"><span class="t">One of your templates</span>
-        <span class="c">A designed page — like your Reading List template.</span></span></label>
-      <label class="radiocard on"><span class="radio on"></span><span class="stack"><span class="t">A channel — a filtered stream of posts</span>
-        <span class="c">Like a saved search with its own page and RSS feed. Posts keep their normal URLs. You&rsquo;ll add
-          filter conditions next.</span></span></label></div></div>
-  <div class="foot"><a class="btn secondary" href="routes-manager.html">Cancel</a>
-    <a class="btn coral" href="routes-manager.html">Create route</a></div></div></div></div></div><div class="section-head" id="naming"><h2>Filename collisions and renames are refused at the naming step</h2><p>A <span class="mono">custom-{name}.hbs</span> filename is <b>permanent from its first deploy</b>: Ghost stores the exact string on every page that selects it and never revalidates it. So the rename control is <b>absent</b> rather than present-and-refusing, and the permanence is said once, plainly, at the moment of choosing.</p><p class="frame-cap">FR-I3 · Appendix H</p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;flex-direction:column;gap:12px;max-width:620px;margin:0 auto">
-  <div class="card"><div class="pad stack gap8"><span class="control-label">Template name</span>
-    <input class="input" value="Membership" aria-label="Template name">
-    <span class="chip mono" style="align-self:flex-start">custom-membership.hbs</span>
-    <div class="banner notice"><span class="ico">!</span><span><b>This name is permanent.</b> Ghost remembers it on every
-      page you assign, and renaming it later would quietly unassign them all.</span></div></div></div>
-  <div class="card"><div class="pad stack gap8"><span class="control-label">Template name</span>
-    <input class="input" value="Membership" style="border-color:var(--danger)" aria-label="Template name">
-    <div class="banner error"><span class="ico">✕</span><span>You already have a template called Membership, and Ghost
-      keys on the filename. Pick another name.</span></div></div></div>
-</div></div></div><div class="section-head" id="empty"><h2>Empty</h2><p class="frame-cap">S9d · routes empty · 1440</p></div><div><div class="screen detail"><div style="min-height:420px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px">
-  <svg width="110" height="80" viewBox="0 0 110 80" fill="none" stroke="#1C1B1A" stroke-width="1.5">
-    <path d="M14 40h34M62 40h34"/><circle cx="55" cy="40" r="7" fill="#FFEDE8" stroke="#FF5941"/>
-    <path d="M14 20h20M14 60h20M76 20h20M76 60h20"/></svg>
-  <b style="font-size:18px;font-family:var(--display)">Your site uses Ghost&rsquo;s default routing.</b>
-  <span class="helper">Nice and simple. Add a collection when you want sections like /tutorials/.</span>
-  <a class="btn secondary" href="routes-manager.html#new-collection">+ New collection</a></div></div></div>
+<div class="lifted"><p class="frame-cap">S9a · routes &amp; templates · 1440</p><div class="liftbox"><div data-screen-label="S9a Routes manager" style="width:1440px;height:900px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Routes &amp; Templates</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid #E7E2DB;border-radius:24px;padding:4px 11px;font-size:12px;font-weight:500;background:#FFFFFF"><span style="width:14px;height:14px;border-radius:4px;background:#2F4A3E;color:#F4EFE6;font-size:8px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">O</span>Orbit Weekly</span>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="flex:1.1;padding:22px 24px;display:flex;flex-direction:column;gap:18px;overflow:hidden;border-right:1px solid #E7E2DB">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Collections</span>
+            <span style="font-size:12px;color:#6E6A64;line-height:1.5;margin-top:-4px">Your homepage is a template built from sections — it lists posts only if you add a posts section. Collections are dedicated post listings, like Articles.</span>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;padding:4px 10px">/articles/</span>
+              <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                <span style="font-size:13px;font-weight:600">Articles</span>
+                <span style="font-size:12px;color:#6E6A64">All posts, in one place</span>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">type:post</span>
+              <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Articles</span>
+              <span style="font-size:12px;color:#6E6A64">12 / page</span>
+              <span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;padding:4px 10px">/tutorials/</span>
+              <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                <span style="font-size:13px;font-weight:600">Tutorials</span>
+                <span style="font-size:12px;color:#6E6A64">Guides &amp; how-tos, own section</span>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">tag:tutorials</span>
+              <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Post Grid</span>
+              <span style="font-size:12px;color:#6E6A64">10 / page</span>
+              <span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;padding:4px 10px">/notes/</span>
+              <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+                <span style="font-size:13px;font-weight:600">Notes</span>
+                <span style="font-size:12px;color:#6E6A64">Short posts, no images</span>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">tag:notes</span>
+              <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Minimal List</span>
+              <span style="font-size:12px;color:#6E6A64">20 / page</span>
+              <span style="color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+            </div>
+            <button style="align-self:flex-start;height:32px;padding:0 14px;background:transparent;border:1px dashed #C9C2B8;border-radius:8px;font-size:12px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#E84B34;border-color:#FF5941">+ New collection</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Custom routes</span>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #E7E2DB">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">/</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Home — built from your sections</span>
+                <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #E7E2DB">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">/subscribe/</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Members Signup</span>
+                <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">/about/</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <span style="font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Page — About</span>
+                <span style="margin-left:auto;color:#6E6A64;letter-spacing:2px;font-weight:600;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">⋯</span>
+              </div>
+            </div>
+            <button style="align-self:flex-start;height:32px;padding:0 14px;background:transparent;border:1px dashed #C9C2B8;border-radius:8px;font-size:12px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#E84B34;border-color:#FF5941">+ Custom route</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Taxonomies</span>
+            <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #E7E2DB">
+                <span style="font-size:12px;font-weight:600;width:56px">Tags</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">/topic/{slug}/</span>
+                <span style="margin-left:auto;font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Tag template</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+                <span style="font-size:12px;font-weight:600;width:56px">Authors</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">/writer/{slug}/</span>
+                <span style="margin-left:auto;font-size:12px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#F7F5F2">Author template</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;padding:22px 24px;display:flex;flex-direction:column;gap:12px;background:#F7F5F2;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;background:#E4F5EE;border:1px solid #BFE7D6;border-radius:10px;padding:10px 14px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1FA97A"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            <span style="font-size:13px;font-weight:500;color:#157A58">Valid — Ghost will accept this routing.</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FFFFFF;color:#157A58;border-radius:24px;padding:2px 8px">pass</span>
+          </div>
+          <div style="flex:1;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid #E7E2DB">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">routes.yaml</span>
+              <span style="font-size:11px;color:#6E6A64">· generated live, ships with every deploy</span>
+              <div style="margin-left:auto;display:flex;gap:2px">
+                <div style="width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Copy" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div>
+                <div style="width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 160ms ease-out" title="Download routes.yaml" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
+              </div>
+            </div>
+            <div style="flex:1;padding:16px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.85;overflow:hidden">
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">1</span><span style="white-space:pre"><span style="color:#2B5BD7">routes</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">2</span><span style="white-space:pre">  <span style="color:#1C1B1A">/</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">home</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">3</span><span style="white-space:pre">  <span style="color:#1C1B1A">/subscribe/</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">members-signup</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">4</span><span style="white-space:pre">  <span style="color:#1C1B1A">/about/</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">page-about</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">5</span><span style="white-space:pre"></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">6</span><span style="white-space:pre"><span style="color:#2B5BD7">collections</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">7</span><span style="white-space:pre">  <span style="color:#1C1B1A">/articles/</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">8</span><span style="white-space:pre">    <span style="color:#2B5BD7">permalink</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/articles/{slug}/</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">9</span><span style="white-space:pre">    <span style="color:#2B5BD7">template</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">articles</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">10</span><span style="white-space:pre">    <span style="color:#2B5BD7">filter</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">type:post</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">11</span><span style="white-space:pre">  <span style="color:#1C1B1A">/tutorials/</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">12</span><span style="white-space:pre">    <span style="color:#2B5BD7">permalink</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/tutorials/{slug}/</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">13</span><span style="white-space:pre">    <span style="color:#2B5BD7">template</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">post-grid</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">14</span><span style="white-space:pre">    <span style="color:#2B5BD7">filter</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">tag:tutorials</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">15</span><span style="white-space:pre">  <span style="color:#1C1B1A">/notes/</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">16</span><span style="white-space:pre">    <span style="color:#2B5BD7">permalink</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/notes/{slug}/</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">17</span><span style="white-space:pre">    <span style="color:#2B5BD7">template</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">minimal-list</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">18</span><span style="white-space:pre">    <span style="color:#2B5BD7">filter</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">tag:notes</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">19</span><span style="white-space:pre"></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">20</span><span style="white-space:pre"><span style="color:#2B5BD7">taxonomies</span><span style="color:#6E6A64">:</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">21</span><span style="white-space:pre">  <span style="color:#2B5BD7">tag</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/topic/{slug}/</span></span></div>
+              <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8;user-select:none">22</span><span style="white-space:pre">  <span style="color:#2B5BD7">author</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/writer/{slug}/</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="respec"><h2>Two rows the frame draws that have to go</h2><p>A membership page emits <b>no route</b> — it is <span class="mono">custom-{name}.hbs</span>, bound from Ghost&rsquo;s page editor, so <span class="mono">/subscribe/ : members-signup</span> goes. And <span class="mono">home.hbs</span> resolves for the root by itself; a <span class="mono">routes:</span> entry for <span class="mono">/</span> also removes the index collection, which breaks <span class="mono">/page/2/</span> — so that row goes too (FR-I1/I5).</p></div><div class="section-head" id="error"><h2>YAML error</h2><p>Line-numbered, and <b>deploys are blocked until routing is valid — the Ship button carries the reason</b> rather than failing later.</p></div><div class="lifted"><p class="frame-cap">S9b · yaml pane — validation error</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px;background:#FDEBEC;border:1px solid #F5C6C9;border-radius:10px;padding:10px 14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E5484D"></circle><line x1="8.5" y1="8.5" x2="15.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line><line x1="15.5" y1="8.5" x2="8.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line></svg>
+          <span style="font-size:13px;font-weight:500;color:#C63A3F">Line 15 — filters use a colon: did you mean <span style="font-family:'JetBrains Mono',monospace;font-size:12px">tag:tutorials</span>?</span>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid #E7E2DB">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">routes.yaml</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FDEBEC;color:#C63A3F;border-radius:24px;padding:2px 8px">1 error</span>
+          </div>
+          <div style="padding:14px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.85">
+            <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8">13</span><span style="white-space:pre">    <span style="color:#2B5BD7">permalink</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">/tutorials/{slug}/</span></span></div>
+            <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8">14</span><span style="white-space:pre">    <span style="color:#2B5BD7">template</span><span style="color:#6E6A64">:</span> <span style="color:#157A58">post-grid</span></span></div>
+            <div style="display:flex;gap:16px;padding:0 16px;background:#FDEBEC"><span style="width:16px;text-align:right;color:#C63A3F;font-weight:500">15</span><span style="white-space:pre">    <span style="color:#2B5BD7">filter</span><span style="color:#6E6A64">:</span> <span style="color:#C63A3F;text-decoration:underline wavy #E5484D 1px;text-underline-offset:3px">tag=tutorials</span></span></div>
+            <div style="display:flex;gap:16px;padding:0 16px"><span style="width:16px;text-align:right;color:#C9C2B8">16</span><span style="white-space:pre">  <span style="color:#1C1B1A">/notes/</span><span style="color:#6E6A64">:</span></span></div>
+          </div>
+        </div>
+        <span style="font-size:12px;color:#6E6A64">Deploys are blocked until routing is valid — the Ship button explains why.</span>
+      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-collection"><h2>New Collection Sheet</h2><p><b>Posts per page comes from Theme Settings</b>, and a collection&rsquo;s own <span class="mono">limit:</span> may override it for that route — the frame says it follows the home feed&rsquo;s Count control, which is not where that value lives. And the published-date field offers FR-I2&rsquo;s <b>relative</b> form first.</p></div><div class="lifted"><p class="frame-cap">S9c · &ldquo;+ New collection&rdquo; sheet</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px 28px 300px;display:flex;justify-content:center;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">New collection.</span><span style="font-size:13px;color:#6E6A64">A section of your site with its own URL and layout.</span></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:12px;font-weight:500;color:#6E6A64">Path</label>
+            <input type="text" value="/travel/" style="height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;position:relative">
+            <div style="display:flex;align-items:center;gap:10px">
+              <label style="font-size:12px;font-weight:500;color:#6E6A64">Show posts that match</label>
+              <div style="margin-left:auto;display:flex;background:#EFECE7;border-radius:24px;padding:2px"><span style="text-align:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">All conditions</span><span style="text-align:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;color:#6E6A64;cursor:pointer">Any</span></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center"><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:104px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Tag</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:86px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">is any of</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="flex:1;display:flex;align-items:center;gap:5px;min-height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:3px 8px;flex-wrap:wrap;background:#FFFFFF"><span style="display:inline-flex;align-items:center;gap:5px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px;font-size:11.5px;font-weight:500">Travel<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span><span style="display:inline-flex;align-items:center;gap:5px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px;font-size:11.5px;font-weight:500">Trains<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span><span style="font-size:11.5px;color:#A8A29A">add…</span></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+            <div style="display:flex;gap:8px;align-items:center"><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:104px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Visibility</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:86px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">is</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Public</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+            <div style="display:flex;gap:8px;align-items:center"><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:104px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Published</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:86px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">after</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span style="font-size:12.5px;font-weight:500">Jan 1, 2026</span></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+            <div style="display:flex;gap:8px;align-items:center"><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:104px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Featured</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:86px;flex-shrink:0;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">is</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8"><span style="font-size:12.5px;font-weight:500;flex:1">Yes</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #FF5941;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:104px;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,89,65,.4)"><span style="font-size:12.5px;color:#A8A29A;flex:1">Choose…</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+              <div style="flex:1"></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+            </div>
+            <div style="position:absolute;top:100%;left:0;width:250px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:6px;display:flex;flex-direction:column;gap:1px;z-index:6;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;background:#F7F5F2;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Tag</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">tag:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Author</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">author:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Primary tag</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">primary_tag:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Primary author</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">primary_author:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Featured</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">featured:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Visibility</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">visibility:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Published date</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">published_at:</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><span style="font-size:12.5px;font-weight:500;flex:1">Has feature image</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A29A">feature_image:</span></div>
+            </div>
+            <span style="font-size:11px;color:#6E6A64;line-height:1.5">A post lives in the first collection it matches — drag collections to reorder if posts land in the wrong place.</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12px;font-weight:500;color:#6E6A64">Template</label>
+              <div style="display:flex;align-items:center;gap:9px;height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;cursor:pointer;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">
+                <div style="width:26px;height:18px;border:1px solid #E7E2DB;border-radius:3px;display:flex;padding:2px;gap:1.5px"><div style="flex:1;background:#E7E2DB;border-radius:1px"></div><div style="flex:1;background:#E7E2DB;border-radius:1px"></div><div style="flex:1;background:#FFD9CF;border-radius:1px"></div></div>
+                <span style="font-size:13px;font-weight:500">Post Grid</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="margin-left:auto"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;background:#F7F5F2;border-radius:8px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg>
+              <span style="font-size:12px;color:#6E6A64;line-height:1.5">Posts per page follows the home feed's <strong style="font-weight:600;color:#1C1B1A">Count</strong> control — <span style="font-family:'JetBrains Mono',monospace;font-size:11px">10</span> right now.</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:2px">
+            <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+            <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Create collection</button>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="new-route"><h2>New Route Sheet</h2></div><div class="lifted"><p class="frame-cap">S9e · &ldquo;+ Custom route&rdquo; sheet</p><div class="liftbox"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:28px;display:flex;justify-content:center;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      <div style="width:480px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">New route.</span><span style="font-size:13px;color:#6E6A64">A URL on your site that shows exactly what you choose.</span></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;margin-top:4px"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;font-weight:500;color:#6E6A64">Path</label>
+          <input type="text" value="/reading-list/" style="height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-family:'JetBrains Mono',monospace;font-size:13px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="font-size:12px;font-weight:500;color:#6E6A64">What should it show?</label>
+          <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #FF5941;border-radius:10px;background:#FFF9F7;cursor:pointer">
+            <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #FF5941;display:inline-flex;align-items:center;justify-content:center;margin-top:1px"><span style="width:8px;height:8px;border-radius:50%;background:#FF5941"></span></span>
+            <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">One of your templates</span><span style="font-size:12px;color:#6E6A64">A designed page — like your Members Signup.</span></div>
+              <div style="display:flex;align-items:center;gap:9px;height:38px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;cursor:pointer;background:#FFFFFF;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">
+                <div style="width:26px;height:18px;border:1px solid #E7E2DB;border-radius:3px;display:flex;flex-direction:column;padding:2px;gap:1.5px"><div style="height:3px;width:60%;background:#1C1B1A;border-radius:1px;margin:0 auto"></div><div style="flex:1;background:#FFD9CF;border-radius:1px"></div></div>
+                <span style="font-size:13px;font-weight:500">Reading List</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="margin-left:auto"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #E7E2DB;border-radius:10px;cursor:pointer;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">
+            <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #C9C2B8;margin-top:1px"></span>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">A channel — a filtered stream of posts</span><span style="font-size:12px;color:#6E6A64;line-height:1.5">Like a saved search with its own page and RSS feed. Posts keep their normal URLs. You'll add filter conditions next.</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+          <button style="height:38px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#33312E">Create route</button>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div><div class="section-head" id="empty"><h2>Empty</h2></div><div class="lifted"><p class="frame-cap">S9d · routes — empty state · 1440</p><div class="liftbox"><div data-screen-label="S9d Routes empty" style="width:1440px;height:620px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #E7E2DB;flex-shrink:0">
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em">Routes &amp; Templates</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid #E7E2DB;border-radius:24px;padding:4px 11px;font-size:12px;font-weight:500;background:#FFFFFF"><span style="width:14px;height:14px;border-radius:4px;background:#2B5BD7;color:#FFFFFF;font-size:8px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">F</span>Field Notes</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center">
+          <svg width="120" height="84" viewBox="0 0 120 84" fill="none">
+            <line x1="60" y1="14" x2="60" y2="72" stroke="#1C1B1A" stroke-width="1.5"></line>
+            <rect x="20" y="18" width="44" height="14" rx="3" stroke="#1C1B1A" stroke-width="1.5" fill="#FFFFFF"></rect>
+            <rect x="56" y="40" width="44" height="14" rx="3" stroke="#1C1B1A" stroke-width="1.5" fill="#FFFFFF"></rect>
+            <path d="M98 14l1.8 4.8 4.8 1.8-4.8 1.8-1.8 4.8-1.8-4.8-4.8-1.8 4.8-1.8z" fill="#FF5941"></path>
+            <ellipse cx="60" cy="76" rx="16" ry="3" fill="#E7E2DB"></ellipse>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Your site uses Ghost's default routing.</span>
+            <span style="font-size:14px;color:#6E6A64">Nice and simple. Add a collection when you want sections like /tutorials/.</span>
+          </div>
+          <button style="height:38px;padding:0 18px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2">+ New collection</button>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">S9 Routes.dc.html</span></p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

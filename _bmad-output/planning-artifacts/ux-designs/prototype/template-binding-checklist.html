@@ -1,10 +1,10 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Template Binding Checklist
-  FRAME    : B Missing Surfaces.dc.html — B19 (drawn on a mechanism FR-I1 forbids; its components kept, everything they say changed). Fires from the Deploy Live success state
+  FRAME    : B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · flow F6 · FR-I6
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -22,78 +22,95 @@
 <div class="proto">
   <a href="index.html">← All surfaces</a>
   <span class="name">Template Binding Checklist</span>
-  <span class="frame">B Missing Surfaces.dc.html — B19 (drawn on a mechanism FR-I1 forbids; its components kept, everything they say changed). Fires from the Deploy Live success state</span>
+  <span class="frame">B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · flow F6 · FR-I6</span>
 </div>
 
-<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="deploy-live.html#binding">Deploy Live — &amp;ldquo;one step left&amp;rdquo;</a></span><span class="tstep">next: <a href="template-binding-checklist.html#corrections">What the frame got wrong</a> →</span></div>
+<div class="trails"><div class="trail"><span class="tl">Flow F6 · The post-deploy template-binding checklist</span><span class="tstep">step 2 of 5</span><span class="tstep">← <a href="deploy-live.html#binding">Deploy Live — &amp;ldquo;one step left&amp;rdquo;</a></span><span class="tstep">next: <a href="template-binding-checklist.html#corrections">Every step on it is wrong</a> →</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#corrections">What the frame got wrong<span class="k">B19</span></a><a class="idxrow" href="#where">Where it appears<span class="k">F6</span></a><a class="idxrow" href="#empty-warning">The paired warning<span class="k">FR-I1</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#corrections">What the frame gets wrong<span class="k">B19</span></a><a class="idxrow" href="#where">Where it appears<span class="k">F6</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">B19 re-specified · a checklist with one row per emitted template — not a notification</p><div class="screen "><div style="padding:32px;background:var(--paper);display:flex;justify-content:center">
-  <div class="card" style="max-width:940px"><div class="pad row gap28" style="align-items:flex-start;gap:28px">
-    <div class="stack gap14 grow">
-      <h2 style="font-size:20px">Point a Ghost page at each template</h2>
-      <p style="font-size:13.5px;line-height:1.6">Three templates shipped with this deploy. Ghost stores the template
-        choice on the page&rsquo;s own row, so the last step happens in Ghost — once per page, and it survives a retitle,
-        a slug change and a theme swap.</p>
-      <div class="stack gap10">
-        <div class="itemrow"><span class="check"></span><div class="stack gap2 grow">
-            <b style="font-size:13.5px">Membership</b>
-            <span class="helper mono">custom-membership.hbs</span>
-            <span class="helper">Ghost&rsquo;s Template dropdown will show it as <b>Membership</b>.</span></div>
-          <a class="btn sm secondary" href="template-binding-checklist.html">Open in Ghost ↗</a></div>
-        <div class="itemrow"><span class="check"></span><div class="stack gap2 grow">
-            <b style="font-size:13.5px">Signin</b><span class="helper mono">custom-signin.hbs</span>
-            <span class="helper">Ghost will show it as <b>Signin</b>.</span></div>
-          <a class="btn sm secondary" href="template-binding-checklist.html">Open in Ghost ↗</a></div>
-        <div class="itemrow done"><span class="check on">✓</span><div class="stack gap2 grow">
-            <b style="font-size:13.5px">Member home</b><span class="helper mono">custom-member-home.hbs</span>
-            <span class="helper">Marked done by you.</span></div></div></div>
-      <ol class="stack gap8" style="margin:0;padding-left:18px;font-size:13px;line-height:1.55">
-        <li>Ship this template. It arrives in Ghost as a page template.</li>
-        <li>In Ghost, open a page and pick <b>Membership</b> from the Template dropdown.</li>
-        <li>That&rsquo;s it — Ghost remembers your choice on that page, even if you rename or re-slug it later.</li></ol>
-      <div class="banner info"><span class="ico">ⓘ</span><span><b>We can&rsquo;t see whether you did this.</b>
-        Ghost doesn&rsquo;t tell us which template a page picked, so tick it off yourself when it&rsquo;s done.</span></div>
-    </div>
-    <div class="card" style="width:300px;flex-shrink:0"><div class="pad-tight stack gap10">
-      <span class="frame-cap" style="margin:0">what you will see in Ghost</span>
-      <span class="panel-label" style="font-size:10.5px">GHOST · PAGE SETTINGS</span>
-      <div class="stack gap4"><span class="control-label soft">Page URL</span>
-        <span class="input" style="display:flex;align-items:center;font-size:12.5px">/join/</span></div>
-      <div class="stack gap4"><span class="control-label soft">Template</span>
-        <div class="card" style="box-shadow:var(--sh-md)"><div class="pad-tight stack gap2">
-          <div class="row gap8" style="padding:5px 6px;font-size:12.5px">Default</div>
-          <div class="row gap8" style="padding:5px 6px;font-size:12.5px;background:var(--coral-tint);border-radius:5px">Membership<span style="margin-left:auto">✓</span></div>
-          <div class="row gap8" style="padding:5px 6px;font-size:12.5px">Signin</div>
-          <div class="row gap8" style="padding:5px 6px;font-size:12.5px">Member home</div>
-        </div></div></div>
-      <span class="helper">The dropdown is the setting. There is no badge here, because Inflozo cannot see what a Ghost
-        page chose.</span></div></div>
-  </div></div></div></div></div><div class="section-head" id="corrections"><h2>What the frame got wrong, row by row</h2></div><div><div class="screen "><div style="padding:24px;background:var(--surface)"><table class="limits" style="max-width:900px;margin:0 auto">
+<div class="lifted"><p class="frame-cap">B19 · membership page binding</p><div class="liftbox"><div style="width:700px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:18px 20px;border-bottom:1px solid #EFEAE2;display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:15px;font-weight:600">Point a Ghost page at this template</span>
+          <span style="font-size:12.5px;color:#4A453D;line-height:1.55">You designed <span style="font-weight:600">Membership</span>. Ghost decides which page uses it by matching the page's slug to the template's name — so the last step happens in Ghost, not here.</span>
+        </div>
+        <div style="padding:16px 20px;display:flex;gap:20px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:12.5px;color:#3A3835;line-height:1.5">Ship this template. It arrives in Ghost as a page template file.</span>
+                <div style="background:#FBF9F5;border:1px solid #E7E2DB;border-radius:8px;padding:8px 10px"><span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:11px;color:#3A3835">page-membership.hbs</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</span>
+              <span style="font-size:12.5px;color:#3A3835;line-height:1.5;flex:1">In Ghost, create or open a page and set its URL slug to <span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:11px;background:#F1EDE7;border-radius:3px;padding:1px 5px">membership</span></span>
+            </div>
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="width:19px;height:19px;border-radius:50%;background:#1C1B1A;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</span>
+              <span style="font-size:12.5px;color:#3A3835;line-height:1.5;flex:1">Publish. Ghost picks the template up automatically — there is no setting to toggle.</span>
+            </div>
+            <div style="background:#FBF9F5;border:1px solid #E7E2DB;border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:12px;font-weight:600">If the slug does not match</span>
+              <span style="font-size:11.5px;color:#6B6459;line-height:1.5">Ghost falls back to the default page template and your design is simply unused. Nothing breaks and nothing warns, which is why this card exists.</span>
+            </div>
+          </div>
+          <div style="width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:11px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">WHAT YOU WILL SEE IN GHOST</span>
+            <div style="border:1px solid #E7E2DB;border-radius:10px;background:#FBF9F5;overflow:hidden">
+              <div style="height:28px;background:#F1EDE7;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 10px;gap:6px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#C9C2B8"></span>
+                <span style="font-size:10.5px;color:#6B6459">Ghost · Page settings</span>
+              </div>
+              <div style="padding:11px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:10px;color:#6B6459">Page URL</span>
+                  <div style="height:28px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;padding:0 8px"><span style="font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:10px;color:#3A3835">/membership/</span></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="font-size:10px;color:#6B6459">Template</span>
+                  <div style="height:28px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;padding:0 8px;gap:6px">
+                    <span style="font-size:10.5px;color:#3A3835;flex:1">Membership</span>
+                    <span style="font-size:9px;font-weight:600;color:#146F50;background:#E6F5EF;border-radius:24px;padding:1px 6px">MATCHED</span>
+                  </div>
+                </div>
+                <span style="font-size:10px;color:#6B6459;line-height:1.45">Ghost shows the template's name here once the slug matches.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #EFEAE2;background:#FBF9F5;padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11.5px;color:#6E6A64;flex:1">We cannot create the Ghost page for you — page content belongs to your writers.</span>
+          <span style="height:30px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:11.5px;font-weight:600;cursor:pointer">Open Ghost pages</span>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="corrections"><h2>Every step on that frame is on a mechanism the product forbids</h2><p>The components stay — the numbered steps and, above all, the small honest facsimile of Ghost&rsquo;s own page settings on the right. Everything they <i>say</i> changes.</p></div><div class="lifted"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
   <tr><th>B19 says</th><th>The truth</th></tr>
   <tr><td><span class="mono">page-membership.hbs</span></td>
-    <td><b><span class="mono">custom-membership.hbs</span>.</b> Inflozo never emits <span class="mono">page-{slug}.hbs</span>:
-      that form is matched against the live slug at render time, <b>detaches silently the moment the user retitles the
-      page</b>, and outranks the user&rsquo;s explicit dropdown choice — Ghost Admin disables the dropdown outright when a
-      slug template matches.</td></tr>
+    <td><b><span class="mono">custom-membership.hbs</span>.</b> Inflozo <b>never</b> emits
+      <span class="mono">page-{slug}.hbs</span>: that form is matched against the live slug at render time,
+      <b>detaches silently the moment the user retitles the page</b>, and outranks the user&rsquo;s explicit
+      dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches.</td></tr>
   <tr><td>&ldquo;Set its URL slug to <span class="mono">membership</span>&rdquo;</td>
-    <td><b>Pick the template from Ghost&rsquo;s page-editor Template dropdown.</b> Ghost stores the chosen filename on the
-      page&rsquo;s own row, so the binding survives a retitle, a slug change and a theme swap.</td></tr>
+    <td><b>Pick the template from Ghost&rsquo;s page-editor Template dropdown.</b> Ghost stores the chosen
+      filename on the page&rsquo;s own row, so the binding survives a retitle, a slug change and a theme swap.</td></tr>
   <tr><td>&ldquo;Ghost picks the template up automatically — there is no setting to toggle&rdquo;</td>
     <td>There is exactly one setting to toggle, and this is it.</td></tr>
   <tr><td>A <b>MATCHED</b> badge</td>
-    <td><b>Deleted.</b> It implies a verification that does not exist: the assignment lives on Ghost&rsquo;s page row and
-      the Content API does not expose which template a page selected.</td></tr>
-  <tr><td>One template</td><td><b>Every</b> emitted template, one row each.</td></tr>
-</table></div></div></div><div class="section-head" id="where"><h2>Where it appears, and the one nudge</h2><p>On <a href="deploy-live.html#binding">Deploy Live</a>, as a &ldquo;one step left&rdquo; card — <b>not a modal that must be dismissed to reach the confetti</b>. Afterwards it is reachable from the Template Switcher and from the site card. A project whose deploy emitted no custom template never sees it, which is every starter&rsquo;s first deploy. And if it is still unopened a day later, <a href="notifications.html">Notifications</a> raises it <b>once, and never again</b>.</p></div><div class="section-head" id="empty-warning"><h2>The warning that belongs beside it</h2><p>Removing every section from a designed custom template returns it to untouched and its file stops being emitted; a Ghost page still pointing at that filename falls back to <span class="mono">page.hbs</span> rather than erroring. That fallback is silent on Ghost&rsquo;s side, so Inflozo is not silent on its own — <a href="editor.html#empty-template-warning">Empty Template Warning</a> fires before it takes effect.</p></div>
+    <td><b>Deleted.</b> It implies a verification that does not exist: the assignment lives on Ghost&rsquo;s page
+      row and the Content API does not expose which template a page selected. In its place, verbatim:
+      <b>&ldquo;We can&rsquo;t see whether you did this.&rdquo;</b></td></tr>
+  <tr><td>One template</td><td><b>Every</b> emitted template, one row each, with a done-state the user marks
+      themselves.</td></tr>
+</table></div></div><div class="section-head" id="where"><h2>Where it appears, and the one nudge</h2><p>On <a href="deploy-live.html#binding">Deploy Live</a>, as a &ldquo;one step left&rdquo; card — <b>not a modal that must be dismissed to reach the confetti</b>. A project whose deploy emitted no custom template never sees it. If it is still unopened a day later, Notifications raises it <b>once, and never again</b>.</p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

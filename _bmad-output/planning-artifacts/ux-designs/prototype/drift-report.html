@@ -1,10 +1,10 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Drift Report
-  FRAME    : Extrapolated → Appendix A prompt A3, frames D3a, D3b and D3c. Inherits S8b&rsquo;s step card and checked-row list, and B7&rsquo;s Layers row for the file list
+  FRAME    : NOT DRAWN → Appendix A prompt A3. Inherits S8b's step card and B7's Layers row for the file list
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · FR-J16
+  Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
-  Visual vocabulary is the design export's and nothing else (R-74).
 -->
 <!doctype html>
 <html lang="en">
@@ -22,52 +22,64 @@
 <div class="proto">
   <a href="index.html">← All surfaces</a>
   <span class="name">Drift Report</span>
-  <span class="frame">Extrapolated → Appendix A prompt A3, frames D3a, D3b and D3c. Inherits S8b&rsquo;s step card and checked-row list, and B7&rsquo;s Layers row for the file list</span>
+  <span class="frame">NOT DRAWN → Appendix A prompt A3. Inherits S8b's step card and B7's Layers row for the file list</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · FR-J16</span>
 </div>
-<div class="proto-note"><b>It is skipped on the first deploy</b> — there is nothing to compare against — and it runs before every deploy after that. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</div>
+
 <div class="trails"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
 </div>
-<div class="proto-note"><b>Also on this page</b> — surfaces that exist only over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#pass">No drift<span class="k">D3c</span></a><a class="idxrow" href="#unverified">Could not verify<span class="k">D3b</span></a></div></div>
+<div class="proto-note"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#fail-open">It fails open<span class="k">D3b</span></a><a class="idxrow" href="#rows">The row it inherits<span class="k">B7</span></a></div></div>
 <main id="main">
-<div><p class="frame-cap">D3a · drift found — the deploy stops. Rows are named by YOUR layer name; the raw path is beneath it</p><div class="screen "><div style="min-height:700px;background:var(--paper);display:flex;flex-direction:column"><div class="row gap12" style="padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface)"><a href="editor.html">←</a><b style="font-size:14px">Orbit Weekly</b><span class="chip" style="margin-left:auto">Ship it</span></div><div class="rail-steps"><span class="rstep done"><span class="n">✓</span>Destination</span><span class="rsep"></span><span class="rstep on"><span class="n">2</span>Check</span><span class="rsep"></span><span class="rstep "><span class="n">3</span>Ship</span><span class="rsep"></span><span class="rstep "><span class="n">4</span>Live</span></div><div class="wizbody"><div class="wizcard wide"><div class="stack gap16">
-    <h2 style="font-size:20px">Something changed on your site since we last shipped.</h2>
-    <p style="font-size:13.5px;line-height:1.6">We compare what&rsquo;s live against what we put there. These files are
-      different — someone edited the theme in Ghost, or another tool did.</p>
-    <div class="stack gap10">
-      <span class="panel-label">Changed</span>
-      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Home hero</b>
-          <span class="helper mono">partials/section-home-hero.hbs</span></div></div>
-      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Three Column footer</b>
-          <span class="helper mono">partials/section-footer-three-column.hbs</span></div></div>
-      <span class="panel-label">Added</span>
-      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">A file we did not ship</b>
-          <span class="helper mono">assets/custom-tweaks.css</span></div></div>
-      <span class="panel-label">Removed</span>
-      <div class="itemrow"><div class="lthumb"></div><div class="stack gap2 grow"><b style="font-size:13px">Latest issues</b>
-          <span class="helper mono">partials/section-latest-issues.hbs</span></div></div></div>
-    <div class="wizfoot"><a class="btn secondary" href="deploy-history.html">Download the live theme first</a>
-      <a class="btn" href="deploy-progress.html">Overwrite and ship anyway</a>
-      <a class="btn ghost" href="editor.html">Cancel</a></div>
-    <span class="helper">The destructive action is ink, not danger — this is a deliberate choice, not an accident. The
-      safe one is offered first.</span></div></div></div></div></div></div><div class="section-head" id="pass"><h2>No drift</h2><p>One passing row in the pre-flight list, identical in weight to every other pass.</p><p class="frame-cap">D3c · no drift · 620</p></div><div><div class="screen narrow"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
-  <div class="wizcard"><div class="checkrow" style="border:none"><span class="tick">✓</span>
-    <span class="grow">Nothing changed on your site since v4</span><span class="helper">pass</span></div></div></div></div></div><div class="section-head" id="unverified"><h2>Could not verify — and it proceeds</h2><p>A single sky information row <b>inside</b> the pre-flight list, not a blocking state. <b>Drift is never asserted without two manifests in hand</b>, so this fails open.</p><p class="frame-cap">D3b · could not verify · 720</p></div><div><div class="screen tight"><div style="padding:24px;background:var(--paper);display:flex;justify-content:center">
-  <div class="wizcard"><div class="stack gap10">
-    <div class="checkrow"><span class="tick">✓</span><span class="grow">Ghost 6.x compatible</span><span class="helper">pass</span></div>
-    <div class="checkrow"><span style="color:var(--sky-text)">ⓘ</span>
-      <span class="stack gap2 grow"><b>Couldn&rsquo;t check whether your live theme changed.</b>
-        <span class="helper">We need the site Owner&rsquo;s Staff Access Token to read the live theme, and this project
-          doesn&rsquo;t have one. Shipping anyway.</span>
-        <a class="small" href="staff-token-offer.html" style="color:var(--sky-text)">Add the token</a></span></div>
-    <div class="checkrow"><span class="tick">✓</span><span class="grow"><span class="mono">routes.yaml</span> is valid</span><span class="helper">pass</span></div>
-  </div></div></div></div></div>
+<div class="section-head"><h2>Drift Report</h2><p>Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and compares it against what it last deployed there. If anything differs, <b>the deploy stops</b>. Rows are grouped Changed / Added / Removed and — critically — <b>each is named by the user&rsquo;s own layer name</b> ("Home hero", "Three Column footer") with the raw filename only as small mono text beneath. Never a raw path as the primary label. Two actions: <b>Download the live theme first</b> (offered before the destructive one) and <b>Overwrite and ship anyway</b> — ink, not danger, because it is a deliberate choice.</p></div><div class="nodraw"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A3 (frames D3a, D3b, D3c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="fail-open"><h2>It fails open, and it never asserts drift without two manifests</h2><p>Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</p></div><div class="section-head" id="rows"><h2>The row component it inherits</h2><p class="frame-cap">B7 · layers rows</p></div><div class="lifted"><div class="liftbox"><div style="width:340px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12.5px;font-weight:600">Layers</span>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:6px;padding:0 5px 5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><path d="M12 3v18"></path><path d="M5 8l7-5 7 5"></path></svg>
+            <span style="font-size:10px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">SITE-WIDE</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:9.5px;color:#6B6459">on 26 pages</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="6" width="18" height="5" rx="1.5"></rect></svg>
+            <span style="font-size:12.5px;flex:1">Announcement</span>
+            <span style="font-size:9px;color:#8A6100">✦</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="7" rx="1.5"></rect><path d="M7 8.5h4"></path></svg>
+            <span style="font-size:12.5px;flex:1">Header</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="13" width="18" height="7" rx="1.5"></rect></svg>
+            <span style="font-size:12.5px;flex:1">Footer</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:center;gap:6px;padding:0 5px 5px">
+            <span style="font-size:10px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">THIS PAGE · HOME</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:9.5px;color:#6B6459">6</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;font-weight:600;background:#FFEDE8;color:#C2381F">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg>
+            <span style="font-size:12.5px;flex:1">Home hero</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.7" stroke-linecap="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">Latest issues</span></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">The list, teased</span></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">Signup</span><span style="font-size:9px;color:#8A6100">✦</span></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#6B6459;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">About, short</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><path d="M4 4l16 16"></path><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path></svg></div>
+        </div>
+        <div style="border-top:1px solid #E7E2DB;padding-top:10px">
+          <span style="font-size:11px;color:#6E6A64;line-height:1.5">Editing a site-wide section changes it on all 26 pages. We say so the first time, then stop.</span>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div>
 </main>
 <div class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
+  <a href="../walkthrough/index.html">The walkthrough (5c) →</a>
   <span class="spacer"></span>
-  <span class="frame">Static prototype. Nothing here is wired to anything — it is the product, drawn.</span>
+  <span class="frame">Screens lifted from the export. The annotation is around them, never in them.</span>
 </div>
 </body>
 </html>

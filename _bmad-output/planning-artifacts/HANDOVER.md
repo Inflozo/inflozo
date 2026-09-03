@@ -61,11 +61,13 @@ him.** The critical path now runs through one person opening one file.
 > `S1a`'s primary is ink, not coral, on a card with a ghosted 380px wordmark behind it; `S3a`'s
 > project cards carry real miniature renderings and what's-new is a popover, not a column; `S4a`'s
 > resting sidebar is the **Page** panel with the Style Pack cell, not an empty one; `S4a`'s Layers is
-> a flat list of design names with no site-wide group. **5c has since been rebuilt to LIFT the
-> frames' own markup** (`walkthrough/frames.py`), and its `patch()` raises rather than silently
-> missing. **5b has NOT had that pass and still renders from the text extraction** — rebuilding
-> `prototype/build.py` on `frames.py` is owed. Never author a screen from a stripped-tag reading of
-> a frame again; the frames are HTML, so read them as HTML.
+> a flat list of design names with no site-wide group. **BOTH BUILDS HAVE SINCE BEEN REBUILT to LIFT
+> the frames' own markup** — `ux-designs/frames.py`, shared by the two generators, pulls each region
+> out of the `.dc.html` by `data-screen-label` or by the mono caption above it, and `patch()` raises
+> rather than missing silently. In 5b every screen is a lifted frame with the annotation *around* it,
+> and a surface with **no** frame says so in those words and shows nothing — inventing a picture
+> there would be the second interface vocabulary R-74 forbids. **Never author a screen from a
+> stripped-tag reading of a frame again; the frames are HTML, so read them as HTML.**
 
 **Step 5c is BUILT — 2026-09-03, rebuilt the same day.**
 `planning-artifacts/ux-designs/walkthrough/index.html` — **double-click it**, and it opens on Sign In

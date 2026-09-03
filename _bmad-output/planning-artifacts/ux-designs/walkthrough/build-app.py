@@ -34,8 +34,11 @@ carries a comment saying which ruling it serves.
 """
 import os, re, html, importlib.util
 
-import frames
-from frames import region, unbox, patch, link, attr
+_fspec = importlib.util.spec_from_file_location(
+    'inflozo_frames', os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frames.py'))
+frames = importlib.util.module_from_spec(_fspec)
+_fspec.loader.exec_module(frames)
+region, unbox, patch, link, attr = frames.region, frames.unbox, frames.patch, frames.link, frames.attr
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 KIT_PATH = os.path.join(os.path.dirname(OUT), 'prototype', 'build.py')
