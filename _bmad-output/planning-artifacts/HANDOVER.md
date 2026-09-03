@@ -2,7 +2,7 @@
 title: Inflozo — handover for a fresh session
 status: live
 created: 2026-08-21
-updated: 2026-08-31
+updated: 2026-09-03
 purpose: everything a new chat needs to continue, without reading the previous conversation
 ---
 
@@ -26,7 +26,7 @@ numbered options and one marked **(RECOMMENDED)**.
 
 ## Where the project is
 
-**Steps 1–4 are complete, and so is the inventory merge.** The architecture, the schema and its
+**Steps 1–5 are complete, and so is the inventory merge.** The architecture, the schema and its
 runnable proof, both compiler emitters, four stress rounds, a reliability round and three propagation
 audits are all applied. Every design category is drawn, specified, patched twice and exported. The
 library inventory is now **generated from the design export** and gated, so it cannot drift.
@@ -43,19 +43,41 @@ python3 tools/doc-audit.py --check        # the documentation gate
 
 ## The immediate task
 
-**Step 5 — journeys and flows (`/bmad-ux`).** It is the critical path and it is blocked by nothing.
-The stress-tested prompt is `STEP-5-PROMPT.txt` and inside `build-sequence.md` step 5. **Two
-standing rulings now govern everything after it (2026-09-02, `reconcile-designs-decisions.md`
-§A10): R-74** — the Claude Design export is the design authority for every surface until the
-project finishes, extrapolate rather than invent — **and R-75** — the owner sees Inflozo's own UI
-as a static clickable prototype on his machine (**step 5b**, new) before dynamic build; **step 6
-does not open until he has walked it.**
-Its inputs are prompt 2's exported app screens (S1–S14, M1–M9) and **§37.7 of
-`prds/…/reconcile-designs.md`** — the editor surfaces with no frame and the flows drawn on wrong
-semantics. §37.7 was re-verified against the current export on 2026-08-31 and **still stands**; the
-delta is §A4 of `reconcile-designs-decisions.md` (`reconcile-designs.md` is a `record` and was not
-edited). Two of §37.7's items are now fixed: the design totals printed on the marketing screens, and
-P0's per-prop mark allowlist.
+**Step 5b — the static prototype.** It is the critical path and it is blocked by nothing. The prompt
+is `STEP-5B-PROMPT.txt` and inside `build-sequence.md` step 5b. It turns step 5's `EXPERIENCE.md`
+into one plain HTML page per surface, linked so the four journeys and the eight flows can be walked
+by clicking, built from the design export's tokens and components only, and self-contained enough
+that a **double-click opens it** — no server, no install, no build step.
+
+**Step 6 does not open until the owner has walked it** (ruling **R-75**), and saying he has walked
+it is his to say. A wrong screen is cheapest the moment before anyone builds it.
+
+**Step 5 is done — 2026-09-03.** `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/` holds
+`DESIGN.md` (the visual spine — a **transcription** of the Claude Design export; on any disagreement
+**the export is right and the spine is the bug**, R-74) and `EXPERIENCE.md` (the information
+architecture, the state patterns, the accessibility floor, the four journeys and the eight flows).
+Every surface has **one stable name** used identically in the IA, the journeys and the flows, and
+each either points at a drawn frame by filename or names the frame it extrapolates from. Three
+things it found are worth knowing before you touch a UI task:
+
+- **The Paywall editor is drawn** — `C Post Body.dc.html` region **C3a**, with its controls, three
+  of its twelve designs and its no-paid-tiers empty state. `reconcile-designs.md` §37.7 called it
+  missing and it is not. It also revealed a left-nav group nothing else in the export shows,
+  **Template surfaces** (Paywall · Cards · Error pages), which is the entry point for `S14` and the
+  error canvases.
+- **A library total sat in product copy and both controls were blind to it — for the third time.**
+  `S3 Dashboard` read "Yours starts with 485 gorgeous designs". The detector required the noun to
+  **abut** the number, so one adjective walked past it. Fixed in `tools/reapply-export-edits.py`,
+  where it now lives in one place.
+- **Seven Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A. Six draw surfaces that
+  were never drawn; the seventh corrects six frames whose mechanism changed. **They block nothing** —
+  not step 5b, not step 6.
+
+**Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
+and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
+Free designs only" · **R-78** redesign proposals build FR-C7's whole-site combinations · **R-79**
+pinning's home is the PRD, not `BACKUP-GATE.md`. `prd.md` moved three times, all propagation:
+**FR-D1**, **FR-J7** and **FR-J9**.
 
 **ANY UI OR UX TASK STARTS IN THE DESIGN EXPORT — THE WHOLE DIRECTORY** *(owner, 2026-08-31 — since 2026-09-02 ruling **R-74**, binding until the project finishes)*. It is
 the largest investment in this project and it is never to be missed. The full map is in `CLAUDE.md`;
@@ -79,8 +101,10 @@ the corollary that a fact nobody fetches needs no fixture, and AD-27 the five do
 the owner's instruction to clear them before step 5, and R-29's long-outstanding FR is written —
 **FR-Q10**, owned by E7. R-10 #1 and #7 are **withdrawn**, each refuted by execution.
 
-**What is left of step 4 is DESIGN work, and it is IN PROGRESS:** the owner is running
-`DESIGN-PATCH-PROMPTS-2.html` in Claude Design — 20 prompts, P0 first.
+**Step 4's design work has finished.** Patch passes two to five all ran and were verified
+(`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
+record and every structural check passes. **What is owed now is step 5's seven prompts**, in
+`EXPERIENCE.md` Appendix A, and they block nothing.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive
@@ -93,8 +117,15 @@ prompt flagged as unsure, and bring anything genuinely open to the owner as a nu
 
 - **Step 4a (2026-08-27)** — `prds/…/reconcile-designs.md`, with `reconcile-designs.findings.json`
   beside it. A `record`; never edit it.
+- **Step 5 (2026-09-03)** — `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and
+  `EXPERIENCE.md`, both `status: final`. Both are `live` and are edited rather than superseded.
 - **Step 4b, the Ghost Build Room (2026-08-27)** — `prds/…/reconcile-designs-decisions.md`. Extended
-  2026-08-31 with §A2 (the design patch pass), §A3 (the §F asks) and §A4 (§37.7 re-verified).
+  2026-08-31 with §A2 (the design patch pass), §A3 (the §F asks) and §A4 (§37.7 re-verified);
+  2026-09-02/03 with §A5–§A10 (the library review, the open-questions sheet, the architect rulings,
+  the stress-test rulings, pass five verified, and the two standing rulings R-74/R-75); and
+  **2026-09-03 with §A11 — step 5's four rulings, R-76 … R-79.**
+  **§A4's "the S, B and M screens were not touched" has gone stale** — two re-exports since did
+  touch them. Read what those files say today.
   **Read its §B before trusting any D-number anywhere in this project: D3, D17 and D26 are reversed
   and D27 is reversed in half.**
 - **Register item 47 is CLOSED by execution — and its premise was wrong.** There is **no per-template

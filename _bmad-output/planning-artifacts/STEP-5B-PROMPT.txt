@@ -1,0 +1,47 @@
+Build the static prototype of Inflozo's own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
+
+INPUTS, IN ORDER:
+  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
+     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md's surface names, journeys,
+     flows and states are the content of this prototype.
+  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
+     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
+     `Calibration Set.dc.html`; reuse the drawn screens' construction. If a page of yours would
+     look wrong side by side with its frame, the page is wrong.
+  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
+     prd.md — "## Appendix H — Voice & Microcopy Canon". It is NOT appendix-h1-string-catalog.md,
+     which is the visitor-facing catalog shipped inside a user's THEME.)
+
+OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
+  index.html                 the front door: the surface list, and the four journeys and eight
+                             flows each as a labelled, clickable trail
+  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
+  a shared stylesheet        the tokens transcribed once, from Calibration Set
+
+RULES:
+  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
+    build step. Google Fonts may be linked but every face carries a real fallback stack.
+    Navigation is plain <a> links. Light inline JS may toggle a mock state, but every page must
+    read complete with JavaScript off.
+  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project's fixture publication. Never lorem.
+  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
+    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
+  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
+    error state, a refusal state is a link or a toggle away, never omitted.
+  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
+    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
+    folder; verify rather than assume.
+  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
+    the requirement and MUST be shown.
+
+DONE WHEN the owner can double-click index.html and click through all four journeys and all
+eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
+in one short message: the file to double-click, and the two or three places you had to make a
+judgement call he should look at hardest.
+
+AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
+build-sequence.md (this section and the step table) and in HANDOVER.md, and update
+tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
+the gate is the OWNER'S WALK, not the build. When he says he has walked it, record the date
+here in this section — that sentence is what unlocks step 6, and it is his to say.

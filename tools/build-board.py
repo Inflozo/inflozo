@@ -19,14 +19,19 @@ PLAN = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
 SRC  = os.path.join(PLAN, 'build-sequence.md')
 OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
 
-# The step-5 prompt is also written as a plain-text file, because it is the one prompt the owner
-# pastes by hand and a .txt is the easiest thing to open and select-all. IT IS GENERATED, NOT KEPT
-# IN STEP: it was hand-maintained for one day and had to be re-synced by hand twice in that day,
-# which is the silent-drift shape this project keeps getting bitten by. Deriving it from the same
-# parse that feeds the board means the three copies cannot disagree — and `--check` fails loudly
-# if either output is stale, so a remembered step became a runnable one.
-PASTE = os.path.join(PLAN, 'STEP-5-PROMPT.txt')
-PASTE_ID = '/bmad-ux'          # the block this file mirrors, matched on its first line
+# The prompt for the step the owner is CURRENTLY on is also written as a plain-text file, because
+# it is the one he pastes by hand and a .txt is the easiest thing to open and select-all. IT IS
+# GENERATED, NOT KEPT IN STEP: it was hand-maintained for one day and had to be re-synced by hand
+# twice in that day, which is the silent-drift shape this project keeps getting bitten by. Deriving
+# it from the same parse that feeds the board means the copies cannot disagree — and `--check` fails
+# loudly if either output is stale, so a remembered step became a runnable one.
+#
+# IT MOVES WITH THE CRITICAL PATH. On 2026-09-03 step 5 completed, its prompt block was replaced by
+# a completion record, and STEP-5-PROMPT.txt lost its source — so the two constants below moved to
+# step 5b and the old file was removed. When 5b completes, move them again rather than leaving a
+# generated file with nothing behind it.
+PASTE = os.path.join(PLAN, 'STEP-5B-PROMPT.txt')
+PASTE_ID = 'Build the static prototype'   # the block this file mirrors, matched on its first line
 
 # key, number, title, status, one-line where-it-stands, what it produces, blocked-by
 STEPS = [
@@ -63,18 +68,26 @@ STEPS = [
   '(the per-category Content/Controls/Data unions, and research \u00a77\u2019s design lists) '
   'complete; derived-fields-A1-A12.md retired.',
   'An inventory the build can open, that no longer restates a count anywhere.', None),
- ('s5', '5', 'Journeys and flows', 'next',
-  'THE CRITICAL PATH, and blocked by nothing. Its input is \u00a737.7 of reconcile-designs.md — the '
-  'editor surfaces with no frame, the flows drawn on wrong semantics, and the journeys that hold — '
-  're-verified against the current export on 2026-08-31 and still standing (see \u00a7A4 of the '
-  'decisions file for the delta; two of its items are now fixed).',
-  'Four journeys and eight flows, authored rather than verified.', None),
- ('s5b', '5b', 'Static prototype', 'later',
-  "The owner's ruling R-75 (2026-09-02): he sees INFLOZO'S OWN UI — not the design frames — as "
-  'static, clickable pages on his machine before anything is built dynamically. Built from step '
-  "5's spines and the design export (R-74); opens from a double-click, no server, no install.",
+ ('s5', '5', 'Journeys and flows', 'done',
+  'Ran 2026-09-03. ux-designs/ux-Inflozo-2026-09-03/ holds DESIGN.md (a TRANSCRIPTION of the design '
+  'export — on any disagreement the export is right and the spine is the bug, R-74) and '
+  'EXPERIENCE.md (the IA, the state patterns, the four journeys and the eight flows). Every surface '
+  'has one stable name and either points at a drawn frame or names the frame it extrapolates from. '
+  'It found the PAYWALL EDITOR ALREADY DRAWN at C Post Body C3a, which \u00a737.7 called missing; and '
+  'a library total in S3\u2019s product copy that both controls had been blind to for a THIRD time. '
+  'Four rulings in \u00a7A11 of the decisions file (R-76 \u2026 R-79); prd.md FR-D1, FR-J7 and FR-J9 '
+  'moved.',
+  'Four journeys and eight flows, authored rather than verified — plus SEVEN Claude Design prompts '
+  'in EXPERIENCE.md Appendix A for the surfaces nobody drew.', None),
+ ('s5b', '5b', 'Static prototype', 'next',
+  "THE CRITICAL PATH, and blocked by nothing — both step-5 spines are final. The owner's ruling "
+  "R-75 (2026-09-02): he sees INFLOZO'S OWN UI — not the design frames — as static, clickable pages "
+  'on his machine before anything is built dynamically. Built from EXPERIENCE.md\u2019s surface '
+  'names and the design export (R-74); opens from a double-click, no server, no install. The seven '
+  'Claude Design prompts do NOT block it — EXPERIENCE.md specifies every undrawn surface concretely '
+  'enough to build.',
   'A walkable static prototype of the product. The owner walking it is what unlocks step 6.',
-  'step 5'),
+  None),
  ('s6', '6', 'Epics and stories', 'later',
   'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: it does not open '
   'until the owner has walked the step-5b prototype, and per R-74 every story with a surface '
@@ -100,7 +113,6 @@ PROMPTS = [
  ('s4',  '4b — The Ghost Build Room (you must be in the room)', 'live',
   'Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled '
   'item to you as a numbered decision.'),
- ('s5',  'Journeys and flows', 'live', None),
  ('s5b', 'Static prototype', 'live', None),
  ('s6',  'Epics and stories', 'live', None),
  ('s6b', 'Readiness gate', 'live', None),
@@ -419,16 +431,16 @@ if __name__ == '__main__':
         if not os.path.exists(OUT):
             print('  FAIL  BUILD-BOARD.html missing — run tools/build-board.py'); sys.exit(1)
         if not os.path.exists(PASTE):
-            print('  FAIL  STEP-5-PROMPT.txt missing — run tools/build-board.py'); sys.exit(1)
+            print(f'  FAIL  {os.path.basename(PASTE)} missing — run tools/build-board.py'); sys.exit(1)
         before = open(OUT, encoding='utf8').read()
         before_paste = open(PASTE, encoding='utf8').read()
         build()
         if open(OUT, encoding='utf8').read() != before:
             print('  FAIL  BUILD-BOARD.html was stale and has been regenerated'); sys.exit(1)
         if open(PASTE, encoding='utf8').read() != before_paste:
-            print('  FAIL  STEP-5-PROMPT.txt had drifted from build-sequence.md and has been '
-                  'regenerated'); sys.exit(1)
+            print(f'  FAIL  {os.path.basename(PASTE)} had drifted from build-sequence.md '
+                  'and has been regenerated'); sys.exit(1)
         print('build board: current'); sys.exit(0)
     n = build()
     print(f'BUILD-BOARD.html regenerated — {n} prompts extracted from build-sequence.md')
-    print(f'STEP-5-PROMPT.txt regenerated from the same parse — the three copies cannot drift')
+    print(f'{os.path.basename(PASTE)} regenerated from the same parse — the copies cannot drift')

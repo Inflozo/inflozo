@@ -75,6 +75,15 @@ COPY = [
     #    also STALE — it still said 34 categories after A23 Search was deleted.
     ('34 CATEGORIES<span>485</span>',         'ALL CATEGORIES<span>ALL DESIGNS</span>'),
     ('70 Free designs',                       'the free set'),
+    # ── Missed by BOTH controls until 2026-09-03, because the regex below required the noun
+    #    to abut the number and this one has an adjective between them. Appendix H names the
+    #    canonical string for exactly this surface: "hundreds of gorgeous sections".
+    ('485 gorgeous designs',                  'hundreds of gorgeous sections'),
+    # ── Same miss, same commit. B13a's design note. Only the COUNT is reworded here; the
+    #    mechanism it describes is wrong too (FR-L3 swaps via Shuffle, with no pairing
+    #    table at all) and that correction belongs in EXPERIENCE.md, not in the frame.
+    ('415 Pro designs each need a named Free fallback',
+     'every Pro design needs a named Free fallback'),
 ]
 
 # Files the rule governs: the app screens, the marketing pages, and the internal index frames.
@@ -103,13 +112,21 @@ def leftovers(raw):
     must always be. They separate cleanly by size, because the library is two orders larger than
     its largest category.
 
+    **AND IT WAS STILL BLIND, PROVED 2026-09-03 (step 5).** The number and its noun do not have to
+    abut: `S3 Dashboard`'s empty state read "Yours starts with **485 gorgeous designs**", and one
+    adjective was enough to walk past both controls for three days — a *third* miss of the same
+    rule, by the same mechanism, after two repairs. Up to two words may now sit between them. The
+    three fixed breakpoints (390 · 834 · 1440) are excluded by name, because a frame caption reads
+    "· 1440" and the next label often begins "Find a section".
+
     # ponytail: fixed thresholds, not a derived total. Upgrade to reading tools/export-roster.py
     # if a category ever approaches a third of the library, which would mean about eleven
     # categories in total and a very different product.
     """
     t = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', raw))
     return [m.group(0).strip() for m in re.finditer(
-        r'\b\d{3,4}\+?\s*(?:designs?|designed sections?|sections?)'   # designs: >= 100
+        r'\b(?!390\b|834\b|1440\b)\d{3,4}\+?(?:\s+\w+){0,2}'
+        r'\s*(?:designs?|designed sections?|sections?)'                 # designs: >= 100
         r'|\b(?:[4-9]\d|\d{3,4})\s*Free\b'                            # free set: >= 40
         r'|\b(?:[3-9]\d|\d{3})\s*CATEGOR\w*', t, re.I)]               # categories: >= 30
 

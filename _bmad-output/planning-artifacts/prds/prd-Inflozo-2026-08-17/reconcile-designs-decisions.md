@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 are still owed to normative documents, before E4/E9; §A10's two standing rulings bind every remaining step)
+status: live (§A2–§A3's R-30…R-38 are still owed to normative documents, before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`)
 created: 2026-08-27
-updated: 2026-09-03 (§A5–§A10: the library review, the open-questions sheet, the architect rulings, the stress-test rulings, pass five verified, and the standing rulings R-74/R-75)
+updated: 2026-09-03 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -55,6 +55,7 @@ Standing rule 4: a ruling is not done until it reaches an owning document. **Tie
 | ✅ | `tools/category-prompts.py` · `CATEGORY-PROMPTS.html` | `module_registry()` **derived the count instead of asserting `== 31`** — the hardcoded-class-membership failure `doc-audit.py`'s own header records finding twice, which duly broke on this change. It now parses §7's three columns and asserts the invariant that matters (every §2.1 module has a no-JS line, and no orphan lines exist). All 34 prompts regenerated |
 | ✅ | `build-sequence.md` · `HANDOVER.md` · `INDEX.*` · `tools/doc-audit.py` | Step 4 marked complete both halves, the reversals flagged where D-numbers are quoted, this file catalogued. `python3 tools/doc-audit.py --check` **passes** |
 | ⚠️ | **R-24 was tightened by the owner on 2026-08-27 AFTER the merge session began** | A23 is **deleted entirely**, not reduced to two or three openers; search becomes an A1 control (Icon · Button · Bar) and the category count goes 34 → 33. A merge session started before this correction is working from the superseded text — re-read §A R-24. |
+| ✅ | **`prd.md` FR-D1, FR-J7, FR-J9** · `ux-designs/ux-Inflozo-2026-09-03/` · `tools/reapply-export-edits.py` | **§A11 — step 5, 2026-09-03.** R-76 (the editor is desktop and tablet, and the floor is designed) into FR-D1; R-79 (pinning's home is the PRD, not `BACKUP-GATE.md`) into FR-J7 and FR-J9. R-77 and R-78 need no PRD change — one declines an affordance no requirement carried, the other confirms FR-C7 as written. Both spines written and catalogued. The library-total detector fixed for the third time, and this time it fails on the string that had walked past it |
 | ✅ | **`prd.md`, its companions, `sections-inventory.md`, the category specs** | **Tier 3 — the inventory merge. COMPLETE 2026-08-31.** The inventory is generated from the export and gated; the specs were patched by the design patch pass and are checked by `tools/verify-design-pass.py`; both deferred derivations are done. What Tier 3 does **not** cover is §A2/§A3's rulings R-30 … R-38, taken after it |
 
 ### Tier 3, ruling by ruling
@@ -1150,6 +1151,76 @@ before anyone builds it.
   hand-off and requires stable surface names the prototype can key off · `tools/view-designs.py`
   (a small utility for *sessions* to eyeball export frames over HTTP — explicitly **not** the
   owner's deliverable; his deliverable is the prototype).
+
+---
+
+## A11 · Step 5 — four rulings, and one control that was blind for a third time, 2026-09-03
+
+Taken while authoring the UX spines (`ux-designs/ux-Inflozo-2026-09-03/`). **Three went to the
+owner because neither the PRD nor the export settled them; one is architectural.**
+
+| # | Ruling | Where it lands |
+|---|---|---|
+| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** Below 1024 px a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ step 5b draws **Small Screen Notice** |
+| **R-77** | **Site Remix drops the drawn "Keep Free designs only" tick-box.** Remix always re-rolls from the whole library; FR-L3's exit sheet catches Pro designs at the exits, which is the mechanism the product already has. `B8` drew an affordance no requirement carries, and the owner declined to adopt it | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-D17 is unaffected** · ⬜ `B8` loses the row (prompt **A7**, item 6's canvas) |
+| **R-78** | **Redesign proposals build FR-C7 as written** — 2–3 **whole-site** starter × Style Pack combinations on the user's real content, which must differ in layout structure. **`B22`'s card, its NOW / PROPOSED pairing and above all its argued-from-your-own-data sentence are kept**, one per combination instead of one per section. Its per-section swap model is not built | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-C7 is confirmed as written** |
+| **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ step 5b draws the pin and its refusal |
+
+### Also from this pass — and one of them is a control failing for the third time
+
+**§37.7 re-verified against the export as it stands today.** §A4's line "the S, B and M screens were
+not touched by the design pass" **has gone stale**, exactly as step 5's prompt warned: two
+re-exports since (2026-09-01 and 2026-09-02) touched `B Missing Surfaces`, `M1`, `M2`, `M4`, `M5`,
+`S2`, `S5` and `S12`. Verified by `git log --since=2026-08-31 --name-only`, not assumed.
+
+**ONE SURFACE §37.7 CALLED MISSING IS DRAWN.** The **Paywall editor** (FR-H6) exists at
+`C Post Body.dc.html` region **C3a** — the canvas at 1440, its six controls, three of the twelve
+designs, and the no-paid-tiers empty state. Its entry point is drawn twice more, and it sits in a
+left-nav group the rest of the export does not show: **Template surfaces** (Paywall · Cards · Error
+pages), which is also the entry point for `S14` and the error canvases and is where FR-Q9's
+treatment fallback lands. Two more are **partially** drawn: the Template Switcher has a single
+"Members" entry where FR-D6 needs three canvases plus a conditional Private; and the content-source
+pill's menu exists but has no subject picker. **Every other item on §37.7's frameless list was
+checked one at a time against the current export and is genuinely absent.**
+
+**A LIBRARY TOTAL WAS PRINTED IN PRODUCT COPY, AND BOTH CONTROLS WERE BLIND FOR THE THIRD TIME.**
+`S3 Dashboard`'s empty state read *"Yours starts with **485 gorgeous designs**"* — the exact string
+Appendix H names a canonical replacement for — and `B Missing Surfaces` read *"**415 Pro designs**
+each need a named Free fallback"*. Neither had ever been caught.
+
+- **Why:** `leftovers()` in `tools/reapply-export-edits.py` (and `verify-design-pass.py`'s
+  `§37.7 no design total` check, which reads it) required the noun to **abut** the number. One
+  adjective walked past it.
+- **The history matters more than the instance.** The first version matched raw HTML and missed a
+  number split across two `<span>`s. The second read rendered text and missed an adjective. **Three
+  misses, one rule, one mechanism.** A control that cannot fail is not a control (standing rule 2).
+- **Fixed:** up to two words may now sit between the number and its noun, and the three fixed
+  breakpoints (390 · 834 · 1440) are excluded by name so a frame caption reading "· 1440 Find a
+  section" is not a false positive. Both strings are in the substitution table; `S3`'s becomes
+  Appendix H's canonical *"hundreds of gorgeous sections"*.
+- **Not fixed, and reported rather than touched:** four A-category frames (`A18-3`, `A18-9`,
+  `A18-11`, `A29-10`) carry "485 designs" in their own **design commentary**, which is not product
+  copy and is out of step 5's scope. They are stale (the library is not 485) and belong to a library
+  pass, not to this one.
+
+**The plan matrix drifted on the frames and Appendix F.1 governs.** `S11c` says Pro connects up to
+**3**; `S12a` says **unlimited** projects and **full** history; `S12b` and `M5` say **1 / 3** sites
+and **Last 2 / Full** history; Free's 100 MB storage cap appears on no screen at all. F.1 is "the
+sole definition of Free/Pro gating" and `EXPERIENCE.md` restates it once, as the product limits it
+is required to show. The frames are not hand-edited for this — step 5b's prototype renders the
+correct figures, and prompt **A7** is where a Claude Design pass would catch the frames up.
+
+**One name moved, and §A10 is left as written.** `STEP-5-PROMPT.txt` was a generated file — the
+board writes the prompt for whichever step the owner is currently on — and step 5's prompt block
+became a completion record, so it lost its source. It is now `STEP-5B-PROMPT.txt`, and
+`tools/build-board.py`'s `PASTE` / `PASTE_ID` carry a comment saying to move them again when 5b
+completes. **§A10's target lists still name the old file and are not edited:** they record
+accurately what R-74 and R-75 named on 2026-09-02, and correcting them would falsify that.
+
+**Nothing in either spine contradicts this file.** Every ruling R-1 … R-75 that touches a surface,
+a control, a count or a piece of copy was read before the spine was written, and the four reversed
+approved decisions (§B: D3, D17, D26, D27-in-half) were checked before any document citing them was
+relied on.
 
 ---
 
