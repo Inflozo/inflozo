@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 are still owed to normative documents, before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`)
+status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets)
 created: 2026-08-27
-updated: 2026-09-03 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control)
+updated: 2026-09-03 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -41,9 +41,12 @@ Standing rule 4: a ruling is not done until it reaches an owning document. **Tie
 > scans deliberately flagged `LOOK` for a human. Read that command's output, not this column.
 > The left-hand (normative-documents) column is still accurate.
 >
-> **What is genuinely still open is §A2 and §A3 — rulings R-30 … R-38, taken on 2026-08-31.** None of
-> them has reached a normative document yet. Each names its own targets under its ruling. They are
-> owed before **E4** and **E9** open and they block neither step 5 nor step 6.
+> **§A2 and §A3 — rulings R-30 … R-38, taken on 2026-08-31 — reached the normative documents the
+> same day; §A3's ledger carries the tick per ruling and names the document.** What is still open is
+> their **spec half**: design work for a Claude Design patch prompt, with no runnable check behind it
+> yet (`verify-design-pass.py` covers R-1 … R-24 and §37.7, not R-30 … R-38 — a human tick). It is
+> owed before **E4** and **E9** open and blocks neither step 5 nor step 6 (F-085, corrected 2026-09-03:
+> this block, the front matter and `INDEX.md`'s brief had all said "not propagated yet").
 
 | Landed | Document | What went in |
 |---|---|---|
@@ -801,7 +804,8 @@ A24-14, A25, A26-9 specs · `Appendix B` (Portal actions — add `share`, Ghost 
 The pass raised 28 questions across the 33 categories. **Fifteen the owner answered inside the
 sessions**; eleven more were ruled in the body but left with an un-updated heading (so an extraction
 that reads headings alone over-counts — worth knowing before trusting a question count from this
-corpus). **Two reached him afterwards**, and both are ruled here.
+corpus). **Two reached him afterwards**, and both are ruled here. **All of R-30 … R-38 propagated to the
+normative documents on 2026-08-31 — §A3's ledger is the evidence**; only the spec half is still owed.
 
 **R-30 · "Count per row" in About and Team keeps its three named values — three · four · five.**
 Not a number picker. R-18's "item counts are always a number picker" was written for *how many items
@@ -1161,10 +1165,10 @@ owner because neither the PRD nor the export settled them; one is architectural.
 
 | # | Ruling | Where it lands |
 |---|---|---|
-| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ step 5b draws **Small Screen Notice** |
+| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ prompt **A4** (frame D4f) draws **Small Screen Notice**; 5b names it and draws nothing (R-74), 5c holds it out until the export carries it (F-090) |
 | **R-77** | **Site Remix drops the drawn "Keep Free designs only" tick-box.** Remix always re-rolls from the whole library; FR-L3's exit sheet catches Pro designs at the exits, which is the mechanism the product already has. `B8` drew an affordance no requirement carries, and the owner declined to adopt it | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-D17 is unaffected** · ⬜ `B8` loses the row (prompt **A7**, item 6's canvas) |
 | **R-78** | **Redesign proposals build FR-C7 as written** — 2–3 **whole-site** starter × Style Pack combinations on the user's real content, which must differ in layout structure. **`B22`'s card, its NOW / PROPOSED pairing and above all its argued-from-your-own-data sentence are kept**, one per combination instead of one per section. Its per-section swap model is not built | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-C7 is confirmed as written** |
-| **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ step 5b draws the pin and its refusal |
+| **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ prompt **A2** (D2a/D2b) draws the pin and its refusal; 5b names them and draws nothing (R-74), 5c holds them out until the export carries them (F-090) |
 
 ### Also from this pass — and one of them is a control failing for the third time
 
@@ -1276,6 +1280,33 @@ approved decisions (§B: D3, D17, D26, D27-in-half) were checked before any docu
 relied on.
 
 ---
+
+## A12 · The step-5b/5c review — six decisions, 2026-09-03
+
+A twelve-lens review of the static prototype (5b) and the clickable walkthrough (5c) produced
+verified findings (`F-0xx`, `R2-…`); the owner ruled on the six decisions they raised, taking option 1
+on every one. Each row names its targets so a later session can tick them. ✅ landed in this pass ·
+⬜ owed to the named agent or to the owner. Ruling numbers R-1 … R-79 are unchanged.
+
+| # | Decision | Where it lands |
+|---|---|---|
+| **1** | **Fix the generators and the documents first, then walk.** The findings that were reproduced are fixed at their source — the generator, never an emitted page — before the owner opens 5b | ✅ this file · ✅ `EXPERIENCE.md`, `DESIGN.md`, `prd.md`, `ARCHITECTURE-SPINE.md` AD-20, `BACKUP-GATE.md`, `VERIFY-AT-BUILD.md` items 1, 2, 59–61, `MEASUREMENTS.md` §37 (the rows below say which) · ⬜ `prototype/build.py`, `walkthrough/build-app.py` (the generator passes) · ⬜ the walk itself (owner) |
+| **2** | **The plan-limit strings the frames draw wrongly are patched in 5c to Appendix F.1 at lift time**, each patch carrying a comment naming this decision; the frames catch up in A7 | ✅ `EXPERIENCE.md` § Plan limits ("In the walk") · ✅ A7 item 20 · ⬜ `walkthrough/build-app.py` (the patches) |
+| **3** | **5b is R-75's gate, and "walked" means every journey and every flow on its front door, with the owner's notes in one named file** | ⬜ `build-sequence.md` step 5b (the definition of done) · ⬜ `prototype/index.html` (the front door lists them) · ⬜ the notes file (owner) |
+| **4** | **An accessibility item that would change a frame goes to Claude Design prompt A7, not A8**, because it corrects an existing frame; nothing in 5b or 5c alters what a frame looks like | ✅ `EXPERIENCE.md` Appendix A7 items 7–10 (focus-ring token, accessible names, labels, placeholder colour) · ✅ A8 FRAMES 3 and 5 inherit A7's ring · ⬜ 5c may add attributes only, each naming its finding |
+| **5** | **FR-J13's gate offers the theme and `routes.yaml` downloads only when the Staff Access Token is present, and otherwise names the Ghost Admin path** (F-077 — FR-J13 and `BACKUP-GATE.md` had disagreed) | ✅ `prd.md` FR-J13 · ✅ `BACKUP-GATE.md` § What the gate offers as a download · ✅ `EXPERIENCE.md` F7 and A1 FRAME 4 · ⬜ `prototype/build.py` backup-gate note · *recorded for the owner:* `routes.yaml` alone is readable with the integration key (`MEASUREMENTS.md` §37) |
+| **6** | **The wrong-mechanism frames are held out of 5c until A7 runs, except copy the PRD owns**: Redesign Proposals (B22) held out entirely; the Pro Exit Sheet stays and its remedy count is A7's; the Starter Chooser stays and its roster is A7's; S4d's paid-tier rows are A7's | ✅ `EXPERIENCE.md` § Drawn, but on the wrong mechanism (preamble; S4d and B23a marked → A7) · ✅ A7 items 18 and 19 · ⬜ `walkthrough/build-app.py` and `_screens.html` (the held-out list) |
+
+**Also taken by the pass, as routine judgement rather than owner decisions — flagged here so they are
+visible:** (a) **AD-20 gains the compile-once rule** — Pre-flight is the `compiling` and `checking`
+stages of the deploy job, Ship it resumes the same row at `uploading` (F-075; the architect's call,
+made because `S8b` and FR-J8 disagreed and a story writer would have picked one); (b) **F2's holder
+countdown restarts on interaction rather than stopping**, the smallest rule consistent with
+`addendum.md` §AD2 (F-079); (c) **the persistence indicator's printed labels are B6's** and Appendix H
+now carries them, FR-D10's names being state names (F-080); (d) **the Staff Access Token is per user
+and an Administrator's suffices** — a Ghost fact, cited, correcting FR-C1, §3 and the A1 prompt
+(F-063); (e) prompt A7's numbered items are its count, and the Appendix A preamble no longer writes
+one down.
 
 ## B · Approved decisions superseded by this session
 

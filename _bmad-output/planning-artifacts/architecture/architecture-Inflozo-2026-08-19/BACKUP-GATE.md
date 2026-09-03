@@ -55,6 +55,25 @@ every other surprise is the backup you already have.
 Each item is its own checkbox, because a single "I have a backup" invites a single reflex. The two
 Inflozo actually touches are marked; the rest are recommended.
 
+## What the gate offers as a download — the token decides
+
+**Owner decision, 2026-09-03 (F-077).** FR-J13 used to say the gate "offers both as downloads"
+unconditionally; this file and `EXPERIENCE.md` F7 offered none, and on the no-token path none can
+exist — every `GET /themes/*` with an Admin API key is refused (501 on Ghost 5, 403 on Ghost 6;
+`MEASUREMENTS.md` §15h). The two were reconciled as follows, and FR-J13 now says the same:
+
+- **Staff Access Token present** (given at step 2 of the first-deploy wizard): the **Theme** and
+  **`routes.yaml`** rows each offer the current file as a download served by Inflozo, because the
+  token lifts `GET /themes/` (VERIFY-AT-BUILD item 9, executed on both majors).
+- **Token absent or declined:** no download is offered anywhere on the gate. Each row describes what
+  the customer is looking for in Ghost Admin and links to Ghost's help for the connected version —
+  the rule in the header above. **The gate never promises a file it cannot fetch.**
+
+*Recorded, not ruled:* `GET /admin/settings/routes/yaml/` answered **200 to the integration key
+alone** on both majors (`MEASUREMENTS.md` §37, 2026-09-03), so `routes.yaml` could be offered on both
+paths. That is a loosening of the ruling and is the owner's to take; until then the rule above is
+what E3 builds.
+
 ### Self-hosted — one command covers everything
 
 > **`ghost backup`**

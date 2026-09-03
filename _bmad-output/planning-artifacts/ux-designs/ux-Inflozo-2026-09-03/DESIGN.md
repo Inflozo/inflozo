@@ -38,7 +38,9 @@ colors:
   mint-tint: '#E4F5EE'
   sky: '#4E7FFF'
   sky-text: '#2B5BD7'
+  sky-tint: '#EAF0FF — the Editor Sidebar Kit info banner fill; the earlier #E8EEFF occurred nowhere in the export (F-110)'
   danger: '#E5484D'
+  danger-tint: '#FDECEC — B Missing Surfaces; the frames more often use #FDEBEC (S12 delete hover), both are export values (F-110)'
   scrim: 'rgba(28,27,26,.4)'
 
 typography:
@@ -52,7 +54,7 @@ typography:
   mono:
     fontFamily: "'JetBrains Mono', monospace"
   scale:
-    note: '12 · 13 · 14 · 16 · 20 · 24 · 32 · 44 · 60 · 72'
+    note: 'display and body steps 12 · 13 · 14 · 16 · 20 · 24 · 32 · 44 · 60 · 72; the app frames also set UI text at the half steps 9 · 9.5 · 10 · 10.5 · 11 · 11.5 · 12.5 · 13.5 · 15 — transcribed from the S/B/C/P0 frames and the Editor Sidebar Kit, where 12.5 and 11.5 are the third and fourth most-used sizes (F-111). Follow the frame, never round to the nearest listed step'
   body:
     fontSize: '16px'
   ui-default:
@@ -75,7 +77,7 @@ rounded:
   DEFAULT: '12px'
   lg: '16px'
   pill: '24px'
-  full: '9999px'
+  full: '24px — COMPUTED alias of pill; 9999px occurs nowhere in the export (F-110). Prefer {rounded.pill}'
 
 spacing:
   grid: '4px'
@@ -135,7 +137,7 @@ components:
     color: '{colors.marigold-text}'
     glyph: '✦'
     label: 'Pro — the word is part of the badge, never the glyph alone'
-    rounded: '{rounded.full}'
+    rounded: '{rounded.pill}'
   badge-free:
     border: '1px solid {colors.line}'
     color: '{colors.ink-soft-aa}'
@@ -285,8 +287,12 @@ rather than a mood: URLs, version chips, YAML, API keys, keyboard chips, and **e
 must not shift width as it changes** — the design counter reads "7 of 18" in mono so the 7 does not
 jump when it becomes 17, and the stepper's value uses tabular figures for the same reason.
 
-Scale: **12 · 13 · 14 · 16 · 20 · 24 · 32 · 44 · 60 · 72**. Weights: Inter 400/500/600, Bricolage
-500–800.
+Scale: **12 · 13 · 14 · 16 · 20 · 24 · 32 · 44 · 60 · 72** for display and body. **The app frames
+also set UI text at half steps — 9 · 9.5 · 10 · 10.5 · 11 · 11.5 · 12.5 · 13.5 · 15** — and use
+them heavily: counted across the S, B, C and P0 frames and the Editor Sidebar Kit on 2026-09-03,
+12.5px and 11.5px are the third and fourth most common sizes after 12 and 13, and the export's own
+buttons are 13.5 / 12.5 / 14 (B13a, S12, S1a). **A story reads the size off the frame and never
+rounds it to the nearest listed step** (F-111). Weights: Inter 400/500/600, Bricolage 500–800.
 
 Three sidebar roles are fixed and appear on every panel (Editor Sidebar Kit):
 

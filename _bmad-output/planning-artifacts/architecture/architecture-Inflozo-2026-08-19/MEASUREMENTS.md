@@ -2705,3 +2705,49 @@ carry a horizontal axis at all without Ghost having to support one.
 **This expires with the helper.** If Ghost ever adds a focal-point parameter, the right design would
 change — the crop could be deferred to Ghost's own image service rather than baked at compile.
 Re-read at any Ghost major. Register item **58**.
+
+## 37. Admin API keys do not expire — what Ghost returns for a regenerated key · 2026-09-03
+
+Executed during the step-5b/5c review pass (F-062), because two lifted frames, the voice canon and
+the PRD's own error-copy example all rested on "Ghost said no — your Admin key expired", a cause no
+one had seen Ghost produce. Read-only, `GET` only, integration key and staff token from
+`tools/probe/.env`; the JWT is minted exactly as FR-C2 mints it.
+
+    cd <scratchpad>/ravi && python3 probe-ro.py      # GET only; nothing written
+
+Control first — the real integration key on both servers:
+
+    T3 Ghost 5 https://ghost5.inflozo.com   config/ (integration) 200 version= 5.130.6
+    T1 Ghost 6 https://ghost6.inflozo.com   config/ (integration) 200 version= 6.58.0
+
+Then a correctly formed JWT whose `kid` is a key id Ghost has never issued (the shape of a key that
+was regenerated or whose integration was deleted), a JWT signed with the wrong secret, and a
+tampered signature — identical on both majors:
+
+    bogus key id ->  401 Unknown Admin API Key | UnauthorizedError
+    wrong secret ->  401 Invalid token: invalid signature
+    tampered jwt ->  401 Invalid token: invalid signature
+
+Read in source (Ghost 6.54.1, local checkout): `core/server/services/auth/api-key/admin.js:15,129` —
+`unknownAdminApiKey: 'Unknown Admin API Key'`, `code: 'UNKNOWN_ADMIN_API_KEY'`, thrown when
+`models.ApiKey.findOne({id: apiKeyId})` finds nothing; `core/server/data/schema/schema.js:387`
+`api_keys` — `id, type, secret, …` and **no expiry column**. Read at docs.ghost.org/admin-api:
+"You can regenerate the Admin API key any time"; the only thing with an expiry is the JWT Inflozo
+mints ("Max 5 minutes after 'now'").
+
+**So "your Admin key expired" is a failure that does not exist.** The real causes are: the key was
+regenerated or the integration deleted in Ghost Admin (401 `Unknown Admin API Key`), or Inflozo
+mis-signed the JWT (401 `Invalid token`, a bug of ours, never the user's). Propagated: `prd.md`
+Appendix H's example, `EXPERIENCE.md`'s voice table, prompt A7 item 11 (S8d′ and S11a), AD-24's
+mapping owes one row per code.
+
+Two things recorded in passing from the same run, both majors:
+
+    settings/routes/yaml/ (integration) 200 ok      <- readable with the Admin API key alone
+    settings/routes/yaml/ (staff)       200 ok
+    themes/ (integration) 501 (Ghost 5) / 403 (Ghost 6)   <- unchanged from §15h
+    themes/ (staff)       200, themes listed
+
+The first is why `BACKUP-GATE.md` records that `routes.yaml` *could* be offered as a download on the
+no-token path; the ruling of 2026-09-03 (F-077) ties both downloads to the staff token and the
+loosening is left to the owner.

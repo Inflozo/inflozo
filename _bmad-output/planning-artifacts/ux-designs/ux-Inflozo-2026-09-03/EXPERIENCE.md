@@ -103,7 +103,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 |---|---|---|---|
 | **First Run** | `S2 Onboarding.dc.html` S2a | first sign-in | Three doors: connect a Ghost site (recommended) · start from a starter · blank canvas |
 | **Connect · Integration** | S2b·1 | First Run · Sites · Connect Site Modal | Guided, screenshotted: create a Custom Integration in Ghost Admin |
-| **Connect · Keys** | S2b·2 | Connect · Integration | API URL + Admin API key + Content API key. **Not the Staff Access Token** (FR-C1) |
+| **Connect · Keys** | S2b·2 | Connect · Integration | API URL + Admin API key + Content API key. **Not the Staff Access Token** (FR-C1). On Ghost(Pro) the API URL is the site's `*.ghost.io` **admin domain**, which can differ from the public domain (read at docs.ghost.org/admin-api, 2026-09-03: "All Ghost(Pro) blogs have a `*.ghost.io` domain as their admin domain"); the public `url` is read from `GET /admin/site/` at connect and on the daily health check, so the Sites card, "View site" and Deploy Live link to the public domain, never the admin one (F-068, FR-C8) |
 | **Auto-Branding** | S2c | Connect · Keys, on success | Accent, navigation and logo read from the site — "Use your brand" or "Skip" |
 | **Redesign Proposals** | `B Missing Surfaces.dc.html` B22 *(re-specified — see below)* | Auto-Branding · Dashboard | 2–3 whole-site starter × Style Pack combinations on the user's real content (FR-C7, ruling R-78) |
 | **Starter Chooser** | B23a | First Run · New Project Sheet | All ten starters (Appendix E), filterable, with a "Start empty" escape |
@@ -148,6 +148,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Preview Mode** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
 | **Device Preview** | B11a · B11b *(re-specified)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
 | **Persistence Indicator** | B6 *(extended)* | always in the top bar | Saved on this device · Syncing · Synced · Retrying (FR-D10) |
+| **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project someone else holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is drawn on no frame → **A8** |
 | **Content Source Pill** | B9 | canvas foot | "Previewing with: {site} / Sample content", and the preview subject (FR-D15, FR-D22) |
 | **Preview Subject Picker** | → **A5** *(from B9's menu)* | Content Source Pill | Which post / page / tag / author this canvas renders (FR-D22) |
 | **Member State Preview** | S4d + B9 *(re-specified)* | top bar eye | Anonymous · Free member · Paid member — **three states** (FR-D16) |
@@ -176,13 +177,13 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Deploy Destination** | S8a *(extended)* | step 1 | The site, Deploy & activate vs Deploy only, **and the theme name** (FR-J10) |
 | **Staff Token Offer** | → **A1** | step 2, first deploy to a site only | "One more step unlocks a safety net" — and its decline path (FR-C1) |
 | **Backup Gate** | → **A1** | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) |
-| **Pre-flight Check** | S8b *(extended)* | step 4 | gscan, templates, helpers, routes, and every warning the PRD names |
+| **Pre-flight Check** | S8b *(extended)* | step 4 | **Compiles the theme and runs gscan on it** — the `compiling` and `checking` stages of the deploy job (AD-20): templates, helpers, routes, and every warning the PRD names. The compiled artefact is what Ship it uploads |
 | **Drift Report** | → **A3** | inside Pre-flight, every deploy after the first | A passing row when nothing changed; **it stops the deploy** when something did, naming the files by layer name (FR-J16) |
 | **Library Update Notice** | B14a | project card | "Updates available" (FR-J14) |
 | **Library Update Confirm** | B14b *(re-specified)* | before compile, whenever the library has advanced | The mandatory consent step (FR-J14) |
 | **Pro Exit Sheet** | B13a *(re-specified)* | any blocked exit on Free | Four remedies, itemised (FR-L3) |
 | **Snapshot Gate** | B12a running · B12b degraded *(re-specified)* | the first named stage of step 5, first upload to a site only | Inflozo's own archive of the live theme, before the upload begins (FR-J13) |
-| **Deploy Progress** | S8c | step 5 | Compiling → Checking → Uploading → Activating |
+| **Deploy Progress** | S8c | step 5 | Uploading → Activating — the artefact Pre-flight compiled and checked, on the same job row (AD-20, FR-J8). **No Cancel once uploading starts**; the drawn Cancel goes → **A7** |
 | **Deploy Live** | S8d | step 6, when the deploy activated | The product's one confetti moment |
 | **Deploy Uploaded** | → **A2** | step 6, when the user chose **Deploy only** | The other ending. Uploaded on purpose, not live, with Activate one click away |
 | **Deploy Failure** | S8d′ | step 5, on failure | A human sentence and the action that fixes it |
@@ -201,6 +202,24 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 That group is the entry point for **Paywall Editor**, **Editor Cards** and **Error Pages**, and it
 is drawn in ink chrome rather than paper so a canvas that is not a page announces itself. It is
 also where FR-Q9's fallback lands: a treatment whose host section is absent is still selected here.
+
+### Editor shell — what the frames fix, and what is open for the architect
+
+**What the frames fix** (F-078). There is **one editor shell**, and it is `S4a`'s: the top bar, the
+**Layers** panel on the left, the canvas, the Controls sidebar on the right. The **Template Switcher**
+in the top bar is the canvas selector — Home, Post, Page, the archives, the membership canvases, 404,
+Private, custom templates — and switching a template is navigation, not a mode. `C3a`'s **Template
+surfaces** group (Paywall · Cards · Error pages) is the entry to **Paywall Editor**, **Editor Cards**
+and **Error Pages**; it hangs under **Post template** and is reached through the switcher, so the left
+panel stays Layers on every canvas. Where `C1a`/`C3a` draw that group as its own ink-chrome list and
+`S4a` draws Layers alone, the two are the same shell on two canvases, not two shells.
+
+**Open for the architect at step 6, deliberately not invented here:** the **URL scheme** for a project,
+a template and a template surface (and what browser Back does across them), and the **iframe canvas
+boundary** — AD-21 puts editing chrome inside the iframe as pseudo-elements; which parts of the shell
+above sit inside it and which outside is the architect's call. Neither spine nor prototype fixes
+either, and the prototype's inline canvas is a rendering shortcut, not a statement about the
+boundary.
 
 ---
 
@@ -228,7 +247,7 @@ Short, warm, confident, lightly playful. Errors are human and name the fix.
 
 | Do | Don't |
 |---|---|
-| "Ghost said no — your Admin key expired." + Reconnect | "An error occurred." |
+| "Ghost said no — this Admin API key no longer works. It was regenerated or removed in Ghost Admin." + Reconnect *(a 401 `Unknown Admin API Key` — Admin API keys never expire, `MEASUREMENTS.md` §37)* | "An error occurred." · "Your Admin key expired." — a failure Ghost never produces |
 | "Your theme is on your site but isn't live yet." | "Deploy failed." |
 | "7 unsynced edits will be lost." | "Some changes may not be saved." |
 | "Hundreds of gorgeous sections" | any design, category or free-set total |
@@ -290,7 +309,7 @@ when it has nothing to show".
 | **Deploy History** | first deploy: "Nothing shipped yet" and the limit stated anyway | — | — | pin refusal at N−1, with the reason (F8) |
 | **Notifications** | "Nothing yet. Deploy outcomes land here even if you closed the tab." | — | — | — |
 | **Sites** | Sites with none: the connect card as the whole page | health check spinner on the badge only | "Reconnect needed" badge + the reason and date | Free at 1 site: S11c's ghost slot |
-| **Paywall Editor** | **no paid tiers on the site**: `C3a`'s empty state — "Nothing to sell yet", what Ghost does instead, two numbered steps and a Re-check. **Honest about Ghost, not about us** | — | — | members disabled → the same shape, naming the setting |
+| **Paywall Editor** | **members disabled on the site** (`members_signup_access` = none): `C3a`'s empty-state shape — what Ghost does instead, two numbered steps and a Re-check. **Not** "no paid tiers": Ghost's paywall renders on every gated post — members-only, paid or tier-gated — whether or not a paid tier exists (`content-cta.hbs` carries its own `visibility="members"` branch; VERIFY-AT-BUILD item 11), so a free newsletter gating posts to members is exactly a site this editor serves. `C3b`'s sentence says otherwise → **A7** | — | — | the same shape, naming the setting |
 | **Suggestions** | S13c | — | — | — |
 | **Main feed** | the designated feed design's **own declared empty state** — never back-filled (ruling R-36) | — | — | — |
 | **Secondary `{{#get}}` feed** | **renders nothing at all**, heading and container together | — | — | — |
@@ -305,7 +324,7 @@ when it has nothing to show".
 | **Uploaded, not activated** | Partial Success | A **partial success**, recorded as one. Re-activate is one click. Sends no failure email |
 | **Read-only project** (over limit) | Editor | Canvas legible, sidebar dimmed, nothing responds. **Export still works** (FR-J12) |
 | **Read-only session** (someone else holds the lock) | Editor | Same treatment, different banner: "Rosa is editing this site — you are reading along", + Request editing |
-| **No local storage** | Persistence Indicator | Falls back to per-change cloud sync **and says so in the indicator** — never a false "Saved locally" |
+| **No local storage** | Persistence Indicator | Falls back to per-change cloud sync **and says so in the indicator** — never a false "Saved on this device" (the label; FR-D10's "Saved locally" is the state name — Appendix H) |
 | **Offline** | Persistence Indicator | "Retrying · 12s", counting down. Expanded: "Your work is safe on this device." + Retry now |
 | **`pro_past_due`** | Grace Banner | Every Pro capability is kept for 7 days. Not a plan, and never shown as one |
 
@@ -483,11 +502,11 @@ had none, because the scan runs on NFR-6(a)'s render matrix and that matrix is *
 | Reduced motion | NFR-6(a), with the query forced |
 | 200% browser zoom | NFR-6(a), as a viewport case |
 
-> **A flag for the architect, not a change made here.** **NFR-6(d)'s E2E list names no accessibility
-> journey** — it covers auth, connect, build, shuffle, dark authoring, deploy, rollback, billing and
-> quotas, all of them mouse-driven. Four rows above depend on an E2E pass that does not yet exist in
-> that list. Adding one keyboard-only journey to NFR-6(d) is the smallest thing that gives this
-> section teeth; it is an NFR amendment and is left to whoever owns NFR-6.
+> **Closed 2026-09-03 (F-097).** NFR-6(d)'s E2E list originally named no accessibility journey — auth,
+> connect, build, shuffle, dark authoring, deploy, rollback, billing and quotas, all mouse-driven — so
+> four rows above depended on a pass that did not exist. **NFR-6(d) now carries one keyboard-only
+> journey** — sign in, connect, place a section, cycle the ring with `]` and `[`, deploy — run with no
+> pointer events, and it is the verifier those four rows name.
 
 ### Where the floor stops, and why it is a scope statement rather than an exemption
 
@@ -554,7 +573,7 @@ written and two of them touched the S, M and B screens.
 
 | §37.7 item | Verdict today |
 |---|---|
-| **Paywall editor** (FR-H6) | **DRAWN — §37.7 was wrong.** `C Post Body.dc.html` **C3a** is the paywall canvas at 1440, with its six controls, its "how readers reach it" explainer, three of the twelve designs, and the **no-paid-tiers empty state**. Its entry point is drawn twice more ("Open paywall editor →" on C1a, "Open Paywall →" on C2a) and it sits in a drawn left-nav group, **Template surfaces** |
+| **Paywall editor** (FR-H6) | **DRAWN — §37.7 was wrong.** `C Post Body.dc.html` **C3a** is the paywall canvas at 1440, with its six controls, its "how readers reach it" explainer, three of the twelve designs, and an empty state whose drawn condition — "no paid tiers" — is wrong (→ **A7** item 12; § State Patterns has the right one). Its entry point is drawn twice more ("Open paywall editor →" on C1a, "Open Paywall →" on C2a) and it sits in a drawn left-nav group, **Template surfaces** |
 | Backup gate consent checklist | **not drawn.** No frame anywhere mentions a backup, `ghost backup`, or a consent checklist → **A1** |
 | Drift report (FR-J16) | **not drawn** → **A3** |
 | Credit toggle (FR-J15) | **not drawn.** The only "credit" in the app frames is S14's per-card image-credit control, a different thing → **A6** |
@@ -576,29 +595,30 @@ written and two of them touched the S, M and B screens.
 
 ### Drawn, but on the wrong mechanism — semantics re-specified, visual treatment kept
 
-Each of these keeps its frame's components, layout, colour and density. Only what it *does* changes. **Six of them are marked → A7**, which is the Claude Design prompt that brings the frames themselves back into line; the rest are corrected here and in step 5b's prototype, and the frames catch up whenever a library pass next touches them.
+Each of these keeps its frame's components, layout, colour and density. Only what it *does* changes. **The rows marked → A7** go to the Claude Design prompt that brings the frames themselves back into line — A7's numbered items are the list and the count; the rest are corrected here and in step 5b's prototype, and the frames catch up whenever a library pass next touches them. **Until A7 runs, 5c holds the wrong-mechanism frames out of the walk except where the copy is the PRD's** (owner, 2026-09-03 — `reconcile-designs-decisions.md` §A12): B22 is held out entirely; the Pro Exit Sheet walks with its drawn remedies and the four are A7's; the Starter Chooser walks with its drawn roster and Appendix E's is A7's; S4d's paid-tier rows are A7's.
 
 | Frame | What it draws | What it must do |
 |---|---|---|
 | **B19** Template Binding Checklist *(→ **A7**)* | `page-membership.hbs`, "set the page's URL slug to `membership`", a **MATCHED** badge | FR-I1 forbids `page-{slug}.hbs` — it detaches on retitle and outranks the user's own choice. The file is **`custom-membership.hbs`**; the user picks it from Ghost's page-editor **Template** dropdown. **One row per emitted template**, each naming the filename *and* the dropdown label Ghost derives from it, with a **done-state the user marks themselves**. The MATCHED badge goes: Inflozo cannot see a page's chosen template, and **the flow says so** — "we can't see whether you did this". Keep the right-hand Ghost facsimile panel; it is what makes this work |
-| **B12** Snapshot Gate *(→ **A7**)* | fires "on every deploy"; "snapshots count towards your history"; failure blames integration-key permission | FR-J13: **first upload to a site only**, and the snapshot is **exempt** from history pruning. The 403 is **structural** for every Custom Integration token on every Ghost — there is no permission to fix. The degraded path is the designed one: no snapshot was captured, **Ghost keeps the previous theme under Settings → Design**, and here is how to reactivate it there |
-| **B16** Routes Fallback Card *(→ **A7**)* | "your integration key is missing the settings permission … Fix the key" | FR-I4: automated upload uses the **Staff Access Token**. Integration keys never carry `setting: edit`; there is nothing to fix. The card fires when the token is **absent, revoked or non-Owner**. The Ghost menu path is **not hard-coded** — Ghost 6 has no Settings → Labs (`MEASUREMENTS.md` §33); describe what the customer is looking for and link to Ghost's own help for their version |
+| **B12** Snapshot Gate *(→ **A7**)* | fires "on every deploy"; "snapshots count towards your history"; failure blames integration-key permission | FR-J13: **first upload to a site only**, and the snapshot is **exempt** from history pruning. The 403 is **structural** for every Custom Integration token on every Ghost — there is no permission to fix. The degraded path is the designed one: no snapshot was captured, **Ghost keeps the previous theme under Settings → Design**, and here is how to reactivate it there — true of the **first** upload only: later Inflozo versions replace each other under FR-J10's frozen name and survive only in Deploy History (F-074, VERIFY-AT-BUILD item 61) |
+| **S8c** Deploy Progress *(→ **A7**)* | a **Cancel** action beside "Uploading to Ghost · 1.1 of 2.4 MB" | FR-J8: **Cancel exists during Compiling and Checking only; once Uploading starts the deploy runs to completion** (idempotent; rollback covers regret), and AD-19 holds the site lock for exactly that span. The card, its progress bar and its stage rows stay; the Cancel goes, or is greyed with its reason in R-33's pattern. The compile and gscan the card does not show happened at Pre-flight, on the same job row (AD-20) |
+| **B16** Routes Fallback Card *(→ **A7**)* | "your integration key is missing the settings permission … Fix the key" | FR-I4: automated upload uses the **Staff Access Token**. Integration keys never carry `setting: edit`; there is nothing to fix. The card fires when the token is **absent, revoked, or from a role below Administrator** (F-063). The Ghost menu path is **not hard-coded** — Ghost 6 has no Settings → Labs (`MEASUREMENTS.md` §33); describe what the customer is looking for and link to Ghost's own help for their version |
 | **B13** Pro Exit Sheet *(→ **A7**)* | two remedies — swap for a named Free design, or Go Pro | FR-L3: **four**. **Upgrade · swap to a Free design via Shuffle · remove it · revert to the Free design of that treatment.** "Remove it" is not decorative — some binding contexts have no Free design to swap to. The fourth covers the 22 non-placeable Pro treatments, which are *selected* not placed, and each reverts on its own surface. **Swap is via Shuffle — any Free design in the ring**, not an authored pairing table, so the "someone has to author a fallback per design" data dependency the frame notes does not exist |
 | **B22** Redesign Proposals | four per-section swaps argued from the user's data | *Ruling R-78.* FR-C7: **2–3 whole-site starter × Style Pack combinations** on the user's real content, which must **differ in layout structure**. Keep the frame's card, its NOW / PROPOSED pairing and above all its **argued-from-your-own-data sentence** — one per combination instead of one per section. Re-runnable later from New Project Sheet. Also: "no tag template, so Ghost falls back to a bare list" is false on Inflozo — `tag.hbs` always compiles from the Synthesis Defaults |
 | **B11** Device Preview *(→ **A7**)* | a user "Fit / 55%" zoom control | FR-D14: **no zoom in v1**; AD-21: fit-to-screen only, never user-driven. Keep the mono chip that states true size and scale; delete the control |
 | **B24** Grace Banner *(→ **A7**)* | "after that, Pro designs stop rendering and your sites fall back to their Free replacements" | FR-L3: **existing deployed themes are never touched.** Grace expiry moves the account to Free and blocks the **exits** — deploy, export, code surfaces — until the user resolves what is over. M5's own FAQ already says the right thing ("your deployed theme stays live") and B24 contradicted it |
-| **S9** Routes Manager | routes `/subscribe/ : members-signup` and `/ : home` | FR-I1/I5: a membership page emits **no route** — it is `custom-{name}.hbs`, bound from Ghost's page editor. And `home.hbs` resolves for the root by itself; a `routes:` entry for `/` also removes the index collection, so `/page/2/` breaks. Both rows go. Also S9c's "posts per page follows the home feed's Count control" → **Theme Settings' `posts_per_page`**, which a collection's own `limit:` may override for that route (FR-Q1, FR-I2); and S9c's absolute-only published date offers FR-I2's **relative** form first (`now-30d`) |
+| **S9** Routes Manager | routes `/subscribe/ : members-signup` and `/ : home` | FR-I1/I5: a membership page emits **no route** — it is `custom-{name}.hbs`, bound from Ghost's page editor. And `home.hbs` resolves for the root by itself **only while the root is still a collection**: a `routes:` entry for `/` removes the index collection, so `/page/2/` breaks — and so does a routes.yaml with no `collections: /:` at all. Both rows go, and **Inflozo always emits the index collection first** — `/: {permalink: /{slug}/, template: index}` — ahead of any custom collection, because a post belongs to the first collection whose filter it matches ("Posts can only ever be in one collection", docs.ghost.org/themes/routing) and the drawn `/articles/ filter: type:post` would otherwise capture every post and leave the home feed empty (F-070; the YAML pane → **A7**; not executed — a routes.yaml round-trip on T3 is under the reset protocol). Also S9c's "posts per page follows the home feed's Count control" → **Theme Settings' `posts_per_page`**, which a collection's own `limit:` may override for that route (FR-Q1, FR-I2 — `limit` is in Ghost's code and not in its routing docs: 6.x `route-settings-parser.js:59,151` `limit: LimitField`, 5.x `CollectionRouter.js:39`; VERIFY-AT-BUILD item 60); and S9c's absolute-only published date offers FR-I2's **relative** form first (`now-30d`) |
 | **B17** Theme Settings | no `posts_per_page`; a Logo **Replace** control; "Dark mode: follows the reader's system setting"; the custom-settings meter reads 3 of 20 | `posts_per_page` is FR-Q1's **first** field and belongs here — and **every surface that mentions posts per page links here, never into Ghost Admin**, because Ghost Admin has no such setting (ruling R-10 #13). The logo is Ghost's and is **read, never written** (AD-10's P8 allowlist) — show it, link out, no Replace. The dark row is **FR-D7's project mode**: Light only / Light + Dark. The meter is **3 of 17**: three of Ghost's twenty slots are the dark built-ins on every project (FR-Q2). The builder also needs the Ghost Admin **group**, a **visibility condition**, FR-Q3's text-prop confirm, the post-deploy key-immutability notice and the pack-switch warning for a promoted accent |
 | **B18** Translations | flat keys — `subscribe`, `read_more`, `min_read` | FR-Q6: keys are **dotted `namespace.name`** — `member.signup_cta`, `post.reading_time`, `archive.empty_heading`. Add FR-Q8's brace-refusal error state (a malformed interpolation token is a whole-site 500). The RTL acknowledgement is right, and FR-Q6 additionally requires it **repeated as a pre-deploy warning** on Pre-flight Check |
-| **S4d** Member State Preview | tier-level previews — Orbit Supporter $5, Patron $12, Founding $120 | FR-D16: **three states** — Anonymous / Free member / Paid member. `comped` previews as Paid, differing in billing rather than access. **B9 already says "only" and agrees with the PRD**; S4d is the outlier and moves. Add the two things neither frame has: the **unviewed-states marker** beside the toggle, and the **"Gated content — shown with sample text"** indicator on a gated body |
+| **S4d** Member State Preview *(→ **A7**)* | tier-level previews — Orbit Supporter $5, Patron $12, Founding $120 | FR-D16: **three states** — Anonymous / Free member / Paid member. `comped` previews as Paid, differing in billing rather than access. **B9 already says "only" and agrees with the PRD**; S4d is the outlier and moves. Add the two things neither frame has: the **unviewed-states marker** beside the toggle, and the **"Gated content — shown with sample text"** indicator on a gated body |
 | **B15** Preview-Only Notice | "Upgrade the site to Ghost(Pro) **Creator** or above" | FR-C2: **Publisher or higher**, in Ghost's 2026 Starter / Publisher / Business lineup |
 | **S8a′ / S11a** Preview-Only Destination | "download the theme and upload it in Ghost Admin" | Starter's `customThemes` limit forbids custom themes **in Ghost Admin too** — this is a plan limit, not an API limit. The zip still downloads (FR-J12, all plans); it can be installed on self-hosted Ghost or on a Ghost(Pro) plan that allows custom themes. B15 already gets this right; these two do not |
 | **B8** Site Remix | scopes: this page / every page / site-wide too / **Keep Free designs only** | *Ruling R-77:* **"Keep Free designs only" is dropped.** Remix always re-rolls from the whole library and the Pro Exit Sheet catches it at deploy. FR-D17's own axis is **what** is re-rolled — Style Pack, designs, or both — and the frame has no control for it; add it as a second radio-card group above the existing scope group, which is *where*. Both axes now exist, in the components the frame already draws |
 | **B4** Inline Toolbar | four marks **plus a block-type menu ("Body")** | FR-D4 and `P0-1`: exactly the four marks and Remove link. No block types — Inflozo does not own the post body. **`P0-1` supersedes B4a**; B4b's link entry is kept and gains FR-D9's new-tab and `rel` options |
-| **B23a** Starter Chooser | ten starters, seven names invented, seven marked "All Free" | Appendix E is normative and names all ten with their pack and composition: **Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio**. FR-O4: **only Quiet and Ledger** are Free end-to-end. The frame's grid, category filter, free filter, "swap or upgrade" marks and "Start empty" escape are all kept; the roster and the Free marks are replaced. Also: no starter ships a membership template (FR-O1), so "Cohort — tiers and member pages" goes with the name |
+| **B23a** Starter Chooser *(→ **A7**)* | ten starters, seven names invented, seven marked "All Free" | Appendix E is normative and names all ten with their pack and composition: **Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio**. FR-O4: **only Quiet and Ledger** are Free end-to-end. The frame's grid, category filter, free filter, "swap or upgrade" marks and "Start empty" escape are all kept; the roster and the Free marks are replaced. Also: no starter ships a membership template (FR-O1), so "Cohort — tiers and member pages" goes with the name |
 | **B20 / S11d** Manage Keys | Admin + Content keys only; B20 invents grantable scopes; S11d shows the API URL as an editable field | FR-C8: **three** credentials, each shown **present or absent with what it enables**, the Staff Access Token addable and removable at any time. Custom Integration scopes are fixed by Ghost and cannot be granted — the missing capability is the token, not a permission. **The site URL is immutable**; a domain move is disconnect + reconnect, and the affordance does not exist rather than being guarded |
 | **B7** Layers | "on 26 pages" | The unit is **templates**, and a project has roughly seven to ten of them, not 26 (FR-D6) |
-| **B6** Persistence Indicator | four states | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved locally" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings |
+| **B6** Persistence Indicator | four states | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved on this device" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings. **Copy only (F-080):** the drawn label **"Saved on this device"** is the string and Appendix H now carries it; FR-D10's "Saved locally" is the state name and is never printed |
 
 ### Plan limits — Appendix F.1 is the sole definition, and several frames disagree with it
 
@@ -625,13 +645,21 @@ styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore
 suggestions board. **During the 7-day grace, `pro_past_due` keeps every Pro capability**, with no
 per-row exception.
 
+**In the walk:** 5c patches the drawn plan-limit strings to this table at lift time, each patch
+carrying the ruling (owner, 2026-09-03 — `reconcile-designs-decisions.md` §A12, decision 2); the
+frames themselves catch up in **A7**.
+
 ---
 
 ## Key Flows
 
 The protagonists are **PRD §3's personas, used verbatim**. Each carries the one thing that decides
 how a journey actually plays out — **its Ghost credential reach** — because FR-C1's Staff Access
-Token can only be minted on the site Owner's own account.
+Token is per user and carries that user's role: **every staff user has one** (docs.ghost.org/admin-api,
+read 2026-09-03: "Each user can create and refresh their own token"), an **Administrator's** carries
+everything Inflozo needs (`theme: all`, `setting: all` — Ghost's `fixtures.json` roles_permissions,
+read 2026-09-03), an Editor's does not (`theme: browse, readActive`), and **the Owner is not
+required** (F-063).
 
 - **The solo publisher** — writer or newsletter operator, one Ghost site, zero code skills. *Is the
   site Owner, but is the persona least comfortable minting anything* — reads "Staff Access Token" as
@@ -641,8 +669,9 @@ Token can only be minted on the site Owner's own account.
 - **The creator with taste** — designer-adjacent, opinionated, opens the Style Pack editor on day
   one. *Credential reach: full.*
 - **The multi-site operator** — agency hand or publisher running 3–10 Ghost properties. *Credential
-  reach: variable and often **not** the Owner* — works on clients' sites with delegated access,
-  which is exactly the case FR-C1's graceful no-token path serves.
+  reach: variable* — works on clients' sites with delegated access; as an Administrator they can mint
+  a token that suffices, as an Editor or Author they cannot, which is exactly the case FR-C1's
+  graceful no-token path serves.
 
 ---
 
@@ -665,10 +694,10 @@ token step**, which is what makes it reachable.
 | 7 | **Redesign Proposals** | 2–3 whole-site combinations on her real posts, each argued from her own data. Or **Starter Chooser**, or straight to a blank canvas |
 | 8 | **Editor** | She builds. Everything works: the whole library on the canvas, every control, every template |
 | 9 | **Deploy Destination** | "Ship it". Step 1 of 6, because this is the first deploy to this site. The card names the site, offers **Deploy & activate** or **Deploy only**, and states the theme that will be created: `inflozo-orbit-weekly`, in mono, with one line saying the name is frozen for this site from now on (FR-J10) |
-| 10 | **Staff Token Offer** | Step 2. **"One more step unlocks a safety net — a copy of your current theme before we replace it, plus a check that nothing else has changed it."** It states plainly that this is a full-Administrator credential and can only be created on the site Owner's own account (FR-C3). **Two buttons, both plain** — paste a token, or decline |
+| 10 | **Staff Token Offer** | Step 2. **"One more step unlocks a safety net — a copy of your current theme before we replace it, plus a check that nothing else has changed it."** It states plainly that this is a full-Administrator credential — hers as the Owner, or any Administrator's on the site (FR-C3, F-063). **Two buttons, both plain** — paste a token, or decline |
 | 11 | **Backup Gate** | Step 3. Flow **F7**. Blocks the deploy button until confirmed |
 | 12 | **Pre-flight Check** | Step 4. gscan, templates, helpers, routes — and every warning the PRD names |
-| 13 | **Snapshot Gate** → **Deploy Progress** | Step 5. Flow **F1**, then Compiling → Checking → Uploading → Activating |
+| 13 | **Snapshot Gate** → **Deploy Progress** | Step 5. Flow **F1**, then Uploading → Activating — the artefact step 4 compiled and checked (AD-20) |
 | 14 | **Deploy Live** | Step 6. **"Live! Your site just got gorgeous."** The product's one confetti moment |
 
 **Step 1 has two endings too, and only one of them is Live.** "Deploy & activate" and "Deploy only"
@@ -700,10 +729,11 @@ activates a theme on its own. **She ships.**
 > which enables the snapshot *from that point forward* — it cannot reconstruct a snapshot of a theme
 > that has already been replaced, and the UI does not pretend otherwise.
 >
-> **The multi-site operator reaches the same screen and cannot comply.** Working on a client's site
-> with delegated access, they are not the Owner and cannot mint the token at all. Ending B is not a
-> degradation for that persona — it is the path, and a hard token requirement at connect would have
-> locked them out of the product entirely.
+> **The multi-site operator reaches the same screen and may not be able to comply.** Working on a
+> client's site with delegated access, an **Administrator** can mint a token that suffices; an Editor
+> or Author cannot mint one Inflozo can use (F-063). For the second case Ending B is not a
+> degradation — it is the path, and a hard token requirement at connect would have locked them out
+> of the product entirely.
 
 ---
 
@@ -831,7 +861,7 @@ restore-to-original into restore-to-Inflozo.
 |---|---|
 | **Running** | B12a as drawn, minus the two wrong sentences |
 | **Captured** | The step list completes and the wizard moves on. No celebration — this is plumbing |
-| **No Staff Access Token** *(the designed degraded path, not an error)* | **"We could not archive your current theme."** Then the honest reason: **reading a theme needs the site Owner's Staff Access Token, and this project does not have one** — this is structural on every Ghost version and every host, and there is no permission to grant. Then what protects them anyway: **Ghost keeps the previous theme under Settings → Design**, with how to reactivate it there. Three actions: **Add the token** (opens Staff Token Offer) · **Deploy without a snapshot** · **Cancel** |
+| **No Staff Access Token** *(the designed degraded path, not an error)* | **"We could not archive your current theme."** Then the honest reason: **reading a theme needs a Staff Access Token from the site Owner or an Administrator, and this project does not have one** — this is structural on every Ghost version and every host, and there is no permission to grant. Then what protects them anyway: **Ghost keeps the previous theme under Settings → Design**, with how to reactivate it there. Three actions: **Add the token** (opens Staff Token Offer) · **Deploy without a snapshot** · **Cancel** |
 | **Capture failed for another reason** | The request and the status code, because a person can act on a specific failure and cannot act on "something went wrong". Same three actions |
 | **Restore** | From **Deploy History**. One-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload with its own gscan**, so an old theme can be rejected on the way back in. That case has its own designed fallback: the snapshot zip is offered as a download, and the user is pointed at Settings → Design, where Ghost still holds it |
 
@@ -857,7 +887,7 @@ grows only as the stakes do. That escalation is the design and it stands.
 | Party | Surface | What they see |
 |---|---|---|
 | **The reader** (opened it second) | **Editor**, read-only | B5a: a bar — "Rosa is editing this site — you are reading along" + **Request editing**. The canvas stays fully legible; the sidebar dims to 55% so controls are *visible* but nothing responds |
-| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. It states the sync position *before* asking: "All your changes are synced · 0 pending". **Hand over** / **Keep editing**, with a countdown. **The countdown is a no-response timer and it stops the instant the holder interacts with the popover at all, focus included** — it only runs out when nobody is there, so a present holder is never hurried into a decision that loses someone else's work. **B5b is announced assertively** (§ Accessibility Floor), because a request that arrives silently is a request a screen-reader user answers by not answering |
+| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. It states the sync position *before* asking: "All your changes are synced · 0 pending". **Hand over** / **Keep editing**, with a countdown. **The countdown is a no-response timer and it restarts the instant the holder interacts with the popover at all, focus included** — so a present holder is never hurried into a decision that loses someone else's work. **It does not stop:** §AD2's nudge is answered only by **Hand over** or **Keep editing**, and a holder who focuses the popover and does nothing has not answered it, so §AD4's ~30 s runs again from their last interaction and then the requester's take-over is offered exactly as §AD2 says (F-079 — the smallest rule consistent with §AD2, taken here; the constant stays §AD4's). **B5b is announced assertively** (§ Accessibility Floor), because a request that arrives silently is a request a screen-reader user answers by not answering |
 | **The requester, unanswered** | **Editor** | After ~30 seconds: "No response; that session has X unsaved edits", and **take over anyway** is offered |
 | **The revived former holder** | **Editor**, read-only | "That session had 14 unsaved edits; they were not included." It flips to read-only and its local journal is cleared |
 
@@ -914,9 +944,9 @@ Administrator or Owner holds `setting: all`.
 
 | Cause | What the card says |
 |---|---|
-| No Staff Access Token was ever supplied | "We normally upload this for you. Uploading a routing file needs the site Owner's Staff Access Token, and this project doesn't have one — so this once, you'll do it by hand." + **Add the token instead** |
+| No Staff Access Token was ever supplied | "We normally upload this for you. Uploading a routing file needs a Staff Access Token from the site Owner or an Administrator, and this project doesn't have one — so this once, you'll do it by hand." + **Add the token instead** |
 | The token was revoked or rotated | "…your token has stopped working." + **Update the token** |
-| The connection is not the site Owner's | "…this token belongs to a staff account that can't write settings. Only the site Owner's token can." |
+| The token's role is below Administrator | "…this token belongs to a staff account that can't write settings. Only an Owner's or an Administrator's token can (F-063)." |
 
 **The three steps stay as drawn**, with one correction each:
 
@@ -992,9 +1022,16 @@ waiting. That narrowness is what keeps "nothing changes without your say-so" tru
 **Surfaces: Preview-Only Notice** — B15 · **Preview-Only Destination** — S8a′ · the Sites card —
 S11a. **B15 is right**; the other two are not, and they move to match it.
 
-**Preview-only is probed, never asked.** At connect, `hostSettings.limits.customThemes` reports
-whether the site permits custom theme upload; its absence means self-hosted and unlimited. **There is
-no user-declared-plan step in the happy path and no plan field in Manage Keys.**
+**Preview-only is probed, never asked.** At connect, `hostSettings.limits.customThemes` is read from
+`GET /admin/config/`. **Its shape is a theme-name allowlist, not a yes/no flag** — Ghost's
+`@tryghost/limit-service` declares `customThemes` as an allowlist limit and the upload endpoint runs
+`errorIfWouldGoOverLimit('customThemes', {value: themeName})` (read in source, Ghost 6.54.1
+`api/endpoints/themes.js:53-54`, `services/themes/installer.js:25`, limit-service `config.js:49`) — so
+the probe tests **Inflozo's frozen theme name** (FR-J10) against the list, and "present" does not mean
+"blocked". Its absence means self-hosted and unlimited (**executed**, `MEASUREMENTS.md` §15h). **The
+Ghost(Pro) half is unexecuted** — VERIFY-AT-BUILD item 2 is ⛔ until a Starter trial captures the
+payload — so everything below about Starter is read from Ghost's pricing page (item 1), not observed
+(F-065). **There is no user-declared-plan step in the happy path and no plan field in Manage Keys.**
 
 **The notice (B15)** is **sky, not danger** — this is information, not a failure, and the site works
 perfectly for everything except deploying. It states the cause in Ghost's terms: Ghost restricts
@@ -1096,6 +1133,16 @@ consent is meaningful. Putting it at connect would also cost G1's under-ten-minu
 safety gained. **Once per site**, re-shown if the site is disconnected and reconnected.
 
 **It blocks the deploy button until confirmed.** It is step 3 of the six-step first-deploy wizard.
+
+**What it offers as a download, and when** *(owner, 2026-09-03, F-077 — FR-J13 amended to match)*.
+**With the Staff Access Token present** — given at step 2 — the Theme and `routes.yaml` rows each
+offer the current file as a download served by Inflozo, because that token lifts `GET /themes/`
+(VERIFY-AT-BUILD item 9). **Without it, no download is offered**: the rows name what to look for in
+Ghost Admin and link to Ghost's help for the connected version, exactly as `BACKUP-GATE.md`
+specifies. The gate never promises a file it cannot fetch. *(Recorded, not ruled:
+`GET /admin/settings/routes/yaml/` answered 200 to the integration key alone on both majors —
+`MEASUREMENTS.md` §37 — so `routes.yaml` could be offered on both paths; that loosening is the
+owner's to take.)*
 
 **It opens with the honest part, and the honest part comes first.**
 
@@ -1257,8 +1304,10 @@ not a failure**, and six things follow:
 
 ## Appendix A — Claude Design prompts
 
-Eight prompts. **A1–A6 draw surfaces that do not exist** · **A7 corrects six frames whose mechanism
-changed** · **A8 draws the editor below 1440 and the affordances the accessibility floor needs.**
+**A1–A6 draw surfaces that do not exist** · **A7 corrects existing frames** — the ones whose
+mechanism changed, whose copy states a Ghost fact wrongly, or whose accessibility defect lives in the
+frame's own markup or tokens; its numbered items are the list · **A8 draws the editor below 1440 and
+the affordances the accessibility floor needs.** The `### A` headings are the count.
 Each is self-contained, names the frame it inherits from, and carries the warning below because a
 session that hand-edits a frame hits it every time.
 
@@ -1274,6 +1323,10 @@ live in the repo rather than in Claude Design — the count-agnostic marketing c
 mark allowlist — and a re-export loses them by construction. **Follow the export runbook on the
 build board afterwards:** `tools/reapply-export-edits.py`, then `tools/verify-design-pass.py`, then
 the derivations, then `tools/doc-audit.py --check` twice.
+
+**They can be run as two Claude Design sessions** — **A7 together with A8** (both correct or extend
+the editor's existing frames and share the focus-ring token), then **A1 to A6** — and the export
+runbook above runs once after each session, not once per prompt.
 
 Every prompt in this appendix ends with, and every session must observe:
 
@@ -1304,9 +1357,9 @@ permanent for orbitweekly.com. Renaming the project later changes its name in In
 FRAME 2 — D1b · SAFETY NET · THE OFFER (step 2 of 6), 1440.
 Heading: "One more step unlocks a safety net". Body, verbatim: "A copy of your current theme
 before we replace it, plus a check that nothing else has changed it."
-Then, quieter, in ink-soft: this is a Staff Access Token, it can only be created on the site
-Owner's own account, and it is a full-Administrator credential — say so plainly, do not soften
-it. A mono input for the token, a screenshotted Ghost Admin step beside it in the S2b·1 style.
+Then, quieter, in ink-soft: this is a Staff Access Token from the site Owner or an Administrator —
+every staff user has one on their own profile, and an Administrator's is enough — and it is a
+full-Administrator credential — say so plainly, do not soften it. A mono input for the token, a screenshotted Ghost Admin step beside it in the S2b·1 style.
 TWO PLAIN BUTTONS, side by side, the same weight: "Add the token" (primary ink) and "Not now"
 (secondary surface + hairline). "Not now" is NOT a small link.
 
@@ -1335,6 +1388,10 @@ This BLOCKS the deploy button. Reading order matters and is the design:
       Redirects · Images, files and media (warning "the gap most people miss") · Database.
       Each row DESCRIBES what to look for in Ghost Admin and links to Ghost's own help.
       DO NOT PRINT A GHOST ADMIN MENU PATH — Ghost 6 does not have the menus Ghost 5 has.
+      DOWNLOADS (FR-J13): when the token was given at step 2, the Theme and routes.yaml rows each
+      carry a secondary "Download" button — the file Inflozo fetched. When it was declined, NO
+      download button anywhere on the gate; those two rows describe what to look for in Ghost
+      Admin like the others. Draw D1d with the token given; D1e below with it declined.
   (e) LAST, separated by a rule, the master confirm, DISABLED: "I confirm I have a complete
       backup of my site and understand Inflozo will replace my theme." Under it, greyed, the
       deploy button, with a reason line naming how many rows remain.
@@ -1451,8 +1508,8 @@ choice, not an accident). Plus "Cancel".
 
 FRAME 2 — D3b · COULD NOT VERIFY · IT PROCEEDS, detail at 720.
 A single sky-tinted information row inside the pre-flight list, NOT a blocking state:
-"Couldn't check whether your live theme changed." Body: "We need the site Owner's Staff Access
-Token to read the live theme, and this project doesn't have one. Shipping anyway." A quiet
+"Couldn't check whether your live theme changed." Body: "We need a Staff Access Token from the site Owner or an Administrator
+to read the live theme, and this project doesn't have one. Shipping anyway." A quiet
 "Add the token" link. THE DEPLOY CONTINUES — this row sits among the passing checks and does not
 stop anything. Drift is never asserted without two manifests in hand.
 
@@ -1674,12 +1731,16 @@ A literal Ghost Handlebars expression must be written with zero-width entities. 
 
 ---
 
-### A7 · Six frames whose mechanism changed
+### A7 · The existing frames that need correcting
 
 ```
-Correct six existing frames in the Inflozo design project. THE VISUAL TREATMENT OF EACH IS
-RIGHT AND STAYS — same components, same layout, same colour, same density. Only what they SAY
-and what they DO changes. Do not redesign any of them.
+Correct the existing frames listed below in the Inflozo design project. THE VISUAL TREATMENT OF
+EACH IS RIGHT AND STAYS — same components, same layout, same colour, same density. Only what they
+SAY, what they DO, and what assistive technology is TOLD changes. Do not redesign any of them.
+Items 1–6 are mechanism corrections. The items after them correct copy that states a Ghost fact
+wrongly, fixture drift, or an accessibility defect that lives in the frame's own markup or tokens
+(owner, 2026-09-03: an accessibility fix must not change the design, so these are attribute and
+token corrections, never a redraw).
 
 1. `B Missing Surfaces.dc.html` B19 · MEMBERSHIP PAGE BINDING.
    The mechanism drawn is one the product forbids. The file is `custom-membership.hbs`, NOT
@@ -1702,7 +1763,7 @@ and what they DO changes. Do not redesign any of them.
    Delete "Snapshots count towards your history — Free keeps 3, Pro keeps 10." The snapshot is
    exempt from the history limit; replace with "Kept outside your version limit."
    B12b: the reason drawn is wrong and sends people to fix something that cannot be fixed.
-   Replace the body with: "Reading your live theme needs the site Owner's Staff Access Token,
+   Replace the body with: "Reading your live theme needs a Staff Access Token from the site Owner or an Administrator,
    and this project doesn't have one. That's how Ghost works on every version and every host —
    there's no permission to switch on." Then the reassurance: "Ghost keeps your previous theme
    under Settings → Design, so you can put it back yourself if you need to." Buttons become
@@ -1710,7 +1771,7 @@ and what they DO changes. Do not redesign any of them.
 
 3. B16 · ROUTES FALLBACK CARD.
    Replace "Your integration key is missing the settings permission" with "Uploading a routing
-   file needs the site Owner's Staff Access Token, and this project doesn't have one."
+   file needs a Staff Access Token from the site Owner or an Administrator, and this project doesn't have one."
    Delete "Fix the key instead" → "Add the token instead"; its footnote becomes "Adding the
    token makes this automatic from now on."
    DELETE THE HARD-CODED "Settings → Labs" PATH. Ghost 6 has no Labs page. Replace step 2 with
@@ -1738,6 +1799,106 @@ and what they DO changes. Do not redesign any of them.
    facts — "VIEWPORT 390 × 844 · SHOWN AT 55%" — and keep the Desktop / Tablet / Mobile
    segmented control, which is the only thing the user operates here.
 
+7. `Calibration Set.dc.html` · THE FOCUS-RING TOKEN.
+   The keyboard focus indicator is a 2px coral ring at 40% — rgba(255,89,65,.4) — which composites
+   to 1.55:1 on paper #F7F5F2 and 1.59:1 on white; WCAG 2.1 1.4.11 needs 3:1, and even solid
+   coral #FF5941 reaches only 2.86:1 on paper. Replace the token with ONE ring that meets 3:1 on
+   paper AND on white — 2px solid coral-text #C2381F (7.9:1 on paper) or 2px ink #1C1B1A — and
+   use it for every keyboard-focus state in every frame (the routes-manager inputs' solid-coral
+   style-focus border included). Keep the 40% coral wash for hover and selection only. A8
+   inherits this token.
+
+8. `S4 Editor` · `S6 Variant Shuffle` · `S7 Style Packs` · ACCESSIBLE NAMES.
+   Every icon-only button gets an aria-label: the ▾ half of the "Ship it" split button
+   ("Deploy options"), the ⋯ menus, the eye toggles, every close ×. Attributes only — nothing
+   visible changes.
+
+9. `S4` · `S7` · `S9 Routes` · `S12 Billing` · `S1` · `S2` · `S11` · `S13` · LABELS.
+   Every input carries a <label for> or an sr-only label: the hero title input (S4c, S6), the
+   pack-name and hex fields in S7c ("Tangerine", "#C24E1E"), the route paths in S9a
+   ("/travel/", "/reading-list/"), the typed confirm in S12c ("delete my acc"), the assets
+   search ("Search assets…"). The <label> elements drawn as captions with no control — in S1, S2b,
+   S7, S9, S11d, S12 and S13 — each get a `for` or become plain text. Every scrolling list (the
+   Section Picker's grid in S5a/S5c, the assets grid) gets tabindex="0". Attributes only.
+
+10. `Calibration Set.dc.html` · PLACEHOLDER AND HINT COLOUR.
+    Placeholder and hint text is set in --ink-faint #A8A29A: 2.53:1 on white ("Search assets…",
+    "Choose…") and 2.32:1 on paper ("ALL DESIGNS"). Make it a Calibration Set rule that placeholder
+    and hint text use --ink-soft-aa #6B6459 (5.85:1), and re-tint the mono line numbers in S9's
+    YAML pane from #C9C2B8 (1.76:1) to the same AA value. This is the one visible token change
+    in this prompt, and it is a text-colour token, not a layout.
+
+11. `S8 Deploy` S8d′ · `S11 Sites` S11a · A FAILURE GHOST NEVER PRODUCES.
+    "Ghost said no — your Admin key expired." and the chip "Admin key expired Aug 15": Admin API
+    keys never expire (Ghost's api_keys table has no expiry column; docs.ghost.org/admin-api: "You
+    can regenerate the Admin API key any time"). What Ghost returns for a regenerated or deleted
+    key is 401 "Unknown Admin API Key" — executed on Ghost 5.130.6 and 6.58.0, 2026-09-03,
+    MEASUREMENTS §37. S8d′'s sentence becomes: "Ghost said no — this Admin API key no longer works.
+    It was regenerated or removed in Ghost Admin. Paste the new key." with the Reconnect action.
+    S11a's chip becomes "Key regenerated Aug 15". Same voice, a cause that exists.
+
+12. `C Post Body` C3b · THE PAYWALL EMPTY STATE.
+    Delete "Ghost has no paid tiers … so this block never renders — a members-only post shows the
+    sign-in prompt instead" and "with no paid tier, Ghost's paywall never renders at all". Ghost's
+    paywall renders on EVERY gated post — members-only, paid or tier-gated — whether or not a paid
+    tier exists: its content-cta.hbs carries its own visibility="members" branch (VERIFY-AT-BUILD
+    item 11, executed). The empty state's condition becomes "members are disabled on this site"
+    and its copy names that setting and the Ghost Admin toggle to look for. The shape stays.
+
+13. `S8 Deploy` S8c · CANCEL DURING UPLOAD.
+    Delete the Cancel action from the "Uploading to Ghost" card, or grey it with its reason in the
+    disabled-control pattern. FR-J8: once uploading starts the deploy runs to completion. Keep
+    the card, its progress bar and the Activating row.
+
+14. `S7 Style Packs` S7c · THE THIRD SWATCH ROW.
+    The Edit pack dialog stacks a third row labelled "Dark" with four swatches
+    (Base/Surface/Accent/Contrast) under the two correct seven-swatch rows, against its own
+    "Seven roles per mode" copy. Delete the third row. (S7d's four-swatch block is different: it
+    anchors the colour-picker popover and stays.)
+
+15. `S14 Editor Cards` S14a · GHOST'S OWN CARD ORDER.
+    The dropdown claims Ghost's order and is not it. Reorder to the editor's own menu, read from
+    the koenig-lexical bundle on 5.130.6 and 6.58.0 (identical): Image, Markdown, HTML, Gallery,
+    Divider, Bookmark, Email content, Email call to action, Public preview, Button, Callout, GIF,
+    Toggle, Video, Audio, File, Product, Header, Embed. Slot 8 is "Email call to action" — an
+    email-only card that renders nothing on the web (MEASUREMENTS §35b), so it has no panel and
+    that is where the NO COLOUR CTLS mark belongs. Keep a separate "Call to action" entry for the
+    web card, which does get its panel. Video before Audio.
+
+16. EVERY APP FRAME · ONE FIXTURE IDENTITY.
+    The session belongs to one person: Maya Chen · maya@orbitweekly.com · orbitweekly.com. Replace
+    you@example.com in the account chip (S4c, S6, S7, C4); replace you@yoursite.com in S1a's
+    placeholder — yoursite.com is a registered, parked domain — with you@example.com; and replace
+    the real third-party sites with fixtures: kickscondor.com in C4's style-guide citation, and
+    fieldnotes.ghost.io / sam@fieldnotes.blog on S3a and S11a (both resolve to live sites). Only
+    orbitweekly.com, inflozo.app and RFC 2606 example.* domains may appear anywhere.
+
+17. `S5 Section Picker` S5a · S5c · THE HEROES COUNT.
+    S5a's rail reads "Heroes 28 designs", S5c reads "18 designs", and B1a's counter is "Design 7
+    of 18". Make S5a agree with the other two. A per-category count is a runtime figure and is
+    allowed; a library total still is not.
+
+18. `S4 Editor` S4d · THREE MEMBER STATES.
+    Replace the tier rows (Orbit Supporter $5/mo · Orbit Patron $12/mo · Founding $120/yr) with
+    FR-D16's three: Logged out · Free member · Paid member. Keep the toggle and the panel. Add the
+    unviewed-states marker beside the toggle and the "Gated content — shown with sample text"
+    indicator on a gated body — neither frame draws them.
+
+19. `B Missing Surfaces` B23a · THE STARTER ROSTER.
+    Replace the invented names with Appendix E's ten, each with its pack: Aurora · Gazette ·
+    Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio. Only Quiet and Ledger
+    carry the Free mark. Delete "Cohort — tiers and member pages". The grid, the category filter,
+    the free filter, the "swap or upgrade" marks and the "Start empty" escape all stay.
+
+20. `S11 Sites` S11c · `S12 Billing` S12a, S12b · `M5 Pricing` · THE PLAN LIMITS.
+    Appendix F.1 is the only definition. Free: 1 project · 1 site · 100 MB storage · history
+    last 3. Pro: 25 projects · 10 sites · 5 GB · history last 10 per project. 10 MB per upload on
+    both. Replace the drawn figures ("up to 3", "unlimited", "full", "1 / 3", "Last 2 / Full")
+    with these. S10b's "up to 30 MB each" is A8 FRAME 4's.
+
+21. `S4 Editor` S4c · `S6 Variant Shuffle` · "Try a variant" → "Try a design".
+    Appendix H: the unit is a design; only the feature name "Variant Shuffle" keeps the old word.
+
 DO NOT TOUCH THE FRAME CAPTIONS. Each frame carries a settings snapshot in its caption —
 "drawn at padding Comfortable 96, ground Background, actions Both". Those are RETIRED control
 names and they stay exactly as they are: a caption records how a frame was drawn on the day it was
@@ -1758,7 +1919,8 @@ A literal Ghost Handlebars expression must be written with zero-width entities. 
 ### A8 · The editor below 1440, and the affordances the floor needs
 
 ```
-Add one canvas to the Inflozo design project: D8 · THE EDITOR BELOW 1440, AND SIX AFFORDANCES.
+Add one canvas to the Inflozo design project: D8 · THE EDITOR BELOW 1440, AND THE AFFORDANCES
+THE ACCESSIBILITY FLOOR NEEDS. Run with A7: the focus ring drawn here is A7 item 7's token.
 
 INHERIT FROM: `S4 Editor.dc.html` (the whole editor shell — top bar, Layers, canvas, Controls
 sidebar), `B Missing Surfaces.dc.html` B7 (Layers rows and their three states), B13a (a confirm
@@ -1793,7 +1955,8 @@ touch rules. This frame is what proves the notice does not fire here.
 FRAME 3 — D8c · THE SKIP LINK, detail at 620.
 Two states of ONE element: hidden at rest, and visible on keyboard focus. It is the FIRST
 focusable thing in the editor shell, sitting over the top bar's left edge — a surface pill,
-12 radius, sm shadow, coral focus ring — reading "Skip the canvas". Draw the focused state with
+12 radius, sm shadow, the focus ring as A7 item 7 corrects it (3:1, never the 40% wash) —
+reading "Skip the canvas". Draw the focused state with
 the ring, and a second, dimmed copy showing where it sits when nobody has focused it.
 WHY: the canvas renders the USER'S OWN SITE, so tabbing through it means tabbing through every
 link that site emits — dozens of stops before the sidebar.
@@ -1808,8 +1971,9 @@ in there.
 
 FRAME 5 — D8e · A LAYERS ROW, FOCUSED, detail at 520.
 B7's layers rows currently have three states: rest, hover (a wash), selected (coral tint). Draw
-the FOURTH: keyboard focus — the coral 2px ring at 40%, drawn OVER the row's existing state so
-focused-and-selected is legible as both. Show three rows: rest+focused, hover, selected+focused.
+the FOURTH: keyboard focus — the focus-ring token AS A7 ITEM 7 CORRECTS IT (a 2px ring at 3:1 or
+better, NOT the 40% coral wash, which stays the hover/selection wash), drawn OVER the row's
+existing state so focused-and-selected is legible as both. Show three rows: rest+focused, hover, selected+focused.
 Beside them, a small caption naming the keys, in the kbd-chip style: ↑ ↓ move focus, ⌥↑ ⌥↓ move
 the section itself.
 
@@ -1818,6 +1982,13 @@ Any of the product's irreversible confirms — use "Take over from Rosa?" (B5c) 
 Draw it AS IT OPENS: the focus ring is on the CANCELLING action ("Wait"), not on the danger-fill
 button. This is a rule rather than a list — the same treatment governs Delete account, Roll back,
 project delete, delete-in-use assets and "Overwrite and ship anyway" — so caption it as the rule.
+
+FRAME 7 — D8g · SHIP IT FROM A READ-ONLY SESSION, detail at 620.
+The fourth edit-lock state (F2), drawn on no frame today: a reader — someone else holds the lock —
+presses Ship it or Export. Reuse B5c's shape exactly (a confirm over the dimmed editor, danger
+fill, "Or message Rosa" escape). Heading: "Take over to ship?". Body, from the heartbeat count:
+"7 unsynced edits exist in Rosa's browser and will be lost. We cannot retrieve them from here."
+Two actions: "Take over and ship" (danger) · "Wait" — and focus opens on "Wait", per FRAME 6.
 
 COUNTS: 10 MB per file is a PRODUCT LIMIT and must be printed. Never print a total of designs,
 categories or free designs.
