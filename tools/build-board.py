@@ -19,6 +19,15 @@ PLAN = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
 SRC  = os.path.join(PLAN, 'build-sequence.md')
 OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
 
+# The step-5 prompt is also written as a plain-text file, because it is the one prompt the owner
+# pastes by hand and a .txt is the easiest thing to open and select-all. IT IS GENERATED, NOT KEPT
+# IN STEP: it was hand-maintained for one day and had to be re-synced by hand twice in that day,
+# which is the silent-drift shape this project keeps getting bitten by. Deriving it from the same
+# parse that feeds the board means the three copies cannot disagree — and `--check` fails loudly
+# if either output is stale, so a remembered step became a runnable one.
+PASTE = os.path.join(PLAN, 'STEP-5-PROMPT.txt')
+PASTE_ID = '/bmad-ux'          # the block this file mirrors, matched on its first line
+
 # key, number, title, status, one-line where-it-stands, what it produces, blocked-by
 STEPS = [
  ('s1', '1', 'Architecture', 'done',
@@ -393,6 +402,15 @@ document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {{
   setTimeout(() => {{ b.textContent = was; b.classList.remove('ok'); }}, 1800);
 }});
 </script></body></html>''')
+
+    for b in blocks:
+        if b.lstrip().startswith(PASTE_ID):
+            open(PASTE, 'w', encoding='utf8').write(b.rstrip() + '\n')
+            break
+    else:
+        print(f'  ! no {PASTE_ID} block in build-sequence.md — {os.path.basename(PASTE)} not written',
+              file=sys.stderr)
+        sys.exit(2)
     return len(blocks)
 
 
@@ -400,10 +418,17 @@ if __name__ == '__main__':
     if '--check' in sys.argv:
         if not os.path.exists(OUT):
             print('  FAIL  BUILD-BOARD.html missing — run tools/build-board.py'); sys.exit(1)
+        if not os.path.exists(PASTE):
+            print('  FAIL  STEP-5-PROMPT.txt missing — run tools/build-board.py'); sys.exit(1)
         before = open(OUT, encoding='utf8').read()
+        before_paste = open(PASTE, encoding='utf8').read()
         build()
         if open(OUT, encoding='utf8').read() != before:
             print('  FAIL  BUILD-BOARD.html was stale and has been regenerated'); sys.exit(1)
+        if open(PASTE, encoding='utf8').read() != before_paste:
+            print('  FAIL  STEP-5-PROMPT.txt had drifted from build-sequence.md and has been '
+                  'regenerated'); sys.exit(1)
         print('build board: current'); sys.exit(0)
     n = build()
     print(f'BUILD-BOARD.html regenerated — {n} prompts extracted from build-sequence.md')
+    print(f'STEP-5-PROMPT.txt regenerated from the same parse — the three copies cannot drift')
