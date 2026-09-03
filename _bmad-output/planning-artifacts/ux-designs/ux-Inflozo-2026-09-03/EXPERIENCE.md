@@ -325,6 +325,15 @@ the three. The shortcuts are FR-D11's, and they are the complete set:
 **States added after the shortcut map carry no shortcut, deliberately** (FR-D11): the paginated
 preview, the preview subject, and the member-state nudge are all reached by clicking.
 
+**That rule governs new *global* bindings, and nothing else.** Standard within-component keyboard
+behaviour — arrows through a list, `Enter` to select, `⌥`-arrow to move a row, `⌥F10` into a
+toolbar — is not a shortcut in FR-D11's sense and is **required** by NFR-5's keyboard-completeness
+clause. The full set is in § Accessibility Floor, which is where it is verified.
+
+**Every single-character shortcut above is live only while the editor shell holds focus**, and never
+while a text field or a `contenteditable` has it — WCAG 2.1.4. `⌘`-modified shortcuts are
+unaffected.
+
 **Undo is the journal tail** (AD-15, `addendum.md` §AD1), which is why it survives a reload. **One
 gesture is one edit** — a Variant Shuffle rewrites every prop of a section and is *one* undo step,
 one edit. **No operation count is ever surfaced anywhere in the product** (AD-16).
@@ -347,32 +356,142 @@ Behavioural. Visual contrast is `DESIGN.md`'s.
 violations** — pass/fail, no score. Scope includes **the Inflozo app itself**, not only the designs
 it ships.
 
-- **Keyboard-complete.** Every action reachable without a mouse, including **reorder**. A drag that
-  has no keyboard equivalent is a defect, not a limitation.
-- **Focus is managed across the canvas iframe boundary** (§7.3, AD-21). The canvas is a same-origin
-  iframe and the tab order crosses it as if it were not there.
-- **Focus is visible everywhere and never removed** — one treatment, `DESIGN.md`'s coral ring.
-- **Reduced motion is honoured throughout**, including the one confetti moment.
-- **Every greyed control's reason is text**, in the helper-caption slot — not a `title`, not a
-  tooltip, so a screen reader reaches it in the reading order.
-- **Every state in this document has a text equivalent.** Colour classifies; it never carries the
-  only signal. The persistence indicator has four *labels* and one dot, not four dots.
-- **A destructive confirm is never the default focus.** Take over anyway, Delete account and Roll
-  back all open with focus on the cancelling action.
-- **Live regions:** the persistence indicator, deploy progress and the takeover notice announce
-  politely; the takeover notice is assertive, because it reports work that is already gone.
+### The focus model across the canvas boundary — §7.3's deliverable
 
-**Where the floor stops, and why it is a scope statement rather than an exemption.** The scan does
-not walk inside `{{content}}` (ruling R-6): Ghost emits its own markup in a post body, and a scan
-that walked into it would report violations on a customer's content that no theme can fix.
+**PRD §7.3 assigns this to the UX pass by name**, in three parts, and this is where they are
+discharged. Inline editing happens inside the iframe, in that document's own `contenteditable`; the
+sidebar and the mark toolbar live outside it. One edit gesture crosses the boundary, and two
+documents each hold their own focus and selection.
 
-**The render matrix is NFR-6(a)** — every design × 3 packs × light/dark × 3 viewports, on a pinned
-renderer, and the axe-core scan runs on those same renders at near-zero marginal cost. **A user's own
-Style Pack edit can still break contrast**: FR-E3's colour picker runs a live contrast check and
-**warns before the edit lands, never blocks** — responsibility transfers to the user at that point,
-and the warning is what makes the transfer fair.
+**(1) The canvas is reachable and escapable by keyboard.**
 
----
+- **Reachable:** the canvas is one stop in the editor's tab order, between the Layers panel and the
+  Controls sidebar. Tabbing into it moves focus to the canvas container, not into the rendered site.
+- **Skippable, which is what makes it usable:** the canvas renders the *user's own site*, so tabbing
+  through it means tabbing through every link and control that site emits — a 12-section homepage is
+  dozens of stops before the sidebar. **The first focusable element in the editor shell is a skip
+  link — "Skip the canvas"** — and the canvas container itself offers the same on focus.
+- **Escapable, by one key with a defined ladder rather than a second key to learn.** `Esc` steps
+  outward, one level per press, and announces where it landed: *inside inline editing* → leaves text
+  editing, the section stays selected · *section selected* → deselects, focus rests on the canvas
+  container · *canvas container* → focus leaves the canvas for the editor chrome. From anywhere,
+  holding `Esc` is never required and focus is never trapped.
+
+**(2) Selection survives the chrome taking focus.** Moving focus to the Controls sidebar, the
+Layers panel or the top bar **does not clear the canvas selection** — the persistent outline stays,
+and the sidebar keeps showing that section's controls. This is what makes the sidebar the "second
+way to do everything" (FR-D1) rather than a way that only works with a mouse. A selection is cleared
+only by `Esc`, by selecting something else, or by deleting it.
+
+**(3) The mark toolbar is operable without destroying the selection it acts on.**
+
+- With a text selection live inside the canvas, **`⌥F10` moves focus into the Inline Toolbar** — the
+  ARIA Authoring Practices convention for reaching a toolbar, and it collides with nothing in
+  FR-D11's map. The toolbar is a roving-tabindex group: ← and → move between marks, `Enter` or
+  `Space` applies one.
+- **The selection is held, not re-derived.** Focus leaving the `contenteditable` must not collapse
+  it: the range is captured when the toolbar is raised and re-applied when a mark fires.
+- **`Esc` dismisses the toolbar and restores that exact selection**, caret and all, so a keyboard
+  user is returned to where they were rather than to the top of the field.
+
+### Keyboard completeness — and the distinction that makes it buildable
+
+NFR-5 requires the app to be keyboard-complete "including reorder". **FR-D11's map is the set of
+*global* shortcuts, not the set of every key the app answers to.** Standard within-component
+keyboard behaviour is not a shortcut and is not governed by FR-D11's "states added later carry no
+shortcut" rule — that rule is about *new global bindings*. So:
+
+| Where | Keys |
+|---|---|
+| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility |
+| **Item list** (P0-3) | the same pattern — the Add, Remove and drag affordances each have a focusable control, and drag has the `⌥`-arrow equivalent |
+| **Section Picker** | ↑ ↓ ← → across the grid, `Enter` places, `Esc` closes and returns focus to the invoking position |
+| **Design picker** | ← → across the thumbnail strip, mirroring `[` and `]` |
+| **Assets** | the drop zone is **also a file input** — a drag-and-drop-only upload has no keyboard path |
+| **Every menu, popover and sheet** | focus moves in on open, is trapped while open, and returns to the invoking control on close |
+
+**A drag that has no keyboard equivalent is a defect**, and every drag surface in this document has
+one above.
+
+### Single-character shortcuts — WCAG 2.1.4, and it is a Level A rule inside the AA threshold
+
+`L`, `P`, `.`, `[`, `]`, `1`, `2` and `3` are unmodified letter, punctuation and number keys.
+**2.1.4 Character Key Shortcuts** requires one of: turn off, remap, or active-on-focus. This product
+takes the third: **every single-character shortcut is live only while the editor shell holds focus,
+and never while a text field or a `contenteditable` has it.** Without that rule, a speech-input user
+saying a word near the canvas fires Preview Mode or a Site Remix. `⌘`-modified shortcuts are
+unaffected. **axe-core does not detect this**, which is exactly why it is stated here.
+
+### What is announced, and how
+
+**Colour classifies; it never carries the only signal, and neither does shape.** Every state in this
+document has a text equivalent — the persistence indicator has four *labels* and one dot, not four
+dots; the Pro badge carries the word **Pro** beside its ✦; the auto-generated, has-feature-image and
+dark-override marks each carry their words (Appendix A prompts A5 and A6 say so at each mark).
+
+| Region | Politeness | What it announces |
+|---|---|---|
+| **Canvas status** | polite | The change the canvas just made and the user cannot see happen: the design and its position after `[` / `]` or a Shuffle — *"Design 8 of 18 — Image Backdrop"* — the Style Pack after a switch, and the section count after a Site Remix |
+| **Persistence indicator** | polite | Saved on this device · Syncing · Synced · Retrying, and the fallback state |
+| **Deploy progress** | polite | Each stage as it starts, and the outcome |
+| **Backup Gate** | polite | That the master confirm has become available once the last row is ticked — a button silently turning on is invisible without it |
+| **Edit-lock request (B5b)** | **assertive** | A request has arrived and is waiting on this person |
+| **Takeover notice (B5c and the revived holder)** | **assertive** | Work that is already gone |
+
+### Time limits
+
+**One timed interaction exists: the edit-lock nudge** (F2). It is a **no-response** timer, not a
+decision timer, and the distinction is what keeps it compliant: **it stops the moment the holder
+interacts with the popover at all — including focusing it** — and only runs out when nobody is
+there. A holder who is present is never hurried, and B5b is announced assertively so a screen-reader
+user learns about it while the timer is still running. The magic-link resend countdown (S1b) blocks
+nothing: the link itself is valid for 15 minutes and "Use a different email" is always available.
+
+### Destructive confirms
+
+**A confirm whose primary action is irreversible opens with focus on the cancelling action.** Stated
+as a rule rather than a list, because the list would go stale — it already covers Take over anyway,
+Delete account, Roll back, project delete, delete-in-use assets and "Overwrite and ship anyway", and
+it covers whatever is added next.
+
+### Reduced motion
+
+Honoured throughout, including the one confetti moment, the 300ms pack crossfade, the 180ms design
+slide-fade and the drag tilt. Under `prefers-reduced-motion` each becomes an instant state change,
+never a removed affordance.
+
+### What verifies each of these — because axe-core cannot see most of it
+
+Answering the obvious objection rather than leaving it: **of everything above, axe-core reliably
+detects one thing** — that a greyed control's reason is real text in the reading order rather than a
+`title`. The rest needs a named verifier, and NFR-5's own scope sentence ("the Inflozo app itself")
+had none, because the scan runs on NFR-6(a)'s render matrix and that matrix is *section designs*.
+
+| Floor item | Verified by |
+|---|---|
+| Reason text on a greyed control · accessible names · roles · labels | **axe-core**, run over the app surfaces |
+| Cross-boundary focus order, the `Esc` ladder, the skip link, selection survival, `⌥F10` | **NFR-6(d) E2E**, as a scripted keyboard-only pass — no mouse events |
+| Keyboard reorder in Layers and in item lists | NFR-6(d) E2E |
+| Single-key shortcuts inert inside a text field | NFR-6(d) E2E |
+| Live-region announcements | a manual screen-reader pass per surface, once per release |
+| Reduced motion | NFR-6(a), with the query forced |
+| 200% browser zoom | NFR-6(a), as a viewport case |
+
+> **A flag for the architect, not a change made here.** **NFR-6(d)'s E2E list names no accessibility
+> journey** — it covers auth, connect, build, shuffle, dark authoring, deploy, rollback, billing and
+> quotas, all of them mouse-driven. Four rows above depend on an E2E pass that does not yet exist in
+> that list. Adding one keyboard-only journey to NFR-6(d) is the smallest thing that gives this
+> section teeth; it is an NFR amendment and is left to whoever owns NFR-6.
+
+### Where the floor stops, and why it is a scope statement rather than an exemption
+
+The scan does not walk inside `{{content}}` (ruling R-6): Ghost emits its own markup in a post body,
+and a scan that walked into it would report violations on a customer's content that no theme can
+fix.
+
+**A user's own Style Pack edit can still break contrast**: FR-E3's colour picker runs a live contrast
+check and **warns before the edit lands, never blocks** — responsibility transfers to the user at
+that point, and the warning is what makes the transfer fair.
 
 ## Responsive & Platform
 
@@ -380,6 +499,15 @@ Three widths for Inflozo's own surfaces: **1440 · 834 · 390**, per `DESIGN.md`
 
 **The app floor is 1024px** (ruling R-76). Above it, the editor's four-part shape holds and the
 Layers panel collapses first. Below it, **Small Screen Notice**.
+
+> **The floor is a device test, not a width test — and that distinction is load-bearing.** A 1440px
+> display at 200% browser zoom presents roughly a 720px CSS viewport. Keying the notice on CSS width
+> alone would throw a low-vision user out of the editor for zooming, which is a straight **WCAG 1.4.4
+> Resize Text (AA)** failure and the opposite of what R-76 was for — the owner ruled about *phones*.
+> So **Small Screen Notice fires on a coarse pointer at a small viewport**, and **the editor stays
+> usable at 200% browser zoom on a desktop-class device**, reflowing rather than redirecting: the
+> Layers panel collapses, the Controls sidebar becomes an overlay panel, the canvas keeps its own
+> scroll. `DESIGN.md`'s `app-floor` token is that device threshold, not a zoom threshold.
 
 **The canvas is a viewport, not a column** (FR-D8, AD-21, B11a/b). Device preview resizes it in
 **both** axes to a real device size — 390 × 844 for mobile, not a 390-wide column of infinite
@@ -696,7 +824,7 @@ grows only as the stakes do. That escalation is the design and it stands.
 | Party | Surface | What they see |
 |---|---|---|
 | **The reader** (opened it second) | **Editor**, read-only | B5a: a bar — "Rosa is editing this site — you are reading along" + **Request editing**. The canvas stays fully legible; the sidebar dims to 55% so controls are *visible* but nothing responds |
-| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. It states the sync position *before* asking: "All your changes are synced · 0 pending". **Hand over** / **Keep editing**, with a countdown |
+| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. It states the sync position *before* asking: "All your changes are synced · 0 pending". **Hand over** / **Keep editing**, with a countdown. **The countdown is a no-response timer and it stops the instant the holder interacts with the popover at all, focus included** — it only runs out when nobody is there, so a present holder is never hurried into a decision that loses someone else's work. **B5b is announced assertively** (§ Accessibility Floor), because a request that arrives silently is a request a screen-reader user answers by not answering |
 | **The requester, unanswered** | **Editor** | After ~30 seconds: "No response; that session has X unsaved edits", and **take over anyway** is offered |
 | **The revived former holder** | **Editor**, read-only | "That session had 14 unsaved edits; they were not included." It flips to read-only and its local journal is cleared |
 
@@ -1389,7 +1517,9 @@ S4a's template dropdown, redrawn with the full set: Home · Post · Page · Tag 
 Membership (as a GROUP with three children: Signup, Signin, Member home) · 404 · Private (shown
 ONLY when a Private Site Gate section has been designed) · then a rule · then custom templates
 created in the Routes Manager · then "+ New template". Templates that have never been designed
-show a small hollow dot; designed ones show a filled one. The current one takes the check.
+show a small hollow dot LABELLED "Auto-generated"; designed ones show a filled one with no label.
+The current one takes the check. THE WORD IS NOT OPTIONAL: a shape alone is the same failure as a
+colour alone, and this menu is where a user decides which template to open.
 
 FRAME 3 — D5c · MAIN FEED MARKER AND REASSIGN, 1440.
 An Author archive with two feed sections. The designated main feed carries a small mono chip on
@@ -1408,8 +1538,8 @@ shows what it is. Reached from the Pagination control, not from a keyboard short
 FRAME 5 — D5e · PREVIEW SUBJECT PICKER, detail at 520.
 B9's content-source pill, opened. It has three parts: the SOURCE ("Orbit Weekly" / "Sample
 content"), then a rule, then THE SUBJECT — a searchable list of the connected site's posts for
-a Post canvas, showing title, date and a small marker for those with a feature image, with the
-current one checked. At the top of that list, always: "Style-guide article — the one every post
+a Post canvas, showing title, date and — for those with a feature image — a small marker WITH THE
+WORDS "has image" beside it, never the marker alone. The current one is checked. At the top of that list, always: "Style-guide article — the one every post
 design is designed against", checked by default. One helper line: "This canvas renders one post.
 Which one changes what you see, because a post with a feature image and one without are
 different shapes."
@@ -1456,7 +1586,8 @@ FOUR CHANGES TO THE LEFT COLUMN, and one of them is the surface's own primary va
    and helper text: "Every Style Pack ships a hand-paired dark palette, so dark is already paid
    for." Beneath it, a secondary row: "Clear dark overrides" with a count — "3 sections carry a
    dark override" — and a small moon badge, which is the same 12px badge that marks an
-   overridden control in the sidebar. On a Light-only project the row greys with the reason.
+   overridden control in the sidebar. WHEREVER THAT BADGE APPEARS IT CARRIES AN ACCESSIBLE
+   LABEL READING "Dark override" — a 12px shape is not a signal on its own. On a Light-only project the row greys with the reason.
 
 4. A NEW "CREDITS" GROUP. One toggle: "Show 'Built with Inflozo'" — on, with helper text
    naming both places it appears: the theme footer and the README. On PRO it is a working

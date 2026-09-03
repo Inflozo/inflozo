@@ -134,6 +134,7 @@ components:
     background: '{colors.marigold-tint}'
     color: '{colors.marigold-text}'
     glyph: '✦'
+    label: 'Pro — the word is part of the badge, never the glyph alone'
     rounded: '{rounded.full}'
   badge-free:
     border: '1px solid {colors.line}'
@@ -157,6 +158,7 @@ components:
     target: '30px'
   moon-badge:
     size: '12px'
+    label: 'Dark override — an accessible label, always'
     note: 'marks any control carrying a dark-mode override'
 
 elevation:
@@ -337,7 +339,8 @@ Hover on a card is `md` **plus a 1–2px lift**. The lift is what makes it feel 
 alone reads as a glow.
 
 **One focus treatment, and it is never removed.** Coral at 40%, 2px, on every focusable thing
-including inside the canvas iframe (NFR-5). A design that runs to a bleed edge inverts it to an
+including inside the canvas iframe (NFR-5) — and the tab order crosses that boundary by design, with
+its ladder specified in `EXPERIENCE.md` § Accessibility Floor (PRD §7.3 assigns it to the UX pass). A design that runs to a bleed edge inverts it to an
 inset offset, because an outward ring is clipped at the viewport (ruling R-70) — that is a section
 rule, recorded here so the app never copies it.
 
@@ -402,8 +405,9 @@ Style Pack editor.
 card carries **one line of consequence, plainly said**. Hover firms up the hairline. Inline radios
 inside a list are a 13px circle with a coral dot.
 
-**Badges and chips** — Pro is a marigold-tint pill with **✦**; Free is line-bordered; Live is a mint
-dot; version chips are mono; a gscan result reads `0 · 2` in mono.
+**Badges and chips** — Pro is a marigold-tint pill carrying **✦ and the word Pro**, as the kit and
+B10 both draw it; Free is line-bordered and says Free; Live is a mint dot beside the word Live;
+version chips are mono; a gscan result reads `0 · 2` in mono.
 
 **Tooltips** — ink fill, white 12px, 6px radius, with a variant that carries a mono keyboard chip.
 
@@ -448,6 +452,9 @@ byte count exists. Never a spinner.
 - Don't put px, hex, rem, percentages, font pickers, custom CSS or class names into a section
   control. They exist only in the Style Pack editor, the Routes Manager and Theme Settings.
 - Don't use marigold for anything but Pro and celebration, and never for an error.
+- **Don't let a shape carry a signal on its own, any more than a colour may.** A moon badge, a
+  hollow-versus-filled dot, a ✦ — each carries its word, or an accessible label where the layout
+  genuinely cannot hold one. Same rule, same reason (`EXPERIENCE.md` § Accessibility Floor).
 - Don't use coral in a banner's link — that is sky.
 - Don't put wit into a billing, delete or takeover surface. Those stay serious (Appendix H).
 - Don't add a second confetti moment. There is exactly one in the product — the first successful
