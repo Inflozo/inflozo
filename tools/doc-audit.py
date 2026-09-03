@@ -47,6 +47,18 @@ DOCS = [
   'those names (R-75). Its Appendix A carries one Claude Design prompt per undrawn surface group. '
   'Also the record of §37.7 re-verified against the export: the Paywall editor turned out to be '
   'drawn at C Post Body C3a.'),
+ ('ux-designs/WALK-NOTES.md', 'live', "The owner's walk notes — R-75's gate, in his words",
+  'THE OWNER\'S FILE. A heading per journey and per flow on step 5b\'s front door and a line per '
+  'screen, plus a section for how 5c feels. "Walked" (§A12 decision 3) means every one of those '
+  'trails opened end to end with a line written here; the date line at its top and the one under '
+  'build-sequence.md step 5b are his to write, and no session writes either. The gate is this file '
+  'and that date — a human tick no tool reads.'),
+ ('ux-designs/review-5b-5c-2026-09-03.md', 'record', 'The step-5b/5c review — verdict and decisions',
+  'The twelve-lens review of the static prototype and the walkthrough before the owner walked them: '
+  'the verdict (not ready to walk as they stood — every blocker a generator or document fix, none '
+  'a design change), the ten blockers by id, the six decisions with their options and the owner\'s '
+  'choice on each (option 1 throughout), and where the finding data lives. The decisions themselves '
+  'are reconcile-designs-decisions.md §A12; this is the dated record of the review that raised them.'),
  # ── the spine and its runnable companions ────────────────────────────────────
  ('architecture/.../ARCHITECTURE-SPINE.md', 'live', 'The architecture',
   'Every invariant (AD-1 upward — the file is the count) that every epic is built from. Each carries '
@@ -197,7 +209,8 @@ DOCS = [
   'patch pass · §A3 the §F asks, all now ruled · §A4 §37.7 re-verified for step 5 · §B FOUR APPROVED '
   'DECISIONS SUPERSEDED (D3 native search, D17 accent seeding, D26 gap names, D27 in half) — read it '
   'before trusting any D-number · §C the Ghost facts executed that night · §E the remaining probe '
-  'list. R-30 to R-38 have not propagated yet.'),
+  'list · §A11 step 5\'s four rulings R-76 … R-79 · §A12 the step-5b/5c review\'s six decisions '
+  '(2026-09-03). R-30 … R-38 propagated on 2026-08-31 — §A3 is the ledger.'),
  ('prds/.../encode-propagation-map.md', 'record', 'Encode propagation map',
   'Where each requirement change had to land. The origin of "propagate, never localise".'),
  ('prds/.../encode-report-batch1.md', 'record', 'Encode report', 'Batch record.'),
@@ -384,8 +397,10 @@ DOCS = [
   'hand-maintained for a single day and needed re-syncing by hand twice in that day, which is why '
   "it is derived now. `build-board.py --check` fails loudly if it drifts, and doc-audit runs that. "
   'IT FOLLOWS THE CRITICAL PATH: it was STEP-5-PROMPT.txt until step 5 completed on 2026-09-03 and '
-  'its source block became a completion record. When 5b completes, move build-board.py\'s PASTE and '
-  'PASTE_ID again rather than leaving a generated file with nothing behind it.'),
+  'its source block became a completion record. 5b is built too, but the owner\'s next action is a '
+  'WALK, which has no prompt, so it stays on the 5b block — which now REBUILDS or EXTENDS the '
+  'prototype and carries the lift rules (frames byte-identical, never wired). Move PASTE and '
+  'PASTE_ID to step 6 only when the walk\'s date line stands and step 6 actually opens.'),
   ('tools/view-designs.py', 'tool', 'Serve the design export to a local browser',
   'R-75\'s small utility — for SESSIONS eyeballing exported frames over HTTP (support.js loads '
   'React via fetch, which file:// blocks, so the two Index canvases\' links and the mock '
@@ -423,23 +438,28 @@ GROUPS = [
   'THE FRAMES ARE HTML. Read them as HTML. `patch()` raises when a target is missing, so a lifted screen '
   'cannot quietly stop matching its frame.'),
  ('ux-designs/walkthrough/', 'live', "Step 5c — the walkthrough: the product, as it will feel",
-  'The owner read step 5b and asked for the other thing: a build with NO scaffolding on it — no frame '
-  '(SECOND CUT: the first was authored from a TEXT EXTRACTION of the frames and did not match the '
-  'export — the owner caught it. It now LIFTS each screen\'s markup out of the .dc.html verbatim via '
-  'the shared `../frames.py` and patches it; `patch()` raises rather than missing silently. '
-  'Step 5b was rebuilt on the same lifter in the same pass.) '
-  'captions, no journey trails, no notes, no stacked state variants — that behaves rather than depicts. '
-  '**Double-click `index.html`** and it opens on Sign In, exactly as a user would meet it; walk from there. '
-  'Menus and modals open, the design ring changes the canvas and the control panel with it, the backup gate '
-  'blocks until every row is covered, the deploy wizard walks its six steps with progress that moves, and '
-  "FR-D11's keyboard map works (including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a "
-  'text field). `_screens.html` is the ONE file here that is not a product screen — a jump list, deliberately '
-  'its own page so nothing the owner is judging carries scaffolding. `_selfcheck.html` drives the three '
-  'pieces of `app.js` that are not one-liners and prints ALL PASS. `build-app.py` generates it and IMPORTS '
-  "step 5b's builder, so the tokens are transcribed exactly once and the two cannot drift into two different "
-  'products; `styles.css` is generated as 5b\'s stylesheet plus `_app.css`. '
-  '**NEITHER BUILD REPLACES THE OTHER:** 5b is how you check a screen is right, 5c is how you find out '
-  'whether it is any good, and a change to the design belongs in both.'),
+  'The owner read step 5b and asked for the other thing: a build with NO scaffolding on a product screen '
+  '— no frame captions, no journey trails, no notes, no stacked state variants — that behaves rather than '
+  'depicts. SECOND CUT: the first was authored from a TEXT EXTRACTION of the frames and did not match the '
+  'export (the owner caught it); it now LIFTS each screen out of the .dc.html verbatim via the shared '
+  '`../frames.py` and patches it with links and hooks on the elements the frame drew — `patch()` raises '
+  'rather than missing silently. **Double-click `index.html`** and it opens on Sign In, exactly as a user '
+  'would meet it. WHAT BEHAVES, read from the build: menus, popovers and sheets open from the control that '
+  'raises them and close on Esc, their drawn Cancel or a click outside, focus trapped and returned; '
+  'segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its '
+  'FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, '
+  'Esc leaves it, L hides Layers, and ] and [ step the design ring between its two drawn positions — the rest of '
+  'FR-D11\'s map has no drawn result to land on — and every '
+  'key passes the WCAG 2.1.4 typing guard. WHAT IS HELD OUT is listed in `_screens.html` under three '
+  'headings: no frame yet (an Appendix A prompt owes it — the backup gate is here, not '
+  'in the build), drawn on a mechanism a ruling re-specifies (held out or shown as drawn until A7 runs, '
+  '§A12 decision 6), and states no frame draws. Two files are not product screens, both `_`-prefixed: '
+  '`_screens.html` (the jump list and those lists) and `_selfcheck.html` (drives the hooks build-app.py '
+  'attaches and prints ALL PASS). Shared with 5b, exactly: `../frames.py`, `../prototype/styles.css` (plus '
+  '`_app.css` into this folder\'s `styles.css`), and FONTS and LIMITS from `../prototype/build.py` — the '
+  'tokens and the lifter, NOT the page registry, which is this generator\'s own and is asserted against '
+  'nothing in 5b. **NEITHER BUILD REPLACES THE OTHER:** 5b is R-75\'s gate and how you check a screen is '
+  'right; 5c is walked afterwards, for feel; a change to the design belongs in both.'),
  ('ux-designs/prototype/', 'live', "Step 5b — the static prototype of Inflozo's own UI",
   "Ruling R-75's deliverable: Inflozo's interface as static HTML the owner opens with a DOUBLE-CLICK and walks "
   '— no server, no build step, relative links only. Start at `index.html`: the surface list, the four journeys '
@@ -451,17 +471,19 @@ GROUPS = [
   '`../frames.py` and the annotation sits AROUND the frame, never in it; a surface with no frame says so and '
   'shows nothing, because inventing a picture there is the second interface vocabulary R-74 forbids. '
   'ITS FRAMES ARE DELIBERATELY NOT WIRED, and that was tried and reverted rather than never attempted: '
-  'wiring them inserted 200 elements across 117 frames, matched controls by button text so a re-export '
-  'would silently drop links, and its own assertion pressured the build into a link from a page to itself '
-  'just to pass. The assertion that replaced it is the one worth having — EVERY LIFTED REGION MUST BE '
+  'wiring them inserted elements into most of the lifted frames, matched controls by button text so a '
+  're-export would silently drop links, and its own assertion pressured the build into a link from a page '
+  'to itself just to pass. The assertion that replaced it is the one worth having — EVERY LIFTED REGION MUST BE '
   'BYTE-IDENTICAL TO THE .dc.html, which makes the claim \"this derives from S4a\" checkable by script. '
   'What `proto.js` does keep is the behaviour THE EXPORT ITSELF DECLARES (`style-hover`/`style-focus`), '
   'which 5b previously lacked entirely. Nothing is hidden by default, enforced by a second assertion, so '
   'every page reads complete with JavaScript off (R-75). The clickable build is 5c: it hides, reveals and '
   'navigates because it is the product; 5b does none of those because it is the proof. `build.py` generates the lot from one registry — so the index cannot claim a '
   'surface that does not exist, or miss one that does — and it refuses to write if any link or anchor is dead. '
-  'It is DISPOSABLE BY DESIGN once the dynamic UI matches it. **Step 6 stays shut until the owner says he has '
-  'walked it** (R-75); that sentence lives in `build-sequence.md` step 5b.'),
+  'Its HTML is DISPOSABLE BY DESIGN once the dynamic UI matches it (what outlives it: build-sequence.md '
+  'step 5c). **This is R-75\'s gate. Step 6 stays shut until the owner says he has walked it** — every '
+  'journey and every flow on `index.html` opened end to end, his notes in `ux-designs/WALK-NOTES.md` '
+  '(§A12 decision 3) — and that sentence lives in `build-sequence.md` step 5b, under The walk.'),
  ('ux-designs/', 'live', 'Step 5 — the UX workspace',
   "bmad-ux's run folder: the two spines (catalogued individually above), the memlog that records "
   'every decision taken during the pass, and the working / imports directories the skill creates. '

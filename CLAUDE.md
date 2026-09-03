@@ -10,6 +10,7 @@ compiles the design into a Ghost theme and deploys it to the customer's own Ghos
 |---|---|
 | `_bmad-output/planning-artifacts/INDEX.md` | Every document with a one-line brief. **Start here.** |
 | `_bmad-output/planning-artifacts/HANDOVER.md` | Where the project stands and what is next. |
+| `_bmad-output/planning-artifacts/BUILD-BOARD.html` | The same, for a human: every step, its status, and the prompts with copy buttons. Generated — never edit it. |
 | `_bmad-output/planning-artifacts/build-sequence.md` | The steps from PRD to first story. Governs on any conflict with the board. |
 | `.../architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` | The invariants everything is built from. |
 
@@ -55,6 +56,16 @@ same Claude Design project. Never invent a second interface vocabulary beside th
 finishes.** Its pair, **R-75**, gates the build: the owner sees Inflozo's own UI as a static,
 clickable prototype on his machine (step 5b in `build-sequence.md`) before anything is built
 dynamically. Both live in `reconcile-designs-decisions.md` §A10.
+
+**Two builds exist and neither replaces the other.** `ux-designs/prototype/` is **5b**, the annotated
+proof — every screen a frame lifted from the export with the annotation *around* it; `ux-designs/walkthrough/`
+is **5c**, the clickable product. **5b was made clickable and then deliberately unwired again. Do not
+re-wire it:** every lifted region must be byte-identical to the region in the `.dc.html` — `build.py`
+asserts it — and navigation lives in the scaffolding around each frame. The clickable build is 5c,
+and that is the whole division (`prototype/build.py`'s `lift()` docstring is the record). **5b is
+R-75's gate; 5c is walked afterwards, for feel.** The gate is a human tick no tool reads — the date
+line under `build-sequence.md` step 5b, *The walk*, with the owner's notes in `ux-designs/WALK-NOTES.md`
+— and **the step-6 prompt is not run before that date stands.**
 
 ## The seven standing rules
 

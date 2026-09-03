@@ -105,16 +105,16 @@ drift apart.</p>
 
 <section class="runbook">
   <h2>When the patched export lands — run these, in this order</h2>
-  <p class="rblede">Pass two is being run in Claude Design now. This is what happens the moment its
-  output is dropped into <code>design/claude-design-export/</code>. Every count in this project is
+  <p class="rblede">The next export comes from the Appendix A prompts. This is what happens the moment
+  its output is dropped into <code>design/claude-design-export/</code>. Every count in this project is
   DERIVED from that export, so most of the list is re-derivation rather than editing — and the
   one human step is at the end, not the start.</p>
-  <ol class="rb"><li><div class="rbh"><span class="rbn">1</span><b>Drop the export in, replacing the folder contents</b></div><span class="nocmd">no command — by hand</span><p>The zip is authoritative and Inflozo/ is its extraction. Do not hand-merge: replace, then let the checks below tell you what moved. Two things in there were edited in the REPO rather than in Claude Design — the count-agnostic marketing copy and P0’s mark allowlist — and step 2 is what catches it if the re-export undid either.</p></li><li><div class="rbh"><span class="rbn">2</span><b>Put back the edits a re-export cannot carry</b></div><code>python3 tools/reapply-export-edits.py</code><p>Two edits live in the REPO, not in Claude Design: the count-agnostic marketing copy and P0’s mark allowlist. The 2026-08-31 pass tried to solve this by ASKING Claude Design not to undo them — and the 2026-09-01 re-export proved that impossible. The sessions behaved correctly and said so three times; the text was lost anyway, because a project copy cannot preserve what it never held. RUN THIS FIRST, before anything reads the export. It reports any wording it does not know how to reword rather than guessing.</p></li><li><div class="rbh"><span class="rbn">3</span><b>Did the pass actually apply the rulings?</b></div><code>python3 tools/verify-design-pass.py</code><p>One check per ruling, run against the export. Every structural check must pass. Six prose scans come back LOOK by design — they cannot tell a violation from a spec RECORDING that it removed the thing, so a human reads those six. The last two checks guard the repo-side hand edits: if the re-export put a design total back on a marketing screen, or dropped P0’s mark allowlist, they go red here rather than months later — and they are the check behind the step above, so a re-apply that missed something still fails here. It also caught A9-12 being CUT when the ruling said keep the design and remove only its control.</p></li><li><div class="rbh"><span class="rbn">4</span><b>Re-derive the library from what was actually drawn</b></div><code>python3 tools/export-roster.py &gt; /dev/null &amp;&amp; python3 tools/inventory-gen.py --write</code><p>The export is the count. This rewrites the inventory’s totals and every category roster from it, so no number is ever typed by hand. If a design was cut or renamed in the pass, this is where it shows up.</p></li><li><div class="rbh"><span class="rbn">5</span><b>Is every design still structurally distinct?</b></div><code>python3 tools/tuple-check.py</code><p>FR-G5’s gate: six slots, five closed vocabularies, unique within a category, contiguous numbering. A pass that edits arrangement or media placement can collide two designs without anyone noticing — this is what notices.</p></li><li><div class="rbh"><span class="rbn">6</span><b>Re-derive which designs declare which script</b></div><code>python3 tools/derive-module-reach.py</code><p>A9 loses its filter and A2-13 is gone, so at least two module rows change their design list. Counts a module only where a design’s OWN declaration names it — a mention in category prose is not a declaration, which is what stops every A1 design claiming accordion by association.</p></li><li><div class="rbh"><span class="rbn">7</span><b>Re-derive the storage contract and the control unions</b></div><code>python3 tools/derive-content-lines.py &amp;&amp; python3 tools/derive-control-lines.py</code><p>The Content: line is the STORAGE CONTRACT — a field missing from it has nowhere to park when a user switches design, and their words are lost. If the pass added a field to any spec, it has to reach here or FR-D17’s preservation gate fails on it.</p></li><li><div class="rbh"><span class="rbn">8</span><b>The documentation gate — run it twice</b></div><code>python3 tools/doc-audit.py --check</code><p>Catalogue, index, generated artifacts, tuples, inventory-versus-export. The FIRST run after a change often reports FAIL and fixes itself: its sub-tools regenerate on failure. That is the tools working. The second run is the one that counts.</p></li><li><div class="rbh"><span class="rbn">9</span><b>Triage what came back — the only human step</b></div><span class="nocmd">no command — by hand</span><p>Each prompt was asked to do two things beyond its work list: strike the Open questions that were already settled and mark the ones that are not, and flag anything it was unsure of rather than guess (A33’s Ghost class names especially). Read those flags. Anything genuinely open comes to the owner as a numbered decision — nobody answers one on his behalf.</p></li><li><div class="rbh"><span class="rbn">10</span><b>Then step 5 — journeys and flows</b></div><span class="nocmd">no command — by hand</span><p>Nothing above blocks it and it never did; clearing first was a choice. The prompt is on this board under STEP 5.</p></li></ol>
+  <ol class="rb"><li><div class="rbh"><span class="rbn">1</span><b>Drop the export in, replacing the folder contents</b></div><span class="nocmd">no command — by hand</span><p>The zip is authoritative and Inflozo/ is its extraction. Do not hand-merge: replace, then let the checks below tell you what moved. Two things in there were edited in the REPO rather than in Claude Design — the count-agnostic marketing copy and P0’s mark allowlist — and step 2 is what catches it if the re-export undid either.</p></li><li><div class="rbh"><span class="rbn">2</span><b>Put back the edits a re-export cannot carry</b></div><code>python3 tools/reapply-export-edits.py</code><p>Two edits live in the REPO, not in Claude Design: the count-agnostic marketing copy and P0’s mark allowlist. The 2026-08-31 pass tried to solve this by ASKING Claude Design not to undo them — and the 2026-09-01 re-export proved that impossible. The sessions behaved correctly and said so three times; the text was lost anyway, because a project copy cannot preserve what it never held. RUN THIS FIRST, before anything reads the export. It reports any wording it does not know how to reword rather than guessing.</p></li><li><div class="rbh"><span class="rbn">3</span><b>Did the pass actually apply the rulings?</b></div><code>python3 tools/verify-design-pass.py</code><p>One check per ruling, run against the export. Every structural check must pass. Six prose scans come back LOOK by design — they cannot tell a violation from a spec RECORDING that it removed the thing, so a human reads those six. The last two checks guard the repo-side hand edits: if the re-export put a design total back on a marketing screen, or dropped P0’s mark allowlist, they go red here rather than months later — and they are the check behind the step above, so a re-apply that missed something still fails here. It also caught A9-12 being CUT when the ruling said keep the design and remove only its control.</p></li><li><div class="rbh"><span class="rbn">4</span><b>Re-derive the library from what was actually drawn</b></div><code>python3 tools/export-roster.py &gt; /dev/null &amp;&amp; python3 tools/inventory-gen.py --write</code><p>The export is the count. This rewrites the inventory’s totals and every category roster from it, so no number is ever typed by hand. If a design was cut or renamed in the pass, this is where it shows up.</p></li><li><div class="rbh"><span class="rbn">5</span><b>Is every design still structurally distinct?</b></div><code>python3 tools/tuple-check.py</code><p>FR-G5’s gate: six slots, five closed vocabularies, unique within a category, contiguous numbering. A pass that edits arrangement or media placement can collide two designs without anyone noticing — this is what notices.</p></li><li><div class="rbh"><span class="rbn">6</span><b>Re-derive which designs declare which script</b></div><code>python3 tools/derive-module-reach.py</code><p>A9 loses its filter and A2-13 is gone, so at least two module rows change their design list. Counts a module only where a design’s OWN declaration names it — a mention in category prose is not a declaration, which is what stops every A1 design claiming accordion by association.</p></li><li><div class="rbh"><span class="rbn">7</span><b>Re-derive the storage contract and the control unions</b></div><code>python3 tools/derive-content-lines.py &amp;&amp; python3 tools/derive-control-lines.py</code><p>The Content: line is the STORAGE CONTRACT — a field missing from it has nowhere to park when a user switches design, and their words are lost. If the pass added a field to any spec, it has to reach here or FR-D17’s preservation gate fails on it.</p></li><li><div class="rbh"><span class="rbn">8</span><b>The documentation gate — run it twice</b></div><code>python3 tools/doc-audit.py --check</code><p>Catalogue, index, generated artifacts, tuples, inventory-versus-export. The FIRST run after a change often reports FAIL and fixes itself: its sub-tools regenerate on failure. That is the tools working. The second run is the one that counts.</p></li><li><div class="rbh"><span class="rbn">9</span><b>Triage what came back — the only human step</b></div><span class="nocmd">no command — by hand</span><p>Each prompt was asked to do two things beyond its work list: strike the Open questions that were already settled and mark the ones that are not, and flag anything it was unsure of rather than guess (A33’s Ghost class names especially). Read those flags. Anything genuinely open comes to the owner as a numbered decision — nobody answers one on his behalf.</p></li><li><div class="rbh"><span class="rbn">10</span><b>Then both generators</b></div><span class="nocmd">no command — by hand</span><p>python3 build.py in ux-designs/prototype and python3 build-app.py in ux-designs/walkthrough. A surface that said “not drawn” now has a frame to lift; a lifted region that no longer matches its frame fails the build rather than drifting.</p></li></ol>
 </section>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 5 — journeys and flows</b><span>THE CRITICAL PATH. /bmad-ux authors the four journeys and eight flows from the PRD and prompt 2&#x27;s exported app screens. Its work list is §37.7 of reconcile-designs.md — the editor surfaces with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still standing. It needs almost nothing from you.</span></li><li><b>Design patch pass FIVE — 28 prompts, and it is meant to be the LAST</b><span>DESIGN-PATCH-PROMPTS-5.html. Stress-tested before release, and the test found it INCOMPLETE: as first built it had no home for three rulings made the same day and left four categories with outstanding work out of the pass entirely — 24 prompts became 28. Every ruling now traces to a category in the pass, every factual claim the prompts make was checked against the specs, and six categories (A7, A20, A25, A27, A28, A34) came back genuinely finished and are correctly absent. 23 carry the Image-focus sweep; 11 carry extra work. Run in any order, then verify-design-pass.py and reapply-export-edits.py.</span></li></ol></div>
-  <div class="act soon"><h3>Do soon</h3><ol><li><b>The Image-focus sweep — 23 categories</b><span>Image focus was never a shared control: two dozen category specs each enumerate their own copy, which is the owner’s &quot;one control name, one set of values&quot; ruling in its worst form. Pass four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The list is derived by tools/design-patch-prompts-4.py, which tests the real condition — does the spec enumerate the values WITHOUT referencing P0·9 — after its first version got this wrong by assuming a category in the pass had been fixed.</span></li><li><b>Five registry rulings for the architect</b><span>Not yours, and not blocking: A5’s tabs announced twice without JavaScript, A5’s scroller rule having no registry sentence, A13’s walkthrough emitting a heading per panel, A33’s gallery script having no registry entry, and whether group-headings may re-level a heading. One pass covers all five.</span></li></ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Walk 5b — THE CRITICAL PATH, and only you can do it (R-75)</b><span>Double-click ux-designs/prototype/index.html and open every journey and every flow on its front door end to end, a line per screen in ux-designs/WALK-NOTES.md. The checklist, and the five things to look at hardest, are under build-sequence.md step 5b, The walk. Then 5c — ux-designs/walkthrough/index.html — for how it feels. Write the date on the line under The walk; step 6 opens on that line and on nothing else.</span></li></ol></div>
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>The Appendix A Claude Design prompts</b><span>EXPERIENCE.md Appendix A; its ### A headings are the count. A7 and A8 together (they share the focus-ring token), then A1 to A6. They block nothing. Run the export runbook above after each session, then both generators: the pages that say “not drawn” lift the new frames.</span></li><li><b>The Image-focus sweep — 23 categories</b><span>Image focus was never a shared control: two dozen category specs each enumerate their own copy, which is the owner’s &quot;one control name, one set of values&quot; ruling in its worst form. Pass four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The list is derived by tools/design-patch-prompts-4.py, which tests the real condition — does the spec enumerate the values WITHOUT referencing P0·9 — after its first version got this wrong by assuming a category in the pass had been fixed.</span></li><li><b>Five registry rulings for the architect</b><span>Not yours, and not blocking: A5’s tabs announced twice without JavaScript, A5’s scroller rule having no registry sentence, A13’s walkthrough emitting a heading per panel, A33’s gallery script having no registry entry, and whether group-headings may re-level a heading. One pass covers all five.</span></li></ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
@@ -256,7 +256,7 @@ This project has been damaged four times by an unverified platform claim enterin
       <span class="badge done">complete</span></div>
   </div>
   <p class="stands">Both halves ran 2026-08-27. 4a reviewed every category spec, P0 and the S/M screens (1,086 findings, 41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: all 66 ghost-infeasible findings and all five decision-collisions closed, FOUR approved decisions reversed (D3, D17, D26, D27 in half), and four probe families removed — two closed by execution against T1/T3 during the session, two deleted by the native-search ruling. Nine more rulings (R-30 … R-38) were taken on 2026-08-31. Read reconcile-designs-decisions.md §B before trusting any D-number anywhere in this project.</p>
-  <dl><dt>Produces</dt><dd>prds/.../reconcile-designs.md and reconcile-designs-decisions.md — every ruling naming the documents that must move. Its ledger records what has landed; R-30 … R-38 have not yet, and are owed before E4 and E9 open.</dd>
+  <dl><dt>Produces</dt><dd>prds/.../reconcile-designs.md and reconcile-designs-decisions.md — every ruling naming the documents that must move. Its ledger records what has landed — R-30 … R-38 on 2026-08-31 (§A3) — and §A12 holds the step-5b/5c review’s six decisions.</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>4a — The review (unattended)</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-review
 
@@ -603,191 +603,222 @@ House rules for tonight:
     <div class="stitle"><h2>Static prototype</h2>
       <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. It builds the RE-SPECIFICATION for the six frames drawn on the wrong mechanism, and its plan limits are Appendix F.1’s rather than the four frames that disagree with F.1. Appendix A’s Claude Design prompts had NOT been run when it was built, so its extrapolated pages should be re-checked once the D-canvases exist.</p>
-  <dl><dt>Produces</dt><dd>A walkable static prototype of the product. &lt;b&gt;The owner walking it is what unlocks step 6&lt;/b&gt;, and that sentence is his to write — build-sequence.md step 5b holds the line it goes on.</dd>
+  <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. Appendix A’s Claude Design prompts had NOT been run when it was built, so a surface with no frame says so and shows nothing.</p>
+  <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and &lt;b&gt;R-75’s gate: the owner walking it is what unlocks step 6&lt;/b&gt;. Walked means every journey and every flow on index.html opened end to end, with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, The walk, and that section holds the date line, which is his to write.</dd>
   </dl>
-  <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Rebuild or extend the Inflozo walkthrough — step 5c.
+  <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
-WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
-  build-app.py   the generator — it IMPORTS ../prototype/build.py and reuses its tokens,
-                 components, fixture site and plan matrix, so the two builds cannot drift
-  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
-  app.js         the mock interaction layer — plain script, no modules, no fetch
-  _screens.html  a jump list; the ONE file here that is not a product screen
-  _selfcheck.html drives the ring, the backup gate and the wizard; must print ALL PASS
-Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead.
+INPUTS, IN ORDER:
+  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
+     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md&#x27;s surface names, journeys,
+     flows and states are the content of this prototype.
+  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
+     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
+     `Calibration Set.dc.html`; reuse the drawn screens&#x27; construction. If a page of yours would
+     look wrong side by side with its frame, the page is wrong.
+  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
+     prd.md — &quot;## Appendix H — Voice &amp; Microcopy Canon&quot;. It is NOT appendix-h1-string-catalog.md,
+     which is the visitor-facing catalog shipped inside a user&#x27;s THEME.)
 
-THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
-No frame captions, no journey trails, no notes, no two states of one surface stacked on one
-page. If a reader could tell it is a prototype without clicking anything, it is wrong.
+OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
+  index.html                 the front door: the surface list, and the four journeys and eight
+                             flows each as a labelled, clickable trail
+  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
+  a shared stylesheet        the tokens transcribed once, from Calibration Set
 
-  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
-    vocabulary from the design export and nothing else (R-74).
-  - Fixture content throughout — Orbit Weekly. Never lorem.
-  - Double-click must work: relative links only, no CDN, no build step at read time.
-  - Product limits (Appendix F.1) are shown. A library total never is.
-  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
+TWO THINGS ABOUT EXPERIENCE.md&#x27;S SURFACE LIST, BOTH DECIDED SO YOU DO NOT HAVE TO GUESS:
+  - Its IA names ~80 surfaces, and they are NOT all full pages. Some are panels, pills,
+    markers, popovers and sheets that only exist over another surface. Give a full page to
+    anything a journey or a flow LANDS on; give the rest a section on the page they live on,
+    reachable by a link or a toggle from it. Every name still appears somewhere, and the
+    index lists them all — a surface that cannot be reached by clicking has not been built.
+  - Some surfaces have no frame yet: Appendix A carries a Claude Design prompt for each. The
+    page SAYS SO in those words, names the prompt, and SHOWS NOTHING — inventing a picture for
+    an undrawn surface is the second interface vocabulary R-74 forbids, and the first cut did
+    exactly that. If the owner has run the prompts by the time you start, lift the new frames —
+    check the export before you assume either way.
+  - Frames DRAWN ON THE WRONG MECHANISM (EXPERIENCE.md&#x27;s &quot;Drawn, but on the wrong mechanism&quot;
+    table) are lifted UNCHANGED, with the re-specification in a note beside the frame naming
+    its ruling. The frame is corrected in Claude Design by prompt A7, never here.
 
-A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
-frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
-generators, then `python3 tools/doc-audit.py --check` TWICE.">Copy prompt</button></div><pre>Rebuild or extend the Inflozo walkthrough — step 5c.
+RULES:
+  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
+    build step. Google Fonts may be linked but every face carries a real fallback stack.
+    Navigation is plain &lt;a&gt; links in the scaffolding AROUND each frame. EVERY LIFTED REGION
+    STAYS BYTE-IDENTICAL TO ITS .dc.html REGION — build.py asserts it — and NOTHING IS WIRED
+    INSIDE A FRAME: that was tried and reverted, and build.py&#x27;s lift() docstring says why. Read
+    it before anything else. Nothing is hidden by default; every page reads complete with
+    JavaScript off.
+  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project&#x27;s fixture publication. Never lorem.
+  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
+    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
+  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
+    error state, a refusal state is a link or a toggle away, never omitted.
+  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
+    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
+    folder; verify rather than assume.
+  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
+    the requirement and MUST be shown.
+
+DONE WHEN the owner can double-click index.html and click through all four journeys and all
+eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
+in one short message: the file to double-click, and the two or three places you had to make a
+judgement call he should look at hardest.
+
+5b IS BUILT (2026-09-03) AND THIS PROMPT NOW ONLY REBUILDS OR EXTENDS IT. A change to the
+design belongs in both builds: after editing prototype/build.py run `python3 build.py` there,
+then `python3 build-app.py` in ../walkthrough, then `python3 tools/doc-audit.py --check` TWICE.
+DO NOT OPEN STEP 6: the gate is the OWNER&#x27;S WALK, not the build. The date goes on the line
+under &quot;The walk&quot; in build-sequence.md step 5b, and it is his to write.">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the prototype. It is already built — double-click
+  ux-designs/prototype/index.html to walk it. It predates the lift and the unwiring: the frames are
+  LIFTED byte-identical and NEVER wired (that was tried and reverted). A session reads
+  prototype/build.py’s docstring first, and the prompt says so.</p><pre>Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
-WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
-  build-app.py   the generator — it IMPORTS ../prototype/build.py and reuses its tokens,
-                 components, fixture site and plan matrix, so the two builds cannot drift
-  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
-  app.js         the mock interaction layer — plain script, no modules, no fetch
-  _screens.html  a jump list; the ONE file here that is not a product screen
-  _selfcheck.html drives the ring, the backup gate and the wizard; must print ALL PASS
-Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead.
+INPUTS, IN ORDER:
+  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
+     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md&#x27;s surface names, journeys,
+     flows and states are the content of this prototype.
+  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
+     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
+     `Calibration Set.dc.html`; reuse the drawn screens&#x27; construction. If a page of yours would
+     look wrong side by side with its frame, the page is wrong.
+  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
+     prd.md — &quot;## Appendix H — Voice &amp; Microcopy Canon&quot;. It is NOT appendix-h1-string-catalog.md,
+     which is the visitor-facing catalog shipped inside a user&#x27;s THEME.)
 
-THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
-No frame captions, no journey trails, no notes, no two states of one surface stacked on one
-page. If a reader could tell it is a prototype without clicking anything, it is wrong.
+OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
+  index.html                 the front door: the surface list, and the four journeys and eight
+                             flows each as a labelled, clickable trail
+  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
+  a shared stylesheet        the tokens transcribed once, from Calibration Set
 
-  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
-    vocabulary from the design export and nothing else (R-74).
-  - Fixture content throughout — Orbit Weekly. Never lorem.
-  - Double-click must work: relative links only, no CDN, no build step at read time.
-  - Product limits (Appendix F.1) are shown. A library total never is.
-  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
+TWO THINGS ABOUT EXPERIENCE.md&#x27;S SURFACE LIST, BOTH DECIDED SO YOU DO NOT HAVE TO GUESS:
+  - Its IA names ~80 surfaces, and they are NOT all full pages. Some are panels, pills,
+    markers, popovers and sheets that only exist over another surface. Give a full page to
+    anything a journey or a flow LANDS on; give the rest a section on the page they live on,
+    reachable by a link or a toggle from it. Every name still appears somewhere, and the
+    index lists them all — a surface that cannot be reached by clicking has not been built.
+  - Some surfaces have no frame yet: Appendix A carries a Claude Design prompt for each. The
+    page SAYS SO in those words, names the prompt, and SHOWS NOTHING — inventing a picture for
+    an undrawn surface is the second interface vocabulary R-74 forbids, and the first cut did
+    exactly that. If the owner has run the prompts by the time you start, lift the new frames —
+    check the export before you assume either way.
+  - Frames DRAWN ON THE WRONG MECHANISM (EXPERIENCE.md&#x27;s &quot;Drawn, but on the wrong mechanism&quot;
+    table) are lifted UNCHANGED, with the re-specification in a note beside the frame naming
+    its ruling. The frame is corrected in Claude Design by prompt A7, never here.
 
-A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
-frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
-generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
+RULES:
+  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
+    build step. Google Fonts may be linked but every face carries a real fallback stack.
+    Navigation is plain &lt;a&gt; links in the scaffolding AROUND each frame. EVERY LIFTED REGION
+    STAYS BYTE-IDENTICAL TO ITS .dc.html REGION — build.py asserts it — and NOTHING IS WIRED
+    INSIDE A FRAME: that was tried and reverted, and build.py&#x27;s lift() docstring says why. Read
+    it before anything else. Nothing is hidden by default; every page reads complete with
+    JavaScript off.
+  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project&#x27;s fixture publication. Never lorem.
+  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
+    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
+  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
+    error state, a refusal state is a link or a toggle away, never omitted.
+  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
+    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
+    folder; verify rather than assume.
+  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
+    the requirement and MUST be shown.
+
+DONE WHEN the owner can double-click index.html and click through all four journeys and all
+eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
+in one short message: the file to double-click, and the two or three places you had to make a
+judgement call he should look at hardest.
+
+5b IS BUILT (2026-09-03) AND THIS PROMPT NOW ONLY REBUILDS OR EXTENDS IT. A change to the
+design belongs in both builds: after editing prototype/build.py run `python3 build.py` there,
+then `python3 build-app.py` in ../walkthrough, then `python3 tools/doc-audit.py --check` TWICE.
+DO NOT OPEN STEP 6: the gate is the OWNER&#x27;S WALK, not the build. The date goes on the line
+under &quot;The walk&quot; in build-sequence.md step 5b, and it is his to write.</pre></div>
 </section><section class="step done" id="s5c">
   <div class="shead">
     <span class="snum">5c</span>
     <div class="stitle"><h2>The walkthrough</h2>
       <span class="badge done">complete</span></div>
   </div>
-  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html&lt;/code&gt;&lt;/b&gt; — it opens on Sign In, as a user would meet it, with no scaffolding on any screen. What behaves: the design ring (the canvas AND its control panel change together, which is the model the product rests on), the canvas at rest and on hover, inline editing with its four marks, the backup gate that blocks until every row is covered, the six-step deploy wizard with progress that moves, and FR-D11’s keyboard map including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a text field. &lt;code&gt;_screens.html&lt;/code&gt; is a jump list and the only file there that is not a product screen; &lt;code&gt;_selfcheck.html&lt;/code&gt; drives the three non-trivial pieces of app.js and prints ALL PASS.</p>
-  <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers &lt;b&gt;is this any good&lt;/b&gt;, where 5b answers &lt;b&gt;is this screen right&lt;/b&gt;. A change to the design belongs in both.</dd>
+  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html&lt;/code&gt;&lt;/b&gt; — it opens on Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame lifted from the export and patched with links and hooks on the elements it drew. What behaves, read from the build: menus, popovers and sheets open from the control that raises them and close on Esc, their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in &lt;code&gt;_screens.html&lt;/code&gt; with the reason: the design ring and the backup gate (no frame — prompts A5 and A1), the six-step first deploy, the wrong-mechanism frames held out or shown as drawn until A7 runs (§A12 decision 6), and the states no frame draws. &lt;code&gt;_screens.html&lt;/code&gt; and &lt;code&gt;_selfcheck.html&lt;/code&gt; are the two files that are not product screens.</p>
+  <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers &lt;b&gt;is this any good&lt;/b&gt;, where 5b answers &lt;b&gt;is this screen right&lt;/b&gt;. Walked AFTER 5b, for feel; it is not the gate. A change to the design belongs in both.</dd>
   </dl>
-  <div class="prompt live"><div class="phead"><h4>The walkthrough</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+  <div class="prompt live"><div class="phead"><h4>The walkthrough</h4><span class="ptag live">live</span><button class="copy" data-t="Rebuild or extend the Inflozo walkthrough — step 5c.
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
-INPUTS, IN ORDER:
-  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
-     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md&#x27;s surface names, journeys,
-     flows and states are the content of this prototype.
-  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
-     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
-     `Calibration Set.dc.html`; reuse the drawn screens&#x27; construction. If a page of yours would
-     look wrong side by side with its frame, the page is wrong.
-  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
-     prd.md — &quot;## Appendix H — Voice &amp; Microcopy Canon&quot;. It is NOT appendix-h1-string-catalog.md,
-     which is the visitor-facing catalog shipped inside a user&#x27;s THEME.)
+WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
+  build-app.py   the generator — it LIFTS each screen out of the .dc.html via ../frames.py and
+                 patches it; it IMPORTS ../prototype/build.py for FONTS and LIMITS (Appendix F.1).
+                 The tokens and the lifter are shared with 5b; the page registry is this file&#x27;s own
+  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
+  app.js         the mock interaction layer — plain script, no modules, no fetch
+  _screens.html  the jump list and the three held-out lists (NOT_YET in the generator)
+  _selfcheck.html drives the hooks build-app.py attaches — overlays, picks, the wizard, the
+                 typing guard; must print ALL PASS
+  Those two are the only files that are not product screens.
+Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead, any
+screen is inert or unreachable from Sign In, or any trigger has no overlay. Read its docstring
+first: what is patched into a frame, and what is A7&#x27;s instead, is written there.
 
-OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
-  index.html                 the front door: the surface list, and the four journeys and eight
-                             flows each as a labelled, clickable trail
-  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
-  a shared stylesheet        the tokens transcribed once, from Calibration Set
+THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
+No frame captions, no journey trails, no notes, no two states of one surface stacked on one
+page. If a reader could tell it is a prototype without clicking anything, it is wrong.
 
-TWO THINGS ABOUT EXPERIENCE.md&#x27;S SURFACE LIST, BOTH DECIDED SO YOU DO NOT HAVE TO GUESS:
-  - Its IA names ~80 surfaces, and they are NOT all full pages. Some are panels, pills,
-    markers, popovers and sheets that only exist over another surface. Give a full page to
-    anything a journey or a flow LANDS on; give the rest a section on the page they live on,
-    reachable by a link or a toggle from it. Every name still appears somewhere, and the
-    index lists them all — a surface that cannot be reached by clicking has not been built.
-  - Some surfaces have no frame yet: EXPERIENCE.md names the frame each is EXTRAPOLATED FROM
-    and Appendix A carries a Claude Design prompt for it. Build those from the named frame&#x27;s
-    components, exactly as the spine says. If the owner has run the prompts by the time you
-    start, prefer the new frames — check the export before you assume either way.
-  - Six frames are DRAWN ON THE WRONG MECHANISM and EXPERIENCE.md re-specifies them (its
-    &quot;Drawn, but on the wrong mechanism&quot; table). BUILD THE RE-SPECIFICATION, not the frame:
-    keep the frame&#x27;s components and change what they do. That table is the list.
+  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
+    vocabulary from the design export and nothing else (R-74).
+  - Fixture content throughout — Orbit Weekly. Never lorem.
+  - Double-click must work: relative links only, no CDN scripts, no build step at read time.
+    Google Fonts may be linked but every face carries a real fallback stack — the same
+    allowance as 5b&#x27;s prompt (F-050).
+  - A lift is patched only with links, ids, classes, hooks and the PRD&#x27;s own strings — never
+    markup in a second vocabulary — and every patch carries a comment naming the finding or
+    ruling it serves. A fix that would change what a frame LOOKS like goes to prompt A7.
+  - Product limits (Appendix F.1) are shown. A library total never is.
+  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
 
-RULES:
-  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
-    build step. Google Fonts may be linked but every face carries a real fallback stack.
-    Navigation is plain &lt;a&gt; links. Light inline JS may toggle a mock state, but every page must
-    read complete with JavaScript off.
-  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project&#x27;s fixture publication. Never lorem.
-  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
-    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
-  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
-    error state, a refusal state is a link or a toggle away, never omitted.
-  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
-    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
-    folder; verify rather than assume.
-  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
-    the requirement and MUST be shown.
-
-DONE WHEN the owner can double-click index.html and click through all four journeys and all
-eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
-in one short message: the file to double-click, and the two or three places you had to make a
-judgement call he should look at hardest.
-
-AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
-build-sequence.md (this section and the step table) and in HANDOVER.md, and update
-tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
-the gate is the OWNER&#x27;S WALK, not the build. When he says he has walked it, record the date
-here in this section — that sentence is what unlocks step 6, and it is his to say.">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the walkthrough. It is already built — double-click
-  ux-designs/walkthrough/index.html to look at it.</p><pre>Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
+A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
+frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
+generators, then `python3 tools/doc-audit.py --check` TWICE.">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the walkthrough. It is already built — double-click
+  ux-designs/walkthrough/index.html to look at it, after 5b. Read build-app.py’s docstring first.</p><pre>Rebuild or extend the Inflozo walkthrough — step 5c.
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
 
-INPUTS, IN ORDER:
-  1. The finished step-5 spines: DESIGN.md and EXPERIENCE.md under
-     _bmad-output/planning-artifacts/ux-designs/ — EXPERIENCE.md&#x27;s surface names, journeys,
-     flows and states are the content of this prototype.
-  2. The design export at _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ —
-     ruling R-74: its tokens and components are the ONLY visual vocabulary. Copy the values from
-     `Calibration Set.dc.html`; reuse the drawn screens&#x27; construction. If a page of yours would
-     look wrong side by side with its frame, the page is wrong.
-  3. The PRD for behaviour, and its Appendix H for every string. (Appendix H is INSIDE
-     prd.md — &quot;## Appendix H — Voice &amp; Microcopy Canon&quot;. It is NOT appendix-h1-string-catalog.md,
-     which is the visitor-facing catalog shipped inside a user&#x27;s THEME.)
+WHERE IT LIVES: _bmad-output/planning-artifacts/ux-designs/walkthrough/
+  build-app.py   the generator — it LIFTS each screen out of the .dc.html via ../frames.py and
+                 patches it; it IMPORTS ../prototype/build.py for FONTS and LIMITS (Appendix F.1).
+                 The tokens and the lifter are shared with 5b; the page registry is this file&#x27;s own
+  _app.css       the product-only additions, appended to 5b&#x27;s stylesheet at build time
+  app.js         the mock interaction layer — plain script, no modules, no fetch
+  _screens.html  the jump list and the three held-out lists (NOT_YET in the generator)
+  _selfcheck.html drives the hooks build-app.py attaches — overlays, picks, the wizard, the
+                 typing guard; must print ALL PASS
+  Those two are the only files that are not product screens.
+Run `python3 build-app.py` from inside that folder. It refuses to write if any link is dead, any
+screen is inert or unreachable from Sign In, or any trigger has no overlay. Read its docstring
+first: what is patched into a frame, and what is A7&#x27;s instead, is written there.
 
-OUTPUT: _bmad-output/planning-artifacts/ux-designs/prototype/
-  index.html                 the front door: the surface list, and the four journeys and eight
-                             flows each as a labelled, clickable trail
-  one .html page per surface EXPERIENCE.md names, filed by its stable surface name
-  a shared stylesheet        the tokens transcribed once, from Calibration Set
+THE RULE THAT MAKES THIS BUILD DIFFERENT FROM 5B: no scaffolding on any product screen.
+No frame captions, no journey trails, no notes, no two states of one surface stacked on one
+page. If a reader could tell it is a prototype without clicking anything, it is wrong.
 
-TWO THINGS ABOUT EXPERIENCE.md&#x27;S SURFACE LIST, BOTH DECIDED SO YOU DO NOT HAVE TO GUESS:
-  - Its IA names ~80 surfaces, and they are NOT all full pages. Some are panels, pills,
-    markers, popovers and sheets that only exist over another surface. Give a full page to
-    anything a journey or a flow LANDS on; give the rest a section on the page they live on,
-    reachable by a link or a toggle from it. Every name still appears somewhere, and the
-    index lists them all — a surface that cannot be reached by clicking has not been built.
-  - Some surfaces have no frame yet: EXPERIENCE.md names the frame each is EXTRAPOLATED FROM
-    and Appendix A carries a Claude Design prompt for it. Build those from the named frame&#x27;s
-    components, exactly as the spine says. If the owner has run the prompts by the time you
-    start, prefer the new frames — check the export before you assume either way.
-  - Six frames are DRAWN ON THE WRONG MECHANISM and EXPERIENCE.md re-specifies them (its
-    &quot;Drawn, but on the wrong mechanism&quot; table). BUILD THE RE-SPECIFICATION, not the frame:
-    keep the frame&#x27;s components and change what they do. That table is the list.
+  - Behaviour comes from EXPERIENCE.md, strings from PRD Appendix H, and the visual
+    vocabulary from the design export and nothing else (R-74).
+  - Fixture content throughout — Orbit Weekly. Never lorem.
+  - Double-click must work: relative links only, no CDN scripts, no build step at read time.
+    Google Fonts may be linked but every face carries a real fallback stack — the same
+    allowance as 5b&#x27;s prompt (F-050).
+  - A lift is patched only with links, ids, classes, hooks and the PRD&#x27;s own strings — never
+    markup in a second vocabulary — and every patch carries a comment naming the finding or
+    ruling it serves. A fix that would change what a frame LOOKS like goes to prompt A7.
+  - Product limits (Appendix F.1) are shown. A library total never is.
+  - Anything non-trivial added to app.js gets a case in _selfcheck.html.
 
-RULES:
-  - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
-    build step. Google Fonts may be linked but every face carries a real fallback stack.
-    Navigation is plain &lt;a&gt; links. Light inline JS may toggle a mock state, but every page must
-    read complete with JavaScript off.
-  - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project&#x27;s fixture publication. Never lorem.
-  - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
-    EXPERIENCE.md section it implements. That is what makes fidelity checkable.
-  - EVERY STATE EXPERIENCE.md names for a surface is shown or reachable — an empty state, an
-    error state, a refusal state is a link or a toggle away, never omitted.
-  - THE GATE SEES EVERY FILE: python3 tools/doc-audit.py --check must pass, run twice (its
-    sub-tools regenerate on first failure). The ux-designs GROUPS entry from step 5 covers the
-    folder; verify rather than assume.
-  - Counts: never print a library total (Appendix H). Product limits (10/3 versions, 1 site) are
-    the requirement and MUST be shown.
-
-DONE WHEN the owner can double-click index.html and click through all four journeys and all
-eight flows; every surface page names its source frame; the gate passes twice. Then tell him,
-in one short message: the file to double-click, and the two or three places you had to make a
-judgement call he should look at hardest.
-
-AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
-build-sequence.md (this section and the step table) and in HANDOVER.md, and update
-tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
-the gate is the OWNER&#x27;S WALK, not the build. When he says he has walked it, record the date
-here in this section — that sentence is what unlocks step 6, and it is his to say.</pre></div>
+A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
+frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
+generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
 </section><section class="step later" id="s6">
   <div class="shead">
     <span class="snum">6</span>
@@ -796,7 +827,7 @@ here in this section — that sentence is what unlocks step 6, and it is his to 
   </div>
   <p class="stands">Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS BUILT BUT THE GATE IS THE WALK, not the build — this step opens the day the owner says he has walked it, and per R-74 every story with a surface names the frame it is built from.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
-  <dt>Waiting on</dt><dd>the owner&#x27;s walk of the step-5b prototype</dd></dl>
+  <dt>Waiting on</dt><dd>the owner&#x27;s walk of the step-5b prototype — every journey and flow on its index.html end to end, notes in ux-designs/WALK-NOTES.md, and a date on the line under build-sequence.md step 5b, The walk. A human tick no tool reads; do not run the prompt below before it stands</dd></dl>
   <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
@@ -823,7 +854,7 @@ platform-verification spike, then the complete shell block (all 47 designs of Gr
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).">Copy prompt</button></div><pre>/bmad-create-epics-and-stories
+its specs in sections-inventory.md (§4).">Copy prompt</button></div><p class="pnote live">DO NOT RUN before the owner’s walk of 5b has a date under build-sequence.md step 5b, The walk (R-75). Nothing technical stops it; the gate is that line.</p><pre>/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 

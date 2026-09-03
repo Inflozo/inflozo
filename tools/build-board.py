@@ -63,8 +63,8 @@ STEPS = [
   '(R-30 \u2026 R-38) were taken on 2026-08-31. Read reconcile-designs-decisions.md \u00a7B before '
   'trusting any D-number anywhere in this project.',
   'prds/.../reconcile-designs.md and reconcile-designs-decisions.md \u2014 every ruling naming the '
-  'documents that must move. Its ledger records what has landed; R-30 \u2026 R-38 have not yet, and '
-  'are owed before E4 and E9 open.', None),
+  'documents that must move. Its ledger records what has landed \u2014 R-30 \u2026 R-38 on 2026-08-31 '
+  '(\u00a7A3) \u2014 and \u00a7A12 holds the step-5b/5c review\u2019s six decisions.', None),
  ('smerge', '4\u00bd', 'The inventory merge', 'done',
   'The specs merged into sections-inventory.md and the inventory is now GENERATED from the design '
   'export and gated, so it cannot drift again. A23 Search deleted whole; the design patch pass run '
@@ -94,12 +94,16 @@ STEPS = [
   'that page, linked from it and listed on the index. The four journeys and eight flows are each a '
   'labelled, clickable trail. EVERY PAGE\u2019S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM '
   '(R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. '
-  'It builds the RE-SPECIFICATION for the six frames drawn on the wrong mechanism, and its plan '
-  'limits are Appendix F.1\u2019s rather than the four frames that disagree with F.1. '
-  'Appendix A\u2019s Claude Design prompts had NOT been run when it was built, so its extrapolated '
-  'pages should be re-checked once the D-canvases exist.',
-  'A walkable static prototype of the product. <b>The owner walking it is what unlocks step 6</b>, '
-  'and that sentence is his to write \u2014 build-sequence.md step 5b holds the line it goes on.',
+  'Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and '
+  'never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification '
+  'in a note beside them, and the plan limits are Appendix F.1\u2019s table beside the frame. ITS '
+  'FRAMES ARE NEVER WIRED \u2014 that was tried and reverted; the clickable build is 5c. Appendix '
+  'A\u2019s Claude Design prompts had NOT been run when it was built, so a surface with no frame says '
+  'so and shows nothing.',
+  'A walkable static prototype of the product, and <b>R-75\u2019s gate: the owner walking it is what '
+  'unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end, '
+  'with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, '
+  'The walk, and that section holds the date line, which is his to write.',
   None),
  ('s5c', '5c', 'The walkthrough', 'done',
   "The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, "
@@ -107,46 +111,69 @@ STEPS = [
   'They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. '
   'BUILT 2026-09-03. <b>Double-click '
   '<code>_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html</code></b> \u2014 it opens on '
-  'Sign In, as a user would meet it, with no scaffolding on any screen. What behaves: the design ring '
-  '(the canvas AND its control panel change together, which is the model the product rests on), the '
-  'canvas at rest and on hover, inline editing with its four marks, the backup gate that blocks until '
-  'every row is covered, the six-step deploy wizard with progress that moves, and FR-D11\u2019s keyboard '
-  'map including the WCAG 2.1.4 rule that single-key shortcuts are inert inside a text field. '
-  '<code>_screens.html</code> is a jump list and the only file there that is not a product screen; '
-  '<code>_selfcheck.html</code> drives the three non-trivial pieces of app.js and prints ALL PASS.',
+  'Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame '
+  'lifted from the export and patched with links and hooks on the elements it drew. What behaves, read '
+  'from the build: menus, popovers and sheets open from the control that raises them and close on Esc, '
+  'their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn '
+  'selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and '
+  'the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing '
+  'the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: '
+  'the design ring and the backup gate (no frame \u2014 prompts A5 and A1), the six-step first deploy, '
+  'the wrong-mechanism frames held out or shown as drawn until A7 runs (\u00a7A12 decision 6), and the '
+  'states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
+  'that are not product screens.',
   'The product as a clickable application \u2014 the artifact that answers <b>is this any good</b>, where '
-  '5b answers <b>is this screen right</b>. A change to the design belongs in both.', None),
+  '5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to '
+  'the design belongs in both.', None),
  ('s6', '6', 'Epics and stories', 'later',
   'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS '
   'BUILT BUT THE GATE IS THE WALK, not the build \u2014 this step opens the day the owner says he '
   'has walked it, and per R-74 every story with a surface names the frame it is built from.',
-  'The story breakdown.', "the owner's walk of the step-5b prototype"),
+  'The story breakdown.', "the owner's walk of the step-5b prototype \u2014 every journey and flow on its "
+  'index.html end to end, notes in ux-designs/WALK-NOTES.md, and a date on the line under '
+  'build-sequence.md step 5b, The walk. A human tick no tool reads; do not run the prompt below before it stands'),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
 ]
 
-# which fenced block in build-sequence.md belongs to which step, in document order,
-# and whether it is safe to run. A historical prompt gets NO copy button on purpose.
+# which fenced block in build-sequence.md belongs to which step, whether it is safe to run, and a
+# NEEDLE — text that occurs in that block and no other. Blocks are matched by needle, never by
+# document order: the order once swapped the 5b and 5c prompts between their cards (F-083), and a
+# board that pairs a prompt with the wrong step is worse than no board. A historical prompt gets NO
+# copy button on purpose.
 PROMPTS = [
  ('s1',  'Architecture', 'historical',
-  'Complete. Kept for provenance. It states figures that were true when written and are not now.'),
+  'Complete. Kept for provenance. It states figures that were true when written and are not now.',
+  '/bmad-architecture'),
  ('s2',  'Spike (a) — mark emission', 'refuted',
   'Complete, AND one instruction in it is FALSE — it tells you to escape a preceding backslash, '
   'which was executed and disproved. Following it would rebuild a defect four rounds removed. '
-  'Read the warning in build-sequence.md before this prompt, never the prompt alone.'),
+  'Read the warning in build-sequence.md before this prompt, never the prompt alone.',
+  'Build the FR-D4 mark-emission spike'),
  ('s2',  'Spike (b) — platform verification', 'historical',
-  'Complete. Its "21 items" is long out of date; the register has grown every round.'),
- ('s4',  '4a — The review (unattended)', 'live', None),
+  'Complete. Its "21 items" is long out of date; the register has grown every round.',
+  'Run the E0 platform-verification spike'),
+ ('s4',  '4a — The review (unattended)', 'live', None, '/bmad-review'),
  ('s4',  '4b — The Ghost Build Room (you must be in the room)', 'live',
   'Interactive. Run 4a first; the room reads its report as the agenda and presents each unsettled '
-  'item to you as a numbered decision.'),
- ('s5b', 'Static prototype', 'live', None),
+  'item to you as a numbered decision.',
+  '/bmad-party-mode --party ghost-build-room'),
+ ('s5b', 'Static prototype', 'live',
+  'Run it only to REBUILD or extend the prototype. It is already built — double-click\n'
+  '  ux-designs/prototype/index.html to walk it. It predates the lift and the unwiring: the frames are\n'
+  '  LIFTED byte-identical and NEVER wired (that was tried and reverted). A session reads\n'
+  '  prototype/build.py\u2019s docstring first, and the prompt says so.',
+  'Build the static prototype'),
  ('s5c', 'The walkthrough', 'live',
   'Run it only to REBUILD or extend the walkthrough. It is already built — double-click\n'
-  '  ux-designs/walkthrough/index.html to look at it.'),
- ('s6',  'Epics and stories', 'live', None),
- ('s6b', 'Readiness gate', 'live', None),
+  '  ux-designs/walkthrough/index.html to look at it, after 5b. Read build-app.py\u2019s docstring first.',
+  'Rebuild or extend the Inflozo walkthrough'),
+ ('s6',  'Epics and stories', 'live',
+  'DO NOT RUN before the owner\u2019s walk of 5b has a date under build-sequence.md step 5b, The walk '
+  '(R-75). Nothing technical stops it; the gate is that line.',
+  '/bmad-create-epics-and-stories'),
+ ('s6b', 'Readiness gate', 'live', None, '/bmad-sprint-planning'),
 ]
 
 # What to do the moment a patched export lands in the design-export folder, in order.
@@ -205,26 +232,24 @@ RUNBOOK = [
   'guess (A33\u2019s Ghost class names especially). Read those flags. Anything genuinely open comes to '
   'the owner as a numbered decision \u2014 nobody answers one on his behalf.'),
  (None,
-  'Then step 5 \u2014 journeys and flows',
-  'Nothing above blocks it and it never did; clearing first was a choice. The prompt is on this '
-  'board under STEP 5.'),
+  'Then both generators',
+  'python3 build.py in ux-designs/prototype and python3 build-app.py in ux-designs/walkthrough. A '
+  'surface that said \u201cnot drawn\u201d now has a frame to lift; a lifted region that no longer '
+  'matches its frame fails the build rather than drifting.'),
 ]
 
 
 ACTIONS = [
- ('now', 'Step 5 — journeys and flows',
-  'THE CRITICAL PATH. /bmad-ux authors the four journeys and eight flows from the PRD and prompt 2\'s '
-  'exported app screens. Its work list is \u00a737.7 of reconcile-designs.md — the editor surfaces '
-  'with no frame and the flows drawn on wrong semantics — re-verified on 2026-08-31 and still '
-  'standing. It needs almost nothing from you.'),
- ('now', 'Design patch pass FIVE \u2014 28 prompts, and it is meant to be the LAST',
-  'DESIGN-PATCH-PROMPTS-5.html. Stress-tested before release, and the test found it INCOMPLETE: as '
-  'first built it had no home for three rulings made the same day and left four categories with '
-  'outstanding work out of the pass entirely \u2014 24 prompts became 28. Every ruling now traces to '
-  'a category in the pass, every factual claim the prompts make was checked against the specs, and '
-  'six categories (A7, A20, A25, A27, A28, A34) came back genuinely finished and are correctly '
-  'absent. 23 carry the Image-focus sweep; 11 carry extra work. Run in any order, then '
-  'verify-design-pass.py and reapply-export-edits.py.'),
+ ('now', 'Walk 5b \u2014 THE CRITICAL PATH, and only you can do it (R-75)',
+  'Double-click ux-designs/prototype/index.html and open every journey and every flow on its front '
+  'door end to end, a line per screen in ux-designs/WALK-NOTES.md. The checklist, and the five '
+  'things to look at hardest, are under build-sequence.md step 5b, The walk. Then 5c \u2014 '
+  'ux-designs/walkthrough/index.html \u2014 for how it feels. Write the date on the line under '
+  'The walk; step 6 opens on that line and on nothing else.'),
+ ('soon', 'The Appendix A Claude Design prompts',
+  'EXPERIENCE.md Appendix A; its ### A headings are the count. A7 and A8 together (they share the '
+  'focus-ring token), then A1 to A6. They block nothing. Run the export runbook above after each '
+  'session, then both generators: the pages that say \u201cnot drawn\u201d lift the new frames.'),
  ('soon', 'The Image-focus sweep \u2014 23 categories',
   'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
   'which is the owner\u2019s "one control name, one set of values" ruling in its worst form. Pass '
@@ -271,9 +296,18 @@ def build():
     date = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
                           capture_output=True, text=True).stdout.strip()
     e = html.escape
-    by_step = {}
-    for (skey, title, kind, note), body in zip(PROMPTS, blocks):
-        by_step.setdefault(skey, []).append((title, kind, note, body))
+    by_step, claimed = {}, set()
+    for skey, title, kind, note, needle in PROMPTS:
+        hits = [i for i, b in enumerate(blocks) if needle in b]
+        if len(hits) != 1:
+            print(f'  ! PROMPTS needle {needle!r} matches {len(hits)} blocks in build-sequence.md; '
+                  'it must match exactly one. Update tools/build-board.py.', file=sys.stderr)
+            sys.exit(2)
+        if hits[0] in claimed:
+            print(f'  ! two PROMPTS entries claim the same block ({needle!r}).', file=sys.stderr)
+            sys.exit(2)
+        claimed.add(hits[0])
+        by_step.setdefault(skey, []).append((title, kind, note, blocks[hits[0]]))
 
     LABEL = {'done': 'complete', 'running': 'running now', 'next': 'next up',
              'ready': 'ready when unblocked', 'later': 'later'}
@@ -416,8 +450,8 @@ drift apart.</p>
 
 <section class="runbook">
   <h2>When the patched export lands \u2014 run these, in this order</h2>
-  <p class="rblede">Pass two is being run in Claude Design now. This is what happens the moment its
-  output is dropped into <code>design/claude-design-export/</code>. Every count in this project is
+  <p class="rblede">The next export comes from the Appendix A prompts. This is what happens the moment
+  its output is dropped into <code>design/claude-design-export/</code>. Every count in this project is
   DERIVED from that export, so most of the list is re-derivation rather than editing \u2014 and the
   one human step is at the end, not the start.</p>
   <ol class="rb">{''.join(rb)}</ol>

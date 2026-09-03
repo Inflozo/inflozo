@@ -25,19 +25,23 @@ TWO THINGS ABOUT EXPERIENCE.md'S SURFACE LIST, BOTH DECIDED SO YOU DO NOT HAVE T
     anything a journey or a flow LANDS on; give the rest a section on the page they live on,
     reachable by a link or a toggle from it. Every name still appears somewhere, and the
     index lists them all — a surface that cannot be reached by clicking has not been built.
-  - Some surfaces have no frame yet: EXPERIENCE.md names the frame each is EXTRAPOLATED FROM
-    and Appendix A carries a Claude Design prompt for it. Build those from the named frame's
-    components, exactly as the spine says. If the owner has run the prompts by the time you
-    start, prefer the new frames — check the export before you assume either way.
-  - Six frames are DRAWN ON THE WRONG MECHANISM and EXPERIENCE.md re-specifies them (its
-    "Drawn, but on the wrong mechanism" table). BUILD THE RE-SPECIFICATION, not the frame:
-    keep the frame's components and change what they do. That table is the list.
+  - Some surfaces have no frame yet: Appendix A carries a Claude Design prompt for each. The
+    page SAYS SO in those words, names the prompt, and SHOWS NOTHING — inventing a picture for
+    an undrawn surface is the second interface vocabulary R-74 forbids, and the first cut did
+    exactly that. If the owner has run the prompts by the time you start, lift the new frames —
+    check the export before you assume either way.
+  - Frames DRAWN ON THE WRONG MECHANISM (EXPERIENCE.md's "Drawn, but on the wrong mechanism"
+    table) are lifted UNCHANGED, with the re-specification in a note beside the frame naming
+    its ruling. The frame is corrected in Claude Design by prompt A7, never here.
 
 RULES:
   - DOUBLE-CLICK MUST WORK. Self-contained: relative links only, no fetch, no CDN scripts, no
     build step. Google Fonts may be linked but every face carries a real fallback stack.
-    Navigation is plain <a> links. Light inline JS may toggle a mock state, but every page must
-    read complete with JavaScript off.
+    Navigation is plain <a> links in the scaffolding AROUND each frame. EVERY LIFTED REGION
+    STAYS BYTE-IDENTICAL TO ITS .dc.html REGION — build.py asserts it — and NOTHING IS WIRED
+    INSIDE A FRAME: that was tried and reverted, and build.py's lift() docstring says why. Read
+    it before anything else. Nothing is hidden by default; every page reads complete with
+    JavaScript off.
   - FIXTURE CONTENT THROUGHOUT — Orbit Weekly, the project's fixture publication. Never lorem.
   - EVERY PAGE OPENS WITH AN HTML COMMENT naming the frame(s) it derives from (R-74) and the
     EXPERIENCE.md section it implements. That is what makes fidelity checkable.
@@ -54,8 +58,8 @@ eight flows; every surface page names its source frame; the gate passes twice. T
 in one short message: the file to double-click, and the two or three places you had to make a
 judgement call he should look at hardest.
 
-AND THE COMPLETION RECORD, because every step leaves one: mark step 5b built in
-build-sequence.md (this section and the step table) and in HANDOVER.md, and update
-tools/build-board.py (the board is generated — never edit the HTML). BUT DO NOT OPEN STEP 6:
-the gate is the OWNER'S WALK, not the build. When he says he has walked it, record the date
-here in this section — that sentence is what unlocks step 6, and it is his to say.
+5b IS BUILT (2026-09-03) AND THIS PROMPT NOW ONLY REBUILDS OR EXTENDS IT. A change to the
+design belongs in both builds: after editing prototype/build.py run `python3 build.py` there,
+then `python3 build-app.py` in ../walkthrough, then `python3 tools/doc-audit.py --check` TWICE.
+DO NOT OPEN STEP 6: the gate is the OWNER'S WALK, not the build. The date goes on the line
+under "The walk" in build-sequence.md step 5b, and it is his to write.

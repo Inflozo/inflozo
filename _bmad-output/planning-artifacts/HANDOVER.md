@@ -20,7 +20,8 @@ numbered options and one marked **(RECOMMENDED)**.
 | | |
 |---|---|
 | `planning-artifacts/INDEX.md` | Every document with a one-line brief. **Start here.** Four statuses: **live** (edit these), **tool** (runnable), **record** (dated — *never edit*), **retired**. |
-| `planning-artifacts/BUILD-BOARD.html` | Where the project stands, what is next, prompts with copy buttons. |
+| `planning-artifacts/HANDOVER.md` | This file — where the project stands and what is next. |
+| `planning-artifacts/BUILD-BOARD.html` | The same, for a human: every step, its status, and the prompts with copy buttons. |
 | `planning-artifacts/build-sequence.md` | The build steps from PRD to first story. Governs on any conflict with the board. |
 | `.../architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` | The invariants everything is built from. |
 
@@ -46,13 +47,22 @@ python3 tools/doc-audit.py --check        # the documentation gate
 **The owner's walk of the step-5b prototype. It is not a build task, and no session can do it for
 him.** The critical path now runs through one person opening one file.
 
+**5b is R-75's gate; 5c is walked afterwards, for feel** (owner, 2026-09-03 —
+`reconcile-designs-decisions.md` §A12 decision 3). **"Walked" means every journey and every flow on
+`ux-designs/prototype/index.html`'s front door opened end to end, with his notes in one named file:
+`ux-designs/WALK-NOTES.md`** — a heading per journey and per flow, a line per screen. The checklist
+he follows in one sitting, and the five things to look at hardest, are in `build-sequence.md` step
+5b under *The walk*. **The gate is a human tick no tool reads** — the date line in that section;
+`doc-audit.py` quotes it and checks nothing, the board's step-6 status is set by hand — **and the
+step-6 prompt is not run before a date stands there.**
+
 **Two builds exist, they answer different questions, and neither replaces the other.**
 
 | | `ux-designs/prototype/` — step 5b | `ux-designs/walkthrough/` — step 5c |
 |---|---|---|
 | Answers | *is this screen right?* | *is this any good?* |
 | Carries | the frame reference, the journey trails, every state of a surface on one page | nothing but the product |
-| Behaves | no — it depicts | yes — menus, the design ring, the wizard, the keyboard map |
+| Behaves | no — it depicts; **its frames are never wired** | yes — menus, popovers and sheets; picks; the four-step deploy wizard; `P`, `L`, `Esc` in the editor. **Not the design ring or the backup gate** — held out until prompts A5 and A1 run |
 | **A design change** | **belongs here** | **and here** |
 
 > ⚠️ **READ THIS BEFORE TOUCHING EITHER BUILD.** The first cut of both was authored from a **text
@@ -68,17 +78,38 @@ him.** The critical path now runs through one person opening one file.
 > and a surface with **no** frame says so in those words and shows nothing — inventing a picture
 > there would be the second interface vocabulary R-74 forbids. **Never author a screen from a
 > stripped-tag reading of a frame again; the frames are HTML, so read them as HTML.**
+>
+> **5B WAS MADE CLICKABLE AND THEN DELIBERATELY UNWIRED AGAIN. Do not re-wire it.** Every lifted
+> region must be byte-identical to the region in the `.dc.html` — `build.py` asserts it — and
+> navigation lives in the scaffolding around each frame. Wiring the frames' own controls was tried:
+> it broke that claim, matched controls by button text, and its own assertion pressured the build
+> into a link from a page to itself just to pass. **The clickable build is 5c**, and that is the
+> whole division. `prototype/build.py`'s `lift()` docstring is the record; read it first.
 
-**Step 5c is BUILT — 2026-09-03, rebuilt the same day.**
+**Step 5c is BUILT — 2026-09-03, rebuilt the same day, corrected after the review the same night.**
 `planning-artifacts/ux-designs/walkthrough/index.html` — **double-click it**, and it opens on Sign In
-as a user would meet it. Every screen in it is **lifted from the export verbatim** and then wired up;
-surfaces with no frame are held out and listed in `_screens.html` with the reason. The owner read 5b and said the
-true thing: its annotations are exactly what stop it feeling like the product. They are also the
-point of it, so 5c drops them and adds behaviour instead. `build-app.py` **imports 5b's builder**, so
-the tokens are transcribed from the export exactly once and the two cannot drift. Two files there are
-not product screens, both `_`-prefixed: `_screens.html` is a jump list, `_selfcheck.html` drives the
-three non-trivial pieces of `app.js` and must print ALL PASS. Rebuild with `python3 build-app.py`
-from inside that folder; never hand-edit the emitted `.html`.
+as a user would meet it. Every screen in it is **lifted from the export verbatim** and patched with
+links and hooks on the elements the frame drew. **What behaves, read from the build:** menus,
+popovers and sheets open from the control that raises them and close on `Esc`, their drawn Cancel or
+a click outside, with focus trapped and returned; segmented controls, tabs and radio lists pick with
+the drawn selected look; the deploy wizard walks its **four drawn steps** through the library-update
+confirm and the snapshot gate; in the editor `P` opens Preview, `Esc` leaves it, `L` hides Layers,
+`]` and `[` and the drawn ◀ ▶ step the design ring between its two drawn positions — the rest of
+FR-D11's map has no drawn result to land on — and every key passes the WCAG 2.1.4
+typing guard. **What is held out** is listed in `_screens.html` under three headings — no frame yet
+(an Appendix A prompt owes it: the first-deploy gates, so **the backup gate is not in it**; the canvas
+markers, so **the design ring is not in it**), drawn on a mechanism a ruling re-specifies (held out
+or shown as drawn until A7 runs — §A12 decision 6), and states no frame draws. The owner read 5b and
+said the true thing: its annotations are exactly what stop it feeling like the product. They are also
+the point of it, so 5c drops them and adds behaviour instead. **What is shared with 5b is exactly
+four things** — `../frames.py`, `../prototype/styles.css`, and `FONTS` and `LIMITS` (Appendix F.1)
+imported from `../prototype/build.py`; the two page registries are separate and nothing asserts one
+against the other, so "cannot drift" is true of the tokens and the lifter, not of which frames each
+build lifts. Two files there are not product screens, both `_`-prefixed: `_screens.html` is the jump
+list and the held-out lists; `_selfcheck.html` drives the hooks `build-app.py` attaches and must
+print ALL PASS. Rebuild with `python3 build-app.py` from inside that folder; never hand-edit the
+emitted `.html`. Read its docstring first — what may be patched into a frame, and what is A7's, is
+written there.
 
 **Step 5b is BUILT — 2026-09-03.**
 `planning-artifacts/ux-designs/prototype/index.html` — **double-click it.** No server, no install,
@@ -91,14 +122,16 @@ makes fidelity checkable rather than asserted. `build.py` beside it generates th
 registry and refuses to write if any link or anchor is dead.
 
 Three things a session picking this up should know about how it was built, all recorded on the pages
-themselves: it builds the **re-specification** rather than the frame for the six frames drawn on the
-wrong mechanism; its plan limits are **Appendix F.1's**, not the four frames that disagree with F.1;
-and **Appendix A's Claude Design prompts had not been run**, so the pages for surfaces with no frame
-are extrapolated exactly as the spine describes and should be re-checked once the D-canvases exist.
+themselves: the frames drawn on the wrong mechanism are **lifted unchanged**, with the
+re-specification in a note beside them naming its ruling (and A7 where A7 redraws the frame); its plan
+limits are shown as **Appendix F.1's table beside the frame**, the frames that disagree with F.1 lifted
+untouched; and **Appendix A's Claude Design prompts had not been run**, so a surface with no frame
+says so and shows nothing — once the D-canvases exist, those pages lift the new frames.
 
-**Step 6 does not open until the owner has walked it** (ruling **R-75**), and saying he has walked
-it is his to say — the line it goes on is in `build-sequence.md` step 5b, under *The walk*. **The
-gate is the walk, not the build.** A wrong screen is cheapest the moment before anyone builds it.
+**Step 6 does not open until the owner has walked 5b** (ruling **R-75**), and saying he has walked
+it is his to say — the line it goes on is in `build-sequence.md` step 5b, under *The walk*, and it is
+a human tick no tool reads. **The gate is the walk, not the build.** A wrong screen is cheapest the
+moment before anyone builds it.
 
 **Step 5 is done — 2026-09-03.** `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/` holds
 `DESIGN.md` (the visual spine — a **transcription** of the Claude Design export; on any disagreement
@@ -117,11 +150,13 @@ things it found are worth knowing before you touch a UI task:
   `S3 Dashboard` read "Yours starts with 485 gorgeous designs". The detector required the noun to
   **abut** the number, so one adjective walked past it. Fixed in `tools/reapply-export-edits.py`,
   where it now lives in one place.
-- **Eight Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A. Six draw surfaces that
-  were never drawn; **A7** corrects six frames whose mechanism changed; **A8** draws the editor at
-  834 and 720 — which R-76's tablet half and the accessibility floor both need, and which the export
-  has never drawn at any width but 1440. **They block nothing** — and step 5b was built without
-  them, so once they have run, its extrapolated pages should be checked against the new frames.
+- **Claude Design prompts are owed**, in `EXPERIENCE.md` Appendix A — its `### A` headings are the
+  count. A1 to A6 draw surfaces that were never drawn; **A7** corrects existing frames (its numbered
+  items are the list — the mechanism changes, the wrong Ghost facts in copy, and since the 2026-09-03
+  review the accessibility items that would change a frame); **A8** draws the editor at 834 and 720 —
+  which R-76's tablet half and the accessibility floor both need, and which the export has never
+  drawn at any width but 1440. **They block nothing** — and both builds were made without them, so
+  once they have run, the pages that say "not drawn" lift the new frames.
 
 **Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
 and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
@@ -174,8 +209,17 @@ prompt flagged as unsure, and bring anything genuinely open to the owner as a nu
   then it is the one place the whole product can be seen at once. Rebuild it with `python3 build.py`
   from inside that folder after any edit to the registry; never hand-edit the emitted `.html`.
 - **Step 5c (2026-09-03)** — `planning-artifacts/ux-designs/walkthrough/`. The **product** build: the
-  same design with the scaffolding off and the behaviour on. Its generator imports 5b's, so the two
-  share one transcription of the tokens. Also disposable once the real app exists.
+  same design with the scaffolding off and the behaviour on. Its generator imports 5b's `FONTS` and
+  `LIMITS` and shares the lifter and the stylesheet, so the tokens are transcribed once. Also
+  disposable once the real app exists — **the HTML is; these are not, and step 6 carries them
+  forward:** the token transcription in `prototype/build.py`, the plan matrix `LIMITS` (Appendix F.1
+  as data), the icon set `ICON`, the Orbit Weekly fixture strings, `app.js`'s keyboard map with its
+  `typing()` guard (WCAG 2.1.4 as code), and the lifters' assertions — byte-identical to the frame,
+  nothing hidden, no dead link, no inert screen, every screen reachable — as the real app's tests.
+  `build-sequence.md` step 5c, *What outlives both builds*, is the list.
+- **The step-5b/5c review (2026-09-03)** — `planning-artifacts/ux-designs/review-5b-5c-2026-09-03.md`,
+  a `record`: the verdict, the ten blockers, the six decisions and the owner's choice on each. The
+  decisions themselves are `reconcile-designs-decisions.md` §A12.
 - **Step 4b, the Ghost Build Room (2026-08-27)** — `prds/…/reconcile-designs-decisions.md`. Extended
   2026-08-31 with §A2 (the design patch pass), §A3 (the §F asks) and §A4 (§37.7 re-verified);
   2026-09-02/03 with §A5–§A10 (the library review, the open-questions sheet, the architect rulings,
@@ -208,9 +252,9 @@ prompt flagged as unsure, and bring anything genuinely open to the owner as a nu
 - Three gates with triggers, all in `VERIFY-AT-BUILD.md`: Supabase **Pro** before the live project
   holds customer data (Free has no backups at all); **Ghost(Pro) Starter** before public launch;
   turn on Dodo's renewal reminder.
-- The probe list `reconcile-designs-decisions.md` §E: **E-2** (`feature_image_caption`'s stored
-  shape), **E-3** (`@member` prefill under `cacheMembersContent`) and **E-4** (`<details name>` under
-  the Baseline linter). E-1 has run.
+- Nothing from the probe list `reconcile-designs-decisions.md` §E: all four ran — E-1 on
+  2026-08-27, E-2, E-3 and E-4 on 2026-08-31 (`MEASUREMENTS.md` §31), two of them refuting the
+  ruling that asked for them.
 
 ## Standing rules — these were each learned expensively
 
