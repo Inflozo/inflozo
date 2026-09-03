@@ -1210,6 +1210,32 @@ sole definition of Free/Pro gating" and `EXPERIENCE.md` restates it once, as the
 is required to show. The frames are not hand-edited for this — step 5b's prototype renders the
 correct figures, and prompt **A7** is where a Claude Design pass would catch the frames up.
 
+**THE REVIEWER GATE FOUND A SCOPE MISS, AND IT IS THE ONE WORTH REMEMBERING.** One accessibility
+lens ran over the spines at Finalize. It found eight real defects, six of them in the spine, and the
+worst was not a quality problem but a **deliverable that was never delivered**: **`prd.md` §7.3 says
+in as many words that "the focus order is a UX-pass deliverable"**, and names three parts — the
+canvas reachable and escapable by keyboard, selection surviving the chrome taking focus, and the
+mark toolbar operable without destroying the iframe selection it acts on. The first draft answered
+none of them. **§7.3 sits in the architecture-direction section**, not in §5's requirements and not
+in step 5's own source list, and the pass read the FRs and the NFRs. *A UX-pass deliverable stated
+only inside a technical-assumptions section is easy to walk past — worth knowing before step 6
+reads the same document for stories.* All eight are fixed; the record is
+`ux-designs/ux-Inflozo-2026-09-03/review-accessibility.md`.
+
+Two of the eight were **WCAG failures axe-core cannot detect**, so the zero-violations threshold
+would have passed over both: eight unmodified single-character shortcuts with no remap and no
+disable (**2.1.4**, Level A and therefore inside the AA threshold), and R-76's floor stated as a CSS
+width, which would have evicted a user at 200% browser zoom (**1.4.4**). The floor is now a **device
+test rather than a width test** — that narrows how R-76 is measured and does not reverse it; the
+owner was told in the same session.
+
+**ONE ITEM IS LEFT OPEN AND HAS NO OWNER YET.** **NFR-6(d)'s E2E list names no accessibility
+journey** — auth, connect, build, shuffle, dark authoring, deploy, rollback, billing and quotas, all
+mouse-driven. `EXPERIENCE.md`'s accessibility floor now names a verifier for every item it states,
+and **four of those verifiers are an E2E pass that does not exist in NFR-6(d)'s list**. Adding one
+keyboard-only journey is the smallest fix. **It is an NFR amendment and step 5 did not make it** —
+it is recorded here so it is not lost, and it belongs to whoever next opens NFR-6.
+
 **One name moved, and §A10 is left as written.** `STEP-5-PROMPT.txt` was a generated file — the
 board writes the prompt for whichever step the owner is currently on — and step 5's prompt block
 became a completion record, so it lost its source. It is now `STEP-5B-PROMPT.txt`, and
