@@ -330,13 +330,14 @@ below is §8's, not re-derived. Coverage was checked mechanically: 132 FRs extra
 | **E14** Marketing Site & Docs | FR-N1–N5 · FR-P3 |
 | **E15** Hardening & Launch | *none* — owns the launch gates |
 
-**The three documented splits, and nothing else is split.**
+**The four documented splits, and nothing else is split.**
 
 1. **FR-P1 splits per email**, because each email belongs to the epic that emits its event: (1) magic link and (2) email change → **E1**; (3) "Reconnect needed" → **E3**; (4) payment failed / grace and (6) the annual renewal reminder → **E12**; (5) deploy failure → **E7**.
 2. **FR-Q6 splits format from surface**: the catalog's keys, English defaults and the `{{t}}` contract are **E4**'s, because E4 writes the library's first chrome strings and every design is constrained by them; the Translations *surface* and the `locales/` emission are **E7**'s.
-3. **FR-G1, FR-G4, FR-G5 and FR-G6 are shared** between **E9** (Group 1) and **E10** (every other category), because each quantifies over the whole library and between them the two epics cover every category.
+3. **FR-C1 splits connect from first deploy.** The connect wizard's one credential pair is **E3**'s; **the first-deploy credential step is E7's** — §8 says so in E7's own paragraph — because the Staff Access Token request, its decline path and all three graceful degradations behind it are deploy-time surfaces and none of them exists at connect. *(Found by the step-6 stress test, finding F5: the first pass named three splits and this is a fourth.)*
+4. **FR-G1, FR-G4, FR-G5 and FR-G6 are shared** between **E9** (Group 1) and **E10** (every other category), because each quantifies over the whole library and between them the two epics cover every category.
 
-**One thing that is not a split and is recorded so it is not read as one.** §8's E1 cut line puts FR-B1's
+**Two things that are NOT splits and are recorded so they are not read as ones.** **FR-H5 stays E4's** — §8 calls the canvas shims "a work split, not a second owner", so E4 defines what the shims must render and E5's Story 5.21 builds them inside the canvas. And §8's E1 cut line puts FR-B1's
 **static Style-Pack placeholder** inside E1 — "IN, because it no longer waits on anything". **FR-B1 remains
 E13's**; E1 delivers that one element early under E13's ownership, and E13 closes the rest of the card.
 
@@ -490,7 +491,7 @@ that tool is the source if they move again.
 
 ### Per-FR coverage map
 
-Read left to right; every FR appears exactly once except the three documented splits, which appear in both
+Read left to right; every FR appears exactly once except the four documented splits, which appear in both
 owning epics and say which half.
 
 | FR | Epic | FR | Epic | FR | Epic | FR | Epic |
@@ -7903,7 +7904,7 @@ Run at step 4 and checked mechanically rather than by eye, because a coverage li
 | Check | Result |
 |---|---|
 | **FR coverage** | **132 of 132.** Every FR in §5 is cited by at least one story's `FRs:` line. Extracted from the PRD and matched against the story metadata by script; nothing missing, nothing invented. |
-| **Epic ownership** | 132 assigned, matching §8 exactly, with the three documented splits (FR-P1 per email, FR-Q6 format vs surface, FR-G1/G4/G5/G6 shell block vs gated pipeline) and no others. |
+| **Epic ownership** | 132 assigned, matching §8 exactly, with the **four** documented splits (FR-P1 per email, FR-Q6 format vs surface, FR-C1 connect vs first deploy, FR-G1/G4/G5/G6 shell block vs gated pipeline) and no others. **FR-C1 was missed on the first pass and added by the step-6 stress test, finding F5.** |
 | **UX-DR coverage** | **22 of 22.** UX-DR2–UX-DR22 are cited by name in the stories that implement them. **UX-DR1 is discharged structurally rather than by citation:** every one of the **231 owner-tested stories names the frame it is built from**, verified by script over the metadata blocks — which is what R-74 asks for. |
 | **Owner-test verdict** | **255 of 255** story metadata blocks carry an explicit `Owner test:` verdict, so no story is ambiguous about whether R-80 applies to it. |
 | **Story sizing** | **266 stories.** Every story is scoped to one build session. The library runs are the R-85 shape at the owner's ruled sizing — four designs per story, the first story's four being the two [Free] plus two Pro. |

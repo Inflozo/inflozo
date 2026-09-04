@@ -15,7 +15,7 @@ story reported "nothing builds the edit lock" and "nothing builds the compiler",
 
 ## Verdict
 
-**Five findings. All five are closed.** Three were structural gaps that would have surfaced months into the
+**Six findings. All six are closed.** Three were structural gaps that would have surfaced months into the
 build; one was an over-specified verification; one is an accepted risk with a named calibration point.
 
 | | Finding | Severity | State |
@@ -25,6 +25,7 @@ build; one was an over-specified verification; one is an accepted risk with a na
 | **F2** | The canvas renders "in the project's Style Pack" three epics before one is authored | **high** | fixed |
 | **F3** | Three editor/compiler surfaces select from design sets that arrive in E10, undeclared | moderate | declared |
 | **F4** | A category's first story does strictly more work than the rest | accepted | named, with a calibration point |
+| **F5** | The coverage map claimed three FR splits; §8 documents **four** | low | fixed |
 
 ---
 
@@ -140,6 +141,45 @@ stories of each run and say so on the board. The risk this closes is discovering
 in.
 
 ---
+
+## F5 — a fourth split the coverage map did not name *(low)*
+
+**Found by:** listing every FR whose owning stories sit in more than one epic, and subtracting the splits the
+document itself declares.
+
+Four came back. Three were already declared — FR-B1's early delivery under E13's ownership, FR-H5's canvas work
+split, and one false positive that the control caught (Story 5.20 mentions FR-Q7 only in prose about a
+*dependency*, and its own `FRs:` line is FR-H6 alone). **The fourth was real: FR-C1.** §8's E7 paragraph says
+plainly *"the first-deploy credential step is E7's"*, so FR-C1 is split between **E3** (the connect wizard's one
+credential pair) and **E7** (the Staff Access Token request, its decline path and the three degradations behind
+it). The story list had this right — Story 7.19 is labelled "the deploy-time half of FR-C1 (E7's by §8)" — but
+**the coverage map asserted "three documented splits and nothing else is split", which was false.**
+
+Low severity because no work is missing and no story changes. It is fixed because a coverage map that overclaims
+is exactly the artifact nobody re-checks.
+
+**Fixed:** the map now names four splits, adds FR-C1 with §8's own words, and separates the two *work* splits
+(FR-B1, FR-H5) that are deliberately not ownership splits.
+
+---
+
+## Also verified clean, after the findings above were closed
+
+**Every external reference a story depends on exists.** R-74 makes the frame load-bearing, and the frames were
+transcribed from `EXPERIENCE.md`'s index rather than checked against the filesystem, so they were checked:
+
+| Reference | Result |
+|---|---|
+| Literal `.dc.html` frames cited by stories | **66 / 66 exist** |
+| Per-category spec files (`<ID> <Name> - Spec.md`) | **33 / 33 exist** |
+| Category proof frames (`<ID>-0 Category Proof.dc.html`) | **33 / 33 exist** |
+| Per-design frames (`<ID>-<n> <Name>.dc.html`) | **466 / 466 exist** |
+
+Not one dangling reference. This is the check that would have made a category story unbuildable on the day it
+opened, and it passes completely.
+
+**Near-duplicate story detection** returned only the library stories, which share a title template by design.
+No two stories build the same thing.
 
 ## What was tested and found clean
 
