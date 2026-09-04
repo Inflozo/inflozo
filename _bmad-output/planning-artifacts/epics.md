@@ -230,8 +230,8 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 **FR-P · Transactional Email**
 
-- **FR-P1** Exactly five user-facing transactional emails via Resend — magic link, email-change verification, "Reconnect needed", payment failed/grace, deploy failure — plus a **conditional sixth**, the annual renewal reminder, if and only if Dodo does not send it.
-- **FR-P2** No marketing, digest or nudge emails in v1, with two non-discretionary carve-outs.
+- **FR-P1** Exactly five user-facing transactional emails via Resend — magic link, email-change verification, "Reconnect needed", payment failed/grace, deploy failure — plus a sixth, the annual renewal reminder. **Its condition is resolved: the owner ruled on 2026-09-04 that Dodo does not send it, so Inflozo must** — see Story 12.8 and the propagation note under *Questions for the owner*.
+- **FR-P2** No marketing, digest or nudge emails in v1, with two non-discretionary carve-outs — the Ghost-compatibility notice, and the annual renewal reminder, **which is now active rather than conditional** (owner, 2026-09-04).
 - **FR-P3** Owner-relay emails: the marketing contact form and the docs "Suggest an edit" affordance, with honeypot and rate limiting.
 
 ### NonFunctional Requirements
@@ -325,14 +325,14 @@ below is §8's, not re-derived. Coverage was checked mechanically: 132 FRs extra
 | **E9** The Shell Block | **FR-G1 · FR-G4 · FR-G5 · FR-G6, for Group 1 only** (Headers & Navigation, Announcement Bars, Footers) |
 | **E10** The Gated Library Pipeline | **FR-G1 · FR-G4 · FR-G5 · FR-G6, for every category outside Group 1** |
 | **E11** Starters | FR-G2 · FR-O1 · FR-O2 · FR-O3 · FR-O4 |
-| **E12** Billing & Entitlements | FR-L1–L5 · FR-P1 email (4) and the conditional (6) · FR-P2 |
+| **E12** Billing & Entitlements | FR-L1–L5 · FR-P1 emails (4) and (6) · FR-P2 |
 | **E13** Suggestions, Notifications & Dashboard Completion | FR-M1–M4 · FR-B1 · FR-B2 · FR-B6 · FR-B7 · FR-C7 |
 | **E14** Marketing Site & Docs | FR-N1–N5 · FR-P3 |
 | **E15** Hardening & Launch | *none* — owns the launch gates |
 
 **The three documented splits, and nothing else is split.**
 
-1. **FR-P1 splits per email**, because each email belongs to the epic that emits its event: (1) magic link and (2) email change → **E1**; (3) "Reconnect needed" → **E3**; (4) payment failed / grace and (6) the conditional annual renewal reminder → **E12**; (5) deploy failure → **E7**.
+1. **FR-P1 splits per email**, because each email belongs to the epic that emits its event: (1) magic link and (2) email change → **E1**; (3) "Reconnect needed" → **E3**; (4) payment failed / grace and (6) the annual renewal reminder → **E12**; (5) deploy failure → **E7**.
 2. **FR-Q6 splits format from surface**: the catalog's keys, English defaults and the `{{t}}` contract are **E4**'s, because E4 writes the library's first chrome strings and every design is constrained by them; the Translations *surface* and the `locales/` emission are **E7**'s.
 3. **FR-G1, FR-G4, FR-G5 and FR-G6 are shared** between **E9** (Group 1) and **E10** (every other category), because each quantifies over the whole library and between them the two epics cover every category.
 
@@ -441,7 +441,8 @@ Free end to end.
 
 A user upgrades, is billed correctly by a merchant of record, keeps every Pro capability through a 7-day grace,
 and — if they downgrade — is asked to resolve what is over rather than having anything deleted.
-**FRs covered:** FR-L1–L5, FR-P1 email (4) and the conditional (6), FR-P2.
+**FRs covered:** FR-L1–L5, FR-P1 email (4) and email (6) — **no longer conditional; the owner ruled on
+2026-09-04 that Dodo does not send it** — and FR-P2.
 
 ### Epic 13: Suggestions, Notifications & Dashboard Completion
 
@@ -3316,16 +3317,16 @@ button, link column, social row, inline newsletter form.
 > the export's own `<ID> <Name> - Spec.md` files, and `sections-inventory.md` is generated from them —
 > `python3 tools/inventory-gen.py --check` printing "current" is the test, and it passes today for every category.
 >
-> **Sizing note, and it is a stated assumption rather than a ruling.** The runs below put the shared content
-> model, the stylesheet and **three** designs in a category's first story and **about four** designs in each
-> later one. That is a one-session estimate, not something §8 or R-85 fixed; it is question 1 under
-> *Questions for the owner*, because it decides how often the owner is asked to test.
+> **Sizing — ruled by the owner on 2026-09-04: four designs per story, and the first story's four are the two
+> [Free] designs plus two Pro.** Every story in every category therefore carries four designs, except a final
+> story taking the remainder. The Free pair ships in a category's first story, which is what makes a category
+> usable by a Free account the moment its first story lands.
 
 ### A1 · Headers — 15 designs, 4 stories
 
 *Per-design specs: `A1 Headers - Spec.md` in the export. Frames: `A1-<n> <Name>.dc.html` and `A1-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 9.1: A1 — the content model, the stylesheet and designs #1–3
+#### Story 9.1: A1 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3337,7 +3338,8 @@ So that I can start using Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A1 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rail · #2 Split Rail · #3 Stacked Masthead are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Rail · #2 Split Rail · #3 Stacked Masthead · #4 Overlay are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3345,11 +3347,10 @@ So that I can start using Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.2: A1 — designs #4–7
+#### Story 9.2: A1 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3359,7 +3360,8 @@ So that I can choose more widely within Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Overlay · #5 Floating Pill · #6 Drawer-First · #7 Mega Bar are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Floating Pill · #6 Drawer-First · #7 Mega Bar · #8 Utility + Nav are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3367,11 +3369,10 @@ So that I can choose more widely within Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.3: A1 — designs #8–11
+#### Story 9.3: A1 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3381,7 +3382,8 @@ So that I can choose more widely within Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Utility + Nav · #10 Contrast Band · #11 Side Rail are built **against that same model**, each with its own per-design control schema
+**Then** designs #10 Contrast Band · #11 Side Rail · #12 Boxed are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3389,11 +3391,10 @@ So that I can choose more widely within Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.4: A1 — designs #12–15 (owner gate)
+#### Story 9.4: A1 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3403,7 +3404,8 @@ So that I can choose more widely within Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Boxed · #13 Centre Nav · #14 Icon Utilities · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Centre Nav · #14 Icon Utilities · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3411,7 +3413,6 @@ So that I can choose more widely within Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -3431,7 +3432,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A2 Announcement Bars - Spec.md` in the export. Frames: `A2-<n> <Name>.dc.html` and `A2-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 9.5: A2 — the content model, the stylesheet and designs #1–3
+#### Story 9.5: A2 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3443,7 +3444,8 @@ So that I can start using Announcement Bars on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A2 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rule · #2 Split · #3 Badge are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Rule · #2 Split · #3 Badge · #4 Two-Line are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3451,11 +3453,10 @@ So that I can start using Announcement Bars on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.6: A2 — designs #4–7
+#### Story 9.6: A2 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3465,7 +3466,8 @@ So that I can choose more widely within Announcement Bars on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Two-Line · #5 Capture · #6 Countdown · #7 Dateline are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Capture · #6 Countdown · #7 Dateline · #8 Ticker are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3473,11 +3475,10 @@ So that I can choose more widely within Announcement Bars on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.7: A2 — designs #8–11
+#### Story 9.7: A2 — designs #9–11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3487,7 +3488,8 @@ So that I can choose more widely within Announcement Bars on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Ticker · #9 Rotator · #10 Pill · #11 Toast are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Rotator · #10 Pill · #11 Toast are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3495,7 +3497,6 @@ So that I can choose more widely within Announcement Bars on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -3510,6 +3511,7 @@ So that I can choose more widely within Announcement Bars on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #12 Takeover · #14 Edge are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3517,7 +3519,6 @@ So that I can choose more widely within Announcement Bars on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -3533,11 +3534,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A3 · Footers — 16 designs, 5 stories
+### A3 · Footers — 16 designs, 4 stories
 
 *Per-design specs: `A3 Footers - Spec.md` in the export. Frames: `A3-<n> <Name>.dc.html` and `A3-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 9.9: A3 — the content model, the stylesheet and designs #1–3
+#### Story 9.9: A3 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3549,7 +3550,8 @@ So that I can start using Footers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A3 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Minimal Line · #2 Columns · #3 Two-Tier are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Minimal Line · #2 Columns · #3 Two-Tier · #4 Newsletter Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3557,11 +3559,10 @@ So that I can start using Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.10: A3 — designs #4–7
+#### Story 9.10: A3 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3571,7 +3572,8 @@ So that I can choose more widely within Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Newsletter Band · #5 Contrast Band · #6 Centred Stack · #7 Big Type are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Centred Stack · #7 Big Type · #8 Sitemap are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3579,11 +3581,10 @@ So that I can choose more widely within Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.11: A3 — designs #8–10
+#### Story 9.11: A3 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3593,7 +3594,8 @@ So that I can choose more widely within Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Sitemap · #9 Latest Posts · #10 Contact Block are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Latest Posts · #10 Contact Block · #11 Colophon · #12 Card are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3601,11 +3603,10 @@ So that I can choose more widely within Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.12: A3 — designs #11–13
+#### Story 9.12: A3 — designs #13–16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3615,7 +3616,8 @@ So that I can choose more widely within Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #11 Colophon · #12 Card · #13 Tags are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Tags · #14 Image Band · #15 Wrap · #16 Mini Bar are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3623,29 +3625,6 @@ So that I can choose more widely within Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 9.13: A3 — designs #14–16 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Footers on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #14 Image Band · #15 Wrap · #16 Mini Bar are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -3661,7 +3640,7 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-**The Shell Block — 13 stories across 3 categories, 45 designs.** Counts derived from `tools/export-roster.py` on 2026-09-04, never restated.
+**The Shell Block — 12 stories across 3 categories, 45 designs.** Counts derived from `tools/export-roster.py`, never restated.
 
 *Exit:* **three owner gates passed, one per category** — Headers & Navigation, Announcement Bars, Footers, each
 taken in turn and each blocking the next, exactly as a library category's gate does. **The epic does not exit on
@@ -3676,6 +3655,7 @@ behind §4's blocking owner gate.
 
 > Same granularity rule, same gate, same sequencing — **one category at a time in inventory order beginning
 > with Heroes**, each behind §4's blocking owner gate, and **no two category stories ever in flight at once**.
+> Four designs per story, the first story's four being the two [Free] plus two Pro (owner, 2026-09-04).
 >
 > **Two ordering constraints inside this epic, both §8's.** **A25's owner gate cannot open until E7's card design
 > module emits**, because a reading design assessed against Ghost's default card styling is being assessed
@@ -3686,7 +3666,7 @@ behind §4's blocking owner gate.
 
 *Per-design specs: `A4 Heroes - Spec.md` in the export. Frames: `A4-<n> <Name>.dc.html` and `A4-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.1: A4 — the content model, the stylesheet and designs #1–3
+#### Story 10.1: A4 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3698,7 +3678,8 @@ So that I can start using Heroes on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A4 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Full Bleed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3706,11 +3687,10 @@ So that I can start using Heroes on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.2: A4 — designs #4–7
+#### Story 10.2: A4 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3720,7 +3700,8 @@ So that I can choose more widely within Heroes on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Full Bleed · #5 Image Under · #6 Big Type · #7 Masthead are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Image Under · #6 Big Type · #7 Masthead · #8 Card are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3728,11 +3709,10 @@ So that I can choose more widely within Heroes on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.3: A4 — designs #8–11
+#### Story 10.3: A4 — designs #9–11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3742,7 +3722,8 @@ So that I can choose more widely within Heroes on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Card · #9 Contrast Band · #10 Video Poster · #11 Subscribe are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Contrast Band · #10 Video Poster · #11 Subscribe are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3750,7 +3731,6 @@ So that I can choose more widely within Heroes on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -3765,6 +3745,7 @@ So that I can choose more widely within Heroes on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #12 Offset Image · #13 Latest Post · #14 Full Height are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3772,7 +3753,6 @@ So that I can choose more widely within Heroes on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -3787,6 +3767,7 @@ So that I can choose more widely within Heroes on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #16 Pull Quote · #17 Slim are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3794,7 +3775,6 @@ So that I can choose more widely within Heroes on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -3810,11 +3790,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A5 · Features — 16 designs, 5 stories
+### A5 · Features — 16 designs, 4 stories
 
 *Per-design specs: `A5 Features - Spec.md` in the export. Frames: `A5-<n> <Name>.dc.html` and `A5-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.6: A5 — the content model, the stylesheet and designs #1–3
+#### Story 10.6: A5 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3826,7 +3806,8 @@ So that I can start using Features on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A5 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Two Up · #3 Four Up are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3834,11 +3815,10 @@ So that I can start using Features on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A5-<n> <Name>.dc.html` — and the category's `A5-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A5). · **Frame:** `A5-<n> <Name>.dc.html` · `A5-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.7: A5 — designs #4–7
+#### Story 10.7: A5 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3848,7 +3828,8 @@ So that I can choose more widely within Features on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Cards · #5 Split Head · #6 Rows · #7 Alternating Media are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Rows · #7 Alternating Media · #8 Media Top are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3856,11 +3837,10 @@ So that I can choose more widely within Features on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A5-<n> <Name>.dc.html` — and the category's `A5-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A5). · **Frame:** `A5-<n> <Name>.dc.html` · `A5-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.8: A5 — designs #8–10
+#### Story 10.8: A5 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3870,7 +3850,8 @@ So that I can choose more widely within Features on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Media Top · #9 Bento · #10 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Bento · #10 Contrast Band · #11 Checklist · #12 Tabs are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3878,11 +3859,10 @@ So that I can choose more widely within Features on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A5-<n> <Name>.dc.html` — and the category's `A5-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A5). · **Frame:** `A5-<n> <Name>.dc.html` · `A5-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.9: A5 — designs #11–13
+#### Story 10.9: A5 — designs #13–16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3892,7 +3872,8 @@ So that I can choose more widely within Features on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #11 Checklist · #12 Tabs · #13 Spotlight are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Spotlight · #14 Scroller · #15 Index · #16 Panel are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3900,29 +3881,6 @@ So that I can choose more widely within Features on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A5-<n> <Name>.dc.html` — and the category's `A5-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A5). · **Frame:** `A5-<n> <Name>.dc.html` · `A5-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.10: A5 — designs #14–16 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Features on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #14 Scroller · #15 Index · #16 Panel are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A5-<n> <Name>.dc.html` — and the category's `A5-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -3942,7 +3900,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A6 CTA Banners - Spec.md` in the export. Frames: `A6-<n> <Name>.dc.html` and `A6-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.11: A6 — the content model, the stylesheet and designs #1–3
+#### Story 10.10: A6 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -3954,7 +3912,8 @@ So that I can start using CTA Banners on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A6 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Card are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3962,11 +3921,10 @@ So that I can start using CTA Banners on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A6-<n> <Name>.dc.html` — and the category's `A6-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A6). · **Frame:** `A6-<n> <Name>.dc.html` · `A6-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.12: A6 — designs #4–7
+#### Story 10.11: A6 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3976,7 +3934,8 @@ So that I can choose more widely within CTA Banners on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Card · #5 Contrast Band · #6 Inline Form · #7 Full Bleed Image are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Inline Form · #7 Full Bleed Image · #8 Image Split are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -3984,11 +3943,10 @@ So that I can choose more widely within CTA Banners on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A6-<n> <Name>.dc.html` — and the category's `A6-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A6). · **Frame:** `A6-<n> <Name>.dc.html` · `A6-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.13: A6 — designs #8–11
+#### Story 10.12: A6 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -3998,7 +3956,8 @@ So that I can choose more widely within CTA Banners on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Image Split · #9 Big Type · #10 Slim · #11 Reasons are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Slim · #11 Reasons · #12 Pair are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4006,11 +3965,10 @@ So that I can choose more widely within CTA Banners on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A6-<n> <Name>.dc.html` — and the category's `A6-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A6). · **Frame:** `A6-<n> <Name>.dc.html` · `A6-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.14: A6 — designs #12–15 (owner gate)
+#### Story 10.13: A6 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4020,7 +3978,8 @@ So that I can choose more widely within CTA Banners on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Pair · #13 Overlap · #14 Members · #15 Signature are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Overlap · #14 Members · #15 Signature are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4028,7 +3987,6 @@ So that I can choose more widely within CTA Banners on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A6-<n> <Name>.dc.html` — and the category's `A6-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4048,7 +4006,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A7 Pricing and Tiers - Spec.md` in the export. Frames: `A7-<n> <Name>.dc.html` and `A7-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.15: A7 — the content model, the stylesheet and designs #1–3
+#### Story 10.14: A7 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4060,7 +4018,8 @@ So that I can start using Pricing and Tiers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A7 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Cards · #2 Table · #3 Stack are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Cards · #2 Table · #3 Stack · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4068,11 +4027,10 @@ So that I can start using Pricing and Tiers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A7-<n> <Name>.dc.html` — and the category's `A7-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A7). · **Frame:** `A7-<n> <Name>.dc.html` · `A7-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.16: A7 — designs #4–7
+#### Story 10.15: A7 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4082,7 +4040,8 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Split Head · #5 Contrast Band · #6 Single Tier · #7 Highlight are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Single Tier · #7 Highlight · #8 Slim Row are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4090,11 +4049,10 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A7-<n> <Name>.dc.html` — and the category's `A7-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A7). · **Frame:** `A7-<n> <Name>.dc.html` · `A7-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.17: A7 — designs #8–11
+#### Story 10.16: A7 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4104,7 +4062,8 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Slim Row · #9 Big Price · #10 Tabs · #11 Free and Paid are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Price · #10 Tabs · #11 Free and Paid · #12 Ledger are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4112,11 +4071,10 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A7-<n> <Name>.dc.html` — and the category's `A7-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A7). · **Frame:** `A7-<n> <Name>.dc.html` · `A7-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.18: A7 — designs #12–15 (owner gate)
+#### Story 10.17: A7 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4126,7 +4084,8 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Ledger · #13 Members · #14 Assurances · #15 Both Prices are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Members · #14 Assurances · #15 Both Prices are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4134,7 +4093,6 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A7-<n> <Name>.dc.html` — and the category's `A7-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4154,7 +4112,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A8 Testimonials - Spec.md` in the export. Frames: `A8-<n> <Name>.dc.html` and `A8-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.19: A8 — the content model, the stylesheet and designs #1–3
+#### Story 10.18: A8 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4166,7 +4124,8 @@ So that I can start using Testimonials on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A8 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Single · #2 Three Up · #3 Two Up are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Single · #2 Three Up · #3 Two Up · #4 Grid are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4174,11 +4133,10 @@ So that I can start using Testimonials on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A8-<n> <Name>.dc.html` — and the category's `A8-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A8). · **Frame:** `A8-<n> <Name>.dc.html` · `A8-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.20: A8 — designs #4–7
+#### Story 10.19: A8 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4188,7 +4146,8 @@ So that I can choose more widely within Testimonials on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Grid · #5 Wall · #6 Split Head · #7 Slider are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Wall · #6 Split Head · #7 Slider · #8 Portrait are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4196,11 +4155,10 @@ So that I can choose more widely within Testimonials on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A8-<n> <Name>.dc.html` — and the category's `A8-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A8). · **Frame:** `A8-<n> <Name>.dc.html` · `A8-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.21: A8 — designs #8–11
+#### Story 10.20: A8 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4210,7 +4168,8 @@ So that I can choose more widely within Testimonials on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Portrait · #9 Contrast Band · #10 Big Quote · #11 Faces are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Contrast Band · #10 Big Quote · #11 Faces · #12 Rows are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4218,11 +4177,10 @@ So that I can choose more widely within Testimonials on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A8-<n> <Name>.dc.html` — and the category's `A8-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A8). · **Frame:** `A8-<n> <Name>.dc.html` · `A8-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.22: A8 — designs #12–15 (owner gate)
+#### Story 10.21: A8 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4232,7 +4190,8 @@ So that I can choose more widely within Testimonials on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Rows · #13 Highlight · #14 Slim Line · #15 Overlap are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Highlight · #14 Slim Line · #15 Overlap are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4240,7 +4199,6 @@ So that I can choose more widely within Testimonials on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A8-<n> <Name>.dc.html` — and the category's `A8-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4260,7 +4218,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A9 FAQ - Spec.md` in the export. Frames: `A9-<n> <Name>.dc.html` and `A9-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.23: A9 — the content model, the stylesheet and designs #1–3
+#### Story 10.22: A9 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4272,7 +4230,8 @@ So that I can start using FAQ on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A9 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Accordion · #2 Two Column · #3 Open List are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Accordion · #2 Two Column · #3 Open List · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4280,11 +4239,10 @@ So that I can start using FAQ on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A9-<n> <Name>.dc.html` — and the category's `A9-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A9). · **Frame:** `A9-<n> <Name>.dc.html` · `A9-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.24: A9 — designs #4–7
+#### Story 10.23: A9 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4294,7 +4252,8 @@ So that I can choose more widely within FAQ on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Cards · #5 Split Head · #6 Grouped · #7 Index are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Grouped · #7 Index · #8 Contrast Band are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4302,11 +4261,10 @@ So that I can choose more widely within FAQ on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A9-<n> <Name>.dc.html` — and the category's `A9-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A9). · **Frame:** `A9-<n> <Name>.dc.html` · `A9-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.25: A9 — designs #8–11
+#### Story 10.24: A9 — designs #9–11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4316,7 +4274,8 @@ So that I can choose more widely within FAQ on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Contrast Band · #9 Numbered · #10 Image Split · #11 Tabs are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Numbered · #10 Image Split · #11 Tabs are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4324,11 +4283,10 @@ So that I can choose more widely within FAQ on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A9-<n> <Name>.dc.html` — and the category's `A9-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A9). · **Frame:** `A9-<n> <Name>.dc.html` · `A9-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.26: A9 — designs #12–14 (owner gate)
+#### Story 10.25: A9 — designs #12–14 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4339,6 +4297,7 @@ So that I can choose more widely within FAQ on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Slim · #14 Ask are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4346,7 +4305,6 @@ So that I can choose more widely within FAQ on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A9-<n> <Name>.dc.html` — and the category's `A9-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4366,7 +4324,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A10 Stats and Numbers - Spec.md` in the export. Frames: `A10-<n> <Name>.dc.html` and `A10-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.27: A10 — the content model, the stylesheet and designs #1–3
+#### Story 10.26: A10 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4378,7 +4336,8 @@ So that I can start using Stats and Numbers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A10 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Row · #2 Cards · #3 Grid are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Row · #2 Cards · #3 Grid · #4 Single are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4386,11 +4345,10 @@ So that I can start using Stats and Numbers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A10-<n> <Name>.dc.html` — and the category's `A10-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A10). · **Frame:** `A10-<n> <Name>.dc.html` · `A10-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.28: A10 — designs #4–7
+#### Story 10.27: A10 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4400,7 +4358,8 @@ So that I can choose more widely within Stats and Numbers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Single · #5 Lead Stat · #6 Split Head · #7 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Lead Stat · #6 Split Head · #7 Contrast Band · #8 Ledger are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4408,11 +4367,10 @@ So that I can choose more widely within Stats and Numbers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A10-<n> <Name>.dc.html` — and the category's `A10-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A10). · **Frame:** `A10-<n> <Name>.dc.html` · `A10-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.29: A10 — designs #8–11
+#### Story 10.28: A10 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4422,7 +4380,8 @@ So that I can choose more widely within Stats and Numbers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Ledger · #9 Bars · #10 Image Split · #11 Inline are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Bars · #10 Image Split · #11 Inline · #12 Sourced are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4430,11 +4389,10 @@ So that I can choose more widely within Stats and Numbers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A10-<n> <Name>.dc.html` — and the category's `A10-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A10). · **Frame:** `A10-<n> <Name>.dc.html` · `A10-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.30: A10 — designs #12–15 (owner gate)
+#### Story 10.29: A10 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4444,7 +4402,8 @@ So that I can choose more widely within Stats and Numbers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Sourced · #13 Slim · #14 Change · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Slim · #14 Change · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4452,7 +4411,6 @@ So that I can choose more widely within Stats and Numbers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A10-<n> <Name>.dc.html` — and the category's `A10-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4472,7 +4430,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A11 Logo Walls - Spec.md` in the export. Frames: `A11-<n> <Name>.dc.html` and `A11-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.31: A11 — the content model, the stylesheet and designs #1–3
+#### Story 10.30: A11 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4484,7 +4442,8 @@ So that I can start using Logo Walls on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A11 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Row · #2 Caption Row · #3 Grid are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Row · #2 Caption Row · #3 Grid · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4492,11 +4451,10 @@ So that I can start using Logo Walls on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A11-<n> <Name>.dc.html` — and the category's `A11-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A11). · **Frame:** `A11-<n> <Name>.dc.html` · `A11-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.32: A11 — designs #4–7
+#### Story 10.31: A11 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4506,7 +4464,8 @@ So that I can choose more widely within Logo Walls on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Boxed · #5 Cards · #6 Split Head · #7 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Cards · #6 Split Head · #7 Contrast Band · #8 Marquee are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4514,11 +4473,10 @@ So that I can choose more widely within Logo Walls on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A11-<n> <Name>.dc.html` — and the category's `A11-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A11). · **Frame:** `A11-<n> <Name>.dc.html` · `A11-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.33: A11 — designs #8–11
+#### Story 10.32: A11 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4528,7 +4486,8 @@ So that I can choose more widely within Logo Walls on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Marquee · #9 Rail · #10 Slim · #11 Named are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Rail · #10 Slim · #11 Named · #12 Tiers are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4536,11 +4495,10 @@ So that I can choose more widely within Logo Walls on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A11-<n> <Name>.dc.html` — and the category's `A11-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A11). · **Frame:** `A11-<n> <Name>.dc.html` · `A11-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.34: A11 — designs #12–15 (owner gate)
+#### Story 10.33: A11 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4550,7 +4508,8 @@ So that I can choose more widely within Logo Walls on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Tiers · #13 Dense · #14 Inline · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Dense · #14 Inline · #15 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4558,7 +4517,6 @@ So that I can choose more widely within Logo Walls on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A11-<n> <Name>.dc.html` — and the category's `A11-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4578,7 +4536,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A12 About and Team - Spec.md` in the export. Frames: `A12-<n> <Name>.dc.html` and `A12-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.35: A12 — the content model, the stylesheet and designs #1–3
+#### Story 10.34: A12 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4590,7 +4548,8 @@ So that I can start using About and Team on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A12 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Cards · #3 Rows are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Grid · #2 Cards · #3 Rows · #4 Story and Team are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4598,11 +4557,10 @@ So that I can start using About and Team on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A12-<n> <Name>.dc.html` — and the category's `A12-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A12). · **Frame:** `A12-<n> <Name>.dc.html` · `A12-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.36: A12 — designs #4–7
+#### Story 10.35: A12 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4612,7 +4570,8 @@ So that I can choose more widely within About and Team on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Story and Team · #5 Split Head · #6 Portraits · #7 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Portraits · #7 Contrast Band · #8 Founder are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4620,11 +4579,10 @@ So that I can choose more widely within About and Team on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A12-<n> <Name>.dc.html` — and the category's `A12-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A12). · **Frame:** `A12-<n> <Name>.dc.html` · `A12-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.37: A12 — designs #8–11
+#### Story 10.36: A12 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4634,7 +4592,8 @@ So that I can choose more widely within About and Team on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Founder · #9 Faces · #10 Directory · #11 Slim are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Faces · #10 Directory · #11 Slim · #12 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4642,11 +4601,10 @@ So that I can choose more widely within About and Team on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A12-<n> <Name>.dc.html` — and the category's `A12-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A12). · **Frame:** `A12-<n> <Name>.dc.html` · `A12-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.38: A12 — designs #12–15 (owner gate)
+#### Story 10.37: A12 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4656,7 +4614,8 @@ So that I can choose more widely within About and Team on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Big Type · #13 Rail · #14 Reveal · #15 Groups are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Rail · #14 Reveal · #15 Groups are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4664,7 +4623,6 @@ So that I can choose more widely within About and Team on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A12-<n> <Name>.dc.html` — and the category's `A12-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4684,7 +4642,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A13 Process - Spec.md` in the export. Frames: `A13-<n> <Name>.dc.html` and `A13-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.39: A13 — the content model, the stylesheet and designs #1–3
+#### Story 10.38: A13 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4696,7 +4654,8 @@ So that I can start using Process on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A13 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Track · #3 Rows are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Three Up · #2 Track · #3 Rows · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4704,11 +4663,10 @@ So that I can start using Process on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A13-<n> <Name>.dc.html` — and the category's `A13-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A13). · **Frame:** `A13-<n> <Name>.dc.html` · `A13-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.40: A13 — designs #4–7
+#### Story 10.39: A13 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4718,7 +4676,8 @@ So that I can choose more widely within Process on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Cards · #5 Split Head · #6 Contrast Band · #7 Alternating Media are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Contrast Band · #7 Alternating Media · #8 Rail are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4726,11 +4685,10 @@ So that I can choose more widely within Process on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A13-<n> <Name>.dc.html` — and the category's `A13-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A13). · **Frame:** `A13-<n> <Name>.dc.html` · `A13-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.41: A13 — designs #8–11
+#### Story 10.40: A13 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4740,7 +4698,8 @@ So that I can choose more widely within Process on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Rail · #9 Big Numbers · #10 Panel · #11 Walkthrough are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Numbers · #10 Panel · #11 Walkthrough · #12 Media Top are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4748,11 +4707,10 @@ So that I can choose more widely within Process on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A13-<n> <Name>.dc.html` — and the category's `A13-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A13). · **Frame:** `A13-<n> <Name>.dc.html` · `A13-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.42: A13 — designs #12–15 (owner gate)
+#### Story 10.41: A13 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4762,7 +4720,8 @@ So that I can choose more widely within Process on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Media Top · #13 Slim Bar · #14 Index · #15 Sticky Rail are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Slim Bar · #14 Index · #15 Sticky Rail are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4770,7 +4729,6 @@ So that I can choose more widely within Process on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A13-<n> <Name>.dc.html` — and the category's `A13-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4790,7 +4748,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A14 Galleries - Spec.md` in the export. Frames: `A14-<n> <Name>.dc.html` and `A14-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.43: A14 — the content model, the stylesheet and designs #1–3
+#### Story 10.42: A14 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4802,7 +4760,8 @@ So that I can start using Galleries on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A14 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Masonry · #3 Mosaic are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Grid · #2 Masonry · #3 Mosaic · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4810,11 +4769,10 @@ So that I can start using Galleries on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A14-<n> <Name>.dc.html` — and the category's `A14-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A14). · **Frame:** `A14-<n> <Name>.dc.html` · `A14-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.44: A14 — designs #4–7
+#### Story 10.43: A14 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4824,7 +4782,8 @@ So that I can choose more widely within Galleries on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Panel · #5 Split Head · #6 Contrast Band · #7 Carousel are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Contrast Band · #7 Carousel · #8 Filmstrip are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `lightbox`, `carousel + lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4832,11 +4791,10 @@ So that I can choose more widely within Galleries on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A14-<n> <Name>.dc.html` — and the category's `A14-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A14). · **Frame:** `A14-<n> <Name>.dc.html` · `A14-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.45: A14 — designs #8–11
+#### Story 10.44: A14 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4846,29 +4804,8 @@ So that I can choose more widely within Galleries on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Filmstrip · #9 Full Bleed · #10 Lead and Grid · #11 Overlay are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `carousel + lightbox`, `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A14-<n> <Name>.dc.html` — and the category's `A14-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A14). · **Frame:** `A14-<n> <Name>.dc.html` · `A14-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.46: A14 — designs #12–15 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Galleries on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #12 Captioned Rows · #13 Contact Sheet · #14 Index · #15 Boxed are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Full Bleed · #10 Lead and Grid · #11 Overlay · #12 Captioned Rows are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4876,7 +4813,28 @@ So that I can choose more widely within Galleries on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A14-<n> <Name>.dc.html` — and the category's `A14-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
+
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A14). · **Frame:** `A14-<n> <Name>.dc.html` · `A14-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+
+#### Story 10.45: A14 — designs #13–15 (owner gate)
+
+As a user choosing how this part of my site looks,
+I want the next designs in this category,
+So that I can choose more widely within Galleries on my own site.
+
+**Acceptance Criteria:**
+
+**Given** the shared content model and stylesheet delivered by this category's first story
+**When** this story lands
+**Then** designs #13 Contact Sheet · #14 Index · #15 Boxed are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
+**And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
+**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
+**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
+**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
+**And** each design **matches its frame** — `A14-<n> <Name>.dc.html` — and the category's `A14-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4896,7 +4854,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A15 Video and Embeds - Spec.md` in the export. Frames: `A15-<n> <Name>.dc.html` and `A15-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.47: A15 — the content model, the stylesheet and designs #1–3
+#### Story 10.46: A15 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4908,7 +4866,8 @@ So that I can start using Video and Embeds on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A15 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Player · #2 Split · #3 Panel are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Player · #2 Split · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4916,11 +4875,10 @@ So that I can start using Video and Embeds on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A15-<n> <Name>.dc.html` — and the category's `A15-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A15). · **Frame:** `A15-<n> <Name>.dc.html` · `A15-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.48: A15 — designs #4–7
+#### Story 10.47: A15 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4930,7 +4888,8 @@ So that I can choose more widely within Video and Embeds on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Full Bleed · #6 Cover · #7 Grid are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Full Bleed · #6 Cover · #7 Grid · #8 Lead and Grid are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4938,11 +4897,10 @@ So that I can choose more widely within Video and Embeds on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A15-<n> <Name>.dc.html` — and the category's `A15-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A15). · **Frame:** `A15-<n> <Name>.dc.html` · `A15-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.49: A15 — designs #8–11
+#### Story 10.48: A15 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4952,19 +4910,19 @@ So that I can choose more widely within Video and Embeds on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Lead and Grid · #9 Carousel · #10 Playlist · #11 Chapters are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Carousel · #10 Playlist · #11 Chapters · #12 Embed Card are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `video-facade`, `carousel + video-facade`, `tabs + video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `carousel + video-facade`, `tabs + video-facade`, `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A15-<n> <Name>.dc.html` — and the category's `A15-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A15). · **Frame:** `A15-<n> <Name>.dc.html` · `A15-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.50: A15 — designs #12–15 (owner gate)
+#### Story 10.49: A15 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4974,7 +4932,8 @@ So that I can choose more widely within Video and Embeds on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Embed Card · #13 Thumb Rows · #14 Slim Bar · #15 Tabs are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Thumb Rows · #14 Slim Bar · #15 Tabs are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `video-facade`, `tabs + video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -4982,7 +4941,6 @@ So that I can choose more widely within Video and Embeds on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A15-<n> <Name>.dc.html` — and the category's `A15-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5002,7 +4960,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A16 Contact - Spec.md` in the export. Frames: `A16-<n> <Name>.dc.html` and `A16-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.51: A16 — the content model, the stylesheet and designs #1–3
+#### Story 10.50: A16 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5014,7 +4972,8 @@ So that I can start using Contact on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A16 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Split · #2 Centred · #3 Card are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Split · #2 Centred · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5022,11 +4981,10 @@ So that I can start using Contact on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A16-<n> <Name>.dc.html` — and the category's `A16-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A16). · **Frame:** `A16-<n> <Name>.dc.html` · `A16-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.52: A16 — designs #4–7
+#### Story 10.51: A16 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5036,7 +4994,8 @@ So that I can choose more widely within Contact on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Panel · #5 Contrast Band · #6 Details Grid · #7 Map Split are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Details Grid · #7 Map Split · #8 Locations are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `contact-form req.`, `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5044,11 +5003,10 @@ So that I can choose more widely within Contact on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A16-<n> <Name>.dc.html` — and the category's `A16-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A16). · **Frame:** `A16-<n> <Name>.dc.html` · `A16-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.53: A16 — designs #8–11
+#### Story 10.52: A16 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5058,7 +5016,8 @@ So that I can choose more widely within Contact on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Locations · #9 Slim Bar · #10 Big Type · #11 Enquiry Types are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Slim Bar · #10 Big Type · #11 Enquiry Types · #12 Boxed are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none`, `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5066,11 +5025,10 @@ So that I can choose more widely within Contact on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A16-<n> <Name>.dc.html` — and the category's `A16-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A16). · **Frame:** `A16-<n> <Name>.dc.html` · `A16-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.54: A16 — designs #12–15 (owner gate)
+#### Story 10.53: A16 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5080,15 +5038,15 @@ So that I can choose more widely within Contact on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Boxed · #13 Directory · #14 Reasons · #15 Cover are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Directory · #14 Reasons · #15 Cover are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `contact-form req.`, `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `none`, `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A16-<n> <Name>.dc.html` — and the category's `A16-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5108,7 +5066,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A17 Post Grids - Spec.md` in the export. Frames: `A17-<n> <Name>.dc.html` and `A17-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.55: A17 — the content model, the stylesheet and designs #1–3
+#### Story 10.54: A17 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5120,19 +5078,19 @@ So that I can start using Post Grids on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A17 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Two Up · #3 Four Up are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing on this design moves`, `loads o`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; both 636 cells`, `their excerpts and their meta are server-r`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `including the stress frame's short last row.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing on this design moves`, `loads o`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; both 636 cells`, `their excerpts and their meta are server-r`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `including the stress frame's short last row.`, `None. Edit-safe: yes — the hover shadow is a CSS transition on the card and does not run while a card is being edited. J` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.56: A17 — designs #4–7
+#### Story 10.55: A17 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5142,19 +5100,19 @@ So that I can choose more widely within Post Grids on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Cards · #5 Lead and Grid · #6 Split Head · #7 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Lead and Grid · #6 Split Head · #7 Contrast Band · #8 Overlay are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the hover shadow is a CSS transition on the card and does not run while a card is being edited. J`, `None. Edit-safe: yes — the lead is a grid-column placement`, `not a script. JS off: pixel-identical`, `lead cell included.`, `None. Edit-safe: yes — Head sticky is CSS position: sticky`, `not a module. JS off: pixel-identical; the head stays beside`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical`, `band and all.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the lead is a grid-column placement`, `not a script. JS off: pixel-identical`, `lead cell included.`, `None. Edit-safe: yes — Head sticky is CSS position: sticky`, `not a module. JS off: pixel-identical; the head stays beside`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical`, `band and all.`, `None. Edit-safe: yes — the scrim is a CSS gradient over a server-rendered image. JS off: pixel-identical; title`, `tag and` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.57: A17 — designs #8–11
+#### Story 10.56: A17 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5164,19 +5122,19 @@ So that I can choose more widely within Post Grids on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Overlay · #9 Big Type · #10 Ledger · #11 Masonry are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Ledger · #11 Masonry · #12 Bento are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the scrim is a CSS gradient over a server-rendered image. JS off: pixel-identical; title`, `tag and`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the design is type and hairlines. typewriter considered an`, `None. Edit-safe: yes — nothing sorts`, `filters or measures. JS off: pixel-identical; every row`, `its tag and its abbreviat`, `None — and this is where that claim is worth most`, `because the layout it imitates normally cannot make it: three server-` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the design is type and hairlines. typewriter considered an`, `None. Edit-safe: yes — nothing sorts`, `filters or measures. JS off: pixel-identical; every row`, `its tag and its abbreviat`, `None — and this is where that claim is worth most`, `because the layout it imitates normally cannot make it: three server-`, `None. Edit-safe: yes — the composition is grid-template-columns`, `explicit grid-row spans`, `aspect-ratio boxes and a grid-` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.58: A17 — designs #12–15
+#### Story 10.57: A17 — designs #13–15
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5186,19 +5144,19 @@ So that I can choose more widely within Post Grids on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Bento · #13 Thumb Side · #14 Dense · #15 Filtered are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Thumb Side · #14 Dense · #15 Filtered are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the composition is grid-template-columns`, `explicit grid-row spans`, `aspect-ratio boxes and a grid-`, `None. Edit-safe: yes — Thumbnail side Right is row-reverse and nothing else in the row moves. JS off: pixel-identical. l`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; a wall of 196 px cells is markup and one grid rule. The th`, `filter-strip. Edit-safe: yes — the module only marks the current pill`, `at every width; the scrollable row below 767 is n` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — Thumbnail side Right is row-reverse and nothing else in the row moves. JS off: pixel-identical. l`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; a wall of 196 px cells is markup and one grid rule. The th`, `filter-strip. Edit-safe: yes — the module only marks the current pill`, `at every width; the scrollable row below 767 is n` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.59: A17 — designs #16–18 (owner gate)
+#### Story 10.58: A17 — designs #16–18 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5209,6 +5167,7 @@ So that I can choose more widely within Post Grids on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #16 Load More · #17 Panel · #18 Edge to Edge are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `load-more. Edit-safe: no — it appends posts the editor did not place. JS off`, `quoted: "Ghost's numbered /page/2/ paginat`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical; the full-bleed band below 767`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the band`, `its zero gutter and its scrim at Text Over are C` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5216,7 +5175,6 @@ So that I can choose more widely within Post Grids on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5236,7 +5194,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A18 Post Lists - Spec.md` in the export. Frames: `A18-<n> <Name>.dc.html` and `A18-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.60: A18 — the content model, the stylesheet and designs #1–3
+#### Story 10.59: A18 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5248,19 +5206,19 @@ So that I can start using Post Lists on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A18 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rows · #2 Thumb Rows · #3 Slim are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Rows · #2 Thumb Rows · #3 Slim · #4 Dated are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical (loading="lazy" is HTML`, `not a script). lightbox refused —`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the truncation is CSS. filter-strip considered and not de` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical (loading="lazy" is HTML`, `not a script). lightbox refused —`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the truncation is CSS. filter-strip considered and not de`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the date column is server-rendered from each post's publis` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A18-<n> <Name>.dc.html` — and the category's `A18-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A18). · **Frame:** `A18-<n> <Name>.dc.html` · `A18-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.61: A18 — designs #4–7
+#### Story 10.60: A18 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5270,19 +5228,19 @@ So that I can choose more widely within Post Lists on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Dated · #5 Grouped · #6 Split Head · #7 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Grouped · #6 Split Head · #7 Contrast Band · #8 Row Cards are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the date column is server-rendered from each post's publis`, `group-headings — Ghost cannot tell that the month changed between two posts`, `so the headings are cut in by the browser f`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. Sticky head refused`, `as in A8`, `6 and A17`, `6.`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical. Print: on white`, `without the band` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `group-headings — Ghost cannot tell that the month changed between two posts`, `so the headings are cut in by the browser f`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. Sticky head refused`, `as in A8`, `6 and A17`, `6.`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical. Print: on white`, `without the band`, `None. Edit-safe: yes — the lift does not run while editing. JS off: pixel-identical — the hover lift is a CSS transition` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A18-<n> <Name>.dc.html` — and the category's `A18-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A18). · **Frame:** `A18-<n> <Name>.dc.html` · `A18-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.62: A18 — designs #8–11
+#### Story 10.61: A18 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5292,19 +5250,19 @@ So that I can choose more widely within Post Lists on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Row Cards · #9 Big Type · #10 Lead and List · #11 Numbered are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Lead and List · #11 Numbered · #12 Panel are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the lift does not run while editing. JS off: pixel-identical — the hover lift is a CSS transition`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. reveal and typewriter both considered and refused.`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the lead and its picture are server-rendered. lightbox not`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the numerals are rendered into the markup`, `not by a CSS c` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. reveal and typewriter both considered and refused.`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the lead and its picture are server-rendered. lightbox not`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the numerals are rendered into the markup`, `not by a CSS c`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical. accordion considered and refu` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A18-<n> <Name>.dc.html` — and the category's `A18-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A18). · **Frame:** `A18-<n> <Name>.dc.html` · `A18-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.63: A18 — designs #12–15 (owner gate)
+#### Story 10.62: A18 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5314,15 +5272,15 @@ So that I can choose more widely within Post Lists on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Panel · #13 Timeline · #14 Index · #15 Load More are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Timeline · #14 Index · #15 Load More are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical. accordion considered and refu`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more. Edit-safe: no — it appends rows the editor did not place; the module does not run while editing`, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more. Edit-safe: no — it appends rows the editor did not place; the module does not run while editing`, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A18-<n> <Name>.dc.html` — and the category's `A18-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5342,7 +5300,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A19 Featured and Spotlight - Spec.md` in the export. Frames: `A19-<n> <Name>.dc.html` and `A19-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.64: A19 — the content model, the stylesheet and designs #1–3
+#### Story 10.63: A19 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5354,7 +5312,8 @@ So that I can start using Featured and Spotlight on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A19 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Split · #2 Full Bleed · #3 Card are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Split · #2 Full Bleed · #3 Card · #4 Poster are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5362,11 +5321,10 @@ So that I can start using Featured and Spotlight on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A19-<n> <Name>.dc.html` — and the category's `A19-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A19). · **Frame:** `A19-<n> <Name>.dc.html` · `A19-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.65: A19 — designs #4–7
+#### Story 10.64: A19 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5376,7 +5334,8 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Poster · #5 Contrast Band · #6 Big Type · #7 Overlap are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Big Type · #7 Overlap · #8 Lead and Two are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5384,11 +5343,10 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A19-<n> <Name>.dc.html` — and the category's `A19-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A19). · **Frame:** `A19-<n> <Name>.dc.html` · `A19-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.66: A19 — designs #8–11
+#### Story 10.65: A19 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5398,7 +5356,8 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Lead and Two · #9 Alternating · #10 Pair · #11 Lead and Rail are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Alternating · #10 Pair · #11 Lead and Rail · #12 Picks are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5406,11 +5365,10 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A19-<n> <Name>.dc.html` — and the category's `A19-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A19). · **Frame:** `A19-<n> <Name>.dc.html` · `A19-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.67: A19 — designs #12–15 (owner gate)
+#### Story 10.66: A19 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5420,7 +5378,8 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Picks · #13 Quote · #14 Slim · #15 Carousel are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Quote · #14 Slim · #15 Carousel are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5428,7 +5387,6 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A19-<n> <Name>.dc.html` — and the category's `A19-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5448,7 +5406,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A20 Tag Collections - Spec.md` in the export. Frames: `A20-<n> <Name>.dc.html` and `A20-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.68: A20 — the content model, the stylesheet and designs #1–3
+#### Story 10.67: A20 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5460,7 +5418,8 @@ So that I can start using Tag Collections on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A20 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Chips · #2 Tiles · #3 Cards are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Chips · #2 Tiles · #3 Cards · #4 Rows are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5468,11 +5427,10 @@ So that I can start using Tag Collections on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A20-<n> <Name>.dc.html` — and the category's `A20-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A20). · **Frame:** `A20-<n> <Name>.dc.html` · `A20-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.69: A20 — designs #4–7
+#### Story 10.68: A20 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5482,7 +5440,8 @@ So that I can choose more widely within Tag Collections on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Rows · #5 Split Head · #6 Contrast Band · #7 Index are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split Head · #6 Contrast Band · #7 Index · #8 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `group-headings` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5490,11 +5449,10 @@ So that I can choose more widely within Tag Collections on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A20-<n> <Name>.dc.html` — and the category's `A20-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A20). · **Frame:** `A20-<n> <Name>.dc.html` · `A20-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.70: A20 — designs #8–11
+#### Story 10.69: A20 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5504,7 +5462,8 @@ So that I can choose more widely within Tag Collections on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Big Type · #9 Rail · #10 Lead and Rest · #11 Ledger are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Rail · #10 Lead and Rest · #11 Ledger · #12 Panel are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5512,11 +5471,10 @@ So that I can choose more widely within Tag Collections on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A20-<n> <Name>.dc.html` — and the category's `A20-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A20). · **Frame:** `A20-<n> <Name>.dc.html` · `A20-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.71: A20 — designs #12–15 (owner gate)
+#### Story 10.70: A20 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5526,7 +5484,8 @@ So that I can choose more widely within Tag Collections on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Panel · #13 Overlay · #14 Slim · #15 Filter Bar are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Overlay · #14 Slim · #15 Filter Bar are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `filter-strip` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5534,7 +5493,6 @@ So that I can choose more widely within Tag Collections on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A20-<n> <Name>.dc.html` — and the category's `A20-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5554,7 +5512,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A21 Author Showcases - Spec.md` in the export. Frames: `A21-<n> <Name>.dc.html` and `A21-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.72: A21 — the content model, the stylesheet and designs #1–3
+#### Story 10.71: A21 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5566,7 +5524,8 @@ So that I can start using Author Showcases on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A21 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Cards · #3 Rows are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Grid · #2 Cards · #3 Rows · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5574,11 +5533,10 @@ So that I can start using Author Showcases on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A21-<n> <Name>.dc.html` — and the category's `A21-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A21). · **Frame:** `A21-<n> <Name>.dc.html` · `A21-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.73: A21 — designs #4–7
+#### Story 10.72: A21 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5588,7 +5546,8 @@ So that I can choose more widely within Author Showcases on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Split Head · #5 Contrast Band · #6 Founder · #7 Panel are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Founder · #7 Panel · #8 Faces are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5596,11 +5555,10 @@ So that I can choose more widely within Author Showcases on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A21-<n> <Name>.dc.html` — and the category's `A21-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A21). · **Frame:** `A21-<n> <Name>.dc.html` · `A21-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.74: A21 — designs #8–11
+#### Story 10.73: A21 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5610,19 +5568,19 @@ So that I can choose more widely within Author Showcases on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Faces · #9 Big Type · #10 Directory · #11 Rail are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Directory · #11 Rail · #12 Carousel are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `group-headings at On` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `group-headings at On`, `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A21-<n> <Name>.dc.html` — and the category's `A21-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A21). · **Frame:** `A21-<n> <Name>.dc.html` · `A21-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.75: A21 — designs #12–15 (owner gate)
+#### Story 10.74: A21 — designs #13–15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5632,15 +5590,15 @@ So that I can choose more widely within Author Showcases on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Carousel · #13 Lead and Rest · #14 Image Band · #15 Slim are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Lead and Rest · #14 Image Band · #15 Slim are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A21-<n> <Name>.dc.html` — and the category's `A21-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5656,11 +5614,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A21). · **Frame:** `A21-<n> <Name>.dc.html` · `A21-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A22 · Newsletter — 16 designs, 5 stories
+### A22 · Newsletter — 16 designs, 4 stories
 
 *Per-design specs: `A22 Newsletter - Spec.md` in the export. Frames: `A22-<n> <Name>.dc.html` and `A22-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.76: A22 — the content model, the stylesheet and designs #1–3
+#### Story 10.75: A22 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5672,7 +5630,8 @@ So that I can start using Newsletter on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A22 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Inline Row · #2 Card · #3 Split are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Inline Row · #2 Card · #3 Split · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5680,11 +5639,10 @@ So that I can start using Newsletter on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.77: A22 — designs #4–7
+#### Story 10.76: A22 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5694,7 +5652,8 @@ So that I can choose more widely within Newsletter on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Panel · #6 Image Split · #7 Cover are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Panel · #6 Image Split · #7 Cover · #8 Big Type are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5702,11 +5661,10 @@ So that I can choose more widely within Newsletter on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.78: A22 — designs #8–10
+#### Story 10.77: A22 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5716,7 +5674,8 @@ So that I can choose more widely within Newsletter on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Big Type · #9 Slim Bar · #10 Choice are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Slim Bar · #10 Choice · #11 Reasons · #12 Issue Preview are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5724,11 +5683,10 @@ So that I can choose more widely within Newsletter on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.79: A22 — designs #11–13
+#### Story 10.78: A22 — designs #13–16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5738,29 +5696,8 @@ So that I can choose more widely within Newsletter on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #11 Reasons · #12 Issue Preview · #13 Boxed are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.80: A22 — designs #14–16 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Newsletter on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #14 Slide-in Card · #15 Two Up · #16 Quote are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Boxed · #14 Slide-in Card · #15 Two Up · #16 Quote are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `slide-in-card` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5768,7 +5705,6 @@ So that I can choose more widely within Newsletter on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5784,11 +5720,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A24 · Post Headers — 16 designs, 5 stories
+### A24 · Post Headers — 16 designs, 4 stories
 
 *Per-design specs: `A24 Post Headers - Spec.md` in the export. Frames: `A24-<n> <Name>.dc.html` and `A24-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.81: A24 — the content model, the stylesheet and designs #1–3
+#### Story 10.79: A24 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5800,7 +5736,8 @@ So that I can start using Post Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A24 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Image Top are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5808,11 +5745,10 @@ So that I can start using Post Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.82: A24 — designs #4–7
+#### Story 10.80: A24 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5822,7 +5758,8 @@ So that I can choose more widely within Post Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Image Top · #5 Full Bleed · #6 Edge to Edge · #7 Card are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Full Bleed · #6 Edge to Edge · #7 Card · #8 Contrast Band are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5830,11 +5767,10 @@ So that I can choose more widely within Post Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.83: A24 — designs #8–10
+#### Story 10.81: A24 — designs #9–12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5844,7 +5780,8 @@ So that I can choose more widely within Post Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Contrast Band · #9 Overlap · #10 Big Type are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Overlap · #10 Big Type · #11 Dateline · #12 Rail are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5852,11 +5789,10 @@ So that I can choose more widely within Post Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.84: A24 — designs #11–13
+#### Story 10.82: A24 — designs #13–16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5866,37 +5802,15 @@ So that I can choose more widely within Post Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #11 Dateline · #12 Rail · #13 Sticky are built **against that same model**, each with its own per-design control schema
+**Then** designs #13 Sticky · #14 Share Row · #15 Slim · #16 Two Column are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `reading-progress + header-scroll` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `reading-progress + header-scroll`, `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.85: A24 — designs #14–16 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Post Headers on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #14 Share Row · #15 Slim · #16 Two Column are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -5912,11 +5826,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A25 · Post Content Layouts — 12 designs, 4 stories
+### A25 · Post Content Layouts — 12 designs, 3 stories
 
 *Per-design specs: `A25 Post Content Layouts - Spec.md` in the export. Frames: `A25-<n> <Name>.dc.html` and `A25-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.86: A25 — the content model, the stylesheet and designs #1–3
+#### Story 10.83: A25 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5928,7 +5842,8 @@ So that I can start using Post Content Layouts on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A25 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Measured · #2 Plain · #3 Sheet are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Measured · #2 Plain · #3 Sheet · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `toc`, `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -5936,11 +5851,10 @@ So that I can start using Post Content Layouts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.87: A25 — designs #4–6
+#### Story 10.84: A25 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5950,19 +5864,19 @@ So that I can choose more widely within Post Content Layouts on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Full Bleed · #6 Hanging Heads are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Full Bleed · #6 Hanging Heads · #7 Sticky Index · #8 Index Top are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `toc`, `lightbox`, `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `lightbox`, `heading anchor`, `toc scroll-spy`, `toc` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.88: A25 — designs #7–9
+#### Story 10.85: A25 — designs #9–12 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5972,29 +5886,8 @@ So that I can choose more widely within Post Content Layouts on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #7 Sticky Index · #8 Index Top · #9 Share Rail are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `toc scroll-spy`, `toc` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.89: A25 — designs #10–12 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Post Content Layouts on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #10 Marginalia · #11 Ruled · #12 Numbered are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Share Rail · #10 Marginalia · #11 Ruled · #12 Numbered are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6002,7 +5895,6 @@ So that I can choose more widely within Post Content Layouts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6022,7 +5914,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A26 Post Footers - Spec.md` in the export. Frames: `A26-<n> <Name>.dc.html` and `A26-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.90: A26 — the content model, the stylesheet and designs #1–3
+#### Story 10.86: A26 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6034,7 +5926,8 @@ So that I can start using Post Footers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A26 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Author Bio · #2 Rows · #3 Card are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Author Bio · #2 Rows · #3 Card · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6042,11 +5935,10 @@ So that I can start using Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.91: A26 — designs #4–7
+#### Story 10.87: A26 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6056,7 +5948,52 @@ So that I can choose more widely within Post Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Split · #6 Slim · #7 Next and Prev are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Split · #6 Slim · #7 Next and Prev · #8 Tag Row are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
+**And** the behaviour modules these designs declare — `share member-form`, `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
+**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
+**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
+**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
+**And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+
+#### Story 10.88: A26 — designs #9–12
+
+As a user choosing how this part of my site looks,
+I want the next designs in this category,
+So that I can choose more widely within Post Footers on my own site.
+
+**Acceptance Criteria:**
+
+**Given** the shared content model and stylesheet delivered by this category's first story
+**When** this story lands
+**Then** designs #9 Share Row · #10 Big Type · #11 Portrait · #12 Subscribe are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
+**And** the behaviour modules these designs declare — `share`, `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
+**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
+**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
+**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
+**And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+
+#### Story 10.89: A26 — designs #13–15 (owner gate)
+
+As a user choosing how this part of my site looks,
+I want the next designs in this category,
+So that I can choose more widely within Post Footers on my own site.
+
+**Acceptance Criteria:**
+
+**Given** the shared content model and stylesheet delivered by this category's first story
+**When** this story lands
+**Then** designs #13 Rail · #14 Ledger · #15 Grid are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6064,51 +6001,6 @@ So that I can choose more widely within Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.92: A26 — designs #8–11
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Post Footers on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #8 Tag Row · #9 Share Row · #10 Big Type · #11 Portrait are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.93: A26 — designs #12–15 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Post Footers on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #12 Subscribe · #13 Rail · #14 Ledger · #15 Grid are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form`, `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6124,11 +6016,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A27 · Related Posts — 12 designs, 4 stories
+### A27 · Related Posts — 12 designs, 3 stories
 
 *Per-design specs: `A27 Related Posts - Spec.md` in the export. Frames: `A27-<n> <Name>.dc.html` and `A27-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.94: A27 — the content model, the stylesheet and designs #1–3
+#### Story 10.90: A27 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6140,7 +6032,8 @@ So that I can start using Related Posts on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A27 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Rows · #3 Thumb Rows are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Three Up · #2 Rows · #3 Thumb Rows · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6148,11 +6041,10 @@ So that I can start using Related Posts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A27-<n> <Name>.dc.html` — and the category's `A27-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A27). · **Frame:** `A27-<n> <Name>.dc.html` · `A27-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.95: A27 — designs #4–6
+#### Story 10.91: A27 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6162,7 +6054,8 @@ So that I can choose more widely within Related Posts on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Panel · #5 Contrast Band · #6 Lead and List are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Lead and List · #7 Rail · #8 Overlay are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6170,11 +6063,10 @@ So that I can choose more widely within Related Posts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A27-<n> <Name>.dc.html` — and the category's `A27-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A27). · **Frame:** `A27-<n> <Name>.dc.html` · `A27-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.96: A27 — designs #7–9
+#### Story 10.92: A27 — designs #9–12 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6184,29 +6076,8 @@ So that I can choose more widely within Related Posts on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #7 Rail · #8 Overlay · #9 Big Type are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A27-<n> <Name>.dc.html` — and the category's `A27-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A27). · **Frame:** `A27-<n> <Name>.dc.html` · `A27-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.97: A27 — designs #10–12 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Related Posts on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #10 Carousel · #11 Index · #12 Next Up are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Carousel · #11 Index · #12 Next Up are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6214,7 +6085,6 @@ So that I can choose more widely within Related Posts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A27-<n> <Name>.dc.html` — and the category's `A27-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6234,7 +6104,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A28 Comments - Spec.md` in the export. Frames: `A28-<n> <Name>.dc.html` and `A28-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.98: A28 — the content model, the stylesheet and designs #1–3
+#### Story 10.93: A28 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6246,7 +6116,8 @@ So that I can start using Comments on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A28 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rule · #2 Split Head · #3 Panel are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Rule · #2 Split Head · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6254,11 +6125,10 @@ So that I can start using Comments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A28-<n> <Name>.dc.html` — and the category's `A28-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A28). · **Frame:** `A28-<n> <Name>.dc.html` · `A28-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.99: A28 — designs #4–7
+#### Story 10.94: A28 — designs #5–7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6268,7 +6138,8 @@ So that I can choose more widely within Comments on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Boxed · #6 Rail · #7 Disclosure are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Boxed · #6 Rail · #7 Disclosure are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `accordion` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6276,11 +6147,10 @@ So that I can choose more widely within Comments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A28-<n> <Name>.dc.html` — and the category's `A28-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A28). · **Frame:** `A28-<n> <Name>.dc.html` · `A28-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.100: A28 — designs #8–10 (owner gate)
+#### Story 10.95: A28 — designs #8–10 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6291,6 +6161,7 @@ So that I can choose more widely within Comments on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Prompt · #9 Big Count · #10 Slim are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6298,7 +6169,6 @@ So that I can choose more widely within Comments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A28-<n> <Name>.dc.html` — and the category's `A28-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6318,7 +6188,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A29 Archive Headers - Spec.md` in the export. Frames: `A29-<n> <Name>.dc.html` and `A29-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.101: A29 — the content model, the stylesheet and designs #1–3
+#### Story 10.96: A29 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6330,7 +6200,8 @@ So that I can start using Archive Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A29 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Head · #3 Contrast Band are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Split Head · #3 Contrast Band · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6338,11 +6209,10 @@ So that I can start using Archive Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A29-<n> <Name>.dc.html` — and the category's `A29-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A29). · **Frame:** `A29-<n> <Name>.dc.html` · `A29-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.102: A29 — designs #4–7
+#### Story 10.97: A29 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6352,7 +6222,8 @@ So that I can choose more widely within Archive Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Panel · #5 Full Bleed · #6 Image Split · #7 Rail are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Full Bleed · #6 Image Split · #7 Rail · #8 Bar are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6360,11 +6231,10 @@ So that I can choose more widely within Archive Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A29-<n> <Name>.dc.html` — and the category's `A29-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A29). · **Frame:** `A29-<n> <Name>.dc.html` · `A29-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.103: A29 — designs #8–11
+#### Story 10.98: A29 — designs #9–11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6374,7 +6244,8 @@ So that I can choose more widely within Archive Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Bar · #9 Big Type · #10 Boxed · #11 Filter are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Boxed · #11 Filter are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `count-up`, `filter-strip` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6382,11 +6253,10 @@ So that I can choose more widely within Archive Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A29-<n> <Name>.dc.html` — and the category's `A29-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A29). · **Frame:** `A29-<n> <Name>.dc.html` · `A29-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.104: A29 — designs #12–14 (owner gate)
+#### Story 10.99: A29 — designs #12–14 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6397,6 +6267,7 @@ So that I can choose more widely within Archive Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #12 Portrait · #13 Index · #14 Sticky are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6404,7 +6275,6 @@ So that I can choose more widely within Archive Headers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A29-<n> <Name>.dc.html` — and the category's `A29-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6424,7 +6294,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A30 Members Pages - Spec.md` in the export. Frames: `A30-<n> <Name>.dc.html` and `A30-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.105: A30 — the content model, the stylesheet and designs #1–3
+#### Story 10.100: A30 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6436,7 +6306,8 @@ So that I can start using Members Pages on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A30 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Pitch · #3 Card are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Split Pitch · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6444,11 +6315,10 @@ So that I can start using Members Pages on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A30-<n> <Name>.dc.html` — and the category's `A30-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A30). · **Frame:** `A30-<n> <Name>.dc.html` · `A30-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.106: A30 — designs #4–7
+#### Story 10.101: A30 — designs #5–7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6458,7 +6328,8 @@ So that I can choose more widely within Members Pages on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Panel · #5 Contrast Band · #6 Cover · #7 Image Split are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Contrast Band · #6 Cover · #7 Image Split are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6466,11 +6337,10 @@ So that I can choose more widely within Members Pages on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A30-<n> <Name>.dc.html` — and the category's `A30-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A30). · **Frame:** `A30-<n> <Name>.dc.html` · `A30-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.107: A30 — designs #8–10
+#### Story 10.102: A30 — designs #8–10
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6481,6 +6351,7 @@ So that I can choose more widely within Members Pages on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Tiers · #9 Big Type · #10 Boxed are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form`, `price-toggle` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6488,11 +6359,10 @@ So that I can choose more widely within Members Pages on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A30-<n> <Name>.dc.html` — and the category's `A30-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A30). · **Frame:** `A30-<n> <Name>.dc.html` · `A30-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.108: A30 — designs #11–13 (owner gate)
+#### Story 10.103: A30 — designs #11–13 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6503,6 +6373,7 @@ So that I can choose more widely within Members Pages on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #11 Rail · #12 Ledger · #13 Steps are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `member-form`, `scroll-spy` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6510,7 +6381,6 @@ So that I can choose more widely within Members Pages on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A30-<n> <Name>.dc.html` — and the category's `A30-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6530,7 +6400,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A31 Error and Utility - Spec.md` in the export. Frames: `A31-<n> <Name>.dc.html` and `A31-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.109: A31 — the content model, the stylesheet and designs #1–3
+#### Story 10.104: A31 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6542,7 +6412,8 @@ So that I can start using Error and Utility on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A31 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Reason · #3 Card are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Centred · #2 Split Reason · #3 Card · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6550,11 +6421,10 @@ So that I can start using Error and Utility on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A31-<n> <Name>.dc.html` — and the category's `A31-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A31). · **Frame:** `A31-<n> <Name>.dc.html` · `A31-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.110: A31 — designs #4–7
+#### Story 10.105: A31 — designs #5–7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6564,7 +6434,8 @@ So that I can choose more widely within Error and Utility on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Boxed · #5 Panel · #6 Contrast Band · #7 Cover are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Panel · #6 Contrast Band · #7 Cover are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6572,11 +6443,10 @@ So that I can choose more widely within Error and Utility on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A31-<n> <Name>.dc.html` — and the category's `A31-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A31). · **Frame:** `A31-<n> <Name>.dc.html` · `A31-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.111: A31 — designs #8–10 (owner gate)
+#### Story 10.106: A31 — designs #8–10 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6587,6 +6457,7 @@ So that I can choose more widely within Error and Utility on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Elsewhere · #9 Directory · #10 Display are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6594,7 +6465,6 @@ So that I can choose more widely within Error and Utility on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A31-<n> <Name>.dc.html` — and the category's `A31-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6610,11 +6480,11 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A31). · **Frame:** `A31-<n> <Name>.dc.html` · `A31-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-### A32 · Paywall — 12 designs, 4 stories
+### A32 · Paywall — 12 designs, 3 stories
 
 *Per-design specs: `A32 Paywall - Spec.md` in the export. Frames: `A32-<n> <Name>.dc.html` and `A32-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.112: A32 — the content model, the stylesheet and designs #1–3
+#### Story 10.107: A32 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6626,7 +6496,8 @@ So that I can start using Paywall on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A32 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Fade · #2 Card · #3 Panel are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Fade · #2 Card · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core`, `member-form at one value` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6634,11 +6505,10 @@ So that I can start using Paywall on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A32-<n> <Name>.dc.html` — and the category's `A32-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A32). · **Frame:** `A32-<n> <Name>.dc.html` · `A32-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.113: A32 — designs #4–6
+#### Story 10.108: A32 — designs #5–8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6648,19 +6518,19 @@ So that I can choose more widely within Paywall on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Contrast Band · #5 Boxed · #6 Split Pitch are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Boxed · #6 Split Pitch · #7 Tiers · #8 Ledger are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core`, `member-form at one value` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `core`, `member-form at one value`, `price-toggle` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A32-<n> <Name>.dc.html` — and the category's `A32-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A32). · **Frame:** `A32-<n> <Name>.dc.html` · `A32-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.114: A32 — designs #7–9
+#### Story 10.109: A32 — designs #9–12 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6670,29 +6540,8 @@ So that I can choose more widely within Paywall on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #7 Tiers · #8 Ledger · #9 Big Type are built **against that same model**, each with its own per-design control schema
-**And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `price-toggle`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
-**And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
-**And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
-**And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
-**And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A32-<n> <Name>.dc.html` — and the category's `A32-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
-
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A32). · **Frame:** `A32-<n> <Name>.dc.html` · `A32-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
-
-#### Story 10.115: A32 — designs #10–12 (owner gate)
-
-As a user choosing how this part of my site looks,
-I want the next designs in this category,
-So that I can choose more widely within Paywall on my own site.
-
-**Acceptance Criteria:**
-
-**Given** the shared content model and stylesheet delivered by this category's first story
-**When** this story lands
-**Then** designs #10 Cover · #11 Sticky Bar · #12 Meter are built **against that same model**, each with its own per-design control schema
+**Then** designs #9 Big Type · #10 Cover · #11 Sticky Bar · #12 Meter are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core`, `dismiss at one value`, `reading-progress` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6700,7 +6549,6 @@ So that I can choose more widely within Paywall on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A32-<n> <Name>.dc.html` — and the category's `A32-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6720,7 +6568,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A33 Koenig Card Treatments - Spec.md` in the export. Frames: `A33-<n> <Name>.dc.html` and `A33-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.116: A33 — the content model, the stylesheet and designs #1–3
+#### Story 10.110: A33 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6732,7 +6580,8 @@ So that I can start using Koenig Card Treatments on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A33 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Plain · #2 Card · #3 Panel are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Plain · #2 Card · #3 Panel · #4 Wide are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `accordion`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6740,11 +6589,10 @@ So that I can start using Koenig Card Treatments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A33-<n> <Name>.dc.html` — and the category's `A33-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A33). · **Frame:** `A33-<n> <Name>.dc.html` · `A33-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.117: A33 — designs #4–6 (owner gate)
+#### Story 10.111: A33 — designs #5–6 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6754,7 +6602,8 @@ So that I can choose more widely within Koenig Card Treatments on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Wide · #5 Full Bleed · #6 Contrast Band are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Full Bleed · #6 Contrast Band are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `accordion`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6762,7 +6611,6 @@ So that I can choose more widely within Koenig Card Treatments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A33-<n> <Name>.dc.html` — and the category's `A33-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6782,7 +6630,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A34 Pagination Styles - Spec.md` in the export. Frames: `A34-<n> <Name>.dc.html` and `A34-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.118: A34 — the content model, the stylesheet and designs #1–3
+#### Story 10.112: A34 — the content model, the stylesheet and designs #1–4
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6794,7 +6642,8 @@ So that I can start using Pagination Styles on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A34 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Numbers · #2 Prev and Next · #3 Bar are built against that model, each with its **own per-design control schema** and its first 3–5 entries recovered mechanically as its Quick Controls
+**And** designs #1 Numbers · #2 Prev and Next · #3 Bar · #4 Pill are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** each carries its **own per-design control schema**, whose first 3–5 entries are recovered mechanically as its Quick Controls
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6802,11 +6651,10 @@ So that I can start using Pagination Styles on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A34-<n> <Name>.dc.html` — and the category's `A34-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A34). · **Frame:** `A34-<n> <Name>.dc.html` · `A34-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.119: A34 — designs #4–7
+#### Story 10.113: A34 — designs #5–7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6816,7 +6664,8 @@ So that I can choose more widely within Pagination Styles on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #4 Pill · #5 Counter · #6 Load More · #7 Endless are built **against that same model**, each with its own per-design control schema
+**Then** designs #5 Counter · #6 Load More · #7 Endless are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none`, `load-more`, `infinite-scroll` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6824,11 +6673,10 @@ So that I can choose more widely within Pagination Styles on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A34-<n> <Name>.dc.html` — and the category's `A34-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A34). · **Frame:** `A34-<n> <Name>.dc.html` · `A34-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.120: A34 — designs #8–10 (owner gate)
+#### Story 10.114: A34 — designs #8–10 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6839,6 +6687,7 @@ So that I can choose more widely within Pagination Styles on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Contrast Band · #9 Cards · #10 Slim are built **against that same model**, each with its own per-design control schema
+**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
@@ -6846,7 +6695,6 @@ So that I can choose more widely within Pagination Styles on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A34-<n> <Name>.dc.html` — and the category's `A34-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
-**And** the **first two designs of the category are `[Free]`** and nothing else is
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6862,7 +6710,7 @@ review is never a substitute for the sheet**
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A34). · **Frame:** `A34-<n> <Name>.dc.html` · `A34-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-**The Gated Library Pipeline — 120 stories across 30 categories, 421 designs.** Counts derived from `tools/export-roster.py` on 2026-09-04, never restated.
+**The Gated Library Pipeline — 114 stories across 30 categories, 421 designs.** Counts derived from `tools/export-roster.py`, never restated.
 
 *Exit:* **every** category in the epic has passed its own owner gate. There is no epic-level shortcut — the epic
 exits when its last category does, and **a category that has not passed cannot be carried forward as a known
@@ -7402,30 +7250,40 @@ withdrawing capability the moment a card bounces would be the retention dark pat
 **FRs:** FR-P1 email (4), the FR-L2 banner. · **Frame:** `B Missing Surfaces.dc.html` B24. · **Owner test:** yes.
 · **Verification:** a real Dodo failed-payment event and a real Resend send (R-82).
 
-### Story 12.8: The conditional annual renewal reminder, and the no-nudge rule
+### Story 12.8: The annual renewal reminder, and the no-nudge rule
 
 As an annual subscriber,
 I want advance notice before I am charged again,
-So that the renewal is not a surprise — and so the product meets its statutory obligations.
+So that a $150 renewal is never a surprise — and so the product meets its statutory obligations.
 
 **Acceptance Criteria:**
 
-**Given** the answer to whether Dodo already sends this notice as merchant of record
-**When** the answer is **yes**
-**Then** **Inflozo sends nothing**, and this story closes as verified-not-needed
-**And when** the answer is **no**
-**Then** the reminder becomes **email #6**, carved out of the no-nudge rule, sent before an annual auto-renewal
-charge — because advance notice is statutory in several target markets, including California's ARL and EU/UK
-consumer rules
-**And** either way, **no marketing, digest or nudge emails exist in v1**, with exactly two non-discretionary
-carve-outs: the Ghost-compatibility notice that names affected shipped designs, and this reminder if and only if
-Dodo does not send it
-**And** "Theme updates available" is surfaced **in-app only, never by email**
-**And** the routine per-release confirmation that the library was verified **stays in-app**.
+**Given** the owner's ruling of 2026-09-04 — **Dodo does not send it, so Inflozo must** — which resolves FR-P1's
+condition and makes the reminder **email #6, unconditionally**
+**When** an annual subscription approaches its auto-renewal date
+**Then** Inflozo **sends the reminder automatically** via Resend, ahead of the charge, naming the renewal date and
+the amount that will be charged
+**And** it is **automated, never a manual task**: it is a scheduled job with **one owning epic and one home**
+(AD-33), driven off the subscription's own renewal date rather than off a calendar someone maintains
+**And** it is **idempotent** — a subscription is reminded once per renewal period, and a retry, a webhook replay
+or a re-run of the job never sends a second copy
+**And** it is **carved out of FR-P2's no-nudge rule** as one of exactly two non-discretionary carve-outs, the
+other being the Ghost-compatibility notice that names affected shipped designs
+**And** it is sent for **annual subscriptions**, whose advance notice is statutory in several target markets —
+California's ARL and EU/UK consumer rules among them
+**And** **no other subscription reminder is sent**: a monthly subscriber is not emailed twelve times a year,
+because that is precisely the nudge pattern FR-P2 forbids and no statute asks for it. *(The scope of "automated
+reminders for subscriptions" is question 1 under* Questions for the owner *— it is written here as annual-only,
+which is the reading the statutory basis and the no-nudge rule both support.)*
+**And** a cancelled subscription — auto-renew already stopped — **is not reminded**, because there is no charge
+coming
+**And** **"Theme updates available" is surfaced in-app only, never by email**, and the routine per-release
+confirmation that the library was verified **stays in-app**
+**And** the send is recorded, so a customer support question about "did we tell them" has a fact to answer with.
 
-**FRs:** FR-P1 email (6, conditional), FR-P2. · **Frame:** none — a transactional email is not a drawn surface. · **Owner test:** yes (if built). · **This story is blocked on
-question 2 under *Questions for the owner*** — the answer is a fact only Dodo can supply and the owner has the
-open action to ask them in writing.
+**FRs:** FR-P1 email (6, now unconditional), FR-P2. · **Frame:** none — a transactional email is not a drawn
+surface. · **Owner test:** yes. · **Verification:** a real Resend send against a real Dodo annual subscription
+approaching renewal (R-82).
 
 *Exit:* live-mode $15 transaction; downgrade rules verified; entitlement transitions verified against real Dodo
 events.
@@ -7927,9 +7785,9 @@ Run at step 4 and checked mechanically rather than by eye, because a coverage li
 |---|---|
 | **FR coverage** | **132 of 132.** Every FR in §5 is cited by at least one story's `FRs:` line. Extracted from the PRD and matched against the story metadata by script; nothing missing, nothing invented. |
 | **Epic ownership** | 132 assigned, matching §8 exactly, with the three documented splits (FR-P1 per email, FR-Q6 format vs surface, FR-G1/G4/G5/G6 shell block vs gated pipeline) and no others. |
-| **UX-DR coverage** | **22 of 22.** UX-DR2–UX-DR22 are cited by name in the stories that implement them. **UX-DR1 is discharged structurally rather than by citation:** every one of the **238 owner-tested stories names the frame it is built from**, verified by script over the metadata blocks — which is what R-74 asks for. |
-| **Owner-test verdict** | **262 of 262** story metadata blocks carry an explicit `Owner test:` verdict, so no story is ambiguous about whether R-80 applies to it. |
-| **Story sizing** | **270 stories.** Every story is scoped to one build session. The library runs are the R-85 shape and their sizing is question 1 below. |
+| **UX-DR coverage** | **22 of 22.** UX-DR2–UX-DR22 are cited by name in the stories that implement them. **UX-DR1 is discharged structurally rather than by citation:** every one of the **231 owner-tested stories names the frame it is built from**, verified by script over the metadata blocks — which is what R-74 asks for. |
+| **Owner-test verdict** | **255 of 255** story metadata blocks carry an explicit `Owner test:` verdict, so no story is ambiguous about whether R-80 applies to it. |
+| **Story sizing** | **263 stories.** Every story is scoped to one build session. The library runs are the R-85 shape at the owner's ruled sizing — four designs per story, the first story's four being the two [Free] plus two Pro. |
 | **Starter template** | The architecture specifies **none** — the repo is greenfield and its structure is the spine's Structural Seed, which is Story 1.1. There is therefore no "set up from starter template" story to write, and its absence is deliberate rather than an omission. |
 
 **Four of the skill's own checks fail against §8, and each is overruled by it rather than worked around.**
@@ -7955,51 +7813,72 @@ order, each after the previous is done, and no two category stories are ever in 
 
 ## Questions for the owner
 
-Two, and only two. Everything else this run needed was already decided — by §8, by the reconciliation rulings,
-or by the export. Both questions below change what gets built, so neither is defaulted quietly: the stories above
-are written at the **(RECOMMENDED)** option, and if you rule differently I adjust them and re-commit.
+**Both answered on 2026-09-04. The stories above are adjusted to match.** One new question follows from the
+second ruling, and it is the only thing on this page still open.
 
-### 1. How many designs should one library story carry?
+### 1. How many designs should one library story carry? — ANSWERED
 
-**What this is about.** Ruling R-85 says a category is a run of stories, each sized for one build session, and
-that you test every one as it lands. It did not say how many designs fit in one session — that is the question
-here, and it decides how often you are asked to test.
+> **Ruled: "Four per story 2 free and 2 pro designs"** *(owner, 2026-09-04)*
 
-**An example.** Heroes has 17 designs. At about four designs per story that is **5 stories**, so you would test
-Heroes five times — five short tests rather than one long one. At about eight designs per story it is **3
-stories**: three longer tests.
+**Applied.** Every story in every category carries **four designs** — a final story takes the remainder — and
+**a category's first story is designs #1–4: its two [Free] designs plus its first two Pro**. The library is
+therefore **126 stories**: 12 in the shell block and 114 in the gated pipeline, across 33 categories and 466
+designs, all derived from `tools/export-roster.py`.
 
-The three options, with the real totals for the whole library (33 categories, 466 designs):
+**One thing worth stating, because it is what the ruling can and cannot mean.** "2 free and 2 pro" describes a
+category's **first** story only. It cannot describe the later ones: ruling **R-17** fixes `[Free]` as *exactly*
+the first two designs of every category and nothing else, so a category holds two Free designs in total and both
+are in its first story. Every later story is four Pro designs. **If you meant to change the Free tier itself —
+more than two Free designs per category — say so and I will raise it properly**, because that would move FR-G2,
+Appendix F.1, the derived Free count and FR-L3's exit sheet together, and it is not a change to make quietly.
 
-1. **(RECOMMENDED) About four designs per story — 133 library stories.** Each test is short: three or four
-   designs to look at on a deployed site. A mistake in a category's shared content model surfaces at its first
-   story rather than after fifteen designs have been built on top of it, which is the reason R-85 exists.
-2. **About six designs per story — 104 library stories.** Roughly a fifth fewer tests, each somewhat longer.
-3. **About eight designs per story — 95 library stories.** The fewest tests, each the longest. The risk is the
-   one R-85 was written against: more work is built on a shared model before anyone looks at it.
+**What the ruling improved, and it is not only cosmetic:** the Free pair now ships in a category's **first**
+story rather than being split across the first two, so a Free account has something placeable in that category
+the moment its first story lands.
 
-*Reply, for example:* `Ruled: four per story` — or name a different number.
+### 2. Does Dodo already send the annual renewal reminder? — ANSWERED
 
-### 2. Does Dodo already send the annual renewal reminder?
+> **Ruled: "It does not. We need to send automated reminders for subscriptions"** *(owner, 2026-09-04)*
 
-**What this is about.** Before an annual subscription renews and charges someone again, several markets require
-advance notice — California and the EU/UK among them. Dodo is the merchant of record, so **Dodo may already send
-this**. If it does, Inflozo sends nothing. If it does not, Inflozo has to send it, and it becomes a sixth
-transactional email that Story 12.8 builds.
+**Applied.** FR-P1's condition is resolved: the annual renewal reminder is **email #6, unconditional**, and
+**Story 12.8 is unblocked and rewritten to build it** — sent automatically ahead of the charge, driven off the
+subscription's own renewal date, idempotent so a webhook replay never sends a second copy, and carved out of
+FR-P2's no-nudge rule as one of exactly two carve-outs.
 
-**An example.** A customer pays $150 in March. In late February the following year, somebody has to email them
-"your subscription renews on 3 March for $150". The question is only whether that somebody is Dodo or Inflozo.
+### 3. Should the reminder cover monthly subscriptions too, or annual only? — OPEN
 
-1. **(RECOMMENDED) Ask Dodo in writing, and tell me their answer.** This is the only way to settle it — it is a
-   fact about Dodo's product, and this project's standing rule is that a claim about an external platform is a
-   hypothesis until executed or read in its source. Story 12.8 stays written and blocked until you have the
-   answer. You already hold this as an open action.
-2. **Assume Dodo does not send it and build email #6 now.** Safe legally, and wasted work plus a duplicate email
-   to every annual customer if Dodo does send one.
-3. **Assume Dodo does send it and build nothing.** No work, but if the assumption is wrong the product is out of
-   compliance in two of its target markets, and nothing in the build would catch that.
+**Why this is being asked.** Your ruling said "reminders for subscriptions", which could mean annual only or
+every subscription. It matters because the two answers produce very different amounts of email.
 
-*Reply, for example:* `Ruled: Dodo does send it` / `Ruled: Dodo does not send it` / `Ruled: option 2`.
+**An example.** A monthly customer paying $15 renews twelve times a year. Reminding them each time is **twelve
+emails a year to every monthly customer**. The annual customer gets **one**.
+
+1. **(RECOMMENDED) Annual only — one reminder per year, before the $150 charge.** This is what the law actually
+   asks for: California's ARL and the EU/UK rules attach to long-term auto-renewals, not to a monthly card
+   charge people already expect. It is also the only reading that does not collide with FR-P2, which forbids
+   nudge emails — twelve reminders a year is a nudge campaign whatever it is called. **Story 12.8 is written this
+   way.**
+2. **Annual and monthly — a reminder before every renewal.** Maximum transparency, and defensible if you want it.
+   Cost: twelve emails a year per monthly customer, a real unsubscribe and spam-complaint risk on a transactional
+   channel, and an explicit amendment to FR-P2, which currently permits exactly two carve-outs.
+3. **Annual, plus monthly only on the first renewal.** A middle option: a monthly customer is reminded once, the
+   first time they are charged again, and never after. More email than (1), far less than (2).
+
+*Reply, for example:* `Ruled: annual only` — and if that is what you meant all along, Story 12.8 already says it
+and nothing changes.
+
+### And one propagation this run did not make, deliberately
+
+**Ruling 2 contradicts the PRD's own text and the PRD has not been changed.** FR-P1 still calls the sixth email
+conditional, FR-P2 still describes the carve-out as conditional, and §7.6 still carries "verify whether Dodo
+sends it" as an open item. This document records the ruling; the PRD does not yet.
+
+That is exactly the failure class **R-79** was written about — a decision the owner made that never reached the
+document a story is built from. **This run did not edit the PRD on its own**, because amending normative FR text
+is a numbered-ruling act with its own propagation ledger, and a half-propagation is worse than none.
+
+**Recommended:** let me land it as a numbered ruling — FR-P1, FR-P2, §7.6's item, and the ledger row in
+`reconcile-designs-decisions.md` — in one pass, then re-run the gate. Say the word and it is one commit.
 
 ---
 
