@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#1C1B1A; text-decoration:none; }
+  a:hover { color:#FF5941; }
+  input::placeholder, textarea::placeholder { color:#A8A29A; }
+</style>
+<script src="./interactions.js"></script>
+</helmet>
+<section style="padding:48px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:820px">
+    <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;letter-spacing:-0.02em">Editor sidebar kit</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">every control type allowed in the 280–320px Controls sidebar · named values first · colour comes from the Style Pack, never a picker here · one coral action per surface</span>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <!-- labels & text -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">labels &amp; text</span>
+      <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Panel label — 13 / 600 / 0.04em</span>
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Control label — 12 / 500</span>
+      <span style="font-size:11px;color:#6E6A64;line-height:1.5">Helper caption — 11px, one line of guidance under a control. Never jargon.</span>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Hero</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px;background:#FFFFFF">4 / 18</span>
+      </div>
+      <span style="font-size:11px;color:#6E6A64">↑ selected-section header with variant counter chip (mono)</span>
+    </div>
+
+    <!-- accordions -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:2px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;margin-bottom:10px">accordion headers</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-top:1px solid #E7E2DB;cursor:pointer"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Content</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+      <span style="font-size:11px;color:#6E6A64;padding:2px 2px 10px">open — body renders below</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-top:1px solid #E7E2DB;cursor:pointer"><span style="font-size:12px;font-weight:600;color:#6E6A64;text-transform:uppercase;letter-spacing:0.04em">Data</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <span style="font-size:11px;color:#6E6A64;padding:2px 2px 0">closed</span>
+    </div>
+
+    <!-- inputs -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">inputs — radius 8 · coral caret · focus ring 2px @40%</span>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Text · rest</span><input type="text" value="The slow return of the personal homepage" style="height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;font-size:12.5px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941"></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Text · focused</span><input type="text" value="Sunday essays on the humane web" style="height:36px;border:1px solid #FF5941;border-radius:8px;padding:0 11px;font-size:12.5px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)"></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Multiline</span><textarea style="height:64px;border:1px solid #E7E2DB;border-radius:8px;padding:9px 11px;font-size:12.5px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;resize:none;line-height:1.5">Why writers are leaving the feed — and coming home.</textarea></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Search · with key hint</span><div style="display:flex;align-items:center;gap:8px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg><span style="font-size:12.5px;color:#A8A29A;flex:1">Find a section…</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Mono value (keys, URLs)</span><input type="text" value="https://orbitweekly.com" style="height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;font-family:'JetBrains Mono',monospace;font-size:12px;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941"></div>
+    </div>
+
+    <!-- segmented -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">segmented — pill on paper · active = surface + sm shadow</span>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Two options</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Left</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Right</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Three options — named values, never numbers</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Compact</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Comfortable</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Spacious</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#6E6A64">With moon badge — carries a dark-mode override <span style="width:12px;height:12px;flex-shrink:0;border-radius:50%;background:#1C1B1A;display:inline-flex;align-items:center;justify-content:center"><svg width="7" height="7" viewBox="0 0 24 24" fill="#F7F5F2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg></span></span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">None</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Soft</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64;cursor:pointer">Strong</span></div></div>
+    </div>
+
+    <!-- design picker -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">design picker — 64×44 wireframe diagrams · coral active ring</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;padding:6px;gap:4px;align-items:center;cursor:pointer"><div style="flex:1.2;display:flex;flex-direction:column;gap:3px"><div style="height:4px;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:70%;background:#C9C2B8;border-radius:1px"></div></div><div style="flex:1;height:100%;background:#FFD9CF;border-radius:3px"></div></div>
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;gap:4px;align-items:center;cursor:pointer"><div style="flex:1;height:100%;background:#FFD9CF;border-radius:3px"></div><div style="flex:1.2;display:flex;flex-direction:column;gap:3px"><div style="height:4px;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:70%;background:#C9C2B8;border-radius:1px"></div></div></div>
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;gap:4px;align-items:center;cursor:pointer"><div style="flex:1;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center"><div style="height:4px;width:70%;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:45%;background:#C9C2B8;border-radius:1px"></div><div style="height:8px;width:80%;background:#FFD9CF;border-radius:2px"></div></div></div>
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;align-items:center;cursor:pointer"><div style="flex:1;height:100%;background:#FFD9CF;border-radius:3px;display:flex;align-items:center;justify-content:center"><div style="height:4px;width:60%;background:#1C1B1A;border-radius:1px"></div></div></div>
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;gap:4px;align-items:center;cursor:pointer"><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:8px;background:#FFD9CF;border-radius:2px"></div><div style="height:4px;width:70%;background:#1C1B1A;border-radius:1px"></div></div></div>
+        <div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;gap:4px;align-items:center;cursor:pointer"><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:4px;width:85%;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:55%;background:#C9C2B8;border-radius:1px"></div></div></div>
+      </div>
+      <span style="font-size:11px;color:#6E6A64">quick controls show 3 favorites; the Design accordion shows all</span>
+    </div>
+
+    <!-- swatch row -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">swatch row — 7 colour roles · 24px circles · active = coral ring</span>
+      <div style="display:flex;gap:9px">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#FBF9F5;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Background</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Surface</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#232019;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Text</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#6B6459;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Muted</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#E7E2DB;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Border</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#D96C3F;box-shadow:0 0 0 2px #FF5941, inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Accent</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12);cursor:pointer"></span><span style="font-size:9px;color:#6E6A64;white-space:nowrap">Contrast</span></div>
+      </div>
+    </div>
+
+    <!-- stepper + toggle + eye + grip -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">stepper · toggle · micro-controls</span>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Count — tabular numerals</span><div style="display:flex;align-items:center;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;overflow:hidden"><span style="width:26px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:#6E6A64;cursor:pointer" style-hover="background:#F7F5F2">−</span><span style="width:32px;text-align:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">12</span><span style="width:26px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:#6E6A64;cursor:pointer" style-hover="background:#F7F5F2">+</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Toggle · on — 36×20, coral</span><div style="width:36px;height:20px;border-radius:10px;background:#FF5941;position:relative;cursor:pointer"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Toggle · off</span><div style="width:36px;height:20px;border-radius:10px;background:#D8D2C9;position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.2)"></span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Visibility eye · shown / hidden</span><span style="display:flex;gap:10px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="4" y1="20" x2="20" y2="4"></line></svg></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Drag grip — 6 dots</span><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg></div>
+    </div>
+
+    <!-- selects & menus -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">select rows &amp; menus</span>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Select · closed (with mini thumb)</span><div style="display:flex;align-items:center;gap:9px;height:38px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;cursor:pointer;background:#FFFFFF" style-hover="border-color:#C9C2B8"><div style="width:26px;height:18px;border:1px solid #E7E2DB;border-radius:3px;display:flex;padding:2px;gap:1.5px"><div style="flex:1;background:#E7E2DB;border-radius:1px"></div><div style="flex:1;background:#FFD9CF;border-radius:1px"></div></div><span style="font-size:12.5px;font-weight:500">Post Grid</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="margin-left:auto"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Font row — live "Aa" rendering</span><div style="display:flex;align-items:center;gap:9px;height:40px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF;cursor:pointer" style-hover="border-color:#C9C2B8"><span style="font-family:Georgia,serif;font-size:14px;width:20px">Aa</span><div style="display:flex;flex-direction:column;flex:1"><span style="font-size:10px;color:#6E6A64">Title font</span><span style="font-size:12px;font-weight:600">Georgia</span></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Dropdown menu — check on active</span><div style="width:210px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:6px;display:flex;flex-direction:column;gap:1px"><div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:13px;font-weight:600;border-radius:8px;background:#FFEDE8">Home<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div><div style="display:flex;align-items:center;padding:7px 10px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer" style-hover="background:#F7F5F2">Post</div><div style="height:1px;background:#E7E2DB;margin:4px 8px"></div><div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;font-weight:500;color:#C4383C;border-radius:8px;cursor:pointer" style-hover="background:#FDEBEC"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg>Delete</div></div></div>
+    </div>
+
+    <!-- radio cards -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">radio cards — selected gets coral border + tint wash</span>
+      <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #FF5941;border-radius:10px;background:#FFF9F7;cursor:pointer">
+        <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #FF5941;display:inline-flex;align-items:center;justify-content:center;margin-top:1px"><span style="width:8px;height:8px;border-radius:50%;background:#FF5941"></span></span>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">Selected option</span><span style="font-size:12px;color:#6E6A64">One line of consequence, plainly said.</span></div>
+      </div>
+      <div style="display:flex;gap:11px;padding:12px 13px;border:1px solid #E7E2DB;border-radius:10px;cursor:pointer" style-hover="border-color:#C9C2B8">
+        <span style="width:16px;height:16px;flex-shrink:0;border-radius:50%;border:1.5px solid #C9C2B8;margin-top:1px"></span>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">Unselected option</span><span style="font-size:12px;color:#6E6A64">Hover firms up the hairline.</span></div>
+      </div>
+      <span style="font-size:11px;color:#6E6A64">inline radios (in lists): 13px circle, coral dot when picked</span>
+      <div style="display:flex;gap:16px;align-items:center"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600"><span style="width:13px;height:13px;border-radius:50%;border:1.5px solid #FF5941;display:inline-flex;align-items:center;justify-content:center"><span style="width:6px;height:6px;border-radius:50%;background:#FF5941"></span></span>Picked</span><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:#6E6A64"><span style="width:13px;height:13px;border-radius:50%;border:1.5px solid #C9C2B8"></span>Not picked</span></div>
+    </div>
+
+    <!-- buttons -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">buttons — sizes 44/36/32 · coral = THE action of the surface</span>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button style="height:36px;padding:0 16px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg>Ship it</button>
+        <div style="display:flex;height:32px;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(28,27,26,.06)"><span style="display:inline-flex;align-items:center;padding:0 14px;background:#C2381F;color:#FFFFFF;font-size:13px;font-weight:600;cursor:pointer">Split</span><span style="width:26px;background:#C2381F;border-left:1px solid rgba(255,255,255,.25);color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button style="height:36px;padding:0 16px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Primary</button>
+        <button style="height:36px;padding:0 16px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#F7F5F2">Secondary</button>
+        <button style="height:36px;padding:0 12px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Ghost</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button style="height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #FF5941;color:#C2381F;border-radius:10px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#FFF9F7">Coral outline</button>
+        <button style="height:32px;padding:0 13px;background:#C4383C;color:#FFFFFF;border:none;border-radius:10px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#C63A3F">Danger</button>
+        <button style="height:32px;padding:0 13px;background:#FFFFFF;border:1px solid #F5C6C9;color:#C4383C;border-radius:10px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#FDEBEC">Danger outline</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button style="width:100%;height:32px;background:transparent;border:1px dashed #C9C2B8;border-radius:8px;font-size:13px;font-weight:500;color:#6E6A64;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#E84B34;border-color:#FF5941">+ Add section — dashed affordance</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 160ms ease-out" style-hover="background:rgba(28,27,26,.05)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg></div>
+        <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:.35"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round"><path d="M15 14l5-5-5-5"></path><path d="M20 9H9a5 5 0 0 0 0 10h3"></path></svg></div>
+        <span style="font-size:11px;color:#6E6A64">icon buttons 28px — enabled / disabled at 35%</span>
+      </div>
+    </div>
+
+    <!-- badges & chips -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">badges &amp; chips — marigold only for Pro/celebration</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="background:#FFF4D6;color:#8A6100;font-size:11px;font-weight:600;padding:2px 9px;border-radius:24px">✦ Pro</span>
+        <span style="border:1px solid #E7E2DB;color:#6E6A64;font-size:11px;font-weight:600;padding:2px 9px;border-radius:24px">Free</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#157A58"><span style="width:6px;height:6px;border-radius:50%;background:#1FA97A"></span>Live <span style="font-family:'JetBrains Mono',monospace;font-size:11px">v4</span></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px">v5</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">0 errors · 0 warnings</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">0 · 2</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FDEBEC;color:#C63A3F;border-radius:24px;padding:2px 8px">1 error</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="background:#FFEDE8;color:#C2381F;font-size:12px;font-weight:600;padding:4px 10px;border-radius:24px">Recommended</span>
+        <span style="font-size:11px;font-weight:600;background:#EAF0FF;color:#3155B4;border-radius:24px;padding:3px 10px">Planned</span>
+        <span style="font-size:11px;font-weight:600;background:#E4F5EE;color:#157A58;border-radius:24px;padding:3px 10px">Shipped</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:2px 9px;background:#FFFFFF">tag:tutorials</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="width:12px;height:12px;flex-shrink:0;border-radius:50%;background:#1C1B1A;display:inline-flex;align-items:center;justify-content:center"><svg width="7" height="7" viewBox="0 0 24 24" fill="#F7F5F2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg></span>
+        <span style="font-size:11px;color:#6E6A64">moon badge — 12px, marks any control carrying a dark-mode override</span>
+      </div>
+    </div>
+
+    <!-- tooltips -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">tooltips — ink fill · 12px white · 6px radius</span>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <span style="background:#1C1B1A;color:#FFFFFF;font-size:12px;font-weight:500;padding:5px 9px;border-radius:6px;box-shadow:0 4px 16px rgba(28,27,26,.2)">Duplicate section</span>
+        <span style="background:#1C1B1A;color:#FFFFFF;font-size:12px;font-weight:500;padding:5px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(28,27,26,.2)">Next design<span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:0 5px;line-height:1.5">]</span></span>
+      </div>
+      <span style="font-size:11px;color:#6E6A64">keyboard-key variant carries a mono kbd chip</span>
+    </div>
+
+    <!-- composite: quick controls -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">composite — quick controls card (3–5 most-used, surface card)</span>
+      <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span><div style="display:flex;gap:8px"><div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;padding:6px;gap:4px;align-items:center"><div style="flex:1.2;display:flex;flex-direction:column;gap:3px"><div style="height:4px;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:70%;background:#C9C2B8;border-radius:1px"></div></div><div style="flex:1;height:100%;background:#FFD9CF;border-radius:3px"></div></div><div style="width:64px;height:44px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:6px;gap:4px;align-items:center"><div style="flex:1;height:100%;background:#FFD9CF;border-radius:3px"></div><div style="flex:1.2;display:flex;flex-direction:column;gap:3px"><div style="height:4px;background:#1C1B1A;border-radius:1px"></div><div style="height:3px;width:70%;background:#C9C2B8;border-radius:1px"></div></div></div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Density</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:600;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06)">Comfortable</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:20px;font-size:11.5px;font-weight:500;color:#6E6A64">Spacious</span></div></div>
+      </div>
+    </div>
+
+    <!-- composite: variant + pack cards -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">composite — variant thumb · pack cards</span>
+      <div style="position:relative;border:1px solid #E7E2DB;border-radius:8px;background:#FFFFFF;padding:8px;display:flex;gap:8px;align-items:center;cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.08)">
+        <div style="width:48px;height:34px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;padding:5px;align-items:center;flex-shrink:0"><div style="flex:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center"><div style="height:3px;width:70%;background:#1C1B1A;border-radius:1px"></div><div style="height:6px;width:80%;background:#FFD9CF;border-radius:2px"></div></div></div>
+        <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:12px;font-weight:500">Editorial Stack</span><span style="font-size:10px;color:#6E6A64">Same words, new look</span></div>
+        <span style="margin-left:auto;flex-shrink:0;background:#FFF4D6;color:#8A6100;font-size:10px;font-weight:600;padding:1px 7px;border-radius:24px">✦ Pro</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div style="position:relative;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:3px;box-shadow:0 0 0 2px #FF5941"><span style="position:absolute;top:4px;right:4px;width:15px;height:15px;border-radius:50%;border:1px solid #C9C2B8;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg></span><span style="font-family:Georgia,serif;font-size:15px">Ag</span><span style="font-size:10.5px;font-weight:600">Paper</span><div style="display:flex;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#FBF9F5;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12)"></span><span style="width:9px;height:9px;border-radius:50%;background:#D96C3F"></span><span style="width:9px;height:9px;border-radius:50%;background:#232019"></span></div></div>
+        <div style="position:relative;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:3px"><span style="position:absolute;top:4px;right:4px;width:15px;height:15px;border-radius:50%;border:1px solid #C9C2B8;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg></span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:15px">Ag</span><span style="font-size:10.5px;font-weight:600">Tangerine</span><div style="display:flex;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#FFF4EA;box-shadow:inset 0 0 0 1px rgba(28,27,26,.12)"></span><span style="width:9px;height:9px;border-radius:50%;background:#E8450A"></span><span style="width:9px;height:9px;border-radius:50%;background:#2B1D12"></span></div></div>
+        <div style="border:1.5px dashed #C9C2B8;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:border-color 160ms ease-out" style-hover="border-color:#FF5941"><span style="font-size:16px;line-height:1;color:#6E6A64">+</span><span style="font-size:10px;font-weight:600;color:#6E6A64">New pack</span></div>
+      </div>
+      <span style="font-size:11px;color:#6E6A64">pack cell: glyph in the pack's heading font · palette dots · pencil to edit · active = coral ring</span>
+    </div>
+
+    <!-- layers row -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">layers rows — grip · mini-thumb · name · eye (rest / hover / selected)</span>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px"><div style="flex:1;display:flex;flex-direction:column;gap:2px;justify-content:center"><div style="height:3px;background:#1C1B1A;border-radius:1px"></div><div style="height:2px;width:70%;background:#C9C2B8;border-radius:1px"></div></div><div style="width:10px;background:#FF5941;opacity:.7;border-radius:2px"></div></div><span style="font-size:13px;font-weight:500;flex:1">Rest</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;background:rgba(28,27,26,.04)"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px"><div style="flex:1.4;background:#E7E2DB;border-radius:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="flex:1;background:#E7E2DB;border-radius:1px"></div><div style="flex:1;background:#E7E2DB;border-radius:1px"></div></div></div><span style="font-size:13px;font-weight:500;flex:1">Hover — wash</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9C2B8" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;background:#FFEDE8"><svg width="10" height="14" viewBox="0 0 10 16" fill="#C9C2B8"><circle cx="3" cy="3" r="1.3"></circle><circle cx="7" cy="3" r="1.3"></circle><circle cx="3" cy="8" r="1.3"></circle><circle cx="7" cy="8" r="1.3"></circle><circle cx="3" cy="13" r="1.3"></circle><circle cx="7" cy="13" r="1.3"></circle></svg><div style="width:30px;height:21px;border:1px solid #E7E2DB;border-radius:4px;background:#FFFFFF;display:flex;padding:3px;gap:2px;align-items:center"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:2px;background:#C9C2B8;border-radius:1px"></div><div style="height:2px;background:#C9C2B8;border-radius:1px"></div></div><div style="width:9px;height:6px;background:#FF5941;opacity:.7;border-radius:1px"></div></div><span style="font-size:13px;font-weight:600;flex:1">Selected — coral tint</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+    </div>
+
+    <!-- filter condition row -->
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">condition row — field · operator · value (+ chips for lists)</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:84px;flex-shrink:0"><span style="font-size:12.5px;font-weight:500;flex:1">Tag</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+        <div style="display:flex;align-items:center;gap:6px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;cursor:pointer;background:#FFFFFF;width:88px;flex-shrink:0"><span style="font-size:12.5px;font-weight:500;flex:1">is any of</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+        <div style="flex:1;display:flex;align-items:center;gap:5px;min-height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:3px 8px;flex-wrap:wrap;background:#FFFFFF"><span style="display:inline-flex;align-items:center;gap:5px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:24px;padding:2px 8px;font-size:11.5px;font-weight:500">Travel<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" stroke-linecap="round" style="cursor:pointer;flex-shrink:0"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+      </div>
+    </div>
+
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">feedback banners — one icon, one plain sentence</span>
+      <div style="display:flex;gap:9px;background:#EAF0FF;border:1px solid #D4E0FA;border-radius:10px;padding:11px 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3155B4" stroke-width="1.8" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16" stroke-linecap="round"></line><circle cx="12" cy="8" r="0.5" fill="#3155B4"></circle></svg><span style="font-size:12.5px;line-height:1.5;color:#2A448C">Info — sky tint. Links get sky, not coral.</span></div><div style="display:flex;gap:9px;background:#E4F5EE;border:1px solid #BFE7D6;border-radius:10px;padding:11px 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" fill="#1FA97A"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg><span style="font-size:12.5px;line-height:1.5;color:#157A58">Success — mint. "Live! Your site just got gorgeous."</span></div><div style="display:flex;gap:9px;background:#FFFDF6;border:1px solid #F5E3B8;border-radius:10px;padding:11px 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.4" fill="#B87A00"></circle></svg><span style="font-size:12.5px;line-height:1.5;color:#8A6100">Notice — marigold. Warnings never block a deploy.</span></div><div style="display:flex;gap:9px;background:#FDEBEC;border:1px solid #F5C6C9;border-radius:10px;padding:11px 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" fill="#E5484D"></circle><line x1="8.5" y1="8.5" x2="15.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line><line x1="15.5" y1="8.5" x2="8.5" y2="15.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line></svg><span style="font-size:12.5px;line-height:1.5;color:#A3341F">Error — danger, serious voice. No puns here.</span></div>
+    </div>
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">toast — bottom-center pill · icon + message + action</span>
+      <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:24px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:9px 16px;align-self:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" fill="#1FA97A"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg><span style="font-size:13px;font-weight:500">Optimized: <span style="font-family:'JetBrains Mono',monospace;font-size:12px">4.2 MB → 380 KB</span></span><div style="width:1px;height:14px;background:#E7E2DB"></div><span style="font-size:13px;font-weight:600;color:#C2381F;cursor:pointer">View</span></div>
+    </div>
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">loading — skeletons, not spinners · progress bars coral</span>
+      <div style="display:flex;flex-direction:column;gap:8px">
+   <div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:32px;border-radius:6px;background:#EFECE7"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:9px;width:70%;background:#EFECE7;border-radius:3px"></div><div style="height:7px;width:45%;background:#F1EDE7;border-radius:3px"></div></div></div>
+   <div style="height:9px;width:88%;background:#EFECE7;border-radius:3px"></div>
+   <div style="height:9px;width:60%;background:#F1EDE7;border-radius:3px"></div>
+ </div>
+ <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Uploading</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1.1 of 2.4 MB</span></div><div style="height:5px;background:#EFECE7;border-radius:3px;overflow:hidden"><div style="width:46%;height:100%;background:#FF5941;border-radius:3px"></div></div></div>
+    </div>
+
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">image control — asset row + drop zone</span>
+      <div style="display:flex;align-items:center;gap:10px;border:1px solid #E7E2DB;border-radius:8px;padding:8px 10px;background:#FFFFFF">
+   <div style="width:44px;height:32px;flex-shrink:0;border-radius:6px;background:repeating-linear-gradient(45deg,#EDE4D8 0 6px,#E5DACB 6px 12px)"></div>
+   <div style="display:flex;flex-direction:column;gap:1px;min-width:0;flex:1"><span style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">hero-shot.jpg</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">380 KB · WebP</span></div>
+   <span style="font-size:12px;font-weight:600;color:#C2381F;cursor:pointer;flex-shrink:0">Replace</span>
+ </div>
+ <div style="border:1.5px dashed #FF5941;border-radius:10px;background:rgba(255,237,232,.6);padding:16px;display:flex;flex-direction:column;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span style="font-size:12px;font-weight:600">Drop an image — we'll optimize it ✨</span><span style="font-size:11px;color:#6E6A64">JPG, PNG, SVG or WebP</span></div>
+    </div>
+
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">panel empty state — nothing selected</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 12px;text-align:center">
+   <svg width="64" height="44" viewBox="0 0 64 44" fill="none"><rect x="4" y="4" width="56" height="36" rx="6" stroke="#C9C2B8" stroke-width="1.5" stroke-dasharray="4 4"></rect><rect x="14" y="14" width="22" height="5" rx="2.5" fill="#E7E2DB"></rect><rect x="14" y="24" width="14" height="7" rx="3" fill="#FFD9CF"></rect></svg>
+   <span style="font-size:13px;font-weight:600">Nothing selected</span>
+   <span style="font-size:12px;color:#6E6A64;line-height:1.5">Click any section on the canvas — its controls appear here.</span>
+ </div>
+    </div>
+    <div style="width:352px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:20px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">shortcut rows — action + mono kbd chips</span>
+      <div style="display:flex;flex-direction:column">
+   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #E7E2DB"><span style="font-size:12.5px;font-weight:500">Shuffle design</span><span style="display:flex;gap:4px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px;background:#FFFFFF">[</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px;background:#FFFFFF">]</span></span></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #E7E2DB"><span style="font-size:12.5px;font-weight:500">Duplicate section</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px;background:#FFFFFF">⌘D</span></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><span style="font-size:12.5px;font-weight:500">Ship it</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 6px;background:#FFFFFF">⌘⏎</span></div>
+ </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

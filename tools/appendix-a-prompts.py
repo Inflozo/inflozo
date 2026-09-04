@@ -128,8 +128,8 @@ def render():
 <title>Inflozo — Appendix A prompts</title><style>{dp1.CSS}</style>
 <body><div class="wrap">
 <h1>Appendix A — the Claude Design prompts</h1>
-<p class="sub">These draw the parts of Inflozo's own app that Claude Design has not drawn yet, and
-correct the frames it drew wrongly. They live in the UX spine,
+<p class="sub">These drew the parts of Inflozo's own app that Claude Design had not drawn, and
+corrected the frames it drew wrongly; they ran on 2026-09-04 and this page is the record of what was asked. They live in the UX spine,
 <a href="{html.escape(SPINE_REL)}">EXPERIENCE.md</a> → Appendix A, and this page lifts them from it word
 for word. Paste each session's prompts into one Claude Design chat, in the order shown. Tick a card
 when you have run it. Export the whole project once, after Session 2, then run the runbook once.

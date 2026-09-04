@@ -161,10 +161,11 @@ SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GU
     the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
   - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
     flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
-    section 8 and go on; none of them is a stop.
-  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
-    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
-    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+    section 8 and go on; none of them is a stop.  - Every surface now has a frame: the Appendix A export landed on 2026-09-04 and EXPERIENCE.md&#x27;s
+    Information Architecture names the D canvas and label for the surfaces that were undrawn
+    (D1 first-deploy gates · D2 history completed · D3 drift report · D4 dashboard sheets · D5 canvas
+    markers and template switcher · D6 theme settings · D8 the editor below 1440). Name that frame.
+    A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
   - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
@@ -202,7 +203,7 @@ AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
   - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.">Copy the step 6 prompt</button><a class="lnk" href="STORY-BOARD.html">Then watch it on STORY-BOARD.html</a></div></section>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 6 — the story breakdown. Open since 2026-09-04</b><span>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</span></li><li><b>The Appendix A Claude Design prompts — two sessions, in parallel with step 6</b><span>Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They block nothing. Export the whole project ONCE after the second session, drop it into the export directory, run the runbook above once, then both generators: the pages that say “not drawn” lift the new frames.</span></li></ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 6 — the story breakdown. Open since 2026-09-04</b><span>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</span></li></ol></div>
 </div>
 
 <section class="runbook">
@@ -215,7 +216,7 @@ AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
 </section>
 
 <div class="acts">
-  
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>One Claude Design session is owed — prompt A9, and you decide which half</b><span>The Appendix A export landed 2026-09-04 (the previous issue is InflozoOld/, for diffing only), the runbook ran once, and both builds lift the D canvases. reconcile-designs-decisions.md §A15 verified every prompt frame by frame and wrote A9 for the misses: items 1–9 are misses of this export, the optional second half the frames the UX pass had deferred. Decide in §A15 — (1) both halves in one session, RECOMMENDED, or (2) items 1–9 only — then copy A9 from APPENDIX-A-PROMPTS.html, export once after, run the runbook once. It blocks nothing.</span></li></ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
@@ -695,7 +696,7 @@ House rules for tonight:
       <a class="badge done" href="#s5">complete</a></div>
   </div>
   <p class="stands">Ran 2026-09-03. ux-designs/ux-Inflozo-2026-09-03/ holds DESIGN.md (a TRANSCRIPTION of the design export — on any disagreement the export is right and the spine is the bug, R-74) and EXPERIENCE.md (the IA, the state patterns, the four journeys and the eight flows). Every surface has one stable name and either points at a drawn frame or names the frame it extrapolates from. It found the PAYWALL EDITOR ALREADY DRAWN at C Post Body C3a, which §37.7 called missing; and a library total in S3’s product copy that both controls had been blind to for a THIRD time. Four rulings in §A11 of the decisions file (R-76 … R-79); prd.md FR-D1, FR-J7 and FR-J9 moved.</p>
-  <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count). A8 came out of the step’s own stress test: the export draws the editor at 1440 and NOWHERE ELSE, so R-76’s tablet half and the 200%-zoom floor were both prose with no frame behind them.</dd>
+  <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count) — all run, export landed 2026-09-04, §A15 verified, A9 drafted for the misses. A8 came out of the step’s own stress test: the export then drew the editor at 1440 and NOWHERE ELSE, so R-76’s tablet half and the 200%-zoom floor were both prose with no frame behind them.</dd>
   </dl>
   
 </section><section class="step done" id="s5b">
@@ -704,7 +705,7 @@ House rules for tonight:
     <div class="stitle"><h2>Static prototype</h2>
       <a class="badge done" href="#s5b">complete</a></div>
   </div>
-  <p class="stands">BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/prototype/index.html</code></b> — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. Appendix A’s Claude Design prompts had NOT been run when it was built, so a surface with no frame says so and shows nothing.</p>
+  <p class="stands">BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/prototype/index.html</code></b> — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. The Appendix A prompts ran and their export landed on 2026-09-04, so the pages that said “not drawn” now lift the D canvases.</p>
   <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and <b>R-75’s gate: the owner walking it is what unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end and the date written on the line under build-sequence.md step 5b, The walk, which is his to write; notes in ux-designs/WALK-NOTES.md were optional. WALKED 2026-09-04 — the date stands. What he found is fixed inside the stories that own the screens, from his own test of each deployed story (R-80 as amended, §A13).</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
@@ -845,7 +846,7 @@ rebuilds or extends the prototype, and a UI issue he finds now is fixed in its s
     <div class="stitle"><h2>The walkthrough</h2>
       <a class="badge done" href="#s5c">complete</a></div>
   </div>
-  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html</code></b> — it opens on Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame lifted from the export and patched with links and hooks on the elements it drew. What behaves, read from the build: menus, popovers and sheets open from the control that raises them and close on Esc, their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: the on-section design nav and the backup gate (no frame — prompts A5 and A1), the six-step first deploy, the wrong-mechanism frames held out or shown as drawn until A7 runs (§A12 decision 6), and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files that are not product screens.</p>
+  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html</code></b> — it opens on Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame lifted from the export and patched with links and hooks on the elements it drew. What behaves, read from the build: menus, popovers and sheets open from the control that raises them and close on Esc, their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn selected look; the FIRST DEPLOY WALKS ALL SIX STEPS since the Appendix A export of 2026-09-04 — the safety-net offer and its declined path, the backup gate with its ghost-backup shortcut, pre-flight with the drift report, the snapshot gate, ship, live, and Deploy only ends on its own drawn ending — later deploys walk four; history pins; the dashboard sheets open; the editor carries the complete switcher, the canvas markers, the skip link and the 834/720 layouts; P opens Preview, Esc leaves it, L hides Layers, ] and [ step the ring, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: detail cards with no drawn trigger, the two wrong-mechanism frames A7 left (B22, B18 — prompt A9), and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files that are not product screens.</p>
   <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers <b>is this any good</b>, where 5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to the design belongs in both.</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>The walkthrough</h4><span class="ptag live">live</span><button class="copy" data-t="Rebuild or extend the Inflozo walkthrough — step 5c.
@@ -977,10 +978,11 @@ SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GU
     the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
   - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
     flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
-    section 8 and go on; none of them is a stop.
-  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
-    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
-    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+    section 8 and go on; none of them is a stop.  - Every surface now has a frame: the Appendix A export landed on 2026-09-04 and EXPERIENCE.md&#x27;s
+    Information Architecture names the D canvas and label for the surfaces that were undrawn
+    (D1 first-deploy gates · D2 history completed · D3 drift report · D4 dashboard sheets · D5 canvas
+    markers and template switcher · D6 theme settings · D8 the editor below 1440). Name that frame.
+    A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
   - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
@@ -1063,10 +1065,11 @@ SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GU
     the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
   - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
     flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
-    section 8 and go on; none of them is a stop.
-  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
-    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
-    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+    section 8 and go on; none of them is a stop.  - Every surface now has a frame: the Appendix A export landed on 2026-09-04 and EXPERIENCE.md&#x27;s
+    Information Architecture names the D canvas and label for the surfaces that were undrawn
+    (D1 first-deploy gates · D2 history completed · D3 drift report · D4 dashboard sheets · D5 canvas
+    markers and template switcher · D6 theme settings · D8 the editor below 1440). Name that frame.
+    A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
   - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md

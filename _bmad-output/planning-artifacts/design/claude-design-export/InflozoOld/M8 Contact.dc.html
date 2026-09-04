@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#1C1B1A; text-decoration:none; }
+  a:hover { color:#FF5941; }
+</style>
+<script src="./interactions.js"></script>
+</helmet>
+<section style="padding:48px;display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M8 · contact — email first, short form · 1440</div>
+    <div data-screen-label="M8 Contact" style="width:1440px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:72px;display:flex;align-items:center;gap:28px;padding:0 64px">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:23px;letter-spacing:-0.02em">Inflozo</span>
+        <div style="display:flex;gap:24px;font-size:14px;font-weight:500;color:#6E6A64;margin-left:24px">
+          <a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#6E6A64">Sections</a><a href="#" style="color:#6E6A64">Pricing</a><a href="#" style="color:#6E6A64">Docs</a>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+          <a href="#" style="font-size:14px;font-weight:500;color:#6E6A64;padding:8px 12px">Sign in</a>
+          <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#A82D18">Start free</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:26px;padding:100px 120px 60px;text-align:center">
+        <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:72px;letter-spacing:-0.03em">Say hello.</h1>
+        <a href="#" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;color:#E84B34;border-bottom:3px solid #FFD9CF;padding-bottom:4px;transition:all 160ms ease-out" style-hover="border-bottom:3px solid #FF5941">hello@inflozo.com</a>
+        <span style="font-size:16px;color:#6E6A64;line-height:1.6;max-width:440px">A human answers within a day — usually much faster. Bug reports, ideas, or just showing off what you shipped: all welcome.</span>
+        
+      </div>
+      <div style="display:flex;justify-content:center;padding:0 0 90px">
+        <div style="width:560px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:32px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Or write to us right here.</span>
+          <div style="display:flex;gap:14px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12px;font-weight:500;color:#6E6A64">Name</label>
+              <input type="text" placeholder="Maya Chen" style="height:42px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-size:14px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;box-sizing:border-box;width:100%" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12px;font-weight:500;color:#6E6A64">Email</label>
+              <input type="email" placeholder="you@yoursite.com" style="height:42px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-size:14px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;box-sizing:border-box;width:100%" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)">
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:12px;font-weight:500;color:#6E6A64">What's on your mind?</label>
+            <textarea placeholder="A bug, an idea, or the site you just shipped — all welcome." style="height:120px;border:1px solid #E7E2DB;border-radius:8px;padding:11px 12px;font-size:14px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;resize:none;line-height:1.55;box-sizing:border-box;width:100%" style-focus="border-color:#FF5941;box-shadow:0 0 0 2px rgba(255,89,65,.4)"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:12px;color:#6E6A64">Replies land in your inbox within a day.</span>
+            <button style="margin-left:auto;height:44px;padding:0 24px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Send message</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;max-width:640px;width:100%;margin:0 auto;padding:0 0 110px">
+        <div style="border-bottom:1px solid #E7E2DB;padding:20px 0;display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"><span style="font-size:15px;font-weight:600">Something's broken — where do I report it?</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+          <span style="font-size:14px;color:#6E6A64;line-height:1.6">Email us with the project name and what you clicked. Screenshots make our day.</span>
+        </div>
+        <div style="border-bottom:1px solid #E7E2DB;padding:20px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer"><span style="font-size:15px;font-weight:600">Do you do agency or partner work?</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+        <div style="padding:20px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer"><span style="font-size:15px;font-weight:600">Feature ideas — email or the Suggestions board?</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      </div>
+      <div style="padding:0 120px 0;display:flex;flex-direction:column;gap:48px;overflow:hidden;border-top:1px solid #E7E2DB">
+        <div style="display:flex;gap:64px;padding-top:56px">
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1.4">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</span>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.55;max-width:260px">The visual builder for Ghost. Building a beautiful site should feel like play.</span>
+            <a href="#" style="font-size:13px;font-weight:500;color:#C2381F;margin-top:6px">Changelog — built with Inflozo on Ghost ↗</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Product</span><a href="#" style="color:#6E6A64">Features</a><a href="#" style="color:#6E6A64">Sections</a><a href="#" style="color:#6E6A64">Pricing</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Learn</span><a href="#" style="color:#6E6A64">How it works</a><a href="#" style="color:#6E6A64">Docs</a></div>
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;color:#6E6A64"><span style="font-size:12px;font-weight:600;color:#1C1B1A;text-transform:uppercase;letter-spacing:0.05em">Company</span><a href="#" style="color:#6E6A64">Contact</a><a href="#" style="color:#6E6A64">Terms</a><a href="#" style="color:#6E6A64">Privacy</a></div>
+        </div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:230px;letter-spacing:-0.04em;color:#EFECE7;line-height:.72;text-align:center;user-select:none;margin-bottom:-8px">Inflozo</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">M8 · mobile · 390</div>
+    <div data-screen-label="M8 mobile" style="width:390px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex;flex-direction:column">
+      <div style="height:60px;display:flex;align-items:center;gap:8px;padding:0 16px">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em">Inflozo</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <button style="height:38px;padding:0 16px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer">Start free</button>
+          <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:52px 24px 36px;text-align:center">
+        <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.03em">Say hello.</h1>
+        <a href="#" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;color:#E84B34;border-bottom:2px solid #FFD9CF;padding-bottom:3px">hello@inflozo.com</a>
+        <span style="font-size:14px;color:#6E6A64;line-height:1.6">A human answers within a day — usually much faster.</span>
+      </div>
+      <div style="padding:0 20px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">Or write to us right here.</span>
+          <div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;font-weight:500;color:#6E6A64">Name</label><input type="text" placeholder="Maya Chen" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-size:15px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;box-sizing:border-box;width:100%"></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;font-weight:500;color:#6E6A64">Email</label><input type="email" placeholder="you@yoursite.com" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 12px;font-size:15px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;box-sizing:border-box;width:100%"></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;font-weight:500;color:#6E6A64">What's on your mind?</label><textarea placeholder="A bug, an idea, or the site you just shipped." style="height:110px;border:1px solid #E7E2DB;border-radius:8px;padding:11px 12px;font-size:15px;font-family:'Inter',sans-serif;background:#FFFFFF;color:#1C1B1A;outline:none;caret-color:#FF5941;resize:none;line-height:1.55;box-sizing:border-box;width:100%"></textarea></div>
+          <button style="height:48px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer">Send message</button>
+          <span style="font-size:12px;color:#6E6A64;text-align:center">Replies land in your inbox within a day.</span>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <div style="border-bottom:1px solid #E7E2DB;padding:15px 0;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:600">Something's broken — where do I report it?</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0"><polyline points="18 15 12 9 6 15"></polyline></svg></div>
+            <span style="font-size:13px;color:#6E6A64;line-height:1.6">Email us with the project name and what you clicked.</span>
+          </div>
+          <div style="border-bottom:1px solid #E7E2DB;padding:15px 0;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:14px;font-weight:600">Do you do agency or partner work?</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+          <div style="padding:15px 0;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:14px;font-weight:600">Ideas — email or Suggestions board?</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+        </div>
+      </div>
+      <div style="padding:36px 24px 0;display:flex;flex-direction:column;gap:20px;overflow:hidden;border-top:1px solid #E7E2DB">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.02em">Inflozo</span>
+          <a href="#" style="font-size:13px;font-weight:500;color:#C2381F">Changelog — built with Inflozo on Ghost ↗</a>
+        </div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:82px;letter-spacing:-0.04em;color:#EFECE7;line-height:.72;text-align:center;user-select:none;margin-bottom:-5px">Inflozo</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

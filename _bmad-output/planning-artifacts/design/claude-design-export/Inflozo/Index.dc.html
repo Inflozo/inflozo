@@ -60,12 +60,12 @@
             </div>
             <div style="display:flex;flex-direction:column">
               <a href="{{ cat.proofHref }}" style="display:flex;gap:9px;align-items:baseline;padding:4px 7px;margin:0 -7px;border-radius:5px;font-size:13.5px;color:#6B6459" style-hover="background:#F4F0E8;color:#D96C3F">
-                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A;min-width:15px;text-align:right">0</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459;min-width:15px;text-align:right">0</span>
                 <span>Category Proof</span>
               </a>
               <sc-for list="{{ cat.designs }}" as="d" hint-placeholder-count="15">
                 <a href="{{ d.href }}" style="display:flex;gap:9px;align-items:baseline;padding:4px 7px;margin:0 -7px;border-radius:5px;font-size:13.5px;color:#232019" style-hover="background:#F4F0E8;color:#D96C3F">
-                  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A;min-width:15px;text-align:right">{{ d.num }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459;min-width:15px;text-align:right">{{ d.num }}</span>
                   <span>{{ d.name }}</span>
                 </a>
               </sc-for>
@@ -135,9 +135,9 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:8px">
         <sc-for list="{{ briefs }}" as="b" hint-placeholder-count="33">
           <a href="{{ b.href }}" style="border:1px dashed #DCD5CA;border-radius:8px;padding:10px 13px;display:flex;align-items:baseline;gap:9px;color:#6B6459" style-hover="border-color:#D96C3F;color:#232019">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A;min-width:28px">{{ b.code }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459;min-width:28px">{{ b.code }}</span>
             <span style="font-size:14px">{{ b.name }}</span>
-            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8A29A">{{ b.count }}</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459">{{ b.count }}</span>
           </a>
         </sc-for>
       </div>

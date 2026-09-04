@@ -2,12 +2,12 @@
 name: Inflozo
 status: final
 created: 2026-09-03
-updated: 2026-09-03
+updated: 2026-09-04
 sources:
   - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/prd.md"
   - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/addendum.md — §AD1, §AD2"
   - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/reconcile-designs.md — §SCREENS, §37.7"
-  - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md — R-1 … R-75"
+  - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md — R-1 … R-85, §A15 (the Appendix A export, verified 2026-09-04)"
   - "{planning_artifacts}/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md — AD-1 … AD-38"
   - "{planning_artifacts}/architecture/architecture-Inflozo-2026-08-19/BACKUP-GATE.md"
   - "{planning_artifacts}/design/claude-design-export/Inflozo/ — the whole directory"
@@ -39,9 +39,11 @@ and in the flows.** Step 5b turns this document into a static clickable prototyp
 page per surface (ruling **R-75**) — and it keys its pages off these names. A surface that goes by
 two names becomes two half-pages.
 
-**Every surface below either points at a drawn frame by filename, or names the frame it is
-extrapolated from and carries a Claude Design prompt in Appendix A.** There are no surfaces
-described in prose and left there.
+**Every surface below points at a drawn frame by filename.** Until 2026-09-04 a surface with no
+frame named the frame it was extrapolated from and carried a Claude Design prompt in Appendix A;
+those prompts ran, their export landed the same day, and the `D1`…`D8` canvases they drew are cited
+below (`reconcile-designs-decisions.md` §A15 verified them frame by frame). Appendix A stays as the
+record of what was asked. There are no surfaces described in prose and left there.
 
 **One user role.** Every account has identical capabilities, differentiated only by plan — Free or
 Pro (PRD §3, Appendix F.1). The `admin` claim that gates suggestions-board moderation is an internal
@@ -57,9 +59,11 @@ drew them:
 | **Phone, tablet and desktop** | 390 · 834 · 1440 | Sign In · Magic Link Sent · Dashboard · Account Menu · Notifications · Billing · Suggestions · every marketing page |
 | **Tablet and desktop only** | 834 · 1440 | Editor and everything it contains · Section Picker · Variant Shuffle · Style Packs · Deploy Wizard · Deploy History · Routes Manager · Theme Settings · Translations · Assets · Sites · Editor Cards · Paywall Editor · Post Content · Error Pages |
 
-**Every one of those is drawn at 1440 and at no other width.** The 834 column is the owner's ruling,
-not the export's evidence — **prompt A8 is what makes it true**, and it draws 720 beside it for the
-200%-zoom case. Said plainly here because R-74 forbids a surface that exists only in prose.
+**The editor is drawn at 834 and at 720 as well as at 1440** — `D8 Editor Below 1440.dc.html` D8a
+(834 × 1112, touch) and D8b (720 × 900, captioned as a 1440 display at 200% browser zoom). Until the
+D canvases landed on 2026-09-04 every one of those surfaces was drawn at 1440 and at no other width,
+and the 834 column was the owner's ruling rather than the export's evidence; prompt A8 is what made
+it true, because R-74 forbids a surface that exists only in prose.
 
 Below **1024px**, opening a project lands on **Small Screen Notice** — a designed surface, not a
 broken layout — which says the editor needs a wider screen and offers what does work from a phone:
@@ -67,7 +71,8 @@ the project's deploy history, a one-tap rollback, the sites list and billing. Th
 stays fully usable at 390, exactly as `S3 Dashboard.dc.html` draws it.
 
 This matches what was drawn rather than deciding against it: `S1`, `S3` and `M1`–`M9` each carry a
-390 frame, and `S4`–`S14` carry none.
+390 frame, and `S4`–`S14` carry none — and **Small Screen Notice** is drawn at 390
+(`D4 Dashboard Sheets and Blocks.dc.html` D4f), captioned with its coarse-pointer condition.
 
 > `R Responsive System.dc.html` is **not** this app's responsive spec. Its first line says so —
 > "responsive behaviour is a property of the archetype, not the design" — and it governs the
@@ -78,8 +83,9 @@ This matches what was drawn rather than deciding against it: `S1`, `S3` and `M1`
 
 ## Information Architecture
 
-Every row names a drawn frame or the frame it is extrapolated from. `→ A1`…`→ A7` point at
-Appendix A's Claude Design prompts.
+Every row names a drawn frame. The surfaces that had none until 2026-09-04 name the D canvas and
+the frame label the Appendix A prompt drew for them — `D1`…`D8`; there is no D7, because A7
+corrected frames that already existed.
 
 ### Marketing — in scope only where a journey lands on it
 
@@ -106,36 +112,36 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Connect · Keys** | S2b·2 | Connect · Integration | API URL + Admin API key + Content API key. **Not the Staff Access Token** (FR-C1). On Ghost(Pro) the API URL is the site's `*.ghost.io` **admin domain**, which can differ from the public domain (read at docs.ghost.org/admin-api, 2026-09-03: "All Ghost(Pro) blogs have a `*.ghost.io` domain as their admin domain"); the public `url` is read from `GET /admin/site/` at connect and on the daily health check, so the Sites card, "View site" and Deploy Live link to the public domain, never the admin one (F-068, FR-C8) |
 | **Auto-Branding** | S2c | Connect · Keys, on success | Accent, navigation and logo read from the site — "Use your brand" or "Skip" |
 | **Redesign Proposals** | `B Missing Surfaces.dc.html` B22 *(re-specified — see below)* | Auto-Branding · Dashboard | 2–3 whole-site starter × Style Pack combinations on the user's real content (FR-C7, ruling R-78) |
-| **Starter Chooser** | B23a | First Run · New Project Sheet | All ten starters (Appendix E), filterable, with a "Start empty" escape |
+| **Starter Chooser** | B23a *(Appendix E's roster since 2026-09-04, A7 item 19)* | First Run · New Project Sheet | All ten starters (Appendix E), filterable, with a "Start empty" escape |
 
 ### Dashboard and account
 
 | Surface | Frame | Reached from | Purpose |
 |---|---|---|---|
 | **Dashboard** | `S3 Dashboard.dc.html` S3a · S3b empty · S3c Free | sign-in, logo | Project cards, asset meter, what's-new |
-| **New Project Sheet** | → **A4** *(from S2a + B23a)* | Dashboard "New project" | FR-B2's four paths: Starter · Blank · Duplicate · Redesign proposals |
+| **New Project Sheet** | `D4 Dashboard Sheets and Blocks.dc.html` D4a · D4b Free at the cap *(from S2a + B23a)* | Dashboard "New project" | FR-B2's four paths: Starter · Blank · Duplicate · Redesign proposals |
 | **Account Menu** | S3d | avatar | Account settings · Billing · Suggestions · Docs · Shortcuts · Sign out |
 | **Notifications** | S3e + B21 | bell | Deploy outcomes, site health, compatibility notices, billing, library updates (FR-B7) |
 | **Sites** | `S11 Sites.dc.html` S11a · S11c Free | nav | Connected sites with health badges |
 | **Connect Site Modal** | S11b | Sites | Connect · Integration and Connect · Keys, as a modal |
 | **Manage Keys** | S11d + B20 *(re-specified)* | site ⋯ menu · any "Reconnect needed" | Three credentials, each present or absent with what it enables (FR-C8) |
 | **Connected Sites Strip** | B25 | Dashboard | Health at a glance, "3 of 10" |
-| **Assets** | `S10 Assets.dc.html` S10a–d | nav | Library, drag-drop, delete-in-use, details |
+| **Assets** | `S10 Assets.dc.html` S10a–d · D8d drop zone with a Choose files button | nav | Library, drag-drop, delete-in-use, details |
 | **Billing** | `S12 Billing.dc.html` S12a | Account Menu | Plan, limits, email, passkeys, danger zone |
 | **Upgrade Sheet** | S12b | any Pro exit, any cap | Free vs Pro, monthly / yearly |
 | **Delete Account** | S12c | Billing | Typed confirm, serious voice |
 | **Invoices** | S12d | Billing | Receipts, Dodo portal link |
 | **Suggestions** | `S13 Suggestions.dc.html` S13a–c | Account Menu | Board, submit sheet, empty state |
-| **Over-Limit Sheet** | → **A4** | grace expiry · any blocked exit while over | Itemised: what is over and by how much (FR-L3) |
-| **Small Screen Notice** | → **A4** | opening a project below 1024px | What works from a phone (R-76) |
+| **Over-Limit Sheet** | D4c · D4d Which project stays editable · D4e Read-only project | grace expiry · any blocked exit while over | Itemised: what is over and by how much (FR-L3) |
+| **Small Screen Notice** | D4f, at 390 | opening a project below 1024px | What works from a phone (R-76) |
 
 ### Editor
 
 | Surface | Frame | Reached from | Purpose |
 |---|---|---|---|
-| **Editor** | `S4 Editor.dc.html` S4a rest · S4b hover · S4c selected | project card | Top bar · Layers · canvas · Controls sidebar (FR-D1) |
-| **Template Switcher** | S4a *(extended — see below)* | top bar | Home · Post · Page · Tag · Author · **Membership (Signup / Signin / Member Home)** · 404 · conditional Private · custom templates · + New template (FR-D6) |
-| **Layers** | B7 | `L` · left panel | Ordered sections; a pinned **Site-wide** card above the page's own |
+| **Editor** | `S4 Editor.dc.html` S4a rest · S4b hover · S4c selected · `D8 Editor Below 1440.dc.html` D8a at 834 · D8b at 720 | project card | Top bar · Layers · canvas · Controls sidebar (FR-D1) |
+| **Template Switcher** | S4a · `D5 Canvas Markers and Template Switcher.dc.html` D5b, complete | top bar | Home · Post · Page · Tag · Author · **Membership (Signup / Signin / Member Home)** · 404 · conditional Private · custom templates · + New template (FR-D6) |
+| **Layers** | B7 · D8e focused row | `L` · left panel | Ordered sections; a pinned **Site-wide** card above the page's own |
 | **Design Picker** | B1a | Controls sidebar | The category's full design ring — "Design 7 of 18", twelve thumbs then a `+N` tile |
 | **Design Nav** | B1b | hover on a section | The same counter and arrows riding on the section itself |
 | **Control Sidebar** | B2 + `Editor Sidebar Kit.dc.html` | selection | Per-design controls, ~4–7 per design |
@@ -146,24 +152,24 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Style Packs** | `S7 Style Packs.dc.html` S7a–d | sidebar "Change" | The pack roster, mid-switch crossfade, edit and create |
 | **Site Remix** | B8 *(re-specified)* | `⇧R` | Re-rolls pack and/or every design, content preserved (FR-D17) |
 | **Preview Mode** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
-| **Device Preview** | B11a · B11b *(re-specified)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
+| **Device Preview** | B11a · B11b *(corrected 2026-09-04, A7 item 6)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
 | **Persistence Indicator** | B6 *(extended)* | always in the top bar | Saved on this device · Syncing · Synced · Retrying (FR-D10) |
-| **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project someone else holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is drawn on no frame → **A8** |
+| **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project someone else holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is `D8 Editor Below 1440.dc.html` D8g |
 | **Content Source Pill** | B9 | canvas foot | "Previewing with: {site} / Sample content", and the preview subject (FR-D15, FR-D22) |
-| **Preview Subject Picker** | → **A5** *(from B9's menu)* | Content Source Pill | Which post / page / tag / author this canvas renders (FR-D22) |
-| **Member State Preview** | S4d + B9 *(re-specified)* | top bar eye | Anonymous · Free member · Paid member — **three states** (FR-D16) |
+| **Preview Subject Picker** | D5e *(from B9's menu)* | Content Source Pill | Which post / page / tag / author this canvas renders (FR-D22) |
+| **Member State Preview** | S4d *(corrected 2026-09-04, A7 item 18)* + B9 | top bar eye | Anonymous · Free member · Paid member — **three states** (FR-D16) |
 | **Pro Design Badge** | B10 | selection of a Pro design | A price tag, not a lock. No sheet on click, ever |
-| **Auto-Generated Marker** | → **A5** | any untouched synthesized template | "Auto-generated — edit anything to make it yours" (FR-D6, Appendix H) |
-| **Main Feed Marker** | → **A5** | Layers · the section itself | Which feed is the paginated one, and reassign (FR-H2) |
-| **Page 2 Preview** | → **A5** | main-feed section · pagination control | "Page 2" with "Back to page 1" (FR-D21, Appendix H) |
-| **Empty Template Warning** | → **A5** | removing the last section of a custom template | "The page still loads, wearing a different design" (FR-I1) |
+| **Auto-Generated Marker** | D5a | any untouched synthesized template | "Auto-generated — edit anything to make it yours" (FR-D6, Appendix H) |
+| **Main Feed Marker** | D5c | Layers · the section itself | Which feed is the paginated one, and reassign (FR-H2) |
+| **Page 2 Preview** | D5d | main-feed section · pagination control | "Page 2" with "Back to page 1" (FR-D21, Appendix H) |
+| **Empty Template Warning** | D5f | removing the last section of a custom template | "The page still loads, wearing a different design" (FR-I1) |
 | **Editor Cards** | `S14 Editor Cards.dc.html` S14a–e | Editor left nav → Template surfaces | Every Koenig card, six A33 treatments, per-card reset (FR-Q7) |
 | **Paywall Editor** | `C Post Body.dc.html` **C3a** | Editor left nav → Template surfaces | Its own canvas, one design active per project (FR-H6) |
 | **Post Content** | `C Post Body.dc.html` C2a | Post and Page canvases | The section that renders the article (A25) |
 | **Style-Guide Fixture** | `C Post Body.dc.html` C4 | every body, always | The generated article every post design is judged against (FR-H3, FR-H4) |
 | **Error Pages** | Editor left nav → Template surfaces *(A31 designs)* | Editor left nav | `error.hbs`, and `private.hbs` when a Private Gate is designed |
-| **Theme Settings** | B17 *(re-specified and extended)* | Editor left nav | `posts_per_page`, project mode, credits, the custom-settings builder (FR-Q1/Q2/Q3) |
-| **Custom Settings Builder** | B17 right column | Theme Settings | Promote a control to a Ghost theme setting |
+| **Theme Settings** | `D6 Theme Settings Completed.dc.html` D6a Pro · D6b Free *(completes B17)* | Editor left nav | `posts_per_page`, project mode, credits, the custom-settings builder (FR-Q1/Q2/Q3) |
+| **Custom Settings Builder** | D6a right column · D6c Text-prop confirm | Theme Settings | Promote a control to a Ghost theme setting |
 | **Translations** | B18 *(re-specified)* | Theme Settings | Every chrome string the theme prints (FR-Q6) |
 | **Routes Manager** | `S9 Routes.dc.html` S9a · S9b error · S9d empty *(re-specified)* | Template Switcher → Manage routes | Collections, custom routes, taxonomies, live YAML |
 | **New Collection Sheet** | S9c *(re-specified)* | Routes Manager | Path, filter conditions, template, per-route limit |
@@ -174,26 +180,26 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | Surface | Frame | Reached from | Purpose |
 |---|---|---|---|
 | **Deploy Wizard** | `S8 Deploy.dc.html` S8a–d | "Ship it" · `⌘⏎` | 4 steps normally; **6 on the first deploy to a site** |
-| **Deploy Destination** | S8a *(extended)* | step 1 | The site, Deploy & activate vs Deploy only, **and the theme name** (FR-J10) |
-| **Staff Token Offer** | → **A1** | step 2, first deploy to a site only | "One more step unlocks a safety net" — and its decline path (FR-C1) |
-| **Backup Gate** | → **A1** | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) |
+| **Deploy Destination** | S8a · `D1 First-Deploy Gates.dc.html` D1a on the first deploy | step 1 | The site, Deploy & activate vs Deploy only, **and the theme name** (FR-J10) |
+| **Staff Token Offer** | D1b · D1c declined | step 2, first deploy to a site only | "One more step unlocks a safety net" — and its decline path (FR-C1) |
+| **Backup Gate** | D1d self-hosted · D1d′ shortcut ticked · D1e Ghost(Pro) | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) |
 | **Pre-flight Check** | S8b *(extended)* | step 4 | **Compiles the theme and runs gscan on it** — the `compiling` and `checking` stages of the deploy job (AD-20): templates, helpers, routes, and every warning the PRD names. The compiled artefact is what Ship it uploads |
-| **Drift Report** | → **A3** | inside Pre-flight, every deploy after the first | A passing row when nothing changed; **it stops the deploy** when something did, naming the files by layer name (FR-J16) |
+| **Drift Report** | `D3 The Drift Report.dc.html` D3a drift found · D3b could not verify · D3c no drift | inside Pre-flight, every deploy after the first | A passing row when nothing changed; **it stops the deploy** when something did, naming the files by layer name (FR-J16) |
 | **Library Update Notice** | B14a | project card | "Updates available" (FR-J14) |
 | **Library Update Confirm** | B14b *(re-specified)* | before compile, whenever the library has advanced | The mandatory consent step (FR-J14) |
-| **Pro Exit Sheet** | B13a *(re-specified)* | any blocked exit on Free | Four remedies, itemised (FR-L3) |
-| **Snapshot Gate** | B12a running · B12b degraded *(re-specified)* | the first named stage of step 5, first upload to a site only | Inflozo's own archive of the live theme, before the upload begins (FR-J13) |
-| **Deploy Progress** | S8c | step 5 | Uploading → Activating — the artefact Pre-flight compiled and checked, on the same job row (AD-20, FR-J8). **No Cancel once uploading starts**; the drawn Cancel goes → **A7** |
+| **Pro Exit Sheet** | B13a *(corrected 2026-09-04, A7 item 4)* | any blocked exit on Free | Four remedies, itemised (FR-L3) |
+| **Snapshot Gate** | B12a running · B12b degraded *(corrected 2026-09-04, A7 item 2)* | the first named stage of step 5, first upload to a site only | Inflozo's own archive of the live theme, before the upload begins (FR-J13) |
+| **Deploy Progress** | S8c | step 5 | Uploading → Activating — the artefact Pre-flight compiled and checked, on the same job row (AD-20, FR-J8). **No Cancel once uploading starts** — S8c greys it with its reason, "Once it starts, it finishes" (corrected 2026-09-04, A7 item 13) |
 | **Deploy Live** | S8d | step 6, when the deploy activated | The product's one confetti moment |
-| **Deploy Uploaded** | → **A2** | step 6, when the user chose **Deploy only** | The other ending. Uploaded on purpose, not live, with Activate one click away |
+| **Deploy Uploaded** | `D2 Deploy History Completed.dc.html` D2f | step 6, when the user chose **Deploy only** | The other ending. Uploaded on purpose, not live, with Activate one click away |
 | **Deploy Failure** | S8d′ | step 5, on failure | A human sentence and the action that fixes it |
-| **Partial Success** | → **A2** | upload succeeded, activation failed | "Your theme is on your site but isn't live yet" (FR-J8) |
+| **Partial Success** | D2e in the wizard · D2d the history row | upload succeeded, activation failed | "Your theme is on your site but isn't live yet" (FR-J8) |
 | **Preview-Only Destination** | S8a′ *(re-specified)* | step 1, Preview-only site | Export instead of deploy |
 | **Preview-Only Notice** | B15 *(re-specified)* | site card · Sites | What Preview-only is, and what clears it (FR-C2) |
-| **Routes Fallback Card** | B16 *(re-specified)* | after deploy, when routes could not be uploaded | The guided manual upload (FR-I4) |
-| **Template Binding Checklist** | B19 *(re-specified)* | Deploy Live, when custom templates were emitted | One row per emitted template (FR-I6) |
-| **Deploy History** | S8e *(extended)* | clock icon · Ship it ▾ → History | Versions, pinning, rollback, restore-to-original (FR-J7/J9, F8) |
-| **Grace Banner** | B24 *(re-specified)* | every surface, while `pro_past_due` | 7 days, and what does not happen (FR-L2/L3) |
+| **Routes Fallback Card** | B16 *(corrected 2026-09-04, A7 item 3)* | after deploy, when routes could not be uploaded | The guided manual upload (FR-I4) |
+| **Template Binding Checklist** | B19 *(corrected 2026-09-04, A7 item 1)* | Deploy Live, when custom templates were emitted | One row per emitted template (FR-I6) |
+| **Deploy History** | S8e · D2a pinning, Pro · D2b pin refusal · D2c Free | clock icon · Ship it ▾ → History | Versions, pinning, rollback, restore-to-original (FR-J7/J9, F8) |
+| **Grace Banner** | B24 *(corrected 2026-09-04, A7 item 5)* | every surface, while `pro_past_due` | 7 days, and what does not happen (FR-L2/L3) |
 
 ### The three canvases that are not pages
 
@@ -309,7 +315,7 @@ when it has nothing to show".
 | **Deploy History** | first deploy: "Nothing shipped yet" and the limit stated anyway | — | — | pin refusal at N−1, with the reason (F8) |
 | **Notifications** | "Nothing yet. Deploy outcomes land here even if you closed the tab." | — | — | — |
 | **Sites** | Sites with none: the connect card as the whole page | health check spinner on the badge only | "Reconnect needed" badge + the reason and date | Free at 1 site: S11c's ghost slot |
-| **Paywall Editor** | **members disabled on the site** (`members_signup_access` = none): `C3a`'s empty-state shape — what Ghost does instead, two numbered steps and a Re-check. **Not** "no paid tiers": Ghost's paywall renders on every gated post — members-only, paid or tier-gated — whether or not a paid tier exists (`content-cta.hbs` carries its own `visibility="members"` branch; VERIFY-AT-BUILD item 11), so a free newsletter gating posts to members is exactly a site this editor serves. `C3b`'s sentence says otherwise → **A7** | — | — | the same shape, naming the setting |
+| **Paywall Editor** | **members disabled on the site** (`members_signup_access` = none): `C3a`'s empty-state shape — what Ghost does instead, two numbered steps and a Re-check. **Not** "no paid tiers": Ghost's paywall renders on every gated post — members-only, paid or tier-gated — whether or not a paid tier exists (`content-cta.hbs` carries its own `visibility="members"` branch; VERIFY-AT-BUILD item 11), so a free newsletter gating posts to members is exactly a site this editor serves. `C3b` has said the same since 2026-09-04 — "Members are switched off … subscription access is set to Nobody" (A7 item 12) | — | — | the same shape, naming the setting |
 | **Suggestions** | S13c | — | — | — |
 | **Main feed** | the designated feed design's **own declared empty state** — never back-filled (ruling R-36) | — | — | — |
 | **Secondary `{{#get}}` feed** | **renders nothing at all**, heading and container together | — | — | — |
@@ -395,7 +401,7 @@ documents each hold their own focus and selection.
   through it means tabbing through every link and control that site emits — a 12-section homepage is
   dozens of stops before the sidebar. **The first focusable element in the editor shell is a skip
   link — "Skip the canvas"** — and the canvas container itself offers the same on focus.
-  *(No frame draws it → **A8**.)*
+  *(Drawn: `D8 Editor Below 1440.dc.html` D8c — not rendered at rest, visible on the first Tab, in the corrected focus ring.)*
 - **Escapable, by one key with a defined ladder rather than a second key to learn.** `Esc` steps
   outward, one level per press, and announces where it landed: *inside inline editing* → leaves text
   editing, the section stays selected · *section selected* → deselects, focus rests on the canvas
@@ -428,11 +434,11 @@ shortcut" rule — that rule is about *new global bindings*. So:
 
 | Where | Keys |
 |---|---|
-| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility. B7 draws three row states and not the focused one *(→ **A8**)* |
+| **Layers**, and any reorderable list | ↑ ↓ move focus between rows · **`⌥↑` / `⌥↓` move the section itself**, with the canvas following and the move announced · `Enter` selects · `Space` toggles visibility. B7 draws three row states; the fourth, keyboard focus, is D8e — the ring over whichever state the row is in, with the keys captioned |
 | **Item list** (P0-3) | the same pattern — the Add, Remove and drag affordances each have a focusable control, and drag has the `⌥`-arrow equivalent |
 | **Section Picker** | ↑ ↓ ← → across the grid, `Enter` places, `Esc` closes and returns focus to the invoking position |
 | **Design picker** | ← → across the thumbnail strip, mirroring `[` and `]` |
-| **Assets** | the drop zone is **also a file input**, with a visible "Choose files" button — a drag-and-drop-only upload has no keyboard path *(→ **A8**)* |
+| **Assets** | the drop zone is **also a file input**, with a visible "Choose files" button — a drag-and-drop-only upload has no keyboard path — D8d draws the button, and S10b's size line now reads "up to 10 MB each" |
 | **Every menu, popover and sheet** | focus moves in on open, is trapped while open, and returns to the invoking control on close |
 
 **A drag that has no keyboard equivalent is a defect**, and every drag surface in this document has
@@ -452,7 +458,7 @@ unaffected. **axe-core does not detect this**, which is exactly why it is stated
 **Colour classifies; it never carries the only signal, and neither does shape.** Every state in this
 document has a text equivalent — the persistence indicator has four *labels* and one dot, not four
 dots; the Pro badge carries the word **Pro** beside its ✦; the auto-generated, has-feature-image and
-dark-override marks each carry their words (Appendix A prompts A5 and A6 say so at each mark).
+dark-override marks each carry their words (D5b writes "Auto-generated" beside the hollow dot, D5e writes "has image" beside the marker, and D6a captions the moon badge "Dark override").
 
 | Region | Politeness | What it announces |
 |---|---|---|
@@ -474,7 +480,7 @@ nothing: the link itself is valid for 15 minutes and "Use a different email" is 
 
 ### Destructive confirms
 
-**A confirm whose primary action is irreversible opens with focus on the cancelling action** *(→ **A8**)*. Stated
+**A confirm whose primary action is irreversible opens with focus on the cancelling action** — drawn as the rule on D8f ("Take over from Rosa?", focus on Wait) and applied on D8g. Stated
 as a rule rather than a list, because the list would go stale — it already covers Take over anyway,
 Delete account, Roll back, project delete, delete-in-use assets and "Overwrite and ship anyway", and
 it covers whatever is added next.
@@ -535,10 +541,12 @@ Layers panel collapses first. Below it, **Small Screen Notice**.
 > keeps its own scroll. `DESIGN.md`'s `app-floor` token is that device threshold, not a zoom
 > threshold.
 >
-> **And the export draws none of this** — the editor exists at 1440 and nowhere else, so R-76's
-> tablet half and this zoom rule are both prose until they are drawn. **Prompt A8** draws the editor
-> at 834 and at 720; until it has run, this paragraph is a specification with no frame behind it,
-> and step 5b builds it from A8's description rather than inventing a third answer.
+> **Both are drawn** — `D8 Editor Below 1440.dc.html` D8a (834, touch: the Layers icon rail, the
+> Controls sidebar as an overlay with a scrim, every target at least 44px, one overflow menu) and
+> D8b (720, captioned "a 1440 display at 200% browser zoom", fine pointer, hover live), and
+> `D4 Dashboard Sheets and Blocks.dc.html` D4f draws the notice at 390 with the coarse-pointer
+> condition in its caption. Until 2026-09-04 the editor existed at 1440 and nowhere else and this
+> paragraph was a specification with no frame behind it; prompt A8 is what drew it.
 
 **The canvas is a viewport, not a column** (FR-D8, AD-21, B11a/b). Device preview resizes it in
 **both** axes to a real device size — 390 × 844 for mobile, not a 390-wide column of infinite
@@ -569,64 +577,72 @@ on tap-and-hold, and no interaction that requires a hover state to be discoverab
 against the export **as it stands today**, because four re-exports have landed since §37.7 was
 written and two of them touched the S, M and B screens.
 
+**Re-verified again on 2026-09-04**, against the export the Appendix A prompts produced: every row
+below now says what the export draws today, with what it drew before in one clause. The string
+evidence, frame by frame, is `reconcile-designs-decisions.md` §A15.
+
 ### Reported as having no frame — verified one by one
 
 | §37.7 item | Verdict today |
 |---|---|
-| **Paywall editor** (FR-H6) | **DRAWN — §37.7 was wrong.** `C Post Body.dc.html` **C3a** is the paywall canvas at 1440, with its six controls, its "how readers reach it" explainer, three of the twelve designs, and an empty state whose drawn condition — "no paid tiers" — is wrong (→ **A7** item 12; § State Patterns has the right one). Its entry point is drawn twice more ("Open paywall editor →" on C1a, "Open Paywall →" on C2a) and it sits in a drawn left-nav group, **Template surfaces** |
-| Backup gate consent checklist | **not drawn.** No frame anywhere mentions a backup, `ghost backup`, or a consent checklist → **A1** |
-| Drift report (FR-J16) | **not drawn** → **A3** |
-| Credit toggle (FR-J15) | **not drawn.** The only "credit" in the app frames is S14's per-card image-credit control, a different thing → **A6** |
-| Page-2 preview (FR-D21) | **not drawn** → **A5** |
-| Auto-generated marker (FR-D6) | **not drawn** → **A5** |
-| Membership / Private canvases (FR-D6) | **partially drawn.** S4a's Template Switcher has one **"Members"** entry and no Private. FR-D6 needs Membership as three canvases (Signup / Signin / Member Home) plus a conditional Private → **A5** |
-| Project mode + "Clear dark overrides" (FR-D7) | **not drawn.** S4a's "Dark mode — Readers get a moon toggle" is the visitor `mode-toggle`, a different setting → **A6** |
-| New project sheet (FR-B2) | **not drawn.** S3 has the button and nothing behind it → **A4** |
-| Downgrade / over-limit sheet (FR-L3) | **not drawn** → **A4** |
-| First-deploy name confirm (FR-J10) | **not drawn** → **A1** |
-| Partial-success state (FR-J8) | **not drawn.** S8a draws "Deploy only"; S8d′ draws an *upload* failure. Neither is upload-succeeded-activation-failed → **A2** |
-| Empty-custom-template warning (FR-I1) | **not drawn** → **A5** |
-| Preview subject (FR-D22) | **partially drawn.** B9's menu exists and its note says it also offers the style-guide article — but there is no picker for *which* post, page, tag or author → **A5** |
-| Main-feed marker and reassign (FR-H2) | **not drawn** → **A5** |
-| **Staff Access Token step and its decline path** (FR-C1 — J1's core) | **not drawn.** Zero occurrences of "Staff Access Token" anywhere in the export → **A1** |
-| History pinning | **not drawn.** B7's "SITE-WIDE PINNED" is the Layers group, a different thing → **A2** |
+| **Paywall editor** (FR-H6) | **DRAWN — §37.7 was wrong.** `C Post Body.dc.html` **C3a** is the paywall canvas at 1440, with its six controls, its "how readers reach it" explainer, three of the twelve designs, and an empty state whose condition is **members switched off** — C3b was corrected on 2026-09-04 (A7 item 12; until then it said "no paid tiers", which § State Patterns had already refused). Its entry point is drawn twice more ("Open paywall editor →" on C1a, "Open Paywall →" on C2a) and it sits in a drawn left-nav group, **Template surfaces** |
+| Backup gate consent checklist | **drawn** — `D1 First-Deploy Gates.dc.html` D1d, D1d′ and D1e, with the `ghost backup` shortcut, the seven rows and the disabled master confirm (was not drawn until the D canvases landed on 2026-09-04) |
+| Drift report (FR-J16) | **drawn** — `D3 The Drift Report.dc.html` D3a drift found, D3b could not verify, D3c no drift (was not drawn until 2026-09-04) |
+| Credit toggle (FR-J15) | **drawn** — `D6 Theme Settings Completed.dc.html` D6a (Pro, a working toggle) and D6b (Free, greyed with "Credits stay on with the Free plan."); until 2026-09-04 the only "credit" in the app frames was S14's per-card image-credit control |
+| Page-2 preview (FR-D21) | **drawn** — `D5 Canvas Markers and Template Switcher.dc.html` D5d (was not drawn until 2026-09-04) |
+| Auto-generated marker (FR-D6) | **drawn** — D5a, the sentence in the top bar and at the head of Layers (was not drawn until 2026-09-04) |
+| Membership / Private canvases (FR-D6) | **drawn** — D5b's switcher carries **Membership** as a group of three (Signup · Signin · Member home) and a conditional **Private** ("appears only once a Private Site Gate section has been designed · otherwise the row is absent, not greyed"); until 2026-09-04 S4a had one "Members" entry and no Private |
+| Project mode + "Clear dark overrides" (FR-D7) | **drawn** — D6a's "This project · Light only / Light + Dark" and "Clear dark overrides · 3 sections carry a dark override", the badge captioned "Dark override"; until 2026-09-04 the only dark row was S4a's visitor `mode-toggle`, a different setting |
+| New project sheet (FR-B2) | **drawn** — `D4 Dashboard Sheets and Blocks.dc.html` D4a, four doors, and D4b at the Free cap; until 2026-09-04 S3 had the button and nothing behind it |
+| Downgrade / over-limit sheet (FR-L3) | **drawn** — D4c itemised, D4d "Which project stays editable?", D4e the read-only project (was not drawn until 2026-09-04) |
+| First-deploy name confirm (FR-J10) | **drawn** — D1a's "Theme to be created · inflozo-orbit-weekly" with its permanence line (was not drawn until 2026-09-04) |
+| Partial-success state (FR-J8) | **drawn** — `D2 Deploy History Completed.dc.html` D2e in the wizard, D2d as the history row, and D2f the deploy-only ending beside it; until 2026-09-04 S8a drew "Deploy only" and S8d′ an *upload* failure, and neither was upload-succeeded-activation-failed |
+| Empty-custom-template warning (FR-I1) | **drawn** — D5f, "Remove the last section from Membership?" (was not drawn until 2026-09-04) |
+| Preview subject (FR-D22) | **drawn** — D5e, B9's pill opened on source, then subject, the style-guide article first; until 2026-09-04 B9's menu existed with no picker for *which* post |
+| Main-feed marker and reassign (FR-H2) | **drawn** — D5c, the MAIN FEED chip on canvas and in Layers, the greyed Count with its reason, "Make this the main feed" on the other feed (was not drawn until 2026-09-04) |
+| **Staff Access Token step and its decline path** (FR-C1 — J1's core) | **drawn** — D1b the offer, D1c the decline acknowledged once; until 2026-09-04 there were zero occurrences of "Staff Access Token" anywhere in the export |
+| History pinning | **drawn** — D2a (Pro, two of ten pinned), D2b the refusal with its reason, D2c Free; until 2026-09-04 the only "pinned" in the export was B7's Layers group |
 
-**One found already drawn, two found partially drawn.** Everything else stands as §37.7 recorded it.
+**On 2026-09-03 one was found already drawn and two partially drawn; on 2026-09-04 the Appendix A export drew the rest.** Every row above now points at a frame.
 
 ### Drawn, but on the wrong mechanism — semantics re-specified, visual treatment kept
 
-Each of these keeps its frame's components, layout, colour and density. Only what it *does* changes. **The rows marked → A7** go to the Claude Design prompt that brings the frames themselves back into line — A7's numbered items are the list and the count; the rest are corrected here and in step 5b's prototype, and the frames catch up whenever a library pass next touches them. **Until A7 runs, 5c holds the wrong-mechanism frames out of the walk except where the copy is the PRD's** (owner, 2026-09-03 — `reconcile-designs-decisions.md` §A12): B22 is held out entirely; the Pro Exit Sheet walks with its drawn remedies and the four are A7's; the Starter Chooser walks with its drawn roster and Appendix E's is A7's; S4d's paid-tier rows are A7's.
+Each of these keeps its frame's components, layout, colour and density. Only what it *does* changes. **The rows marked → A7** went to the Claude Design prompt that brings the frames themselves back into line — A7's numbered items are the list and the count — and **A7 ran on 2026-09-04**: each such row now says what the frame draws today, with the string evidence in `reconcile-designs-decisions.md` §A15. The rows that were never in A7 are corrected here and in step 5b's prototype, and the frames catch up whenever a library pass next touches them — prompt **A9**'s optional half is that pass, if the owner ticks it (§A15, decision 1). The hold-out of §A12 decision 6 (owner, 2026-09-03 — "until A7 runs") has therefore run its course for the Pro Exit Sheet, the Starter Chooser and S4d, whose frames now carry the PRD's copy; **B22 was held out entirely but was never in A7**, so it is A9's, and so is the S9 YAML pane, which this table had assigned to A7 without A7 carrying it.
 
 | Frame | What it draws | What it must do |
 |---|---|---|
-| **B19** Template Binding Checklist *(→ **A7**)* | `page-membership.hbs`, "set the page's URL slug to `membership`", a **MATCHED** badge | FR-I1 forbids `page-{slug}.hbs` — it detaches on retitle and outranks the user's own choice. The file is **`custom-membership.hbs`**; the user picks it from Ghost's page-editor **Template** dropdown. **One row per emitted template**, each naming the filename *and* the dropdown label Ghost derives from it, with a **done-state the user marks themselves**. The MATCHED badge goes: Inflozo cannot see a page's chosen template, and **the flow says so** — "we can't see whether you did this". Keep the right-hand Ghost facsimile panel; it is what makes this work |
-| **B12** Snapshot Gate *(→ **A7**)* | fires "on every deploy"; "snapshots count towards your history"; failure blames integration-key permission | FR-J13: **first upload to a site only**, and the snapshot is **exempt** from history pruning. The 403 is **structural** for every Custom Integration token on every Ghost — there is no permission to fix. The degraded path is the designed one: no snapshot was captured, **Ghost keeps the previous theme under Settings → Design**, and here is how to reactivate it there — true of the **first** upload only: later Inflozo versions replace each other under FR-J10's frozen name and survive only in Deploy History (F-074, VERIFY-AT-BUILD item 61) |
-| **S8c** Deploy Progress *(→ **A7**)* | a **Cancel** action beside "Uploading to Ghost · 1.1 of 2.4 MB" | FR-J8: **Cancel exists during Compiling and Checking only; once Uploading starts the deploy runs to completion** (idempotent; rollback covers regret), and AD-19 holds the site lock for exactly that span. The card, its progress bar and its stage rows stay; the Cancel goes, or is greyed with its reason in R-33's pattern. The compile and gscan the card does not show happened at Pre-flight, on the same job row (AD-20) |
-| **B16** Routes Fallback Card *(→ **A7**)* | "your integration key is missing the settings permission … Fix the key" | FR-I4: automated upload uses the **Staff Access Token**. Integration keys never carry `setting: edit`; there is nothing to fix. The card fires when the token is **absent, revoked, or from a role below Administrator** (F-063). The Ghost menu path is **not hard-coded** — Ghost 6 has no Settings → Labs (`MEASUREMENTS.md` §33); describe what the customer is looking for and link to Ghost's own help for their version |
-| **B13** Pro Exit Sheet *(→ **A7**)* | two remedies — swap for a named Free design, or Go Pro | FR-L3: **four**. **Upgrade · swap to a Free design via Shuffle · remove it · revert to the Free design of that treatment.** "Remove it" is not decorative — some binding contexts have no Free design to swap to. The fourth covers the 22 non-placeable Pro treatments, which are *selected* not placed, and each reverts on its own surface. **Swap is via Shuffle — any Free design in the ring**, not an authored pairing table, so the "someone has to author a fallback per design" data dependency the frame notes does not exist |
-| **B22** Redesign Proposals | four per-section swaps argued from the user's data | *Ruling R-78.* FR-C7: **2–3 whole-site starter × Style Pack combinations** on the user's real content, which must **differ in layout structure**. Keep the frame's card, its NOW / PROPOSED pairing and above all its **argued-from-your-own-data sentence** — one per combination instead of one per section. Re-runnable later from New Project Sheet. Also: "no tag template, so Ghost falls back to a bare list" is false on Inflozo — `tag.hbs` always compiles from the Synthesis Defaults |
-| **B11** Device Preview *(→ **A7**)* | a user "Fit / 55%" zoom control | FR-D14: **no zoom in v1**; AD-21: fit-to-screen only, never user-driven. Keep the mono chip that states true size and scale; delete the control |
-| **B24** Grace Banner *(→ **A7**)* | "after that, Pro designs stop rendering and your sites fall back to their Free replacements" | FR-L3: **existing deployed themes are never touched.** Grace expiry moves the account to Free and blocks the **exits** — deploy, export, code surfaces — until the user resolves what is over. M5's own FAQ already says the right thing ("your deployed theme stays live") and B24 contradicted it |
-| **S9** Routes Manager | routes `/subscribe/ : members-signup` and `/ : home` | FR-I1/I5: a membership page emits **no route** — it is `custom-{name}.hbs`, bound from Ghost's page editor. And `home.hbs` resolves for the root by itself **only while the root is still a collection**: a `routes:` entry for `/` removes the index collection, so `/page/2/` breaks — and so does a routes.yaml with no `collections: /:` at all. Both rows go, and **Inflozo always emits the index collection first** — `/: {permalink: /{slug}/, template: index}` — ahead of any custom collection, because a post belongs to the first collection whose filter it matches ("Posts can only ever be in one collection", docs.ghost.org/themes/routing) and the drawn `/articles/ filter: type:post` would otherwise capture every post and leave the home feed empty (F-070; the YAML pane → **A7**; not executed — a routes.yaml round-trip on T3 is under the reset protocol). Also S9c's "posts per page follows the home feed's Count control" → **Theme Settings' `posts_per_page`**, which a collection's own `limit:` may override for that route (FR-Q1, FR-I2 — `limit` is in Ghost's code and not in its routing docs: 6.x `route-settings-parser.js:59,151` `limit: LimitField`, 5.x `CollectionRouter.js:39`; VERIFY-AT-BUILD item 60); and S9c's absolute-only published date offers FR-I2's **relative** form first (`now-30d`) |
-| **B17** Theme Settings | no `posts_per_page`; a Logo **Replace** control; "Dark mode: follows the reader's system setting"; the custom-settings meter reads 3 of 20 | `posts_per_page` is FR-Q1's **first** field and belongs here — and **every surface that mentions posts per page links here, never into Ghost Admin**, because Ghost Admin has no such setting (ruling R-10 #13). The logo is Ghost's and is **read, never written** (AD-10's P8 allowlist) — show it, link out, no Replace. The dark row is **FR-D7's project mode**: Light only / Light + Dark. The meter is **3 of 17**: three of Ghost's twenty slots are the dark built-ins on every project (FR-Q2). The builder also needs the Ghost Admin **group**, a **visibility condition**, FR-Q3's text-prop confirm, the post-deploy key-immutability notice and the pack-switch warning for a promoted accent |
-| **B18** Translations | flat keys — `subscribe`, `read_more`, `min_read` | FR-Q6: keys are **dotted `namespace.name`** — `member.signup_cta`, `post.reading_time`, `archive.empty_heading`. Add FR-Q8's brace-refusal error state (a malformed interpolation token is a whole-site 500). The RTL acknowledgement is right, and FR-Q6 additionally requires it **repeated as a pre-deploy warning** on Pre-flight Check |
-| **S4d** Member State Preview *(→ **A7**)* | tier-level previews — Orbit Supporter $5, Patron $12, Founding $120 | FR-D16: **three states** — Anonymous / Free member / Paid member. `comped` previews as Paid, differing in billing rather than access. **B9 already says "only" and agrees with the PRD**; S4d is the outlier and moves. Add the two things neither frame has: the **unviewed-states marker** beside the toggle, and the **"Gated content — shown with sample text"** indicator on a gated body |
-| **B15** Preview-Only Notice | "Upgrade the site to Ghost(Pro) **Creator** or above" | FR-C2: **Publisher or higher**, in Ghost's 2026 Starter / Publisher / Business lineup |
-| **S8a′ / S11a** Preview-Only Destination | "download the theme and upload it in Ghost Admin" | Starter's `customThemes` limit forbids custom themes **in Ghost Admin too** — this is a plan limit, not an API limit. The zip still downloads (FR-J12, all plans); it can be installed on self-hosted Ghost or on a Ghost(Pro) plan that allows custom themes. B15 already gets this right; these two do not |
-| **B8** Site Remix | scopes: this page / every page / site-wide too / **Keep Free designs only** | *Ruling R-77:* **"Keep Free designs only" is dropped.** Remix always re-rolls from the whole library and the Pro Exit Sheet catches it at deploy. FR-D17's own axis is **what** is re-rolled — Style Pack, designs, or both — and the frame has no control for it; add it as a second radio-card group above the existing scope group, which is *where*. Both axes now exist, in the components the frame already draws |
-| **B4** Inline Toolbar | four marks **plus a block-type menu ("Body")** | FR-D4 and `P0-1`: exactly the four marks and Remove link. No block types — Inflozo does not own the post body. **`P0-1` supersedes B4a**; B4b's link entry is kept and gains FR-D9's new-tab and `rel` options |
-| **B23a** Starter Chooser *(→ **A7**)* | ten starters, seven names invented, seven marked "All Free" | Appendix E is normative and names all ten with their pack and composition: **Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio**. FR-O4: **only Quiet and Ledger** are Free end-to-end. The frame's grid, category filter, free filter, "swap or upgrade" marks and "Start empty" escape are all kept; the roster and the Free marks are replaced. Also: no starter ships a membership template (FR-O1), so "Cohort — tiers and member pages" goes with the name |
-| **B20 / S11d** Manage Keys | Admin + Content keys only; B20 invents grantable scopes; S11d shows the API URL as an editable field | FR-C8: **three** credentials, each shown **present or absent with what it enables**, the Staff Access Token addable and removable at any time. Custom Integration scopes are fixed by Ghost and cannot be granted — the missing capability is the token, not a permission. **The site URL is immutable**; a domain move is disconnect + reconnect, and the affordance does not exist rather than being guarded |
-| **B7** Layers | "on 26 pages" | The unit is **templates**, and a project has roughly seven to ten of them, not 26 (FR-D6) |
-| **B6** Persistence Indicator | four states | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved on this device" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings. **Copy only (F-080):** the drawn label **"Saved on this device"** is the string and Appendix H now carries it; FR-D10's "Saved locally" is the state name and is never printed |
+| **B19** Template Binding Checklist *(corrected 2026-09-04, A7 item 1)* | now `custom-membership.hbs` "shown as Membership", a three-row checklist (Membership · Signin · Member home) the user ticks, "We can't see whether you did this", and the facsimile showing Ghost's Template dropdown; until 2026-09-04: `page-membership.hbs`, "set the page's URL slug to `membership`", a **MATCHED** badge | FR-I1 forbids `page-{slug}.hbs` — it detaches on retitle and outranks the user's own choice. The file is **`custom-membership.hbs`**; the user picks it from Ghost's page-editor **Template** dropdown. **One row per emitted template**, each naming the filename *and* the dropdown label Ghost derives from it, with a **done-state the user marks themselves**. The MATCHED badge goes: Inflozo cannot see a page's chosen template, and **the flow says so** — "we can't see whether you did this". Keep the right-hand Ghost facsimile panel; it is what makes this work |
+| **B12** Snapshot Gate *(corrected 2026-09-04, A7 item 2)* | now "we only do it the first time you upload to a site", "Kept outside your version limit.", and a failure that names the Staff Access Token, the 403 and "there's no permission to switch on"; until 2026-09-04: fired "on every deploy", "snapshots count towards your history", failure blamed integration-key permission | FR-J13: **first upload to a site only**, and the snapshot is **exempt** from history pruning. The 403 is **structural** for every Custom Integration token on every Ghost — there is no permission to fix. The degraded path is the designed one: no snapshot was captured, **Ghost keeps the previous theme under Settings → Design**, and here is how to reactivate it there — true of the **first** upload only: later Inflozo versions replace each other under FR-J10's frozen name and survive only in Deploy History (F-074, VERIFY-AT-BUILD item 61) |
+| **S8c** Deploy Progress *(corrected 2026-09-04, A7 item 13)* | now Cancel greyed (`aria-disabled`) with its reason, "Once it starts, it finishes"; until 2026-09-04 a live **Cancel** beside "Uploading to Ghost · 1.1 of 2.4 MB" | FR-J8: **Cancel exists during Compiling and Checking only; once Uploading starts the deploy runs to completion** (idempotent; rollback covers regret), and AD-19 holds the site lock for exactly that span. The card, its progress bar and its stage rows stay; the Cancel goes, or is greyed with its reason in R-33's pattern. The compile and gscan the card does not show happened at Pre-flight, on the same job row (AD-20) |
+| **B16** Routes Fallback Card *(corrected 2026-09-04, A7 item 3)* | now "Uploading a routing file needs a Staff Access Token from the site Owner or an Administrator, and this project doesn't have one", step 2 "In Ghost, find the routes upload for your version · Show me where ↗", "Add the token instead"; until 2026-09-04: "your integration key is missing the settings permission … Fix the key", with a hard-coded Settings → Labs path | FR-I4: automated upload uses the **Staff Access Token**. Integration keys never carry `setting: edit`; there is nothing to fix. The card fires when the token is **absent, revoked, or from a role below Administrator** (F-063). The Ghost menu path is **not hard-coded** — Ghost 6 has no Settings → Labs (`MEASUREMENTS.md` §33); describe what the customer is looking for and link to Ghost's own help for their version |
+| **B13** Pro Exit Sheet *(corrected 2026-09-04, A7 item 4)* | now Swap · Remove it on every row, a "Chosen, not placed" row type with "Revert to the free one", and no pairing note; until 2026-09-04 two remedies — swap for a named Free design, or Go Pro | FR-L3: **four**. **Upgrade · swap to a Free design via Shuffle · remove it · revert to the Free design of that treatment.** "Remove it" is not decorative — some binding contexts have no Free design to swap to. The fourth covers the 22 non-placeable Pro treatments, which are *selected* not placed, and each reverts on its own surface. **Swap is via Shuffle — any Free design in the ring**, not an authored pairing table, so the "someone has to author a fallback per design" data dependency the frame notes does not exist |
+| **B22** Redesign Proposals *(unchanged in the 2026-09-04 export → **A9** item 9)* | four per-section swaps argued from the user's data | *Ruling R-78.* FR-C7: **2–3 whole-site starter × Style Pack combinations** on the user's real content, which must **differ in layout structure**. Keep the frame's card, its NOW / PROPOSED pairing and above all its **argued-from-your-own-data sentence** — one per combination instead of one per section. Re-runnable later from New Project Sheet. Also: "no tag template, so Ghost falls back to a bare list" is false on Inflozo — `tag.hbs` always compiles from the Synthesis Defaults |
+| **B11** Device Preview *(corrected 2026-09-04, A7 item 6)* | now "There is one control here: device" and the chip "VIEWPORT 390 × 844 · SHOWN AT 55%"; until 2026-09-04 a user "Fit / 55%" zoom control | FR-D14: **no zoom in v1**; AD-21: fit-to-screen only, never user-driven. Keep the mono chip that states true size and scale; delete the control |
+| **B24** Grace Banner *(corrected 2026-09-04, A7 item 5)* | now "After that you go back to Free. Your live sites are never touched — what's shipped stays shipped."; until 2026-09-04 "after that, Pro designs stop rendering and your sites fall back to their Free replacements" | FR-L3: **existing deployed themes are never touched.** Grace expiry moves the account to Free and blocks the **exits** — deploy, export, code surfaces — until the user resolves what is over. M5's own FAQ already says the right thing ("your deployed theme stays live") and B24 contradicted it |
+| **S9** Routes Manager | routes `/subscribe/ : members-signup` and `/ : home` | FR-I1/I5: a membership page emits **no route** — it is `custom-{name}.hbs`, bound from Ghost's page editor. And `home.hbs` resolves for the root by itself **only while the root is still a collection**: a `routes:` entry for `/` removes the index collection, so `/page/2/` breaks — and so does a routes.yaml with no `collections: /:` at all. Both rows go, and **Inflozo always emits the index collection first** — `/: {permalink: /{slug}/, template: index}` — ahead of any custom collection, because a post belongs to the first collection whose filter it matches ("Posts can only ever be in one collection", docs.ghost.org/themes/routing) and the drawn `/articles/ filter: type:post` would otherwise capture every post and leave the home feed empty (F-070; the YAML pane was assigned to **A7**, which never carried it — the 2026-09-04 export still draws `/ : home` and `/subscribe/ : members-signup` → **A9** item 8; not executed — a routes.yaml round-trip on T3 is under the reset protocol). Also S9c's "posts per page follows the home feed's Count control" → **Theme Settings' `posts_per_page`**, which a collection's own `limit:` may override for that route (FR-Q1, FR-I2 — `limit` is in Ghost's code and not in its routing docs: 6.x `route-settings-parser.js:59,151` `limit: LimitField`, 5.x `CollectionRouter.js:39`; VERIFY-AT-BUILD item 60); and S9c's absolute-only published date offers FR-I2's **relative** form first (`now-30d`) |
+| **B17** Theme Settings *(completed by D6, 2026-09-04)* | `D6 Theme Settings Completed.dc.html` D6a–D6c now draw all of the right-hand column — `posts_per_page` first, the logo padlocked, "This project · Light only / Light + Dark", Credits, "3 OF 17", the builder's group, condition, text-prop confirm and key-freeze notice; B17 itself is unchanged (no `posts_per_page`; a Logo **Replace** control; "Dark mode: follows the reader's system setting"; 3 of 20) and stays as the shape D6 inherited | `posts_per_page` is FR-Q1's **first** field and belongs here — and **every surface that mentions posts per page links here, never into Ghost Admin**, because Ghost Admin has no such setting (ruling R-10 #13). The logo is Ghost's and is **read, never written** (AD-10's P8 allowlist) — show it, link out, no Replace. The dark row is **FR-D7's project mode**: Light only / Light + Dark. The meter is **3 of 17**: three of Ghost's twenty slots are the dark built-ins on every project (FR-Q2). The builder also needs the Ghost Admin **group**, a **visibility condition**, FR-Q3's text-prop confirm, the post-deploy key-immutability notice and the pack-switch warning for a promoted accent |
+| **B18** Translations *(unchanged 2026-09-04 — A9's optional half)* | flat keys — `subscribe`, `read_more`, `min_read` | FR-Q6: keys are **dotted `namespace.name`** — `member.signup_cta`, `post.reading_time`, `archive.empty_heading`. Add FR-Q8's brace-refusal error state (a malformed interpolation token is a whole-site 500). The RTL acknowledgement is right, and FR-Q6 additionally requires it **repeated as a pre-deploy warning** on Pre-flight Check |
+| **S4d** Member State Preview *(corrected 2026-09-04, A7 item 18)* | now "Logged out user · Free member · Paid member", "2 not viewed" beside the toggle and "Gated content — shown with sample text" on the gated body; until 2026-09-04 tier-level previews — Orbit Supporter $5, Patron $12, Founding $120 | FR-D16: **three states** — Anonymous / Free member / Paid member. `comped` previews as Paid, differing in billing rather than access. **B9 already says "only" and agrees with the PRD**; S4d is the outlier and moves. Add the two things neither frame has: the **unviewed-states marker** beside the toggle, and the **"Gated content — shown with sample text"** indicator on a gated body |
+| **B15** Preview-Only Notice *(unchanged 2026-09-04 — A9's optional half)* | "Upgrade the site to Ghost(Pro) **Creator** or above" | FR-C2: **Publisher or higher**, in Ghost's 2026 Starter / Publisher / Business lineup |
+| **S8a′ / S11a** Preview-Only Destination *(unchanged 2026-09-04 — A9's optional half)* | "download the theme and upload it in Ghost Admin" | Starter's `customThemes` limit forbids custom themes **in Ghost Admin too** — this is a plan limit, not an API limit. The zip still downloads (FR-J12, all plans); it can be installed on self-hosted Ghost or on a Ghost(Pro) plan that allows custom themes. B15 already gets this right; these two do not |
+| **B8** Site Remix *(unchanged 2026-09-04 — A9's optional half)* | scopes: this page / every page / site-wide too / **Keep Free designs only** | *Ruling R-77:* **"Keep Free designs only" is dropped.** Remix always re-rolls from the whole library and the Pro Exit Sheet catches it at deploy. FR-D17's own axis is **what** is re-rolled — Style Pack, designs, or both — and the frame has no control for it; add it as a second radio-card group above the existing scope group, which is *where*. Both axes now exist, in the components the frame already draws |
+| **B4** Inline Toolbar *(unchanged 2026-09-04 — A9's optional half)* | four marks **plus a block-type menu ("Body")** | FR-D4 and `P0-1`: exactly the four marks and Remove link. No block types — Inflozo does not own the post body. **`P0-1` supersedes B4a**; B4b's link entry is kept and gains FR-D9's new-tab and `rel` options |
+| **B23a** Starter Chooser *(corrected 2026-09-04, A7 item 19)* | now Appendix E's ten with their packs and "All Free" on Quiet and Ledger only; until 2026-09-04 ten starters, seven names invented, seven marked "All Free" | Appendix E is normative and names all ten with their pack and composition: **Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio**. FR-O4: **only Quiet and Ledger** are Free end-to-end. The frame's grid, category filter, free filter, "swap or upgrade" marks and "Start empty" escape are all kept; the roster and the Free marks are replaced. Also: no starter ships a membership template (FR-O1), so "Cohort — tiers and member pages" goes with the name |
+| **B20 / S11d** Manage Keys *(unchanged 2026-09-04 — A9's optional half)* | Admin + Content keys only; B20 invents grantable scopes; S11d shows the API URL as an editable field | FR-C8: **three** credentials, each shown **present or absent with what it enables**, the Staff Access Token addable and removable at any time. Custom Integration scopes are fixed by Ghost and cannot be granted — the missing capability is the token, not a permission. **The site URL is immutable**; a domain move is disconnect + reconnect, and the affordance does not exist rather than being guarded |
+| **B7** Layers *(unchanged 2026-09-04 — A9's optional half)* | "on 26 pages" | The unit is **templates**, and a project has roughly seven to ten of them, not 26 (FR-D6) |
+| **B6** Persistence Indicator *(unchanged 2026-09-04 — A9's optional half)* | four states | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved on this device" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings. **Copy only (F-080):** the drawn label **"Saved on this device"** is the string and Appendix H now carries it; FR-D10's "Saved locally" is the state name and is never printed |
 
 ### Plan limits — Appendix F.1 is the sole definition, and several frames disagree with it
 
-`S11c` says Pro connects up to **3**; `S12a` says **unlimited** projects and **full** history;
-`S12b` and `M5` say **1 / 3** sites and **Last 2 / Full** history; **`S10b` says uploads may be
-"up to 30 MB each"** where F.1 caps them at 10 MB on both plans; and Free's 100 MB storage cap
-appears nowhere. **Appendix F.1 governs every one of them**, and these are product limits, so they are shown
-rather than implied:
+Until 2026-09-04 `S11c` said Pro connects up to **3**; `S12a` said **unlimited** projects and
+**full** history; `S12b` and `M5` said **1 / 3** sites and **Last 2 / Full** history; **`S10b` said
+uploads may be "up to 30 MB each"** where F.1 caps them at 10 MB on both plans; and Free's 100 MB
+storage cap appeared nowhere. **Appendix F.1 governs every one of them**, and these are product
+limits, so they are shown rather than implied — and since 2026-09-04 the frames print this table
+(A7 item 20, A8 frame D8d): S11c "Free includes 1 site. Pro connects up to 10.", S12a "6 of 25 ·
+2 of 10 · 312 MB of 5 GB · last 10 per project", S12b and M5 "1 / 25 · 1 / 10 · 10 MB / file ·
+Last 3 / Last 10", S10b "up to 10 MB each". **One figure is still missing: Free's 100 MB appears
+only on M5's 390 frame** → **A9** item 7.
 
 | | Free | Pro |
 |---|---|---|
@@ -645,9 +661,10 @@ styles, Shuffle, Remix, member-state preview, preview subject, snapshot, restore
 suggestions board. **During the 7-day grace, `pro_past_due` keeps every Pro capability**, with no
 per-row exception.
 
-**In the walk:** 5c patches the drawn plan-limit strings to this table at lift time, each patch
-carrying the ruling (owner, 2026-09-03 — `reconcile-designs-decisions.md` §A12, decision 2); the
-frames themselves catch up in **A7**.
+**In the walk:** 5c patched the drawn plan-limit strings to this table at lift time, each patch
+carrying the ruling (owner, 2026-09-03 — `reconcile-designs-decisions.md` §A12, decision 2). **The
+frames caught up on 2026-09-04**, so those patches retire when the walkthrough next lifts the frames
+— except the 100 MB row, which stays patched until A9 runs.
 
 ---
 
@@ -708,7 +725,7 @@ a theme nobody is serving. A deploy-only that is later activated gets it then. *
 made here rather than carried to the owner: the canonical string decided it.*
 
 **Deploy Uploaded and Partial Success are the same state reached two ways**, and the history row is
-identical for both — `uploaded`, `activated` false, no active badge, **Re-activate**. Only the cause
+identical for both — `uploaded`, `activated` false, no active badge, **Re-activate** (D2e and D2f are drawn side by side to say exactly this, with the one row under both). Only the cause
 differs, so only the sentence differs: *"Uploaded. You chose not to make it live yet."* against
 *"Your theme is on your site but isn't live yet."* Neither is an error, and **neither sends a
 deploy-failure email** (FR-P1 email 5).
@@ -836,7 +853,8 @@ Each is **a designed surface, never a warning toast**.
 ### F1 · Pre-deploy snapshot gate — FR-J13
 
 **Surface: Snapshot Gate** — `B Missing Surfaces.dc.html` B12a running, B12b degraded. Semantics
-re-specified; visual treatment kept.
+re-specified; visual treatment kept — and the frames have carried the re-specification since
+2026-09-04 (A7 item 2).
 
 **When it fires.** At Inflozo's **first theme upload to a site**, deploy-only included — manual
 activation in Ghost Admin must not bypass the safety net. **Not on every deploy**, which is what the
@@ -865,7 +883,7 @@ restore-to-original into restore-to-Inflozo.
 | **Capture failed for another reason** | The request and the status code, because a person can act on a specific failure and cannot act on "something went wrong". Same three actions |
 | **Restore** | From **Deploy History**. One-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload with its own gscan**, so an old theme can be rejected on the way back in. That case has its own designed fallback: the snapshot zip is offered as a download, and the user is pointed at Settings → Design, where Ghost still holds it |
 
-> **B12b's copy is wrong in the way that matters most.** It says "your integration key may not have
+> **B12b's copy was wrong in the way that matters most** (corrected 2026-09-04, A7 item 2). It said "your integration key may not have
 > theme read permission … Check the key." Ghost's `tokenPermissionCheck` allowlists only
 > `themes: ['POST','PUT']` for Custom Integration tokens, so **every** `GET /themes/*` made with an
 > Admin API key returns 403 — on every version, every host. There is no key to fix. Telling a user
@@ -903,8 +921,8 @@ grows only as the stakes do. That escalation is the design and it stands.
    next hydrate, there is no merge path, and orphaned edits are never recovered.
 
 > **One deviation from B5c, and it is not optional.** The frame itemises the loss per section —
-> "Home hero — design and two controls · Footer — three link labels · Post template — measure".
-> **That detail does not exist.** The heartbeat carries `unsynced_edits` and nothing else; the
+> "Home hero — design and two controls · Footer — three link labels · Post template — measure" —
+> and still does in the 2026-09-04 export (→ **A9** item 4). **That detail does not exist.** The heartbeat carries `unsynced_edits` and nothing else; the
 > requester's browser has never seen the holder's journal. The modal keeps its shape, its danger
 > fill and its "Or message Rosa" escape, and its body becomes: **"7 unsynced edits will be lost.
 > They exist only in Rosa's browser. We cannot retrieve them from here."** The second sentence is
@@ -915,7 +933,8 @@ grows only as the stakes do. That escalation is the design and it stands.
 
 **Deploy and export require the lock.** From a read-only session, Ship it or Export first prompts a
 take-over, **surfacing "X unsaved edits exist elsewhere"** — so a stale cloud snapshot can never
-silently ship. This state is not drawn on any frame and is added to B5's family.
+silently ship. This state is `D8 Editor Below 1440.dc.html` D8g — B5c's confirm reused at the entry
+point that had none, "Take over to ship?", focus opening on Wait — and it joins B5's family.
 
 **The security half is already enforced in the schema.** A holder change cannot happen without
 advancing `lock_generation`, and that number is what the displaced device detects the takeover from
@@ -935,7 +954,7 @@ Architect owns.
 `POST /settings/routes/yaml`, `multipart/form-data`, file under the field name `routes`, performed
 with the **Staff Access Token** and immediately verified by reading the file back byte-for-byte.
 
-**Why the frame is wrong.** B16 says "your integration key is missing the settings permission … Fix
+**Why the frame was wrong** (corrected 2026-09-04, A7 item 3). B16 said "your integration key is missing the settings permission … Fix
 the key." **Integration tokens never carry `setting: edit`** — Ghost's allowlist binds them and there
 is nothing to grant. A **staff** token carries a `user_id`, skips the allowlist entirely, and an
 Administrator or Owner holds `setting: all`.
@@ -963,7 +982,7 @@ Administrator or Owner holds `setting: all`.
 
 **"Fix the key instead" becomes "Add the token instead"**, and the footnote under it —
 "fixing the key makes this automatic again" — becomes **"adding the token makes this automatic from
-now on."**
+now on."** *(Both are in the frame since 2026-09-04.)*
 
 **States:** *needed* (as above) · *uploaded and verified* (the card resolves to a single confirming
 line and does not return) · *could not verify* (the file was uploaded, the read-back failed — say so
@@ -978,7 +997,7 @@ degrading except the automation.
 ### F4 · The library-update confirm — FR-J14
 
 **Surfaces: Library Update Notice** — B14a · **Library Update Confirm** — B14b. **Both are right**,
-and this flow is the one §37.7 found correct. One stale sentence is corrected.
+and this flow is the one §37.7 found correct. One stale sentence is corrected here; B14b still carries it in the 2026-09-04 export (not in A7 — A9's optional half, item 12).
 
 **Why a confirm exists at all.** Compiles always use the current library — a single live library,
 no per-project pinning — so **any redeploy carries every library change since the project's last
@@ -1020,7 +1039,7 @@ waiting. That narrowness is what keeps "nothing changes without your say-so" tru
 ### F5 · The Preview-only explanation, and its clearing conditions — FR-C2
 
 **Surfaces: Preview-Only Notice** — B15 · **Preview-Only Destination** — S8a′ · the Sites card —
-S11a. **B15 is right**; the other two are not, and they move to match it.
+S11a. **B15 is right**; the other two are not, and they move to match it — here and in the prototype; all three frames are unchanged in the 2026-09-04 export (A9's optional half, items 10 and 11).
 
 **Preview-only is probed, never asked.** At connect, `hostSettings.limits.customThemes` is read from
 `GET /admin/config/`. **Its shape is a theme-name allowlist, not a yes/no flag** — Ghost's
@@ -1067,9 +1086,10 @@ probe* · *cleared by a successful deploy* · *asked* (the unreadable-`hostSetti
 
 ### F6 · The post-deploy template-binding checklist — FR-I6
 
-**Surface: Template Binding Checklist** — B19. **Drawn on a mechanism FR-I1 forbids.** The frame's
-components — the numbered steps, and especially the small honest facsimile of Ghost's own page
-settings on the right — are kept. Everything they say changes.
+**Surface: Template Binding Checklist** — B19. **Was drawn on a mechanism FR-I1 forbids; corrected
+on 2026-09-04 (A7 item 1).** The frame's components — the numbered steps, and especially the small
+honest facsimile of Ghost's own page settings on the right — are kept. Everything they said changed,
+and the frame now says it.
 
 **Why it exists.** A designed membership page or custom template compiles to `custom-{name}.hbs` and
 emits **no route**, which removes a Ghost Admin step and leaves exactly one: someone must open the
@@ -1079,7 +1099,7 @@ was a thing the user had to already know.
 
 **What the frame gets wrong**
 
-| B19 says | The truth |
+| B19 said, until 2026-09-04 | The truth — and what B19 now draws |
 |---|---|
 | `page-membership.hbs` | **`custom-membership.hbs`.** Inflozo **never** emits `page-{slug}.hbs`: that form is matched against the live slug at render time, **detaches silently the moment the user retitles the page**, and outranks the user's explicit dropdown choice — Ghost Admin disables the dropdown outright when a slug template matches |
 | "Set its URL slug to `membership`" | **Pick the template from Ghost's page-editor Template dropdown.** Ghost stores the chosen filename on the page's own row, so the binding survives a retitle, a slug change and a theme swap |
@@ -1118,9 +1138,10 @@ naming the consequence: *the page still loads, wearing a different design.*
 
 ### F7 · The pre-deploy backup gate — `BACKUP-GATE.md`
 
-**Surface: Backup Gate** — **no frame exists → Appendix A prompt A1.** Extrapolated from the
-**Deploy Wizard**'s step card (S8b's checked-row list) and the **Pro Exit Sheet**'s itemised rows
-(B13a), reusing both verbatim.
+**Surface: Backup Gate** — `D1 First-Deploy Gates.dc.html` **D1d** (self-hosted, token given),
+**D1d′** (the shortcut ticked) and **D1e** (Ghost(Pro), token declined), drawn on 2026-09-04 from
+Appendix A prompt A1. Extrapolated from the **Deploy Wizard**'s step card (S8b's checked-row list)
+and the **Pro Exit Sheet**'s itemised rows (B13a), reusing both verbatim — and the frames do.
 
 **Owner decision, 2026-08-21: Inflozo is not a backup tool and does not undertake to be one.** It
 does not copy, keep or restore the customer's Ghost data. Instead, before Inflozo changes anything on
@@ -1226,9 +1247,10 @@ the rest of the wizard, and never fires again for this site).
 
 ### F8 · Deploy history with pinning — FR-J7/J9, `BACKUP-GATE.md` § Rollback retention
 
-**Surface: Deploy History** — S8e, **extended → Appendix A prompt A2.** The drawer, its rows, the
-gscan chips, the active badge and the roll-back confirm are all drawn and all kept. Pinning, the
-snapshot row and the partial-success row are added.
+**Surface: Deploy History** — S8e, **completed by `D2 Deploy History Completed.dc.html`** (Appendix
+A prompt A2, drawn 2026-09-04). The drawer, its rows, the gscan chips, the active badge and the
+roll-back confirm are all drawn and all kept; D2a adds pinning and the original-theme row, D2b the
+refusal with its reason, D2c the Free drawer, D2d the partial-success row.
 
 **The limit: at most 10 stored versions per project on Pro and 3 on Free. Pinned versions count
 against that total.**
@@ -1284,8 +1306,8 @@ stays in history — nothing is lost."
 > PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules.**
 > This is propagation of an existing decision, not a new one (`reconcile-designs-decisions.md` §A11).
 
-**Partial success — FR-J8, and it is a state nobody drew.** Surface: **Partial Success**, in the
-Deploy Wizard and as a history row. Upload succeeded, activation failed. **This is a partial success,
+**Partial success — FR-J8, a state nobody had drawn until D2e and D2d.** Surface: **Partial
+Success**, in the Deploy Wizard (D2e) and as a history row (D2d). Upload succeeded, activation failed. **This is a partial success,
 not a failure**, and six things follow:
 
 1. **The artifact is retained** like any successful compile and appears in history without an active
@@ -1304,19 +1326,30 @@ not a failure**, and six things follow:
 
 ## Appendix A — Claude Design prompts
 
-**A1–A6 draw surfaces that do not exist** · **A7 corrects existing frames** — the ones whose
+**A1–A6 drew surfaces that did not exist** · **A7 corrected existing frames** — the ones whose
 mechanism changed, whose copy states a Ghost fact wrongly, or whose accessibility defect lives in the
-frame's own markup or tokens; its numbered items are the list · **A8 draws the editor below 1440 and
-the affordances the accessibility floor needs.** The `### A` headings are the count.
+frame's own markup or tokens; its numbered items are the list · **A8 drew the editor below 1440 and
+the affordances the accessibility floor needs** · **A9 corrects what the 2026-09-04 export got
+wrong.** The `### A` headings are the count.
 Each is self-contained, names the frame it inherits from, and carries the warning below because a
 session that hand-edits a frame hits it every time.
+
+> **Run, and landed.** Both sessions ran on 2026-09-04 — A7 with A8, then A1 to A6 — and one export
+> of the whole project replaced the repository's copy the same day
+> (`design/claude-design-export/Inflozo/`; the previous export is kept beside it as `InflozoOld/`).
+> Seven canvases are new — **D1 First-Deploy Gates · D2 Deploy History Completed · D3 The Drift
+> Report · D4 Dashboard Sheets and Blocks · D5 Canvas Markers and Template Switcher · D6 Theme
+> Settings Completed · D8 Editor Below 1440** (no D7: A7 corrected frames that exist) — and
+> twenty-seven frames changed. What landed, item by item with the strings, is
+> `reconcile-designs-decisions.md` §A15; what did not is **A9** below. **A1–A8 stay exactly as they
+> were run: they are the record of what was asked.**
 
 > **A8 exists because this pass asserted something the export does not draw**, and found it in its
 > own stress test rather than downstream. R-76 says the editor is a **desktop and tablet** surface —
 > and **no frame draws it at 834**, only at 1440. The accessibility floor then widened the gap: an
 > editor that must hold at 200% browser zoom has to work at roughly 720 CSS px on a desktop display.
 > Both are layouts described in prose that nobody has drawn, which is exactly the failure R-74
-> exists to prevent, so they go back to Claude Design like every other undrawn surface.
+> exists to prevent, so they went back to Claude Design like every other undrawn surface — and came back as D8a and D8b.
 
 **Running any of these produces a new export, which replaces the repository's copy.** Two edits
 live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0's per-prop
@@ -1324,7 +1357,7 @@ mark allowlist — and a re-export loses them by construction. **Follow the expo
 build board afterwards:** `tools/reapply-export-edits.py`, then `tools/verify-design-pass.py`, then
 the derivations, then `tools/doc-audit.py --check` twice.
 
-**They can be run as two Claude Design sessions** — **A7 together with A8** (both correct or extend
+**They can be run as two Claude Design sessions** — and were, on 2026-09-04 — **A7 together with A8** (both correct or extend
 the editor's existing frames and share the focus-ring token), then **A1 to A6** — and the export
 runbook above runs **once, after the last session** — one export of the whole project, dropped into the export directory, is enough; nothing in the repository needs the export between the two sessions, and the runbook is the same work however many prompts preceded it.
 
@@ -1995,6 +2028,130 @@ categories or free designs.
 
 A literal Ghost Handlebars expression must be written with zero-width entities. A bare
 {{ … }} is a Claude Design value hole and renders EMPTY.
+```
+
+### A9 · What the 2026-09-04 export got wrong
+
+Written on 2026-09-04 from `reconcile-designs-decisions.md` §A15 — the frame-by-frame verification
+of the export A1–A8 produced. **Items 1–9 are misses in that export.** The **optional second half**
+(items 10–18) is the ten frames this document re-specified on 2026-09-03 and deferred to "whenever
+a library pass next touches them"; this prompt is that pass **only if the owner ticks §A15
+decision 1, option 1** — otherwise paste items 1–9 and the closing rules alone.
+
+```
+Correct the frames listed below in the Inflozo design project. THE VISUAL TREATMENT OF EACH IS
+RIGHT AND STAYS — same components, same layout, same colour, same density. Only what they SAY
+changes, plus two captions and one text colour. Do not redesign any of them.
+
+1. `S5 Section Picker` S5a and S5c · THE RAIL HEAD. It reads "ALL CATEGORIES 485". DELETE THE
+   NUMBER — "ALL CATEGORIES" with nothing beside it. A library total is never printed: the library
+   grows monthly (FR-J14) and Appendix H forbids the figure. The per-category counts in the rail
+   ("Heroes 18") are runtime figures and stay.
+
+2. `Editor Sidebar Kit` · THE INPUTS CAPTION. It reads "inputs — radius 8 · coral caret · focus
+   ring 2px @40%". The focused input drawn under it already carries the corrected ring; the caption
+   did not follow. It becomes "inputs — radius 8 · coral caret · focus ring 2px solid coral-text
+   #C2381F".
+
+3. `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` · `P0-5 Populate From Panel` ·
+   PLACEHOLDER AND HINT COLOUR. These three were not in A7 and still set placeholder and hint text
+   in #A8A29A — "Search 420 icons", "Search icons", "+ 3 more rows", "+ Add post", "Search posts
+   to add", "+ 25 more rows". Apply the Calibration Set's rule: #6B6459. Colour only; nothing moves.
+
+4. `B Missing Surfaces` B5c and `D8 Editor Below 1440` D8f · EDITS, NOT CHANGES. The unit is an
+   EDIT (addendum §AD2): "7 unsynced edits will be lost" and "She has edits that never reached the
+   server". DELETE B5c's itemised list ("Home hero — design and two controls · Footer — three link
+   labels · Post template — measure") — the heartbeat carries a count and nothing else, so the
+   product cannot know it. Keep "They exist only in Rosa's browser. We cannot retrieve them from
+   here." D8g beside it already says "edits" and is the model.
+
+5. `D8 Editor Below 1440` D8b · THE CAPTION. It says a reader of the frame would apply "the 44px
+   rules and the below-720 notice". There is no below-720 notice: the Small Screen Notice fires on
+   a COARSE POINTER at a small viewport (D4f), and the width in the ruling is 1024, not 720. The
+   caption becomes "the 44px rules and the small-screen notice".
+
+6. `D5 Canvas Markers and Template Switcher` D5b · ONE FILE, TWO TEMPLATES. The routes-manager
+   example "Membership landing · custom-membership.hbs" takes the filename the Membership group's
+   own Signup template ships as (B19, D5f). Rename the example: "Landing · custom-landing.hbs".
+
+7. `S12 Billing` S12a, S12b · `M5 Pricing` at 1440 · THE STORAGE ROW. Free's 100 MB storage cap
+   appears only on M5's 390 frame. Add "Asset storage · 100 MB · 5 GB" to S12b's and M5's
+   comparison tables, and print it wherever S12a prints the Free plan's limits. Appendix F.1 is the
+   only definition: Free 1 project · 1 site · 100 MB · last 3 versions; Pro 25 · 10 · 5 GB · last
+   10; 10 MB per upload on both.
+
+8. `S9 Routes` S9a · THE YAML PANE AND THE CUSTOM ROUTES. Delete the rows "/ : home" and
+   "/subscribe/ : members-signup" from the Custom routes list AND from the YAML. A membership page
+   emits NO route — it is custom-{name}.hbs, bound from Ghost's page editor (B19) — and a routes:
+   entry for / removes the index collection and breaks /page/2/. The YAML opens with the index
+   collection, ALWAYS first, ahead of any custom collection:
+     collections:
+       /:
+         permalink: /{slug}/
+         template: index
+   then /articles/, /tutorials/, /notes/ as drawn. S9c: "Posts per page follows the home feed's
+   Count control — 10 right now" becomes "Posts per page is your theme setting — 12 right now. A
+   collection can set its own limit here." and the Published date condition offers a relative form
+   first — "in the last 30 days" (now-30d) — with the absolute date second.
+
+9. `B Missing Surfaces` B22 · REDESIGN PROPOSALS (ruling R-78, FR-C7). Held out of the walk until
+   A7 ran, but never in A7. Keep the card, the NOW / PROPOSED pairing and the sentence argued from
+   the user's own data. What changes: not four per-section swaps but 2–3 WHOLE-SITE proposals, each
+   a starter × Style Pack combination rendered on the user's real content and differing from the
+   others in layout structure, with ONE sentence per proposal arguing from the data ("You have
+   4,100 members and no signup above the fold"). Delete "no tag template, so Ghost falls back to a
+   bare list" — tag.hbs always compiles. It is re-runnable later from the New Project Sheet's
+   fourth door (D4a).
+
+OPTIONAL SECOND HALF — RUN ONLY IF THE OWNER HAS TICKED §A15 DECISION 1, OPTION 1.
+
+10. `B Missing Surfaces` B15 · "Creator" → "Publisher or higher". Ghost's 2026 lineup is Starter /
+    Publisher / Business.
+
+11. `S8 Deploy` S8a′ · `S11 Sites` S11a · "download the theme and upload it in Ghost Admin" is
+    wrong: Starter forbids custom themes in Ghost Admin too. The zip still downloads; say where it
+    can go: "Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that
+    allows custom themes."
+
+12. `B Missing Surfaces` B14b · delete "We snapshot before redeploying, so this is reversible from
+    history." → "The version you're on now stays in history and rolls back in one click."
+
+13. `B Missing Surfaces` B7 · "on 26 pages" → the unit is templates, and the count is the
+    project's own from the switcher (D5b): "on all 9 templates", and the notice line "Editing a
+    site-wide section changes it on all 9 templates."
+
+14. `B Missing Surfaces` B18 · keys become dotted namespace.name — member.signup_cta,
+    post.reading_time, archive.empty_heading — and add one error row: a translation containing a
+    brace pair is refused with the reason "Braces would break every page of your site" (FR-Q8: a
+    malformed interpolation token is a whole-site 500). Keep the RTL note.
+
+15. `B Missing Surfaces` B8 · delete the "Keep Free designs only" scope (ruling R-77). Add a second
+    radio-card group ABOVE the existing scope group, titled "Re-roll what": Style Pack · Designs ·
+    Both (FR-D17). The existing group is "where"; this one is "what".
+
+16. `B Missing Surfaces` B4a · delete the "Body" block-type menu: the toolbar is bold · italic ·
+    underline · link, and Remove link when a link is selected (P0-1 supersedes B4a). B4b's link
+    entry gains "Open in new tab" and a rel row (FR-D9).
+
+17. `B Missing Surfaces` B20 · `S11 Sites` S11d · THREE credentials — Admin API key, Content API
+    key, Staff Access Token — each present or absent with one line saying what it enables; the
+    token addable and removable at any time. Delete B20's grantable scopes: Ghost fixes an
+    integration's permissions and nothing can be granted. The site URL is read-only text, never a
+    field — a domain move is disconnect and reconnect.
+
+18. `B Missing Surfaces` B6 · add the fifth state, no local storage, with the label "Syncing every
+    change to the cloud" — because a false "Saved on this device" is the one thing this indicator
+    must never say (FR-D10).
+
+DO NOT TOUCH THE FRAME CAPTIONS that record settings snapshots ("drawn at padding …"): ruling R-73.
+VOICE: PRD Appendix H. Errors are human and name the fix. Billing stays serious.
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.
+
+19. `D1 First-Deploy Gates` D1b · WHAT THE TOKEN IS FOR. The offer says the token is for "reading your current theme, and reading routes.yaml". Reading routes.yaml needs no token — the integration key already reads it (MEASUREMENTS §37) — and what the token unlocks is UPLOADING routes.yaml (FR-I4) and READING the live theme for the snapshot and the drift report (FR-J13, FR-J16). Say those two, in those words; D1c's decline copy already has it right.
+20. `D8 Editor Below 1440` D8c · THE SKIP LINK'S TARGET. The drawn link points at `#d8-canvas` and nothing in the file carries that id, so the frame's own link is dead. Give the canvas container the id the link names; the product's skip link is implemented by the story, but the frame should not contradict itself.
 ```
 
 ## Finalize notes

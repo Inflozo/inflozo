@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">A9 FAQ · DESIGN 4 OF 14 · PAPER PACK · ALWAYS OPEN</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">Cards</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">One question and its answer per card, three cards of 416 on a 24 px gutter — <a href="./A8-2 Three Up.dc.html">A8·2</a>'s grid and card, unchanged, carrying a question where it carried a quotation. Always open, because <strong style="font-weight:600">a card that has to be pressed to show its contents is a card with nothing in it.</strong></p>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:740px;text-wrap:pretty">It is the design for a short FAQ with short answers — six questions of two sentences each — and the one place in A9 where <strong style="font-weight:600">answer length has a cost a reader can see</strong>: cards in a row are as tall as the tallest answer in that row. A8·4's rule arrives with the grid: <strong style="font-weight:600">rows are equal within themselves and never across the grid</strong>, and the slack falls at the foot of the short cards.</p>
+</section>
+
+<section data-screen-label="A9-4 desktop light" style="padding:0 56px 64px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PRIMARY · desktop 1440 · light · padding Comfortable 96, head Centred, title Large 40, columns Three, questions shown Six, cards Surface · 6 of 6 drawn</div>
+    <div style="width:1440px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:96px 72px">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+        <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Questions</span>
+        <h2 style="margin:0;font-family:Georgia,serif;font-weight:700;font-size:40px;line-height:1.1;letter-spacing:-0.02em;color:#232019;max-width:780px;text-wrap:pretty">What members ask us most</h2>
+        <p style="margin:0;font-size:17px;line-height:1.55;color:#6B6459;max-width:620px;text-wrap:pretty">If your question is not here, write to us and a person will answer it.</p>
+      </div>
+      <ul style="margin:48px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,416px);gap:24px">
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">What do I get with a membership?</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">Three things, for one price:</p>
+            <ul style="margin:0;padding:0 0 0 20px;list-style:disc;display:flex;flex-direction:column;gap:8px">
+              <li style="font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">The Thursday letter, every week.</li>
+              <li style="font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">The full archive, back to 2019, searchable.</li>
+              <li style="font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">The printed quarterly, four times a year.</li>
+            </ul>
+          </div>
+        </li>
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">When does the Thursday letter arrive?</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">Thursday at 07:00 UK time, every week except the last two of December.</p>
+        </li>
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">Can I read the archive without a membership?</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">The last four weeks are open to everyone. Everything older is for members, and you can see what is in there on the <a href="#archive" style="color:#232019;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#D96C3F">archive page</a>.</p>
+        </li>
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">How do I cancel?</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">On your account page, under Membership. Access runs to the end of the period you have paid for, and nothing you have saved is deleted.</p>
+        </li>
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">Do you offer student rates?</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">Yes. Write to us from your university address and we will send you a link.</p>
+        </li>
+        <li style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <h3 style="margin:0;font-size:17px;font-weight:600;line-height:1.4;color:#232019">Can I gift a membership?</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#232019;text-wrap:pretty">Yes, for a year. You choose the date the recipient hears about it, and they pick their own password when they arrive.</p>
+        </li>
+      </ul>
+      <div style="margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:10px">
+        <span style="font-size:13px;line-height:1.5;color:#6B6459;max-width:620px;text-align:center">If something here is out of date, tell us and we will fix it.</span>
+        <span style="font-size:14px;font-weight:600;color:#232019;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#D96C3F">Email the editors</span>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px"><strong style="font-weight:600">416 · 24 · 416 · 24 · 416 = 1,296</strong>, card padding 28, the pack radius, a 1 px hairline and <strong style="font-weight:600">no shadow at any value</strong> — A8's card rules hold, including the reason: nine warm shadows in a grid is texture. <strong style="font-weight:600">The question sits at the top of the card and the answer beneath it</strong>, 12 px apart at Row 17, and the answer takes the card inside its padding — 360 px, well under the 620 cap, which is why this design's real limit is the card's height rather than its measure.<br><strong style="font-weight:600">The first row is as tall as its list answer and the second row is not.</strong> Two row heights, three cards each, slack at the foot of the short cards. Equal-across-the-grid is refused for A8·4's reason — every short answer would pay for one long one — and so is a packed masonry, which would break the reading order the grid gives for free. ⚑ Reusing A8·2's card verbatim, the 12 px question-to-answer gap in a card, and the refusals are flagged there and restated here.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">COLUMNS TWO · 632 px cards, padding 32 · drawn at 620 crop, type scaled</div>
+      <div style="width:620px;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:7px"><span style="font-size:12px;font-weight:600;color:#232019">What do I get with a membership?</span><span style="font-size:11px;line-height:1.6;color:#232019">Three things, for one price: the Thursday letter, the full archive and the printed quarterly.</span></div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:7px"><span style="font-size:12px;font-weight:600;color:#232019">When does the Thursday letter arrive?</span><span style="font-size:11px;line-height:1.6;color:#232019">Thursday at 07:00 UK time, every week except the last two of December.</span></div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:7px"><span style="font-size:12px;font-weight:600;color:#232019">How do I cancel?</span><span style="font-size:11px;line-height:1.6;color:#232019">On your account page, under Membership. Access runs to the end of the period you have paid for.</span></div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:7px"><span style="font-size:12px;font-weight:600;color:#232019">Do you offer student rates?</span><span style="font-size:11px;line-height:1.6;color:#232019">Yes. Write to us from your university address.</span></div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">COLUMNS TWO · 632 · 32 · 632 · CARD PADDING 32 · TWO ROWS OF TWO</span>
+        </div>
+        <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">How do I cancel?</span><span style="font-size:10px;line-height:1.6;color:#232019">On your account page, under Membership.</span></div>
+            <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">Student rates?</span><span style="font-size:10px;line-height:1.6;color:#232019">Yes. Write to us from your university address.</span></div>
+            <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">Is there an app?</span><span style="font-size:10px;line-height:1.6;color:#232019">No. The letter is email and the archive is a website.</span></div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">CARDS GROUND · THE CARD TAKES THE PAGE'S GROUND AND KEEPS ITS HAIRLINE</span>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+          <span><strong style="font-weight:600">Card padding is not a control — it follows the column count</strong>, 28 at three and 32 at two, which is A8·4's rule and the reason this design has a Columns control and no padding control of its own.</span>
+          <span><strong style="font-weight:600">Cards Ground puts the page's ground inside the hairline</strong>, for a section sitting on a surface-coloured band above or below it. The hairline is then a 1.3:1 boundary rather than information, which is stated rather than corrected: the card's edge is where the answer stops, and nothing in it needs to be found by contrast.</span>
+          <span><strong style="font-weight:600">Hairline columns is not offered.</strong> A8·4 refused it in a two-row grid for the reason that holds here too — a vertical rule that stops between two rows is a table's rule without a table's header — and 15 Ledger is A9's honest version of that idea.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">WHAT A LONG ANSWER COSTS · and the two counts · drawn at 560 crop</div>
+      <div style="width:560px;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:stretch">
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">The letter isn't arriving. What should I check?</span><span style="font-size:10px;line-height:1.6;color:#232019">Three things, in this order: your spam folder and the promotions tab; whether <span style="font-family:'JetBrains Mono',monospace;font-size:9px;background:#F4F0E8;border-radius:8px;padding:0 4px">letters@orbitweekly.com</span> is in your contacts; the address on your account page. If all three are fine, write to us and we will look at the send log.</span></div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">Student rates?</span><span style="font-size:10px;line-height:1.6;color:#232019">Yes. Write to us from your university address.</span></div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;color:#232019">Is there an app?</span><span style="font-size:10px;line-height:1.6;color:#232019">No. The letter is email and the archive is a website that reads well on a phone.</span></div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6A64">ONE 268-CHARACTER ANSWER SETS THE ROW · THE SLACK IS AT THE FOOT OF THE OTHER TWO</span>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.65;color:#3A3835">
+          <span><strong style="font-weight:600">The card grows and the row grows with it.</strong> Nothing is truncated, clamped, faded, given a “read more” or moved to another row; the two short cards carry the difference as white space under their answers. <strong style="font-weight:600">The answer is not vertically centred and is not pinned to the foot</strong> — it starts under its question, where a reader's eye already is.</span>
+          <span><strong style="font-weight:600">The editor's counter turns muted past 450 characters in this design and advises 1 Accordion</strong>, where the same answer costs a row's height instead of a grid's. The field's own ceiling is still 900; this is advice at 450, not a limit. ⚑ Both the 450 and the wording are mine.</span>
+          <span><strong style="font-weight:600">Questions shown is a number picker, 1–6, and six is its greyed ceiling.</strong> Nine cards of prose is a page of cards rather than a FAQ, and 3 Open List or 1 Accordion holds nine questions without a grid. <strong style="font-weight:600">Fewer authored than shown draws what exists</strong> — five at Six is five cards and the last cell is absent, not empty.</span>
+          <span><strong style="font-weight:600">Two questions draw two cards of 416, centred and not widened</strong>; one draws one 416 card, centred, and the panel advises 1 Accordion, because a single card in a 1,296 width reads as a note rather than a section.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">DARK · desktop 1440 · padding Comfortable 96, head Flush left, title Medium 34, columns Three, questions shown Three, cards Surface</div>
+    <div style="width:1440px;background:#171511;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.24);overflow:hidden;box-sizing:border-box;padding:96px 72px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#A79E8F">Questions</span>
+        <h3 style="margin:0;font-family:Georgia,serif;font-weight:700;font-size:34px;line-height:1.12;letter-spacing:-0.02em;color:#F2EDE4;max-width:780px;text-wrap:pretty">What members ask us most</h3>
+        <p style="margin:0;font-size:17px;line-height:1.55;color:#A79E8F;max-width:620px;text-wrap:pretty">If your question is not here, write to us and a person will answer it.</p>
+      </div>
+      <div style="margin-top:48px;display:grid;grid-template-columns:repeat(3,416px);gap:24px;align-items:stretch">
+        <div style="background:#211D17;border:1px solid #332E27;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:17px;font-weight:600;line-height:1.4;color:#F2EDE4">What do I get with a membership?</span>
+          <span style="display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:16px;line-height:1.65;color:#F2EDE4">Three things, for one price:</span>
+            <span style="display:flex;flex-direction:column;gap:8px;padding-left:20px">
+              <span style="font-size:16px;line-height:1.65;color:#F2EDE4;display:list-item;list-style:disc">The Thursday letter, every week.</span>
+              <span style="font-size:16px;line-height:1.65;color:#F2EDE4;display:list-item;list-style:disc">The full archive, back to 2019, searchable.</span>
+              <span style="font-size:16px;line-height:1.65;color:#F2EDE4;display:list-item;list-style:disc">The printed quarterly, four times a year.</span>
+            </span>
+          </span>
+        </div>
+        <div style="background:#211D17;border:1px solid #332E27;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:17px;font-weight:600;line-height:1.4;color:#F2EDE4">When does the Thursday letter arrive?</span>
+          <span style="font-size:16px;line-height:1.65;color:#F2EDE4">Thursday at 07:00 UK time, every week except the last two of December.</span>
+        </div>
+        <div style="background:#211D17;border:1px solid #332E27;border-radius:8px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:17px;font-weight:600;line-height:1.4;color:#F2EDE4">Can I read the archive without a membership?</span>
+          <span style="font-size:16px;line-height:1.65;color:#F2EDE4">The last four weeks are open to everyone. Everything older is for members, and you can see what is in there on the <span style="text-decoration:underline;text-underline-offset:3px;text-decoration-color:#E0805A">archive page</span>.</span>
+        </div>
+      </div>
+      <div style="margin-top:40px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:13px;line-height:1.5;color:#A79E8F">If something here is out of date, tell us and we will fix it.</span>
+        <span style="font-size:14px;font-weight:600;color:#F2EDE4;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#E0805A">Email the editors</span>
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1000px"><strong style="font-weight:600">Three cards, one row, one height.</strong> Dark lifts the card from the ground to <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code> and keeps the hairline, which is the plane step doing what a shadow does in light — except that there is no shadow in light either, so in both modes the card is a fill and an edge. Question 15.1:1, answer the same, list markers with it; the one link's underline at 6.3:1. <strong style="font-weight:600">At questions shown Three the section is a single row and the equal-height rule has nothing to divide</strong>, which is the count a site with three short answers should be using.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TABLET 834 · two columns at both Columns values · 365 + 24 + 365 = 754</div>
+      <div style="width:834px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:80px 40px">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px">
+          <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Questions</span>
+          <span style="font-family:Georgia,serif;font-size:34px;font-weight:700;line-height:1.12;letter-spacing:-0.02em;color:#232019;max-width:640px;text-wrap:pretty">What members ask us most</span>
+          <span style="font-size:17px;line-height:1.55;color:#6B6459;max-width:560px;text-wrap:pretty">If your question is not here, write to us and a person will answer it.</span>
+        </div>
+        <div style="margin-top:40px;display:grid;grid-template-columns:repeat(2,365px);gap:24px;align-items:stretch">
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">What do I get with a membership?</span>
+            <span style="display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:16px;line-height:1.65;color:#232019">Three things, for one price:</span>
+              <span style="display:flex;flex-direction:column;gap:8px;padding-left:20px">
+                <span style="font-size:16px;line-height:1.65;color:#232019;display:list-item;list-style:disc">The Thursday letter, every week.</span>
+                <span style="font-size:16px;line-height:1.65;color:#232019;display:list-item;list-style:disc">The full archive, back to 2019, searchable.</span>
+                <span style="font-size:16px;line-height:1.65;color:#232019;display:list-item;list-style:disc">The printed quarterly, four times a year.</span>
+              </span>
+            </span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">When does the Thursday letter arrive?</span>
+            <span style="font-size:16px;line-height:1.65;color:#232019">Thursday at 07:00 UK time, every week except the last two of December.</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">Can I read the archive without a membership?</span>
+            <span style="font-size:16px;line-height:1.65;color:#232019">The last four weeks are open to everyone. Everything older is for members, and you can see what is in there on the <span style="text-decoration:underline;text-underline-offset:3px;text-decoration-color:#D96C3F">archive page</span>.</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+            <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">How do I cancel?</span>
+            <span style="font-size:16px;line-height:1.65;color:#232019">On your account page, under Membership. Access runs to the end of the period you have paid for, and nothing you have saved is deleted.</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:834px"><strong style="font-weight:600">Two columns at 1080 and below, at both Columns values</strong>, disclosed as “Two at this width” — A8·4's rule and its wording. 365 px cells on a 24 px gutter, <strong style="font-weight:600">card padding 24</strong>, padding 80, title 34, question Row 17 unchanged. Six cards become three rows of two and <strong style="font-weight:600">three row heights</strong>; the frame draws the first four. The list answer still sets its row and the slack still falls at the foot of its neighbour.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · state one · one column, 16 px apart, every card its own height</div>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:64px 20px">
+          <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px">
+            <span style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#6B6459">Questions</span>
+            <span style="font-family:Georgia,serif;font-size:28px;font-weight:700;line-height:1.14;letter-spacing:-0.02em;color:#232019;text-wrap:pretty">What members ask us most</span>
+          </div>
+          <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px">
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">What do I get with a membership?</span>
+              <span style="display:flex;flex-direction:column;gap:12px">
+                <span style="font-size:16px;line-height:1.6;color:#232019">Three things, for one price:</span>
+                <span style="display:flex;flex-direction:column;gap:8px;padding-left:20px">
+                  <span style="font-size:16px;line-height:1.6;color:#232019;display:list-item;list-style:disc">The Thursday letter, every week.</span>
+                  <span style="font-size:16px;line-height:1.6;color:#232019;display:list-item;list-style:disc">The full archive, back to 2019, searchable.</span>
+                  <span style="font-size:16px;line-height:1.6;color:#232019;display:list-item;list-style:disc">The printed quarterly, four times a year.</span>
+                </span>
+              </span>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">When does the Thursday letter arrive?</span>
+              <span style="font-size:16px;line-height:1.6;color:#232019">Thursday at 07:00 UK time, every week except the last two of December.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">MOBILE 390 · state two · cards Ground · the same six, further down</div>
+        <div style="width:390px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:64px 20px">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">Do you offer student rates?</span>
+              <span style="font-size:16px;line-height:1.6;color:#232019">Yes. Write to us from your university address and we will send you a link.</span>
+            </div>
+            <div style="background:#FBF9F5;border:1px solid #EBE5DB;border-radius:8px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:17px;font-weight:600;line-height:1.4;color:#232019">Can I gift a membership?</span>
+              <span style="font-size:16px;line-height:1.6;color:#232019">Yes, for a year. You choose the date the recipient hears about it, and they pick their own password when they arrive.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:390px"><strong style="font-weight:600">One column at ≤ 767, 16 px apart, card padding 24, and every card is its own height because there is no row.</strong> This is the width where the design's cost disappears: nothing is stretched to match a neighbour it no longer has. The second frame is Cards Ground at the same width — a hairline box on the page's own ground, which on a phone reads as a divided list rather than as cards, and the panel says so.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:620px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.65;color:#3A3835">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">ACCESSIBILITY · A GRID THAT IS STILL ONE LIST</span>
+      <span><strong style="font-weight:600">One <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;ul&gt;</code> of six <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;li&gt;</code>, never two lists of three</strong>, with the grid on the list and each card an item. One <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;h2&gt;</code>, an <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;h3&gt;</code> per question, its answer beneath. <strong style="font-weight:600">No button, no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">role="region"</code>, no marker</strong> — 3 Open List's structure in a grid.</span>
+      <span><strong style="font-weight:600">The equal-height stretch is invisible to assistive technology</strong>, and so is the row it belongs to: a screen reader hears six items in authored order and nothing about which three shared a height.</span>
+      <span><strong style="font-weight:600">The card is not a link and has no hover state.</strong> A9's rule and A8's before it: a card whose only destination is the answer it already shows is a link to nowhere. The only focusable things here are links inside answers and the optional section link.</span>
+      <span><strong style="font-weight:600">The <code style="font-family:'JetBrains Mono',monospace;font-size:12px">anchor</code> is on the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;h3&gt;</code> with <code style="font-family:'JetBrains Mono',monospace;font-size:12px">tabindex="-1"</code></strong>, as in 3 Open List, so a deep link scrolls the card into view with 96 px above it and puts focus on the question. Nothing opens and nothing is highlighted.</span>
+      <span><strong style="font-weight:600">Contrast:</strong> question and answer 15.8:1 light / 15.1:1 dark on <code style="font-family:'JetBrains Mono',monospace;font-size:12px">surface</code>, 15.4:1 / 14.7:1 at Cards Ground, card hairline 1.3:1 as a boundary, link underline 3.3:1 / 6.3:1. <strong style="font-weight:600">In forced colours the card keeps its hairline and loses its fill</strong>, which makes Surface and Ground the same drawing — stated, not corrected.</span>
+      <span><strong style="font-weight:600">Print: one column, every card open, hairlines kept</strong>, because a printed page is not 1,296 px wide.</span>
+    </div>
+
+    <div style="width:320px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">CONTROLS · as the user sees them</span>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <span style="font-size:12px;font-weight:500;color:#6E6A64">Design</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:7px;box-sizing:border-box"><span style="height:1px;background:#DED8CC"></span><span style="height:3px;width:70%;background:#C9C2B6;border-radius:1px"></span><span style="height:1px;background:#DED8CC"></span><span style="height:3px;width:55%;background:#C9C2B6;border-radius:1px"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:7px;box-sizing:border-box"><span style="height:3px;width:60%;background:#C9C2B6;border-radius:1px"></span><span style="height:2px;background:#DED8CC"></span><span style="height:2px;width:80%;background:#DED8CC"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FF5941;display:flex;gap:3px;padding:6px;box-sizing:border-box"><span style="flex:1;border:1px solid #DED8CC;border-radius:2px"></span><span style="flex:1;border:1px solid #DED8CC;border-radius:2px"></span><span style="flex:1;border:1px solid #DED8CC;border-radius:2px"></span></div>
+          <div style="width:64px;height:36px;border:1px solid #E7E2DB;border-radius:6px;background:#232019;display:flex;gap:3px;padding:6px;box-sizing:border-box"><span style="flex:1;border:1px solid #4A443B;border-radius:2px"></span><span style="flex:1;border:1px solid #4A443B;border-radius:2px"></span><span style="flex:1;border:1px solid #4A443B;border-radius:2px"></span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Head</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Centred</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Flush left</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">None</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">The grid fills the width at every value; only the head and the foot move.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Title size</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Medium</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Large</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Display</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">34 · 40 · 48. Unavailable at head None.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Columns</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Two</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Three</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">632 cards at Two, 416 at Three. Two at 1080 and below, whichever you pick.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Questions shown</span><div style="height:36px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:12px;color:#8A857C">−</span><span style="font-size:12.5px;font-weight:600">6</span><span style="font-size:12px;color:#8A857C;opacity:.35">+</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5"><strong style="font-weight:600;color:#3A3835">A number picker, 1–6, default 6</strong> ⚑ 29 August 2026 — item counts are a number picker, never a row of fixed buttons. <strong style="font-weight:600;color:#3A3835">Six is the ceiling</strong> and + is greyed there: nine cards of prose is a page of cards rather than a FAQ. Cards in a row are as tall as the longest answer in that row.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Cards</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Surface</span><span style="flex:1;text-align:center;font-size:11.5px;padding:5px 6px;border-radius:24px;color:#6E6A64">Ground</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Ground for a section between two surface-coloured bands. On a phone it reads as a divided list.</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Member visibility</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Everyone</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Logged out</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Free</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Paid</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Who sees the whole section, server-side. <strong style="font-weight:600;color:#3A3835">A FAQ written for members</strong> — cancelling, gifting, what happens to an address — is a section a logged-out reader has no use for, and the section link can be a Portal target. <strong style="font-weight:600;color:#3A3835">A Portal link is conditional:</strong> where that link opens Ghost’s own sign-up it does not render when the connected site has self-signup switched off or no payment provider connected — and Ghost’s sign-up pop-up needs JavaScript: with JavaScript off, nothing happens.</span></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:10px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">UNIVERSAL · every placeable section · outside the design’s list</span><div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Background role</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Background</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Surface</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64;opacity:.45">Contrast</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Contrast is disabled: an inverted band needs its own paddings, derived mixes and accent substitution, and <strong style="font-weight:600;color:#3A3835">8 Contrast Band</strong> is the design for it. The Cards row above is the card’s fill, not the section’s ground — the two are separate controls and the panel keeps them apart.</span></div><div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Vertical spacing</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Compact</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">Comfortable</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Spacious</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Resolves 64 · 96 · 132 (80 at 834, 64 at 390). <strong style="font-weight:600;color:#3A3835">The design’s own Padding row retired into this control</strong> — the same three values under the name every section uses.</span></div><div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:500;color:#6E6A64">Top divider</span><div style="display:flex;background:#EFECE7;border-radius:24px;padding:3px"><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;background:#FFFFFF;box-shadow:0 1px 2px rgba(28,27,26,.06);font-weight:600">None</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Line</span><span style="flex:1;text-align:center;font-size:11px;padding:4px 6px;border-radius:24px;color:#6E6A64">Fade</span></div><span style="font-size:11px;color:#6E6A64;line-height:1.5">Drawn above the section, in the page’s own hairline. None is the default in A9: the first row already starts against a rule.</span></div></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">EDITING · the P0 primitives</span><span style="font-size:11px;line-height:1.5;color:#6E6A64">Eyebrow, title, sub, note and the link label edit inline with the <strong style="font-weight:600;color:#3A3835">P0·1 toolbar</strong> — bold · italic · underline · link, the popover carrying open-in-new-tab and rel nofollow · noreferrer · sponsored. <strong style="font-weight:600;color:#3A3835">Questions and answers edit inline on canvas</strong>, selected where they are drawn rather than only in the repeater. The answer raises the marks toolbar on selection with <strong style="font-weight:600;color:#3A3835">bold · italic · link · inline code and no underline</strong> — an underline inside prose is a link that is not one. <strong style="font-weight:600;color:#3A3835">Recorded as a PRD delta.</strong> <strong style="font-weight:600;color:#3A3835">Nothing in A9 is Ghost-owned</strong>, so nothing here says “Edit in Ghost” — every word on the page is the site’s own. The link opens the Ghost-aware <strong style="font-weight:600;color:#3A3835">Link Picker</strong> and takes an optional <strong style="font-weight:600;color:#3A3835">P0·2</strong> icon before or after its label, off by default. Questions are the <strong style="font-weight:600;color:#3A3835">P0·3</strong> item list: Add question arrives with content, Remove is never disabled, drag to reorder, <strong style="font-weight:600;color:#3A3835">per-item content only</strong>. <strong style="font-weight:600;color:#3A3835">Open rows is not offered</strong>: a card that has to be pressed to show its contents is a card with nothing in it.</span></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">BEHAVIOUR · from the fixed registry</span><span style="font-size:11px;line-height:1.5;color:#6E6A64"><strong style="font-weight:600;color:#3A3835">No module.</strong> Nothing to declare: no button, no summary, no region, no hover, no motion, and the anchor is an <code style="font-family:'JetBrains Mono',monospace;font-size:12px">id</code> on a heading. <strong style="font-weight:600;color:#3A3835">JS off:</strong> identical — print, screen and no-JS are one drawing. <strong style="font-weight:600;color:#3A3835">ARCHITECT: registry addition</strong> — deep-linking (open the row at the fragment, scroll it to 96 px, move focus, animate nothing) is script no registry module covers. The no-JS state is drawn and <strong style="font-weight:600;color:#3A3835">no module name is coined</strong>.</span></div>
+      <div style="border-top:1px solid #E7E2DB;padding-top:12px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">DATA · nothing from Ghost · outside the design’s list</span><span style="font-size:11px;line-height:1.5;color:#6E6A64"><strong style="font-weight:600;color:#3A3835">Nothing here comes from Ghost.</strong> There is no FAQ, question or answer resource, so every question, answer and group label is authored in this section: <strong style="font-weight:600;color:#3A3835">no “Populate from…” panel is offered on any A9 design</strong> and there is no missing-data branch. Rows pulled from posts under an internal tag were considered and refused — a post has its own URL, and a page of tagged posts is a documentation index. The only failure available is an empty repeater, and then the section does not render. <strong style="font-weight:600;color:#3A3835">Refused on record, at every value:</strong> no Expand all or Collapse all; no question count in the resting state — <strong style="font-weight:600;color:#3A3835">no exception any more</strong>: 12 Filter held it, and that design was cut on 31 August 2026; no “Was this helpful?”, votes or thumbs; no icon per question; no chat launcher, ask-AI or search-the-site field; no accordion inside an accordion; no popular / new / important flag; and no <code style="font-family:'JetBrains Mono',monospace;font-size:12px">FAQPage</code> schema — a section cannot know what the page is.</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #E7E2DB;padding-top:10px"><span style="font-size:11px;line-height:1.5;color:#6E6A64"><strong style="font-weight:600;color:#3A3835">6 of 6 drawn, every answer visible.</strong> Answers over 450 characters make one card set its whole row — <strong style="font-weight:600;color:#3A3835">for long answers use 1 Accordion.</strong> One question → one card, with 1 Accordion advised. <span style="color:#232019;font-weight:600;text-decoration:underline;text-underline-offset:3px">Edit questions →</span></span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">6 controls + the universal trio + the Data group · card padding follows the column count; question fixed at Row 17</span></div>
+    </div>
+
+    <sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+    <div style="width:1000px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">SPEC · A9·4 CARDS · full text in “A9 FAQ — Spec.md” · the card and the grid are A8·2's and A8·4's</span>
+      <span style="font-size:12.5px;line-height:1.65;color:#3A3835;border:1px solid #E7E2DB;border-radius:8px;padding:12px 14px;background:#FBF9F5;display:block"><strong style="font-weight:600">Patched · design patch pass, 29 August 2026.</strong> <strong style="font-weight:600">Questions shown is a number picker, 1–6, default 6</strong> — item counts are a number picker. <strong style="font-weight:600">One question draws one centred card</strong> with 1 Accordion advised: no design ever turns into another design. <strong style="font-weight:600">The two free designs are 1 Accordion · 3 Open List</strong> — the owner’s own choice, ruled on 29 August 2026. A9 holds no subscribe or sign-in form, so the no-JavaScript form notice has no subject here; the per-design no-JavaScript line is in the Behaviour group above. <strong style="font-weight:600">Nothing was renumbered.</strong></span>
+      <span style="font-size:12.5px;line-height:1.65;color:#3A3835;border:1px solid #E7E2DB;border-radius:8px;padding:12px 14px;background:#FBF9F5;display:block"><strong style="font-weight:600">Reconciled · controls pass, 24 August 2026.</strong> Added: <strong style="font-weight:600">Member visibility</strong>. Retired into the universal trio: Padding → Vertical spacing. <strong style="font-weight:600">Open rows is not offered</strong> — this design closes nothing. Every visible text edits inline with the <strong style="font-weight:600">P0·1</strong> toolbar — the answer’s marks bold · italic · link · inline code, no underline — the link goes through the <strong style="font-weight:600">Link Picker</strong> with an optional <strong style="font-weight:600">P0·2</strong> icon, and Questions is the <strong style="font-weight:600">P0·3</strong> item list. A <strong style="font-weight:600">Data group</strong> states the category’s one data fact. <strong style="font-weight:600">Cards stays the card’s fill and Background role the section’s ground</strong> — two controls, kept apart at the panel. <strong style="font-weight:600">No section frame was redrawn:</strong> nothing this pass changes is visible at a drawn value. <strong style="font-weight:600">Quick Controls:</strong> Head · Columns · Questions shown · Cards. <strong style="font-weight:600">Controls: 6 controls + the universal trio + the Data group.</strong></span>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:600">Content fields · data</span>
+          <span style="font-size:12.5px;line-height:1.65;color:#3A3835">Reads <code style="font-family:'JetBrains Mono',monospace;font-size:12px">eyebrow</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">title</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">sub</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">note</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">linkLabel</code> + <code style="font-family:'JetBrains Mono',monospace;font-size:12px">linkUrl</code>, and <strong style="font-weight:600">three or six items of <code style="font-family:'JetBrains Mono',monospace;font-size:12px">items[]</code></strong> — <code style="font-family:'JetBrains Mono',monospace;font-size:12px">question</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">answer</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">anchor</code>. <code style="font-family:'JetBrains Mono',monospace;font-size:12px">group</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">image</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:12px">imageAlt</code> kept, not drawn.<br><strong style="font-weight:600">Data: nothing from Ghost.</strong> <strong style="font-weight:600">The editor advises against answers over 450 characters here</strong> and advises 1 Accordion; the field's ceiling is still 900.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:600">Controls · the arrangement</span>
+          <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><strong style="font-weight:600">Universal, outside this list:</strong> Background role, Contrast disabled with 8 Contrast Band named · Vertical spacing resolving 64 · 96 · 132, which is where the old Padding row went · Top divider None · Line · Fade. Plus the Data group. Member visibility: Everyone · Logged out · Free · Paid. Head: Centred · Flush left · None. Title size: Medium 34 · Large 40 · Display 48. Columns: Two · Three. Questions shown: a number picker, 1–6, default 6 ⛑ 29 August 2026. Cards: Surface · Ground.<br><strong style="font-weight:600">Not offered:</strong> Question size — fixed at Row 17, because 20 px in a 416 card runs most questions to three lines; Marker and Open on load, because nothing opens; Hairline columns, refused as in A8·4.<br><strong style="font-weight:600">The arrangement:</strong> 416 · 24 at three columns, 632 · 32 at two; <strong style="font-weight:600">card padding follows the count, 28 and 32</strong>; pack radius, 1 px hairline, <strong style="font-weight:600">no shadow at any value</strong>; question to answer 12; the answer takes the card inside its padding. <strong style="font-weight:600">Rows equal within a row, never across the grid</strong>, slack at the foot of the short cards, nothing truncated.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:600">Responsive · empty</span>
+          <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><strong style="font-weight:600">Responsive, in words:</strong> three columns above 1081. <strong style="font-weight:600">Two at 1080 and below at both Columns values</strong>, disclosed as “Two at this width” — at 834, 365 px cells on 24, card padding 24, padding 80, title 34. <strong style="font-weight:600">At ≤ 767 one column 16 px apart, card padding 24, and every card is its own height because there is no row.</strong><br><strong style="font-weight:600">Empty:</strong> head parts, note and link → absent. <strong style="font-weight:600">Fewer authored than shown draws what exists</strong> — five at Six is five cards, the last cell absent rather than empty. <strong style="font-weight:600">Two → two 416 cards centred, not widened; one → one card, centred, with 1 Accordion advised</strong>. No items → the section does not render.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:600">a11y · flagged</span>
+          <span style="font-size:12.5px;line-height:1.65;color:#3A3835"><strong style="font-weight:600">a11y:</strong> <strong style="font-weight:600">one <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;ul&gt;</code> of six, never two lists of three</strong>; one <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;h2&gt;</code>, an <code style="font-family:'JetBrains Mono',monospace;font-size:12px">&lt;h3&gt;</code> per question with <code style="font-family:'JetBrains Mono',monospace;font-size:12px">tabindex="-1"</code> and the <code style="font-family:'JetBrains Mono',monospace;font-size:12px">anchor</code> as its <code style="font-family:'JetBrains Mono',monospace;font-size:12px">id</code>; no button, no region, no marker, no hover, no motion. Cards are not links. The equal-height stretch is invisible to assistive technology. Print: one column, hairlines kept. Contrast: question and answer 15.8:1 / 15.1:1, 15.4:1 / 14.7:1 at Cards Ground, hairline 1.3:1, link underline 3.3:1 / 6.3:1.<br><strong style="font-weight:600">Flagged as mine:</strong> fixing the question at Row 17 in a card; the 12 px question-to-answer gap; <strong style="font-weight:600">the 450-character advice and its wording</strong>; six as the ceiling; two cards centred and not widened; the advice at one; and stating that forced colours make Surface and Ground the same drawing.</span>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showSpec: this.props.showSpec ?? true };
+  }
+}
+
+</script>
+</body>
+</html>

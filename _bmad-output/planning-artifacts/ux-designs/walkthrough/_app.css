@@ -39,6 +39,35 @@ body.product { background: var(--paper); padding-bottom: 52px; }
   .stage > .at-390 { display: block; flex: 0 0 auto; margin: 0 auto; }
 }
 
+/* D8a · D8b (prompt A8): the editor carries its drawn 834 and 720 frames too — tablet, and a
+   desktop at 200% browser zoom. The frame's own width is stripped so it fills the window; its
+   drawn height stays, so nothing collapses. A fine pointer never leaves the editor (R-76). */
+.stage > .at-834, .stage > .at-720 { display: none; }
+@media (max-width: 834px) {
+  .stage > .at-1440 { display: none; }
+  .stage > .at-834 { display: flex; flex-direction: column; }
+}
+@media (max-width: 720px) {
+  .stage > .at-834 { display: none; }
+  .stage > .at-720 { display: flex; flex-direction: column; }
+}
+
+/* D4f · Small Screen Notice: a drawn 390 × 844 card, centred on the paper on a wide window and
+   filling a phone-width one (the only place it is ever met for real — app.js hands the editor
+   over on a coarse pointer below 1024). */
+@media (max-width: 600px) {
+  .stage.centre.phone { padding: 0; }
+  .stage.centre.phone > * { width: 100% !important; min-height: 100vh; border-radius: 0 !important; }
+}
+
+/* D8c · the skip link: the first focusable thing in the editor shell. Its drawn look is the frame's
+   own inline style (the focused state); at rest it is not rendered, exactly as D8c captions it. */
+.skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip:focus { z-index: 50; }
+
 /* ── overlays ─────────────────────────────────────────────────────────────────
    A lifted overlay keeps the frame's own inline look and gains only a hidden default.
    `!important` because the frame writes `display:flex` inline — it documents the element
@@ -59,10 +88,16 @@ body.product { background: var(--paper); padding-bottom: 52px; }
 @media (prefers-reduced-motion: reduce) { .overlay.is-open { animation: none !important; } }
 
 [data-pick], [data-open] { cursor: pointer; }
-[data-pick]:focus-visible, [data-open]:focus-visible, [role="link"]:focus-visible, [role="button"]:focus-visible {
-  outline: 2px solid var(--coral); outline-offset: 2px;
+/* A7 item 7 · Calibration Set: one focus ring everywhere — 2px solid coral-text #C2381F, 3:1 on paper
+   and on white; the 40% coral wash is for hover and selection only. */
+[data-pick]:focus-visible, [data-open]:focus-visible, [role="link"]:focus-visible, [role="button"]:focus-visible,
+[role="checkbox"]:focus-visible, [data-twin]:focus-visible, [data-layer]:focus-visible {
+  outline: 2px solid var(--coral-text); outline-offset: 2px;
 }
-.off, [aria-disabled="true"] { opacity: .45; pointer-events: none; }
+/* A control the frame draws disabled (aria-disabled, A7) keeps its own drawn look and only stops
+   responding; .off is the typed confirm's blocked look, which no frame draws. */
+.off { opacity: .45; }
+.off, [aria-disabled="true"] { pointer-events: none; }
 
 /* L hides the drawn Layers panel (F-032). */
 body.layers-hidden .layers { display: none !important; }

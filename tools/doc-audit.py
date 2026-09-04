@@ -44,7 +44,7 @@ DOCS = [
   'Step 5. The information architecture, the state patterns, the accessibility floor, the four '
   'journeys and the eight flows. EVERY SURFACE HAS ONE STABLE NAME and either points at a drawn '
   'frame by filename or names the frame it extrapolates from — step 5b keys its prototype pages off '
-  'those names (R-75). Its Appendix A carries one Claude Design prompt per undrawn surface group. '
+  'those names (R-75). Its Appendix A carries the Claude Design prompts that drew the undrawn surfaces and corrected the frames — run, and landed 2026-09-04, verified in reconcile-designs-decisions.md §A15, with A9 for the misses. '
   'Also the record of §37.7 re-verified against the export: the Paywall editor turned out to be '
   'drawn at C Post Body C3a.'),
  ('ux-designs/WALK-NOTES.md', 'live', "The owner's walk notes — an optional notebook",
@@ -385,7 +385,7 @@ DOCS = [
   'The owner-facing page for the Appendix A Claude Design prompts, with copy buttons and '
   'browser-stored progress ticks, extracted from the spine so it cannot drift. A7 with A8 first, '
   'then A1 to A6; export the whole project once, after the last session, then run the export runbook '
-  'on the build board once. NOT YET RUN.'),
+  'on the build board once. RAN \u2014 both sessions, export landed 2026-09-04; kept as the record of what was asked.'),
  ('tools/derive-control-lines.py', 'tool', 'Derive the Controls: union',
   'Attempts each category\'s Controls: line and does NOT succeed: the specs declare controls in at least four shapes (a per-design `Control | Values` table, a prose line with names before colons, another with names before brackets, and typed enum rows), the granularity differs by an order of magnitude between them — 53 names for one category, 3 for another — and eight categories carry nothing readable at all. Kept because it MEASURES the gap and names the eight, and because the fix is cheap: if every spec carried the per-design Control|Values table A1-A3 already use, this becomes reliable. Do not land its output as-is.'),
  ('tools/derive-module-reach.py', 'tool', 'Which designs declare which script',
@@ -533,13 +533,13 @@ GROUPS = [
   'would meet it. WHAT BEHAVES, read from the build: menus, popovers and sheets open from the control that '
   'raises them and close on Esc, their drawn Cancel or a click outside, focus trapped and returned; '
   'segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its '
-  'FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, '
-  'Esc leaves it, L hides Layers, and ] and [ step the design ring between its two drawn positions — the rest of '
-  'FR-D11\'s map has no drawn result to land on — and every '
-  'key passes the WCAG 2.1.4 typing guard. WHAT IS HELD OUT is listed in `_screens.html` under three '
-  'headings: no frame yet (an Appendix A prompt owes it — the backup gate is here, not '
-  'in the build), drawn on a mechanism a ruling re-specifies (held out or shown as drawn until A7 runs, '
-  '§A12 decision 6), and states no frame draws. Two files are not product screens, both `_`-prefixed: '
+  'SIX steps on the first deploy since the Appendix A export of 2026-09-04 (the safety-net offer, the backup gate with its '
+  'ghost-backup shortcut, pre-flight with the drift report, the snapshot gate; Deploy only ends on its own drawn ending) and '
+  'four on later ones; history pins; the dashboard sheets open; in the editor the complete switcher, the canvas markers, the skip '
+  'link and the 834/720 layouts are there, P opens Preview, Esc leaves it, L hides Layers, and ] and [ step the design ring '
+  'between its two drawn positions — and every key passes the WCAG 2.1.4 typing guard. WHAT IS HELD OUT is listed in '
+  '`_screens.html`: detail cards with no drawn trigger, the two wrong-mechanism frames A7 left (B22, B18 — prompt A9), and '
+  'states no frame draws. Two files are not product screens, both `_`-prefixed: '
   '`_screens.html` (the jump list and those lists) and `_selfcheck.html` (drives the hooks build-app.py '
   'attaches and prints ALL PASS). Shared with 5b, exactly: `../frames.py`, `../prototype/styles.css` (plus '
   '`_app.css` into this folder\'s `styles.css`), and FONTS and LIMITS from `../prototype/build.py` — the '
@@ -576,13 +576,13 @@ GROUPS = [
   'Nothing here is a second answer to a question the design export already answers — no mocks and '
   'no wireframes were produced, deliberately (see EXPERIENCE.md § Finalize notes). Step 5b\'s '
   'prototype sits beside it in `prototype/` and is not that second answer either: it restates the one '
-  'answer in walkable form, page by page, naming its source frame on every page.'),
- ('design/claude-design-export/InflozoOld/', 'retired', 'Design export — the 2026-08-31 issue',
-  'The export as it stood BEFORE the pass-two re-export of 2026-09-01, kept by the owner as '
-  'provenance. Superseded wholesale by Inflozo/ beside it — nothing derives from this directory, '
-  'and every tool points at Inflozo/ explicitly. Useful for one thing only: diffing what a pass '
-  'actually changed, which is how A9-12 was found to have been cut when the ruling said keep it. '
-  'Do not build from it, and do not let a tool read it.'),
+  'answer in walkable form, page by page, naming its source frame on every page.'), ('design/claude-design-export/InflozoOld/', 'retired', 'Design export — the issue before the Appendix A sessions',
+  'The export as it stood BEFORE the Appendix A Claude Design sessions whose export landed on '
+  '2026-09-04 (it is the 2026-09-03 issue, the one both step-5 builds were first lifted from), kept '
+  'by the owner as provenance. Superseded wholesale by Inflozo/ beside it \u2014 nothing derives from '
+  'this directory, and every tool points at Inflozo/ explicitly. Useful for one thing only: diffing '
+  'what a pass actually changed (the D canvases and A7\u2019s corrections). Do not build from it, and do '
+  'not let a tool read it; git history holds every earlier issue.'),
  ('design/claude-design-export/', 'live', 'Design library export — the library itself',
   'Claude Design\'s export, and THE STARTING MATERIAL FOR EVERY UI OR UX TASK — read the WHOLE '
   'directory, never a subset (Index.dc.html and Index - Categories.dc.html are the map — there is no '

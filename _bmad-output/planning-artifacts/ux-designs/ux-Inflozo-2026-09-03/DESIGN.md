@@ -3,13 +3,14 @@ name: Inflozo
 description: The visual identity of Inflozo's own interface — "Playful Pro", transcribed from the Claude Design export.
 status: final
 created: 2026-09-03
-updated: 2026-09-03
+updated: 2026-09-04
 sources:
   - "{planning_artifacts}/design/claude-design-export/Inflozo/Calibration Set.dc.html"
   - "{planning_artifacts}/design/claude-design-export/Inflozo/Editor Sidebar Kit.dc.html"
+  - "{planning_artifacts}/design/claude-design-export/Inflozo/D8 Editor Below 1440.dc.html — D8c, D8e: the corrected focus ring, drawn"
   - "{planning_artifacts}/design/claude-design-prompt-2.md §0.1"
   - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/prd.md — Appendix C, Appendix D, Appendix H"
-  - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md — §A10 (R-74, R-75)"
+  - "{planning_artifacts}/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md — §A10 (R-74, R-75), §A15 (the 2026-09-04 export, verified)"
 
 colors:
   paper: '#F7F5F2'
@@ -20,7 +21,7 @@ colors:
   ink-deep: '#232019'
   ink-soft: '#6E6A64'
   ink-soft-aa: '#6B6459'
-  ink-faint: '#A8A29A'
+  ink-faint: '#A8A29A — rules, dividers and disabled text; never placeholder or hint text, which moved to ink-soft-aa on 2026-09-04 (A7 item 10)'
   line: '#E7E2DB'
   line-faint: '#EFEAE2'
   line-strong: '#C9C2B8'
@@ -30,6 +31,7 @@ colors:
   coral-deep: '#E84B34'
   coral-tint: '#FFEDE8'
   coral-tint-strong: '#FFD9CF'
+  coral-wash: 'rgba(255,89,65,.4) — hover and selection only; until 2026-09-04 it was also the focus ring, at 1.55:1 on paper (A7 item 7)'
   marigold: '#FFB100'
   marigold-text: '#8A6100'
   marigold-tint: '#FFF4D6'
@@ -87,9 +89,9 @@ spacing:
   gutter-marketing-max: '120px'
   sidebar-width: '280–320px'
   breakpoint-desktop: '1440px'
-  breakpoint-tablet: '834px'
-  breakpoint-mobile: '390px'
-  app-floor: '1024px — a COARSE-POINTER threshold, never a bare width; a desktop at 200% zoom stays in the editor'
+  breakpoint-tablet: '834px — the editor is drawn here, D8a (2026-09-04)'
+  breakpoint-mobile: '390px — Small Screen Notice is drawn here, D4f'
+  app-floor: '1024px — a COARSE-POINTER threshold, never a bare width; a desktop at 200% zoom stays in the editor — D8b draws it at 720 to prove it'
 
 components:
   button-primary:
@@ -114,7 +116,9 @@ components:
     rounded: '{rounded.sm}'
     border: '1px solid {colors.line}'
     caretColor: '{colors.coral}'
-    focusRing: '0 0 0 2px rgba(255,89,65,.4)'
+    placeholderColor: '{colors.ink-soft-aa} — was {colors.ink-faint} until 2026-09-04'
+    focusBorder: '1px solid {colors.coral-text} — was {colors.coral} until 2026-09-04'
+    focusRing: '{elevation.focus} — was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04'
   segmented:
     track: '{colors.paper}'
     activeBackground: '{colors.surface}'
@@ -168,7 +172,7 @@ elevation:
   md: '0 4px 16px rgba(28,27,26,.08)'
   lg: '0 12px 40px rgba(28,27,26,.14)'
   hairline-inset: 'inset 0 0 0 1px rgba(28,27,26,.12)'
-  focus: '0 0 0 2px rgba(255,89,65,.4)'
+  focus: '0 0 0 2px #C2381F — the one ring, everywhere: 7.9:1 on paper, past 3:1 on white; was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04 (A7 item 7)'
 ---
 
 # Inflozo — Design Spine
@@ -191,6 +195,15 @@ This is ruling **R-74** (`reconcile-designs-decisions.md` §A10, owner, 2026-09-
 the project finishes: **the export is the design authority for every surface.** A surface with no
 frame is extrapolated from the nearest frame that exists — same components, same tokens — and drawn
 in the same Claude Design project, never invented in prose beside it.
+
+**Re-derived on 2026-09-04 against the Appendix A export.** The Calibration Set and the Editor Sidebar
+Kit changed in exactly two tokens — the keyboard focus ring and the placeholder-and-hint colour (A7
+items 7 and 10) — and every other value transcribed here was checked again against both frames and
+against the whole export, and holds. Where a value moved, the old value is recorded beside the new
+one, in the front matter and in the section that carries it. One disagreement inside the export is
+recorded rather than smoothed over: the Kit's inputs caption still reads "focus ring 2px @40%" while
+the focused input it captions carries the solid ring — the drawing governs, and A9 item 2 corrects
+the caption (`reconcile-designs-decisions.md` §A15).
 
 **Scope.** This spine governs **Inflozo's own interface** — the app chrome and the marketing site.
 It does **not** govern the sites Inflozo builds. Those are the section library's business: their
@@ -253,7 +266,7 @@ value, and the text value is what carries a sentence.
 | `{colors.surface}` | cards, panels, bars |
 | `{colors.ink}` | primary text, primary buttons. `{colors.ink-deep}` for dark chrome and inverted surfaces |
 | `{colors.ink-soft}` | secondary text and labels. `{colors.ink-soft-aa}` where it carries a sentence |
-| `{colors.ink-faint}` | disabled text, placeholder |
+| `{colors.ink-faint}` | disabled text, rules and dividers — **never words a user must read**: placeholder and hint text take `{colors.ink-soft-aa}` (Calibration Set, 2026-09-04) |
 | `{colors.line}` | hairlines and dividers. `{colors.line-faint}` inside a card, `{colors.line-strong}` where a border must separate two lit surfaces |
 | `{colors.coral}` / `{colors.coral-text}` | THE accent — see above |
 | `{colors.coral-tint}` · `{colors.coral-tint-strong}` | selected backgrounds and accent washes |
@@ -261,6 +274,13 @@ value, and the text value is what carries a sentence.
 | `{colors.mint}` / `{colors.mint-text}` / `{colors.mint-tint}` | success, "Live" states |
 | `{colors.sky}` / `{colors.sky-text}` | informational chips and docs links. **Links in an info banner take sky, not coral** |
 | `{colors.danger}` | destructive actions and deploy failures |
+
+**Two token rules, added to the Calibration Set on 2026-09-04, and they hold in every frame, app and
+section alike.** Keyboard focus is **one ring, everywhere** — 2px solid `{colors.coral-text}`, 7.9:1
+on paper and past 3:1 on white, so it clears WCAG 2.1 1.4.11 on both grounds; the old 2px coral wash
+at 40% composited to 1.55:1 and indicated nothing to anyone who needed it, and it stays only as
+`{colors.coral-wash}`, for hover and selection. **Placeholders, hints and mono line numbers are
+`{colors.ink-soft-aa}`** (5.85:1), never faint ink, which read at 2.53:1 on white and 2.32:1 on paper.
 
 **Colour classifies, and the four feedback banners are where that is most visible** (Editor Sidebar
 Kit): **sky** for information · **mint** for success · **marigold** for a notice that never blocks a
@@ -283,7 +303,7 @@ white page disappears.
 
 **Display and headings: Bricolage Grotesque**, 28–72px, tracking tightened as it grows. **UI and
 body: Inter** — 13px dense, 14px default, 16px body. **Mono: JetBrains Mono**, and it has a job
-rather than a mood: URLs, version chips, YAML, API keys, keyboard chips, and **every number that
+rather than a mood: URLs, version chips, YAML, API keys, keyboard chips (its line numbers in `{colors.ink-soft-aa}`, never faint — S9, 2026-09-04), and **every number that
 must not shift width as it changes** — the design counter reads "7 of 18" in mono so the 7 does not
 jump when it becomes 17, and the stepper's value uses tabular figures for the same reason.
 
@@ -326,8 +346,10 @@ reader's accessibility setting and is not the canvas scale FR-D14 refuses. Sign 
 Dashboard, Deploy history, Sites and Billing are drawn and usable at 390; the editor, the Section
 Picker, Style Packs, Deploy, Routes, Assets, Editor Cards and the template surfaces are desktop and
 tablet shapes. Opening a project below the floor lands on a designed surface that says so and
-offers what does work — it is a state, not a broken layout. See `EXPERIENCE.md` § Responsive &
-Platform.
+offers what does work — it is a state, not a broken layout. **All three widths are drawn since
+2026-09-04**: the editor at 834 (`D8 Editor Below 1440.dc.html` D8a, touch) and at 720 (D8b, a 1440
+display at 200% zoom), the notice at 390 (`D4 Dashboard Sheets and Blocks.dc.html` D4f). See
+`EXPERIENCE.md` § Responsive & Platform.
 
 ---
 
@@ -342,13 +364,17 @@ low alpha — because a neutral-grey shadow on warm paper reads as dirt.
 | `md` | `0 4px 16px rgba(28,27,26,.08)` | card hover, popovers, the account and notifications menus |
 | `lg` | `0 12px 40px rgba(28,27,26,.14)` | modals, sheets, the pills that float over the canvas |
 | hairline inset | `inset 0 0 0 1px rgba(28,27,26,.12)` | a border that must not add to the box's size |
-| focus | `0 0 0 2px rgba(255,89,65,.4)` | **the focus ring, everywhere** |
+| focus | `0 0 0 2px #C2381F` | **the focus ring, everywhere** — solid coral-text since 2026-09-04; was `0 0 0 2px rgba(255,89,65,.4)` |
 
 Hover on a card is `md` **plus a 1–2px lift**. The lift is what makes it feel physical; the shadow
 alone reads as a glow.
 
-**One focus treatment, and it is never removed.** Coral at 40%, 2px, on every focusable thing
-including inside the canvas iframe (NFR-5) — and the tab order crosses that boundary by design, with
+**One focus treatment, and it is never removed.** A 2px solid ring in `{colors.coral-text}` — 7.9:1
+on paper, past 3:1 on white (WCAG 2.1 1.4.11) — on every focusable thing including inside the canvas
+iframe (NFR-5). *Until 2026-09-04 it was coral at 40%, which composited to 1.55:1 on paper and 1.59:1
+on white and indicated nothing to anyone who needed it; A7 item 7 replaced it, the Calibration Set
+now carries the rule, and D8c and D8e draw it. The 40% wash stays for hover and selection only.* The
+tab order crosses that boundary by design, with
 its ladder specified in `EXPERIENCE.md` § Accessibility Floor (PRD §7.3 assigns it to the UX pass). A design that runs to a bleed edge inverts it to an
 inset offset, because an outward ring is clipped at the viewport (ruling R-70) — that is a section
 rule, recorded here so the app never copies it.
@@ -386,9 +412,9 @@ action of a surface** and appears once: Ship it on the deploy wizard, Remix on t
 Connect on the connect step. **Secondary** is surface plus a hairline. **Ghost** is text only.
 **Danger** is a `{colors.danger}` fill, with an outline variant for the less final of two
 destructive choices. A **split button** carries a primary action and a `▾` that opens its menu —
-that is the Ship it control.
+that is the Ship it control, and the `▾` is named "Deploy options" (A7 item 8).
 
-**Inputs** — 8px radius, hairline border, coral caret, and the focus ring above. A **mono value**
+**Inputs** — 8px radius, hairline border, coral caret, placeholder in `{colors.ink-soft-aa}`, and on focus a coral-text border with the ring above. A **mono value**
 variant holds keys, URLs and YAML. A **search** variant carries a keyboard hint chip on its right.
 
 **Segmented control** — 2 to 4 segments on a `{colors.paper}` track; the active segment is
@@ -424,8 +450,9 @@ version chips are mono; a gscan result reads `0 · 2` in mono.
 
 **Toast** — a bottom-centre pill: icon, message, action.
 
-**Layers rows** — grip, mini-thumbnail, name, eye. Three states: rest, hover (a wash), selected
-(`{colors.coral-tint}`). The **site-wide group** is a separate white card with its own drag icon and
+**Layers rows** — grip, mini-thumbnail, name, eye. Four states: rest, hover (the 40% wash), selected
+(`{colors.coral-tint}`), and keyboard focus — the solid ring drawn over whichever state the row is
+already in, so focused-and-selected reads as both (D8e). The **site-wide group** is a separate white card with its own drag icon and
 a page count, so it reads as pinned rather than merely first.
 
 **Composite cards** — the **quick-controls card** holds three to five most-used controls on a
@@ -465,6 +492,10 @@ byte count exists. Never a spinner.
   hollow-versus-filled dot, a ✦ — each carries its word, or an accessible label where the layout
   genuinely cannot hold one. Same rule, same reason (`EXPERIENCE.md` § Accessibility Floor).
 - Don't use coral in a banner's link — that is sky.
+- **Don't use the 40% coral wash as a focus ring.** It is hover and selection only; keyboard focus is
+  the solid coral-text ring, everywhere (Calibration Set, 2026-09-04).
+- **Don't set words in faint ink.** `{colors.ink-faint}` is for rules and dividers; a placeholder, a
+  hint or a mono line number takes `{colors.ink-soft-aa}` (Calibration Set, 2026-09-04).
 - Don't put wit into a billing, delete or takeover surface. Those stay serious (Appendix H).
 - Don't add a second confetti moment. There is exactly one in the product — the first successful
   deploy — and it respects reduced-motion.

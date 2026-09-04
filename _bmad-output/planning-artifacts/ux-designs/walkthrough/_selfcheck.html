@@ -45,6 +45,55 @@
 
   <!-- fixture: a text field, for the typing guard -->
   <input id="field" type="text">
+
+  <!-- fixture: a destructive confirm (D8f) — focus must open on the cancelling action, not the danger button -->
+  <div data-open="danger" id="raise-danger" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">open danger</div>
+  <div id="danger" class="overlay sheet-lifted" data-destructive style="display:flex">
+    <h3>Take over from Rosa?</h3>
+    <button id="danger-go">Take over anyway</button>
+    <button id="danger-wait" data-close>Wait</button>
+  </div>
+
+  <!-- fixture: the backup gate (D1d / D1e) — rows tick, the confirm waits for them, the button wakes -->
+  <div id="gate">
+    <div data-check data-check-group="g" role="checkbox" aria-checked="false" tabindex="0" id="row-a">
+      <span data-box id="box-a-off">☐</span><span data-box data-box-on hidden id="box-a-on">☑</span> Theme</div>
+    <div data-check data-check-group="g" role="checkbox" aria-checked="false" tabindex="0" id="row-b">
+      <span data-box>☐</span><span data-box data-box-on hidden>☑</span> routes.yaml</div>
+    <div data-check data-check-all="g" role="checkbox" aria-checked="false" tabindex="0" id="shortcut">
+      <span data-box>☐</span><span data-box data-box-on hidden>☑</span> ghost backup</div>
+    <span id="left" data-remaining="g" data-some="{n} rows still to tick, then the confirmation above." data-none="One confirmation left.">x</span>
+    <div data-check data-check-needs="g" data-enables="#run" role="checkbox" aria-checked="false" tabindex="0" id="confirm" style="opacity:.5">
+      <span data-box>☐</span><span data-box data-box-on hidden>☑</span> I confirm</div>
+    <button id="run" disabled aria-disabled="true" style="background:#EFECE7" data-on-style="background:#1C1B1A;color:#FFFFFF">Run checks</button>
+  </div>
+
+  <!-- fixture: a two-state control (D2a's pin) — the other drawn state is a hidden twin -->
+  <span data-twin="pin" id="pin-off" role="button" tabindex="0" aria-pressed="false" title="Pin this version">pin</span><span data-twin="pin" id="pin-on" role="button" tabindex="0" aria-pressed="true" title="Pinned — unpin" hidden>pinned</span>
+
+  <!-- fixture: the first-deploy wizard — a Deploy-only destination ends on its own step (D2f), the declined
+       safety net raises the no-token gate (B12b) which waits, and the run lands where it should -->
+  <div data-wizard data-at="1" id="wiz2" hidden>
+    <div data-step="1" data-step-title="Destination" tabindex="-1">
+      <span data-pick="dest" role="radio" aria-checked="true" data-picked tabindex="0" id="dest-act" style="font-weight:600">Deploy &amp; activate</span>
+      <span data-pick="dest" role="radio" aria-checked="false" tabindex="-1" id="dest-only" data-ending="9" style="font-weight:500">Deploy only</span>
+      <button data-goto="2" id="w-next">Next</button>
+    </div>
+    <div data-step="2" data-step-title="Safety net" tabindex="-1" hidden>
+      <button data-accepts data-goto="3" id="w-accept">Add the token</button>
+      <button data-declines data-goto="7" id="w-decline">Not now</button>
+    </div>
+    <div data-step="3" data-step-title="Check" tabindex="-1" hidden>
+      <button id="w-ship" data-run="6" data-goto-first="5" data-run-host="w-host" data-run-gate="snap-ok" data-run-gate-declined="snap-no" data-run-after-declined="routes-fb">Ship it</button>
+    </div>
+    <div data-step="5" tabindex="-1" hidden id="w-host"></div>
+    <div data-step="6" data-step-title="Live" tabindex="-1" hidden>live</div>
+    <div data-step="7" data-step-title="Declined" tabindex="-1" hidden><button data-goto="3" id="w-cont">Continue</button></div>
+    <div data-step="9" data-step-title="Uploaded, not live" tabindex="-1" hidden>D2f</div>
+    <div id="snap-ok" class="overlay sheet-lifted">snapshot running</div>
+    <div id="snap-no" class="overlay sheet-lifted" data-gate-manual><button data-continue id="w-without">Deploy without a snapshot</button></div>
+    <div id="routes-fb" class="overlay sheet-lifted">routes fallback</div>
+  </div>
 </div>
 
 <script src="app.js"></script>
@@ -117,6 +166,38 @@ window.addEventListener('load', function () {
   check('it advances to step 2', !$('[data-step="2"]').hidden && $('[data-step="1"]').hidden);
   check('focus moves to the step', document.activeElement === $('[data-step="2"]'));
 
+  // 9 · a destructive confirm opens with focus on its cancelling action (D8f)
+  $('#raise-danger').click();
+  check('a destructive confirm opens on its cancelling action, not the danger button', document.activeElement === $('#danger-wait'));
+  key('Escape');
+
+  // 10 · the backup gate: rows tick with their drawn twins, the confirm waits for the group, the button wakes (D1d, D1e, D1d′)
+  check('the group starts counted from the drawn state', $('#left').textContent === '2 rows still to tick, then the confirmation above.');
+  check('the confirm starts disabled while rows remain', $('#confirm').getAttribute('aria-disabled') === 'true');
+  $('#row-a').click();
+  check('ticking a row shows its drawn ticked twin', $('#box-a-off').hidden && !$('#box-a-on').hidden && $('#row-a').getAttribute('aria-checked') === 'true');
+  check('the count follows, and reads as English', $('#left').textContent === '1 row still to tick, then the confirmation above.');
+  $('#row-a').click();
+  $('#shortcut').click();
+  check('the ghost backup shortcut ticks every row', $('#row-a').getAttribute('aria-checked') === 'true' && $('#row-b').getAttribute('aria-checked') === 'true');
+  check('with every row ticked the confirm wakes', $('#confirm').getAttribute('aria-disabled') === 'false' && $('#left').textContent === 'One confirmation left.');
+  check('Run checks is still asleep until the confirm is ticked', $('#run').disabled);
+  $('#confirm').click();
+  check('the confirm wakes Run checks with the drawn primary look', !$('#run').disabled && $('#run').getAttribute('aria-disabled') === 'false' && $('#run').style.background === 'rgb(28, 27, 26)');
+  $('#row-b').click();
+  check('unticking a row puts the confirm and the button back to sleep', $('#confirm').getAttribute('aria-disabled') === 'true' && $('#run').disabled && $('#run').style.background === 'rgb(239, 236, 231)');
+
+  // 11 · a two-state control shows its other drawn state (D2a's pin)
+  $('#pin-off').click();
+  check('a click on the outline pin shows the drawn pinned one', $('#pin-off').hidden && !$('#pin-on').hidden && document.activeElement === $('#pin-on'));
+  $('#pin-on').click();
+  check('and back', !$('#pin-off').hidden && $('#pin-on').hidden);
+
+  // 12 · Small Screen Notice fires on a coarse pointer below 1024, never on width alone (R-76, D4f, D8b)
+  check('a phone (390, coarse) gets the notice', window.needsBigScreen(390, true) === true);
+  check('a desktop at 200% zoom (720, fine) keeps the editor', window.needsBigScreen(720, false) === false);
+  check('a tablet (834, coarse) keeps the editor', window.needsBigScreen(834, true) === false);
+
   // 8 · page-level keys are inert inside a text field (WCAG 2.1.4) and live outside it
   var navigated = null;
   document.addEventListener('keydown', function (e) { if (e.defaultPrevented) navigated = e.key; });
@@ -127,13 +208,37 @@ window.addEventListener('load', function () {
   var stop = function (e) { if (e.key === ']' && e.defaultPrevented) e.stopImmediatePropagation(); };
   // app.js would navigate on ']' — the fixture's target is a fragment, so the location stays here
   key(']', { target: document.body });
+
+  // 13 · the six-step first deploy: Deploy only ends on D2f, the declined safety net raises the no-token
+  //      gate and waits for "Deploy without a snapshot", then the routes fallback opens over the ending
+  $('#wiz').remove(); $('#wiz2').hidden = false;           // one wizard per page, as in the product
+  window.gotoStep(1, true);
+  $('#w-next').click();
+  check('the first deploy walks from Destination to Safety net', !$('#wiz2 [data-step="2"]').hidden);
+  $('#w-decline').click();
+  check('Not now lands on the declined card and remembers it', !$('#wiz2 [data-step="7"]').hidden && $('#wiz2').hasAttribute('data-declined'));
+  $('#w-cont').click();
+  $('#w-ship').click();
+  check('with the token declined, Ship raises the no-token gate and waits', getComputedStyle($('#snap-no')).display === 'flex' && !$('#wiz2 [data-step="5"]').hidden);
+  $('#w-without').click();
+  check('Deploy without a snapshot closes the gate and the run goes on', getComputedStyle($('#snap-no')).display === 'none');
   setTimeout(function () {
-    check('] outside a text field is handled', location.hash === '#next');
-    document.title = fails ? fails + ' FAILED' : 'ALL PASS';
-    out.insertAdjacentHTML('afterend',
-      '<p style="margin-top:18px;font-weight:600;font-size:15px;color:'
-      + (fails ? 'var(--danger)' : 'var(--mint-text)') + '">' + document.title + '</p>');
-  }, 50);
+    check('the run lands on Live, and the routes fallback opens over it (B16)', !$('#wiz2 [data-step="6"]').hidden && getComputedStyle($('#routes-fb')).display === 'flex');
+    key('Escape');
+    window.gotoStep(1, true);
+    $('#w-accept').click();               // the token given: the ordinary gate, which closes itself
+    $('#dest-only').click();              // and Deploy only picked at step 1
+    $('#w-ship').click();
+    check('with the token given the snapshot gate runs on its own', getComputedStyle($('#snap-ok')).display === 'flex' && !$('#wiz2').hasAttribute('data-declined'));
+    setTimeout(function () {
+      check('Deploy only never lands on Live — it ends on its own step (D2f)', !$('#wiz2 [data-step="9"]').hidden && $('#wiz2 [data-step="6"]').hidden);
+      check('] outside a text field is handled', location.hash === '#next');
+      document.title = fails ? fails + ' FAILED' : 'ALL PASS';
+      out.insertAdjacentHTML('afterend',
+        '<p style="margin-top:18px;font-weight:600;font-size:15px;color:'
+        + (fails ? 'var(--danger)' : 'var(--mint-text)') + '">' + document.title + '</p>');
+    }, 3200);
+  }, 800);
 });
 </script>
 </body>

@@ -78,7 +78,7 @@ as another**, then one export of the whole project and the board's runbook once.
 |---|---|---|
 | Answers | *is this screen right?* | *is this any good?* |
 | Carries | the frame reference, the journey trails, every state of a surface on one page | nothing but the product |
-| Behaves | no — it depicts; **its frames are never wired** | yes — menus, popovers and sheets; picks; the four-step deploy wizard; `P`, `L`, `Esc` in the editor. **Not the on-section design nav or the backup gate** — held out until prompts A5 and A1 run |
+| Behaves | no — it depicts; **its frames are never wired** | yes — menus, popovers and sheets; picks; the six-step first deploy and the four-step redeploy; history pinning; the dashboard sheets; the complete switcher, the canvas markers, the skip link and the 834/720 layouts; `P`, `L`, `Esc`, `]`, `[` in the editor — all lifted from the 2026-09-04 export |
 | **A design change** | **belongs here** | **and here** |
 
 > ⚠️ **READ THIS BEFORE TOUCHING EITHER BUILD.** The first cut of both was authored from a **text
@@ -108,14 +108,15 @@ as a user would meet it. Every screen in it is **lifted from the export verbatim
 links and hooks on the elements the frame drew. **What behaves, read from the build:** menus,
 popovers and sheets open from the control that raises them and close on `Esc`, their drawn Cancel or
 a click outside, with focus trapped and returned; segmented controls, tabs and radio lists pick with
-the drawn selected look; the deploy wizard walks its **four drawn steps** through the library-update
-confirm and the snapshot gate; in the editor `P` opens Preview, `Esc` leaves it, `L` hides Layers,
-`]` and `[` and the drawn ◀ ▶ step the design ring between its two drawn positions — the rest of
-FR-D11's map has no drawn result to land on — and every key passes the WCAG 2.1.4
-typing guard. **What is held out** is listed in `_screens.html` under three headings — no frame yet
-(an Appendix A prompt owes it: the first-deploy gates, so **the backup gate is not in it**; the canvas
-markers, so **the on-section design nav is not in it**), drawn on a mechanism a ruling re-specifies (held out
-or shown as drawn until A7 runs — §A12 decision 6), and states no frame draws. The owner read 5b and
+the drawn selected look; **the first deploy walks all six steps** — destination, the safety-net offer
+and its declined path, the backup gate with the `ghost backup` shortcut, pre-flight with the drift
+report, the snapshot gate, ship, live, and Deploy only ends on its own drawn ending — later deploys
+walk four, and history pins; the dashboard raises its sheets; in the editor the complete template
+switcher, the canvas markers, the skip link and the 834 and 720 layouts are there, `P` opens Preview,
+`Esc` leaves it, `L` hides Layers, `]` and `[` and the drawn ◀ ▶ step the design ring between its two
+drawn positions, and every key passes the WCAG 2.1.4 typing guard. **What is held out** is listed in
+`_screens.html` — detail cards with no drawn trigger (the on-section design nav among them), the two
+wrong-mechanism frames A7 left (B22, B18 — prompt A9), and states no frame draws. The owner read 5b and
 said the true thing: its annotations are exactly what stop it feeling like the product. They are also
 the point of it, so 5c drops them and adds behaviour instead. **What is shared with 5b is exactly
 four things** — `../frames.py`, `../prototype/styles.css`, and `FONTS` and `LIMITS` (Appendix F.1)
@@ -139,10 +140,13 @@ registry and refuses to write if any link or anchor is dead.
 
 Three things a session picking this up should know about how it was built, all recorded on the pages
 themselves: the frames drawn on the wrong mechanism are **lifted unchanged**, with the
-re-specification in a note beside them naming its ruling (and A7 where A7 redraws the frame); its plan
-limits are shown as **Appendix F.1's table beside the frame**, the frames that disagree with F.1 lifted
-untouched; and **Appendix A's Claude Design prompts had not been run**, so a surface with no frame
-says so and shows nothing — once the D-canvases exist, those pages lift the new frames.
+re-specification in a note beside them naming its ruling; its plan limits are shown as **Appendix F.1's
+table beside the frame**. **The Appendix A prompts ran and their export landed on 2026-09-04** — the D
+canvases (D1 first-deploy gates · D2 deploy history completed · D3 the drift report · D4 dashboard sheets
+and blocks · D5 canvas markers and template switcher · D6 theme settings completed · D8 the editor below
+1440) and A7's corrections to the existing frames — so both builds lift the new frames and the pages that
+said "not drawn" are gone; `reconcile-designs-decisions.md` §A15 records what landed, item by item. The
+previous export is kept beside it as `InflozoOld/` for diffing only.
 
 **Step 6 opened on 2026-09-04, when the owner walked 5b** (ruling **R-75**) and wrote the date under
 `build-sequence.md` step 5b, *The walk* — a human tick no tool reads. **The gate was the walk, not the
@@ -170,8 +174,7 @@ things it found are worth knowing before you touch a UI task:
   items are the list — the mechanism changes, the wrong Ghost facts in copy, and since the 2026-09-03
   review the accessibility items that would change a frame); **A8** draws the editor at 834 and 720 —
   which R-76's tablet half and the accessibility floor both need, and which the export has never
-  drawn at any width but 1440. **They block nothing** — and both builds were made without them, so
-  once they have run, the pages that say "not drawn" lift the new frames.
+  drawn at any width but 1440. **They block nothing** — and both builds were made without them, so  they ran on 2026-09-04 and both builds now lift the D canvases; §A15 records what landed.
 
 **Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
 and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
@@ -203,7 +206,7 @@ the owner's instruction to clear them before step 5, and R-29's long-outstanding
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **What is owed now is the two Claude Design sessions of Appendix A** — A7 with A8, then A1 to A6, from `APPENDIX-A-PROMPTS.html`; its `### A` headings are the count. They block nothing, and one export after both sessions is enough.
+record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **One follow-up prompt is owed — A9** (`EXPERIENCE.md` Appendix A; on `APPENDIX-A-PROMPTS.html`): its first half is the misses of the 2026-09-04 export, its optional second half the frames the UX pass had deferred, and **the owner decides which half runs** (§A15's decision; option 1, both halves in one session, is recommended). It blocks nothing.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive

@@ -20,6 +20,12 @@ the export presents it, on its mat, at its own width. The annotation goes AROUND
 into it. Where a surface has no frame at all, the page says so in those words and describes what
 Appendix A's prompt will draw; it never dresses prose up as a drawing.
 
+WHAT CHANGED ON 2026-09-04. The Appendix A sessions ran and the export gained the D canvases
+(D1–D6, D8). Every surface this file used to mark "Not drawn — owed to prompt An" now lifts its
+D frame instead, and A7's corrections to the existing frames are recorded beside each annotation
+that had flagged one — the executed Ghost citations stay. The method did not change: lifted, never
+redrawn; annotation around, never inside.
+
 WHAT THE COUNTS DO. index.html's surface list, its journey trails and its flow trails all render
 from the registry below, so the front door cannot claim a surface that does not exist or miss one
 that does (standing rule: counts are derived, never restated).
@@ -44,8 +50,8 @@ PAGES, JOURNEYS, FLOWS = [], [], []
 SUB = lambda name, anchor, note='': (name, anchor, note)
 _PENDING = []      # lifts made since the last page() call — page() takes them (F-109, F-019)
 
-# A frame id as the declared FRAME strings write it: S8a′, B14a, S2b·1, P0-0, C3b, M5.
-_ID = re.compile(r"(?<![\w-])((?:S\d+|B\d+|C\d|M\d)|P0-\d)([a-e]?\d?′?)(?![\w-])")
+# A frame id as the declared FRAME strings write it: S8a′, B14a, S2b·1, P0-0, C3b, M5, D1d-prime, D8g.
+_ID = re.compile(r"(?<![\w-])((?:S\d+|B\d+|C\d|M\d|D\d)|P0-\d)([a-g]?\d?′?(?:-prime)?)(?![\w-])")
 
 
 def _ids(text):
@@ -176,9 +182,10 @@ def nodraw(title, blurb, prompt=None, anchor=None):
             f'R-74 forbids. {tail}</p></div>')
 
 
-# The plan matrix. PRD Appendix F.1 is the SOLE definition of Free/Pro gating, and four drawn
-# frames disagree with it (S11c's "3", S12a's "unlimited", S12b/M5's "Last 2", S10b's "30 MB").
-# F.1 governs every one of them — EXPERIENCE.md § Plan limits. Shared with the step-5c build.
+# The plan matrix. PRD Appendix F.1 is the SOLE definition of Free/Pro gating. Four drawn frames
+# disagreed with it (S11c's "3", S12a's "unlimited", S12b/M5's "Last 2", S10b's "30 MB") until the
+# 2026-09-04 export (A7 item 20; S10b under A8). F.1 still governs — EXPERIENCE.md § Plan limits.
+# Shared with the step-5c build.
 LIMITS = [('Projects', '1', '25'),
           ('Site connections', '1', '10'),
           ('Section library', 'canvas: the whole library<br><span class="helper">deploy and export: the free set only</span>', 'The whole library'),
@@ -307,10 +314,10 @@ page('pricing', 'Pricing', 'Marketing',
      + lift('M5 Pricing', label='M5 mobile', capt='M5 · mobile · 390'),
      subs=[SUB('Pricing at 390', 'mobile', 'M5 mobile')],
      note='<b>Two purchasable plans, and only two.</b> <span class="mono">pro_past_due</span> is an internal '
-          'state and is never listed here as a plan. <b>The frame\'s limit column disagrees with Appendix F.1 '
-          'in two rows</b> — it says 3 sites and "Last 2" versions where F.1 says 10 and last 3 / last 10. '
-          'F.1 governs; the frame is owed a patch, and the correction is drawn in '
-          '<a href="billing.html#limits">Billing</a>.')
+          'state and is never listed here as a plan. <b>The frame\'s limit column disagreed with Appendix F.1 '
+          'in two rows</b> — it said 3 sites and "Last 2" versions where F.1 says 10 and last 3 / last 10. '
+          'Corrected in the 2026-09-04 export (A7 item 20): the table now reads 25 · 10 · Last 3 / Last 10. '
+          'F.1 still governs, and it is drawn in <a href="billing.html#limits">Billing</a>.')
 
 page('sign-in', 'Sign In', 'Entry',
      'S1 Sign In.dc.html — S1a default, S1a mobile 390, S1c passkey prompt',
@@ -387,15 +394,16 @@ page('starter-chooser', 'Starter Chooser', 'Onboarding',
      'B Missing Surfaces.dc.html — B23a · S2 Onboarding S2d (the three-starter earlier cut)',
      '§ IA → Onboarding · § wrong mechanism → B23a',
      lift('B Missing Surfaces', label='B23a Chooser', capt='B23a · the chooser · 1440')
-     + head('The roster is wrong on the frame, and the frame says so itself',
-            'B23a&rsquo;s own note flags it: <i>&ldquo;The specification fixes the count at ten and names three. '
-            'The other seven names, their section counts and their Pro counts are mine … treat the roster as a '
-            'proposal, not a fact.&rdquo;</i> <b>Appendix E is normative</b> and names all ten with their pack: '
-            '<b>Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio</b>. '
-            'FR-O4: <b>only Quiet and Ledger are Free end to end</b>. The grid, the category filter, the free '
-            'filter, the swap-or-upgrade marks and the &ldquo;Start empty&rdquo; escape are all kept — the '
-            'roster and the Free marks are replaced. The per-starter Pro <i>counts</i> are dropped rather than '
-            'restated: no document says what they are.', anchor='roster')
+     + head('The roster was wrong on the frame, and A7 replaced it',
+            'B23a&rsquo;s own note flagged it: <i>&ldquo;The specification fixes the count at ten and names three. '
+            'The other seven names … are mine … treat the roster as a proposal, not a fact.&rdquo;</i> '
+            '<b>Appendix E is normative</b> and names all ten with their pack: <b>Aurora · Gazette · Signal · '
+            'Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio</b>; FR-O4: <b>only Quiet and Ledger are '
+            'Free end to end</b>. Corrected in the 2026-09-04 export (A7 item 19): the frame now names those ten, '
+            'marks only Quiet and Ledger &ldquo;All Free&rdquo;, and keeps the grid, the category filter, the '
+            'free filter, the swap-or-upgrade marks and the &ldquo;Start empty&rdquo; escape. <b>Still open:</b> '
+            'the per-starter section and Pro counts on it are the frame&rsquo;s own — no document says what they '
+            'are, so they are not restated anywhere.', anchor='roster')
      + head('The earlier three-starter cut, for comparison', '', 'S2d · choose a starter · 1440')
      + lift('S2 Onboarding', label='S2d Choose starter'),
      subs=[SUB('The roster correction', 'roster', 'Appendix E')],
@@ -441,7 +449,8 @@ page('dashboard', 'Dashboard', 'Dashboard and account',
      + head('Empty', 'The canonical string, verbatim, and one affordance.', anchor='empty')
      + lift('S3 Dashboard', label='S3b Dashboard empty', capt='S3b · dashboard — empty · 1440')
      + head('Free, at the cap', 'One project. The ⋯ menu still offers Rename, Duplicate and Delete — nothing is '
-            'taken away. A second project opens the New Project Sheet on its at-the-cap state.', anchor='free')
+            'taken away. A second project opens the <a href="new-project-sheet.html#cap">New Project Sheet at the '
+            'cap</a> (D4b).', anchor='free')
      + lift('S3 Dashboard', label='S3c Dashboard free plan', capt='S3c · dashboard — free plan (⋯ menu open) · 1440')
      + head('At 390', 'The Dashboard stays fully usable at 390, exactly as the export draws it (R-76).',
             anchor='mobile')
@@ -461,26 +470,26 @@ page('dashboard', 'Dashboard', 'Dashboard and account',
 
 
 page('new-project-sheet', 'New Project Sheet', 'Dashboard and account',
-     'NOT DRAWN → Appendix A prompt A4, frames D4a and D4b. Inherits S2a\'s radio-card doors and '
-     'P0-0\'s greyed pattern; its starter grid is the Starter Chooser\'s, drawn there',
+     'D4 Dashboard Sheets and Blocks.dc.html — D4a four doors · D4b Free, at the cap',
      '§ IA → Dashboard and account · FR-B2',
-     nodraw('New Project Sheet',
-            'FR-B2&rsquo;s four paths over a dimmed dashboard: <b>Start from a starter</b> (opens the starter '
-            'chooser) · <b>Blank canvas</b> · <b>Duplicate an existing project</b>, with a select of the '
-            'user&rsquo;s projects · <b>Redesign one of my sites</b>, greyed with its reason when no site is '
-            'connected. Below them a Style Pack row, then Cancel and Create project. On Free at the cap, all '
-            'four doors are drawn and <b>greyed with the reason</b>, never hidden, and the footer states the '
-            'limit: &ldquo;Free includes 1 project. Pro gives you 25.&rdquo;',
-            'Appendix A prompt A4 (frames D4a, D4b)')
-     + head('The three doors it extends, as drawn', 'S2a is where the radio-card row and its one line of '
-            'consequence come from.', 'S2a · onboarding — first run · 1440')
-     + lift('S2 Onboarding', label='S2a First run')
-     + head('The greyed-with-a-reason pattern it uses', 'A control that could act but cannot now is greyed with '
-            'its reason in the helper slot; one that could <i>never</i> act here is absent and the panel says '
-            'why. The two mean different things (rulings R-33, R-68).',
-            'P0-0 · the greyed-control pattern', anchor='greyed')
-     + lift('P0-0 Greyed Control Pattern', label='P0-0 resting and greyed'),
-     subs=[SUB('The greyed-control pattern', 'greyed', 'P0-0')])
+     lift('D4 Dashboard Sheets and Blocks', label='D4a New project sheet',
+          capt='D4a · new project sheet — four doors · 1440')
+     + head('Four doors, one greyed with its reason',
+            'FR-B2&rsquo;s four paths over a dimmed dashboard, drawn by prompt A4 in the 2026-09-04 export as '
+            'S2a&rsquo;s radio-card rows with one line of consequence each: <b>Start from a starter</b> (opens the '
+            '<a href="starter-chooser.html">Starter Chooser</a>) · <b>Blank canvas</b> · <b>Duplicate an existing '
+            'project</b>, with a select of the user&rsquo;s projects · <b>Redesign one of my sites</b>, greyed with '
+            '&ldquo;Connect a Ghost site first.&rdquo; when no site is connected — P0-0&rsquo;s pattern, greyed with '
+            'the reason and never hidden (rulings R-33, R-68). Below them the Style Pack row, then Cancel and '
+            'Create project.', anchor='doors')
+     + head('Free, at the cap',
+            'All four doors stay drawn and each carries its reason; the footer states the limit — &ldquo;Free '
+            'includes 1 project. Pro gives you 25.&rdquo; — which is Appendix F.1&rsquo;s figure. Nothing is '
+            'deleted and nothing is hidden. This is where the <a href="dashboard.html#free">Dashboard on Free</a> '
+            'sends a second project.', anchor='cap')
+     + lift('D4 Dashboard Sheets and Blocks', label='D4b Free at the cap',
+            capt='D4b · new project · Free, at the cap — detail at 720'),
+     subs=[SUB('The four doors', 'doors', 'D4a'), SUB('Free, at the cap', 'cap', 'D4b')])
 
 page('notifications', 'Notifications', 'Dashboard and account',
      'S3 Dashboard.dc.html S3e · B Missing Surfaces.dc.html B21',
@@ -500,8 +509,9 @@ page('sites', 'Sites', 'Dashboard and account',
      lift('S11 Sites', label='S11a Sites', capt='S11a · sites &amp; connections — ⋯ menu open · 1440')
      + head('Connect Site Modal', 'S2&rsquo;s two connect steps, run as a modal.', anchor='connect-modal')
      + lift('S11 Sites', caption='S11b ·', capt='S11b · connect site — S2&rsquo;s flow as a modal')
-     + head('Free, at one site', 'The frame says Pro connects up to 3. <b>Appendix F.1 says 10 and governs</b> '
-            '— see <a href="billing.html#limits">the limits</a>.', anchor='free')
+     + head('Free, at one site', 'The frame said Pro connects up to 3; <b>Appendix F.1 says 10 and governs</b>, '
+            'and the 2026-09-04 export says 10 (A7 item 20) — see <a href="billing.html#limits">the limits</a>.',
+            anchor='free')
      + lift('S11 Sites', caption='S11c ·', capt='S11c · free plan — one site + upgrade ghost slot')
      + nodraw('Sites with none, and disconnecting',
               'Sites with no connection shows the connect card as the whole page. Disconnecting keeps the '
@@ -516,9 +526,9 @@ page('sites', 'Sites', 'Dashboard and account',
           'and upload it in Ghost Admin&rdquo;; Starter&rsquo;s <span class="mono">customThemes</span> limit '
           'forbids custom themes <b>in Ghost Admin too</b>. B15 already gets this right — see '
           '<a href="preview-only-notice.html">Preview-Only Notice</a>. <b>And its &ldquo;Admin key expired Aug '
-          '15&rdquo; chip names a cause Ghost never produces</b> — keys never expire; a regenerated or removed key '
-          'answers 401 Unknown Admin API Key (see <a href="deploy-failure.html">Deploy Failure</a>). The chip '
-          'becomes &ldquo;Key regenerated Aug 15&rdquo;; that is prompt A7&rsquo;s.')
+          '15&rdquo; chip named a cause Ghost never produces</b> — keys never expire; a regenerated or removed key '
+          'answers 401 Unknown Admin API Key (see <a href="deploy-failure.html">Deploy Failure</a>). Corrected in '
+          'the 2026-09-04 export (A7 item 11): the chip reads &ldquo;Key regenerated Aug 15&rdquo;.')
 
 page('manage-keys', 'Manage Keys', 'Dashboard and account',
      'S11 Sites.dc.html S11d + B Missing Surfaces.dc.html B20 — both re-specified (FR-C8)',
@@ -538,16 +548,20 @@ page('manage-keys', 'Manage Keys', 'Dashboard and account',
 
 
 page('assets', 'Assets', 'Dashboard and account',
-     'S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details',
+     'S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details · '
+     'D8 Editor Below 1440.dc.html — D8d the drop zone with a keyboard path',
      '§ IA → Dashboard and account · § State Patterns → Assets · J4 step 8',
      lift('S10 Assets', label='S10a Asset library', capt='S10a · asset library — one card hovered, WebP toast · 1440')
      + head('The drop zone', '', 'S10b · drag-over — full-surface drop zone', anchor='drop')
      + lift('S10 Assets', caption='S10b ·')
-     + head('Two corrections the frame is owed',
-            '<b>The size line says &ldquo;up to 30 MB each&rdquo;. Appendix F.1 caps uploads at 10 MB per file '
-            'on both plans.</b> And a drop zone with no button cannot be reached by keyboard at all, so it needs '
-            'a visible <b>&ldquo;Choose files&rdquo;</b> button inside it — both are Appendix A prompt A8, frame '
-            'D8d, which has not been run.', anchor='drop-fix')
+     + head('The drop zone, with a keyboard path — and the size line corrected',
+            'S10b&rsquo;s size line read &ldquo;up to 30 MB each&rdquo; where Appendix F.1 caps uploads at 10 MB '
+            'per file on both plans, and a drop zone with no button cannot be reached by keyboard at all. Both are '
+            'corrected in the 2026-09-04 export: S10b above now reads &ldquo;up to 10 MB each&rdquo;, and prompt '
+            'A8 drew the zone with a <b>Choose files</b> button inside it, below the sparkle line.',
+            anchor='drop-fix')
+     + lift('D8 Editor Below 1440', label='D8d Drop zone',
+            capt='D8d · assets drop zone · with a keyboard path · 720')
      + head('Delete in use', 'Serious voice, and it names every place the image is used.', anchor='delete')
      + lift('S10 Assets', caption='S10c ·', capt='S10c · delete-in-use — serious, no puns')
      + head('Image details', '', anchor='details')
@@ -557,7 +571,7 @@ page('assets', 'Assets', 'Dashboard and account',
               'deletes below the cap. <b>Nothing is deleted by Inflozo, on any path.</b> No frame draws it.',
               anchor='over-quota'),
      subs=[SUB('Drop zone', 'drop', 'S10b'),
-           SUB('The two corrections it is owed', 'drop-fix', 'F.1 · D8d'),
+           SUB('The drop zone, with a keyboard path', 'drop-fix', 'D8d'),
            SUB('Delete in use', 'delete', 'S10c'),
            SUB('Image details', 'details', 'S10d'),
            SUB('Assets — over quota', 'over-quota', 'not drawn')])
@@ -570,12 +584,13 @@ page('billing', 'Billing', 'Dashboard and account',
      + lift('S12 Billing', caption='S12d ·', capt='S12d · invoices — the popup')
      + head('Delete Account', 'Typed confirm, serious voice, and no wit anywhere near it.', anchor='delete')
      + lift('S12 Billing', caption='S12c ·', capt='S12c · delete account — typed confirm')
-     + head('The limits, plainly — and where the frames disagree with them',
-            'Appendix F.1 is the <b>sole definition</b> of Free/Pro gating, and four frames disagree with it: '
-            'S11c says Pro connects up to <b>3</b>; S12a says <b>unlimited</b> projects and <b>full</b> history; '
-            'S12b and M5 say <b>1 / 3</b> sites and <b>Last 2 / Full</b> history; S10b says uploads may be '
-            '<b>up to 30 MB</b>. <b>F.1 governs every one of them.</b> These are product limits, so they are '
-            'shown rather than implied.', anchor='limits')
+     + head('The limits, plainly — and where the frames disagreed with them',
+            'Appendix F.1 is the <b>sole definition</b> of Free/Pro gating, and four frames disagreed with it: '
+            'S11c said Pro connects up to <b>3</b>; S12a said <b>unlimited</b> projects and <b>full</b> history; '
+            'S12b and M5 said <b>1 / 3</b> sites and <b>Last 2 / Full</b> history; S10b said uploads may be '
+            '<b>up to 30 MB</b>. <b>All four are corrected in the 2026-09-04 export</b> (A7 item 20; S10b under '
+            'A8) and F.1 still governs. These are product limits, so they are shown rather than implied.',
+            anchor='limits')
      + LIMITS_TABLE
      + nodraw('Cancelling',
               'No refunds and no mid-cycle cancellation (Appendix F.2). Auto-renew stops, access continues to '
@@ -592,10 +607,11 @@ page('upgrade-sheet', 'Upgrade Sheet', 'Dashboard and account',
      'S12 Billing.dc.html — S12b, used app-wide',
      '§ IA → Dashboard and account · § Plan limits · J3 step 5b',
      lift('S12 Billing', caption='S12b ·', capt='S12b · upgrade modal — used app-wide')
-     + head('Its limit column is wrong in two rows',
-            'The frame says <b>3</b> connected sites and <b>Last 2</b> versions of history. Appendix F.1 says '
-            '<b>10</b> sites, and <b>last 3 on Free / last 10 per project on Pro</b>. F.1 governs — the '
-            'corrected table is on <a href="billing.html#limits">Billing</a>.', anchor='limits'),
+     + head('Its limit column was wrong in two rows',
+            'The frame said <b>3</b> connected sites and <b>Last 2</b> versions of history. Appendix F.1 says '
+            '<b>10</b> sites, and <b>last 3 on Free / last 10 per project on Pro</b>, and the 2026-09-04 export '
+            'says the same (A7 item 20: 1 / 10 sites, Last 3 / Last 10). F.1 governs — its table is on '
+            '<a href="billing.html#limits">Billing</a>.', anchor='limits'),
      subs=[SUB('The limit corrections', 'limits', 'Appendix F.1')],
      note='On return from Dodo&rsquo;s hosted checkout the server verifies the subscription directly and grants '
           'Pro <b>without waiting for the webhook</b>.')
@@ -612,34 +628,48 @@ page('suggestions', 'Suggestions', 'Dashboard and account',
 
 
 page('over-limit-sheet', 'Over-Limit Sheet', 'Dashboard and account',
-     'NOT DRAWN → Appendix A prompt A4, frames D4c and D4d. Inherits the Pro Exit Sheet\'s itemised '
-     'rows (B13 in the export\'s label) over a dimmed dashboard',
+     'D4 Dashboard Sheets and Blocks.dc.html — D4c the sheet · D4d which project stays editable · '
+     'D4e a read-only project',
      '§ IA → Dashboard and account · FR-L3 · J4 steps 5, 6 and 10',
-     nodraw('Over-Limit Sheet',
-            'The climax of J4. It opens with <b>&ldquo;Nothing has been deleted, and nothing will be. Your live '
-            'sites are untouched.&rdquo;</b> and then itemises exactly what is over and by how much, each row '
-            'naming the one action that fixes it: <b>Projects 6 of 1</b> → choose which one stays editable · '
-            '<b>Connected sites 2 of 1</b> → disconnect one · <b>Assets 312 MB of 100 MB</b> → delete some '
-            'files · <b>Stored versions 8 of 3</b> → nothing to do, we keep these. Footer: rollback, restore '
-            'and export keep working the whole time.',
-            'Appendix A prompt A4 (frames D4c, D4d)')
-     + head('The itemised-row component it inherits', 'B13a is where the row shape, its per-row remedy and its '
-            'two-real-verbs footer come from.', 'B13a · the sheet, over a dimmed editor · 1440', anchor='rows')
-     + lift('B Missing Surfaces', label='B13 Pro blocking sheet'),
-     subs=[SUB('The row component it inherits', 'rows', 'B13a')])
+     lift('D4 Dashboard Sheets and Blocks', label='D4c Over limit sheet',
+          capt='D4c · over-limit sheet — a Pro account that has become Free · 1440')
+     + head('The climax of J4, and it opens with what has not happened',
+            'Drawn by prompt A4 in the 2026-09-04 export, in B13a&rsquo;s itemised-row style over a dimmed '
+            'dashboard. First line: <b>&ldquo;Nothing has been deleted, and nothing will be. Your live sites are '
+            'untouched.&rdquo;</b> Then exactly what is over and by how much, each row naming the one action that '
+            'fixes it: <b>Projects 6 of 1</b> → choose which one stays editable · <b>Connected sites 2 of 1</b> → '
+            'disconnect one · <b>Assets 312 MB of 100 MB</b> → delete some files · <b>Stored versions 8 of 3</b> → '
+            'nothing to do, we keep these. Footer: rollback, restore and export keep working the whole time. '
+            'Every figure on it is Appendix F.1&rsquo;s.', anchor='rows')
+     + head('Which project stays editable',
+            'A radio list of the six, the most recently updated pre-selected — so submitting without reading keeps '
+            'the one being worked on. The other five stay viewable and exportable.', anchor='which')
+     + lift('D4 Dashboard Sheets and Blocks', label='D4d Which project editable',
+            capt='D4d · which project stays editable — detail at 720')
+     + head('A read-only project',
+            'The editor shell with the <a href="edit-lock.html#reader">read-only treatment from B5a</a>: canvas '
+            'fully legible, sidebars at 55%, controls visible but inert. The bar names the cause and offers two '
+            'things — Make this the editable one, and Export theme zip. <b>Export is not disabled.</b> Read-only '
+            'means not editable; it never means locked in.', anchor='read-only')
+     + lift('D4 Dashboard Sheets and Blocks', label='D4e Read-only project',
+            capt='D4e · a read-only project — canvas legible, sidebars at 55%, export live · 1440'),
+     subs=[SUB('The itemised rows', 'rows', 'D4c'),
+           SUB('Which project stays editable', 'which', 'D4d'),
+           SUB('A read-only project', 'read-only', 'D4e')])
 
 page('grace-banner', 'Grace Banner', 'Deploy',
      'B Missing Surfaces.dc.html — B24 (consequence re-specified: FR-L3)',
      '§ IA → Deploy · § wrong mechanism → B24 · J4 steps 1–2',
      lift('B Missing Surfaces', caption='B24 · #24', capt='B24 · past-due grace banner')
-     + head('The frame is wrong in the frightening half, and it has to change',
-            'B24 says <i>&ldquo;after that, Pro designs stop rendering and your sites fall back to their Free '
+     + head('The frame was wrong in the frightening half, and A7 changed it',
+            'B24 said <i>&ldquo;after that, Pro designs stop rendering and your sites fall back to their Free '
             'replacements&rdquo;</i>. <b>FR-L3: existing deployed themes are never touched.</b> Grace expiry '
             'moves the account to Free and blocks the <i>exits</i> — deploy, export, code surfaces — until the '
-            'user resolves what is over. The replacement sentence: <i>&ldquo;After that you go back to Free. '
-            'Your live sites are never touched — what&rsquo;s shipped stays shipped. You&rsquo;d just need to '
-            'sort out anything over the Free limits before you ship again.&rdquo;</i> '
-            'M5&rsquo;s own FAQ already says the right thing, and B24 contradicted it.', anchor='respec')
+            'user resolves what is over. Corrected in the 2026-09-04 export (A7 item 5); the frame now reads '
+            '<i>&ldquo;After that you go back to Free. Your live sites are never touched — what&rsquo;s shipped '
+            'stays shipped. You&rsquo;d just need to sort out anything over the Free limits before you ship '
+            'again.&rdquo;</i> M5&rsquo;s own FAQ already said the right thing, and B24 contradicted it.',
+            anchor='respec')
      + head('What is kept during the grace, and it is everything',
             'Every Pro capability, for seven days, with <b>no per-row exception</b>. '
             '<span class="mono">pro_past_due</span> is internal and is <b>never shown as a plan</b>.',
@@ -648,20 +678,19 @@ page('grace-banner', 'Grace Banner', 'Deploy',
      subs=[SUB('The re-specification', 'respec', 'FR-L3'), SUB('What is kept', 'kept', 'F.1 third column')])
 
 page('small-screen-notice', 'Small Screen Notice', 'Dashboard and account',
-     'NOT DRAWN → Appendix A prompt A4, frame D4f. Inherits S3 Dashboard\'s 390 frame',
+     'D4 Dashboard Sheets and Blocks.dc.html — D4f at 390',
      '§ IA → Dashboard and account · § Responsive & Platform (ruling R-76)',
-     nodraw('Small Screen Notice',
-            'A calm centred card at 390 — <b>not an error page</b>. &ldquo;The editor needs a bigger screen.&rdquo; '
-            'Then what does work from a phone: the project&rsquo;s deploy history with a one-tap roll back, '
-            'the sites list, and billing. <b>It fires on a coarse pointer at a small viewport, never on width '
-            'alone</b> — a 1440px display at 200% browser zoom presents roughly a 720px CSS viewport, and '
-            'throwing a low-vision user out of the editor for zooming is a straight WCAG 1.4.4 failure. That '
-            'case gets the editor, reflowed (prompt A8, frame D8b).',
-            'Appendix A prompt A4 (frame D4f)')
-     + head('The 390 shell it inherits', 'S3 is drawn at 390 and the Dashboard stays fully usable there.',
-            'S3 · mobile · 390', anchor='shell')
-     + lift('S3 Dashboard', label='S3 mobile'),
-     subs=[SUB('The 390 shell it inherits', 'shell', 'S3 mobile')])
+     lift('D4 Dashboard Sheets and Blocks', label='D4f Small screen notice',
+          capt='D4f · small screen notice · 390 — fires on a coarse pointer at a small viewport, not on width alone')
+     + head('Not an error page, and not a width test',
+            'Drawn by prompt A4 in the 2026-09-04 export: a calm centred card — &ldquo;The editor needs a bigger '
+            'screen.&rdquo; — then what does work from a phone: the project&rsquo;s deploy history with a one-tap '
+            'roll back, Your sites, and Billing. <b>It fires on a coarse pointer at a small viewport, never on '
+            'width alone</b>, and the frame&rsquo;s own caption says so: a 1440px display at 200% browser zoom '
+            'presents roughly a 720px CSS viewport, and throwing a low-vision user out of the editor for zooming '
+            'is a straight WCAG 1.4.4 failure. That case gets the editor, reflowed — drawn as '
+            '<a href="editor-narrow.html#zoom">D8b</a>.', anchor='condition'),
+     subs=[SUB('The firing condition', 'condition', 'D4f · D8b')])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -669,7 +698,8 @@ page('small-screen-notice', 'Small Screen Notice', 'Dashboard and account',
 # ═══════════════════════════════════════════════════════════════════════════════
 page('editor', 'Editor', 'Editor',
      'S4 Editor.dc.html — S4a rest, S4b hover, S4c selected, S4d top-bar dropdowns · '
-     'B Missing Surfaces B1, B2, B3, B4, B6, B7, B8, B9, B10, B11 · P0-0 · P0-1',
+     'B Missing Surfaces B1, B2, B3, B4, B6, B7, B8, B9, B10, B11 · P0-0 · P0-1 · '
+     'D5 Canvas Markers and Template Switcher.dc.html — D5a, D5b, D5c, D5d, D5e, D5f',
      '§ IA → Editor · § State Patterns → Editor and Control Sidebar · § Accessibility Floor · '
      '§ Interaction Primitives',
      lift('S4 Editor', label='S4a Editor rest',
@@ -689,13 +719,13 @@ page('editor', 'Editor', 'Editor',
      + lift('S4 Editor', label='S4c Editor selected', capt='S4c · editor — selected · 1440')
      + head('The top-bar dropdowns', 'Ship it ▾ and the member-state preview.', anchor='topbar')
      + lift('S4 Editor', caption='S4d ·', capt='S4d · top-bar dropdowns')
-     + head('The member-state preview draws tiers; FR-D16 has three states',
-            'S4d previews Orbit Supporter / Patron / Founding. <b>FR-D16: Anonymous / Free member / Paid '
+     + head('The member-state preview: three states, as FR-D16 requires',
+            'S4d previewed Orbit Supporter / Patron / Founding — tiers. <b>FR-D16: Anonymous / Free member / Paid '
             'member</b>, and <span class="mono">comped</span> previews as Paid, differing in billing rather than '
-            'access. B9 already says so; S4d is the outlier. Two things neither frame draws: the '
-            '<b>unviewed-states marker</b> beside the toggle, and the <b>&ldquo;Gated content — shown with sample '
-            'text&rdquo;</b> indicator on a gated body. S4d&rsquo;s paid-tier rows are prompt A7&rsquo;s '
-            '(owner ruling, 2026-09-03); the frame stays as drawn here.', anchor='member-state')
+            'access. Corrected in the 2026-09-04 export (A7 item 18): S4d now previews Logged out / Free member / '
+            'Paid member, with the <b>unviewed-states marker</b> (&ldquo;2 not viewed&rdquo;) beside the toggle '
+            'and the <b>&ldquo;Gated content — shown with sample text&rdquo;</b> indicator, neither of which any '
+            'frame drew before.', anchor='member-state')
      + head('Design Picker · Design Nav',
             'The most-used control in the product. Three ways to the same thing, and the counter names the '
             'unit — <b>Design</b>, never Layout. <span class="kbd">]</span> past the last returns to the first. '
@@ -758,11 +788,12 @@ page('editor', 'Editor', 'Editor',
             'size, so the fold is where the fold actually is.', anchor='device')
      + lift('B Missing Surfaces', caption='B11a ·', capt='B11a · desktop 1440 × 900')
      + lift('B Missing Surfaces', caption='B11b ·', capt='B11b · mobile 390 × 844')
-     + head('B11&rsquo;s Zoom control is re-specified out',
-            'The frame draws a user-driven <b>Fit / 55%</b> picker. FR-D14 says no zoom in v1 and AD-21 says '
-            'the only scale is fit-to-screen, never user-driven. <b>Keep the mono chip that states true size '
-            'and scale; delete the control.</b> Browser zoom is the reader&rsquo;s own accessibility setting '
-            'and is a different thing entirely (WCAG 1.4.4).', anchor='no-zoom')
+     + head('B11&rsquo;s Zoom control was re-specified out, and A7 removed it',
+            'The frame drew a user-driven <b>Fit / 55%</b> picker. FR-D14 says no zoom in v1 and AD-21 says '
+            'the only scale is fit-to-screen, never user-driven. Corrected in the 2026-09-04 export (A7 item 6): '
+            'the control is gone and the mono chip stating true size and scale stays. Browser zoom is the '
+            'reader&rsquo;s own accessibility setting and is a different thing entirely (WCAG 1.4.4).',
+            anchor='no-zoom')
      + head('Site Remix', 'One button re-rolls every design, keeping every word. <b>One undo, always</b> — a '
             'Shuffle is several operations and <i>one</i> edit.', anchor='remix')
      + lift('B Missing Surfaces', caption='B8 · #8', capt='B8 · site remix')
@@ -771,14 +802,50 @@ page('editor', 'Editor', 'Editor',
             'whole library and the Pro Exit Sheet catches it at deploy. And FR-D17&rsquo;s own axis is '
             '<b>what</b> is re-rolled — Style Pack, designs, or both — which the frame has no control for; it '
             'is added as a second radio-card group above the existing scope group.', anchor='remix-fix')
-     + nodraw('The canvas markers, the complete Template Switcher, and the editor below 1440',
-              'Six things the editor shows constantly that no frame draws: the <b>Auto-Generated Marker</b>, '
-              'the <b>Template Switcher</b> with Membership as a group of three and a conditional Private, the '
-              '<b>Main Feed Marker</b> and its reassign, <b>Page 2 Preview</b>, the <b>Preview Subject '
-              'Picker</b>, and the <b>Empty Template Warning</b> — all prompt A5. Plus the editor at 834 and at '
-              '720, the skip link, a focused Layers row and a destructive confirm opening on its cancel — '
-              'prompt A8. <b>The export draws the editor at 1440 and at no other width.</b>',
-              'Appendix A prompts A5 and A8', anchor='not-drawn'),
+     + head('Auto-Generated Marker',
+            'An untouched Tag archive rendering its default stack. The same sentence in two places — a chip in the '
+            'top bar beside the template name and a row at the head of Layers — &ldquo;Auto-generated — edit '
+            'anything to make it yours&rdquo;. Informational, never apologetic; both vanish on the first edit '
+            '(FR-D6, Appendix H). Drawn by prompt A5 in the 2026-09-04 export, as are the five below.',
+            anchor='auto-generated')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5a Auto-generated marker',
+            capt='D5a · auto-generated marker — the same sentence in the top bar and at the head of Layers · 1440')
+     + head('Template Switcher, complete',
+            'Home · Post · Page · Tag · Author · Membership as a group of three · 404 · Private, present only once '
+            'a Private Site Gate section has been designed · a rule · the custom templates from the Routes Manager '
+            '· + New template. A hollow dot always carries the word &ldquo;Auto-generated&rdquo;; a filled one '
+            'needs no label (FR-D6).', anchor='template-switcher')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5b Template switcher',
+            capt='D5b · template switcher, complete — detail at 520')
+     + head('Main Feed Marker, and reassign',
+            'The designated feed carries a mono MAIN FEED chip on its outline and on its Layers row; its Count '
+            'control is <b>greyed with the reason</b> — the feed is sized by Theme Settings&rsquo; '
+            '<span class="mono">posts_per_page</span> — and only it has Pagination. The second feed&rsquo;s ⋯ menu '
+            'offers &ldquo;Make this the main feed&rdquo; (FR-H2).', anchor='main-feed')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5c Main feed marker',
+            capt='D5c · main feed marker and reassign · 1440')
+     + head('Page 2 Preview',
+            'Reached from the Pagination control, never a shortcut. An ink pill reads Page 2 with Back to page 1 '
+            'beside it, and the numbered treatment shows its full range — the only state in which it shows what '
+            'it is (FR-D21, Appendix H).', anchor='page-2')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5d Page 2 preview',
+            capt='D5d · page 2 preview — reached from the Pagination control · 1440')
+     + head('Preview Subject Picker',
+            'B9&rsquo;s pill, opened: the source, a rule, then the subject — a searchable list of the site&rsquo;s '
+            'posts with the style-guide article always first and checked by default. &ldquo;has image&rdquo; is '
+            'the words; the glyph is decoration beside them (FR-D22).', anchor='preview-subject')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5e Preview subject picker',
+            capt='D5e · preview subject picker — detail at 520')
+     + head('Empty Template Warning',
+            'Fires when the last section leaves a designed custom template. Notice, not danger: the page still '
+            'loads, wearing the ordinary page design, and Ghost won&rsquo;t warn anyone — which is why Inflozo '
+            'does (FR-I1).', anchor='empty-template')
+     + lift('D5 Canvas Markers and Template Switcher', label='D5f Empty template warning',
+            capt='D5f · empty template warning — detail at 620')
+     + head('Below 1440, and the affordances the floor needs',
+            'The editor at 834 and at 720, its overflow menu, the skip link, a focused Layers row and where focus '
+            'opens on a destructive confirm are drawn as D8 and lifted on their own page: '
+            '<a href="editor-narrow.html">Editor Below 1440</a>.', anchor='below-1440'),
      subs=[SUB('Hover', 'hover', 'S4b'), SUB('Selected', 'selected', 'S4c'),
            SUB('Top-bar dropdowns', 'topbar', 'S4d'),
            SUB('Member-state preview — three states', 'member-state', 'FR-D16 · A7'),
@@ -798,7 +865,64 @@ page('editor', 'Editor', 'Editor',
            SUB('Device Preview', 'device', 'B11'),
            SUB('The removed zoom control', 'no-zoom', 'FR-D14'),
            SUB('Site Remix', 'remix', 'B8'), SUB('Remix — R-77 and the what-axis', 'remix-fix', 'R-77'),
-           SUB('Markers, switcher, narrow widths — not drawn', 'not-drawn', 'A5 · A8')])
+           SUB('Auto-Generated Marker', 'auto-generated', 'D5a'),
+           SUB('Template Switcher', 'template-switcher', 'D5b'),
+           SUB('Main Feed Marker', 'main-feed', 'D5c'),
+           SUB('Page 2 Preview', 'page-2', 'D5d'),
+           SUB('Preview Subject Picker', 'preview-subject', 'D5e'),
+           SUB('Empty Template Warning', 'empty-template', 'D5f'),
+           SUB('Below 1440 — on its own page', 'below-1440', 'D8')])
+
+page('editor-narrow', 'Editor Below 1440', 'Editor',
+     'D8 Editor Below 1440.dc.html — D8a at 834 and its overflow menu · D8b at 720 · D8c skip link · '
+     'D8e a Layers row focused · D8f a destructive confirm as it opens',
+     '§ IA → Editor · § Responsive & Platform · § Accessibility Floor',
+     head('The same four parts, rearranged rather than redesigned',
+          'The export drew the editor at 1440 and at no other width until prompt A8 ran (2026-09-04). Two things '
+          'need it narrower and neither is a phone: <b>tablet</b> (834, touch) is in scope by the owner&rsquo;s '
+          'ruling, and a <b>desktop at 200% browser zoom</b> sees roughly a 720 CSS px viewport — throwing that '
+          'user out would fail WCAG 1.4.4. Layers collapses to an icon rail, the Controls sidebar becomes an '
+          'overlay over the canvas with a scrim, and the top bar keeps the switcher, View as and Ship it and sends '
+          'the rest to one overflow menu. Below that the product shows the '
+          '<a href="small-screen-notice.html">Small Screen Notice</a> instead — on a coarse pointer, never on width.',
+          'D8a · tablet · 834 × 1112 · touch · every target ≥ 44 px', anchor='tablet')
+     + lift('D8 Editor Below 1440', label='D8a Editor at 834')
+     + head('The one overflow menu', 'Drawn open on its own, because only one overlay is ever open at a time.',
+            'D8a · detail · the one overflow menu', anchor='overflow')
+     + lift('D8 Editor Below 1440', label='D8a Overflow menu')
+     + head('At 720 — a 1440 display at 200% browser zoom',
+            'The same collapse, with a fine pointer: targets stay at their desktop sizes and hover states are live. '
+            'This frame is what proves the notice does not fire here.', 'D8b · 720 × 900 · fine pointer',
+            anchor='zoom')
+     + lift('D8 Editor Below 1440', label='D8b Editor at 720')
+     + head('The skip link',
+            'The first focusable thing in the shell, over the top bar&rsquo;s left edge: hidden at rest, visible on '
+            'keyboard focus, reading &ldquo;Skip the canvas&rdquo; — because the canvas renders the user&rsquo;s '
+            'own site, and tabbing through it means every link that site emits. The ring is the Calibration '
+            'Set&rsquo;s corrected token, 2px solid <span class="mono">#C2381F</span> (A7 item 7).',
+            'D8c · skip link · rest and keyboard focus · 620', anchor='skip-link')
+     + lift('D8 Editor Below 1440', label='D8c Skip link')
+     + head('A Layers row, focused — the fourth state',
+            'B7&rsquo;s rows had rest, hover and selected. Keyboard focus is the ring drawn over the row&rsquo;s '
+            'existing state, so focused-and-selected reads as both; the wash stays for hover and selection only. '
+            '↑ ↓ move focus, ⌥↑ ⌥↓ move the section itself.', 'D8e · a Layers row · the fourth state · 520',
+            anchor='layers-focused')
+     + lift('D8 Editor Below 1440', label='D8e Layers row focused')
+     + head('Where focus opens on a destructive confirm — the rule',
+            'As any irreversible confirm opens, focus is on the <b>cancelling</b> action, never on the danger fill. '
+            'The subject is B5c&rsquo;s &ldquo;Take over from Rosa?&rdquo;; the same rule governs Delete account, '
+            'Roll back, project delete, delete-in-use assets and &ldquo;Overwrite and ship anyway&rdquo;. D8f '
+            'inherits B5c&rsquo;s wording — &ldquo;7 unsynced <i>changes</i>&rdquo; — where §AD2 makes '
+            '<i>edits</i> canonical (the <a href="edit-lock.html#respec">one deviation on Edit Lock</a>); D8g '
+            'already says edits.', 'D8f · a destructive confirm, as it opens · 620', anchor='destructive-confirm')
+     + lift('D8 Editor Below 1440', label='D8f Destructive confirm'),
+     subs=[SUB('At 834 — tablet', 'tablet', 'D8a'), SUB('The overflow menu', 'overflow', 'D8a'),
+           SUB('At 720 — 200% zoom', 'zoom', 'D8b'), SUB('The skip link', 'skip-link', 'D8c'),
+           SUB('A Layers row, focused', 'layers-focused', 'D8e'),
+           SUB('Where focus opens', 'destructive-confirm', 'D8f')],
+     note='Two more D8 frames sit beside the surfaces they extend: the assets drop zone with its keyboard path '
+          '(D8d) on <a href="assets.html#drop-fix">Assets</a>, and Ship it from a read-only session (D8g) on '
+          '<a href="edit-lock.html#deploy-blocked">Edit Lock</a>.')
 
 
 page('section-picker', 'Section Picker', 'Editor',
@@ -880,7 +1004,8 @@ page('routes-manager', 'Routes Manager', 'Editor',
            SUB('Routes — empty', 'empty', 'S9d')])
 
 page('theme-settings', 'Theme Settings', 'Editor',
-     'B Missing Surfaces.dc.html — B17 (re-specified and extended → Appendix A prompt A6) · B18 translations',
+     'B Missing Surfaces.dc.html — B17 (re-specified and extended → drawn as D6) · B18 translations · '
+     'D6 Theme Settings Completed.dc.html — D6a Pro, D6b Free, D6c the text-prop confirm',
      '§ IA → Editor · § wrong mechanism → B17 · FR-Q1/Q2/Q3, FR-J15, FR-D7',
      lift('B Missing Surfaces', caption='B17 · #17', capt='B17 · theme settings, with the custom-settings builder · 1440')
      + head('Four corrections, and one of them is the surface&rsquo;s own primary value',
@@ -893,12 +1018,30 @@ page('theme-settings', 'Theme Settings', 'Editor',
             'setting&rdquo; is the <i>visitor&rsquo;s</i> moon toggle; this row is FR-D7&rsquo;s <b>project '
             'mode</b> — Light only / Light + Dark — plus a &ldquo;Clear dark overrides&rdquo; row. '
             '<b>4 · The meter reads 3 of 20 and should read 3 of 17</b>: three of Ghost&rsquo;s twenty slots '
-            'are the dark built-ins every Inflozo project declares (FR-Q2).', anchor='respec')
+            'are the dark built-ins every Inflozo project declares (FR-Q2). <b>All four are drawn in D6a</b> '
+            '(prompt A6, 2026-09-04 export): Posts per page sits first with its stepper at 12; the logo row is '
+            'padlocked with &ldquo;Change this in Ghost&rdquo;; the dark row is the project mode, Light only / '
+            'Light + Dark, with Clear dark overrides beneath it; the meter reads 3 OF 17.', anchor='respec')
      + head('And four additions to the builder',
             'The Ghost Admin <b>group</b>, a <b>visibility condition</b>, FR-Q3&rsquo;s text-prop confirm '
             '(&ldquo;Ghost&rsquo;s own settings are plain text, so the marks come off&rdquo;), the post-deploy '
-            'key-immutability notice, and the pack-switch warning on a promoted accent. All prompt A6.',
+            'key-immutability notice, and the pack-switch warning on a promoted accent. All drawn by prompt A6: '
+            'Group in Ghost and Only show when are rows of D6a&rsquo;s promote form, the keys-freeze notice sits '
+            'under its meter, the warning sits on the promoted accent, and the confirm is D6c.',
             anchor='additions')
+     + head('Theme Settings, completed — as D6a draws it', '', anchor='completed')
+     + lift('D6 Theme Settings Completed', label='D6a Theme settings Pro', capt='D6a · theme settings · Pro · 1440')
+     + head('Free — the credits row greyed with its reason, and a Light-only project',
+            'The row exists here and is unavailable now, and the sentence says which; hiding it would teach a '
+            'customer that Inflozo has no opinion about credits. The same pattern greys Clear dark overrides on a '
+            'Light-only project — the overrides are kept, not discarded.', anchor='free')
+     + lift('D6 Theme Settings Completed', label='D6b Theme settings Free',
+            capt='D6b · theme settings · Free — greyed with the reason, never hidden · detail at 720')
+     + head('The text-prop promote confirm',
+            'The sentence before and after, because &ldquo;formatting will be removed&rdquo; is abstract until a '
+            'user sees their own line lose its link (FR-Q3).', anchor='text-prop')
+     + lift('D6 Theme Settings Completed', label='D6c Text prop confirm',
+            capt='D6c · the text-prop promote confirm — detail at 520')
      + head('Translations', 'Every chrome string the theme prints.', anchor='translations')
      + lift('B Missing Surfaces', caption='B18 · #18', capt='B18 · translations · 940')
      + head('B18&rsquo;s keys are the wrong shape',
@@ -910,8 +1053,11 @@ page('theme-settings', 'Theme Settings', 'Editor',
             'FR-Q8 adds a <b>brace-refusal error state</b>: a malformed interpolation token is a whole-site '
             '500. The RTL acknowledgement is right, and FR-Q6 requires it <b>repeated as a pre-deploy '
             'warning</b> on the Pre-flight Check.', anchor='translations-fix'),
-     subs=[SUB('The four corrections', 'respec', 'A6'),
-           SUB('Custom Settings Builder — the additions', 'additions', 'A6'),
+     subs=[SUB('The four corrections', 'respec', 'A6 → D6a'),
+           SUB('Custom Settings Builder — the additions', 'additions', 'D6a'),
+           SUB('Theme Settings, completed', 'completed', 'D6a'),
+           SUB('Free — credits greyed', 'free', 'D6b'),
+           SUB('Text-prop confirm', 'text-prop', 'D6c'),
            SUB('Translations', 'translations', 'B18'),
            SUB('Translations — the key shape', 'translations-fix', 'FR-Q6/Q8')])
 
@@ -930,12 +1076,17 @@ page('paywall-editor', 'Paywall Editor', 'Editor',
             '<span class="mono">gh-post-upgrade-cta</span> block (read in source on 6.54.1 and 5.130.6; '
             'MEASUREMENTS §15b executed the override point this design replaces). So the paywall design applies '
             'to <b>any gated post</b> — members, paid or tiers — and the honest empty case is <b>members disabled '
-            'on the site</b> (<span class="mono">members_signup_access = none</span>). The frame&rsquo;s '
-            'empty-state copy is prompt A7&rsquo;s; the frame stays as drawn here.', anchor='designs')
+            'on the site</b> (<span class="mono">members_signup_access = none</span>). Corrected in the '
+            '2026-09-04 export (A7 item 12): C3b&rsquo;s empty state is now &ldquo;Members are switched off&rdquo;, '
+            'with two numbered steps and a re-check. <b>One thing to execute at the story:</b> its step 1 prints a '
+            'Ghost Admin path, Settings → Membership, which this build has not verified on 6.58.0 (T1 exists for '
+            'that) — the backup gate&rsquo;s rule is that Ghost Admin paths are described, never printed.',
+            anchor='designs')
      + lift('C Post Body', label='C3b Paywall designs and empty state', capt='C3b · three designs and the empty state'),
      subs=[SUB('The designs, and the empty case', 'designs', 'C3b')],
      note='This surface was reported as never drawn. <b>It is drawn</b> — C3a, at 1440, with its six controls, '
-          'its &ldquo;how readers reach it&rdquo; explainer and an empty state whose reason is wrong (below) — '
+          'its &ldquo;how readers reach it&rdquo; explainer and an empty state whose reason was wrong until A7 '
+          '(below) — '
           'and it sits in a drawn left-nav group, <b>Template surfaces</b>.')
 
 page('editor-cards', 'Editor Cards', 'Editor',
@@ -946,7 +1097,11 @@ page('editor-cards', 'Editor Cards', 'Editor',
      + head('The card dropdown — every Koenig card, in Ghost&rsquo;s order',
             '<b>Colour controls are never offered for header, signup and CTA cards.</b> The post author sets '
             'those inline in Ghost&rsquo;s editor, and a control that silently loses to an inline style is '
-            'worse than none.', anchor='cards')
+            'worse than none. The order the frame claimed as Ghost&rsquo;s was not, until the 2026-09-04 export '
+            '(A7 item 15): it now follows the editor&rsquo;s own menu, read from the koenig-lexical bundle on '
+            '5.130.6 and 6.58.0 — Video before Audio, Embed last, and slot 8 is <b>Email call to action</b>, the '
+            'email-only card that renders nothing on the web (MEASUREMENTS §35b), which is where the NO COLOUR '
+            'CTLS mark sits; the web <b>Call to action</b> keeps its own entry and its panel.', anchor='cards')
      + lift('S14 Editor Cards', label='S14a Editor cards dropdown', capt='S14a · card-type dropdown open · 1440')
      + head('The treatment dropdown', 'Chosen first, once per project. A per-card override a new treatment '
             'claims is dropped <b>with a one-line notice</b> — never silently kept and outvoted.', anchor='treatment')
@@ -1000,7 +1155,8 @@ page('error-pages', 'Error Pages', 'Editor',
      subs=[SUB('The Template-surfaces group', 'group', 'C3a')])
 
 page('edit-lock', 'Edit Lock', 'Editor',
-     'B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal',
+     'B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal · '
+     'D8 Editor Below 1440.dc.html — D8g ship it from a read-only session',
      '§ IA → Editor · flow F2 · FR-D18, addendum.md §AD2',
      head('One editing context per project — across tabs, browsers and devices',
           'The three frames escalate deliberately: <b>a bar, then a popover, then a modal with a danger '
@@ -1024,13 +1180,17 @@ page('edit-lock', 'Edit Lock', 'Editor',
             'lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> '
             'Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.',
             anchor='respec')
-     + nodraw('Deploy and export from a read-only session',
-              'Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist '
-              'elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. Drawn on no frame; it '
-              'is added to B5&rsquo;s family.', anchor='deploy-blocked'),
+     + head('Deploy and export from a read-only session — the fourth state',
+            'Ship it or Export first prompts a take-over, <b>surfacing the unsynced edits that exist '
+            'elsewhere</b> — so a stale cloud snapshot can never silently ship. Drawn by prompt A8 in the '
+            '2026-09-04 export on B5c&rsquo;s shape: danger fill, &ldquo;Or message Rosa&rdquo;, and focus opening '
+            'on <b>Wait</b>, per the <a href="editor-narrow.html#destructive-confirm">rule D8f draws</a>. It says '
+            '<i>edits</i>, as §AD2 requires.', anchor='deploy-blocked')
+     + lift('D8 Editor Below 1440', label='D8g Ship from read-only',
+            capt='D8g · ship it from a read-only session · the fourth lock state · 620'),
      subs=[SUB('The reader', 'reader', 'B5a'), SUB('The holder', 'holder', 'B5b'),
            SUB('The takeover', 'takeover', 'B5c'), SUB('The one deviation', 'respec', '§AD2'),
-           SUB('Deploy from a read-only session', 'deploy-blocked', 'not drawn')],
+           SUB('Deploy from a read-only session', 'deploy-blocked', 'D8g')],
      note='<b>Rollback and snapshot restore never require the lock</b>, because they redeploy a stored artifact '
           'rather than the working document.')
 
@@ -1044,23 +1204,23 @@ page('deploy-wizard', 'Deploy Wizard', 'Deploy',
      head('The rail grows, and that is the whole shape of this flow',
           'An ordinary deploy is four steps, which is what S8 draws. <b>The first deploy to a given site is '
           'six</b>, because two gates fire once per site and never again — the Staff Token Offer and the '
-          'Backup Gate — and <b>neither is drawn anywhere in the export</b> (prompt A1).')
+          'Backup Gate — drawn by prompt A1 in the 2026-09-04 export as D1b–D1e, with the six-step rail.')
      + head('Every step, as a page you can walk')
      + """<div class="annot"><div class="idxgrid">
-  <a class="idxrow" href="deploy-destination.html">1 · Deploy Destination<span class="k">S8a</span></a>
-  <a class="idxrow" href="staff-token-offer.html">2 · Staff Token Offer<span class="k">not drawn · A1</span></a>
-  <a class="idxrow" href="backup-gate.html">3 · Backup Gate<span class="k">not drawn · A1</span></a>
+  <a class="idxrow" href="deploy-destination.html">1 · Deploy Destination<span class="k">S8a · D1a</span></a>
+  <a class="idxrow" href="staff-token-offer.html">2 · Staff Token Offer<span class="k">D1b · D1c</span></a>
+  <a class="idxrow" href="backup-gate.html">3 · Backup Gate<span class="k">D1d · D1d′ · D1e</span></a>
   <a class="idxrow" href="preflight-check.html">4 · Pre-flight Check<span class="k">S8b</span></a>
   <a class="idxrow" href="snapshot-gate.html">5 · Snapshot Gate<span class="k">B12a · B12b</span></a>
   <a class="idxrow" href="deploy-progress.html">5 · Deploy Progress<span class="k">S8c</span></a>
   <a class="idxrow" href="deploy-live.html">6 · Deploy Live<span class="k">S8d</span></a>
-  <a class="idxrow" href="deploy-uploaded.html">6 · Deploy Uploaded<span class="k">not drawn · A2</span></a>
-  <a class="idxrow" href="partial-success.html">6 · Partial Success<span class="k">not drawn · A2</span></a>
+  <a class="idxrow" href="deploy-uploaded.html">6 · Deploy Uploaded<span class="k">D2f</span></a>
+  <a class="idxrow" href="partial-success.html">6 · Partial Success<span class="k">D2e · D2d</span></a>
   <a class="idxrow" href="deploy-failure.html">5 · Deploy Failure<span class="k">S8d′</span></a>
   <a class="idxrow" href="pro-exit-sheet.html">Pro Exit Sheet<span class="k">B13a</span></a>
   <a class="idxrow" href="library-update-confirm.html">Library Update Confirm<span class="k">B14b</span></a>
-  <a class="idxrow" href="drift-report.html">Drift Report<span class="k">not drawn · A3</span></a>
-  <a class="idxrow" href="deploy-history.html">Deploy History<span class="k">S8e</span></a>
+  <a class="idxrow" href="drift-report.html">Drift Report<span class="k">D3a · D3b · D3c</span></a>
+  <a class="idxrow" href="deploy-history.html">Deploy History<span class="k">S8e · D2a–c</span></a>
 </div></div>"""
      + head('What fires before step 1 even opens',
             'Two sheets sit in front of the wizard rather than inside it. The '
@@ -1071,13 +1231,16 @@ page('deploy-wizard', 'Deploy Wizard', 'Deploy',
             'or not anyone asked.'))
 
 page('deploy-destination', 'Deploy Destination', 'Deploy',
-     'S8 Deploy.dc.html — S8a · S8a′ preview-only',
+     'S8 Deploy.dc.html — S8a · S8a′ preview-only · D1 First-Deploy Gates.dc.html — D1a, the first deploy',
      '§ IA → Deploy · J1 step 9 · J2 step 13',
      lift('S8 Deploy', label='S8a Ship step 1', capt='S8a · ship wizard — step 1 of 4 · destination · 1440')
-     + head('What the first deploy adds, and it is not drawn',
+     + head('What the first deploy adds',
             'On the <b>first</b> deploy to a site the rail is six steps, and this card gains one row: the theme '
             'that will be created, <span class="mono">inflozo-orbit-weekly</span>, with one line saying the name '
-            'is frozen for this site from now on (FR-J10). Prompt A1, frame D1a.', anchor='first-deploy')
+            'is permanent for this site from now on (FR-J10). Drawn by prompt A1 in the 2026-09-04 export.',
+            anchor='first-deploy')
+     + lift('D1 First-Deploy Gates', label='D1a Destination first deploy',
+            capt='D1a · destination, first deploy — step 1 of 6 · 1440')
      + head('Preview-Only Destination', 'The site cannot take a custom theme, so the exit is <b>export</b> '
             'instead of deploy.', anchor='preview-only')
      + lift('S8 Deploy', caption='S8a′ ·', capt='S8a′ · step 1 variant — Ghost(Pro) Starter, preview-only')
@@ -1087,65 +1250,81 @@ page('deploy-destination', 'Deploy Destination', 'Deploy',
             'a plan limit, not an API limit, so the manual route does not exist either. The zip still downloads '
             'on every plan (FR-J12); what the copy must say is where it can be installed: a self-hosted Ghost, '
             'or a Ghost(Pro) plan that allows custom themes. B15 already gets this right.', anchor='preview-fix'),
-     subs=[SUB('What the first deploy adds', 'first-deploy', 'A1 · D1a'),
+     subs=[SUB('What the first deploy adds', 'first-deploy', 'D1a'),
            SUB('Preview-Only Destination', 'preview-only', 'S8a′'),
            SUB('Its copy correction', 'preview-fix', 'FR-C2')])
 
 page('staff-token-offer', 'Staff Token Offer', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b\'s step card and Connect · '
-     'Integration\'s screenshotted step',
+     'D1 First-Deploy Gates.dc.html — D1b the offer · D1c declined',
      '§ IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H',
-     nodraw('Staff Token Offer',
-            'Step 2 of the six-step first deploy. <b>&ldquo;One more step unlocks a safety net — a copy of your '
-            'current theme before we replace it, plus a check that nothing else has changed it.&rdquo;</b> Then, '
-            'quieter: this is a staff credential &mdash; <b>every staff user mints their own</b> from their profile '
-            'page and it carries that user&rsquo;s role (read at docs.ghost.org/admin-api → Staff access tokens: '
-            '&ldquo;Each user can create and refresh their own token&rdquo;). The safety net needs a role that can '
-            'read themes and write settings: <b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, '
-            'Ghost 6.54.1 fixtures.json roles_permissions: Administrator holds <span class="mono">theme: all</span> '
-            'and <span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the '
-            'role with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review '
-            '2026-09-03). The Owner-only wording in FR-C1/C3 and EXPERIENCE.md is owed the same correction '
-            '(finding F-063). <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; '
-            'and &ldquo;Not now&rdquo;. Not now is <b>not</b> a small link. '
-            '<b>Zero occurrences of &ldquo;Staff Access Token&rdquo; exist anywhere in the export.</b>',
-            'Appendix A prompt A1 (frames D1b, D1c)')
+     lift('D1 First-Deploy Gates', label='D1b Safety net offer',
+          capt='D1b · safety net · the offer — step 2 of 6 · 1440')
+     + head('Whose token, exactly — the frame has the reach right',
+            'Step 2 of the six-step first deploy, drawn by prompt A1 in the 2026-09-04 export. It leads with the '
+            'safety net, names the credential second and says plainly that it is a full-Administrator one. <b>Two '
+            'plain buttons, side by side, the same weight</b> — Add the token and Not now; Not now is not a small '
+            'link. It says the token is <b>&ldquo;from the site Owner or an Administrator&rdquo;</b>, which is the '
+            'right reach: every staff user mints their own from their profile page and it carries that user&rsquo;s '
+            'role (read at docs.ghost.org/admin-api → Staff access tokens: &ldquo;Each user can create and refresh '
+            'their own token&rdquo;), and the safety net needs a role that can read themes and write settings — '
+            '<b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, Ghost 6.54.1 fixtures.json '
+            'roles_permissions: Administrator holds <span class="mono">theme: all</span> and '
+            '<span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the role '
+            'with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review '
+            '2026-09-03). Finding F-063 has landed: the PRD now defines &ldquo;the Owner&rsquo;s Staff Access '
+            'Token&rdquo; as a token of Owner-or-Administrator reach (FR-C1, <i>Why the split</i>, read 2026-09-04) '
+            'and EXPERIENCE.md&rsquo;s F3 rows say Owner or an Administrator; the frame agrees with both. '
+            '<b>One sentence on D1b disagrees with D1c:</b> D1b says '
+            'Inflozo uses the token for &ldquo;two things only — reading your current theme, and reading '
+            'routes.yaml&rdquo;, while D1c&rsquo;s third cost and FR-I4 say it also <i>uploads</i> routes.yaml. '
+            'Flagged for the story that builds this step (R-80); nothing here guesses which line moves.',
+            anchor='reach')
      + head('Declined — acknowledged once, then never raised again',
-            'It names exactly three costs — no snapshot, no drift check, manual routes upload — and closes with '
-            '&ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done '
-            'something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>can comply when '
-            'they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is not a '
-            'degradation, it is the path.',
-            anchor='declined')
-     + head('The step card it inherits', '', 'S8b · the checked-row list · 1440', anchor='inherits')
-     + lift('S8 Deploy', caption='S8b ·'),
-     subs=[SUB('Declined', 'declined', 'D1c'), SUB('The step card it inherits', 'inherits', 'S8b')])
+            'It names exactly three costs — no copy of the current theme, no drift check, routes.yaml by hand — '
+            'and closes with &ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user '
+            'has done something wrong.</b> The multi-site operator working on a client&rsquo;s site <b>can comply '
+            'when they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is '
+            'not a degradation, it is the path.', anchor='declined')
+     + lift('D1 First-Deploy Gates', label='D1c Safety net declined',
+            capt='D1c · safety net · declined — step 2 of 6 · 1440 · raised once, never again'),
+     subs=[SUB('Whose token, exactly', 'reach', 'F-063'), SUB('Declined', 'declined', 'D1c')])
 
 page('backup-gate', 'Backup Gate', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A1, frames D1d and D1e. Inherits S8b\'s checked-row list and '
-     'the Pro Exit Sheet\'s itemised rows',
+     'D1 First-Deploy Gates.dc.html — D1d self-hosted, token given · D1d-prime the shortcut ticked · '
+     'D1e Ghost(Pro), token declined',
      '§ IA → Deploy · flow F7 · BACKUP-GATE.md · J1 step 11',
-     nodraw('Backup Gate',
-            'Step 3, and <b>it blocks the deploy button until confirmed</b>. Reading order is the design: '
-            '<b>first</b> the modest truth — <i>Inflozo writes exactly two things to your Ghost site: your '
-            'theme, and <span class="mono">routes.yaml</span></i> — <b>then</b> the recommendation with its '
-            'reason, <b>then</b> the <span class="mono">ghost backup</span> shortcut whose tick checks every row '
-            'below <b>and the rows stay visible</b>, <b>then</b> seven individual rows (Theme · routes.yaml · '
-            'Content, which does NOT include images · Members · Redirects · Images, the gap most people miss · '
-            'Database), and <b>last</b> the master confirm, disabled until every row is covered. '
-            '<b>No frame anywhere in the export mentions a backup, <span class="mono">ghost backup</span>, or a '
-            'consent checklist.</b>',
-            'Appendix A prompt A1 (frames D1d, D1e)')
+     lift('D1 First-Deploy Gates', label='D1d Backup gate self-hosted',
+          capt='D1d · backup gate · self-hosted, token given — step 3 of 6 · 1440 · card drawn full height; '
+               'in the product it scrolls inside the 900 viewport')
+     + head('Reading order is the design, and the frame keeps it',
+            'Step 3, drawn by prompt A1 in the 2026-09-04 export, and <b>it blocks the deploy button until '
+            'confirmed</b>. <b>First</b> the modest truth — Inflozo writes exactly two things, the theme and '
+            '<span class="mono">routes.yaml</span> — <b>then</b> the recommendation with its reason, <b>then</b> the '
+            '<span class="mono">ghost backup</span> shortcut, <b>then</b> the seven rows (Theme · routes.yaml · '
+            'Content, which does not include images · Members · Redirects · Images, files and media, the gap most '
+            'people miss · Database), and <b>last</b> the master confirm, with the deploy button greyed and a line '
+            'counting the rows still to tick. With the token given, the Theme and routes.yaml rows carry a '
+            'Download (FR-J13 as amended, §A12 decision 5). <b>No Ghost Admin menu path is printed on any row</b> — '
+            'each describes what to look for and links to Ghost&rsquo;s own help — which is the rule the note '
+            'above explains.', anchor='order')
+     + head('The shortcut ticked — every row stays visible',
+            'Ticking <span class="mono">ghost backup</span> ticks every row below and leaves them on screen, so the '
+            'customer sees what they now hold; one confirmation is left.', anchor='shortcut')
+     + lift('D1 First-Deploy Gates', label='D1d-prime Shortcut ticked',
+            capt='D1d′ · the shortcut ticked — every row stays visible, ticked · detail at 940')
      + head('On Ghost(Pro), the shortcut does not exist and the gate says so',
-            'This claim is <b>cited, not executed</b> — there is no Ghost(Pro) test server yet — so the copy '
-            'says what Ghost Admin does and does not offer and points the customer at Ghost, rather than '
-            'asserting a platform-wide impossibility in Inflozo&rsquo;s own voice. It closes: <b>&ldquo;This is '
-            'not something Inflozo can fix, and we are not going to pretend otherwise.&rdquo;</b>',
-            anchor='ghostpro')
-     + head('The checked-row list it inherits', '', 'S8b · step 2 · pre-flight check · 1440', anchor='inherits')
-     + lift('S8 Deploy', caption='S8b ·'),
-     subs=[SUB('Backup Gate — Ghost(Pro)', 'ghostpro', 'D1e'),
-           SUB('The list it inherits', 'inherits', 'S8b')],
+            'The shortcut is replaced by a sky information block — not danger — and no Download appears '
+            'anywhere, because the token was declined. The Ghost(Pro) claims on it are <b>cited, not executed</b> '
+            '— there is no Ghost(Pro) test server yet — so the copy says what Ghost Admin does and does not offer '
+            'and points the customer at Ghost, rather than asserting a platform-wide impossibility in '
+            'Inflozo&rsquo;s own voice. It closes: <b>&ldquo;This is not something Inflozo can fix, and we are not '
+            'going to pretend otherwise.&rdquo;</b>', anchor='ghostpro')
+     + lift('D1 First-Deploy Gates', label='D1e Backup gate Ghost Pro',
+            capt='D1e · backup gate · Ghost(Pro), token declined — step 3 of 6 · detail at 940 · '
+                 'no download button anywhere'),
+     subs=[SUB('Reading order', 'order', 'D1d'),
+           SUB('The shortcut ticked', 'shortcut', 'D1d′'),
+           SUB('Backup Gate — Ghost(Pro)', 'ghostpro', 'D1e')],
      note='<b>What this is, and what it is not.</b> A <b>consent gate, not a technical control</b>. It moves '
           'responsibility; it does not reduce risk. A customer who ticks the box without having backed up still '
           'loses their theme — they simply had a fair chance not to. <b>No Ghost Admin menu path is hard-coded '
@@ -1160,8 +1339,11 @@ page('preflight-check', 'Pre-flight Check', 'Deploy',
      + head('Two rows the frame does not have, and both are required',
             'FR-Q6 requires the <b>RTL acknowledgement repeated here as a pre-deploy warning</b> — it is where '
             'it bites. And FR-J16&rsquo;s <b>drift row</b> sits among these checks on every deploy after the '
-            'first: a passing row when nothing changed, and a stop when something did. Neither is drawn '
-            '(prompt A3).', anchor='additions')
+            'first: a passing row when nothing changed, and a stop when something did. The drift row is now drawn '
+            '— D3c passing, D3b when it cannot check, D3a when it stops the deploy, all on '
+            '<a href="drift-report.html">Drift Report</a> (prompt A3, 2026-09-04 export). The RTL row is still '
+            'drawn on no frame and no Appendix A prompt owns it: the story that builds Pre-flight adds it from '
+            'S8b&rsquo;s own warning row (R-80).', anchor='additions')
      + head('&ldquo;Required templates present (index, post, page)&rdquo; — two of those are Ghost&rsquo;s',
             'gscan requires <span class="mono">index.hbs</span> and <span class="mono">post.hbs</span> '
             '(<span class="mono">GS020-INDEX-REQ</span>, <span class="mono">GS020-POST-REQ</span>) and recommends '
@@ -1169,25 +1351,28 @@ page('preflight-check', 'Pre-flight Check', 'Deploy',
             '<span class="mono">page.hbs</span></b> — read in gscan 4.49.7 and 6.4.2 '
             '<span class="mono">lib/specs</span>, the versions Ghost 5.130.6 and 6.58.0 bundle (VERIFY-AT-BUILD '
             'item 31). <span class="mono">page</span> is Inflozo&rsquo;s own standard-set check (FR-I1), not '
-            'Ghost&rsquo;s. If the row is meant to read as Ghost&rsquo;s check, prompt A7 drops &ldquo;page&rdquo;.',
+            'Ghost&rsquo;s. The row is unchanged in the 2026-09-04 export and A7 carried no item for it — this '
+            'annotation had claimed one it did not have. If the row is meant to read as Ghost&rsquo;s check, the '
+            'story that builds Pre-flight drops &ldquo;page&rdquo; or names it as Inflozo&rsquo;s (R-80).',
             anchor='templates-row'),
-     subs=[SUB('The two rows it is owed', 'additions', 'FR-Q6 · A3'),
+     subs=[SUB('The two rows it is owed', 'additions', 'FR-Q6 · D3'),
            SUB('Which template rules are Ghost&rsquo;s', 'templates-row', 'GS020')])
 
 page('snapshot-gate', 'Snapshot Gate', 'Deploy',
      'B Missing Surfaces.dc.html — B12a running, B12b degraded. Semantics re-specified',
      '§ IA → Deploy · flow F1 · FR-J13 · J1 step 13',
      lift('B Missing Surfaces', caption='B12a · #12', capt='B12a · snapshot gate · running')
-     + head('Two sentences on that frame are wrong and both are load-bearing',
+     + head('Two sentences on that frame were wrong and both were load-bearing',
             '<b>&ldquo;It happens on every deploy&rdquo;</b> — it is the <b>first upload to a site</b>, '
             'deploy-only included, because manual activation in Ghost Admin must not bypass the safety net. '
             '<b>&ldquo;Snapshots count towards your history — Free keeps 3, Pro keeps 10&rdquo;</b> — the '
-            'snapshot is <b>exempt from the history limit and never prunes</b>; it becomes &ldquo;Kept outside '
-            'your version limit.&rdquo;', anchor='respec')
+            'snapshot is <b>exempt from the history limit and never prunes</b>. Both corrected in the 2026-09-04 '
+            'export (A7 item 2): the first sentence is gone and the second reads &ldquo;Kept outside your version '
+            'limit.&rdquo;', anchor='respec')
      + head('Capture failed', '', anchor='failed')
      + lift('B Missing Surfaces', caption='B12b · #12', capt='B12b · capture failed')
-     + head('B12b&rsquo;s reason is the most expensive error in the export',
-            'It says <i>&ldquo;your integration key may not have theme read permission … Check the key.&rdquo;</i> '
+     + head('B12b&rsquo;s reason was the most expensive error in the export',
+            'It said <i>&ldquo;your integration key may not have theme read permission … Check the key.&rdquo;</i> '
             'Ghost&rsquo;s admin-API allowlist (<span class="mono">tokenPermissionCheck</span> in '
             '<span class="mono">core/server/web/api/endpoints/admin/middleware.js</span>, read in 6.54.1) lets a '
             'Custom Integration token reach <span class="mono">themes</span> only as POST and PUT, so <b>every</b> '
@@ -1198,7 +1383,13 @@ page('snapshot-gate', 'Snapshot Gate', 'Deploy',
             'Access Token), then what protects them anyway — <b>Ghost keeps the pre-Inflozo theme under Settings → '
             'Design</b>, which holds because this gate fires only at the first upload; later Inflozo versions '
             'replace each other under the frozen name (FR-J10) and live only in Inflozo&rsquo;s history — then '
-            'three real actions.', anchor='respec-b12b'),
+            'three real actions. Corrected in the 2026-09-04 export (A7 item 2): the body names the token and says '
+            'there is no permission to switch on, shows the executed <span class="mono">403</span> (the Ghost 6 '
+            'answer — Ghost 5&rsquo;s is 501, and AD-24 folds both), and the buttons are Add the token · Deploy '
+            'without a snapshot · Cancel; &ldquo;Check the key&rdquo; is gone. <b>One thing to execute at the '
+            'story:</b> the reassurance now prints a Ghost Admin path, Settings → Design, which this build has not '
+            'verified on 6.58.0 (T1 exists for that); the backup gate&rsquo;s rule is to describe what to look for '
+            'rather than print a path.', anchor='respec-b12b'),
      subs=[SUB('The two wrong sentences', 'respec', 'FR-J13'),
            SUB('Capture failed', 'failed', 'B12b'),
            SUB('B12b&rsquo;s wrong reason', 'respec-b12b', 'MEASUREMENTS')])
@@ -1209,7 +1400,8 @@ page('deploy-progress', 'Deploy Progress', 'Deploy',
      lift('S8 Deploy', caption='S8c ·', capt='S8c · step 3 · shipping — upload in progress'),
      note='Each stage is announced politely as it starts, and so is the outcome. <b>Nothing blocks on this</b> — '
           'the user can keep editing and the notification lands in '
-          '<a href="notifications.html">Notifications</a> whether or not the tab is still open.')
+          '<a href="notifications.html">Notifications</a> whether or not the tab is still open. <b>S8c greys the Cancel on the uploading card</b> (disabled, 35% opacity) with the reason &ldquo;Once it starts, it finishes&rdquo; &mdash; A7 item 13&rsquo;s second remedy, applied in the 2026-09-04 export. FR-J8 governs — once uploading starts the deploy '
+          'runs to completion — so the story drops the button (R-80).')
 
 page('deploy-live', 'Deploy Live', 'Deploy',
      'S8 Deploy.dc.html — S8d',
@@ -1219,7 +1411,8 @@ page('deploy-live', 'Deploy Live', 'Deploy',
             'A card on the success state, <b>not a modal that must be dismissed to reach the confetti. The '
             'deploy succeeded.</b> A project whose deploy emitted no custom template never sees it — which is '
             'every starter&rsquo;s first deploy, so the confetti stays clean. It is drawn as '
-            '<a href="template-binding-checklist.html">B19</a>, on a mechanism FR-I1 forbids.', anchor='binding')
+            '<a href="template-binding-checklist.html">B19</a> — on a mechanism FR-I1 forbade until A7 item 1 '
+            'corrected it (2026-09-04 export).', anchor='binding')
      + head('The confetti fires on the first deploy that makes the site LIVE',
             'A deploy-only ends on <a href="deploy-uploaded.html">Deploy Uploaded</a>, not here. &ldquo;Live! '
             'Your site just got gorgeous&rdquo; would be false on a theme nobody is serving — the canonical '
@@ -1231,42 +1424,52 @@ page('deploy-failure', 'Deploy Failure', 'Deploy',
      '§ IA → Deploy · § Voice and Tone (errors are human and name the fix)',
      lift('S8 Deploy', caption='S8d′ ·', capt='S8d′ · step 3 failure — human message + reconnect'),
      note='Never &ldquo;An error occurred.&rdquo; The sentence names what happened in the other party&rsquo;s '
-          'terms and the button is the fix. <b>But the cause this frame names does not exist.</b> An Admin API key '
-          'never expires — the <span class="mono">api_keys</span> table has no expiry column (read in source, Ghost '
-          '6.54.1 <span class="mono">core/server/data/schema/schema.js</span>) and docs.ghost.org/admin-api says '
-          'the key can be regenerated any time; the only thing that expires is the five-minute JWT Inflozo signs '
-          'with it. A key that was regenerated, or whose integration was deleted, answers <span class="mono">401 '
-          'Unknown Admin API Key</span> (executed against T1 6.58.0 and T3 5.130.6, review 2026-09-03). The '
-          'sentence becomes &ldquo;Ghost said no — this Admin API key no longer works. It was regenerated or '
-          'removed in Ghost Admin. Paste the new key.&rdquo; The frame&rsquo;s text is prompt A7&rsquo;s; it '
-          'stays as drawn here. A deploy failure is one of the five product emails (FR-P1), and it '
-          'is the only deploy outcome that sends one — uploaded-not-live sends nothing, because nothing failed.')
+          'terms and the button is the fix. <b>The cause this frame first named — an expired key — does not '
+          'exist.</b> An Admin API key never expires — the <span class="mono">api_keys</span> table has no expiry '
+          'column (read in source, Ghost 6.54.1 <span class="mono">core/server/data/schema/schema.js</span>) and '
+          'docs.ghost.org/admin-api says the key can be regenerated any time; the only thing that expires is the '
+          'five-minute JWT Inflozo signs with it. A key that was regenerated, or whose integration was deleted, '
+          'answers <span class="mono">401 Unknown Admin API Key</span> (executed against T1 6.58.0 and T3 5.130.6, '
+          'review 2026-09-03). Corrected in the 2026-09-04 export (A7 item 11): the sentence now reads '
+          '&ldquo;Ghost said no — this Admin API key no longer works. It was regenerated or removed in Ghost '
+          'Admin. Paste the new key and we&rsquo;ll pick up right here.&rdquo; with Reconnect site. A deploy '
+          'failure is one of the five product emails (FR-P1), and it is the only deploy outcome that sends one — '
+          'uploaded-not-live sends nothing, because nothing failed.')
 
 page('deploy-uploaded', 'Deploy Uploaded', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A2, frame D2f',
+     'D2 Deploy History Completed.dc.html — D2f',
      '§ IA → Deploy · J1 "step 1 has two endings too" · FR-J8',
-     nodraw('Deploy Uploaded',
-            'The other ending, reached deliberately: the user picked <b>Deploy only</b> at step 1. Sky, not '
-            'danger; the same card as Partial Success, the same rail state, the same two buttons — only the '
-            'sentence changes, because only the cause changed. <b>&ldquo;Uploaded. Not live yet.&rdquo;</b> '
-            '<b>No confetti</b>: the one confetti moment is the first deploy that makes the site live, and this '
-            'one deliberately did not.',
-            'Appendix A prompt A2 (frame D2f)')
+     lift('D2 Deploy History Completed', label='D2f Deploy only ending',
+          capt='D2f · deploy only — the same ending, reached deliberately · 1440 · no confetti')
      + head('It is one state with two causes',
-            'Deploy Uploaded and <a href="partial-success.html">Partial Success</a> are the <b>same state '
-            'reached two ways</b>, and the history row is identical for both — status '
-            '<span class="mono">uploaded</span>, <span class="mono">activated</span> false, no active badge, '
-            '<b>Re-activate</b>. <b>Neither sends a deploy-failure email.</b>', anchor='same-state'),
+            'The other ending, reached deliberately: the user picked <b>Deploy only</b> at step 1. Drawn by prompt '
+            'A2 in the 2026-09-04 export beside <a href="partial-success.html">Partial Success</a>, on one canvas, '
+            'because they are the <b>same state reached two ways</b>: sky, not danger; the same card, the same rail '
+            'with Ship complete and Live incomplete, the same two buttons — only the sentence changes, because only '
+            'the cause changed, and the Activating row reads <i>Not requested</i> where the other reads '
+            '<i>Didn&rsquo;t complete</i>. <b>&ldquo;Uploaded. Not live yet.&rdquo;</b> <b>No confetti</b>: the one '
+            'confetti moment is the first deploy that makes the site live, and this one deliberately did not. The '
+            'history row is identical for both — status <span class="mono">uploaded</span>, '
+            '<span class="mono">activated</span> false, no active badge, <b>Re-activate</b> — and <b>neither sends '
+            'a deploy-failure email</b>.', anchor='same-state'),
      subs=[SUB('One state, two causes', 'same-state', 'FR-J8')])
 
 page('partial-success', 'Partial Success', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A2, frames D2e and D2d',
+     'D2 Deploy History Completed.dc.html — D2e in the wizard · D2d the history row',
      '§ IA → Deploy · flow F8 · FR-J8',
-     nodraw('Partial Success',
-            'Upload succeeded, activation failed. <b>This is a partial success, not a failure</b> — sky, not '
-            'danger, and <b>not</b> the S8d′ failure treatment. &ldquo;Your theme is on your site but '
-            'isn&rsquo;t live yet.&rdquo; The step rail shows Ship complete and Live incomplete.',
-            'Appendix A prompt A2 (frames D2e, D2d)')
+     lift('D2 Deploy History Completed', label='D2e Activation failed',
+          capt='D2e · partial success in the wizard — upload passed, activation failed · 1440 · no confetti')
+     + head('A partial success, not a failure',
+            'Upload succeeded, activation failed. Drawn by prompt A2 in the 2026-09-04 export: sky, not danger, '
+            'and <b>not</b> the S8d′ failure treatment. &ldquo;Your theme is on your site but isn&rsquo;t live '
+            'yet.&rdquo; The rail shows Ship complete and Live incomplete, the Activating row reads <i>Didn&rsquo;t '
+            'complete</i>, and the buttons are Re-activate v5 and Leave it for now. Its twin, reached on purpose, '
+            'is <a href="deploy-uploaded.html">Deploy Uploaded</a>.', anchor='wizard')
+     + head('The row it leaves in history',
+            'No Live badge, because it is not live. The sky chip and the primary Re-activate replace the mint badge '
+            'and Roll back; everything else in the row is unchanged.', anchor='row')
+     + lift('D2 Deploy History Completed', label='D2d Partial success row',
+            capt='D2d · partial success · the row — detail at 620')
      + head('Six things follow from calling it a partial success', '', anchor='consequences')
      + """<div class="annot"><div class="stack gap10" style="max-width:760px;margin:0 auto;padding:20px">
   <div class="checkrow"><span class="tick">1</span><span><b>The artifact is retained</b> like any successful
@@ -1281,29 +1484,37 @@ page('partial-success', 'Partial Success', 'Deploy',
     action, because &ldquo;failed&rdquo; would be wrong and silence would be worse.</span></div>
   <div class="checkrow"><span class="tick">6</span><span><b>It sends no deploy-failure email.</b></span></div>
 </div></div>""",
-     subs=[SUB('What follows', 'consequences', 'FR-J8')])
+     subs=[SUB('In the wizard', 'wizard', 'D2e'), SUB('The history row', 'row', 'D2d'),
+           SUB('What follows', 'consequences', 'FR-J8')])
 
 page('drift-report', 'Drift Report', 'Deploy',
-     'NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7\'s Layers row for the file list',
+     'D3 The Drift Report.dc.html — D3a drift found · D3b could not verify · D3c no drift',
      '§ IA → Deploy · FR-J16',
-     nodraw('Drift Report',
-            'Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and '
-            'compares it against what it last deployed there. If anything differs, <b>the deploy stops</b>. '
-            'Rows are grouped Changed / Added / Removed and — critically — <b>each is named by the user&rsquo;s '
-            'own layer name</b> ("Home hero", "Three Column footer") with the raw filename only as small mono '
-            'text beneath. Never a raw path as the primary label. Two actions: <b>Download the live theme '
-            'first</b> (offered before the destructive one) and <b>Overwrite and ship anyway</b> — ink, not '
-            'danger, because it is a deliberate choice.',
-            'Appendix A prompt A3 (frames D3a, D3b, D3c)')
+     lift('D3 The Drift Report', label='D3a Drift found',
+          capt='D3a · drift found · the deploy stops — step 2 of 4 · 1440')
+     + head('What it does, and what the frame keeps',
+            'Drawn by prompt A3 in the 2026-09-04 export. Before every deploy <b>after</b> the first to a given '
+            'site, Inflozo reads the live theme and compares it against what it last deployed there; if anything '
+            'differs, <b>the deploy stops</b>. Rows are grouped Changed / Added on your site / Removed from your '
+            'site and — critically — <b>each is named by the user&rsquo;s own layer name</b> (Home hero, Latest '
+            'issues, Three Column footer) with the raw filename only as small mono text beneath; a file Inflozo '
+            'never wrote is named as exactly that. Never a raw path as the primary label. Two actions besides '
+            'Cancel: <b>Download the live theme first</b>, offered before the destructive one, and <b>Overwrite '
+            'and ship anyway</b> — a deliberate choice, so ink and not danger.', anchor='stops')
      + head('It fails open, and it never asserts drift without two manifests',
             'Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky '
             'information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live '
             'theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> '
             'produces no drift at all, so the list never shows one: nothing on the live site changed, only a '
             'filename Inflozo chose.', anchor='fail-open')
-     + head('The row component it inherits', '', 'B7 · layers rows', anchor='rows')
-     + lift('B Missing Surfaces', caption='B7 · #7'),
-     subs=[SUB('It fails open', 'fail-open', 'D3b'), SUB('The row it inherits', 'rows', 'B7')])
+     + lift('D3 The Drift Report', label='D3b Could not verify',
+            capt='D3b · couldn&rsquo;t verify · it proceeds — detail at 720')
+     + head('No drift — one passing row among the others',
+            'The same weight as &ldquo;Ghost 6.x compatible&rdquo;. Not a badge, not celebrated.', anchor='no-drift')
+     + lift('D3 The Drift Report', label='D3c No drift', capt='D3c · no drift — detail at 620'),
+     subs=[SUB('Drift found — the deploy stops', 'stops', 'D3a'),
+           SUB('It fails open', 'fail-open', 'D3b'),
+           SUB('No drift', 'no-drift', 'D3c')])
 
 
 page('pro-exit-sheet', 'Pro Exit Sheet', 'Deploy',
@@ -1312,16 +1523,19 @@ page('pro-exit-sheet', 'Pro Exit Sheet', 'Deploy',
      '§ IA → Deploy · § wrong mechanism → B13 · J3 steps 3–5',
      lift('B Missing Surfaces', label='B13 Pro blocking sheet', capt='B13a · the sheet, over a dimmed editor · 1440')
      + head('Four remedies, because two was not enough',
-            'The frame draws swap and upgrade. <b>FR-L3 has four</b>, and the missing two are not decorative: '
+            'The frame drew swap and upgrade. <b>FR-L3 has four</b>, and the missing two are not decorative: '
             '<b>&ldquo;Remove it&rdquo;</b>, because some binding contexts have no Free design to swap to; and '
             '<b>&ldquo;Revert to the free one&rdquo;</b> for the non-placeable treatments — a paywall design, a '
             'card treatment, a pagination style — which are <i>selected</i> rather than placed, so each reverts '
-            'on its own surface.', anchor='remedies')
-     + head('And a data dependency the frame invents',
-            'B13a notes that <i>&ldquo;the swap-for suggestions are per-design pairings someone has to author — '
+            'on its own surface. Corrected in the 2026-09-04 export (A7 item 4): every row now carries Remove it, '
+            'and a &ldquo;Chosen, not placed&rdquo; row type carries Revert to the free one.', anchor='remedies')
+     + head('And a data dependency the frame invented',
+            'B13a noted that <i>&ldquo;the swap-for suggestions are per-design pairings someone has to author — '
             'every Pro design needs a named Free fallback&rdquo;</i>. <b>No pairing table exists or is '
             'needed:</b> swapping goes through Shuffle, which offers any free design in that category&rsquo;s '
-            'ring. The note is deleted.', anchor='no-pairings'),
+            'ring. The note is deleted from the frame in the 2026-09-04 export (A7 item 4); the canvas&rsquo;s own '
+            'header still lists it among the things it flagged, which is a record and stays.',
+            anchor='no-pairings'),
      subs=[SUB('The four remedies', 'remedies', 'FR-L3'),
            SUB('The invented pairing table', 'no-pairings', 'B13a')],
      note='<b>Coral appears nowhere on this sheet</b> and marigold only as the Pro mark. This is a money '
@@ -1347,23 +1561,39 @@ page('library-update-confirm', 'Library Update Confirm', 'Deploy',
      subs=[SUB('The stale line', 'stale', 'FR-J13'), SUB('Why a confirm exists', 'why', 'FR-J14')])
 
 page('deploy-history', 'Deploy History', 'Deploy',
-     'S8 Deploy.dc.html — S8e, extended → Appendix A prompt A2',
+     'S8 Deploy.dc.html — S8e · D2 Deploy History Completed.dc.html — D2a pinning on Pro, D2b the pin refusal, '
+     'D2c Free',
      '§ IA → Deploy · flow F8 · FR-J7/J9 · J4 step 9',
      lift('S8 Deploy', label='S8e History drawer', capt='S8e · history — the drawer and its roll-back confirm · 1440')
-     + head('Three things the drawer has to carry that S8e does not',
+     + head('Three things the drawer carries that S8e did not — drawn as D2a',
             '<b>1 · Pinning.</b> A pin control on every row; a pinned version survives pruning; at most '
             '<b>N−1</b> pinned — 9 of 10 on Pro, 2 of 3 on Free — and <b>pinning the last unpinned version '
-            'refuses, visibly, with the reason</b>. Unpinning is always allowed, so nobody can trap themselves. '
-            '<b>2 · The pre-Inflozo snapshot row</b>, above the version list, marked as the site&rsquo;s '
-            'original rather than an Inflozo build, and <b>outside the 3-or-10 count entirely</b>. '
-            '<b>3 · A partial-success row</b> — status <span class="mono">uploaded</span>, no active badge, '
-            'and <b>Re-activate</b> in place of Roll back. All three are prompt A2.', anchor='additions')
-     + head('And one sentence S8e already gets right, which stays',
+            'refuses, visibly, with the reason</b> (D2b, below). Unpinning is always allowed, so nobody can trap '
+            'themselves. <b>2 · The original-theme row</b>, above the version list, marked as the site&rsquo;s '
+            'original rather than an Inflozo build and <b>outside the 3-or-10 count entirely</b> — Restore '
+            'original is where flow F1 ends. <b>3 · A partial-success row</b> — status '
+            '<span class="mono">uploaded</span>, no active badge, and <b>Re-activate</b> in place of Roll back — '
+            'drawn as D2d on <a href="partial-success.html#row">Partial Success</a>. Prompt A2, 2026-09-04 export.',
+            anchor='additions')
+     + lift('D2 Deploy History Completed', label='D2a History pinning Pro',
+            capt='D2a · history with pinning · Pro — ten stored versions, two pinned · 1440 · drawer drawn full height')
+     + head('The pin refusal',
+            'A refusal with a reason, never a greyed control and never a silent failure. The pin stays unfilled.',
+            anchor='refusal')
+     + lift('D2 Deploy History Completed', label='D2b Pin refusal', capt='D2b · the pin refusal — detail at 520')
+     + head('Free — three versions, one pinned',
+            'The limit line is shown on Free too, never withheld as an upsell, and there is no upgrade prompt in '
+            'the drawer.', anchor='free')
+     + lift('D2 Deploy History Completed', label='D2c History Free plan',
+            capt='D2c · Free plan — three stored versions, one pinned · 1440')
+     + head('And one sentence S8e already gets right, which stays — and gains one',
             '&ldquo;Pro keeps the last 10 versions. Free keeps the last 3.&rdquo; <b>A list that silently drops '
             'its oldest entry reads as complete when it is not</b>, and the line stays on Free too rather than '
-            'being hidden as an upsell. It gains one sentence: these artifacts are <b>not regenerable</b>, so '
-            'the retention limit is the true bound on how far back a customer can go.', anchor='limit'),
-     subs=[SUB('The three additions', 'additions', 'A2'), SUB('The limit line', 'limit', 'F8')])
+            'being hidden as an upsell. D2a and D2c add the sentence it was owed: older versions are removed, not '
+            'hidden — an Inflozo theme can&rsquo;t be rebuilt later, so the retention limit is the true bound on '
+            'how far back a customer can go.', anchor='limit'),
+     subs=[SUB('The three additions — D2a', 'additions', 'D2a'), SUB('The pin refusal', 'refusal', 'D2b'),
+           SUB('Free', 'free', 'D2c'), SUB('The limit line', 'limit', 'F8')])
 
 page('preview-only-notice', 'Preview-Only Notice', 'Deploy',
      'B Missing Surfaces.dc.html — B15 (right, apart from the plan name)',
@@ -1397,40 +1627,44 @@ page('routes-fallback', 'Routes Fallback Card', 'Deploy',
      'B Missing Surfaces.dc.html — B16 (cause re-specified; the hard-coded Ghost menu path deleted)',
      '§ IA → Deploy · flow F3 · § wrong mechanism → B16 · FR-I4',
      lift('B Missing Surfaces', caption='B16 · #16', capt='B16 · routes fallback card')
-     + head('The frame sends people to fix something that cannot be fixed',
-            'B16 says <i>&ldquo;your integration key is missing the settings permission … Fix the key.&rdquo;</i> '
+     + head('The frame sent people to fix something that cannot be fixed',
+            'B16 said <i>&ldquo;your integration key is missing the settings permission … Fix the key.&rdquo;</i> '
             '<b>Integration tokens never carry <span class="mono">setting: edit</span></b> — Ghost&rsquo;s '
             'allowlist binds them and there is nothing to grant. A <i>staff</i> token carries a '
             '<span class="mono">user_id</span>, skips the allowlist entirely, and an Administrator or Owner '
             'holds <span class="mono">setting: all</span>. So the cause becomes <b>&ldquo;Uploading a routing '
             'file needs the site Owner&rsquo;s Staff Access Token, and this project doesn&rsquo;t have '
             'one&rdquo;</b>, and &ldquo;Fix the key instead&rdquo; becomes <b>&ldquo;Add the token '
-            'instead&rdquo;</b>.', anchor='respec')
+            'instead&rdquo;</b>. Corrected in the 2026-09-04 export (A7 item 3): the card now says the upload '
+            'needs a Staff Access Token from the site Owner or an Administrator, offers Add the token instead, '
+            'and closes with &ldquo;Adding the token makes this automatic from now on.&rdquo;', anchor='respec')
      + head('The three causes, and each names itself',
             'EXPERIENCE.md F3 documents three causes with three messages and two button labels; the frame '
             'draws only the first. Quoted from the spine:', anchor='causes')
      + """<div class="annot"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
   <tr><th scope="col">Cause</th><th scope="col">What the card says</th></tr>
   <tr><td>No Staff Access Token was ever supplied</td>
-    <td>&ldquo;We normally upload this for you. Uploading a routing file needs the site Owner&rsquo;s Staff Access
-      Token, and this project doesn&rsquo;t have one — so this once, you&rsquo;ll do it by hand.&rdquo; +
-      <b>Add the token instead</b></td></tr>
+    <td>&ldquo;We normally upload this for you. Uploading a routing file needs a Staff Access Token from the site
+      Owner or an Administrator, and this project doesn&rsquo;t have one — so this once, you&rsquo;ll do it by
+      hand.&rdquo; + <b>Add the token instead</b></td></tr>
   <tr><td>The token was revoked or rotated</td>
     <td>&ldquo;…your token has stopped working.&rdquo; + <b>Update the token</b></td></tr>
-  <tr><td>The connection is not the site Owner&rsquo;s</td>
-    <td>&ldquo;…this token belongs to a staff account that can&rsquo;t write settings. Only the site Owner&rsquo;s
-      token can.&rdquo; — no button</td></tr>
-</table><p class="helper" style="margin-top:10px">&ldquo;Owner&rdquo; in the first and third rows is the spine&rsquo;s
-  wording; every staff user has a token and an Administrator&rsquo;s carries <span class="mono">setting: all</span>
-  (read at docs.ghost.org/admin-api → Staff access tokens; Ghost 6.54.1 fixtures.json roles_permissions), so
-  those rows are owed the F-063 correction alongside FR-C1/C3 — see
+  <tr><td>The token&rsquo;s role is below Administrator</td>
+    <td>&ldquo;…this token belongs to a staff account that can&rsquo;t write settings. Only an Owner&rsquo;s or an
+      Administrator&rsquo;s token can.&rdquo; — no button</td></tr>
+</table><p class="helper" style="margin-top:10px">The first and third rows carry finding F-063&rsquo;s reach — every
+  staff user has a token and an Administrator&rsquo;s carries <span class="mono">setting: all</span> (read at
+  docs.ghost.org/admin-api → Staff access tokens; Ghost 6.54.1 fixtures.json roles_permissions) — and the frame
+  above draws only the first cause; the other two are the story&rsquo;s (R-80). See
   <a href="staff-token-offer.html">Staff Token Offer</a>.</p></div></div>"""
-     + head('And the hard-coded menu path has to go',
-            'Step 2 says <b>Settings → Labs</b>. <b>Ghost 6.58.0 has no Labs page</b> — no '
+     + head('And the hard-coded menu path had to go — it went',
+            'Step 2 said <b>Settings → Labs</b>. <b>Ghost 6.58.0 has no Labs page</b> — no '
             '<span class="mono">settings/advanced</span>, no <span class="mono">settings/labs</span>, and its '
             'export UI sits behind a lab flag (MEASUREMENTS §33, executed 2026-08-31). The card must '
             '<b>describe what the customer is looking for and link to Ghost&rsquo;s own help for the version '
-            'Inflozo detected at connect</b>.', anchor='menu-path'),
+            'Inflozo detected at connect</b>. Corrected in the 2026-09-04 export (A7 item 3): step 2 now reads '
+            '&ldquo;In Ghost, find the routes upload for your version&rdquo; with &ldquo;Show me where ↗&rdquo;.',
+            anchor='menu-path'),
      subs=[SUB('The re-specified cause', 'respec', 'FR-I4'),
            SUB('The three causes', 'causes', 'F3'),
            SUB('The hard-coded menu path', 'menu-path', 'MEASUREMENTS §33')],
@@ -1439,14 +1673,18 @@ page('routes-fallback', 'Routes Fallback Card', 'Deploy',
           'degrading except the automation.')
 
 page('template-binding-checklist', 'Template Binding Checklist', 'Deploy',
-     'B Missing Surfaces.dc.html — B19. Drawn on a mechanism FR-I1 forbids',
+     'B Missing Surfaces.dc.html — B19, as A7 item 1 corrected it (2026-09-04)',
      '§ IA → Deploy · flow F6 · FR-I6',
      lift('B Missing Surfaces', caption='B19 · #19', capt='B19 · membership page binding')
-     + head('Every step on that frame is on a mechanism the product forbids',
-            'The components stay — the numbered steps and, above all, the small honest facsimile of Ghost&rsquo;s '
-            'own page settings on the right. Everything they <i>say</i> changes.', anchor='corrections')
+     + head('Every step on that frame was on a mechanism the product forbids — A7 redrew what they say',
+            'The components stayed — the numbered steps and, above all, the small honest facsimile of '
+            'Ghost&rsquo;s own page settings on the right. Everything they <i>said</i> changed in the 2026-09-04 '
+            'export (A7 item 1): <span class="mono">custom-membership.hbs</span>, the Template dropdown, no '
+            'MATCHED badge, &ldquo;We can&rsquo;t see whether you did this&rdquo;, and three rows — Membership, '
+            'Signin, Member home — each with a done state the user ticks. The table below is the record of what '
+            'B19 said and why it was wrong.', anchor='corrections')
      + """<div class="annot"><div class="limits-wrap"><table class="limits" style="max-width:940px;margin:0 auto">
-  <tr><th scope="col">B19 says</th><th scope="col">The truth</th></tr>
+  <tr><th scope="col">B19 said, before A7</th><th scope="col">The truth</th></tr>
   <tr><td><span class="mono">page-membership.hbs</span></td>
     <td><b><span class="mono">custom-membership.hbs</span>.</b> Inflozo <b>never</b> emits
       <span class="mono">page-{slug}.hbs</span>: that form is matched against the live slug at render time,
@@ -1498,7 +1736,7 @@ journey('J2', 'Blank-canvas build',
          ('section-picker.html', 'Section Picker · ⌘K'), ('editor.html#selected', 'Editor — the section lands'),
          ('editor.html#design-picker', 'Design Picker — the climax beat'),
          ('editor.html#control-sidebar', 'Control Sidebar'), ('editor.html#inline-toolbar', 'Inline Toolbar'),
-         ('style-packs.html', 'Style Packs'), ('editor.html#not-drawn', 'Template Switcher — not drawn'),
+         ('style-packs.html', 'Style Packs'), ('editor.html#template-switcher', 'Template Switcher'),
          ('editor.html#layers', 'Layers · L'), ('editor.html#preview', 'Preview Mode · P'),
          ('editor.html#device', 'Device Preview · 3'), ('editor.html#remix', 'Site Remix · ⇧R'),
          ('deploy-wizard.html', 'Deploy Wizard — four steps this time')])
@@ -1522,6 +1760,8 @@ journey('J4', 'Downgrade recovery',
          ('grace-banner.html#kept', 'During grace, nothing is withdrawn'),
          ('billing.html', 'Billing — update the card, or let it lapse'),
          ('over-limit-sheet.html', 'Over-Limit Sheet — the climax beat'),
+         ('over-limit-sheet.html#which', 'Which project stays editable'),
+         ('over-limit-sheet.html#read-only', 'The other five go read-only — export still works'),
          ('sites.html', 'Sites — disconnect down to one'),
          ('assets.html#over-quota', 'Assets — read-only until under'),
          ('deploy-history.html', 'Deploy History — retained, never pruned'),
@@ -1531,7 +1771,7 @@ flow('F1', 'Pre-deploy snapshot gate', 'FR-J13 · fires at the FIRST theme uploa
      [('snapshot-gate.html', 'Running'), ('snapshot-gate.html#respec', 'The two wrong sentences'),
       ('snapshot-gate.html#failed', 'Capture failed'),
       ('snapshot-gate.html#respec-b12b', 'And why its reason is wrong'),
-      ('deploy-history.html#additions', 'Restore, from the snapshot row')])
+      ('deploy-history.html#additions', 'Restore original, from the drawer&rsquo;s original-theme row')])
 
 flow('F2', 'The three-party edit-lock choreography', 'FR-D18 · addendum.md §AD2',
      [('edit-lock.html#reader', 'The reader'), ('edit-lock.html#holder', 'The holder'),
@@ -1563,19 +1803,22 @@ flow('F6', 'The post-deploy template-binding checklist', 'FR-I6 · a checklist, 
       ('template-binding-checklist.html', 'The checklist as drawn'),
       ('template-binding-checklist.html#corrections', 'Every step on it is wrong'),
       ('notifications.html', 'One nudge, once, a day later'),
-      ('editor.html#not-drawn', 'Empty Template Warning — not drawn')])
+      ('editor.html#empty-template', 'Empty Template Warning')])
 
 flow('F7', 'The pre-deploy backup gate', 'BACKUP-GATE.md · a consent gate, not a technical control',
-     [('backup-gate.html', 'The gate — not drawn anywhere in the export'),
+     [('backup-gate.html', 'The gate — self-hosted, token given'),
+      ('backup-gate.html#shortcut', 'The shortcut ticked — every row stays visible'),
       ('backup-gate.html#ghostpro', 'Ghost(Pro) — the honest block'),
-      ('backup-gate.html#inherits', 'The checked-row list it inherits'),
+      ('staff-token-offer.html', 'The token it was offered one step earlier'),
       ('deploy-destination.html#first-deploy', 'And the six-step rail it sits in')])
 
 flow('F8', 'Deploy history with pinning', 'FR-J7/J9 · at most 10 stored versions on Pro and 3 on Free',
      [('deploy-history.html', 'The drawer as drawn'),
-      ('deploy-history.html#additions', 'Pinning, the snapshot row, the partial row'),
+      ('deploy-history.html#additions', 'Pinning, the original-theme row — D2a'),
+      ('deploy-history.html#refusal', 'The pin refusal'),
+      ('deploy-history.html#free', 'Free — three versions, one pinned'),
       ('deploy-history.html#limit', 'The limit is stated, not implied'),
-      ('partial-success.html', 'Partial success — a state nobody drew'),
+      ('partial-success.html#row', 'The partial-success row'),
       ('deploy-uploaded.html#same-state', 'One state, two causes')])
 
 
@@ -1619,8 +1862,8 @@ def build_index():
     return f"""<!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75 · the front door.
   Every screen on every page is LIFTED from the design export verbatim (../frames.py).
-  Where a surface has no frame, the page says so and describes what its Appendix A prompt
-  must draw — nothing is invented as a picture.
+  Where a state has no frame, the page says so in those words and describes what step 6 draws
+  it from — nothing is invented as a picture.
 -->
 <!doctype html>
 <html lang="en">
@@ -1651,9 +1894,10 @@ def build_index():
       the frame&rsquo;s own, never a redrawing of it — so a page can be held against the export and checked
       rather than merely believed.</p>
     <p style="font-size:14.5px;line-height:1.6;max-width:78ch">The annotation sits <i>around</i> each frame
-      and never inside it. Where a surface <b>has no frame</b>, the page says so in those words and describes
-      what its Appendix A prompt must draw; nothing is invented as a picture, because a second interface
-      vocabulary beside the export&rsquo;s is the one thing ruling R-74 forbids.</p>
+      and never inside it. Where a state <b>has no frame</b>, the page says so in those words and describes
+      what step 6 draws it from; nothing is invented as a picture, because a second interface
+      vocabulary beside the export&rsquo;s is the one thing ruling R-74 forbids. The Appendix A canvases
+      (D1&ndash;D6, D8) landed on 2026-09-04 and every surface that was owed one lifts it.</p>
     <div class="row gap10 wrap">
       <span class="chip">{n_pages} pages</span>
       <span class="chip">{n_subs} surfaces and states</span>
@@ -1710,9 +1954,17 @@ def main():
 
     files = set(bodies) | {'styles.css', '../walkthrough/index.html', '../walkthrough/_screens.html'}
     ids = {n: set(re.findall(r'id="([^"]+)"', s)) for n, s in bodies.items()}
+    # The link check is a check on the SCAFFOLDING. A lifted frame's own hrefs are the
+    # export's (D8c's skip link points at an id drawn elsewhere on its canvas) and cannot be
+    # touched, so the boxes come out before the hrefs are read — the boxes themselves are
+    # verified against the export below.
+    lifted_boxes = {p['id'] + '.html': [l['box'] for l in p['lifts']] for p in PAGES}
     bad = []
     for name, src in bodies.items():
-        for href in re.findall(r'href="([^"]+)"', src):
+        scaffold = src
+        for box in lifted_boxes.get(name, ()):
+            scaffold = scaffold.replace(box, '')
+        for href in re.findall(r'href="([^"]+)"', scaffold):
             if href.startswith(('http', 'mailto:')):
                 continue
             if href == '#':

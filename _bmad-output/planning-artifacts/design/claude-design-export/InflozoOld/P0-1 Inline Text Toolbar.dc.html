@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE6; font-family:'Inter',sans-serif; color:#1C1B1A; -webkit-font-smoothing:antialiased; }
+  a { color:#232019; text-decoration:none; }
+  a:hover { color:#D96C3F; }
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">P0 EDITOR PRIMITIVES · 1 OF 6 · SHARED ACROSS EVERY INLINE-EDITABLE TEXT PROP · REUSED BY NAME, NEVER REDESIGNED</span>
+  <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;letter-spacing:-0.03em;line-height:1.04">P0·1 · Inline text toolbar</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:760px;text-wrap:pretty">The floating toolbar that appears when text is selected in any inline-editable text prop, headlines included (FR-D4). One row, five actions: Bold · Italic · Underline · Link · Remove link. No font control, no size, no colour — those belong to the Style Pack and the section, never to a selection.</p>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#3A3835;max-width:760px;text-wrap:pretty">The Link action opens the Ghost-aware Link popover drawn below. A text prop bound to a Ghost Admin setting is plain-text-locked: the toolbar never appears on it.</p>
+</section>
+
+<section data-screen-label="P0-1 toolbar over body text" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TOOLBAR OVER BODY TEXT · CANVAS CROP 960 · SELECTION IN THE PACK ACCENT AT 25% · TOOLBAR CENTRED OVER THE SELECTION, 8 PX ABOVE</div>
+<div style="width:960px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:72px 96px 64px;position:relative">
+  <span style="font-family:Georgia,serif;font-size:28px;font-weight:700;line-height:1.15;letter-spacing:-0.02em;color:#232019;display:block;max-width:620px">Why writers are leaving the feed</span>
+  <div style="height:18px"></div>
+  <p style="margin:0;font-size:17px;line-height:1.65;color:#232019;max-width:620px;font-family:'Inter',sans-serif;position:relative">The web used to point outward. A blogroll was <span style="background:rgba(217,108,63,.25)">a list of other people's homes</span>, kept in public, updated by hand — and reading one felt like being handed a map by someone who had walked the ground.</p>
+  <div style="position:absolute;top:118px;left:230px;display:flex;align-items:center;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;box-shadow:0 4px 16px rgba(28,27,26,.14);padding:3px;gap:1px">
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#1C1B1A;cursor:pointer" title="Bold — ⌘B">B</span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;font-style:italic;color:#1C1B1A;cursor:pointer" title="Italic — ⌘I">I</span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;text-decoration:underline;text-underline-offset:2px;color:#1C1B1A;cursor:pointer" title="Underline — ⌘U">U</span>
+    <span style="width:1px;height:16px;background:#E7E2DB;margin:0 3px"></span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer" title="Link — ⌘K"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;opacity:.35" title="Remove link — disabled, selection has no link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><line x1="3" y1="3" x2="21" y2="21"></line></svg></span>
+  </div>
+  <div style="height:36px"></div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">FIVE ACTIONS, NOTHING ELSE ⚑ · REMOVE LINK IS DISABLED AT 35% WHEN THE SELECTION CARRIES NO LINK · ⌘B ⌘I ⌘U ⌘K WORK WITHOUT THE TOOLBAR</span>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:960px"><strong style="font-weight:600">The toolbar is editor chrome, not canvas content</strong> — white surface, editor border, 10 px radius, md shadow, five 30 px targets. It centres over the selection, 8 px above; when the selection starts in the top 48 px of the canvas it flips below. B, I and U are letterform glyphs in the canvas serif so they read as text marks; Link and Remove link are stroke icons behind a hairline divider. <strong style="font-weight:600">Remove link renders always and disables when the selection has no link</strong> — a five-slot toolbar that never changes width is the whole point of a fixed vocabulary.</p>
+</section>
+
+<section data-screen-label="P0-1 toolbar over headline" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TOOLBAR OVER A HEADLINE · SAME TOOLBAR, SAME SIZE ⚑ · BOLD ACTIVE ON THE SELECTION · A MARK ALREADY PRESENT SHOWS AS A PRESSED CHIP</div>
+<div style="width:960px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:88px 96px 64px;position:relative">
+  <h2 style="margin:0;font-family:Georgia,serif;font-size:44px;font-weight:700;line-height:1.1;letter-spacing:-0.03em;color:#232019;max-width:680px">The slow return of the <span style="background:rgba(217,108,63,.25)">personal homepage</span></h2>
+  <div style="position:absolute;top:26px;left:388px;display:flex;align-items:center;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;box-shadow:0 4px 16px rgba(28,27,26,.14);padding:3px;gap:1px">
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;font-weight:700;color:#C2381F;background:#FFEDE8;cursor:pointer" title="Bold — active on this selection">B</span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;font-style:italic;color:#1C1B1A;cursor:pointer">I</span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:15px;text-decoration:underline;text-underline-offset:2px;color:#1C1B1A;cursor:pointer">U</span>
+    <span style="width:1px;height:16px;background:#E7E2DB;margin:0 3px"></span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span>
+    <span style="width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;opacity:.35"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><line x1="3" y1="3" x2="21" y2="21"></line></svg></span>
+  </div>
+  <div style="height:28px"></div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">HEADLINES GET THE SAME FIVE ACTIONS (FR-D4) · BOLD ON A HEADING RENDERS AS THE PACK'S HEAVIER HEADING WEIGHT, NEVER FAUX-BOLD ⚑</span>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:960px"><strong style="font-weight:600">An active mark shows as a pressed chip</strong> — selected-tint fill, strong-accent glyph, the same treatment as every pressed state in the S4 chrome. Clicking a pressed chip removes the mark. The toolbar does not scale with the text it floats over; a 44 px headline and 15 px meta get the identical 36 px bar.</p>
+</section>
+
+<section data-screen-label="P0-1 link popover states" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">THE LINK POPOVER · LEFT: SEARCH STATE, QUERY "ARCH" · RIGHT: FILLED STATE, EDITING AN EXISTING LINK RE-OPENS THIS PRE-FILLED ⚑</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+  <div style="width:340px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:10px;display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+    <div style="height:36px;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.35);display:flex;align-items:center;gap:8px;padding:0 10px;background:#FFFFFF">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+      <span style="font-size:13px;color:#1C1B1A">arch<span style="display:inline-block;width:1.5px;height:14px;background:#FF5941;vertical-align:-2px;margin-left:1px"></span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="padding:6px 8px 3px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">PAGES</span>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#F7F5F2;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span style="font-size:13px;font-weight:500;flex:1">The <mark style="background:transparent;color:inherit;font-weight:700">arch</mark>ive</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">/archive/</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="padding:6px 8px 3px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">POSTS</span>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg><span style="font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Notes on a 30-year-old <mark style="background:transparent;color:inherit;font-weight:700">arch</mark>ive</span><span style="font-size:10.5px;color:#6E6A64;flex-shrink:0">Jul 28</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg><span style="font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">The <mark style="background:transparent;color:inherit;font-weight:700">arch</mark>itecture of a quiet web</span><span style="font-size:10.5px;color:#6E6A64;flex-shrink:0">Jun 12</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="padding:6px 8px 3px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">TAGS</span>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4L11 3.8A2 2 0 0 0 9.6 3.2H4a1 1 0 0 0-1 1v5.6c0 .5.2 1 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8z"></path><circle cx="7.5" cy="7.5" r="1"></circle></svg><span style="font-size:13px;font-weight:500;flex:1"><mark style="background:transparent;color:inherit;font-weight:700">Arch</mark>ive</span><span style="font-size:10.5px;color:#6E6A64">41 posts</span></div>
+    </div>
+    <div style="height:1px;background:#E7E2DB;margin:2px 4px"></div>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="padding:6px 8px 3px;font-size:10.5px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">PORTAL ACTIONS</span>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 8px 6px">
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer">Sign up</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer">Sign in</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer">Account</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer">Upgrade</span>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#6E6A64;padding-top:2px">SITE</span>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span style="height:26px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>Ghost search</span>
+      </div>
+    </div>
+    <div style="padding:4px 8px 2px;display:flex;align-items:center;gap:7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg><span style="font-size:11.5px;color:#6E6A64">Paste a URL or type an email address to link outside the site</span></div>
+  </div>
+
+  <div style="width:340px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:10px;display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #E7E2DB;border-radius:8px;background:#F7F5F2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+      <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0"><span style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">What we lost when blogrolls died</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">POST · /blogrolls/</span></div>
+      <span style="font-size:12px;font-weight:500;color:#E84B34;cursor:pointer;flex-shrink:0">Change</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:0 2px;cursor:pointer">
+      <span style="width:16px;height:16px;border-radius:4px;background:#FF5941;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span style="font-size:13px;font-weight:500">Open in new tab</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:0 2px">
+      <span style="font-size:11px;font-weight:600;color:#6E6A64;letter-spacing:0.05em">REL</span>
+      <div style="display:flex;gap:6px">
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border-radius:24px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#FFEDE8;color:#C2381F;font-weight:500;cursor:pointer">nofollow</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;cursor:pointer">noreferrer</span>
+        <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid #E7E2DB;border-radius:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;cursor:pointer">sponsored</span>
+      </div>
+    </div>
+    <div style="height:1px;background:#E7E2DB;margin:0 2px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px 2px">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:#C2381F;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><line x1="3" y1="3" x2="21" y2="21"></line></svg>Remove link</span>
+      <span style="height:28px;display:inline-flex;align-items:center;padding:0 14px;background:#C2381F;color:#FFFFFF;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer">Done</span>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:300px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">POPOVER 340 · REPLACES THE TOOLBAR IN PLACE, SAME ANCHOR · SEARCH IS LIVE ACROSS PAGES, POSTS, TAGS AND AUTHORS · GROUPS WITH NO MATCH ARE OMITTED, NEVER SHOWN EMPTY ⚑ · AUTHORS GROUP APPEARS WHEN A NAME MATCHES (NONE MATCHES "ARCH") · PORTAL ACTIONS ALWAYS LAST, ALWAYS ALL FOUR · PASTED URL OR TYPED EMAIL BYPASSES SEARCH AND SHOWS ONE "LINK TO …" ROW</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">FILLED STATE: TARGET ROW WITH CHANGE · OPEN IN NEW TAB (CHECKBOX, DEFAULT OFF; ON BY DEFAULT FOR EXTERNAL URLS ⚑) · REL ROW OF THREE TOGGLES, DEFAULT ALL OFF · REMOVE LINK STRIPS THE MARK AND CLOSES · DONE COMMITS · ESC CLOSES WITHOUT COMMITTING A TARGET CHANGE</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">One popover, two states, and editing re-opens the same popover pre-filled</strong> — there is no separate "edit link" surface. The search state is the A1 dropdown panel grammar at 340: grouped rows, matched substrings bold, group labels in 10.5 px caps. Portal actions are chips, not rows, because they are four constants, not search results. <strong style="font-weight:600">A fifth chip, Ghost search, sits under a SITE label</strong> (Part B·B1) — it points any existing button or link at Ghost’s own search, so opening search never needs a new control or a new design. <strong style="font-weight:600">The Rel toggles write real <code style="font-family:'JetBrains Mono',monospace;font-size:11px">rel</code> attributes</strong> and nothing else; they are mono-labelled because they are code values shown honestly, the one place the library shows a literal.</p>
+</section>
+
+<section data-screen-label="P0-1 plain-text-locked" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">PLAIN-TEXT-LOCKED · A TEXT PROP BOUND TO A GHOST ADMIN SETTING NEVER SHOWS THE TOOLBAR ⚑ · SELECTION STILL WORKS, MARKS DO NOT</div>
+<div style="width:960px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;padding:56px 96px;position:relative;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:7px;background:#D96C3F"></span><span style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#232019;position:relative"><span style="background:rgba(217,108,63,.25)">Orbit Weekly</span></span>
+    <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:24px;box-shadow:0 4px 16px rgba(28,27,26,.10);margin-left:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="font-size:11px;font-weight:500;color:#6E6A64">Site title — plain text, set in Ghost</span></span>
+  </div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">THE SELECTION SHOWS, THE TOOLBAR DOES NOT · IN ITS PLACE, THE LOCK PILL NAMES THE BINDING · EDITING THE TEXT EDITS THE GHOST SETTING ⚑</span>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:960px"><strong style="font-weight:600">Bound text is plain-text-locked by construction</strong>: site title, site description, member counts, author names — anything whose value lives in Ghost Admin or Ghost data. Selecting it shows the selection and a lock pill where the toolbar would sit, naming the binding. The pill is informational, not a control; ⌘B on locked text does nothing and nothing flashes.</p>
+</section>
+
+<section data-screen-label="P0-1 mobile 390" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">AT 390 · THE TOOLBAR DOCKS TO THE FOOT OF THE CANVAS, FULL WIDTH, ABOVE THE KEYBOARD ⚑ · NEVER FLOATS OVER A SELECTION IT WOULD COVER</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+  <div style="width:390px;height:520px;background:#FBF9F5;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;flex-shrink:0">
+    <div style="flex:1;padding:40px 24px 0">
+      <span style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.12;letter-spacing:-0.02em;color:#232019;display:block">The slow return of the <span style="background:rgba(217,108,63,.25)">personal homepage</span></span>
+      <div style="height:14px"></div>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#6B6459">Why writers are leaving the feed — and coming home to a page of their own.</p>
+    </div>
+    <div style="height:52px;background:#FFFFFF;border-top:1px solid #E7E2DB;display:flex;align-items:center;justify-content:space-around;padding:0 20px;flex-shrink:0">
+      <span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px;font-weight:700;color:#1C1B1A">B</span>
+      <span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px;font-style:italic;color:#1C1B1A">I</span>
+      <span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px;text-decoration:underline;text-underline-offset:2px;color:#1C1B1A">U</span>
+      <span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span>
+      <span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;opacity:.35"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1C1B1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path><line x1="3" y1="3" x2="21" y2="21"></line></svg></span>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">DOCKED BAR 52 HIGH · FIVE 44 PX TARGETS, EVENLY SPREAD · APPEARS WITH THE SELECTION, LEAVES WITH IT · THE LINK POPOVER OPENS AS A BOTTOM SHEET AT 390, SAME CONTENT, SAME ORDER</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">KEYBOARD ACCESS, ALL WIDTHS: ⌘B BOLD · ⌘I ITALIC · ⌘U UNDERLINE · ⌘K OPENS THE LINK POPOVER (PRE-FILLED IF THE SELECTION HAS A LINK) · ⌘K ON A LINKED SELECTION THEN ⌫ ON THE TARGET = REMOVE · TOOLBAR ITSELF IS REACHABLE: ALT-F10 FOCUSES IT, ARROWS MOVE, ESC RETURNS TO THE TEXT</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">At 390 the floating bar would fight the OS text-selection handles, so it docks</strong> — a 52 px bar pinned to the canvas foot, above the keyboard, five 44 px targets. Same five actions, same order, same disabled rule. The link popover becomes a bottom sheet with identical content.</p>
+</section>
+
+<section data-screen-label="P0-1 typed tokens" style="padding:0 56px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6A64">TYPED TOKENS · A FIELD THAT ACCEPTS THEM SHOWS THE EXACT LIST IT ACCEPTS ⚑ · ANYTHING ELSE IN BRACES STAYS LITERAL</div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+  <div style="width:280px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:16px;display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="font-size:12px;font-weight:500;color:#6E6A64">Heading</span>
+      <div style="min-height:34px;border:1px solid #FF5941;border-radius:8px;box-shadow:0 0 0 2px rgba(255,89,65,.25);background:#FFFFFF;padding:7px 10px;font-size:12.5px;line-height:1.5;color:#1C1B1A">Join <span style="background:#EFECE7;border-radius:4px;padding:1px 4px;font-family:'JetBrains Mono',monospace;font-size:11px">{total_members}</span> readers</div>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">On the site: <strong style="font-weight:600;color:#3A3835">Join 1,200+ readers</strong></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64">TOKENS THIS FIELD ACCEPTS</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;background:#FFEDE8;color:#C2381F;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer">{total_members}</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;border:1px solid #E7E2DB;color:#6E6A64;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer">{total_paid_members}</span>
+        <span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;border:1px solid #E7E2DB;color:#6E6A64;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer">{site_title}</span>
+      </div>
+      <span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Three, and only these three. Click one to insert it at the cursor. Member counts arrive rounded from Ghost — 1,200+, 100k+ — so write a sentence that reads with the plus.</span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:#EFECE7;border-radius:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="0.5" fill="#6E6A64"></circle></svg><span style="font-size:11.5px;color:#6E6A64;line-height:1.5">Anything else in braces prints exactly as you typed it — {this} stays {this} on the page.</span></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:340px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">THE LIST IS THE FIELD'S OWN · A FIELD WITH NO TOKENS SHOWS NO ROW AT ALL — THERE IS NO GLOBAL TOKEN VOCABULARY TO LEARN ⚑</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">A TOKEN IS PLAIN TEXT IN A PLAIN-TEXT FIELD, SO THE INLINE TOOLBAR IS UNAFFECTED · TOKENS RESOLVE SERVER-SIDE · A TOKEN WITH NOTHING BEHIND IT PRINTS NOTHING AND THE SENTENCE MUST STILL READ — THE FIELD'S HELPER SAYS SO WHERE THAT IS POSSIBLE</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">EVERY TOKEN NAMES A REAL GHOST HELPER · {total_members} AND {total_paid_members} ARE GHOST'S OWN, AND BOTH RETURN A ROUNDED HUMAN FIGURE — "1,200+" FOR 1,225, "100K+" HIGHER UP · NEITHER RETURNS AN EXACT NUMBER, SO NO COPY MAY IMPLY ONE · A10'S GHOST-SOURCED STATS READ THE SAME TWO HELPERS</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459;line-height:1.7">⌘K STILL OPENS THE LINK POPOVER HERE ⚑ · PART B · B5 RETIRES CTRL-K ON THE PUBLISHED SITE, WHERE GHOST'S OWN SEARCH BINDS IT · INFLOZO'S EDITOR IS NOT A GHOST SITE, AND NO SECTION DESIGN BINDS IT</span>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.6;color:#6B6459;max-width:1100px"><strong style="font-weight:600">A token the field does not accept must fail visibly, not silently.</strong> Braces are ordinary characters to a user, so the only defence is showing the accepted list beside the field and letting everything else through untouched. The chips insert; they do not validate after the fact.</p>
+</section>
+</x-dc>
+</body>
+</html>

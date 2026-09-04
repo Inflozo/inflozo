@@ -79,7 +79,7 @@ STEPS = [
   'Four rulings in \u00a7A11 of the decisions file (R-76 \u2026 R-79); prd.md FR-D1, FR-J7 and FR-J9 '
   'moved.',
   'Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per '
-  'undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count). A8 came out of the step\u2019s own stress test: the export draws the editor at 1440 and '
+  'undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count) \u2014 all run, export landed 2026-09-04, \u00a7A15 verified, A9 drafted for the misses. A8 came out of the step\u2019s own stress test: the export then drew the editor at 1440 and '
   'NOWHERE ELSE, so R-76\u2019s tablet half and the 200%-zoom floor were both prose with no frame '
   'behind them.', None),
  ('s5b', '5b', 'Static prototype', 'done',
@@ -93,9 +93,9 @@ STEPS = [
   'Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and '
   'never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification '
   'in a note beside them, and the plan limits are Appendix F.1\u2019s table beside the frame. ITS '
-  'FRAMES ARE NEVER WIRED \u2014 that was tried and reverted; the clickable build is 5c. Appendix '
-  'A\u2019s Claude Design prompts had NOT been run when it was built, so a surface with no frame says '
-  'so and shows nothing.',
+  'FRAMES ARE NEVER WIRED \u2014 that was tried and reverted; the clickable build is 5c. The Appendix '
+  'A prompts ran and their export landed on 2026-09-04, so the pages that said \u201cnot drawn\u201d now lift '
+  'the D canvases.',
   'A walkable static prototype of the product, and <b>R-75\u2019s gate: the owner walking it is what '
   'unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end and '
   'the date written on the line under build-sequence.md step 5b, The walk, which is his to write; notes '
@@ -113,12 +113,14 @@ STEPS = [
   'lifted from the export and patched with links and hooks on the elements it drew. What behaves, read '
   'from the build: menus, popovers and sheets open from the control that raises them and close on Esc, '
   'their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn '
-  'selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and '
-  'the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing '
-  'the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: '
-  'the on-section design nav and the backup gate (no frame \u2014 prompts A5 and A1), the six-step first deploy, '
-  'the wrong-mechanism frames held out or shown as drawn until A7 runs (\u00a7A12 decision 6), and the '
-  'states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
+  'selected look; the FIRST DEPLOY WALKS ALL SIX STEPS since the Appendix A export of 2026-09-04 \u2014 the '
+  'safety-net offer and its declined path, the backup gate with its ghost-backup shortcut, pre-flight with the '
+  'drift report, the snapshot gate, ship, live, and Deploy only ends on its own drawn ending \u2014 later deploys '
+  'walk four; history pins; the dashboard sheets open; the editor carries the complete switcher, the canvas '
+  'markers, the skip link and the 834/720 layouts; P opens Preview, Esc leaves it, L hides Layers, ] and [ '
+  'step the ring, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in '
+  '<code>_screens.html</code> with the reason: detail cards with no drawn trigger, the two wrong-mechanism '
+  'frames A7 left (B22, B18 \u2014 prompt A9), and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files '
   'that are not product screens.',
   'The product as a clickable application \u2014 the artifact that answers <b>is this any good</b>, where '
   '5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to '
@@ -268,14 +270,13 @@ ACTIONS = [
   'advance. Then the loop of build-sequence.md '
   'step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase '
   '(R-81), review and test on the real infrastructure (R-82), every question to you in plain English with '
-  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'),
- ('now', 'The Appendix A Claude Design prompts \u2014 two sessions, in parallel with step 6',
-  'Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, '
-  'extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the '
-  'count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They '
-  'block nothing. Export the whole project ONCE after the second session, drop it into the export '
-  'directory, run the runbook above once, then both generators: the '
-  'pages that say \u201cnot drawn\u201d lift the new frames.'),
+  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'), ('soon', 'One Claude Design session is owed \u2014 prompt A9, and you decide which half',
+  'The Appendix A export landed 2026-09-04 (the previous issue is InflozoOld/, for diffing only), the '
+  'runbook ran once, and both builds lift the D canvases. reconcile-designs-decisions.md \u00a7A15 verified '
+  'every prompt frame by frame and wrote A9 for the misses: items 1\u20139 are misses of this export, the '
+  'optional second half the frames the UX pass had deferred. Decide in \u00a7A15 \u2014 (1) both halves in one '
+  'session, RECOMMENDED, or (2) items 1\u20139 only \u2014 then copy A9 from APPENDIX-A-PROMPTS.html, export '
+  'once after, run the runbook once. It blocks nothing.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

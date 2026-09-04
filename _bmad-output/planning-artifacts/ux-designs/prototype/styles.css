@@ -6,11 +6,17 @@
    rest only in the app frames: --line-faint, --marigold, --sky, --sky-text, --danger and
    --scrim in the S/B/C/M frames, --grey-field and --grey-border in P0-0, --sky-tint in the
    Sidebar Kit's info banner, --danger-tint in B Missing Surfaces (F-110; the check is
-   `grep` over the export, run 2026-09-03). The four font stacks are DESIGN.md's — the
-   export names the families, not the fallback stacks. COMPUTED, not verbatim: only
-   --r-full, which was an invented 9999px and is now an alias of --r-pill (the export's
-   24px) kept solely because the walkthrough's _app.css still names it; drop it when that
-   reference moves to --r-pill.
+   `grep` over the export, run 2026-09-03 and re-run 2026-09-04 against the export the
+   Appendix A sessions produced: every value below still occurs there). The four font
+   stacks are DESIGN.md's — the export names the families, not the fallback stacks.
+   Nothing here is computed: --r-full, the one computed alias, went on 2026-09-04 when
+   nothing in the walkthrough named it any more.
+   TWO TOKEN RULES the 2026-09-04 Calibration Set adds, both transcribed (A7 items 7 and 10):
+   keyboard focus is ONE ring everywhere, 2px solid coral-text #C2381F — the old 2px coral
+   wash at 40% composited to 1.55:1 and is kept for hover and selection only (.landed);
+   and placeholder, hint and mono line-number text is --ink-soft-aa #6B6459, never
+   --ink-faint, which is for rules and dividers, not words. P0-0's greyed control still
+   sets its label in --ink-faint in the export, so .greyed stays a transcription of P0-0.
    Component classes reproduce the construction of the S / B / C / M frames —
    the 220px dashboard rail, the 48px editor top bar, the 240px Layers panel,
    the 280–320px Controls sidebar, hairlines rather than borders, warm shadows. */
@@ -59,14 +65,13 @@
 
   /* shape */
   --r-sm: 8px; --r-thumb: 10px; --r: 12px; --r-lg: 16px; --r-pill: 24px;
-  --r-full: var(--r-pill);     /* computed alias, see the header (F-110) */
 
   /* elevation — warm, cast in the ink colour, never grey-blue */
   --sh-sm: 0 1px 2px rgba(28,27,26,.06);
   --sh-md: 0 4px 16px rgba(28,27,26,.08);
   --sh-lg: 0 12px 40px rgba(28,27,26,.14);
   --sh-hairline: inset 0 0 0 1px rgba(28,27,26,.12);
-  --focus: 0 0 0 2px rgba(255,89,65,.4);
+  --focus: 0 0 0 2px #C2381F;  /* Calibration Set 2026-09-04: one ring everywhere, 7.9:1 on paper (A7 item 7) */
 }
 
 /* ─────────────────────────────────────────────────────────── base */
@@ -87,7 +92,6 @@ svg { flex-shrink: 0; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .soft { color: var(--ink-soft); }
 .softaa { color: var(--ink-soft-aa); }
-.faint { color: var(--ink-faint); }
 .small { font-size: 12px; }
 .helper { font-size: 11px; color: var(--ink-soft-aa); line-height: 1.4; }  /* the designed reason slot; AA ink on the mat (F-057) */
 .panel-label { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
@@ -173,7 +177,7 @@ main { display: block; }
 .avatar.sam { background: #4A3B2F; }
 .appmain { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .topbar { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid var(--line); }
-.search { display: flex; align-items: center; gap: 8px; width: 320px; height: 36px; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 10px; background: var(--surface); font-size: 13px; color: var(--ink-faint); }
+.search { display: flex; align-items: center; gap: 8px; width: 320px; height: 36px; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 10px; background: var(--surface); font-size: 13px; color: var(--ink-soft-aa); }  /* placeholder text: the AA hint colour (A7 item 10) */
 .kbd { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; background: var(--surface); }
 .iconbtn { width: 36px; height: 36px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; position: relative; }
 .iconbtn:hover { background: rgba(28,27,26,.05); }
@@ -356,7 +360,7 @@ main { display: block; }
 
 /* ──────────────────────────────────── wizard (S8) */
 .rail-steps { display: flex; align-items: center; gap: 0; padding: 18px 28px; border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
-.rstep { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-faint); }
+.rstep { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft-aa); }  /* a not-yet step is hint text, so the AA hint colour (A7 item 10) */
 .rstep .n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
 .rstep.on { color: var(--ink); font-weight: 600; }
 .rstep.on .n { background: var(--ink); border-color: var(--ink); color: var(--surface); }

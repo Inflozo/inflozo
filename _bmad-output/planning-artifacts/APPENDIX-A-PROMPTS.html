@@ -53,8 +53,8 @@ margin:14px 0 8px;font-size:.89rem;line-height:1.55}
 footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}</style>
 <body><div class="wrap">
 <h1>Appendix A — the Claude Design prompts</h1>
-<p class="sub">These draw the parts of Inflozo's own app that Claude Design has not drawn yet, and
-correct the frames it drew wrongly. They live in the UX spine,
+<p class="sub">These drew the parts of Inflozo's own app that Claude Design had not drawn, and
+corrected the frames it drew wrongly; they ran on 2026-09-04 and this page is the record of what was asked. They live in the UX spine,
 <a href="ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md">EXPERIENCE.md</a> → Appendix A, and this page lifts them from it word
 for word. Paste each session's prompts into one Claude Design chat, in the order shown. Tick a card
 when you have run it. Export the whole project once, after Session 2, then run the runbook once.
@@ -63,7 +63,7 @@ Progress is stored in this browser.</p>
 <button class="btn" id="expand">Expand all</button><button class="btn" id="reset">Reset</button></div>
 <p class="note"><b>Running any of these produces a new export, which replaces the repository&#x27;s copy.</b> Two edits live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0&#x27;s per-prop mark allowlist — and a re-export loses them by construction. <b>Follow the export runbook on the build board afterwards:</b> <code>tools/reapply-export-edits.py</code>, then <code>tools/verify-design-pass.py</code>, then the derivations, then <code>tools/doc-audit.py --check</code> twice. The build board is <a href="BUILD-BOARD.html">BUILD-BOARD.html</a>;
 the runbook is the numbered list at its top.</p>
-<div class="gate"><b>They can be run as two Claude Design sessions</b> — <b>A7 together with A8</b> (both correct or extend the editor&#x27;s existing frames and share the focus-ring token), then <b>A1 to A6</b> — and the export runbook above runs <b>once, after the last session</b> — one export of the whole project, dropped into the export directory, is enough; nothing in the repository needs the export between the two sessions, and the runbook is the same work however many prompts preceded it.</div>
+<div class="gate"><b>They can be run as two Claude Design sessions</b> — and were, on 2026-09-04 — <b>A7 together with A8</b> (both correct or extend the editor&#x27;s existing frames and share the focus-ring token), then <b>A1 to A6</b> — and the export runbook above runs <b>once, after the last session</b> — one export of the whole project, dropped into the export directory, is enough; nothing in the repository needs the export between the two sessions, and the runbook is the same work however many prompts preceded it.</div>
 <p class="note"><b>Every session must observe:</b> <b>A literal Ghost Handlebars expression must be written with zero-width entities. A bare <code>{{ … }}</code> is a Claude Design value hole and renders EMPTY.</b></p>
 <h2 class="wave">Session 1 — A7 with A8</h2><p class="why">Both correct or extend the editor&#x27;s existing frames and share the focus-ring token — A8&#x27;s prompt says &quot;Run with A7&quot;. Paste A7 first, then A8, in the same chat.</p><div class="cat" data-cat="A7">
   <div class="chead"><input class="tick" type="checkbox" aria-label="mark A7 done">
@@ -327,7 +327,7 @@ categories or free designs.
 
 A literal Ghost Handlebars expression must be written with zero-width entities. A bare
 {{ … }} is a Claude Design value hole and renders EMPTY.</pre>
-    <button class="btn copy">Copy prompt</button></div></div><h2 class="wave">Session 2 — A1 to A6</h2><p class="why">New canvases, each independent of the others. Paste one at a time, in the order shown.</p><div class="cat" data-cat="A1">
+    <button class="btn copy">Copy prompt</button></div></div><h2 class="wave">Session 2 — A1 to A9</h2><p class="why">New canvases, each independent of the others. Paste one at a time, in the order shown.</p><div class="cat" data-cat="A1">
   <div class="chead"><input class="tick" type="checkbox" aria-label="mark A1 done">
     <span class="step">3</span>
     <span class="cid">A1</span><span class="cname">The first-deploy gates</span>
@@ -711,6 +711,124 @@ total of designs, categories or free designs.
 
 A literal Ghost Handlebars expression must be written with zero-width entities. A bare
 {{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A9">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A9 done">
+    <span class="step">9</span>
+    <span class="cid">A9</span><span class="cname">What the 2026-09-04 export got wrong</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Correct the frames listed below in the Inflozo design project. THE VISUAL TREATMENT OF EACH IS
+RIGHT AND STAYS — same components, same layout, same colour, same density. Only what they SAY
+changes, plus two captions and one text colour. Do not redesign any of them.
+
+1. `S5 Section Picker` S5a and S5c · THE RAIL HEAD. It reads &quot;ALL CATEGORIES 485&quot;. DELETE THE
+   NUMBER — &quot;ALL CATEGORIES&quot; with nothing beside it. A library total is never printed: the library
+   grows monthly (FR-J14) and Appendix H forbids the figure. The per-category counts in the rail
+   (&quot;Heroes 18&quot;) are runtime figures and stay.
+
+2. `Editor Sidebar Kit` · THE INPUTS CAPTION. It reads &quot;inputs — radius 8 · coral caret · focus
+   ring 2px @40%&quot;. The focused input drawn under it already carries the corrected ring; the caption
+   did not follow. It becomes &quot;inputs — radius 8 · coral caret · focus ring 2px solid coral-text
+   #C2381F&quot;.
+
+3. `P0-2 Icon Slot and Picker` · `P0-3 Item List Controls` · `P0-5 Populate From Panel` ·
+   PLACEHOLDER AND HINT COLOUR. These three were not in A7 and still set placeholder and hint text
+   in #A8A29A — &quot;Search 420 icons&quot;, &quot;Search icons&quot;, &quot;+ 3 more rows&quot;, &quot;+ Add post&quot;, &quot;Search posts
+   to add&quot;, &quot;+ 25 more rows&quot;. Apply the Calibration Set&#x27;s rule: #6B6459. Colour only; nothing moves.
+
+4. `B Missing Surfaces` B5c and `D8 Editor Below 1440` D8f · EDITS, NOT CHANGES. The unit is an
+   EDIT (addendum §AD2): &quot;7 unsynced edits will be lost&quot; and &quot;She has edits that never reached the
+   server&quot;. DELETE B5c&#x27;s itemised list (&quot;Home hero — design and two controls · Footer — three link
+   labels · Post template — measure&quot;) — the heartbeat carries a count and nothing else, so the
+   product cannot know it. Keep &quot;They exist only in Rosa&#x27;s browser. We cannot retrieve them from
+   here.&quot; D8g beside it already says &quot;edits&quot; and is the model.
+
+5. `D8 Editor Below 1440` D8b · THE CAPTION. It says a reader of the frame would apply &quot;the 44px
+   rules and the below-720 notice&quot;. There is no below-720 notice: the Small Screen Notice fires on
+   a COARSE POINTER at a small viewport (D4f), and the width in the ruling is 1024, not 720. The
+   caption becomes &quot;the 44px rules and the small-screen notice&quot;.
+
+6. `D5 Canvas Markers and Template Switcher` D5b · ONE FILE, TWO TEMPLATES. The routes-manager
+   example &quot;Membership landing · custom-membership.hbs&quot; takes the filename the Membership group&#x27;s
+   own Signup template ships as (B19, D5f). Rename the example: &quot;Landing · custom-landing.hbs&quot;.
+
+7. `S12 Billing` S12a, S12b · `M5 Pricing` at 1440 · THE STORAGE ROW. Free&#x27;s 100 MB storage cap
+   appears only on M5&#x27;s 390 frame. Add &quot;Asset storage · 100 MB · 5 GB&quot; to S12b&#x27;s and M5&#x27;s
+   comparison tables, and print it wherever S12a prints the Free plan&#x27;s limits. Appendix F.1 is the
+   only definition: Free 1 project · 1 site · 100 MB · last 3 versions; Pro 25 · 10 · 5 GB · last
+   10; 10 MB per upload on both.
+
+8. `S9 Routes` S9a · THE YAML PANE AND THE CUSTOM ROUTES. Delete the rows &quot;/ : home&quot; and
+   &quot;/subscribe/ : members-signup&quot; from the Custom routes list AND from the YAML. A membership page
+   emits NO route — it is custom-{name}.hbs, bound from Ghost&#x27;s page editor (B19) — and a routes:
+   entry for / removes the index collection and breaks /page/2/. The YAML opens with the index
+   collection, ALWAYS first, ahead of any custom collection:
+     collections:
+       /:
+         permalink: /{slug}/
+         template: index
+   then /articles/, /tutorials/, /notes/ as drawn. S9c: &quot;Posts per page follows the home feed&#x27;s
+   Count control — 10 right now&quot; becomes &quot;Posts per page is your theme setting — 12 right now. A
+   collection can set its own limit here.&quot; and the Published date condition offers a relative form
+   first — &quot;in the last 30 days&quot; (now-30d) — with the absolute date second.
+
+9. `B Missing Surfaces` B22 · REDESIGN PROPOSALS (ruling R-78, FR-C7). Held out of the walk until
+   A7 ran, but never in A7. Keep the card, the NOW / PROPOSED pairing and the sentence argued from
+   the user&#x27;s own data. What changes: not four per-section swaps but 2–3 WHOLE-SITE proposals, each
+   a starter × Style Pack combination rendered on the user&#x27;s real content and differing from the
+   others in layout structure, with ONE sentence per proposal arguing from the data (&quot;You have
+   4,100 members and no signup above the fold&quot;). Delete &quot;no tag template, so Ghost falls back to a
+   bare list&quot; — tag.hbs always compiles. It is re-runnable later from the New Project Sheet&#x27;s
+   fourth door (D4a).
+
+OPTIONAL SECOND HALF — RUN ONLY IF THE OWNER HAS TICKED §A15 DECISION 1, OPTION 1.
+
+10. `B Missing Surfaces` B15 · &quot;Creator&quot; → &quot;Publisher or higher&quot;. Ghost&#x27;s 2026 lineup is Starter /
+    Publisher / Business.
+
+11. `S8 Deploy` S8a′ · `S11 Sites` S11a · &quot;download the theme and upload it in Ghost Admin&quot; is
+    wrong: Starter forbids custom themes in Ghost Admin too. The zip still downloads; say where it
+    can go: &quot;Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that
+    allows custom themes.&quot;
+
+12. `B Missing Surfaces` B14b · delete &quot;We snapshot before redeploying, so this is reversible from
+    history.&quot; → &quot;The version you&#x27;re on now stays in history and rolls back in one click.&quot;
+
+13. `B Missing Surfaces` B7 · &quot;on 26 pages&quot; → the unit is templates, and the count is the
+    project&#x27;s own from the switcher (D5b): &quot;on all 9 templates&quot;, and the notice line &quot;Editing a
+    site-wide section changes it on all 9 templates.&quot;
+
+14. `B Missing Surfaces` B18 · keys become dotted namespace.name — member.signup_cta,
+    post.reading_time, archive.empty_heading — and add one error row: a translation containing a
+    brace pair is refused with the reason &quot;Braces would break every page of your site&quot; (FR-Q8: a
+    malformed interpolation token is a whole-site 500). Keep the RTL note.
+
+15. `B Missing Surfaces` B8 · delete the &quot;Keep Free designs only&quot; scope (ruling R-77). Add a second
+    radio-card group ABOVE the existing scope group, titled &quot;Re-roll what&quot;: Style Pack · Designs ·
+    Both (FR-D17). The existing group is &quot;where&quot;; this one is &quot;what&quot;.
+
+16. `B Missing Surfaces` B4a · delete the &quot;Body&quot; block-type menu: the toolbar is bold · italic ·
+    underline · link, and Remove link when a link is selected (P0-1 supersedes B4a). B4b&#x27;s link
+    entry gains &quot;Open in new tab&quot; and a rel row (FR-D9).
+
+17. `B Missing Surfaces` B20 · `S11 Sites` S11d · THREE credentials — Admin API key, Content API
+    key, Staff Access Token — each present or absent with one line saying what it enables; the
+    token addable and removable at any time. Delete B20&#x27;s grantable scopes: Ghost fixes an
+    integration&#x27;s permissions and nothing can be granted. The site URL is read-only text, never a
+    field — a domain move is disconnect and reconnect.
+
+18. `B Missing Surfaces` B6 · add the fifth state, no local storage, with the label &quot;Syncing every
+    change to the cloud&quot; — because a false &quot;Saved on this device&quot; is the one thing this indicator
+    must never say (FR-D10).
+
+DO NOT TOUCH THE FRAME CAPTIONS that record settings snapshots (&quot;drawn at padding …&quot;): ruling R-73.
+VOICE: PRD Appendix H. Errors are human and name the fix. Billing stays serious.
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.
+
+19. `D1 First-Deploy Gates` D1b · WHAT THE TOKEN IS FOR. The offer says the token is for &quot;reading your current theme, and reading routes.yaml&quot;. Reading routes.yaml needs no token — the integration key already reads it (MEASUREMENTS §37) — and what the token unlocks is UPLOADING routes.yaml (FR-I4) and READING the live theme for the snapshot and the drift report (FR-J13, FR-J16). Say those two, in those words; D1c&#x27;s decline copy already has it right.
+20. `D8 Editor Below 1440` D8c · THE SKIP LINK&#x27;S TARGET. The drawn link points at `#d8-canvas` and nothing in the file carries that id, so the frame&#x27;s own link is dead. Give the canvas container the id the link names; the product&#x27;s skip link is implemented by the story, but the frame should not contradict itself.</pre>
     <button class="btn copy">Copy prompt</button></div></div>
 <footer>Generated from <code>tools/appendix-a-prompts.py</code>. Every prompt, the export warning and
 the Handlebars line are extracted from <code>ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md</code> at generation time and

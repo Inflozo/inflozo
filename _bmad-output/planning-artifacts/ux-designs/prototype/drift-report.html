@@ -1,8 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Drift Report
-  FRAME    : B Missing Surfaces.dc.html — B7   (derived from the lifts on this page — build.py asserts the line below agrees)
-  DECLARED : NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7's Layers row for the file list
+  FRAME    : D3 The Drift Report.dc.html — D3a Drift found, D3b Could not verify, D3c No drift   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : D3 The Drift Report.dc.html — D3a drift found · D3b could not verify · D3c no drift
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · FR-J16
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -23,59 +23,194 @@
 <header class="proto">
   <a href="index.html">← All surfaces</a>
   <h1 class="name">Drift Report</h1>
-  <span class="frame">NOT DRAWN → Appendix A prompt A3. Inherits the Pre-flight step card and B7's Layers row for the file list</span>
+  <span class="frame">D3 The Drift Report.dc.html — D3a drift found · D3b could not verify · D3c no drift</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · FR-J16</span>
-  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#fail-open">It fails open</a><a href="#rows">The row it inherits</a></nav>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#stops">Drift found — the deploy stops</a><a href="#fail-open">It fails open</a><a href="#no-drift">No drift</a></nav>
 </header>
 
 <nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Not a step in any journey or flow</span><span class="tstep">Reached from the surfaces that link to it, and from <a href="index.html">the index</a>.</span></div>
 </nav>
-<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#fail-open">It fails open<span class="k">D3b</span></a><a class="idxrow" href="#rows">The row it inherits<span class="k">B7</span></a></div></nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#stops">Drift found — the deploy stops<span class="k">D3a</span></a><a class="idxrow" href="#fail-open">It fails open<span class="k">D3b</span></a><a class="idxrow" href="#no-drift">No drift<span class="k">D3c</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>Drift Report</h2><p>Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and compares it against what it last deployed there. If anything differs, <b>the deploy stops</b>. Rows are grouped Changed / Added / Removed and — critically — <b>each is named by the user&rsquo;s own layer name</b> ("Home hero", "Three Column footer") with the raw filename only as small mono text beneath. Never a raw path as the primary label. Two actions: <b>Download the live theme first</b> (offered before the destructive one) and <b>Overwrite and ship anyway</b> — ink, not danger, because it is a deliberate choice.</p></div><div class="nodraw owed"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A3 (frames D3a, D3b, D3c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="fail-open"><h2>It fails open, and it never asserts drift without two manifests</h2><p>Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</p></div><div class="section-head" id="rows"><h2>The row component it inherits</h2><p class="frame-cap">B7 · layers rows</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="B Missing Surfaces — B7 · #7"><div style="width:340px;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:12px;box-shadow:0 1px 2px rgba(28,27,26,.06);padding:14px;display:flex;flex-direction:column;gap:12px">
+<div class="lifted"><p class="frame-cap">D3a · drift found · the deploy stops — step 2 of 4 · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="D3a · drift found · the deploy stops — step 2 of 4 · 1440"><div data-screen-label="D3a Drift found" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="height:48px;border-bottom:1px solid #E7E2DB"></div>
+        <div style="flex:1;display:flex">
+          <div style="width:240px;border-right:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div></div>
+          <div style="flex:1;background:#EDEAE6;padding:24px 28px 0"><div style="max-width:864px;margin:0 auto;height:100%;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10)"></div></div>
+          <div style="width:280px;border-left:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:52px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div><div style="height:120px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div></div>
+        </div>
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:600px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12.5px;font-weight:600">Layers</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
+          <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#C2381F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">2</span><span style="font-size:11px;font-weight:600">Check</span></span>
+          <div style="flex:1;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Ship</span></span>
+          <div style="flex:1;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">4</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Live</span></span>
         </div>
-        <div style="background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:2px">
-          <div style="display:flex;align-items:center;gap:6px;padding:0 5px 5px">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><path d="M12 3v18"></path><path d="M5 8l7-5 7 5"></path></svg>
-            <span style="font-size:10px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">SITE-WIDE</span>
-            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:9.5px;color:#6B6459">on 26 pages</span>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;line-height:1.2;text-wrap:pretty">Something changed on your site since we last shipped.</span>
+          <span style="font-size:13px;color:#6E6A64;line-height:1.55;text-wrap:pretty">We compare what's live against what we put there. These files are different — someone edited the theme in Ghost, or another tool did.</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            <span style="font-size:13px;font-weight:500">Theme compiled</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1.4s · 2.4 MB</span>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="6" width="18" height="5" rx="1.5"></rect></svg>
-            <span style="font-size:12.5px;flex:1">Announcement</span>
-            <span style="font-size:9px;color:#8A6100">✦</span>
+
+          <div style="display:flex;align-items:center;gap:11px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#FFF4D6"></circle><line x1="12" y1="7.5" x2="12" y2="12.5" stroke="#B87A00" stroke-width="2" stroke-linecap="round"></line><circle cx="12" cy="16" r="1" fill="#B87A00"></circle></svg>
+            <span style="font-size:13px;font-weight:600">Comparing with your live theme</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">5 files differ</span>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="7" rx="1.5"></rect><path d="M7 8.5h4"></path></svg>
-            <span style="font-size:12.5px;flex:1">Header</span>
+
+          <div style="margin-left:31px;border:1px solid #E7E2DB;border-radius:10px;overflow:hidden">
+
+            <div style="display:flex;align-items:center;gap:7px;padding:9px 12px;background:#FBF9F5;border-bottom:1px solid #E7E2DB">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M17 3l4 4-11 11H6v-4L17 3z"></path></svg>
+              <span style="font-size:10px;font-weight:600;color:#8A6100;letter-spacing:0.04em">CHANGED</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6B6459">3</span>
+            </div>
+            <div style="padding:6px;display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="1.5"></rect><path d="M7 10h7"></path><path d="M7 14h4"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                  <span style="font-size:12.5px;font-weight:500">Home hero</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">partials/section-hero-1.hbs</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="5" width="7.5" height="6" rx="1.2"></rect><rect x="13.5" y="5" width="7.5" height="6" rx="1.2"></rect><rect x="3" y="13" width="7.5" height="6" rx="1.2"></rect><rect x="13.5" y="13" width="7.5" height="6" rx="1.2"></rect></svg>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                  <span style="font-size:12.5px;font-weight:500">Latest issues</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">partials/section-postgrid-2.hbs</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17"></path><path d="M3.5 12h17"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                  <span style="font-size:12.5px;font-weight:500">Stylesheet</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">assets/built/screen.css</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:7px;padding:9px 12px;background:#FBF9F5;border-top:1px solid #E7E2DB;border-bottom:1px solid #E7E2DB">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#157A58" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span style="font-size:10px;font-weight:600;color:#157A58;letter-spacing:0.04em">ADDED ON YOUR SITE</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6B6459">1</span>
+            </div>
+            <div style="padding:6px;display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V8.5z"></path><path d="M14 3v5.5h5.5"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                  <span style="font-size:12.5px;font-weight:500">A template Inflozo didn't write</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">custom-longform.hbs</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:7px;padding:9px 12px;background:#FBF9F5;border-top:1px solid #E7E2DB;border-bottom:1px solid #E7E2DB">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C4383C" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span style="font-size:10px;font-weight:600;color:#C4383C;letter-spacing:0.04em">REMOVED FROM YOUR SITE</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6B6459">1</span>
+            </div>
+            <div style="padding:6px;display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="13" width="18" height="6" rx="1.5"></rect><path d="M6.5 16h3"></path><path d="M12 16h3"></path></svg>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                  <span style="font-size:12.5px;font-weight:500">Three Column footer</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6459">partials/section-footer-3.hbs</span>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="13" width="18" height="7" rx="1.5"></rect></svg>
-            <span style="font-size:12.5px;flex:1">Footer</span>
+
+          <div style="display:flex;align-items:center;gap:11px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            <span style="font-size:13px;font-weight:500">routes.yaml is valid</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">pass</span>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:2px">
-          <div style="display:flex;align-items:center;gap:6px;padding:0 5px 5px">
-            <span style="font-size:10px;font-weight:600;color:#6E6A64;letter-spacing:0.04em">THIS PAGE · HOME</span>
-            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-variant-ligatures:none;font-size:9.5px;color:#6B6459">6</span>
+
+        <span style="font-size:12px;color:#6E6A64;line-height:1.55;text-wrap:pretty">Shipping replaces all five with Inflozo's versions. Take a copy of the live theme first if you want to keep those edits.</span>
+
+        <div style="display:flex;align-items:center;gap:10px">
+          <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+          <div style="margin-left:auto;display:flex;gap:10px">
+            <button style="height:40px;padding:0 18px;background:#FFFFFF;color:#1C1B1A;border:1px solid #E7E2DB;border-radius:12px;font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 160ms ease-out" style-hover="background:#F7F5F2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Download the live theme first</button>
+            <button style="height:40px;padding:0 20px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Overwrite and ship anyway</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;font-weight:600;background:#FFEDE8;color:#C2381F">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg>
-            <span style="font-size:12.5px;flex:1">Home hero</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C2381F" stroke-width="1.7" stroke-linecap="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">D3 The Drift Report.dc.html</span></p></div><div class="section-head" id="stops"><h2>What it does, and what the frame keeps</h2><p>Drawn by prompt A3 in the 2026-09-04 export. Before every deploy <b>after</b> the first to a given site, Inflozo reads the live theme and compares it against what it last deployed there; if anything differs, <b>the deploy stops</b>. Rows are grouped Changed / Added on your site / Removed from your site and — critically — <b>each is named by the user&rsquo;s own layer name</b> (Home hero, Latest issues, Three Column footer) with the raw filename only as small mono text beneath; a file Inflozo never wrote is named as exactly that. Never a raw path as the primary label. Two actions besides Cancel: <b>Download the live theme first</b>, offered before the destructive one, and <b>Overwrite and ship anyway</b> — a deliberate choice, so ink and not danger.</p></div><div class="section-head" id="fail-open"><h2>It fails open, and it never asserts drift without two manifests</h2><p>Where the Staff Access Token is absent it cannot read the live theme, so it shows a single sky information row <b>inside</b> the pre-flight list — &ldquo;Couldn&rsquo;t check whether your live theme changed … Shipping anyway&rdquo; — and <b>the deploy continues</b>. A layer <b>rename</b> produces no drift at all, so the list never shows one: nothing on the live site changed, only a filename Inflozo chose.</p></div><div class="lifted"><p class="frame-cap">D3b · couldn&rsquo;t verify · it proceeds — detail at 720</p><div class="liftbox" tabindex="0" role="region" aria-label="D3b · couldn&rsquo;t verify · it proceeds — detail at 720"><div data-screen-label="D3b Could not verify" style="width:720px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+        <div style="width:100%;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:26px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
+            <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#C2381F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">2</span><span style="font-size:11px;font-weight:600">Check</span></span>
+            <div style="flex:1;height:1px;background:#E7E2DB"></div>
+            <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Ship</span></span>
+            <div style="flex:1;height:1px;background:#E7E2DB"></div>
+            <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">4</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Live</span></span>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">Latest issues</span></div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">The list, teased</span></div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#3A3835;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">Signup</span><span style="font-size:9px;color:#8A6100">✦</span></div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:#6B6459;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.04)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.9" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="17" r="1"></circle></svg><span style="font-size:12.5px;flex:1">About, short</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round"><path d="M4 4l16 16"></path><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path></svg></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Pre-flight check.</span><span style="font-size:13px;color:#6E6A64">We compile and test everything before it touches your site.</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:11px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+              <span style="font-size:13px;font-weight:500">Theme compiled</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1.4s · 2.4 MB</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+              <span style="font-size:13px;font-weight:500">Checking your theme (Ghost will love it)</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">0 errors · 0 warnings</span>
+            </div>
+            <div style="display:flex;gap:11px;background:#EAF0FF;border:1px solid #D4E0FA;border-radius:10px;padding:12px 13px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="10" fill="#DDE8FC"></circle><line x1="12" y1="11" x2="12" y2="16.5" stroke="#3155B4" stroke-width="2" stroke-linecap="round"></line><circle cx="12" cy="7.8" r="1" fill="#3155B4"></circle></svg>
+              <div style="display:flex;flex-direction:column;gap:4px;flex:1">
+                <span style="font-size:13px;font-weight:600;color:#2A448C">Couldn't check whether your live theme changed.</span>
+                <span style="font-size:12.5px;line-height:1.55;color:#2A448C;text-wrap:pretty">We need a Staff Access Token from the site Owner or an Administrator to read the live theme, and this project doesn't have one. Shipping anyway.</span>
+                <a href="#" style="font-size:12px;font-weight:500;align-self:flex-start;margin-top:2px">Add the token</a>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+              <span style="font-size:13px;font-weight:500">routes.yaml is valid</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">pass</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;color:#6E6A64">Warnings won't block your deploy.</span>
+            <button style="margin-left:auto;height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Back</button>
+            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg>Ship it</button>
+          </div>
         </div>
-        <div style="border-top:1px solid #E7E2DB;padding-top:10px">
-          <span style="font-size:11px;color:#6E6A64;line-height:1.5">Editing a site-wide section changes it on all 26 pages. We say so the first time, then stop.</span>
+        <span style="font-size:11.5px;color:#6E6A64;line-height:1.55;text-wrap:pretty">The row sits among the passing checks and stops nothing. Sky, not marigold and not danger: this is a check that didn't run, not a check that failed.</span>
+      </div></div><p class="lift-src">lifted from <span class="mono">D3 The Drift Report.dc.html</span></p></div><div class="section-head" id="no-drift"><h2>No drift — one passing row among the others</h2><p>The same weight as &ldquo;Ghost 6.x compatible&rdquo;. Not a badge, not celebrated.</p></div><div class="lifted"><p class="frame-cap">D3c · no drift — detail at 620</p><div class="liftbox" tabindex="0" role="region" aria-label="D3c · no drift — detail at 620"><div data-screen-label="D3c No drift" style="width:620px;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+        <div style="width:100%;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.18);padding:20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+            <span style="font-size:13px;font-weight:500">Checking your theme (Ghost will love it)</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">0 errors · 0 warnings</span>
+          </div>
+          <div style="margin-left:31px;border:1px solid #E7E2DB;border-radius:10px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #E7E2DB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">Ghost 6.x compatible</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #E7E2DB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">Nothing changed on your site since v4</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 13px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">No deprecated helpers</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div>
+          </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div>
+        <span style="font-size:11.5px;color:#6E6A64;line-height:1.55;text-wrap:pretty">The good case is one line among the others, at the same weight. It is not a badge and it is not celebrated.</span>
+      </div></div><p class="lift-src">lifted from <span class="mono">D3 The Drift Report.dc.html</span></p></div>
 </main>
 <footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>

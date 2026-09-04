@@ -28,7 +28,7 @@
   <span class="frame">EXPERIENCE.md § IA → Deploy · J1 step 13</span>
   
 </header>
-<aside class="proto-note">Each stage is announced politely as it starts, and so is the outcome. <b>Nothing blocks on this</b> — the user can keep editing and the notification lands in <a href="notifications.html">Notifications</a> whether or not the tab is still open.</aside>
+<aside class="proto-note">Each stage is announced politely as it starts, and so is the outcome. <b>Nothing blocks on this</b> — the user can keep editing and the notification lands in <a href="notifications.html">Notifications</a> whether or not the tab is still open. <b>S8c greys the Cancel on the uploading card</b> (disabled, 35% opacity) with the reason &ldquo;Once it starts, it finishes&rdquo; &mdash; A7 item 13&rsquo;s second remedy, applied in the 2026-09-04 export. FR-J8 governs — once uploading starts the deploy runs to completion — so the story drops the button (R-80).</aside>
 <nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 14 of 15</span><span class="tstep">← <a href="snapshot-gate.html">Snapshot Gate · step 5</a></span><span class="tstep">next: <a href="deploy-live.html">Deploy Live · step 6</a> →</span></div>
 </nav>
 
@@ -61,7 +61,10 @@
           </div>
           <div style="display:flex;align-items:center">
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">checks passed · 0 errors</span>
-            <button style="margin-left:auto;height:36px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Cancel</button>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <span style="font-size:11.5px;color:#6E6A64">Once it starts, it finishes</span>
+              <button disabled="disabled" aria-disabled="true" style="height:36px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;opacity:.35;cursor:not-allowed">Cancel</button>
+            </span>
           </div>
         </div>
       </div></div><p class="lift-src">lifted from <span class="mono">S8 Deploy.dc.html</span></p></div>

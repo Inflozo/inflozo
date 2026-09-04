@@ -34,9 +34,9 @@
       </div>
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
         <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
-          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+          <div role="searchbox" tabindex="0" aria-label="Search assets" style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
-            <span style="font-size:13px;color:#A8A29A;flex:1">Search assets…</span>
+            <span style="font-size:13px;color:#6B6459;flex:1">Search assets…</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
           </div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
@@ -52,7 +52,7 @@
             <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Illustrations</span>
             <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:32px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;background:#FFFFFF;cursor:pointer;font-size:12.5px;font-weight:500;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">Newest<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
+          <div tabindex="0" role="group" aria-label="Assets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 10px,#DCCFD5 10px 20px);cursor:pointer;position:relative;box-shadow:0 4px 16px rgba(28,27,26,.14)">
@@ -82,18 +82,16 @@
           <span style="font-size:13px;font-weight:600;color:#C2381F;cursor:pointer">View</span>
         </div>
       </div>
-    </div><div id="dropzone" class="overlay sheet-lifted"><div style="width:760px;height:520px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex">
-        <div style="width:170px;border-right:1px solid #E7E2DB;padding:16px 10px;display:flex;flex-direction:column;gap:7px;opacity:.5"><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px"></div></div>
-        <div style="flex:1;padding:14px">
-          <div style="width:100%;height:100%;border:2px dashed #FF5941;border-radius:16px;background:rgba(255,237,232,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+    </div><div id="dropzone" class="overlay sheet-lifted"><div style="flex:1;padding:14px;min-width:0;width:692px;height:392px">
+          <div style="width:100%;height:100%;box-sizing:border-box;border:2px dashed #FF5941;border-radius:16px;background:rgba(255,237,232,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px">
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
               <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Drop images — we'll optimize them ✨</span>
-              <span style="font-size:13px;color:#6E6A64">JPG, PNG, SVG or WebP · up to 10 MB each</span>
+              <button style="height:38px;padding:0 18px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 1px 2px rgba(28,27,26,.06);transition:all 160ms ease-out" style-hover="border-color:#C9C2B8" style-focus="box-shadow:0 0 0 2px #C2381F">Choose files</button>
+              <span style="font-size:13px;color:#6B6459">JPG, PNG, SVG or WebP · up to 10 MB each</span>
             </div>
           </div>
-        </div>
-      </div></div><div id="asset-details" class="overlay sheet-lifted"><div style="width:820px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);display:flex;overflow:hidden;position:relative">
+        </div></div><div id="asset-details" class="overlay sheet-lifted"><div style="width:820px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);display:flex;overflow:hidden;position:relative">
         <div style="flex:1.15;background:#EDEAE6;padding:22px;display:flex;align-items:center;justify-content:center">
           <div style="width:100%;aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 12px,#DCCFD5 12px 24px);box-shadow:0 4px 16px rgba(28,27,26,.12);display:flex;align-items:center;justify-content:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6459;background:rgba(255,255,255,.85);padding:2px 8px;border-radius:5px">hero-shot.jpg</span></div>
         </div>
@@ -123,7 +121,7 @@
             <button style="height:34px;padding:0 13px;background:#FFFFFF;border:1px solid #F5C6C9;color:#C4383C;border-radius:10px;font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 160ms ease-out" style-hover="background:#FDEBEC" data-open="delete-asset" aria-haspopup="true" aria-expanded="false"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg>Delete</button>
           </div>
         </div>
-      </div></div><div id="delete-asset" class="overlay sheet-lifted"><div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
+      </div></div><div id="delete-asset" class="overlay sheet-lifted" data-destructive><div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="width:38px;height:38px;flex-shrink:0;border-radius:50%;background:#FDEBEC;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path></svg></div>
             <div style="display:flex;flex-direction:column;gap:4px">

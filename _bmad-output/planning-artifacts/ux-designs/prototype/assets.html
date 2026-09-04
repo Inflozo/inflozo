@@ -1,8 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Assets
-  FRAME    : S10 Assets.dc.html — S10a Asset library, S10b, S10c, S10d Image details   (derived from the lifts on this page — build.py asserts the line below agrees)
-  DECLARED : S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details
+  FRAME    : S10 Assets.dc.html — S10a Asset library, S10b, S10c, S10d Image details · D8 Editor Below 1440.dc.html — D8d Drop zone   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details · D8 Editor Below 1440.dc.html — D8d the drop zone with a keyboard path
   IMPLEMENTS: EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · J4 step 8
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -23,15 +23,15 @@
 <header class="proto">
   <a href="index.html">← All surfaces</a>
   <h1 class="name">Assets</h1>
-  <span class="frame">S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details</span>
+  <span class="frame">S10 Assets.dc.html — S10a library · S10b drop zone · S10c delete-in-use · S10d details · D8 Editor Below 1440.dc.html — D8d the drop zone with a keyboard path</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Dashboard and account · § State Patterns → Assets · J4 step 8</span>
-  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#drop">Drop zone</a><a href="#drop-fix">The two corrections it is owed</a><a href="#delete">Delete in use</a><a href="#details">Image details</a><a href="#over-quota">Assets — over quota</a></nav>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#drop">Drop zone</a><a href="#drop-fix">The drop zone, with a keyboard path</a><a href="#delete">Delete in use</a><a href="#details">Image details</a><a href="#over-quota">Assets — over quota</a></nav>
 </header>
 
-<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 6 of 8</span><span class="tstep">← <a href="sites.html">Sites — disconnect down to one</a></span><span class="tstep">next: <a href="deploy-history.html">Deploy History — retained, never pruned</a> →</span></div>
+<nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J4 · Downgrade recovery</span><span class="tstep">step 8 of 10</span><span class="tstep">← <a href="sites.html">Sites — disconnect down to one</a></span><span class="tstep">next: <a href="deploy-history.html">Deploy History — retained, never pruned</a> →</span></div>
 </nav>
-<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#drop">Drop zone<span class="k">S10b</span></a><a class="idxrow" href="#drop-fix">The two corrections it is owed<span class="k">F.1 · D8d</span></a><a class="idxrow" href="#delete">Delete in use<span class="k">S10c</span></a><a class="idxrow" href="#details">Image details<span class="k">S10d</span></a><a class="idxrow" href="#over-quota">Assets — over quota<span class="k">not drawn</span></a></div></nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#drop">Drop zone<span class="k">S10b</span></a><a class="idxrow" href="#drop-fix">The drop zone, with a keyboard path<span class="k">D8d</span></a><a class="idxrow" href="#delete">Delete in use<span class="k">S10c</span></a><a class="idxrow" href="#details">Image details<span class="k">S10d</span></a><a class="idxrow" href="#over-quota">Assets — over quota<span class="k">not drawn</span></a></div></nav>
 <main id="main">
 <div class="lifted"><p class="frame-cap">S10a · asset library — one card hovered, WebP toast · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="S10a · asset library — one card hovered, WebP toast · 1440"><div data-screen-label="S10a Asset library" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);display:flex">
       <div style="width:220px;border-right:1px solid #E7E2DB;display:flex;flex-direction:column;padding:24px 12px 16px;flex-shrink:0">
@@ -56,9 +56,9 @@
       </div>
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
         <div style="height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid #E7E2DB">
-          <div style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
+          <div role="searchbox" tabindex="0" aria-label="Search assets" style="display:flex;align-items:center;gap:8px;width:320px;height:36px;border:1px solid #E7E2DB;border-radius:8px;padding:0 10px;background:#FFFFFF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
-            <span style="font-size:13px;color:#A8A29A;flex:1">Search assets…</span>
+            <span style="font-size:13px;color:#6B6459;flex:1">Search assets…</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64;border:1px solid #E7E2DB;border-radius:5px;padding:1px 5px">⌘K</span>
           </div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
@@ -74,7 +74,7 @@
             <span style="font-size:12.5px;font-weight:500;color:#6E6A64;border:1px solid #E7E2DB;border-radius:24px;padding:5px 14px;background:#FFFFFF;cursor:pointer;transition:all 160ms ease-out" style-hover="color:#1C1B1A">Illustrations</span>
             <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:32px;border:1px solid #E7E2DB;border-radius:8px;padding:0 11px;background:#FFFFFF;cursor:pointer;font-size:12.5px;font-weight:500;transition:all 160ms ease-out" style-hover="border-color:#C9C2B8">Newest<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
+          <div tabindex="0" role="group" aria-label="Assets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#EDE4D8 0 10px,#E5DACB 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E7E9E2 0 10px,#DDE0D6 10px 20px);cursor:pointer;transition:box-shadow 160ms ease-out" style-hover="box-shadow:0 4px 16px rgba(28,27,26,.12)"></div>
             <div style="aspect-ratio:4/3;border-radius:10px;background:repeating-linear-gradient(45deg,#E4D9DE 0 10px,#DCCFD5 10px 20px);cursor:pointer;position:relative;box-shadow:0 4px 16px rgba(28,27,26,.14)">
@@ -111,11 +111,23 @@
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             <div style="display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">
               <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Drop images — we'll optimize them ✨</span>
-              <span style="font-size:13px;color:#6E6A64">JPG, PNG, SVG or WebP · up to 30 MB each</span>
+              <span style="font-size:13px;color:#6E6A64">JPG, PNG, SVG or WebP · up to 10 MB each</span>
             </div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="drop-fix"><h2>Two corrections the frame is owed</h2><p><b>The size line says &ldquo;up to 30 MB each&rdquo;. Appendix F.1 caps uploads at 10 MB per file on both plans.</b> And a drop zone with no button cannot be reached by keyboard at all, so it needs a visible <b>&ldquo;Choose files&rdquo;</b> button inside it — both are Appendix A prompt A8, frame D8d, which has not been run.</p></div><div class="section-head" id="delete"><h2>Delete in use</h2><p>Serious voice, and it names every place the image is used.</p></div><div class="lifted"><p class="frame-cap">S10c · delete-in-use — serious, no puns</p><div class="liftbox" tabindex="0" role="region" aria-label="S10c · delete-in-use — serious, no puns"><div style="width:600px;height:520px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
+      </div></div><p class="lift-src">lifted from <span class="mono">S10 Assets.dc.html</span></p></div><div class="section-head" id="drop-fix"><h2>The drop zone, with a keyboard path — and the size line corrected</h2><p>S10b&rsquo;s size line read &ldquo;up to 30 MB each&rdquo; where Appendix F.1 caps uploads at 10 MB per file on both plans, and a drop zone with no button cannot be reached by keyboard at all. Both are corrected in the 2026-09-04 export: S10b above now reads &ldquo;up to 10 MB each&rdquo;, and prompt A8 drew the zone with a <b>Choose files</b> button inside it, below the sparkle line.</p></div><div class="lifted"><p class="frame-cap">D8d · assets drop zone · with a keyboard path · 720</p><div class="liftbox" tabindex="0" role="region" aria-label="D8d · assets drop zone · with a keyboard path · 720"><div data-screen-label="D8d Drop zone" style="width:720px;height:420px;box-sizing:border-box;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);overflow:hidden;display:flex">
+        <div style="width:160px;border-right:1px solid #E7E2DB;padding:16px 10px;display:flex;flex-direction:column;gap:7px;opacity:.5;flex-shrink:0"><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:8px"></div></div>
+        <div style="flex:1;padding:14px;min-width:0">
+          <div style="width:100%;height:100%;box-sizing:border-box;border:2px dashed #FF5941;border-radius:16px;background:rgba(255,237,232,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#E84B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.01em">Drop images — we'll optimize them ✨</span>
+              <button style="height:38px;padding:0 18px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 1px 2px rgba(28,27,26,.06);transition:all 160ms ease-out" style-hover="border-color:#C9C2B8" style-focus="box-shadow:0 0 0 2px #C2381F">Choose files</button>
+              <span style="font-size:13px;color:#6B6459">JPG, PNG, SVG or WebP · up to 10 MB each</span>
+            </div>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">D8 Editor Below 1440.dc.html</span></p></div><div class="section-head" id="delete"><h2>Delete in use</h2><p>Serious voice, and it names every place the image is used.</p></div><div class="lifted"><p class="frame-cap">S10c · delete-in-use — serious, no puns</p><div class="liftbox" tabindex="0" role="region" aria-label="S10c · delete-in-use — serious, no puns"><div style="width:600px;height:520px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
         <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
         <div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px;position:relative">
           <div style="display:flex;gap:12px;align-items:flex-start">

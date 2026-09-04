@@ -74,6 +74,9 @@ COPY = [
     #    31 August substitution missed some, which is standing rule 7 in one line. This one was
     #    also STALE — it still said 34 categories after A23 Search was deleted.
     ('34 CATEGORIES<span>485</span>',         'ALL CATEGORIES<span>ALL DESIGNS</span>'),
+    # ── The Appendix A re-export of 2026-09-04 carried the repo's 'ALL CATEGORIES' but put the
+    #    total back in the span — the fourth time this rule has been walked past (§A15).
+    ('ALL CATEGORIES<span>485</span>',        'ALL CATEGORIES<span>ALL DESIGNS</span>'),
     ('70 Free designs',                       'the free set'),
     # ── Missed by BOTH controls until 2026-09-03, because the regex below required the noun
     #    to abut the number and this one has an adjective between them. Appendix H names the
@@ -119,6 +122,10 @@ def leftovers(raw):
     three fixed breakpoints (390 · 834 · 1440) are excluded by name, because a frame caption reads
     "· 1440" and the next label often begins "Find a section".
 
+    **AND BLIND A FOURTH TIME, 2026-09-04.** The Appendix A re-export kept the repo's "ALL CATEGORIES"
+    label and put the total back AFTER it — "ALL CATEGORIES 485" — and every alternative above wants
+    the figure BEFORE its noun. A figure of library size that follows the noun is now flagged too.
+
     # ponytail: fixed thresholds, not a derived total. Upgrade to reading tools/export-roster.py
     # if a category ever approaches a third of the library, which would mean about eleven
     # categories in total and a very different product.
@@ -128,7 +135,9 @@ def leftovers(raw):
         r'\b(?!390\b|834\b|1440\b)\d{3,4}\+?(?:\s+\w+){0,2}'
         r'\s*(?:designs?|designed sections?|sections?)'                 # designs: >= 100
         r'|\b(?:[4-9]\d|\d{3,4})\s*Free\b'                            # free set: >= 40
-        r'|\b(?:[3-9]\d|\d{3})\s*CATEGOR\w*', t, re.I)]               # categories: >= 30
+        r'|\b(?:[3-9]\d|\d{3})\s*CATEGOR\w*'                            # categories: >= 30
+        r'|\bCATEGOR\w*\s*\d{3,4}\b'                                     # the figure AFTER the noun: "ALL CATEGORIES 485" — the fourth miss, 2026-09-04
+        r'|\bdesigns?\s*(?!390\b|834\b|1440\b)\d{3,4}\b', t, re.I)]      # same shape with the design noun
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. P0's per-prop mark allowlist — §37.7's last open finding, written here on 2026-08-31.

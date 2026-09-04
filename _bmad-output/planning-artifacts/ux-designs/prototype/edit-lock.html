@@ -1,8 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Edit Lock
-  FRAME    : B Missing Surfaces.dc.html — B5a, B5b, B5c   (derived from the lifts on this page — build.py asserts the line below agrees)
-  DECLARED : B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal
+  FRAME    : B Missing Surfaces.dc.html — B5a, B5b, B5c · D8 Editor Below 1440.dc.html — D8g Ship from read-only   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal · D8 Editor Below 1440.dc.html — D8g ship it from a read-only session
   IMPLEMENTS: EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -23,7 +23,7 @@
 <header class="proto">
   <a href="index.html">← All surfaces</a>
   <h1 class="name">Edit Lock</h1>
-  <span class="frame">B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal</span>
+  <span class="frame">B Missing Surfaces.dc.html — B5a read-only bar, B5b request popover, B5c takeover modal · D8 Editor Below 1440.dc.html — D8g ship it from a read-only session</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Editor · flow F2 · FR-D18, addendum.md §AD2</span>
   <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#reader">The reader</a><a href="#holder">The holder</a><a href="#takeover">The takeover</a><a href="#respec">The one deviation</a><a href="#deploy-blocked">Deploy from a read-only session</a></nav>
@@ -31,7 +31,7 @@
 <aside class="proto-note"><b>Rollback and snapshot restore never require the lock</b>, because they redeploy a stored artifact rather than the working document.</aside>
 <nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Flow F2 · The three-party edit-lock choreography</span><span class="tstep">step 1 of 5</span><span class="tstep">next: <a href="edit-lock.html#holder">The holder</a> →</span></div>
 </nav>
-<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reader">The reader<span class="k">B5a</span></a><a class="idxrow" href="#holder">The holder<span class="k">B5b</span></a><a class="idxrow" href="#takeover">The takeover<span class="k">B5c</span></a><a class="idxrow" href="#respec">The one deviation<span class="k">§AD2</span></a><a class="idxrow" href="#deploy-blocked">Deploy from a read-only session<span class="k">not drawn</span></a></div></nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reader">The reader<span class="k">B5a</span></a><a class="idxrow" href="#holder">The holder<span class="k">B5b</span></a><a class="idxrow" href="#takeover">The takeover<span class="k">B5c</span></a><a class="idxrow" href="#respec">The one deviation<span class="k">§AD2</span></a><a class="idxrow" href="#deploy-blocked">Deploy from a read-only session<span class="k">D8g</span></a></div></nav>
 <main id="main">
 <div class="section-head"><h2>One editing context per project — across tabs, browsers and devices</h2><p>The three frames escalate deliberately: <b>a bar, then a popover, then a modal with a danger fill</b>. The interruption grows only as the stakes do. That escalation is the design and it stands.</p></div><div class="section-head" id="reader"><h2>The reader</h2><p>The canvas stays fully legible; the sidebar dims to 55% so controls are <i>visible</i> but nothing responds. The bar names the person, not a role.</p></div><div class="lifted"><p class="frame-cap">B5a · read-only</p><div class="liftbox" tabindex="0" role="region" aria-label="B5a · read-only"><div style="width:560px;height:400px;box-sizing:border-box;background:#F7F5F2;border:1px solid #E7E2DB;border-radius:8px;box-shadow:0 4px 16px rgba(28,27,26,.08);overflow:hidden;display:flex;flex-direction:column">
         <div style="height:38px;flex-shrink:0;background:#EFECE7;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:9px">
@@ -90,7 +90,35 @@
           <span style="flex:1"></span>
           <span style="font-size:11.5px;color:#6E6A64">Or message Rosa</span>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One deviation from B5c, and it is not optional</h2><p>The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — three link labels · Post template — measure&rdquo;. <b>That detail does not exist.</b> The heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and its &ldquo;Or message Rosa&rdquo; escape, and its body becomes: <b>&ldquo;7 unsynced edits will be lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.</p></div><div class="section-head" id="deploy-blocked"><h2>Deploy and export from a read-only session</h2><p>Ship it or Export first prompts a take-over, <b>surfacing &ldquo;X unsaved edits exist elsewhere&rdquo;</b> — so a stale cloud snapshot can never silently ship. Drawn on no frame; it is added to B5&rsquo;s family.</p></div><div class="nodraw state"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper"><b>No prompt owns this state</b>; it is a state of a drawn surface, and step 6 draws it from that surface&rsquo;s frame and <span class="mono">DESIGN.md</span>&rsquo;s component rules.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What it must show is described below.</p></div>
+      </div></div><p class="lift-src">lifted from <span class="mono">B Missing Surfaces.dc.html</span></p></div><div class="section-head" id="respec"><h2>One deviation from B5c, and it is not optional</h2><p>The frame itemises the loss per section — &ldquo;Home hero — design and two controls · Footer — three link labels · Post template — measure&rdquo;. <b>That detail does not exist.</b> The heartbeat carries <span class="mono">unsynced_edits</span> and nothing else; the requester&rsquo;s browser has never seen the holder&rsquo;s journal. The modal keeps its shape, its danger fill and its &ldquo;Or message Rosa&rdquo; escape, and its body becomes: <b>&ldquo;7 unsynced edits will be lost. They exist only in Rosa&rsquo;s browser. We cannot retrieve them from here.&rdquo;</b> Also: B5c says &ldquo;changes&rdquo;; <b>§AD2 says <i>edits</i> is canonical, everywhere</b>.</p></div><div class="section-head" id="deploy-blocked"><h2>Deploy and export from a read-only session — the fourth state</h2><p>Ship it or Export first prompts a take-over, <b>surfacing the unsynced edits that exist elsewhere</b> — so a stale cloud snapshot can never silently ship. Drawn by prompt A8 in the 2026-09-04 export on B5c&rsquo;s shape: danger fill, &ldquo;Or message Rosa&rdquo;, and focus opening on <b>Wait</b>, per the <a href="editor-narrow.html#destructive-confirm">rule D8f draws</a>. It says <i>edits</i>, as §AD2 requires.</p></div><div class="lifted"><p class="frame-cap">D8g · ship it from a read-only session · the fourth lock state · 620</p><div class="liftbox" tabindex="0" role="region" aria-label="D8g · ship it from a read-only session · the fourth lock state · 620"><div data-screen-label="D8g Ship from read-only" style="width:620px;height:420px;box-sizing:border-box;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+          <div style="height:38px;flex-shrink:0;background:#EFECE7;border-bottom:1px solid #E7E2DB;display:flex;align-items:center;padding:0 12px;gap:9px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.7" stroke-linecap="round" style="flex-shrink:0"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 018 0v3"></path></svg>
+            <span style="font-size:12px;color:#3A3835;flex:1"><span style="font-weight:600">Rosa</span> is editing this site — you are reading along</span>
+          </div>
+          <div style="flex:1;display:flex">
+            <div style="width:150px;border-right:1px solid #E7E2DB;padding:14px 10px;display:flex;flex-direction:column;gap:7px"><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#EFECE7;border-radius:8px"></div><div style="height:22px;background:#EFECE7;border-radius:8px"></div></div>
+            <div style="flex:1;background:#EDEAE6;padding:14px"><div style="height:100%;background:#FBF9F5;border-radius:6px"></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+        <div style="width:440px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);overflow:hidden;display:flex;flex-direction:column;position:relative">
+          <div style="padding:20px 22px 14px;display:flex;flex-direction:column;gap:8px">
+            <h3 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.02em">Take over to ship?</h3>
+            <span style="font-size:13px;line-height:1.6;color:#4A453D">Shipping needs the edit lock, and Rosa is holding it.</span>
+          </div>
+          <div style="margin:0 22px;background:#FDECEC;border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:12.5px;font-weight:600;color:#8E2C30">7 unsynced edits exist in Rosa's browser and will be lost.</span>
+            <span style="font-size:11px;color:#A85055;line-height:1.5">We cannot retrieve them from here.</span>
+          </div>
+          <div style="padding:16px 22px 20px;display:flex;align-items:center;gap:9px">
+            <button style="height:36px;padding:0 15px;background:#C4383C;color:#FFFFFF;border:none;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#A82D31">Take over and ship</button>
+            <button style="height:36px;padding:0 15px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:10px;font-size:12.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 0 0 2px #C2381F">Wait</button>
+            <span style="flex:1"></span>
+            <span style="font-size:11.5px;color:#6E6A64">Or message Rosa</span>
+          </div>
+        </div>
+      </div></div><p class="lift-src">lifted from <span class="mono">D8 Editor Below 1440.dc.html</span></p></div>
 </main>
 <footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>

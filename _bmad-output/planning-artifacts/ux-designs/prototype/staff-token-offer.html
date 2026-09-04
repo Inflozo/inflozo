@@ -1,8 +1,8 @@
 <!--
   INFLOZO STATIC PROTOTYPE · step 5b · ruling R-75
   SURFACE  : Staff Token Offer
-  FRAME    : S8 Deploy.dc.html — S8b   (derived from the lifts on this page — build.py asserts the line below agrees)
-  DECLARED : NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b's step card and Connect · Integration's screenshotted step
+  FRAME    : D1 First-Deploy Gates.dc.html — D1b Safety net offer, D1c Safety net declined   (derived from the lifts on this page — build.py asserts the line below agrees)
+  DECLARED : D1 First-Deploy Gates.dc.html — D1b the offer · D1c declined
   IMPLEMENTS: EXPERIENCE.md § IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H
   Every screen below is LIFTED from the design export verbatim (../frames.py) and never redrawn.
   Fixture publication: Orbit Weekly (orbitweekly.com), Maya Chen · Sam Okafor · Rosa Menendez.
@@ -23,70 +23,120 @@
 <header class="proto">
   <a href="index.html">← All surfaces</a>
   <h1 class="name">Staff Token Offer</h1>
-  <span class="frame">NOT DRAWN → Appendix A prompt A1, frames D1b and D1c. Inherits S8b's step card and Connect · Integration's screenshotted step</span>
+  <span class="frame">D1 First-Deploy Gates.dc.html — D1b the offer · D1c declined</span>
   <span class="spacer"></span>
   <span class="frame">EXPERIENCE.md § IA → Deploy · J1 step 10 · FR-C1, FR-C3 · Appendix H</span>
-  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#declined">Declined</a><a href="#inherits">The step card it inherits</a></nav>
+  <nav class="jump" aria-label="Surfaces on this page"><span>On this page:</span><a href="#reach">Whose token, exactly</a><a href="#declined">Declined</a></nav>
 </header>
 
 <nav class="trails" aria-label="Journeys and flows through this surface"><div class="trail"><span class="tl">Journey J1 · Connect → first deploy</span><span class="tstep">step 10 of 15</span><span class="tstep">← <a href="deploy-destination.html">Deploy Destination · step 1 of 6</a></span><span class="tstep">next: <a href="backup-gate.html">Backup Gate · step 3</a> →</span></div>
 <div class="trail"><span class="tl">Flow F3 · The guided routes-upload card</span><span class="tstep">step 4 of 4</span><span class="tstep">← <a href="routes-fallback.html#menu-path">And its Ghost menu path is gone</a></span></div>
+<div class="trail"><span class="tl">Flow F7 · The pre-deploy backup gate</span><span class="tstep">step 4 of 5</span><span class="tstep">← <a href="backup-gate.html#ghostpro">Ghost(Pro) — the honest block</a></span><span class="tstep">next: <a href="deploy-destination.html#first-deploy">And the six-step rail it sits in</a> →</span></div>
 </nav>
-<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#declined">Declined<span class="k">D1c</span></a><a class="idxrow" href="#inherits">The step card it inherits<span class="k">S8b</span></a></div></nav>
+<nav class="proto-note" aria-label="Also on this page"><b>Also on this page</b> — surfaces and states that live over this one: <div class="idxgrid" style="margin-top:8px"><a class="idxrow" href="#reach">Whose token, exactly<span class="k">F-063</span></a><a class="idxrow" href="#declined">Declined<span class="k">D1c</span></a></div></nav>
 <main id="main">
-<div class="section-head"><h2>Staff Token Offer</h2><p>Step 2 of the six-step first deploy. <b>&ldquo;One more step unlocks a safety net — a copy of your current theme before we replace it, plus a check that nothing else has changed it.&rdquo;</b> Then, quieter: this is a staff credential &mdash; <b>every staff user mints their own</b> from their profile page and it carries that user&rsquo;s role (read at docs.ghost.org/admin-api → Staff access tokens: &ldquo;Each user can create and refresh their own token&rdquo;). The safety net needs a role that can read themes and write settings: <b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, Ghost 6.54.1 fixtures.json roles_permissions: Administrator holds <span class="mono">theme: all</span> and <span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the role with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review 2026-09-03). The Owner-only wording in FR-C1/C3 and EXPERIENCE.md is owed the same correction (finding F-063). <b>Two plain buttons, side by side, the same weight</b> — &ldquo;Add the token&rdquo; and &ldquo;Not now&rdquo;. Not now is <b>not</b> a small link. <b>Zero occurrences of &ldquo;Staff Access Token&rdquo; exist anywhere in the export.</b></p></div><div class="nodraw owed"><div class="row gap10" style="margin-bottom:8px"><span class="badge notice">Not drawn</span><span class="helper">This surface has no frame in the export. <b>Appendix A prompt A1 (frames D1b, D1c)</b> will draw it; it has not been run.</span></div><p class="helper">Nothing is drawn here on purpose. A picture invented in this file would be a second interface vocabulary beside the export&rsquo;s, which is the one thing R-74 forbids. What the prompt must produce is described below and in <span class="mono">EXPERIENCE.md</span> Appendix A.</p></div><div class="section-head" id="declined"><h2>Declined — acknowledged once, then never raised again</h2><p>It names exactly three costs — no snapshot, no drift check, manual routes upload — and closes with &ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done something wrong.</b> And the multi-site operator working on a client&rsquo;s site <b>can comply when they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is not a degradation, it is the path.</p></div><div class="section-head" id="inherits"><h2>The step card it inherits</h2><p class="frame-cap">S8b · the checked-row list · 1440</p></div><div class="lifted"><div class="liftbox" tabindex="0" role="region" aria-label="S8 Deploy — S8b ·"><div style="width:640px;flex-shrink:0;background:#F7F5F2;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14);padding:36px;display:flex;justify-content:center">
-        <div style="width:520px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:18px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:11px;font-weight:500;color:#6E6A64">Destination</span></span>
-            <div style="flex:1;height:1px;background:#1FA97A;opacity:.4"></div>
-            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#C2381F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">2</span><span style="font-size:11px;font-weight:600">Check</span></span>
-            <div style="flex:1;height:1px;background:#E7E2DB"></div>
-            <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Ship</span></span>
-            <div style="flex:1;height:1px;background:#E7E2DB"></div>
-            <span style="display:inline-flex;align-items:center;gap:6px;opacity:.55"><span style="width:18px;height:18px;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">4</span><span style="font-size:11px;font-weight:500;color:#6E6A64">Live</span></span>
+<div class="lifted"><p class="frame-cap">D1b · safety net · the offer — step 2 of 6 · 1440</p><div class="liftbox" tabindex="0" role="region" aria-label="D1b · safety net · the offer — step 2 of 6 · 1440"><div data-screen-label="D1b Safety net offer" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="height:48px;border-bottom:1px solid #E7E2DB"></div>
+        <div style="flex:1;display:flex">
+          <div style="width:240px;border-right:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div></div>
+          <div style="flex:1;background:#EDEAE6;padding:24px 28px 0"><div style="max-width:864px;margin:0 auto;height:100%;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10)"></div></div>
+          <div style="width:280px;border-left:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:52px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div><div style="height:120px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div></div>
+        </div>
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      </sc-if>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Destination</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#1FA97A;opacity:.4"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:#C2381F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">2</span><span style="font-size:10.5px;font-weight:600;white-space:nowrap">Safety net</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Backup</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">4</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Check</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">5</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Ship</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">6</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Live</span></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;text-wrap:pretty">One more step unlocks a safety net</span>
+          <span style="font-size:13.5px;line-height:1.6;color:#1C1B1A;max-width:560px;text-wrap:pretty">A copy of your current theme before we replace it, plus a check that nothing else has changed it.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;max-width:600px">
+          <span style="font-size:12.5px;line-height:1.65;color:#6B6459;text-wrap:pretty">This is a Staff Access Token, from the site Owner or an Administrator. Every staff user has one on their own profile, and an Administrator's is enough. <span style="color:#1C1B1A;font-weight:500">It is a full-Administrator credential: anything that user can do in Ghost Admin, this token can do.</span></span>
+          <span style="font-size:12.5px;line-height:1.65;color:#6B6459;text-wrap:pretty">Inflozo uses it for two things only — reading your current theme, and reading routes.yaml. You can remove it at any time.</span>
+        </div>
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;min-width:0">
+            <label style="font-size:12px;font-weight:500;color:#6E6A64" for="d1b-token">Staff Access Token</label>
+            <input id="d1b-token" type="text" placeholder="a1f4c9e07b2d…:6f83b1c4d90e…" style="height:44px;border:1px solid #E7E2DB;border-radius:8px;padding:0 14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#1C1B1A;background:#FFFFFF;box-sizing:border-box;width:100%"></input>
+            <span style="font-size:11px;color:#6E6A64;line-height:1.55">Stored encrypted, and only ever sent to orbitweekly.com.</span>
           </div>
-          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em">Pre-flight check.</span><span style="font-size:13px;color:#6E6A64">We compile and test everything before it touches your site.</span></div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
-              <span style="font-size:13px;font-weight:500">Theme compiled</span>
-              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E6A64">1.4s · 2.4 MB</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:11px">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
-              <span style="font-size:13px;font-weight:500">Checking your theme (Ghost will love it)</span>
-              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#FFF4D6;color:#8A6100;border-radius:24px;padding:2px 8px">0 errors · 2 warnings</span>
-            </div>
-            <div style="margin-left:31px;border:1px solid #E7E2DB;border-radius:10px;overflow:hidden">
-              <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #E7E2DB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">Ghost 6.x compatible</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div><div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #E7E2DB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">Required templates present (index, post, page)</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div><div style="display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #E7E2DB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="font-size:12.5px;font-weight:500;flex:1">No deprecated helpers</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:1px 7px">pass</span></div>
-              <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:#FFFDF6;border-top:1px solid #E7E2DB">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="1.8" stroke-linecap="round" style="margin-top:1px;flex-shrink:0"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.4" fill="#B87A00"></circle></svg>
-                <div style="display:flex;flex-direction:column;gap:3px;flex:1">
-                  <span style="font-size:12.5px;font-weight:600">hero.jpg is 2.1 MB</span>
-                  <span style="font-size:12px;color:#6E6A64;line-height:1.5">Big images slow readers down. We'll convert it to WebP on upload — about 240 KB.</span>
-                </div>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0;margin-top:2px"><polyline points="18 15 12 9 6 15"></polyline></svg>
-              </div>
-              <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid #E7E2DB">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B87A00" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><circle cx="12" cy="17" r="0.4" fill="#B87A00"></circle></svg>
-                <span style="font-size:12.5px;font-weight:500;flex:1">Footer has no navigation links yet</span>
-                <span style="font-size:12px;font-weight:500;color:#C2381F;cursor:pointer">Fix in editor</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.5" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:11px">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E4F5EE"></circle><polyline points="8 12.5 11 15.5 16 9.5" stroke="#1FA97A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
-              <span style="font-size:13px;font-weight:500">routes.yaml is valid</span>
-              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;background:#E4F5EE;color:#157A58;border-radius:24px;padding:2px 8px">pass</span>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:12px;color:#6E6A64">Warnings won't block your deploy.</span>
-            <button style="margin-left:auto;height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Back</button>
-            <button style="height:40px;padding:0 22px;background:#C2381F;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#A82D18"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path></svg>Ship it</button>
+          <div style="width:280px;flex-shrink:0;height:150px;border-radius:10px;background:repeating-linear-gradient(45deg,#F1EDE7 0 10px,#EAE5DE 10px 20px);position:relative;overflow:hidden">
+            <div style="position:absolute;top:12px;left:12px;right:12px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.5;color:#6E6A64;background:#FFFFFF;padding:5px 8px;border-radius:6px">screenshot: the Staff Access Token panel on a staff user's own profile in Ghost Admin</div>
           </div>
         </div>
-      </div></div><p class="lift-src">lifted from <span class="mono">S8 Deploy.dc.html</span></p></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button style="height:38px;padding:0 14px;background:transparent;color:#6E6A64;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:rgba(28,27,26,.05)">Back</button>
+          <div style="margin-left:auto;display:flex;gap:10px">
+            <button style="height:42px;padding:0 22px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background 160ms ease-out" style-hover="background:#33312E">Add the token</button>
+            <button style="height:42px;padding:0 22px;background:#FFFFFF;color:#1C1B1A;border:1px solid #E7E2DB;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 160ms ease-out" style-hover="background:#F7F5F2">Not now</button>
+          </div>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">D1 First-Deploy Gates.dc.html</span></p></div><div class="section-head" id="reach"><h2>Whose token, exactly — the frame has the reach right</h2><p>Step 2 of the six-step first deploy, drawn by prompt A1 in the 2026-09-04 export. It leads with the safety net, names the credential second and says plainly that it is a full-Administrator one. <b>Two plain buttons, side by side, the same weight</b> — Add the token and Not now; Not now is not a small link. It says the token is <b>&ldquo;from the site Owner or an Administrator&rdquo;</b>, which is the right reach: every staff user mints their own from their profile page and it carries that user&rsquo;s role (read at docs.ghost.org/admin-api → Staff access tokens: &ldquo;Each user can create and refresh their own token&rdquo;), and the safety net needs a role that can read themes and write settings — <b>an Administrator&rsquo;s or the Owner&rsquo;s</b> (read in source, Ghost 6.54.1 fixtures.json roles_permissions: Administrator holds <span class="mono">theme: all</span> and <span class="mono">setting: all</span>; Editor holds only browse and read). Inflozo can check the role with <span class="mono">GET /admin/users/me/?include=roles</span> (executed on T1 and T3, review 2026-09-03). Finding F-063 has landed: the PRD now defines &ldquo;the Owner&rsquo;s Staff Access Token&rdquo; as a token of Owner-or-Administrator reach (FR-C1, <i>Why the split</i>, read 2026-09-04) and EXPERIENCE.md&rsquo;s F3 rows say Owner or an Administrator; the frame agrees with both. <b>One sentence on D1b disagrees with D1c:</b> D1b says Inflozo uses the token for &ldquo;two things only — reading your current theme, and reading routes.yaml&rdquo;, while D1c&rsquo;s third cost and FR-I4 say it also <i>uploads</i> routes.yaml. Flagged for the story that builds this step (R-80); nothing here guesses which line moves.</p></div><div class="section-head" id="declined"><h2>Declined — acknowledged once, then never raised again</h2><p>It names exactly three costs — no copy of the current theme, no drift check, routes.yaml by hand — and closes with &ldquo;You can add it any time from Manage keys.&rdquo; <b>Nothing implies the user has done something wrong.</b> The multi-site operator working on a client&rsquo;s site <b>can comply when they hold an Administrator seat there</b>; one with an Editor seat cannot, and for them this is not a degradation, it is the path.</p></div><div class="lifted"><p class="frame-cap">D1c · safety net · declined — step 2 of 6 · 1440 · raised once, never again</p><div class="liftbox" tabindex="0" role="region" aria-label="D1c · safety net · declined — step 2 of 6 · 1440 · raised once, never again"><div data-screen-label="D1c Safety net declined" style="width:1440px;height:900px;background:#F7F5F2;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 12px 40px rgba(28,27,26,.14)">
+      <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="height:48px;border-bottom:1px solid #E7E2DB"></div>
+        <div style="flex:1;display:flex">
+          <div style="width:240px;border-right:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div><div style="height:26px;background:#EFECE7;border-radius:8px"></div></div>
+          <div style="flex:1;background:#EDEAE6;padding:24px 28px 0"><div style="max-width:864px;margin:0 auto;height:100%;background:#FBF9F5;border-radius:6px 6px 0 0;box-shadow:0 4px 16px rgba(28,27,26,.10)"></div></div>
+          <div style="width:280px;border-left:1px solid #E7E2DB;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="height:52px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div><div style="height:120px;background:#FFFFFF;border:1px solid #E7E2DB;border-radius:12px"></div></div>
+        </div>
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(28,27,26,.4)"></div>
+      </sc-if>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;background:#FFFFFF;border-radius:16px;box-shadow:0 12px 40px rgba(28,27,26,.25);padding:26px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:#E4F5EE;display:inline-flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Destination</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#1FA97A;opacity:.4"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;background:#C2381F;color:#FFFFFF;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">2</span><span style="font-size:10.5px;font-weight:600;white-space:nowrap">Safety net</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">3</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Backup</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">4</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Check</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">5</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Ship</span></span>
+          <div style="flex:1;min-width:10px;height:1px;background:#E7E2DB"></div>
+          <span style="display:inline-flex;align-items:center;gap:5px;opacity:.55"><span style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1px solid #C9C2B8;color:#6E6A64;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">6</span><span style="font-size:10.5px;font-weight:500;color:#6E6A64;white-space:nowrap">Live</span></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;text-wrap:pretty">Continuing without the token</span>
+          <span style="font-size:13.5px;line-height:1.6;color:#1C1B1A;max-width:560px;text-wrap:pretty">Deploys work exactly the same. Three things won't be available:</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:13px;display:flex;align-items:center;gap:13px">
+            <span style="width:34px;height:34px;flex-shrink:0;border-radius:10px;background:#F7F5F2;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg></span>
+            <span style="flex:1;font-size:13.5px;line-height:1.5">No copy of your current theme before we replace it</span>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:13px;display:flex;align-items:center;gap:13px">
+            <span style="width:34px;height:34px;flex-shrink:0;border-radius:10px;background:#F7F5F2;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></span>
+            <span style="flex:1;font-size:13.5px;line-height:1.5">No check that the live theme changed since we last shipped</span>
+          </div>
+          <div style="border:1px solid #E7E2DB;border-radius:12px;padding:13px;display:flex;align-items:center;gap:13px">
+            <span style="width:34px;height:34px;flex-shrink:0;border-radius:10px;background:#F7F5F2;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6A64" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
+            <span style="flex:1;font-size:13.5px;line-height:1.5">routes.yaml uploads by hand, with a guided card</span>
+          </div>
+        </div>
+        <span style="font-size:13px;line-height:1.6;color:#6B6459">You can add it any time from <span style="font-weight:600;color:#1C1B1A">Manage keys</span>.</span>
+        <div style="display:flex">
+          <button style="margin-left:auto;height:42px;padding:0 24px;background:#1C1B1A;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 160ms ease-out" style-hover="background:#33312E">Continue<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+      </div>
+    </div></div><p class="lift-src">lifted from <span class="mono">D1 First-Deploy Gates.dc.html</span></p></div>
 </main>
 <footer class="proto" style="position:static">
   <a href="index.html">← All surfaces</a>
