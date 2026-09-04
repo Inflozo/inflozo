@@ -1326,7 +1326,7 @@ the derivations, then `tools/doc-audit.py --check` twice.
 
 **They can be run as two Claude Design sessions** — **A7 together with A8** (both correct or extend
 the editor's existing frames and share the focus-ring token), then **A1 to A6** — and the export
-runbook above runs once after each session, not once per prompt.
+runbook above runs **once, after the last session** — one export of the whole project, dropped into the export directory, is enough; nothing in the repository needs the export between the two sessions, and the runbook is the same work however many prompts preceded it.
 
 Every prompt in this appendix ends with, and every session must observe:
 

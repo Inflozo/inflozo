@@ -249,7 +249,8 @@ ACTIONS = [
   'Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, '
   'extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the '
   'count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They '
-  'block nothing. Run the export runbook above once after each session, then both generators: the '
+  'block nothing. Export the whole project ONCE after the second session, drop it into the export '
+  'directory, run the runbook above once, then both generators: the '
   'pages that say \u201cnot drawn\u201d lift the new frames.'),
  ('soon', 'The Image-focus sweep \u2014 23 categories',
   'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '

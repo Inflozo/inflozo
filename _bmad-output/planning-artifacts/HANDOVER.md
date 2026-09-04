@@ -56,7 +56,7 @@ them.
 a surface names its frame, per R-80 every screen with a walk note carries it as an acceptance criterion.
 (2) **The Appendix A Claude Design prompts**, from `planning-artifacts/APPENDIX-A-PROMPTS.html` — copy
 buttons, extracted from the spine so the page cannot drift: **A7 with A8 as one session, then A1 to A6
-as another**, the export runbook on the board once after each. They block nothing.
+as another**, then one export of the whole project and the board's runbook once. They block nothing.
 
 **Two builds exist, they answer different questions, and neither replaces the other.**
 
