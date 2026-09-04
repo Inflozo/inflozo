@@ -145,6 +145,13 @@ home, not a fresh apply. Counts are executed evidence, never the requirement (st
 *Not touched, and why:* Resend, Dodo and the Ghost servers T1/T3. This story adds no email, no billing call and
 no Ghost call; hitting them would prove nothing about a schema.
 
-*CI:* the `rls` job is added to `.github/workflows/ci.yml` and runs the same one command. It runs for the first
-time on this story's Dev push — the green run is the Review phase's evidence, not something Dev can pre-date.
-`pnpm check` is unaffected: ESLint lints `.ts`/`.tsx`/`.js` only, and nothing this story adds is one.
+*Real GitHub Actions (R-82) — the `rls` job is added to `.github/workflows/ci.yml` and runs the same one
+command. Queried with `GITHUB_TOKEN` after the Dev push:*
+
+| Check | Returned |
+|---|---|
+| run for `acc46ee10b6aae3d74020ead6d8a8b18ba37d5b0` | `CI` — status `completed`, conclusion **success** |
+| its jobs | `check` **success** · `rls` **success** |
+
+So the gate is green on a clean runner, not only on this machine. `pnpm check` is unaffected: ESLint lints
+`.ts`/`.tsx`/`.js` only, and nothing this story adds is one.
