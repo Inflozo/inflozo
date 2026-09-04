@@ -18,7 +18,7 @@
                          data-check-group counts, data-check-needs waits for a group, data-enables wakes a button
      [data-twin]         two drawn states of one control (D2a's pin): click shows the other one
      [data-destructive]  a confirm that opens with focus on its cancelling action (D8f)
-     body[data-small-screen=url]  the editor hands a coarse pointer below 1024 to Small Screen Notice (D4f, R-76)
+     body[data-small-screen=url]  the editor hands a coarse pointer below 834 to Small Screen Notice (D4f, R-76 as amended by R-87)
 
    F-081: what no lifted screen carries is not here — the first cut's design ring, backup gate,
    persistence indicator, inline toolbar, pack crossfade, remix and confetti went with it. */
@@ -298,8 +298,8 @@
   /* ── Small Screen Notice (D4f) · R-76, EXPERIENCE.md § Responsive & Platform ─
      A device test, not a width test: a coarse pointer on a phone lands on the notice; a desktop at
      200% zoom (about 720 CSS px, fine pointer) keeps the editor and reflows (D8b), and so does a
-     tablet — A8 drew the editor at 834 with touch (D8a), so the threshold is the drawn tablet width,
-     not the 1024 floor EXPERIENCE.md § Responsive names (flagged: the two disagree). */
+     tablet — A8 drew the editor at 834 with touch (D8a), so the threshold is the drawn tablet width —
+     834, ruled R-87 (owner, 2026-09-04); EXPERIENCE.md § Responsive names the same number. */
   function needsBigScreen(width, coarse) { return !!coarse && width < 834; }
   window.needsBigScreen = needsBigScreen;
 

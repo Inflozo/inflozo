@@ -193,8 +193,9 @@ window.addEventListener('load', function () {
   $('#pin-on').click();
   check('and back', !$('#pin-off').hidden && $('#pin-on').hidden);
 
-  // 12 · Small Screen Notice fires on a coarse pointer below 1024, never on width alone (R-76, D4f, D8b)
+  // 12 · Small Screen Notice fires on a coarse pointer below 834, never on width alone (R-76 as amended by R-87, D4f, D8a, D8b)
   check('a phone (390, coarse) gets the notice', window.needsBigScreen(390, true) === true);
+  check('just under the tablet width (833, coarse) still gets the notice', window.needsBigScreen(833, true) === true);
   check('a desktop at 200% zoom (720, fine) keeps the editor', window.needsBigScreen(720, false) === false);
   check('a tablet (834, coarse) keeps the editor', window.needsBigScreen(834, true) === false);
 

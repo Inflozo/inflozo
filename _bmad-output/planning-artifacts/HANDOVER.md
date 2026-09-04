@@ -177,7 +177,7 @@ things it found are worth knowing before you touch a UI task:
   drawn at any width but 1440. **They block nothing** — and both builds were made without them, so  they ran on 2026-09-04 and both builds now lift the D canvases; §A15 records what landed.
 
 **Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
-and tablet surface with a designed floor below 1024 px · **R-77** Site Remix drops the drawn "Keep
+and tablet surface with a designed floor below 834 px on a touch device (the width amended from 1024 by R-87, 2026-09-04) · **R-77** Site Remix drops the drawn "Keep
 Free designs only" · **R-78** redesign proposals build FR-C7's whole-site combinations · **R-79**
 pinning's home is the PRD, not `BACKUP-GATE.md`. `prd.md` moved three times, all propagation:
 **FR-D1**, **FR-J7** and **FR-J9**.
@@ -206,7 +206,7 @@ the owner's instruction to clear them before step 5, and R-29's long-outstanding
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **One follow-up prompt is owed — A9** (`EXPERIENCE.md` Appendix A; on `APPENDIX-A-PROMPTS.html`): its first half is the misses of the 2026-09-04 export, its optional second half the frames the UX pass had deferred, and **the owner decides which half runs** (§A15's decision; option 1, both halves in one session, is recommended). It blocks nothing.
+record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **One follow-up prompt is owed — A9** (`EXPERIENCE.md` Appendix A; on `APPENDIX-A-PROMPTS.html`): its first half is the misses of the 2026-09-04 export, its second half the frames the UX pass had deferred, and **the owner ruled on 2026-09-04 that both halves run in one session (R-86)**; the same day he ruled the touch-device threshold at 834 (R-87), so § Responsive, the walkthrough and D8a agree. It blocks nothing.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive

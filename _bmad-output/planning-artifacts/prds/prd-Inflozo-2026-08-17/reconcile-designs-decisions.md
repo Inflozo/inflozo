@@ -1166,7 +1166,7 @@ owner because neither the PRD nor the export settled them; one is architectural.
 
 | # | Ruling | Where it lands |
 |---|---|---|
-| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ⬜ prompt **A4** (frame D4f) draws **Small Screen Notice**; 5b names it and draws nothing (R-74), 5c holds it out until the export carries it (F-090) |
+| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. **Width amended 2026-09-04 by R-87 (§A15):** the threshold is **834** — a coarse pointer below 834 (a phone) gets the notice; a tablet at 834 and above gets the editor as D8a draws it. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ✅ prompt **A4** drew **Small Screen Notice** (D4f, landed 2026-09-04); 5b and 5c lift it, and 5c hands a coarse pointer below 834 to it |
 | **R-77** | **Site Remix drops the drawn "Keep Free designs only" tick-box.** Remix always re-rolls from the whole library; FR-L3's exit sheet catches Pro designs at the exits, which is the mechanism the product already has. `B8` drew an affordance no requirement carries, and the owner declined to adopt it | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-D17 is unaffected** · ⬜ `B8` loses the row (prompt **A7**, item 6's canvas) |
 | **R-78** | **Redesign proposals build FR-C7 as written** — 2–3 **whole-site** starter × Style Pack combinations on the user's real content, which must differ in layout structure. **`B22`'s card, its NOW / PROPOSED pairing and above all its argued-from-your-own-data sentence are kept**, one per combination instead of one per section. Its per-section swap model is not built | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-C7 is confirmed as written** |
 | **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ prompt **A2** (D2a/D2b) draws the pin and its refusal; 5b names them and draws nothing (R-74), 5c holds them out until the export carries them (F-090) |
@@ -1480,12 +1480,19 @@ item 1 removes the figure at the source. Until then the gate is green on a scree
   S11a "download the theme and upload it in Ghost Admin"; B14b "We snapshot before redeploying"
   1 → 1; B7 "on 26 pages" 3 → 3; B18 `read_more` / `min_read` 1 → 1; B8 "Keep Free designs only"
   1 → 1; B4a's "Body" menu 2 → 2; B20's grantable scopes and S11d's editable URL; B6's four states.
-  B17 is completed by D6 and needs nothing. They are A9's **optional second half**, and whether it
-  runs is decision 1.
+  B17 is completed by D6 and needs nothing. They are A9's **second half**, and it runs —
+  decision 1, ruled R-86.
 - **The Index canvases** changed only their totals, which they derive from the export (the
   re-apply script's own note on why that is not a breach).
 
-### Decision for the owner
+### Decisions for the owner — both ruled 2026-09-04
+
+| | Ruling |
+|---|---|
+| **R-86** | **A9 runs whole — both halves in one Claude Design session** (decision 1, option 1). The misses (items 1–9) and the ten deferred frames (items 10–18) are one corrections pass in A7's shape; export once after it, run the runbook once. `EXPERIENCE.md` A9's preamble and its second-half heading say so, and the "unchanged — A9's optional half" rows now read "A9's second half — runs". |
+| **R-87** | **The touch-device threshold is 834, amending R-76's width** (decision 2, option 1): on a **coarse pointer below 834** — a phone — opening a project lands on Small Screen Notice (D4f); a tablet at **834 and above gets the editor as A8 drew it** (D8a); a fine pointer never meets the floor (a desktop at 200 % zoom keeps the editor, D8b). D4f's own caption, "Open this project on a laptop or tablet", already says this, so nothing is added to A9. Propagated the same day: `EXPERIENCE.md` § Foundation, the IA row, the Editor states row, § Responsive & Platform, A9 item 5 · `DESIGN.md` `app-floor` and the accessibility floor · `prd.md` FR-D1 states the device test with no width and is unchanged · `HANDOVER.md` and `build-sequence.md` R-76 summaries · the R-76 row in §A11 · the walkthrough (`app.js` `needsBigScreen`, `build-app.py`, `_app.css`), which already tested 834 and now cites the ruling. |
+
+The two decisions as they were put, kept for the record:
 
 **A second decision for the owner, found while rebuilding the walkthrough on this export.** Two statements in
 `EXPERIENCE.md` disagree on where a touch device stops getting the editor: § Responsive says *below 1024 px*
@@ -1509,11 +1516,11 @@ the walkthrough agree.
 Targets: ✅ `EXPERIENCE.md` (Information Architecture; both "what the export draws" tables; the
 accessibility floor's D8c–D8f citations; the responsive section's D8a/D8b and D4f; the journeys and
 flows; the Appendix A preamble; A9) · ✅ `DESIGN.md` (the two moved tokens re-derived, old → new
-recorded; every other value re-checked against the new Calibration Set, Kit and export) · ⬜ the
-process documents and generators that still say "not drawn", "until A7 runs" or "prompt A8 draws"
-(main session — the file-and-line list is in this pass's report) · ⬜ `tools/reapply-export-edits.py`
-and `tools/verify-design-pass.py` (main session, above) · ⬜ the prototypes lift the D frames (the
-two prototype agents) · ⬜ decision 1, then A9 and the export runbook after it (owner).
+recorded; every other value re-checked against the new Calibration Set, Kit and export) · ✅ the
+process documents and generators that said "not drawn", "until A7 runs" or "prompt A8 draws"
+(main session, 2026-09-04) · ✅ `tools/reapply-export-edits.py` and `tools/verify-design-pass.py`
+(main session, above) · ✅ the prototypes lift the D frames (2026-09-04, both builds) · ✅ decision 1
+(R-86) and decision 2 (R-87), ruled 2026-09-04 · ⬜ A9, both halves, and the export runbook after it (owner).
 
 ## B · Approved decisions superseded by this session
 

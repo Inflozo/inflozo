@@ -270,13 +270,13 @@ ACTIONS = [
   'advance. Then the loop of build-sequence.md '
   'step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase '
   '(R-81), review and test on the real infrastructure (R-82), every question to you in plain English with '
-  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'), ('soon', 'One Claude Design session is owed \u2014 prompt A9, and you decide which half',
+  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'), ('soon', 'One Claude Design session is owed \u2014 prompt A9, both halves (R-86)',
   'The Appendix A export landed 2026-09-04 (the previous issue is InflozoOld/, for diffing only), the '
   'runbook ran once, and both builds lift the D canvases. reconcile-designs-decisions.md \u00a7A15 verified '
-  'every prompt frame by frame and wrote A9 for the misses: items 1\u20139 are misses of this export, the '
-  'optional second half the frames the UX pass had deferred. Decide in \u00a7A15 \u2014 (1) both halves in one '
-  'session, RECOMMENDED, or (2) items 1\u20139 only \u2014 then copy A9 from APPENDIX-A-PROMPTS.html, export '
-  'once after, run the runbook once. It blocks nothing.'),
+  'every prompt frame by frame and wrote A9: items 1\u20139 are misses of this export, items 10 onward the '
+  'frames the UX pass had deferred. You ruled on 2026-09-04 that both halves run in one session (R-86) and '
+  'that a touch device below 834 gets the notice while a tablet gets the editor (R-87) \u2014 so copy the whole '
+  'of A9 from APPENDIX-A-PROMPTS.html, export once after, run the runbook once. It blocks nothing.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),

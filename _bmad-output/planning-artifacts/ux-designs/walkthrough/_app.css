@@ -54,7 +54,7 @@ body.product { background: var(--paper); padding-bottom: 52px; }
 
 /* D4f · Small Screen Notice: a drawn 390 × 844 card, centred on the paper on a wide window and
    filling a phone-width one (the only place it is ever met for real — app.js hands the editor
-   over on a coarse pointer below 1024). */
+   over on a coarse pointer below 834, R-87). */
 @media (max-width: 600px) {
   .stage.centre.phone { padding: 0; }
   .stage.centre.phone > * { width: 100% !important; min-height: 100vh; border-radius: 0 !important; }

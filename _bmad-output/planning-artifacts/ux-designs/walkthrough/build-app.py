@@ -402,7 +402,7 @@ PAGES = []
 def page(pid, title, body, attrs=''):
     """A product screen. `attrs` are body attributes (`data-editor-shell`, `data-keys`, `data-esc`)
     that app.js reads — no per-page script (F-022). An editor shell gets D8c's skip link as its
-    first focusable element and hands a coarse pointer below 1024 to Small Screen Notice (D4f)."""
+    first focusable element and hands a coarse pointer below 834 to Small Screen Notice (D4f, R-87)."""
     if 'data-editor-shell' in attrs:
         body = SKIP + body
         attrs += ' data-small-screen="small-screen.html"'
@@ -1087,7 +1087,7 @@ ro = layers_panel(canvas_id(ro), 'LAYERS · HOME')
 page('editor-readonly', 'Harbour Letter · Home (read-only)', fill(ro) + bar(('← Projects', 'dashboard-free.html')),
      attrs='data-editor-shell')
 
-# D4f · Small Screen Notice — what a phone gets instead of the editor (R-76: a coarse pointer below 1024,
+# D4f · Small Screen Notice — what a phone gets instead of the editor (R-76 as amended by R-87: a coarse pointer below 834,
 # never width alone — app.js decides on every editor shell). What works from here is wired.
 small = region('D4 Dashboard Sheets and Blocks', label='D4f Small screen notice')
 small = link(small, ('Deploy history', 'deploy-history.html'), ('Roll back to v4', 'deploy-history.html'),

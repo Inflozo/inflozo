@@ -91,7 +91,7 @@ spacing:
   breakpoint-desktop: '1440px'
   breakpoint-tablet: '834px — the editor is drawn here, D8a (2026-09-04)'
   breakpoint-mobile: '390px — Small Screen Notice is drawn here, D4f'
-  app-floor: '1024px — a COARSE-POINTER threshold, never a bare width; a desktop at 200% zoom stays in the editor — D8b draws it at 720 to prove it'
+  app-floor: '834px — a COARSE-POINTER threshold, never a bare width (R-76; its width amended from 1024 to 834 by R-87, 2026-09-04): a tablet at 834 gets the editor as D8a draws it, a phone gets D4f; a desktop at 200% zoom stays in the editor — D8b draws it at 720 to prove it'
 
 components:
   button-primary:
@@ -339,8 +339,9 @@ is drawn to fit that width, which is why the vocabulary has no free-form inputs 
 the generated sites use, and that is a convenience rather than a shared system — `R Responsive
 System.dc.html` describes the *sites*, not this app.
 
-**Below 1024px on a coarse pointer the editor is not offered** *(ruling R-76, owner, 2026-09-03,
-refined by step 5's stress test)*. **It is a device test, not a width test:** a desktop at 200%
+**Below 834px on a coarse pointer the editor is not offered** *(ruling R-76, owner, 2026-09-03,
+refined by step 5's stress test; its width amended from 1024 to 834 by R-87, owner, 2026-09-04 — the tablet
+A8 drew at 834 with touch, D8a, gets the editor)*. **It is a device test, not a width test:** a desktop at 200%
 browser zoom presents roughly a 720px viewport and keeps the editor, because browser zoom is the
 reader's accessibility setting and is not the canvas scale FR-D14 refuses. Sign In, the
 Dashboard, Deploy history, Sites and Billing are drawn and usable at 390; the editor, the Section
