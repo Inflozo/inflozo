@@ -56,9 +56,9 @@ footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid 
 <p class="sub">These draw the parts of Inflozo's own app that Claude Design has not drawn yet, and
 correct the frames it drew wrongly. They live in the UX spine,
 <a href="ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md">EXPERIENCE.md</a> → Appendix A, and this page lifts them from it word
-for word. Open a card, press <b>Copy prompt</b> — it copies the whole prompt — and paste it into a
-Claude Design chat, <b>one prompt at a time, in the order shown</b>. Tick a card when its export is
-back. Progress is stored in this browser.</p>
+for word. Paste each session's prompts into one Claude Design chat, in the order shown. Tick a card
+when you have run it. Export the whole project once, after Session 2, then run the runbook once.
+Progress is stored in this browser.</p>
 <div class="bar"><span class="count"></span><span class="prog"><i></i></span>
 <button class="btn" id="expand">Expand all</button><button class="btn" id="reset">Reset</button></div>
 <p class="note"><b>Running any of these produces a new export, which replaces the repository&#x27;s copy.</b> Two edits live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0&#x27;s per-prop mark allowlist — and a re-export loses them by construction. <b>Follow the export runbook on the build board afterwards:</b> <code>tools/reapply-export-edits.py</code>, then <code>tools/verify-design-pass.py</code>, then the derivations, then <code>tools/doc-audit.py --check</code> twice. The build board is <a href="BUILD-BOARD.html">BUILD-BOARD.html</a>;

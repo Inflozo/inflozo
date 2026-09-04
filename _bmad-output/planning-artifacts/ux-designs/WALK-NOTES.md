@@ -13,8 +13,9 @@ This file is yours. Nobody else writes in it. The checklist is in `build-sequenc
 *The walk*; the short version: double-click `prototype/index.html`, follow each trail below to its
 last page, and on each page write one line under that screen — `fine`, or what reads wrong. Every
 heading below is a trail on 5b's front door and every line is a step on it, exactly as the front door
-lists them. When every trail has its lines, 5b is walked (§A12 decision 3). Then open
-`walkthrough/index.html` and write how it feels at the bottom.
+lists them. Since 2026-09-04 (§A13) "walked" is the date on the line under `build-sequence.md` step 5b,
+*The walk* — it stands — and these lines are optional. Then open `walkthrough/index.html` and write how
+it feels at the bottom, if you want to.
 
 The five things to look at hardest, from the review (`review-5b-5c-2026-09-03.md`):
 

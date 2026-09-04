@@ -1,6 +1,6 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 as amended — UI findings come from his test of each deployed story and are fixed there; §A14 the four development-loop rulings R-81…R-84 of the same day)
+status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half landed in the design patch passes and is verified (§A5–§A9); §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 as amended — UI findings come from his test of each deployed story and are fixed there; §A14 the four development-loop rulings R-81…R-84 of the same day)
 created: 2026-08-27
 updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80, amended the same day; §A14 adds R-81…R-84 — commit after every phase, real-infra review, plain-English questions, the story board)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
@@ -150,7 +150,7 @@ done, and how it was closed matters more than that it was:
 
 ### R-30 … R-38 · propagation ledger *(the owner ruled on 2026-08-31 that this lands before step 5)*
 
-The **normative half is DONE**. The **spec half is design work** — it changes drawn frames and spec
+The **normative half is DONE**. The **spec half was design work** — it changed drawn frames and spec
 text, so it belongs in a Claude Design patch prompt, not in a repo edit — and it is listed below as the
 work list for that prompt.
 
@@ -805,7 +805,7 @@ The pass raised 28 questions across the 33 categories. **Fifteen the owner answe
 sessions**; eleven more were ruled in the body but left with an un-updated heading (so an extraction
 that reads headings alone over-counts — worth knowing before trusting a question count from this
 corpus). **Two reached him afterwards**, and both are ruled here. **All of R-30 … R-38 propagated to the
-normative documents on 2026-08-31 — §A3's ledger is the evidence**; only the spec half is still owed.
+normative documents on 2026-08-31 — §A3's ledger is the evidence**; the spec half then ran in patch passes two to five, verified (§A5–§A9).
 
 **R-30 · "Count per row" in About and Team keeps its three named values — three · four · five.**
 Not a number picker. R-18's "item counts are always a number picker" was written for *how many items
@@ -1322,28 +1322,23 @@ he finds; those findings are fixed inside that story before it is done. The mech
 story with a screen carries `## Owner's manual test` (numbered steps — URL · screen · what to do · dummy
 data · what should be seen), `owner_test: pending` in its frontmatter until he has tested it, and his
 findings under `## Owner's test findings` with `owner_test: issues` until they are fixed and `passed` when
-he accepts. `ux-designs/WALK-NOTES.md` stays as his optional notebook for the prototypes; it is no longer
-the channel. The Appendix A prompts are unaffected and still run as two sessions, A7 with A8 and then A1
+he accepts. `ux-designs/WALK-NOTES.md` stays as his optional notebook for the prototypes; it is no longer the channel. **This amends §A12 decision 3:** "walked" is the date on the line under *The walk*, which he wrote on 2026-09-04; the notes file was optional and unused. The Appendix A prompts are unaffected and still run as two sessions, A7 with A8 and then A1
 to A6, in parallel with the stories.
 - Targets: `build-sequence.md` step 5b (*The walk*), the step table, the outstanding table, step 6
   (*Needs from the owner* and its prompt), step 7 (the loop) · `HANDOVER.md` · `CLAUDE.md` ·
-  `docs/project-context.md` · `_bmad/custom/bmad-build.user.toml` and `bmad-build-auto.user.toml` ·
+  `docs/project-context.md` · `_bmad/custom/bmad-build.toml` and `bmad-build-auto.toml` (the committed team layer) ·
   `tools/build-board.py` · `ux-designs/WALK-NOTES.md` (its purpose line). ✅ all landed 2026-09-04.
 
 ## A14 · The development loop — four rulings, 2026-09-04
 
 Given by the owner in the same message as the amendment above, while the Claude Design sessions run.
 Each binds every story from the first one, and each is bound where the work happens — inside the BMAD
-skills through `docs/project-context.md` (loaded as a persistent fact by `bmad-build`,
-`bmad-build-auto`, `bmad-code-review` and the testarch skills) and the `_bmad/custom/*.user.toml`
-overrides — not only in prose.
+skills through `docs/project-context.md` (loaded as a persistent fact by `bmad-build`, `bmad-build-auto`, `bmad-code-review`, `bmad-create-epics-and-stories` and `bmad-sprint-planning`) and the committed `_bmad/custom/*.toml` team overrides — not only in prose.
 
 **R-81 — after every story phase, commit and push to `main`.** Create, dev, review, deploy, owner test,
 fix, done, and any other status change. One-line message, always this shape: `Story <epic>.<story> -
-<Phase> - <one line about the story>`; Phase is one word from *Create · Dev · Review · Deploy · Test ·
-Fix · Done · Blocked*. The gate runs first and is never pushed red.
-- Targets: `CLAUDE.md` (Git workflow) · `docs/project-context.md` · the three `.user.toml` overrides
-  (`on_complete`) · `build-sequence.md` step 7 · `HANDOVER.md`. ✅ landed 2026-09-04.
+<Phase> - <one line about the story>`; Phase is one word from *Create · Dev · Review · Deploy · Test · Fix · Done · Blocked*. Work that belongs to no story commits as `Hotfix - <one line>`, a retrospective as `Epic <N> - Retro - <one line>`; a `commit-msg` hook in `tools/hooks/` rejects any other shape that starts with Story, Step, Hotfix or Epic. The gate runs first and is never pushed red.
+- Targets: `CLAUDE.md` (Git workflow) · `docs/project-context.md` · the three `.toml` overrides (`on_complete`) · `build-sequence.md` step 7 · `HANDOVER.md` · `tools/hooks/commit-msg`. ✅ landed 2026-09-04.
 
 **R-82 — the review phase and the test phase run on the real infrastructure, never on mocks alone.** The
 owner has put the keys in `tools/probe/.env` (Supabase, Vercel, Resend, Dodo, and the Ghost test servers

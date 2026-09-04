@@ -1,0 +1,27 @@
+#!/bin/sh
+# Inflozo — the commit-message shape (R-81). The story board reads commits, so a subject that starts
+# like one of ours must parse, and a typo in a phase word is caught here rather than listed on the
+# board as an unreadable commit. Installed with `git config core.hooksPath tools/hooks`.
+#
+#   Story <E>.<S> - <Phase> - <one line>     Phase: Create Dev Review Deploy Test Fix Done Blocked
+#   Step <n> - <Phase> - <one line>
+#   Hotfix - <one line>
+#   Epic <N> - Retro - <one line>
+#
+# A subject that does not start with Story, Step, Hotfix or Epic is not checked.
+
+subject=$(sed -e '/^#/d' -e '/^[[:space:]]*$/d' "$1" | sed -n '1p')
+printf '%s\n' "$subject" | grep -Eq '^(Story|Step|Hotfix|Epic)\b' || exit 0
+P='(Create|Dev|Review|Deploy|Test|Fix|Done|Blocked)'
+printf '%s\n' "$subject" | grep -Eq "^Story [0-9]+\.[0-9]+[a-z]? - $P - .+\$|^Step [^ ]+ - $P - .+\$|^Hotfix - .+\$|^Epic [0-9]+ - Retro - .+\$" && exit 0
+cat <<MSG
+COMMIT BLOCKED — the subject starts like one of ours but does not fit the shape (R-81):
+  $subject
+Expected one of:
+  Story <E>.<S> - <Phase> - <one line>     Phase: Create · Dev · Review · Deploy · Test · Fix · Done · Blocked
+  Step <n> - <Phase> - <one line>
+  Hotfix - <one line>
+  Epic <N> - Retro - <one line>
+A subject that does not start with Story, Step, Hotfix or Epic is not checked.
+MSG
+exit 1

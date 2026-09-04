@@ -20,7 +20,7 @@ Three rules from section 8 that shape the story list and are easy to get wrong:
   - There are as many owner gates as there are categories, the shell block's three included.
 
 Section 4's build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
-platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category's design-and-specification session has landed
@@ -40,8 +40,22 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     two sections can be derived from them without guessing. His findings are fixed inside that
     story, not by a design pass.
 
+THREE THINGS THE SKILL WILL WANT TO DO THAT THIS PROJECT HAS ALREADY DECIDED:
+  - UX design requirements fold into the section-8 epic that owns the surface — never a separate
+    "design system" or "UX polish" epic.
+  - The E4/E7 joint compile gate and the per-category owner gates are section 8's design: record
+    them as exit criteria (the E4/E7 gate is E7's closing story); do not restructure the epics to
+    remove forward dependencies.  - At each of the skill's [C] continue menus, continue. The skill also stops to ask whether the
+    extracted requirements are accurate, whether you approve the epic structure, whether each story
+    captures its requirement and fits one session, and whether to proceed to the next epic. Section
+    8 and the reconciliation already decided all of those: treat every such confirmation as answered
+    yes and do not stop for it. Stop only for a decision that is genuinely the owner's.
+  - Do not invoke bmad-help or offer a next skill at the end; the last act of this run is the commit.
+
 AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
   - Every question you need him to answer is written in plain English a non-engineer reads, with
     an example, numbered options, and the option or combination you recommend marked
-    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+    (RECOMMENDED). Collect them under "## Questions for the owner" at the end of epics.md AND
+    repeat them in your final message. When he answers in this chat, write "Ruled: <his words>"
+    under each, adjust the stories, and commit and push "Step 6 - Create - owner ruled: <one line>".
   - When epics.md is complete, commit and push to main: "Step 6 - Create - epics and stories".

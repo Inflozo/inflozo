@@ -131,9 +131,9 @@ def render():
 <p class="sub">These draw the parts of Inflozo's own app that Claude Design has not drawn yet, and
 correct the frames it drew wrongly. They live in the UX spine,
 <a href="{html.escape(SPINE_REL)}">EXPERIENCE.md</a> → Appendix A, and this page lifts them from it word
-for word. Open a card, press <b>Copy prompt</b> — it copies the whole prompt — and paste it into a
-Claude Design chat, <b>one prompt at a time, in the order shown</b>. Tick a card when its export is
-back. Progress is stored in this browser.</p>
+for word. Paste each session's prompts into one Claude Design chat, in the order shown. Tick a card
+when you have run it. Export the whole project once, after Session 2, then run the runbook once.
+Progress is stored in this browser.</p>
 <div class="bar"><span class="count"></span><span class="prog"><i></i></span>
 <button class="btn" id="expand">Expand all</button><button class="btn" id="reset">Reset</button></div>
 <p class="note">{md(export_line)} The build board is <a href="BUILD-BOARD.html">BUILD-BOARD.html</a>;

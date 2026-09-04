@@ -47,12 +47,12 @@ DOCS = [
   'those names (R-75). Its Appendix A carries one Claude Design prompt per undrawn surface group. '
   'Also the record of §37.7 re-verified against the export: the Paywall editor turned out to be '
   'drawn at C Post Body C3a.'),
- ('ux-designs/WALK-NOTES.md', 'live', "The owner's walk notes — R-75's gate, in his words",
-  'THE OWNER\'S FILE. A heading per journey and per flow on step 5b\'s front door and a line per '
-  'screen, plus a section for how 5c feels. "Walked" (§A12 decision 3) means every one of those '
-  'trails opened end to end with a line written here; the date line at its top and the one under '
-  'build-sequence.md step 5b are his to write, and no session writes either. The gate is this file '
-  'and that date — a human tick no tool reads.'),
+ ('ux-designs/WALK-NOTES.md', 'live', "The owner's walk notes — an optional notebook",
+  'THE OWNER\'S FILE, and optional: a heading per journey and per flow on step 5b\'s front door with '
+  'room for a line per screen, plus a section for how 5c feels. "Walked" is the date on the line under '
+  'build-sequence.md step 5b, The walk — his to write, and no session writes it (R-75, §A13). What he '
+  'found on the walk is fixed inside the stories that own the screens, from his own test of each '
+  'deployed story (R-80 as amended 2026-09-04), so nothing here is an input a story waits for.'),
  ('ux-designs/review-5b-5c-2026-09-03.md', 'record', 'The step-5b/5c review — verdict and decisions',
   'The twelve-lens review of the static prototype and the walkthrough before the owner walked them: '
   'the verdict (not ready to walk as they stood — every blocker a generator or document fix, none '
@@ -156,10 +156,11 @@ DOCS = [
 
  # ── process ──────────────────────────────────────────────────────────────────
  ('build-sequence.md', 'live', 'The build sequence',
-  'The steps from finished PRD to first story, what each needs from the owner, and a runnable '
-  'prompt for each. Steps 1–4 and the inventory merge are COMPLETE; step 5 (journeys and flows) is '
-  'the critical path. One step-2 prompt contains an instruction later proven FALSE, flagged in '
-  'place rather than deleted.'),
+  'The steps from finished PRD to the development loop, what each needs from the owner, and a runnable '
+  'prompt for each. Steps 1–5, 5b and 5c are COMPLETE; the owner walked 5b on 2026-09-04; step 6 (the '
+  'story breakdown) is OPEN; step 7 is the loop every story runs through, and its phase prompts — with '
+  'the plain-English briefing before each — are what the story board copies. One step-2 prompt contains '
+  'an instruction later proven FALSE, flagged in place rather than deleted.'),
  ('design/claude-design-prompt.md', 'record', 'Design prompt 1 — run',
   'Produced the 27 interface mockups.'),
  ('design/claude-design-prompt-2.md', 'record', 'Design prompt 2 — run',
@@ -204,13 +205,14 @@ DOCS = [
   '41 probe families, 1,078 owner-flag rows (the Ghost Build Room agenda), the PRD amendments by FR. '
   'Its findings array is reconcile-designs.findings.json beside it.'),
  ('prds/.../reconcile-designs-decisions.md', 'live', 'Ghost Build Room rulings',
-  'Step 4b (2026-08-27, extended through 2026-09-03: §A5-§A9 the library review, the open-questions sheet, the architect rulings, the stress-test rulings and pass five; §A10 the two STANDING rulings R-74/R-75 — export fidelity till project end, and the static-prototype gate on step 6): the owner\'s rulings on everything 4a could not settle '
+  'Step 4b (2026-08-27, extended through 2026-09-04: §A5-§A9 the library review, the open-questions sheet, the architect rulings, the stress-test rulings and pass five; §A10 the two STANDING rulings R-74/R-75 — export fidelity till project end, and the static-prototype gate on step 6): the owner\'s rulings on everything 4a could not settle '
   'by reading, each naming the documents that must move. §A the room\'s rulings · §A2 the design '
   'patch pass · §A3 the §F asks, all now ruled · §A4 §37.7 re-verified for step 5 · §B FOUR APPROVED '
   'DECISIONS SUPERSEDED (D3 native search, D17 accent seeding, D26 gap names, D27 in half) — read it '
   'before trusting any D-number · §C the Ghost facts executed that night · §E the remaining probe '
   'list · §A11 step 5\'s four rulings R-76 … R-79 · §A12 the step-5b/5c review\'s six decisions '
-  '(2026-09-03). R-30 … R-38 propagated on 2026-08-31 — §A3 is the ledger.'),
+  '(2026-09-03) · §A13 the walk and R-80 amended · §A14 R-81…R-84 (2026-09-04). R-30 … R-38 propagated '
+  'on 2026-08-31 — §A3 is the ledger.'),
  ('prds/.../encode-propagation-map.md', 'record', 'Encode propagation map',
   'Where each requirement change had to land. The origin of "propagate, never localise".'),
  ('prds/.../encode-report-batch1.md', 'record', 'Encode report', 'Batch record.'),
@@ -331,7 +333,7 @@ DOCS = [
   'A32 quote the old value list too, but only as the mapping, which is correct.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-5.html', 'live', 'Design patch prompts, pass five',
   'The owner-facing page for the fifth patch pass. Runnable in any order; nothing depends on '
-  'anything else. NOT YET RUN.'),
+  'anything else. RAN — verified by tools/verify-design-pass.py.'),
  ('tools/design-patch-prompts-4.py', 'tool', 'Design patch prompts — pass four',
   'Generates DESIGN-PATCH-PROMPTS-4.html: the spec-side half of R-48 to R-59, over eight categories. '
   'Carries the FIVE questions that needed no ruling at all — the pack tokens, the main-feed '
@@ -342,7 +344,7 @@ DOCS = [
   'never typed, because a hand-written list of private copies is one more thing to go stale.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-4.html', 'live', 'Design patch prompts, pass four',
   'The owner-facing page for the fourth patch pass — eight prompts, P0 first because it holds two '
-  'shared controls every category inherits. NOT YET RUN.'),
+  'shared controls every category inherits. RAN — verified by tools/verify-design-pass.py.'),
  ('tools/design-patch-prompts-3.py', 'tool', 'Design patch prompts — pass three',
   'Generates DESIGN-PATCH-PROMPTS-3.html: the six spec-side halves of the owner\'s nine rulings of '
   '2026-09-02, over seven categories. Small by design — four of the seven close a question the '
@@ -351,7 +353,7 @@ DOCS = [
   'the work lists are authored. A third file rather than an edit to the second for the same reason '
   'the second was not an edit to the first: each is the record of what was actually sent.'),
  ('planning-artifacts/LIBRARY-QUESTIONS.html', 'record', 'Open questions — the decision sheet, answered',
-  'Every question the 33 category specifications still leave open after the 2026-09-02 rulings, as a '
+  'Every question every category specification still leaves open after the 2026-09-02 rulings, as a '
   'sheet the owner answers in the browser: plain-language explanation, numbered options with one '
   'recommended, a note box per item, and a Copy-my-reply button that assembles the lot. Built from '
   'tools/probe/report-template.html, which is the pattern ROUND-4-FINDINGS.html used and the one the '
@@ -359,11 +361,12 @@ DOCS = [
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-3.html', 'live', 'Design patch prompts, pass three',
   'The owner-facing page for the third patch pass — seven prompts, runnable in any order because '
   'nothing here depends on anything else. Carries the six spec-side rulings of 2026-09-02 (R-39 to '
-  'R-47, less the three that changed a requirement and landed directly). NOT YET RUN.'),
+  'R-47, less the three that changed a requirement and landed directly). RAN — verified by '
+  'tools/verify-design-pass.py.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS-2.html', 'live', 'Design patch prompts, pass two',
   'The owner-facing page for the second patch pass — one prompt per category that has work, P0 '
   'first because the greyed-control treatment is drawn there once and every later category points '
-  'at it. NOT YET RUN. Nothing in it is a question: the normative half of every item is already in '
+  'at it. RAN — verified by tools/verify-design-pass.py. Nothing in it is a question: the normative half of every item is already in '
   'the PRD and the spine, and this carries it into the designs. Copy buttons and browser-stored '
   'progress ticks; verify each returned export with tools/verify-design-pass.py.'),
  ('planning-artifacts/DESIGN-PATCH-PROMPTS.html', 'live', 'Design patch prompts, per category',
@@ -381,8 +384,8 @@ DOCS = [
  ('planning-artifacts/APPENDIX-A-PROMPTS.html', 'live', 'Appendix A prompts — the page',
   'The owner-facing page for the Appendix A Claude Design prompts, with copy buttons and '
   'browser-stored progress ticks, extracted from the spine so it cannot drift. A7 with A8 first, '
-  'then A1 to A6; run the export runbook on the build board once after each session, not once per '
-  'prompt. NOT YET RUN.'),
+  'then A1 to A6; export the whole project once, after the last session, then run the export runbook '
+  'on the build board once. NOT YET RUN.'),
  ('tools/derive-control-lines.py', 'tool', 'Derive the Controls: union',
   'Attempts each category\'s Controls: line and does NOT succeed: the specs declare controls in at least four shapes (a per-design `Control | Values` table, a prose line with names before colons, another with names before brackets, and typed enum rows), the granularity differs by an order of magnitude between them — 53 names for one category, 3 for another — and eight categories carry nothing readable at all. Kept because it MEASURES the gap and names the eight, and because the fix is cheap: if every spec carried the per-design Control|Values table A1-A3 already use, this becomes reliable. Do not land its output as-is.'),
  ('tools/derive-module-reach.py', 'tool', 'Which designs declare which script',
@@ -406,7 +409,8 @@ DOCS = [
   'IT FOLLOWS THE CRITICAL PATH: it was STEP-5-PROMPT.txt until step 5 completed on 2026-09-03, then '
   'STEP-5B-PROMPT.txt while the owner\'s walk was the next action, and became STEP-6-PROMPT.txt on 2026-09-04 '
   'when he walked 5b and step 6 opened (R-75). Two rules ride into every story it produces: R-74, every story '
-  'with a surface names its frame; R-80, every screen with a line in ux-designs/WALK-NOTES.md carries that line.'),
+  'with a surface names its frame; R-80 as amended 2026-09-04, every story with a screen carries the '
+  'owner\'s manual-test steps and he tests it on the deployed site before it is done.'),
   ('tools/view-designs.py', 'tool', 'Serve the design export to a local browser',
   'R-75\'s small utility — for SESSIONS eyeballing exported frames over HTTP (support.js loads '
   'React via fetch, which file:// blocks, so the two Index canvases\' links and the mock '
@@ -436,21 +440,24 @@ DOCS = [
   "when it is his to test — the manual test script with URLs, screens and dummy data; every open "
   "question across every story in one inbox. GENERATED by tools/story-board.py from epics.md (the "
   "PRD's §8 epic list until step 6 writes it), sprint-status.yaml, the spec files, git log and "
-  "deferred-work.md; the phase prompts are extracted from build-sequence.md step 7, never retyped. "
-  "Self-contained — opens from a double-click, no server. The gate regenerates it on every commit, so a "
-  "new commit makes it stale on purpose; reload it after each one."),
+  "deferred-work.md; the phase prompts and the plain-English briefing before each are extracted from "
+  "build-sequence.md step 7, never retyped. Self-contained — opens from a double-click, no server. The "
+  "post-commit hook regenerates the working-tree copy after every commit; the committed copy is one "
+  "commit behind by construction. Reload it whenever a session says it has saved."),
  ('tools/story-board.py', 'tool', 'Story board generator',
   'Reads epics.md, sprint-status.yaml (stdlib parse — it is one flat mapping under one key), every '
   'spec-<E>-<S>-<slug>.md, git log in the R-81 commit shape `Story E.S - Phase - …` and '
   'deferred-work.md, and emits STORY-BOARD.html. Every loader takes text, so `--demo` renders the '
-  'same page from an in-memory fixture through the same parsers, and that run is its self-check. A '
-  "story's lane is derived from its commit trail first (R-81 makes one per phase), then the sprint "
-  'status and the spec frontmatter; `owner_test: pending` alone does not mean deployed, because the '
-  'Create phase sets it too. Matches a spec to a story on exact key segments, so 1-1 never matches '
-  '1-10. `--check` regenerates in memory and fails on drift; the gate runs it.'),
+  'same page from an in-memory fixture through the same parsers, and that run is its self-check — one '
+  "story per derivation rule. A story's phase is the LATER of its commit trail (R-81 makes one per "
+  'phase) and its tracker and spec status; Done comes only from a Done commit, `owner_test: passed`, or '
+  '`owner_test: none` once a Deploy commit exists — a review\'s `done` alone reads as In review; deployed '
+  'means a Deploy commit, nothing else. Matches a spec to a story on exact key segments, so 1-1 never '
+  'matches 1-10. `--check` regenerates in memory and fails on drift; the gate runs it.'),
  ('docs/project-context.md', 'live', 'Project context — the facts every BMAD skill loads',
-  'The block bmad-build, bmad-build-auto, bmad-code-review and the testarch skills load as persistent '
-  'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`). '
+  'The block bmad-build, bmad-build-auto, bmad-code-review and the planning skills load as persistent '
+  'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`; the '
+  'file\'s own header names every one). '
   "Carries the owner's rulings R-80 to R-84 as instructions the skills obey — commit after every "
   'phase, review on the real infrastructure, every question in plain English with options, the owner '
   'tests every screen himself, the story board is the tracker — plus where things are and the known '
@@ -460,29 +467,53 @@ DOCS = [
   "step, requires the spec's three owner-facing sections and `owner_test: pending` for any story with a "
   'screen, adds the Real-infra verifier review layer (R-82), and ends every run by regenerating the '
   'story board, running the gate twice and committing `Story <E>.<S> - <Phase> - …` (R-81). '
-  "GITIGNORED by BMAD convention (`*.user.toml`), so it lives on the owner's machine only — a fresh "
-  'clone does not carry it, and this catalogue reports it gone there.'),
+  'Tracked: the committed team override, so every clone carries it.'),
  ('_bmad/custom/bmad-build-auto.toml', 'tool', 'bmad-build-auto override — the unattended loop',
   'The same rulings as the bmad-build override, for the loop that runs with no human present: the '
   "questions rule becomes HALT with status `blocked` and the question written under `## Questions for "
   "the owner` in plain English with options (R-83), never a decision taken on the owner's behalf. "
-  'Same Real-infra verifier layer, same end-of-run board regeneration, gate and commit. Gitignored, as '
-  'above.'),
+  'Same Real-infra verifier layer, same end-of-run board regeneration, gate and commit. Tracked, as above.'),
  ('_bmad/custom/bmad-code-review.toml', 'tool', 'bmad-code-review override — review on the real stack',
   'Binds a story review to the real infrastructure (R-82) through the Real-infra verifier layer, '
   'which finds the story\'s spec and executes what its `## Verification` claims with one negative '
   'control; every finding that needs the owner is written R-83-shaped; the run ends with the board, '
-  'the gate twice and `Story <E>.<S> - Review - …` (R-81). Gitignored, as above.'),
+  'the gate twice and `Story <E>.<S> - Review - …` (R-81). Tracked, as above.'),
+ ('planning-artifacts/BMAD-BEST-PRACTICES.md', 'live', 'How to get the best out of BMAD on Inflozo',
+  'Read 2026-09-04 from the method\'s own documentation and its practitioners, every quotation cited to '
+  'its source: the ten rules that matter for this project and where Inflozo already follows each, three '
+  'practitioner lessons, and the one open question the research raises. The source of the "Before you '
+  'paste it" briefings that sit above every remaining prompt in build-sequence.md and on both boards.'),
+ ('planning-artifacts/epics.md', 'live', 'The epics and stories — step 6\'s output',
+  'Written by step 6 (/bmad-create-epics-and-stories): every epic from the PRD\'s §8 expanded into '
+  'stories with acceptance criteria. The story board reads it — its epics and stories are the cards — '
+  'and the sprint tracker keys off its headings. Absent until step 6 runs; this row waits for it.'),
+ ('planning-artifacts/implementation-readiness.md', 'record', 'The readiness gate\'s verdict — step 6b',
+  'Written by /bmad-sprint-planning\'s readiness gate (step 6b): the go/no-go on opening the first '
+  'story, with the two project-specific conditions about the library running sequentially. A dated '
+  'verdict, so a record. Absent until step 6b runs; this row waits for it.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
-  'Generates the index and checks documentation propagation. Exits non-zero on drift.'),
+  'Generates the index and checks documentation propagation. Exits non-zero on drift; a stale index is '
+  'regenerated on that first failure, like its sub-tools, so the pre-commit hook\'s one retry passes.'),
 ]
 
+# Catalogue rows for files a later step writes: not reported as gone while they do not exist yet.
+PENDING = {'planning-artifacts/epics.md', 'planning-artifacts/implementation-readiness.md'}
+
 GROUPS = [
+ ('tools/hooks/', 'tool', 'The git hooks — installed with core.hooksPath',
+  'Tracked, executable, installed once per clone with `git config core.hooksPath tools/hooks`: '
+  '`pre-commit` runs the documentation gate (retrying once, because its sub-tools regenerate on the '
+  'first failure), stages every regenerated artefact, and BLOCKS a commit whose staged lines contain '
+  'a secret from tools/probe/.env (the values of its KEY, SECRET, TOKEN, PASSWORD and DB_URL entries, '
+  'compared in memory and never printed); `commit-msg` rejects a subject that starts Story, Step, '
+  'Hotfix or Epic but does not fit the R-81 shape and vocabulary; `post-commit` regenerates '
+  'STORY-BOARD.html in the working tree so the page the owner opens carries the commit just made. '
+  'There is no bypass: --no-verify is denied in .claude/settings.json.'),
  ('_bmad/custom/', 'tool', 'BMAD configuration and skill overrides',
-  "The project's BMAD configuration (config.toml and its user copy) and the per-skill `*.user.toml` "
-  'overrides BMAD merges at run time — the party-mode persona file among them. The three overrides '
-  "that bind the owner's rulings R-80 to R-84 are catalogued individually. `*.user.toml` is "
-  'gitignored by BMAD convention, so these exist on the machine that wrote them.'),
+  "The project's BMAD configuration (config.toml) and the per-skill team overrides (`<skill>.toml`) "
+  "BMAD merges at run time. The three that bind the owner's rulings R-80 to R-84 are catalogued "
+  'individually. A `*.user.toml` beside them is a personal copy, gitignored by BMAD convention, and '
+  'never catalogued: the inventory comes from git, so an ignored file never enters it.'),
  ('ux-designs/frames.py', 'tool', 'The frame lifter — shared by both step-5 builds',
   'Pulls a region of the Claude Design export out of its `.dc.html` VERBATIM, by `data-screen-label` '
   'or by the mono caption above it, and hands it to a builder to patch. It exists because the first cut '
@@ -536,9 +567,9 @@ GROUPS = [
   'navigates because it is the product; 5b does none of those because it is the proof. `build.py` generates the lot from one registry — so the index cannot claim a '
   'surface that does not exist, or miss one that does — and it refuses to write if any link or anchor is dead. '
   'Its HTML is DISPOSABLE BY DESIGN once the dynamic UI matches it (what outlives it: build-sequence.md '
-  'step 5c). **This is R-75\'s gate. Step 6 stays shut until the owner says he has walked it** — every '
-  'journey and every flow on `index.html` opened end to end, his notes in `ux-designs/WALK-NOTES.md` '
-  '(§A12 decision 3) — and that sentence lives in `build-sequence.md` step 5b, under The walk.'),
+  'step 5c). **This was R-75\'s gate, and it is met: step 6 opened 2026-09-04 when the owner walked it** '
+  '— every journey and every flow on `index.html` opened end to end; his notes in `ux-designs/WALK-NOTES.md` '
+  'were optional — and the date lives in `build-sequence.md` step 5b, under The walk.'),
  ('ux-designs/', 'live', 'Step 5 — the UX workspace',
   "bmad-ux's run folder: the two spines (catalogued individually above), the memlog that records "
   'every decision taken during the pass, and the working / imports directories the skill creates. '
@@ -597,24 +628,26 @@ def short(path):
     return p.replace(os.path.join('prds', 'prd-Inflozo-2026-08-17'), 'prds/...')
 
 
+BASES = ('_bmad-output/planning-artifacts', 'tools', 'docs', '_bmad/custom')
+EXT = ('.md', '.html', '.sql', '.js', '.py', '.sh', '.txt', '.toml')
+
+
 def inventory():
-    out = []
-    # docs/ and _bmad/custom/ joined the walk on 2026-09-04: the owner's rulings R-80 to R-84 are
-    # bound INSIDE the BMAD skills through docs/project-context.md and the *.user.toml overrides, so
-    # those files are project documents and are catalogued like any other. Rows resolve the same way —
-    # ROOT-relative, matched by suffix — so nothing existing moved.
-    for base in (PLAN, os.path.join(ROOT, 'tools'), os.path.join(ROOT, 'docs'),
-                 os.path.join(ROOT, '_bmad', 'custom')):
-        for dirpath, dirnames, files in os.walk(base):
-            dirnames[:] = [d for d in dirnames if d != 'node_modules']
-            for f in files:
-                if not f.endswith(('.md', '.html', '.sql', '.js', '.py', '.sh', '.txt', '.toml')):
-                    continue
-                full = os.path.join(dirpath, f)
-                rel = os.path.relpath(full, ROOT)
-                if any(s.strip('/') in rel for s in SKIP):
-                    continue
-                out.append(rel)
+    """Every document under BASES as git sees it: tracked files plus untracked ones git does not
+    ignore. A gitignored file — a personal `*.user.toml`, the generated theme, a key file — never
+    enters the catalogue or a group's count, and a new file still needs its row before it is
+    committed. docs/ and _bmad/custom/ are walked because the owner's rulings R-80 to R-84 are bound
+    inside the BMAD skills through them. The hooks in tools/hooks/ have no extension and are kept."""
+    ls = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '--', *BASES],
+                        cwd=ROOT, capture_output=True, text=True).stdout.splitlines()
+    out = set()
+    for rel in ls:
+        if not rel or any(s.strip('/') in rel for s in SKIP):
+            continue
+        if not (rel.endswith(EXT) or rel.startswith('tools/hooks/')):
+            continue
+        if os.path.exists(os.path.join(ROOT, rel)):        # still in the index, gone from the tree
+            out.add(rel)
     return sorted(out)
 
 
@@ -643,19 +676,18 @@ def check():
     # 2. every catalogued doc still exists
     for path, _s, title, _b in DOCS:
         tail = path.split('/')[-1]
+        if path in PENDING:
+            continue
         if not any(f.endswith(tail) for f in files):
             fails.append(f'CATALOGUED BUT GONE: {path} ("{title}") — remove its entry or restore it')
 
-    # 3. the index is current
-    for name in ('INDEX.md', 'INDEX.html'):
-        p = os.path.join(PLAN, name)
-        if not os.path.exists(p):
-            fails.append(f'MISSING: {name} — run --generate')
-        else:
-            body = open(p, encoding='utf8').read()
-            n = len([f for f in files if describe(f) and describe(f)[3]])
-            if f'{n} catalogued' not in body:
-                fails.append(f'STALE: {name} does not match disk — run --generate')
+    # 3. the index is current — the whole file, not a count in it; regenerated on the first failure
+    #    (the shape the 3b sub-tools use) so the pre-commit hook's one retry passes and stages it
+    md_txt, html_txt, _n, _t = generate()
+    if any(not os.path.exists(os.path.join(PLAN, name)) or open(os.path.join(PLAN, name), encoding='utf8').read() != txt
+           for name, txt in (('INDEX.md', md_txt), ('INDEX.html', html_txt))):
+        write_index(md_txt, html_txt)
+        fails.append('STALE — regenerated INDEX.md and INDEX.html, run --check again')
 
     # 3b. generated HTML must match its sources
     import subprocess as _sp
@@ -793,7 +825,7 @@ points at a file that is gone, or if this file is out of date.
         for _s, title, blurb, members in sorted(gs, key=lambda g: g[1]):
             md.append(f'| **{title}** *({len(members)} files)*<br>`{short(members[0]).rsplit("/",1)[0]}/` | {blurb} |')
         md.append('')
-    open(os.path.join(PLAN, 'INDEX.md'), 'w', encoding='utf8').write('\n'.join(md))
+    md_txt = '\n'.join(md)
 
     # ── INDEX.html ─────────────────────────────────────────────────────────────
     e = html.escape
@@ -814,7 +846,7 @@ points at a file that is gone, or if this file is out of date.
                          f'<code>{e(short(members[0]).rsplit("/",1)[0])}/</code><p>{e(blurb)}</p></div>')
         cards.append('</div></section>')
 
-    open(os.path.join(PLAN, 'INDEX.html'), 'w', encoding='utf8').write(f"""<!doctype html>
+    html_txt = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Inflozo — Document Index</title><style>
@@ -883,14 +915,20 @@ and its output.</li>
 {''.join(cards)}
 <footer>Generated {e(today)} · regenerate with <code>python3 tools/doc-audit.py --generate</code> ·
 verify with <code>--check</code>, which exits non-zero on drift.</footer>
-</div></body></html>""")
-    return n_exact, len(files)
+</div></body></html>"""
+    return md_txt, html_txt, n_exact, len(files)
+
+
+def write_index(md_txt, html_txt):
+    open(os.path.join(PLAN, 'INDEX.md'), 'w', encoding='utf8').write(md_txt)
+    open(os.path.join(PLAN, 'INDEX.html'), 'w', encoding='utf8').write(html_txt)
 
 
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else '--check'
     if mode == '--generate':
-        n, total = generate()
+        md_txt, html_txt, n, total = generate()
+        write_index(md_txt, html_txt)
         print(f'INDEX.md and INDEX.html regenerated — {n} catalogued entries over {total} files.')
         sys.exit(0)
     fails, warns = check()

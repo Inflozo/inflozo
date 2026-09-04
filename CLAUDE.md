@@ -64,8 +64,9 @@ re-wire it:** every lifted region must be byte-identical to the region in the `.
 asserts it — and navigation lives in the scaffolding around each frame. The clickable build is 5c,
 and that is the whole division (`prototype/build.py`'s `lift()` docstring is the record). **5b is
 R-75's gate; 5c is walked afterwards, for feel.** The gate is a human tick no tool reads — the date
-line under `build-sequence.md` step 5b, *The walk*, with the owner's notes in `ux-designs/WALK-NOTES.md`
-— and **the step-6 prompt is not run before that date stands.**
+line under `build-sequence.md` step 5b, *The walk* — **and it stands: he walked 5b on 2026-09-04, so
+step 6 is open.** His notes were optional; UI issues come from his test of each deployed story (R-80 as
+amended) and are fixed in that story.
 
 ## The seven standing rules
 
@@ -100,7 +101,9 @@ Each was learned expensively. They are not style preferences.
 python3 tools/doc-audit.py --check     # must pass; exits non-zero on drift
 ```
 
-It is installed as a **pre-commit hook**, so a red gate blocks the commit. Two things it does *not*
+It is installed as a **pre-commit hook** — the hooks live in `tools/hooks/` and are installed once per
+clone with `git config core.hooksPath tools/hooks`; a `commit-msg` hook there also enforces the story
+commit shape, and a `post-commit` hook regenerates the story board — so a red gate blocks the commit. Two things it does *not*
 do, and both have bitten: it verifies the catalogue and the generated artifacts but **does not verify
 propagation** — it passed while FR-G7 still said 31 modules. And its sub-tools **regenerate on
 failure**, so a first failure right after a commit is normal (the hook retries once and stages them).
@@ -124,7 +127,7 @@ other status change — commit and push to `main` with the one-line message
 `Story <epic>.<story> - <Phase> - <one line about the story>`, e.g. `Story 3.2 - Dev - connect wizard
 validates the three keys`. The rule, the phases and the real-infra rule below are bound inside the BMAD
 skills themselves through `docs/project-context.md` (loaded as persistent facts) and
-`_bmad/custom/bmad-build.user.toml`, `bmad-build-auto.user.toml`, `bmad-code-review.user.toml`. Claude must **never**, without the owner asking in that moment: force-push,
+`_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` (the committed team layer). Claude must **never**, without the owner asking in that moment: force-push,
 `reset --hard`, rebase, amend anything already pushed, delete a branch or tag, rewrite history, or
 delete files it did not create. Those rules are also encoded in `.claude/settings.json`, but a
 deny-list over shell strings is leaky by construction — treat the rule as the real control and the

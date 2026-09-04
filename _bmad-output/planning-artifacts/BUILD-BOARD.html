@@ -7,7 +7,17 @@
 --next:#1f6feb;--wait:#8b8b93;--red:#b42318;--red-s:#fdeceb;
 --sh:0 1px 2px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.055)}
 .runbook{background:var(--card);border:1px solid var(--line);border-radius:16px;
-padding:24px 26px;box-shadow:var(--sh);margin:26px 0 4px}
+padding:24px 26px;box-shadow:var(--sh);margin:14px 0 4px}
+.strip{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:15px;
+padding:18px 24px;box-shadow:var(--sh);margin:26px 0 0}
+.strip h2{margin:.1em 0 .3em;font-size:1.15rem;letter-spacing:-.01em}
+.strip p{margin:0 0 10px;color:var(--muted);font-size:.93rem;max-width:80ch}
+.sa{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.lnk{font-size:.9rem;font-weight:600}
+.brief{padding:11px 14px;font-size:.9rem;line-height:1.55;border-bottom:1px solid var(--line);background:var(--card)}
+.brief p{margin:0 0 6px;max-width:82ch}.brief p:last-child{margin:0}
+.strip .brief{border:1px solid var(--line);border-radius:10px;margin:0 0 12px;background:var(--code)}
+.badge{text-decoration:none}
 .runbook h2{font-size:1.12rem;margin:0 0 .4em;letter-spacing:-.01em}
 .rblede{color:var(--muted);font-size:.93rem;margin:0 0 18px;max-width:78ch}
 ol.rb{list-style:none;margin:0;padding:0;counter-reset:none}
@@ -103,6 +113,72 @@ drift apart.</p>
 <a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="done" href="#s5c"><span class="n">STEP 5c</span><span class="t">The walkthrough</span><span class="b"></span></a><a class="next" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a><a class="later" href="#s7"><span class="n">STEP 7</span><span class="t">The development loop</span><span class="b"></span></a>
 </div>
 
+<section class="strip"><div class="kick">Next action</div><h2>Step 6 — the story breakdown. Open since 2026-09-04</h2><p>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</p><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The skill loads the PRD, the architecture and the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect thirty to sixty minutes.</p></div><div class="sa"><button class="copy" data-t="/bmad-create-epics-and-stories
+
+Create the epics and stories list for Inflozo.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
+Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
+reconcile-designs-decisions.md — the rulings there bind the stories.
+
+Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
+owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
+it into stories; do not re-plan it and do not renumber anything.
+
+Three rules from section 8 that shape the story list and are easy to get wrong:
+  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
+    category. A category story delivers every design in that category against one shared content
+    model and one stylesheet, plus that category&#x27;s behaviour modules.
+  - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
+    the next category from starting.
+  - There are as many owner gates as there are categories, the shell block&#x27;s three included.
+
+Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
+platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
+minimal shell), then the gated categories in inventory order beginning with Heroes.
+
+A category story cannot open until that category&#x27;s design-and-specification session has landed
+its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md&#x27;s Information Architecture gives every surface its frame — and carry a
+    &quot;matches the frame&quot; acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE OWNER TESTS EVERY SCREEN HIMSELF, ON THE DEPLOYED SITE, before its story is done (R-80 as
+    amended 2026-09-04). So every story with a screen must be written so that a non-engineer can
+    test it: its spec will carry &quot;## In plain English&quot; (three sentences: what the user can now do,
+    and what they will see) and &quot;## Owner&#x27;s manual test&quot; (numbered steps — URL, screen, what to do,
+    dummy data to type if any, what should be seen). Write the story&#x27;s acceptance criteria so those
+    two sections can be derived from them without guessing. His findings are fixed inside that
+    story, not by a design pass.
+
+THREE THINGS THE SKILL WILL WANT TO DO THAT THIS PROJECT HAS ALREADY DECIDED:
+  - UX design requirements fold into the section-8 epic that owns the surface — never a separate
+    &quot;design system&quot; or &quot;UX polish&quot; epic.
+  - The E4/E7 joint compile gate and the per-category owner gates are section 8&#x27;s design: record
+    them as exit criteria (the E4/E7 gate is E7&#x27;s closing story); do not restructure the epics to
+    remove forward dependencies.  - At each of the skill&#x27;s [C] continue menus, continue. The skill also stops to ask whether the
+    extracted requirements are accurate, whether you approve the epic structure, whether each story
+    captures its requirement and fits one session, and whether to proceed to the next epic. Section
+    8 and the reconciliation already decided all of those: treat every such confirmation as answered
+    yes and do not stop for it. Stop only for a decision that is genuinely the owner&#x27;s.
+  - Do not invoke bmad-help or offer a next skill at the end; the last act of this run is the commit.
+
+AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
+  - Every question you need him to answer is written in plain English a non-engineer reads, with
+    an example, numbered options, and the option or combination you recommend marked
+    (RECOMMENDED). Collect them under &quot;## Questions for the owner&quot; at the end of epics.md AND
+    repeat them in your final message. When he answers in this chat, write &quot;Ruled: &lt;his words&gt;&quot;
+    under each, adjust the stories, and commit and push &quot;Step 6 - Create - owner ruled: &lt;one line&gt;&quot;.
+  - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.">Copy the step 6 prompt</button><a class="lnk" href="STORY-BOARD.html">Then watch it on STORY-BOARD.html</a></div></section>
+
+<div class="acts">
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 6 — the story breakdown. Open since 2026-09-04</b><span>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</span></li><li><b>The Appendix A Claude Design prompts — two sessions, in parallel with step 6</b><span>Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They block nothing. Export the whole project ONCE after the second session, drop it into the export directory, run the runbook above once, then both generators: the pages that say “not drawn” lift the new frames.</span></li></ol></div>
+</div>
+
 <section class="runbook">
   <h2>When the patched export lands — run these, in this order</h2>
   <p class="rblede">The next export comes from the Appendix A prompts. This is what happens the moment
@@ -113,8 +189,7 @@ drift apart.</p>
 </section>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 6 — the story breakdown. Open since 2026-09-04</b><span>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</span></li><li><b>The Appendix A Claude Design prompts — two sessions, in parallel with step 6</b><span>Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They block nothing. Export the whole project ONCE after the second session, drop it into the export directory, run the runbook above once, then both generators: the pages that say “not drawn” lift the new frames.</span></li></ol></div>
-  <div class="act soon"><h3>Do soon</h3><ol><li><b>The Image-focus sweep — 23 categories</b><span>Image focus was never a shared control: two dozen category specs each enumerate their own copy, which is the owner’s &quot;one control name, one set of values&quot; ruling in its worst form. Pass four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The list is derived by tools/design-patch-prompts-4.py, which tests the real condition — does the spec enumerate the values WITHOUT referencing P0·9 — after its first version got this wrong by assuming a category in the pass had been fixed.</span></li><li><b>Five registry rulings for the architect</b><span>Not yours, and not blocking: A5’s tabs announced twice without JavaScript, A5’s scroller rule having no registry sentence, A13’s walkthrough emitting a heading per panel, A33’s gallery script having no registry entry, and whether group-headings may re-level a heading. One pass covers all five.</span></li></ol></div>
+  
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
@@ -122,7 +197,7 @@ drift apart.</p>
   <div class="shead">
     <span class="snum">1</span>
     <div class="stitle"><h2>Architecture</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s1">complete</a></div>
   </div>
   <p class="stands">Every invariant (the spine is the count), the schema, and its runnable proof. Four stress rounds and a reliability round applied on top.</p>
   <dl><dt>Produces</dt><dd>The architecture spine — the rules everything else is built from.</dd>
@@ -178,7 +253,7 @@ Log to the memlog when you finish:
   <div class="shead">
     <span class="snum">2</span>
     <div class="stitle"><h2>The two E0 spikes</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s2">complete</a></div>
   </div>
   <p class="stands">Both emitters exist and are proven to agree node by node. The platform register is closed to the limit of what is reachable without a Ghost(Pro) site.</p>
   <dl><dt>Produces</dt><dd>Proof the rich-text model works end to end, and executed results for the whole register.</dd>
@@ -243,17 +318,17 @@ This project has been damaged four times by an unverified platform claim enterin
   <div class="shead">
     <span class="snum">3</span>
     <div class="stitle"><h2>Design prompts 2 and 3</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s3">complete</a></div>
   </div>
-  <p class="stands">Every category designed and exported, then patched by the controls-reconciliation pass (P0 primitives plus one patch per category; 39 decisions, all ruled — four later reversed). Every spec ends with its own Reconciliation notes — step 4&#x27;s third input.</p>
-  <dl><dt>Produces</dt><dd>The archetype system and the app screens (prompt 2); every category&#x27;s designs AND their specifications (prompt 3).</dd>
+  <p class="stands">Every category designed and exported, then patched by the controls-reconciliation pass (P0 primitives plus one patch per category; 39 decisions, all ruled — four later reversed). Every spec ends with its own Reconciliation notes — step 4's third input.</p>
+  <dl><dt>Produces</dt><dd>The archetype system and the app screens (prompt 2); every category's designs AND their specifications (prompt 3).</dd>
   </dl>
   
 </section><section class="step done" id="s4">
   <div class="shead">
     <span class="snum">4</span>
     <div class="stitle"><h2>Reconcile designs against the PRD, the architecture and Ghost</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s4">complete</a></div>
   </div>
   <p class="stands">Both halves ran 2026-08-27. 4a reviewed every category spec, P0 and the S/M screens (1,086 findings, 41 probe families, a 1,078-row owner-flag register). The Ghost Build Room then ruled: all 66 ghost-infeasible findings and all five decision-collisions closed, FOUR approved decisions reversed (D3, D17, D26, D27 in half), and four probe families removed — two closed by execution against T1/T3 during the session, two deleted by the native-search ruling. Nine more rulings (R-30 … R-38) were taken on 2026-08-31. Read reconcile-designs-decisions.md §B before trusting any D-number anywhere in this project.</p>
   <dl><dt>Produces</dt><dd>prds/.../reconcile-designs.md and reconcile-designs-decisions.md — every ruling naming the documents that must move. Its ledger records what has landed — R-30 … R-38 on 2026-08-31 (§A3) — and §A12 holds the step-5b/5c review’s six decisions.</dd>
@@ -581,7 +656,7 @@ House rules for tonight:
   <div class="shead">
     <span class="snum">4½</span>
     <div class="stitle"><h2>The inventory merge</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#smerge">complete</a></div>
   </div>
   <p class="stands">The specs merged into sections-inventory.md and the inventory is now GENERATED from the design export and gated, so it cannot drift again. A23 Search deleted whole; the design patch pass run over every category and verified by tools/verify-design-pass.py; both deferred derivations (the per-category Content/Controls/Data unions, and research §7’s design lists) complete; derived-fields-A1-A12.md retired.</p>
   <dl><dt>Produces</dt><dd>An inventory the build can open, that no longer restates a count anywhere.</dd>
@@ -591,20 +666,20 @@ House rules for tonight:
   <div class="shead">
     <span class="snum">5</span>
     <div class="stitle"><h2>Journeys and flows</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s5">complete</a></div>
   </div>
   <p class="stands">Ran 2026-09-03. ux-designs/ux-Inflozo-2026-09-03/ holds DESIGN.md (a TRANSCRIPTION of the design export — on any disagreement the export is right and the spine is the bug, R-74) and EXPERIENCE.md (the IA, the state patterns, the four journeys and the eight flows). Every surface has one stable name and either points at a drawn frame or names the frame it extrapolates from. It found the PAYWALL EDITOR ALREADY DRAWN at C Post Body C3a, which §37.7 called missing; and a library total in S3’s product copy that both controls had been blind to for a THIRD time. Four rulings in §A11 of the decisions file (R-76 … R-79); prd.md FR-D1, FR-J7 and FR-J9 moved.</p>
-  <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per undrawn surface group in EXPERIENCE.md Appendix A (eight of them; its ### A headings are the count). A8 came out of the step’s own stress test: the export draws the editor at 1440 and NOWHERE ELSE, so R-76’s tablet half and the 200%-zoom floor were both prose with no frame behind them.</dd>
+  <dl><dt>Produces</dt><dd>Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count). A8 came out of the step’s own stress test: the export draws the editor at 1440 and NOWHERE ELSE, so R-76’s tablet half and the 200%-zoom floor were both prose with no frame behind them.</dd>
   </dl>
   
 </section><section class="step done" id="s5b">
   <div class="shead">
     <span class="snum">5b</span>
     <div class="stitle"><h2>Static prototype</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s5b">complete</a></div>
   </div>
-  <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. Appendix A’s Claude Design prompts had NOT been run when it was built, so a surface with no frame says so and shows nothing.</p>
-  <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and &lt;b&gt;R-75’s gate: the owner walking it is what unlocks step 6&lt;/b&gt;. Walked means every journey and every flow on index.html opened end to end, with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, The walk, and that section holds the date line, which is his to write. WALKED 2026-09-04 — the date stands; what he found goes to the stories (R-80, §A13).</dd>
+  <p class="stands">BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/prototype/index.html</code></b> — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. Appendix A’s Claude Design prompts had NOT been run when it was built, so a surface with no frame says so and shows nothing.</p>
+  <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and <b>R-75’s gate: the owner walking it is what unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end and the date written on the line under build-sequence.md step 5b, The walk, which is his to write; notes in ux-designs/WALK-NOTES.md were optional. WALKED 2026-09-04 — the date stands. What he found is fixed inside the stories that own the screens, from his own test of each deployed story (R-80 as amended, §A13).</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
@@ -669,8 +744,8 @@ judgement call he should look at hardest.
 5b IS BUILT (2026-09-03) AND THIS PROMPT NOW ONLY REBUILDS OR EXTENDS IT. A change to the
 design belongs in both builds: after editing prototype/build.py run `python3 build.py` there,
 then `python3 build-app.py` in ../walkthrough, then `python3 tools/doc-audit.py --check` TWICE.
-DO NOT OPEN STEP 6: the gate is the OWNER&#x27;S WALK, not the build. The date goes on the line
-under &quot;The walk&quot; in build-sequence.md step 5b, and it is his to write.">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the prototype. It is already built — double-click
+STEP 6 IS OPEN (the owner walked 5b on 2026-09-04); this prompt never touches it — it only
+rebuilds or extends the prototype, and a UI issue he finds now is fixed in its story (R-80).">Copy prompt</button></div><p class="pnote live">Run it only to REBUILD or extend the prototype. It is already built — double-click
   ux-designs/prototype/index.html to walk it. It predates the lift and the unwiring: the frames are
   LIFTED byte-identical and NEVER wired (that was tried and reverted). A session reads
   prototype/build.py’s docstring first, and the prompt says so.</p><pre>Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
@@ -736,16 +811,16 @@ judgement call he should look at hardest.
 5b IS BUILT (2026-09-03) AND THIS PROMPT NOW ONLY REBUILDS OR EXTENDS IT. A change to the
 design belongs in both builds: after editing prototype/build.py run `python3 build.py` there,
 then `python3 build-app.py` in ../walkthrough, then `python3 tools/doc-audit.py --check` TWICE.
-DO NOT OPEN STEP 6: the gate is the OWNER&#x27;S WALK, not the build. The date goes on the line
-under &quot;The walk&quot; in build-sequence.md step 5b, and it is his to write.</pre></div>
+STEP 6 IS OPEN (the owner walked 5b on 2026-09-04); this prompt never touches it — it only
+rebuilds or extends the prototype, and a UI issue he finds now is fixed in its story (R-80).</pre></div>
 </section><section class="step done" id="s5c">
   <div class="shead">
     <span class="snum">5c</span>
     <div class="stitle"><h2>The walkthrough</h2>
-      <span class="badge done">complete</span></div>
+      <a class="badge done" href="#s5c">complete</a></div>
   </div>
-  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html&lt;/code&gt;&lt;/b&gt; — it opens on Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame lifted from the export and patched with links and hooks on the elements it drew. What behaves, read from the build: menus, popovers and sheets open from the control that raises them and close on Esc, their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in &lt;code&gt;_screens.html&lt;/code&gt; with the reason: the on-section design nav and the backup gate (no frame — prompts A5 and A1), the six-step first deploy, the wrong-mechanism frames held out or shown as drawn until A7 runs (§A12 decision 6), and the states no frame draws. &lt;code&gt;_screens.html&lt;/code&gt; and &lt;code&gt;_selfcheck.html&lt;/code&gt; are the two files that are not product screens.</p>
-  <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers &lt;b&gt;is this any good&lt;/b&gt;, where 5b answers &lt;b&gt;is this screen right&lt;/b&gt;. Walked AFTER 5b, for feel; it is not the gate. A change to the design belongs in both.</dd>
+  <p class="stands">The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, every state of a surface stacked on one page — are exactly what stop it feeling like the product. They are also the point of it. So there are TWO BUILDS AND NEITHER REPLACES THE OTHER. BUILT 2026-09-03. <b>Double-click <code>_bmad-output/planning-artifacts/ux-designs/walkthrough/index.html</code></b> — it opens on Sign In, as a user would meet it, with no scaffolding on a product screen. Every screen is a frame lifted from the export and patched with links and hooks on the elements it drew. What behaves, read from the build: menus, popovers and sheets open from the control that raises them and close on Esc, their drawn Cancel or a click outside; segmented controls, tabs and radio lists pick with the drawn selected look; the deploy wizard walks its FOUR drawn steps through the library-update confirm and the snapshot gate; in the editor P opens Preview, Esc leaves it, L hides Layers, every key passing the WCAG 2.1.4 typing guard. NOT in it, and listed in <code>_screens.html</code> with the reason: the on-section design nav and the backup gate (no frame — prompts A5 and A1), the six-step first deploy, the wrong-mechanism frames held out or shown as drawn until A7 runs (§A12 decision 6), and the states no frame draws. <code>_screens.html</code> and <code>_selfcheck.html</code> are the two files that are not product screens.</p>
+  <dl><dt>Produces</dt><dd>The product as a clickable application — the artifact that answers <b>is this any good</b>, where 5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to the design belongs in both.</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>The walkthrough</h4><span class="ptag live">live</span><button class="copy" data-t="Rebuild or extend the Inflozo walkthrough — step 5c.
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
@@ -823,12 +898,12 @@ generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
   <div class="shead">
     <span class="snum">6</span>
     <div class="stitle"><h2>Epics and stories</h2>
-      <span class="badge next">next up</span></div>
+      <a class="badge next" href="#s6">next up</a></div>
   </div>
-  <p class="stands">OPEN SINCE 2026-09-04 — the owner walked 5b and wrote the date under build-sequence.md step 5b, The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every story with a surface names the frame it is built from; per R-80 (§A13) every screen with a line in ux-designs/WALK-NOTES.md carries that line as an acceptance criterion — the walk’s findings are fixed in their stories, not by another design pass first.</p>
+  <p class="stands">OPEN SINCE 2026-09-04 — the owner walked 5b and wrote the date under build-sequence.md step 5b, The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every story with a surface names the frame it is built from; per R-80 as amended (§A13) every story with a screen carries the owner’s manual-test steps and he tests it on the deployed site before it is done — what he finds is fixed in that story, not by another design pass first.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
   </dl>
-  <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
+  <div class="prompt live"><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The skill loads the PRD, the architecture and the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect thirty to sixty minutes.</p></div><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
@@ -850,7 +925,7 @@ Three rules from section 8 that shape the story list and are easy to get wrong:
   - There are as many owner gates as there are categories, the shell block&#x27;s three included.
 
 Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
-platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
@@ -870,11 +945,25 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     two sections can be derived from them without guessing. His findings are fixed inside that
     story, not by a design pass.
 
+THREE THINGS THE SKILL WILL WANT TO DO THAT THIS PROJECT HAS ALREADY DECIDED:
+  - UX design requirements fold into the section-8 epic that owns the surface — never a separate
+    &quot;design system&quot; or &quot;UX polish&quot; epic.
+  - The E4/E7 joint compile gate and the per-category owner gates are section 8&#x27;s design: record
+    them as exit criteria (the E4/E7 gate is E7&#x27;s closing story); do not restructure the epics to
+    remove forward dependencies.  - At each of the skill&#x27;s [C] continue menus, continue. The skill also stops to ask whether the
+    extracted requirements are accurate, whether you approve the epic structure, whether each story
+    captures its requirement and fits one session, and whether to proceed to the next epic. Section
+    8 and the reconciliation already decided all of those: treat every such confirmation as answered
+    yes and do not stop for it. Stop only for a decision that is genuinely the owner&#x27;s.
+  - Do not invoke bmad-help or offer a next skill at the end; the last act of this run is the commit.
+
 AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
   - Every question you need him to answer is written in plain English a non-engineer reads, with
     an example, numbered options, and the option or combination you recommend marked
-    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
-  - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.">Copy prompt</button></div><p class="pnote live">DO NOT RUN before the owner’s walk of 5b has a date under build-sequence.md step 5b, The walk (R-75). Nothing technical stops it; the gate is that line.</p><pre>/bmad-create-epics-and-stories
+    (RECOMMENDED). Collect them under &quot;## Questions for the owner&quot; at the end of epics.md AND
+    repeat them in your final message. When he answers in this chat, write &quot;Ruled: &lt;his words&gt;&quot;
+    under each, adjust the stories, and commit and push &quot;Step 6 - Create - owner ruled: &lt;one line&gt;&quot;.
+  - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.">Copy prompt</button></div><p class="pnote live">Step 6 is open (2026-09-04); the gate is met — the owner’s walk of 5b has its date under build-sequence.md step 5b, The walk (R-75).</p><pre>/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
@@ -896,7 +985,7 @@ Three rules from section 8 that shape the story list and are easy to get wrong:
   - There are as many owner gates as there are categories, the shell block&#x27;s three included.
 
 Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
-platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
@@ -916,36 +1005,38 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     two sections can be derived from them without guessing. His findings are fixed inside that
     story, not by a design pass.
 
+THREE THINGS THE SKILL WILL WANT TO DO THAT THIS PROJECT HAS ALREADY DECIDED:
+  - UX design requirements fold into the section-8 epic that owns the surface — never a separate
+    &quot;design system&quot; or &quot;UX polish&quot; epic.
+  - The E4/E7 joint compile gate and the per-category owner gates are section 8&#x27;s design: record
+    them as exit criteria (the E4/E7 gate is E7&#x27;s closing story); do not restructure the epics to
+    remove forward dependencies.  - At each of the skill&#x27;s [C] continue menus, continue. The skill also stops to ask whether the
+    extracted requirements are accurate, whether you approve the epic structure, whether each story
+    captures its requirement and fits one session, and whether to proceed to the next epic. Section
+    8 and the reconciliation already decided all of those: treat every such confirmation as answered
+    yes and do not stop for it. Stop only for a decision that is genuinely the owner&#x27;s.
+  - Do not invoke bmad-help or offer a next skill at the end; the last act of this run is the commit.
+
 AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
   - Every question you need him to answer is written in plain English a non-engineer reads, with
     an example, numbered options, and the option or combination you recommend marked
-    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+    (RECOMMENDED). Collect them under &quot;## Questions for the owner&quot; at the end of epics.md AND
+    repeat them in your final message. When he answers in this chat, write &quot;Ruled: &lt;his words&gt;&quot;
+    under each, adjust the stories, and commit and push &quot;Step 6 - Create - owner ruled: &lt;one line&gt;&quot;.
   - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.</pre></div>
 </section><section class="step later" id="s6b">
   <div class="shead">
     <span class="snum">6b</span>
     <div class="stitle"><h2>Readiness gate</h2>
-      <span class="badge later">later</span></div>
+      <a class="badge later" href="#s6b">later</a></div>
   </div>
   <p class="stands">Two readiness conditions specific to this project, both about the library running sequentially.</p>
   <dl><dt>Produces</dt><dd>Sprint status tracking, and a go/no-go on opening any story.</dd>
   <dt>Waiting on</dt><dd>step 6</dd></dl>
-  <div class="prompt live"><div class="phead"><h4>Readiness gate</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-sprint-planning
+  <div class="prompt live"><div class="brief"><p><b>Before you paste it</b> — New chat again; the prompt is on the story board&#x27;s top card once step 6 is done. It first judges whether the stories are ready, like a sceptical senior developer reading a hand-over, and answers <b>PASS, CONCERNS or FAIL</b>; then it writes the tracker — the file the board reads to know each story&#x27;s status. On CONCERNS it asks <i>proceed anyway or fix first?</i> — for the E4/E7 gate or the category order say <code>proceed</code>; for anything else say <code>explain in plain English with numbered options</code>, then choose. On FAIL say <code>yes, save the findings</code>, open a new chat and paste: <code>Step 6b failed. Read _bmad-output/planning-artifacts/implementation-readiness.md, fix epics.md so every finding is closed without changing section 8&#x27;s epics or their order, then commit and push &quot;Step 6 - Fix - readiness findings&quot;.</code> — then run 6b again from the board. Expect ten to twenty minutes. Sign it worked: reload the board — the top card is now <i>Story 1.1 — Create the spec</i>, your next prompt.</p></div><div class="phead"><h4>Readiness gate</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-sprint-planning
 
-Check implementation readiness for Inflozo and generate the sprint status tracking from the
-epics.
-
-PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
-
-Two readiness conditions are specific to this project and are not the usual ones:
-  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
-    session has landed its per-design specs in sections-inventory.md (§4). A category whose
-    designs still carry only their one-line descriptor has not been through that session.
-  - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
-    gate, so the sprint plan must not show library categories running in parallel.">Copy prompt</button></div><pre>/bmad-sprint-planning
-
-Check implementation readiness for Inflozo and generate the sprint status tracking from the
-epics.
+Run sprint planning for Inflozo: gate readiness, then generate sprint-status.yaml from
+_bmad-output/planning-artifacts/epics.md — the full flow, not the readiness report alone.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
 
@@ -954,17 +1045,41 @@ Two readiness conditions are specific to this project and are not the usual ones
     session has landed its per-design specs in sections-inventory.md (§4). A category whose
     designs still carry only their one-line descriptor has not been through that session.
   - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
-    gate, so the sprint plan must not show library categories running in parallel.</pre></div>
+    gate, so the sprint plan must not show library categories running in parallel.
+The E4/E7 joint gate and the sequential category chain are by design — record them, do not raise
+them as concerns. Heading warnings from the tracker generator are yours to settle: fix any heading
+that hides a real epic or story, accept the rest, never ask the owner about headings. Any question
+for the owner: plain English, an example, numbered options, one marked (RECOMMENDED). When the
+status file is written, commit and push: &quot;Step 6b - Create - sprint status&quot;. Do not invoke
+bmad-help at the end; the commit is the last act.">Copy prompt</button></div><pre>/bmad-sprint-planning
+
+Run sprint planning for Inflozo: gate readiness, then generate sprint-status.yaml from
+_bmad-output/planning-artifacts/epics.md — the full flow, not the readiness report alone.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+
+Two readiness conditions are specific to this project and are not the usual ones:
+  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
+    session has landed its per-design specs in sections-inventory.md (§4). A category whose
+    designs still carry only their one-line descriptor has not been through that session.
+  - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
+    gate, so the sprint plan must not show library categories running in parallel.
+The E4/E7 joint gate and the sequential category chain are by design — record them, do not raise
+them as concerns. Heading warnings from the tracker generator are yours to settle: fix any heading
+that hides a real epic or story, accept the rest, never ask the owner about headings. Any question
+for the owner: plain English, an example, numbered options, one marked (RECOMMENDED). When the
+status file is written, commit and push: &quot;Step 6b - Create - sprint status&quot;. Do not invoke
+bmad-help at the end; the commit is the last act.</pre></div>
 </section><section class="step later" id="s7">
   <div class="shead">
     <span class="snum">7</span>
     <div class="stitle"><h2>The development loop</h2>
-      <span class="badge later">later</span></div>
+      <a class="badge later" href="#s7">later</a></div>
   </div>
-  <p class="stands">Per story: Create → Dev → Review → Deploy → your test on the live site → Done, with a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options and one marked RECOMMENDED (R-83). The four prompts below are TEMPLATES with placeholders — copy the filled-in prompt for a given story from the story board, STORY-BOARD.html (R-84), which is regenerated on every commit.</p>
+  <p class="stands">Per story: Create → Dev → Review → Deploy → your test on the live site → Done, with a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options and one marked RECOMMENDED (R-83). The prompts below are TEMPLATES with placeholders — copy the filled-in prompt for a given story from the story board, STORY-BOARD.html (R-84), which is regenerated on every commit.</p>
   <dl><dt>Produces</dt><dd>Working software, one story at a time, tested by you before it is done.</dd>
   <dt>Waiting on</dt><dd>step 6 producing the first stories</dd></dl>
-  <div class="prompt template"><div class="phead"><h4>Create — the spec (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: {E.S} and {spec} are filled in per story. Copy the finished prompt from STORY-BOARD.html.</p><pre>/bmad-build
+  <div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — New chat. Paste the whole prompt from the story board (it fills in the story number). The skill reads the epic, investigates, and writes the plan — the spec. <b>It stops and asks you to approve the plan; that is your moment.</b> Read the <code>## In plain English</code> section and the <code>## Owner&#x27;s manual test</code> steps before you approve: if they describe the wrong thing, say so and it re-plans. Approve when the plan describes the right thing to build. It then commits <code>Story {E.S} - Create - …</code> and stops; reload the board.</p></div><div class="phead"><h4>Create — the spec (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: {E.S} and {spec} are filled in per story. Copy the finished prompt from STORY-BOARD.html.</p><pre>/bmad-build
 
 Story {E.S} from _bmad-output/planning-artifacts/epics.md — CREATE THE SPEC ONLY. Stop when the spec
 reaches ready-for-dev; do not implement in this run.
@@ -978,27 +1093,62 @@ Read docs/project-context.md first; its rulings bind. Besides the template&#x27;
     numbered options, one marked (RECOMMENDED) (R-83). Otherwise omit the section.
   - The frame the surface is built from, named, with a &quot;matches the frame&quot; acceptance criterion
     (R-74; EXPERIENCE.md&#x27;s Information Architecture names every surface&#x27;s frame).
-  - `owner_test: pending` in the frontmatter of any story with a screen.
-Then commit and push: &quot;Story {E.S} - Create - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="phead"><h4>Dev — implement (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-build
+  - `owner_test: pending` in the frontmatter of any story with a screen; `owner_test: none` for a story
+    with no screen (schema, tooling, a server-only change).
+  - In E9 and E10 (the shell block and the gated library), refuse to plan a category story unless the
+    previous story in that epic is `done` in sprint-status.yaml — the owner&#x27;s gate. A category story&#x27;s
+    &quot;## Verification&quot; lists PRD §4&#x27;s automated sheet as commands with expected results.
+  - Any question for the owner: plain English, an example, numbered options, one marked
+    (RECOMMENDED), under &quot;## Questions for the owner&quot; — then stop and say so.
+Then commit and push: &quot;Story {E.S} - Create - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — New chat, never the one that planned it. Paste the whole prompt. The session builds against the spec only, ticks each task, runs its checks on the real services, and stops before review. Nothing is asked of you unless a question arrives in the plain-English shape. It commits <code>Story {E.S} - Dev - …</code>; reload the board — the story moves to <i>In review</i>.</p></div><div class="phead"><h4>Dev — implement (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-build
 
 Story {E.S} — IMPLEMENT the spec at {spec}. It is the sole source of truth; read
 docs/project-context.md first. Tick every task, satisfy every acceptance criterion, and write
 &quot;## Verification&quot; naming the real services the story hit (Supabase, Vercel, Resend, Dodo, the Ghost
-test servers T1/T3 — keys in tools/probe/.env, never printed) and what each returned (R-82). Stop
-before the review phase. Then commit and push: &quot;Story {E.S} - Dev - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="phead"><h4>Review (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-code-review
+test servers T1/T3 — keys in tools/probe/.env, never printed; record a key by its variable name, never
+its value) and what each returned (R-82). Stop before the review phase. Any question for the owner:
+plain English, an example, numbered options, one marked (RECOMMENDED), under &quot;## Questions for the
+owner&quot; — then stop and say so. Then commit and push: &quot;Story {E.S} - Dev - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — New chat — a review must not share the builder&#x27;s context. Paste the whole prompt. Several independent reviewers read the change, one of them verifies it against the real services. Findings are fixed automatically where they are plain patches; anything that is genuinely your call arrives as a numbered question. It ends by saying how many findings it fixed; more than a handful, paste the same prompt again in a new chat; stop when the findings are small. It commits <code>Story {E.S} - Review - …</code>.</p></div><div class="phead"><h4>Review (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-code-review
 
 Review story {E.S}: the diff since the baseline_commit in {spec}, against that spec. Read
 docs/project-context.md first. Run every review layer, the Real-infra verifier included — the review
 runs on the real infrastructure, never mocks alone (R-82). Triage the findings; fix what is a patch;
 anything that is the owner&#x27;s to decide goes under &quot;## Questions for the owner&quot; in the spec in plain
-English with an example, numbered options and one marked (RECOMMENDED) (R-83). Then commit and
-push: &quot;Story {E.S} - Review - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="phead"><h4>Fix — the owner’s findings (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-build
+English with an example, numbered options and one marked (RECOMMENDED) (R-83). At the skill&#x27;s menus:
+proceed, apply every patch, done. A clean review leaves the story in review — it never marks it done;
+Done is the owner&#x27;s (R-80). Then commit and push: &quot;Story {E.S} - Review - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — New chat. Paste the whole prompt (it starts with plain text, not a slash — that is fine). The session puts the change live on the real site — there is only one, and it is the one under test — writes the live URLs into your test steps, and commits <code>Story {E.S} - Deploy - …</code>. Reload the board: the story sits in the gold column, <i>Deployed, your test</i>, and the next-action card is yours.</p></div><div class="phead"><h4>Deploy (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>Deploy story {E.S} to the real stack — the one pre-launch stack (PRD §4 and AD-26: production is the
+stack under test), reading docs/project-context.md first. Deploy means what the story changed is live:
+app code — the push to main already builds the production Vercel project once E1&#x27;s integration exists,
+so confirm that deployment is Ready and record `Deployment: &lt;url or id&gt;` under &quot;## Verification&quot;; a
+schema change — the migration applied and RLS-TEST.sql green; tooling — nothing. Keys are in
+tools/probe/.env: read them only into a command&#x27;s environment, never cat, echo or print one, and record
+every command with the key&#x27;s variable name. Then open {spec}: fill the live URL into every step of
+&quot;## Owner&#x27;s manual test&quot; and keep owner_test: pending; if the story has no screen (owner_test: none),
+mark it done in sprint-status.yaml instead. Regenerate the story board (python3 tools/story-board.py),
+run the gate twice, and commit and push: &quot;Story {E.S} - Deploy - &lt;one line&gt;&quot; (or &quot;- Done -&quot; for a
+no-screen story). Any question for the owner: plain English, an example, numbered options, one marked
+(RECOMMENDED), under &quot;## Questions for the owner&quot; — then stop and say so. Finally show the owner the
+test steps, in plain English.</pre></div><div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — New chat. Paste the whole prompt after your findings have been recorded (the Record prompt does that). The session fixes every finding inside this story and stops; it commits <code>Story {E.S} - Fix - …</code>. Then Review, Deploy and your test again — the loop repeats until you pass it.</p></div><div class="phead"><h4>Fix — the owner’s findings (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>/bmad-build
 
 Story {E.S} — FIX the owner&#x27;s test findings. Read docs/project-context.md, then {spec}: the findings
 are under &quot;## Owner&#x27;s test findings&quot; (set owner_test: issues). Fix every one inside this story — never
 by a design pass — keeping the spec&#x27;s frozen intent. When done, &quot;## Verification&quot; is refreshed
 against the real services (R-82), and the story goes back through Review and Deploy for the owner
-to test again. Commit and push: &quot;Story {E.S} - Fix - &lt;one line&gt;&quot;.</pre></div>
+to test again. Any question for the owner: plain English, an example, numbered options, one marked
+(RECOMMENDED), under &quot;## Questions for the owner&quot; — then stop and say so. Commit and push:
+&quot;Story {E.S} - Fix - &lt;one line&gt;&quot;.</pre></div><div class="prompt template"><div class="brief"><p><b>Before you paste it</b> — Do the test first, on the live site, following the numbered steps in the story&#x27;s panel (click the story&#x27;s card; the panel slides in). Then open a chat, paste this prompt, and write under it what you saw — <code>passed</code>, or one line per problem — or, for a question the story asked you, <code>Ruled:</code> and your answer. The session records it, commits <code>Story {E.S} - Test - …</code> or <code>- Done -</code>, and tells you which prompt is next. Your ruling always goes through chat, never by editing a file.</p></div><div class="phead"><h4>Record — your test, or your answer (template)</h4><span class="ptag template">template</span></div><p class="pnote template">A template: copy the finished prompt for a story from STORY-BOARD.html.</p><pre>I tested story {E.S} on the live site, or I am answering its question. What I found, or my answer:
+&lt;write &quot;passed&quot;, or one line per problem, or &quot;Ruled: &lt;your words&gt;&quot; for a question&gt;
+
+Record it in {spec} (read docs/project-context.md first). Passed: set owner_test: passed, mark the
+story done in _bmad-output/implementation-artifacts/sprint-status.yaml, regenerate the story board
+(python3 tools/story-board.py), run the gate twice, commit and push: &quot;Story {E.S} - Done - accepted by
+the owner&quot;. Problems: write each one under &quot;## Owner&#x27;s test findings&quot; in my words, set owner_test:
+issues, regenerate the board, commit and push: &quot;Story {E.S} - Test - &lt;n&gt; findings&quot;; the Fix prompt is
+next. A ruling: write &quot;Ruled: &lt;my words&gt;&quot; under that question in &quot;## Questions for the owner&quot;, put the
+spec&#x27;s status back to what it was before the halt, regenerate the board, commit and push:
+&quot;Story {E.S} - &lt;the phase that halted&gt; - owner ruled: &lt;one line&gt;&quot;, and tell me which prompt to run
+next. Never print a key. If anything is unclear, ask me in plain English with an example, numbered
+options and one marked (RECOMMENDED).</pre></div>
 </section>
 
 <footer>Generated 2026-09-04 from <code>build-sequence.md</code>, which governs on any conflict.

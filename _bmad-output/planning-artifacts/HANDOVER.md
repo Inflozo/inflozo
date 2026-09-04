@@ -2,7 +2,7 @@
 title: Inflozo — handover for a fresh session
 status: live
 created: 2026-08-21
-updated: 2026-09-03
+updated: 2026-09-04
 purpose: everything a new chat needs to continue, without reading the previous conversation
 ---
 
@@ -46,14 +46,18 @@ python3 tools/doc-audit.py --check        # the documentation gate
 ## The immediate task
 
 **Step 6 — the story breakdown — is open.** The owner walked 5b on **2026-09-04** and the date stands
-under `build-sequence.md` step 5b, *The walk* (R-75's gate, a human tick no tool reads). His note there
-is **ruling R-80** (`reconcile-designs-decisions.md` §A13), amended by him the same day: UI issues are fixed
-inside the stories that own their screens, not by another Claude Design pass — and they come from **his own
-test of each UI story on the deployed site**, from the spec's `## Owner's manual test`, not from notes
-written in advance.
+under `build-sequence.md` step 5b, *The walk* (R-75's gate, a human tick no tool reads).
+
+**In his words, what he decided that day and what it means for every session from here:** he tests
+each screen himself once it is live, and what he finds is fixed in that story, not by a design pass ·
+every phase of every story is saved and pushed to `main` the moment it ends · review and testing run on
+the real services, never on pretend ones · every question to him arrives in plain English with an
+example, the options, and one marked (RECOMMENDED) · he watches all of it on `STORY-BOARD.html`, where
+each story carries its prompts and, when it is his turn, his test steps. The rulings behind those
+sentences are R-80 (amended) and R-81 to R-84, `reconcile-designs-decisions.md` §A13–§A14.
 
 **Five rulings from 2026-09-04 bind the development loop that step 6 opens** (`reconcile-designs-decisions.md`
-§A13–§A14; bound inside the BMAD skills by `docs/project-context.md` and the `_bmad/custom/*.user.toml`
+§A13–§A14; bound inside the BMAD skills by `docs/project-context.md` and the committed `_bmad/custom/*.toml`
 overrides): **R-80 (amended)** — the owner tests every UI story on the deployed site from the spec's
 `## Owner's manual test`, and his findings are fixed inside that story; **R-81** — after every story phase,
 commit and push to `main` as `Story <epic>.<story> - <Phase> - <one line>`; **R-82** — review and test run on
@@ -74,7 +78,7 @@ as another**, then one export of the whole project and the board's runbook once.
 |---|---|---|
 | Answers | *is this screen right?* | *is this any good?* |
 | Carries | the frame reference, the journey trails, every state of a surface on one page | nothing but the product |
-| Behaves | no — it depicts; **its frames are never wired** | yes — menus, popovers and sheets; picks; the four-step deploy wizard; `P`, `L`, `Esc` in the editor. **Not the design ring or the backup gate** — held out until prompts A5 and A1 run |
+| Behaves | no — it depicts; **its frames are never wired** | yes — menus, popovers and sheets; picks; the four-step deploy wizard; `P`, `L`, `Esc` in the editor. **Not the on-section design nav or the backup gate** — held out until prompts A5 and A1 run |
 | **A design change** | **belongs here** | **and here** |
 
 > ⚠️ **READ THIS BEFORE TOUCHING EITHER BUILD.** The first cut of both was authored from a **text
@@ -110,7 +114,7 @@ confirm and the snapshot gate; in the editor `P` opens Preview, `Esc` leaves it,
 FR-D11's map has no drawn result to land on — and every key passes the WCAG 2.1.4
 typing guard. **What is held out** is listed in `_screens.html` under three headings — no frame yet
 (an Appendix A prompt owes it: the first-deploy gates, so **the backup gate is not in it**; the canvas
-markers, so **the design ring is not in it**), drawn on a mechanism a ruling re-specifies (held out
+markers, so **the on-section design nav is not in it**), drawn on a mechanism a ruling re-specifies (held out
 or shown as drawn until A7 runs — §A12 decision 6), and states no frame draws. The owner read 5b and
 said the true thing: its annotations are exactly what stop it feeling like the product. They are also
 the point of it, so 5c drops them and adds behaviour instead. **What is shared with 5b is exactly
@@ -199,8 +203,7 @@ the owner's instruction to clear them before step 5, and R-29's long-outstanding
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **What is owed now is step 5's Claude Design prompts** — eight
-of them, in `EXPERIENCE.md` Appendix A, whose `### A` headings are the count. They block nothing.
+record and every structural check passes. **What is owed now is the two Claude Design sessions of Appendix A** — A7 with A8, then A1 to A6, from `APPENDIX-A-PROMPTS.html`; its `### A` headings are the count. They block nothing, and one export after both sessions is enough.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive

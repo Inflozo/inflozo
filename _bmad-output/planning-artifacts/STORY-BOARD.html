@@ -85,16 +85,16 @@ border-radius:12px;padding:9px 16px 10px;box-shadow:var(--sh)}
 .next details{flex-basis:100%}.next summary{cursor:pointer;font-size:.8rem;color:var(--accent)}
 .next pre{margin:6px 0 0;max-height:200px}
 .board{flex:1;min-height:0;display:grid;grid-template-columns:var(--rail) 1fr;gap:12px;padding:10px 18px 10px}
-.rail{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px;min-height:0}
+.rail{overflow:auto;display:flex;flex-direction:column;gap:4px;padding-right:3px;min-height:0}
 .ep{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
-border-radius:10px;padding:7px 10px;cursor:pointer;color:var(--ink);flex:none}
+border-radius:8px;padding:4px 8px;cursor:pointer;color:var(--ink);flex:none;display:flex;gap:6px;align-items:center;
+position:relative;overflow:hidden;line-height:1.3}
 .ep:hover{border-color:var(--accent)}.ep.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
 .ep.done{border-left-color:var(--good)}.ep.progress{border-left-color:var(--accent)}
-.ep .et{display:flex;gap:6px;align-items:baseline;font-size:.78rem;font-weight:650;line-height:1.25}
-.ep .en{color:var(--muted);font-weight:700;font-size:.68rem;flex:none}
-.ep .em{display:block;color:var(--muted);font-size:.7rem;margin-top:2px}
-.epbar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
-.epbar i{display:block;height:100%;background:var(--good)}
+.ep .en{color:var(--muted);font-weight:700;font-size:.66rem;flex:none;min-width:22px}
+.ep .et{flex:1;min-width:0;font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep .em{color:var(--muted);font-size:.66rem;flex:none;white-space:nowrap}
+.ep .epbar{position:absolute;left:0;bottom:0;height:2px;background:var(--good)}
 .lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;min-height:0}
 .lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;border:1px solid var(--line)}
 .lane h2{font-size:.78rem;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);line-height:1.2}
@@ -106,7 +106,8 @@ font-size:.7rem;color:var(--muted);white-space:nowrap}
 .lane.test{border-color:var(--warn)}
 .cards{overflow:auto;flex:1;padding:8px;display:flex;flex-direction:column;gap:8px}
 .card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--wait);border-radius:9px;
-padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none}
+padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none;cursor:pointer}
+.card:hover{border-color:var(--accent)}
 .card.ready,.card.progress,.card.review{border-left-color:var(--accent)}.card.test{border-left-color:var(--warn)}
 .card.done{border-left-color:var(--good);opacity:.8}.card.issues,.card.blocked{border-left-color:var(--crit)}
 .card .ch{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
@@ -116,19 +117,20 @@ padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none}
 border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
 .ph.Test{background:var(--warn-s);color:var(--warn)}.ph.Fix,.ph.Blocked{background:var(--crit-s);color:var(--crit)}
 .ph.Done{background:var(--good-s);color:var(--good)}.ph.Dev,.ph.Review,.ph.Deploy{background:var(--accent-s);color:var(--accent)}
-.card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}.card h3 a{color:inherit;text-decoration:none}
-.card h3 a:hover{color:var(--accent)}
+.card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
 background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
-.cp.ok,.btn.ok{background:var(--good);border-color:var(--good);color:#fff}
-.more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:700;padding:0 7px;border-radius:6px;
-border:1px solid var(--line);font-size:.8rem;line-height:1.5}
+.cp.ok,.btn.ok,.cpv.ok{background:var(--good);border-color:var(--good);color:#fff}
+.more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:600;padding:0 7px;border-radius:6px;
+border:1px solid var(--line);font-size:.7rem;line-height:1.7}
 .more:hover{color:var(--accent);border-color:var(--accent)}
 .empty{color:var(--muted);font-size:.76rem;padding:10px 8px;text-align:center;line-height:1.45}
 .tag{display:inline-block;font-size:.64rem;font-weight:700;padding:1px 7px;border-radius:99px;vertical-align:middle;
 text-transform:uppercase;letter-spacing:.04em}
+.tag.long{text-transform:none;letter-spacing:0}
 .tag.warn{background:var(--warn);color:#fff}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
+.flag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--warn)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
 box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:21;overflow:auto;padding:16px 22px 48px}
@@ -154,20 +156,25 @@ background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:
 .flags{margin:4px 0 0}
 .tbox{border:1px solid var(--accent);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
 .tbox h3{color:var(--accent);margin-top:4px}
-.tw{overflow-x:auto;max-width:100%}
-table.mt{border-collapse:collapse;width:100%;font-size:.8rem;margin:6px 0}
-.mt th,.mt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
-.mt th{background:var(--code);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.steps{padding-left:1.4em;font-size:.88rem}.steps li{margin:4px 0}
+.steps{padding-left:1.4em;font-size:.88rem}.steps li{margin:8px 0}.steps label{display:block}
+.steps .see{margin:3px 0 0 22px}.steps .dummy{margin:3px 0 0 22px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.84rem}
+.steps .dummy code{font-size:.9em;padding:2px 6px}
+.cpv{font:inherit;font-size:.68rem;font-weight:650;padding:1px 7px;border-radius:6px;border:1px solid var(--accent);
+background:var(--card);color:var(--accent);cursor:pointer}
 .tasks{list-style:none;padding:0;margin:0}.tasks li{padding:2px 0 2px 22px;position:relative;font-size:.86rem}
 .tasks li::before{content:'☐';position:absolute;left:2px;color:var(--muted)}.tasks li.done::before{content:'☑';color:var(--good)}
 .tasks li.done{color:var(--muted)}
 .ct{width:100%;border-collapse:collapse;font-size:.8rem}.ct td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:top}
 .ct td:first-child{white-space:nowrap;color:var(--muted)}
+details.eng{margin:14px 0;border:1px solid var(--line);border-radius:10px;padding:0 12px}
+details.eng summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--muted);padding:8px 0;text-transform:uppercase;letter-spacing:.07em}
+details.eng[open] summary{border-bottom:1px solid var(--line)}details.eng h3:first-of-type{margin-top:10px}
 .pr{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
 .pr.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
 .prh{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--code);font-size:.84rem}.prh b{flex:1}
 .pr pre{border:0;border-radius:0;margin:0;max-height:280px}
+.brief{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:6px 0;font-size:.86rem}
+.pr .brief{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0}.next .brief{flex-basis:100%;margin:0 0 8px}
 .links{font-size:.84rem;color:var(--muted);margin-top:16px}
 .dw{border-top:1px solid var(--line);padding:8px 0}.dw:first-of-type{border-top:0}.dw b{display:block}
 .help p{margin:6px 0;font-size:.92rem;line-height:1.55}.help dt{font-weight:700;margin-top:8px}.help dd{margin:0 0 4px;color:var(--muted);font-size:.9rem}
@@ -183,10 +190,10 @@ footer{padding:6px 18px;margin:0;border-top:1px solid var(--line);font-size:.72r
   <div class="tools"><input id="q" type="search" placeholder="Search stories  ( / )" aria-label="search stories">
     <button class="btn" data-panel="questions">Questions for you <b class="zero">0</b></button>
     <button class="btn" data-panel="activity">Activity</button>
-    <button class="btn" data-panel="deferred">Deferred</button>
+    <button class="btn" data-panel="deferred" title="small things put off for later">Deferred</button>
     <button class="btn" data-panel="help">Help</button></div>
 </header>
-<section class="next setup"><div class="nh"><span class="kick">Next action</span><h2>Run step 6 — the story breakdown</h2></div><p>There is no epics.md yet, so the lanes are empty and the epics on the left come from the PRD. Copy this prompt into a Claude Code chat; it writes the epics and stories, and the board fills on the next commit.</p><div class="na"><button class="btn copy" data-copy="na-prompt">Copy prompt</button><details><summary>Show the prompt</summary><pre id="na-prompt">/bmad-create-epics-and-stories
+<section class="next setup"><div class="nh"><span class="kick">Next action</span><h2>Run step 6 — the story breakdown</h2></div><p>The stories are not written yet. Copy this prompt into a Claude Code chat; when that session finishes it saves its work and this page fills itself — press reload.</p><div class="brief"><div class="md"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The skill loads the PRD, the architecture and the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked <span class="tag good">RECOMMENDED</span> — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect thirty to sixty minutes.</p></div></div><div class="na"><button class="btn copy" data-copy="na-prompt">Copy prompt</button><details><summary>Show the prompt</summary><pre id="na-prompt">/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
@@ -208,7 +215,7 @@ Three rules from section 8 that shape the story list and are easy to get wrong:
   - There are as many owner gates as there are categories, the shell block&#x27;s three included.
 
 Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
-platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
@@ -228,31 +235,46 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     two sections can be derived from them without guessing. His findings are fixed inside that
     story, not by a design pass.
 
+THREE THINGS THE SKILL WILL WANT TO DO THAT THIS PROJECT HAS ALREADY DECIDED:
+  - UX design requirements fold into the section-8 epic that owns the surface — never a separate
+    &quot;design system&quot; or &quot;UX polish&quot; epic.
+  - The E4/E7 joint compile gate and the per-category owner gates are section 8&#x27;s design: record
+    them as exit criteria (the E4/E7 gate is E7&#x27;s closing story); do not restructure the epics to
+    remove forward dependencies.  - At each of the skill&#x27;s [C] continue menus, continue. The skill also stops to ask whether the
+    extracted requirements are accurate, whether you approve the epic structure, whether each story
+    captures its requirement and fits one session, and whether to proceed to the next epic. Section
+    8 and the reconciliation already decided all of those: treat every such confirmation as answered
+    yes and do not stop for it. Stop only for a decision that is genuinely the owner&#x27;s.
+  - Do not invoke bmad-help or offer a next skill at the end; the last act of this run is the commit.
+
 AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
   - Every question you need him to answer is written in plain English a non-engineer reads, with
     an example, numbered options, and the option or combination you recommend marked
-    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+    (RECOMMENDED). Collect them under &quot;## Questions for the owner&quot; at the end of epics.md AND
+    repeat them in your final message. When he answers in this chat, write &quot;Ruled: &lt;his words&gt;&quot;
+    under each, adjust the stories, and commit and push &quot;Step 6 - Create - owner ruled: &lt;one line&gt;&quot;.
   - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.</pre></details></div></section>
 <main class="board">
-  <nav class="rail" aria-label="epics"><button class="ep all" data-e=""><span class="et">All epics</span><span class="em">16 epics · 0 stories</span></button><button class="ep backlog" data-e="0" title="Owns no FRs; owns two blocking spikes."><span class="et"><span class="en">E0</span><span>De-risking Spikes</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="1" title="Owns FR-A1, FR-B3, FR-B4, FR-B5, FR-P1 emails (1)–(2)."><span class="et"><span class="en">E1</span><span>Foundations &amp; Design System</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="2" title="Owns FR-A2–A6."><span class="et"><span class="en">E2</span><span>Accounts &amp; Passkeys</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="3" title="Owns FR-C1–C6, FR-C8, FR-P1 email (3)."><span class="et"><span class="en">E3</span><span>Sites &amp; Connections</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="4" title="Owns FR-F1–F8, FR-G3, FR-G7, FR-G8, FR-H1, FR-H3, FR-H5, FR-H7, FR-H8, and FR-Q6&#x27;s string-catalog format."><span class="et"><span class="en">E4</span><span>Section Runtime Platform</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="5" title="Owns FR-D1–D22, FR-H2, FR-H4, FR-H6."><span class="et"><span class="en">E5</span><span>Editor Shell</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="6" title="Owns FR-E1–E5."><span class="et"><span class="en">E6</span><span>Style Packs</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="7" title="Owns FR-I1–I6, FR-J1–J17 (including FR-J4&#x27;s two-bundle emission and the `size-limit` gate), FR-K5, FR-Q1–Q5, FR-Q7–Q10, FR-Q6&#x27;s Translations surface and `locales/` emission, FR-P1 email (5)."><span class="et"><span class="en">E7</span><span>Compiler, Deploy &amp; Routes</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="8" title="Owns FR-K1–K4, FR-K6."><span class="et"><span class="en">E8</span><span>Asset Library</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="9" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for Group 1 (Headers &amp; Navigation, Announcement Bars, Footers)."><span class="et"><span class="en">E9</span><span>The Shell Block</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="10" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for every category outside Group 1."><span class="et"><span class="en">E10</span><span>The Gated Library Pipeline</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="11" title="Owns FR-G2 (the Free-tier floor, verifiable only once every category exists) and FR-O1–O4."><span class="et"><span class="en">E11</span><span>Starters</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="12" title="Owns FR-L1–L5, FR-P1 email (4) and the conditional annual-renewal email (6), FR-P2."><span class="et"><span class="en">E12</span><span>Billing &amp; Entitlements</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="13" title="Owns FR-M1–M4, FR-B1, FR-B2, FR-B6, FR-B7, FR-C7."><span class="et"><span class="en">E13</span><span>Suggestions, Notifications &amp; Dashboard Completion</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="14" title="Owns FR-N1–N5, FR-P3."><span class="et"><span class="en">E14</span><span>Marketing Site &amp; Docs</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="15" title="Owns no new FRs; owns the launch gates."><span class="et"><span class="en">E15</span><span>Hardening &amp; Launch</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button></nav>
+  <nav class="rail" aria-label="epics"><button class="ep all" data-e=""><span class="et">All epics</span><span class="em">16 epics · 0 stories</span></button><button class="ep backlog" data-e="0" title="Owns no FRs; owns two blocking spikes."><span class="en">E0</span><span class="et">De-risking Spikes</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="1" title="Owns FR-A1, FR-B3, FR-B4, FR-B5, FR-P1 emails (1)–(2)."><span class="en">E1</span><span class="et">Foundations &amp; Design System</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="2" title="Owns FR-A2–A6."><span class="en">E2</span><span class="et">Accounts &amp; Passkeys</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="3" title="Owns FR-C1–C6, FR-C8, FR-P1 email (3)."><span class="en">E3</span><span class="et">Sites &amp; Connections</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="4" title="Owns FR-F1–F8, FR-G3, FR-G7, FR-G8, FR-H1, FR-H3, FR-H5, FR-H7, FR-H8, and FR-Q6&#x27;s string-catalog format."><span class="en">E4</span><span class="et">Section Runtime Platform</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="5" title="Owns FR-D1–D22, FR-H2, FR-H4, FR-H6."><span class="en">E5</span><span class="et">Editor Shell</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="6" title="Owns FR-E1–E5."><span class="en">E6</span><span class="et">Style Packs</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="7" title="Owns FR-I1–I6, FR-J1–J17 (including FR-J4&#x27;s two-bundle emission and the `size-limit` gate), FR-K5, FR-Q1–Q5, FR-Q7–Q10, FR-Q6&#x27;s Translations surface and `locales/` emission, FR-P1 email (5)."><span class="en">E7</span><span class="et">Compiler, Deploy &amp; Routes</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="8" title="Owns FR-K1–K4, FR-K6."><span class="en">E8</span><span class="et">Asset Library</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="9" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for Group 1 (Headers &amp; Navigation, Announcement Bars, Footers)."><span class="en">E9</span><span class="et">The Shell Block</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="10" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for every category outside Group 1."><span class="en">E10</span><span class="et">The Gated Library Pipeline</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="11" title="Owns FR-G2 (the Free-tier floor, verifiable only once every category exists) and FR-O1–O4."><span class="en">E11</span><span class="et">Starters</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="12" title="Owns FR-L1–L5, FR-P1 email (4) and the conditional annual-renewal email (6), FR-P2."><span class="en">E12</span><span class="et">Billing &amp; Entitlements</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="13" title="Owns FR-M1–M4, FR-B1, FR-B2, FR-B6, FR-B7, FR-C7."><span class="en">E13</span><span class="et">Suggestions, Notifications &amp; Dashboard Completion</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="14" title="Owns FR-N1–N5, FR-P3."><span class="en">E14</span><span class="et">Marketing Site &amp; Docs</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button><button class="ep backlog" data-e="15" title="Owns no new FRs; owns the launch gates."><span class="en">E15</span><span class="et">Hardening &amp; Launch</span><span class="em" title="stories done">—</span><i class="epbar" style="width:0%"></i></button></nav>
   <div class="lanes"><section class="lane backlog"><h2>Backlog<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane ready"><h2>Ready<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane progress"><h2>In progress<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane review"><h2>In review<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane test"><h2>Deployed, your test<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane done"><h2>Done<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section></div>
 </main>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" hidden aria-label="details"><button class="close" aria-label="close">✕ close</button><div id="dbody"></div></aside>
-<div id="details" hidden><section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">0 open</span></h2><p class="fine">Everything the build needs you to decide, across every story. Open one, read the options, answer in chat by number.</p><p class="fine">Nothing is waiting on you. A question appears here the moment a spec writes one under "Questions for the owner".</p></section><section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last 0 story commits</span></h2><p class="fine">No story commits yet. Every phase ends with one, shaped <code>Story E.S - Phase - one line</code>, and they appear here as they land.</p></section><section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">0 entries</span></h2><p class="fine">Things a review chose not to do inside its story. Each is a small decision for later, not a bug in what shipped.</p><p class="fine">Nothing has been deferred. The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.</p></section><section class="pd help" id="pd-help" hidden><h2>How to read this board</h2>
-<p>Every card is one story. A story moves left to right as it is built, and it comes to you once, in the amber lane.</p>
+<div id="details" hidden><section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">0 open</span></h2><p class="fine">Everything the build needs you to decide, across every story. Open one, read the options, answer in chat by number.</p><p class="fine">Nothing is waiting on you. A question appears here the moment a spec writes one under "Questions for the owner".</p></section><section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last 0 commits</span></h2><p class="fine">No story commits yet. Every phase ends with one, shaped <code>Story E.S - Phase - one line</code>, and they appear here as they land.</p><h3>Unreadable commits <span class="fine">6</span></h3><p class="fine">These start like a story, step, hotfix or retro commit but do not fit the shape <code>Story E.S - Phase - one line</code> (or <code>Step n - Phase - …</code>, <code>Hotfix - …</code>, <code>Epic N - Retro - …</code>), so the board cannot read them. The commit-msg hook rejects new ones.</p><table class="ct"><tr><td>2026-09-03</td><td><code>59b28a75</code></td><td>Step 5b lifts the frames too, and says nothing where nothing was drawn</td></tr><tr><td>2026-09-03</td><td><code>b1d4730a</code></td><td>Step 5c — the same product, with the scaffolding off and the behaviour on</td></tr><tr><td>2026-09-03</td><td><code>61127bb3</code></td><td>Step 5b gets the two things it would otherwise have to guess, and the prompts get their runbook</td></tr><tr><td>2026-09-03</td><td><code>92beed7d</code></td><td>Step 5 — the four journeys and the eight flows, and the Paywall editor was drawn all along</td></tr><tr><td>2026-09-02</td><td><code>7340cd60</code></td><td>Step 5&#x27;s prompt, rewritten and stress-tested three times</td></tr><tr><td>2026-08-27</td><td><code>2522daf4</code></td><td>Step 4 complete: the Ghost Build Room&#x27;s 29 rulings, propagated</td></tr></table></section><section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">0 entries</span></h2><p class="fine">Small things put off for later: a review chose not to do them inside its story. Each is a small decision for later, not a bug in what shipped.</p><p class="fine">Nothing has been deferred. The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.</p></section><section class="pd help" id="pd-help" hidden><h2>How to read this board</h2>
+<p>Every card is one story. A story moves left to right as it is built, and it comes to you once, in the gold column.</p>
 <dl>
-<dt>Backlog</dt><dd>Not started. Its spec has not been written.</dd>
+<dt>Backlog</dt><dd>Not started. Its spec (the written plan for the story) has not been written.</dd>
 <dt>Ready</dt><dd>The spec is written and waiting to be built.</dd>
 <dt>In progress</dt><dd>Being built now.</dd>
 <dt>In review</dt><dd>Being checked against the real services, then deployed. Nothing for you to do yet.</dd>
-<dt>Deployed, your test</dt><dd>Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed.</dd>
+<dt>Deployed, your test</dt><dd>The gold column. Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed. A story with no screen skips your test: say "done" in chat and the Record prompt closes it.</dd>
 <dt>Done</dt><dd>You accepted it.</dd>
 </dl>
-<p><b>The phases.</b> Create (write the spec) → Dev (build it) → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
-<p><b>The prompts.</b> Each card carries a copy button for the phase it is in; the story panel carries every phase's prompt. Paste one into a Claude Code chat exactly as copied, including the first line that starts with a slash.</p>
-<p><b>The commit rule.</b> Every phase ends with a commit and push to main, shaped <code>Story E.S - Phase - one line</code>. This board reads those commits, so a story's history is its commit list, and the board itself is regenerated on every commit — reload it after each one.</p>
+<p><b>The phases.</b> Create (write the spec) → Build → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
+<p><b>The prompts.</b> Each card carries one Copy prompt button, for the phase on its badge; Details shows every phase's prompt. Paste it into a Claude Code chat exactly as copied, top to bottom — some begin with a /command, some do not.</p>
+<p><b>Reload.</b> Reload this page whenever a session says it has saved. Every save is a commit shaped <code>Story E.S - Phase - one line</code>, this board is rebuilt from those commits, and a story's history is its commit list.</p>
 <p><b>Questions for you.</b> The inbox in the top bar lists every open question across every story. Each is plain English with numbered options and one marked RECOMMENDED; answer in chat by number.</p>
+<p><b>Waits for.</b> In the two library epics the stories run one at a time behind your category gate, so only the first open one carries a prompt; the rest say which story they wait for.</p>
 <p><b>Keys.</b> <code>/</code> focuses the search, <code>Esc</code> closes a panel. The ticks on a test script are stored in this browser only; your verdict still goes through chat.</p>
 </section></div>
 <footer>Generated on 2026-09-04 by <code>tools/story-board.py</code> from the PRD&#x27;s §8 epic list (epics.md does not exist yet), git log and build-sequence.md. The phase prompts are extracted from
@@ -292,18 +314,22 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.classList.contains
   t.checked?ticks.add(t.dataset.k):ticks.delete(t.dataset.k);
   try{localStorage.setItem(TK,JSON.stringify([...ticks]));}catch(x){}});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-copy]');
-  if(c){const src=document.getElementById(c.dataset.copy);if(!src)return;
-    copy(src.textContent).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
+  const c=e.target.closest('[data-copy],[data-text]');
+  if(c){const src=c.dataset.text!==undefined?c.dataset.text:(document.getElementById(c.dataset.copy)||{}).textContent;
+    if(src===undefined)return;
+    copy(src).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
       setTimeout(()=>{c.textContent=o;c.classList.remove('ok');},1400);});return;}
   const p=e.target.closest('[data-panel]');
   if(p){location.hash='#'+p.dataset.panel;return;}
   if(e.target.closest('.close')||e.target===scrim){closeDrawer();return;}
+  const card=e.target.closest('.card');
+  if(card&&!e.target.closest('a,button,input')){location.hash='#'+card.dataset.key;return;}
   const ep=e.target.closest('.ep');
   if(ep){epicFilter=(epicFilter===ep.dataset.e)?'':ep.dataset.e;apply();}});
 function apply(){
   const s=q.value.trim().toLowerCase();
-  $$('.card').forEach(c=>{c.hidden=(epicFilter&&c.dataset.e!==epicFilter)||(s&&!c.dataset.s.includes(s));});
+  const needle=/^\d+\.\d+[a-z]?$/.test(s)?' '+s+' ':s;   // a story key matches whole: 1.1 is not 1.10
+  $$('.card').forEach(c=>{c.hidden=(epicFilter&&c.dataset.e!==epicFilter)||(s&&!c.dataset.s.includes(needle));});
   $$('.lane').forEach(l=>{const all=l.querySelectorAll('.card'),shown=[...all].filter(c=>!c.hidden);
     l.querySelector('.n').textContent=shown.length===all.length?all.length:shown.length+' of '+all.length;});
   $$('.ep').forEach(b=>b.classList.toggle('on',b.dataset.e===epicFilter));}

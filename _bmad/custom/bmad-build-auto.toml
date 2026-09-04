@@ -1,18 +1,19 @@
-# Inflozo TEAM overrides for bmad-build-auto (committed; the .user.toml layer is personal and gitignored) — the unattended loop carries the same rulings as bmad-build
-# (R-80 to R-84, 2026-09-04). No human is present, so the questions rule becomes: HALT with the
-# question written for the owner rather than deciding it.
+# Inflozo TEAM overrides for bmad-build-auto (committed; the .user.toml layer is personal and gitignored).
+# The unattended loop carries the same rulings as bmad-build (R-80 to R-84, 2026-09-04). No human is
+# present, so the questions rule becomes: never decide what is the owner's — halt with the question
+# written where the story board shows it.
 
 [workflow]
 
 activation_steps_append = [
-  "You are bound by the owner's rulings in docs/project-context.md: commit and push to main after every phase with `Story <epic>.<story> - <Phase> - <one line>` (R-81); review and test on the real infrastructure with the keys in tools/probe/.env, never mocks alone (R-82); a decision that is genuinely the owner's is never taken here — HALT with status `blocked` and write the question under `## Questions for the owner` in the spec in plain English with an example, numbered options and one marked (RECOMMENDED) (R-83); a story with a screen carries `## In plain English`, `## Owner's manual test`, `owner_test: pending`, and names its frame (R-74, R-80).",
+  "You are bound by the owner's rulings in docs/project-context.md: commit and push to main after every phase with `Story <epic>.<story> - <Phase> - <one line>` (R-81); review and test on the real infrastructure with the keys in tools/probe/.env, never mocks alone, and never print or record a key's value (R-82); a decision that is genuinely the owner's is never taken here — HALT with status `blocked`, and BEFORE the halt's write-back copy every question verbatim under `## Questions for the owner` in the spec in R-83 shape (plain English, an example, numbered options, one marked (RECOMMENDED)), because the board reads only that section; a story with a screen carries `## In plain English`, `## Owner's manual test`, `owner_test: pending`, and names its frame; a story with no screen carries `owner_test: none` (R-74, R-80). When you rewrite an existing spec, carry over verbatim every frontmatter key and every section the template does not define. Every commit uses the R-81 shape. In E9 and E10 refuse to plan a category story unless the previous story in that epic is `done` in sprint-status.yaml.",
 ]
 
 on_complete = """
 Before exiting, in this order:
 1. `python3 {project-root}/tools/story-board.py` to regenerate the story board.
-2. `python3 {project-root}/tools/doc-audit.py --check` twice; if red after the second run, HALT with status `blocked` and the gate's output as the blocking condition — never push a red gate.
-3. Commit and push to main: `Story <epic>.<story> - <Phase> - <one line about the story>` (Phase: Create · Dev · Review · Deploy · Test · Fix · Done · Blocked).
+2. `python3 {project-root}/tools/doc-audit.py --check` twice. If it is still red, do not halt again from here (this block is already the halt's last instruction): write the gate's output under `## Auto Run Result` in the spec, leave the working tree as it is, and exit; a human restarts by fixing the cause, getting the gate green, and committing `Story <epic>.<story> - Blocked - gate red: <cause>`.
+3. Otherwise commit and push to main: `Story <epic>.<story> - <Phase> - <one line about the story>` (Phase: Create · Dev · Review · Deploy · Test · Fix · Done · Blocked).
 """
 
 [[workflow.review_layers]]
@@ -21,9 +22,9 @@ name = "Real-infra verifier"
 instruction = """
 Launch a context-free subagent with this prompt:
 You are verifying a story of Inflozo against the REAL infrastructure, never mocks alone (owner's ruling R-82).
-Read `{project-root}/docs/project-context.md` first. The keys are in `{project-root}/tools/probe/.env` (never print or commit one).
+Read `{project-root}/docs/project-context.md` first. The keys are in `{project-root}/tools/probe/.env`: read a key only into a command's environment, never cat, echo, printenv or print one, and record every command with the key's variable name, never its value; strip Authorization headers and connection strings from any output you record.
 Read the spec at {spec_file}: its `## Verification` section must name the real endpoints, sites or services the story touches — Supabase, Vercel, Resend, Dodo, the Ghost test servers T1 ghost6.inflozo.com and T3 ghost5.inflozo.com — and what each returned.
-Execute what the spec claims against those real services and record the command and its output, with one negative control. Report as a Markdown list: each claim, whether it held, and the evidence. If the spec's Verification names no real service for a story that reads or writes one, report that as a finding — the review cannot pass on mocks.
+Execute what it claims against those real services and record the command and its output, with one negative control. Report as a Markdown list: each claim, whether it held, and the evidence. If the spec's Verification names no real service for a story that reads or writes one, report that as a finding — the review cannot pass on mocks.
 Review content for context:
 {diff_output}
 Do not invoke any skill. Return only the review result.

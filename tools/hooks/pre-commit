@@ -1,0 +1,69 @@
+#!/bin/sh
+# Inflozo — the pre-commit gate. Tracked in tools/hooks/ and installed once per clone with
+#   git config core.hooksPath tools/hooks
+# so every clone runs the same three hooks. There is no bypass: `git commit --no-verify` is denied
+# in .claude/settings.json, and a gate that can be skipped is not a gate.
+#
+# Three things, in this order:
+#   1. the documentation gate (python3 tools/doc-audit.py --check), retried once — its sub-tools and
+#      the index REGENERATE on the first failure, so a first failure right after a commit is the
+#      tools working, not drift;
+#   2. every regenerated artefact is staged, so the commit carries current pages;
+#   3. a secret scan over everything staged: a line containing a value from tools/probe/.env blocks
+#      the commit. Values are read and compared in memory and never printed; the report names the
+#      variable, not the value. Only the entries that hold secrets are compared (KEY, SECRET, TOKEN,
+#      PASSWORD, _PW, DB_URL) — the file also holds URLs, emails and plan names that legitimately
+#      appear in the documents, and a scan that blocks on ghost6.inflozo.com would be ignored.
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+if ! python3 tools/doc-audit.py --check >/dev/null 2>&1; then
+  echo "documentation gate failed — retrying once (the artefacts may have been regenerated)"
+  if ! python3 tools/doc-audit.py --check; then
+    echo
+    echo "COMMIT BLOCKED. Fix the failures above — a new document needs a catalogue row in tools/doc-audit.py — then commit again."
+    exit 1
+  fi
+  echo "gate passed on retry."
+fi
+
+git add -A -- _bmad-output/planning-artifacts/*.html 2>/dev/null
+git add -A -- _bmad-output/planning-artifacts/INDEX.md 2>/dev/null
+git add -A -- _bmad-output/planning-artifacts/STEP-*-PROMPT.txt 2>/dev/null
+
+python3 - <<'PY' || exit 1
+import re, subprocess, sys
+try:
+    lines = open('tools/probe/.env', encoding='utf8').read().splitlines()
+except FileNotFoundError:
+    sys.exit(0)
+secrets = {}
+for line in lines:
+    m = re.match(r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$', line)
+    if not m:
+        continue
+    name, val = m.group(1), m.group(2).strip().strip('\'"')
+    if re.search(r'KEY|SECRET|TOKEN|PASSWORD|_PW$|DB_URL', name) and len(val) >= 8:
+        secrets[name] = val
+if not secrets:
+    sys.exit(0)
+diff = subprocess.run(['git', 'diff', '--cached', '-U0'], capture_output=True, text=True, errors='replace').stdout
+hits, path = set(), '?'
+for line in diff.splitlines():
+    if line.startswith('+++ '):
+        path = line[4:]
+        path = path[2:] if path.startswith('b/') else path
+        continue
+    if not line.startswith('+') or line.startswith('+++'):
+        continue
+    for name, val in secrets.items():
+        if val in line:
+            hits.add((path, name))
+if hits:
+    print('COMMIT BLOCKED — a staged line contains a secret from tools/probe/.env:')
+    for path, name in sorted(hits):
+        print(f'  {path}: the value of {name}')
+    print('Remove it from the change — refer to the key by its variable name — and commit again.')
+    sys.exit(1)
+PY
+exit 0

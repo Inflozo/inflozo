@@ -15,13 +15,14 @@ Everything on it is DERIVED at generation time and nothing is retyped:
   - the status of each from `implementation-artifacts/sprint-status.yaml` (stdlib parse — it is one
     flat mapping under one key), and from each story's `spec-<E>-<S>-<slug>.md` frontmatter;
   - the history of each from `git log`, reading the R-81 commit shape `Story E.S - Phase - …`;
-  - the phase prompts from build-sequence.md step 7, "### The phase prompts", by needle;
+  - the phase prompts from build-sequence.md step 7, "### The phase prompts", by order and first line;
   - the deferred-work ledger, when it exists.
 `--check` regenerates in memory and fails if the file differs, so the gate (tools/doc-audit.py) keeps it
 current — and because git output is a source, a new commit makes the page stale on purpose.
 
 The `--demo` fixture feeds markdown strings through the SAME loaders, so it exercises the real parsers
-and doubles as this script's self-check: it asserts every lane is populated and the R-83 flags fire.
+and doubles as this script's self-check: it asserts every lane is populated, the R-83 flags fire, and
+each derivation rule below has a story that exercises it.
 """
 import os, re, sys, html, subprocess, importlib.util
 
@@ -41,20 +42,39 @@ dp1 = importlib.util.module_from_spec(_s); _s.loader.exec_module(dp1)
 
 e = html.escape
 
-# The phase prompts under "### The phase prompts" of build-sequence.md step 7, matched by a NEEDLE that
-# occurs in that block and no other — never by position (the build board once paired a prompt with the
-# wrong step by order). The last block records the owner's test and ends in a Done or a Test commit.
-PROMPTS = [('Create', 'CREATE THE SPEC ONLY'), ('Dev', 'IMPLEMENT the spec'),
-           ('Review', '/bmad-code-review'), ('Deploy', 'Deploy story {E.S}'),
-           ('Fix', 'FIX the owner'), ('Record', "Record the owner's test")]
+# The six phase prompts under "### The phase prompts" of build-sequence.md step 7, in the order that
+# section keeps them, each checked against the first line it is guaranteed to start with. Three start
+# with the same /bmad-build line, so order is the identity and the first line is the check — a block
+# out of order or reworded fails loudly rather than pairing a prompt with the wrong phase.
+PROMPTS = [('Create', '/bmad-build'), ('Dev', '/bmad-build'), ('Review', '/bmad-code-review'),
+           ('Deploy', 'Deploy story {E.S} to the real stack'), ('Fix', '/bmad-build'),
+           ('Record', 'I tested story {E.S}')]
 PROMPT_LABEL = {'Create': 'Create the spec', 'Dev': 'Build it', 'Review': 'Review it',
                 'Deploy': 'Deploy it', 'Fix': 'Fix your findings', 'Record': 'Record your test'}
 STEPS = ['Create', 'Dev', 'Review', 'Deploy', 'Test', 'Done']           # the stepper, in order
+LABEL = {'Dev': 'Build'}                                                # what the owner reads for a phase
 PROMPT_FOR = {'Create': 'Create', 'Dev': 'Dev', 'Review': 'Review', 'Deploy': 'Deploy',
               'Test': 'Record', 'Fix': 'Fix', 'Done': None}             # phase → the prompt to run next
 LANES = [('backlog', 'Backlog'), ('ready', 'Ready'), ('progress', 'In progress'),
          ('review', 'In review'), ('test', 'Deployed, your test'), ('done', 'Done')]
 LANE_NAME = dict(LANES)
+
+# The commit vocabulary (R-81): the only phase words a story or step commit may carry.
+PHASES = ['Create', 'Dev', 'Review', 'Deploy', 'Test', 'Fix', 'Done', 'Blocked']
+RANK = {'Create': 0, 'Dev': 1, 'Review': 2, 'Deploy': 3, 'Test': 4, 'Fix': 5, 'Done': 6}
+NEXT_AFTER = {None: 'Create', 'Create': 'Dev', 'Dev': 'Review', 'Review': 'Deploy', 'Deploy': 'Test',
+              'Test': 'Fix', 'Fix': 'Review', 'Done': 'Done'}           # last commit → the phase now
+LANE_OF = {'Create': 'backlog', 'Review': 'review', 'Deploy': 'review', 'Test': 'test',
+           'Fix': 'test', 'Done': 'done'}                               # Dev splits on in-progress
+BUILD_WORDS = {'ready-for-dev': 'not started', 'in-progress': 'in progress', 'in-review': 'being reviewed',
+               'done': 'finished', 'blocked': 'blocked'}
+TEST_WORDS = {'pending': 'not yet', 'issues': 'you found issues', 'passed': 'passed', 'none': 'no screen to test'}
+
+# The epics whose stories run one at a time behind the owner's category gate (PRD §4): matched by
+# title, so the numbers stay the PRD's and epics.md's business.
+GATED_TITLES = ('the shell block', 'the gated library pipeline')
+REAL_SERVICE = re.compile(r'ghost[56]\.inflozo\.com|[\w.-]+\.supabase\.co|[\w.-]+\.vercel\.app|'
+                          r'api\.vercel\.com|api\.resend\.com|[\w.-]+\.dodopayments\.com')
 
 # The same grammar bmad-sprint-planning's sprint_plan.py uses, so the board and the tracker agree on
 # what an epic, a story and a status key are (a split story is `2-6a-…`).
@@ -62,8 +82,12 @@ EPIC_RE = re.compile(r'^#{1,3}\s*Epic\s+(\d+)\s*:?\s*(.*?)\s*#*\s*$', re.I)
 STORY_RE = re.compile(r'^#{2,4}\s*Story\s+(\d+)\.(\d+[a-z]?)\s*:?\s*(.*?)\s*#*\s*$', re.I)
 STORY_KEY_RE = re.compile(r'^(\d+)-(\d+[a-z]?)-.+')
 SPEC_RE = re.compile(r'^spec-(\d+)-(\d+[a-z]?)-(.+)\.md$')
-STORY_COMMIT = re.compile(r'^Story (\d+)\.(\d+[a-z]?) - (\w+) - (.*)$')
-STEP_COMMIT = re.compile(r'^Step (\S+) - (\w+) - (.*)$')
+_P = '|'.join(PHASES)
+STORY_COMMIT = re.compile(rf'^Story (\d+)\.(\d+[a-z]?) - ({_P}) - (.*)$')
+STEP_COMMIT = re.compile(rf'^Step (\S+) - ({_P}) - (.*)$')
+HOTFIX_COMMIT = re.compile(r'^Hotfix - (.*)$')
+RETRO_COMMIT = re.compile(r'^Epic (\d+) - Retro - (.*)$')
+SHAPED = re.compile(r'^(Story|Step|Hotfix|Epic)\b')        # looks like one of ours; must parse or is listed
 
 
 def snum(s):
@@ -76,28 +100,42 @@ def snum(s):
 # Loaders. Each takes TEXT, so the demo fixture runs through the same code.
 # ─────────────────────────────────────────────────────────────────────────────
 
+BRIEF_START = '**Before you paste it**'
+
+
 def fenced(md):
-    return re.findall(r'^```[^\n]*\n(.*?)\n```[ \t]*$', md, re.M | re.S)
+    """[(block, briefing)] for every fenced block. The briefing is the blockquote that starts
+    `> **Before you paste it**` and runs up to the fence — the plain-English note build-sequence.md
+    keeps beside a prompt — as text with the `> ` marks stripped, or '' when the prompt has none."""
+    out = []
+    for m in re.finditer(r'^```[^\n]*\n(.*?)\n```[ \t]*$', md, re.M | re.S):
+        before, quote = md[:m.start()].rstrip('\n').split('\n'), []
+        while before and before[-1].startswith('>'):
+            quote.insert(0, before.pop())
+        text = '\n'.join(re.sub(r'^>[ \t]?', '', l) for l in quote).strip()
+        out.append((m.group(1), text if text.startswith(BRIEF_START) else ''))
+    return out
 
 
 def prompts_from_sequence(seq):
-    """(phase prompts by name, step-6 prompt, step-6b prompt) — extracted, never retyped."""
+    """(phase prompts by name, step-6 prompt, step-6b prompt, briefings by the same keys) — extracted,
+    never retyped."""
     m = re.search(r'^### The phase prompts[^\n]*\n(.*?)(?=^# |\Z)', seq, re.M | re.S)
     assert m, 'build-sequence.md has no "### The phase prompts" section under step 7'
     blocks = fenced(m.group(1))
-    phase = {}
-    for name, needle in PROMPTS:
-        hits = [b for b in blocks if needle in b]
-        assert len(hits) == 1, f'phase prompt {name}: needle {needle!r} matches {len(hits)} blocks, not one'
-        phase[name] = hits[0]
-    assert len(phase) == len(blocks), ('a fenced block under "### The phase prompts" is claimed by no '
-                                       'entry in PROMPTS — add it rather than let it vanish')
+    assert len(blocks) == len(PROMPTS), (f'"### The phase prompts" has {len(blocks)} fenced blocks and PROMPTS '
+                                         f'names {len(PROMPTS)} — add or remove an entry rather than let one vanish')
+    phase, briefs = {}, {}
+    for (name, first), (block, brief) in zip(PROMPTS, blocks):
+        assert block.lstrip().startswith(first), (f'phase prompt {name} (block {len(phase) + 1}) does not start '
+                                                  f'with {first!r}: {block.lstrip()[:60]!r}')
+        phase[name], briefs[name] = block, brief
     step = {}
-    for cmd in ('/bmad-create-epics-and-stories', '/bmad-sprint-planning'):
-        hits = [b for b in fenced(seq) if b.lstrip().startswith(cmd)]
+    for cmd, key in (('/bmad-create-epics-and-stories', 'step6'), ('/bmad-sprint-planning', 'step6b')):
+        hits = [(b, br) for b, br in fenced(seq) if b.lstrip().startswith(cmd)]
         assert len(hits) == 1, f'build-sequence.md has {len(hits)} fenced blocks starting {cmd}, not one'
-        step[cmd] = hits[0]
-    return phase, step['/bmad-create-epics-and-stories'], step['/bmad-sprint-planning']
+        step[key], briefs[key] = hits[0]
+    return phase, step['step6'], step['step6b'], briefs
 
 
 def load_epics(text):
@@ -171,7 +209,8 @@ def load_prd_epics(text):
 
 
 def load_status(text):
-    """The flat `development_status:` mapping, stdlib only. Returns {key: status}."""
+    """The flat `development_status:` mapping, stdlib only. Returns {key: status} keyed BOTH by the yaml
+    string (`1-3-magic-link…`, `epic-1`) and, for a story key, by the (epic, story) tuple derive() uses."""
     st, inside = {}, False
     for line in text.splitlines():
         if re.match(r'^development_status:\s*(#.*)?$', line):
@@ -184,7 +223,11 @@ def load_status(text):
             break
         m = re.match(r'^\s+([^\s:#]+)\s*:\s*([^#]*)', line)
         if m:
-            st[m.group(1)] = m.group(2).strip().strip('\'"')
+            key, val = m.group(1), m.group(2).strip().strip('\'"')
+            st[key] = val
+            k = STORY_KEY_RE.match(key)
+            if k:
+                st[(int(k.group(1)), k.group(2))] = val
     return st
 
 
@@ -213,12 +256,11 @@ def parse_spec(rel, text):
     ac_text = tasks_text.split('Acceptance Criteria', 1)[1] if 'Acceptance Criteria' in tasks_text else ''
     ac = [t for t in re.findall(r'^\s*[-*] (?!\[)(.*)$', ac_text, re.M)]
     codemap = [t.strip() for t in re.findall(r'^\s*[-*] (.*)$', sec('Code Map'), re.M)]
-    test = parse_test(sec("Owner's manual test"))
     return {'rel': rel, 'fm': fm, 'status': fm.get('status', ''), 'owner_test': fm.get('owner_test', ''),
             'plain': sec('In plain English'), 'tasks': tasks, 'ac': ac, 'codemap': codemap,
             'questions': question_blocks(sec('Questions for the owner')),
-            'test': test, 'findings': sec("Owner's test findings"),
-            'test_urls': bool(re.search(r'https?://', sec("Owner's manual test")))}
+            'test': parse_test(sec("Owner's manual test")), 'findings': sec("Owner's test findings"),
+            'real_service': bool(REAL_SERVICE.search(sec('Verification')))}
 
 
 def parse_test(text):
@@ -239,6 +281,34 @@ def parse_test(text):
     if steps:
         return {'kind': 'list', 'steps': [' '.join(s) for s in steps]}
     return {'kind': 'text', 'text': text}
+
+
+def test_steps(t):
+    """A table or a numbered list → [{do, see, dummy, where}], the two-line form the owner reads.
+    Table columns are found by their heading words, never by position."""
+    if t['kind'] == 'table':
+        head = [h.lower() for h in t['head']]
+
+        def col(*words):
+            return next((i for i, h in enumerate(head) if any(w in h for w in words)), None)
+
+        c = {'do': col('what to do', 'do'), 'see': col('see'), 'dummy': col('dummy', 'type', 'data'),
+             'url': col('url', 'where'), 'screen': col('screen')}
+        out = []
+        for r in t['rows']:
+            g = lambda k: (r[c[k]] if c[k] is not None and c[k] < len(r) else '').strip()
+            blank = ('', '—', '-', 'n/a', 'none')
+            out.append({'do': g('do'), 'see': g('see'), 'dummy': g('dummy') if g('dummy').lower() not in blank else '',
+                        'where': ' · '.join(x for x in (g('screen'), g('url')) if x.lower() not in blank)})
+        return out
+    if t['kind'] == 'list':
+        out = []
+        for s in t['steps']:
+            m = re.match(r'^(.*?)[\s—–-]*\byou should see\b[:\s]*(.*)$', s, re.I | re.S)
+            out.append({'do': (m.group(1) if m else s).strip(' —–-'), 'see': m.group(2).strip() if m else '',
+                        'dummy': '', 'where': ''})
+        return out
+    return None
 
 
 def question_blocks(text):
@@ -278,7 +348,9 @@ def load_specs(files):
 
 
 def load_commits(lines):
-    """`hash<TAB>date<TAB>subject` lines, newest first → the story- and step-shaped ones (R-81)."""
+    """`hash<TAB>date<TAB>subject` lines, newest first → the shaped commits (R-81): story, step, hotfix
+    and retro, plus every subject that STARTS like one of those and does not parse ('unreadable'), so
+    a typo in a phase word is listed rather than silently dropped."""
     out = []
     for line in lines:
         parts = line.split('\t', 2)
@@ -294,6 +366,18 @@ def load_commits(lines):
         if m:
             out.append({'h': h, 'date': d, 'kind': 'step', 'key': f'Step {m.group(1)}',
                         'phase': m.group(2), 'msg': m.group(3)})
+            continue
+        m = HOTFIX_COMMIT.match(s)
+        if m:
+            out.append({'h': h, 'date': d, 'kind': 'hotfix', 'key': 'Hotfix', 'phase': '', 'msg': m.group(1)})
+            continue
+        m = RETRO_COMMIT.match(s)
+        if m:
+            out.append({'h': h, 'date': d, 'kind': 'retro', 'key': f'Epic {m.group(1)}', 'phase': 'Retro',
+                        'msg': m.group(2)})
+            continue
+        if SHAPED.match(s):
+            out.append({'h': h, 'date': d, 'kind': 'unreadable', 'key': '', 'phase': '', 'msg': s})
     return out
 
 
@@ -319,45 +403,60 @@ def load_deferred(text):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def derive(story, status, specs, commits):
-    """Sets lane, phase, issues, blocked, spec, commits on the story.
+    """Sets lane, phase, issues, blocked, handoff, unverified, spec, commits on the story.
 
-    The commit trail (R-81 makes one per phase) is the freshest signal, so it decides when present;
-    the sprint status and the spec frontmatter decide otherwise. `owner_test: pending` alone does not
-    mean deployed — Create sets it too — so Test needs a Deploy commit or a live URL in the test steps."""
-    st = status.get((story['e'], story['s']), 'backlog')
-    spec = specs.get((story['e'], story['s']))
+    Two readings are taken and the LATER wins: the commit trail (R-81 makes one per phase) and the
+    tracker + spec frontmatter. Done comes only from a Done commit, `owner_test: passed`, or
+    `owner_test: none` once a Deploy commit exists — a tracker or spec `done` alone is the review
+    writing done before the owner's test (R-80), so it reads as In review, phase Deploy. Deployed
+    means a Deploy commit, nothing else. `owner_test: issues` is stale once a Fix commit is newer
+    than the Test commit that reported them."""
+    key = (story['e'], story['s'])
+    st = status.get(key, 'backlog')
+    spec = specs.get(key)
     ss = spec['status'] if spec else ''
     ot = spec['owner_test'] if spec else ''
-    mine = [c for c in commits if c['kind'] == 'story' and (c['e'], c['s']) == (story['e'], story['s'])]
-    phases = [c['phase'] for c in mine]
-    last = next((p for p in phases if p != 'Blocked'), None)
-    # ponytail: a placeholder that is itself an http URL reads as deployed; the Deploy commit is the
-    # signal R-81 guarantees, the URL is the fallback for a spec written before its first commit.
-    deployed = 'Deploy' in phases or bool(spec and spec['test_urls'])
-    if st == 'done' or ss == 'done' or last == 'Done':
-        phase, lane = 'Done', 'done'
-    elif last == 'Test':
-        phase, lane = 'Fix', 'test'
-    elif last == 'Deploy':
-        phase, lane = 'Test', 'test'
-    elif last == 'Review':
-        phase, lane = 'Deploy', 'review'
-    elif last in ('Dev', 'Fix'):
-        phase, lane = 'Review', 'review'
-    elif last == 'Create':
-        phase, lane = 'Dev', 'progress' if 'in-progress' in (st, ss) else 'ready'
-    elif ot == 'issues':
-        phase, lane = 'Fix', 'test'
+    mine = [c for c in commits if c['kind'] == 'story' and (c['e'], c['s']) == key]
+    phases = [c['phase'] for c in mine]                                  # newest first
+    trail = [p for p in phases if p != 'Blocked']
+    deployed = 'Deploy' in trail
+    fixing = 'Fix' in trail and ('Test' not in trail or trail.index('Fix') < trail.index('Test'))
+    by_trail = NEXT_AFTER[trail[0] if trail else None]
+    if ot == 'passed' or (ot == 'none' and deployed):
+        by_status = 'Done'
+    elif ot == 'issues' and not fixing:
+        by_status = 'Fix'
     elif ot == 'pending' and deployed:
-        phase, lane = 'Test', 'test'
+        by_status = 'Test'
+    elif 'done' in (st, ss):
+        by_status = 'Deploy'
     elif st == 'review' or ss == 'in-review':
-        phase, lane = 'Review', 'review'
+        by_status = 'Review'
     elif st in ('ready-for-dev', 'in-progress') or ss in ('ready-for-dev', 'in-progress'):
-        phase, lane = 'Dev', 'progress' if 'in-progress' in (st, ss) else 'ready'
+        by_status = 'Dev'
     else:
-        phase, lane = 'Create', 'backlog'
-    story.update(status=st, spec=spec, commits=mine, phase=phase, lane=lane,
-                 issues=phase == 'Fix', blocked=bool(phases) and phases[0] == 'Blocked')
+        by_status = 'Create'
+    phase = max(by_trail, by_status, key=RANK.get)
+    lane = LANE_OF.get(phase) or ('progress' if 'in-progress' in (st, ss) else 'ready')
+    screen = bool(spec and (spec['test'] or ot in ('pending', 'issues', 'passed')))
+    story.update(status=st, spec=spec, commits=mine, phase=phase, lane=lane, issues=phase == 'Fix',
+                 handoff=phase == 'Test' and screen,                    # the owner's move
+                 blocked=(bool(phases) and phases[0] == 'Blocked') or 'blocked' in (st, ss),
+                 unverified=RANK[phase] >= RANK['Review'] and not (spec and spec['real_service']),
+                 waits=None)
+
+
+def gate_epic(ep):
+    """PRD §4: in the two library epics only the first open story runs; the rest wait on the one before."""
+    if not any(g in ep['title'].lower() for g in GATED_TITLES):
+        return
+    prev, opened = None, False
+    for s in ep['stories']:
+        if s['lane'] != 'done':
+            if opened:
+                s['waits'] = prev
+            opened = True
+        prev = s['key']
 
 
 def epic_status(ep, status):
@@ -370,10 +469,13 @@ def epic_status(ep, status):
 
 
 def plain_sentence(st):
-    """Until a spec exists: the story's As-a / I-want / So-that as one plain sentence."""
+    """Until a spec exists: the story's As-a / I-want / So-that as one plain sentence. "I want to X"
+    reads "can X"; "I want the X …" reads "wants the X …" — the verb decides, so no "can the app"."""
     if not st['as']:
         return ''
-    s = f"A {st['as']} can {re.sub(r'^to\s+', '', st['want'])}"
+    want = st['want']
+    verb = f"can {re.sub(r'^to\s+', '', want)}" if re.match(r'^to\s', want, re.I) else f'wants {want}'
+    s = f"A {st['as']} {verb}"
     return s + (f", so that {st['so']}." if st['so'] else '.')
 
 
@@ -381,6 +483,10 @@ def fill(prompt, story):
     spec = story['spec']
     path = spec['rel'] if spec else f"_bmad-output/implementation-artifacts/spec-{story['e']}-{story['s']}-*.md"
     return prompt.replace('{E.S}', story['key']).replace('{spec}', path)
+
+
+def lab(phase):
+    return LABEL.get(phase, phase)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -391,6 +497,7 @@ def md(s):
     """Escape, then the inline marks the specs use: **bold**, `code`, [text](url), bare URLs."""
     s = e(s)
     s = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', s)
+    s = re.sub(r'(?<!\*)\*([^*\n]+?)\*(?!\*)', r'<i>\1</i>', s)
     s = re.sub(r'`([^`]+)`', r'<code>\1</code>', s)
     s = re.sub(r'\[([^\]]+)\]\((https?://[^)\s]+)\)', r'<a href="\2" target="_blank" rel="noopener">\1</a>', s)
     s = re.sub(r'(?<![">=])(https?://[^\s<)]+)', r'<a href="\1" target="_blank" rel="noopener">\1</a>', s)
@@ -438,23 +545,28 @@ def mdblock(text):
 
 
 def render_test(story):
-    t = story['spec']['test']
-    key = story['key']
-    if t['kind'] == 'table':
-        head = ''.join(f'<th>{md(h)}</th>' for h in t['head'])
-        rows = ''.join(f'<tr><td><input class="tick" type="checkbox" data-k="{e(key)}:{i}" '
-                       f'aria-label="step {i} done"></td>' + ''.join(f'<td>{md(c)}</td>' for c in r) + '</tr>'
-                       for i, r in enumerate(t['rows'], 1))
-        body = f'<div class="tw"><table class="mt"><thead><tr><th>✓</th>{head}</tr></thead><tbody>{rows}</tbody></table></div>'
-    elif t['kind'] == 'list':
-        body = '<ol class="steps">' + ''.join(
-            f'<li><label><input class="tick" type="checkbox" data-k="{e(key)}:{i}"> {md(s)}</label></li>'
-            for i, s in enumerate(t['steps'], 1)) + '</ol>'
-    else:
+    t, key = story['spec']['test'], story['key']
+    steps = test_steps(t)
+    if steps is None:
         body = mdblock(t['text'])
+    else:
+        items = []
+        for i, s in enumerate(steps, 1):
+            where = f' <span class="fine">— {md(s["where"])}</span>' if s['where'] else ''
+            dummy = (f'<div class="dummy">Type <code>{e(s["dummy"])}</code> '
+                     f'<button class="cpv" data-text="{e(s["dummy"])}">Copy</button></div>' if s['dummy'] else '')
+            see = f'<div class="see"><b>You should see:</b> {md(s["see"])}</div>' if s['see'] else ''
+            items.append(f'<li><label><input class="tick" type="checkbox" data-k="{e(key)}:{i}"> '
+                         f'<b>Do:</b> {md(s["do"])}{where}</label>{dummy}{see}</li>')
+        body = '<ol class="steps">' + ''.join(items) + '</ol>'
     return (f'<div class="tbox" data-sub="test"><h3>Your test, on the live site</h3>{body}'
             '<p class="fine">Ticks are stored in this browser only, as a convenience. Your ruling still '
             'goes through chat — tell me what you found, passed or not.</p></div>')
+
+
+NO_OPTIONS = ("This one arrived without options. Don't answer it yet — the next session on this story "
+              "will rewrite it properly.")
+NO_RECOMMENDED = 'No option is marked RECOMMENDED yet — you can still answer by number.'
 
 
 def render_questions(story):
@@ -463,74 +575,103 @@ def render_questions(story):
         return ''
     items = []
     for q in qs:
-        flags = ''
+        flag = ''
         if q['answered']:
-            flags += '<span class="tag good">answered</span>'
-        else:
-            if not q['options']:
-                flags += '<span class="tag warn">needs options</span>'
-            elif not q['recommended']:
-                flags += '<span class="tag warn">needs a (RECOMMENDED)</span>'
-        items.append(f'<div class="q">{mdblock(q["text"])}{("<p class=flags>" + flags + "</p>") if flags else ""}</div>')
+            flag = '<span class="tag good">answered</span>'
+        elif not q['options']:
+            flag = f'<span class="flag">{e(NO_OPTIONS)}</span>'
+        elif not q['recommended']:
+            flag = f'<span class="flag">{e(NO_RECOMMENDED)}</span>'
+        items.append(f'<div class="q">{mdblock(q["text"])}{("<p class=flags>" + flag + "</p>") if flag else ""}</div>')
+    when = ('Answer any time — it does not block your test.' if story['phase'] == 'Test'
+            else 'Answer in chat, by number.')
     return (f'<div class="qbox" data-sub="questions"><h3>Questions for you</h3>{"".join(items)}'
-            '<p class="fine">Answer in chat, by number. A question is written in plain English with '
-            'numbered options and one marked RECOMMENDED (R-83); one flagged in amber was not, and the '
-            'next run must rewrite it before you are asked to rule.</p></div>')
+            f'<p class="fine">{when} A question is written in plain English with numbered options and one '
+            'marked RECOMMENDED (R-83).</p></div>')
 
 
-def render_story(story, ep, phase_prompts):
+def plain_state(spec):
+    """'Build: being reviewed · Your test: not yet' — the frontmatter in the owner's words."""
+    bits = []
+    if spec['status']:
+        bits.append(f'Build: {BUILD_WORDS.get(spec["status"], spec["status"])}')
+    if spec['owner_test']:
+        bits.append(f'Your test: {TEST_WORDS.get(spec["owner_test"], spec["owner_test"])}')
+    return ' · '.join(bits)
+
+
+NO_SCREEN = "no screen — say 'done' in chat and the Record prompt closes it"
+PASTE_HOW = 'Paste it into a Claude Code chat exactly as copied, top to bottom.'
+
+
+def render_story(story, ep, phase_prompts, briefs):
     spec, key, kid = story['spec'], story['key'], story['key'].replace('.', '-')
     phase = story['phase']
     cur = STEPS.index('Test' if phase == 'Fix' else phase)
     stepper = ''.join(
-        f'<li class="{"issues" if (phase == "Fix" and i == cur) else "cur" if i == cur else "done" if i < cur or phase == "Done" else ""}">{s}</li>'
+        f'<li class="{"issues" if (phase == "Fix" and i == cur) else "cur" if i == cur else "done" if i < cur or phase == "Done" else ""}">{lab(s)}</li>'
         for i, s in enumerate(STEPS))
     plain = (spec and spec['plain']) or plain_sentence(story)
     parts = [f'<header><span class="ebadge">E{ep["n"]} · {e(ep["title"])}</span>'
              f'<h2><span class="key">{e(key)}</span> {e(story["title"])}</h2>'
              f'<p class="meta"><span class="lanechip {story["lane"]}">{e(LANE_NAME[story["lane"]])}</span> '
-             f'<span class="ph {phase}">{phase}</span>'
+             f'<span class="ph {phase}">{lab(phase)}</span>'
              + (' <span class="tag crit">blocked</span>' if story['blocked'] else '')
-             + (f' <span class="fine">spec status: {e(spec["status"] or "—")}'
-                + (f' · owner test: {e(spec["owner_test"])}' if spec['owner_test'] else '') + '</span>' if spec else '')
+             + (' <span class="tag warn long">Verification names no real service</span>' if story['unverified'] else '')
+             + (f' <span class="fine">{e(plain_state(spec))}</span>' if spec and plain_state(spec) else '')
              + '</p></header>']
     parts.append(mdblock(plain) if plain else '<p class="fine">No plain-English summary yet — the Create phase writes one.</p>')
     parts.append(f'<ol class="stepper">{stepper}</ol>')
     pk = PROMPT_FOR[phase]
-    if pk:
+    if story['waits']:
+        parts.append(f'<div class="now"><b>Waits for {e(story["waits"])} — the owner\'s gate.</b> '
+                     '<span class="fine">Its prompt appears here once that story is done.</span></div>')
+    elif phase == 'Test':
+        if spec and spec['test']:
+            parts.append(render_test(story))
+            lead = '<b>When you have tested:</b> tell me what you saw in chat, then paste this'
+        else:
+            lead = f'<b>No screen to test.</b> Say \'done\' in chat, then paste this — it closes the story'
+        parts.append(f'<div class="now">{lead} <button class="btn copy" data-copy="pr-{kid}-Record">Copy the Record prompt</button>'
+                     f'<span class="fine">{PASTE_HOW}</span></div>')
+    elif pk:
         parts.append(f'<div class="now"><b>Next: {e(PROMPT_LABEL[pk])}</b> '
-                     f'<button class="btn copy" data-copy="pr-{kid}-{pk}">Copy the {pk} prompt</button>'
-                     f'<span class="fine">Paste it into a Claude Code chat, including the leading /command.</span></div>')
+                     f'<button class="btn copy" data-copy="pr-{kid}-{pk}">Copy prompt</button>'
+                     f'<span class="fine">{PASTE_HOW}</span></div>')
     parts.append(render_questions(story))
-    if spec and spec['test']:
+    if spec and spec['test'] and phase != 'Test':
         parts.append(render_test(story))
     if spec and spec['findings']:
         parts.append(f'<h3>Your test findings</h3>{mdblock(spec["findings"])}')
+    eng = []
     ac = spec['ac'] if spec and spec['ac'] else None
     if ac:
-        parts.append('<h3>Acceptance criteria</h3><ul class="md">' + ''.join(f'<li>{md(a)}</li>' for a in ac) + '</ul>')
+        eng.append('<h3>Acceptance criteria</h3><ul class="md">' + ''.join(f'<li>{md(a)}</li>' for a in ac) + '</ul>')
     elif story.get('ac'):
-        parts.append('<h3>Acceptance criteria</h3><ul class="md">' + ''.join(
+        eng.append('<h3>Acceptance criteria</h3><ul class="md">' + ''.join(
             '<li>' + '<br>'.join(md(l) for l in c) + '</li>' for c in story['ac']) + '</ul>')
     if spec and spec['tasks']:
         n = sum(1 for d, _ in spec['tasks'] if d)
-        parts.append(f'<h3>Tasks <span class="fine">{n} of {len(spec["tasks"])} ticked</span></h3><ul class="tasks">'
-                     + ''.join(f'<li class="{"done" if d else ""}">{md(t)}</li>' for d, t in spec['tasks']) + '</ul>')
+        eng.append(f'<h3>Tasks <span class="fine">{n} of {len(spec["tasks"])} ticked</span></h3><ul class="tasks">'
+                   + ''.join(f'<li class="{"done" if d else ""}">{md(t)}</li>' for d, t in spec['tasks']) + '</ul>')
     if spec and spec['codemap']:
-        parts.append('<h3>Files this story touches</h3><ul class="md">' + ''.join(f'<li>{md(c)}</li>' for c in spec['codemap']) + '</ul>')
+        eng.append('<h3>Files this story touches</h3><ul class="md">' + ''.join(f'<li>{md(c)}</li>' for c in spec['codemap']) + '</ul>')
     if story['commits']:
-        parts.append('<h3>Commits</h3><table class="ct">' + ''.join(
+        eng.append('<h3>Commits</h3><table class="ct">' + ''.join(
             f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td><td><span class="ph {e(c["phase"])}">{e(c["phase"])}</span></td>'
             f'<td>{e(c["msg"])}</td></tr>' for c in story['commits']) + '</table>')
     else:
-        parts.append('<h3>Commits</h3><p class="fine">None yet. Every phase ends with one: '
-                     f'<code>Story {e(key)} - Phase - one line</code>.</p>')
-    order = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk]
-    parts.append('<h3>Every prompt for this story</h3>' + ''.join(
-        f'<div class="pr {"cur" if p == pk else ""}"><div class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
-        + ('<span class="tag good">now</span>' if p == pk else '')
-        + f'<button class="btn copy" data-copy="pr-{kid}-{p}">Copy prompt</button></div>'
-        f'<pre id="pr-{kid}-{p}">{e(fill(phase_prompts[p], story))}</pre></div>' for p in order))
+        eng.append('<h3>Commits</h3><p class="fine">None yet. Every phase ends with one: '
+                   f'<code>Story {e(key)} - Phase - one line</code>.</p>')
+    parts.append(f'<details class="eng"><summary>For the build session</summary>{"".join(eng)}</details>')
+    if not story['waits']:
+        order = ([pk] if pk else []) + [p for p, _ in PROMPTS if p != pk]
+        parts.append('<h3>Every prompt for this story</h3>' + ''.join(
+            f'<div class="pr {"cur" if p == pk else ""}"><div class="prh"><b>{p} — {e(PROMPT_LABEL[p])}</b>'
+            + ('<span class="tag good">now</span>' if p == pk else '')
+            + f'<button class="btn copy" data-copy="pr-{kid}-{p}">Copy prompt</button></div>'
+            + (f'<div class="brief">{mdblock(briefs[p])}</div>' if briefs.get(p) else '')
+            + f'<pre id="pr-{kid}-{p}">{e(fill(phase_prompts[p], story))}</pre></div>' for p in order))
     links = []
     if spec:
         links.append(f'<a href="{e(os.path.relpath(os.path.join(ROOT, spec["rel"]), PLAN))}">the spec file</a>')
@@ -543,54 +684,65 @@ def render_story(story, ep, phase_prompts):
 def render_card(story, ep):
     kid = story['key'].replace('.', '-')
     pk = PROMPT_FOR[story['phase']]
-    search = ' '.join([story['key'], story['title'], (story['spec'] or {}).get('plain', '') or plain_sentence(story),
-                       story['phase'], LANE_NAME[story['lane']], f'E{ep["n"]}', ep['title']]).lower()
+    # A leading space and one after the key, so a search for 1.1 never matches inside 1.10.
+    search = ' '.join(['', story['key'], story['title'], (story['spec'] or {}).get('plain', '') or plain_sentence(story),
+                       lab(story['phase']), LANE_NAME[story['lane']], f'E{ep["n"]}', ep['title']]).lower()
     cls = ' '.join(filter(None, ['card', story['lane'], 'issues' if story['issues'] else '',
                                  'blocked' if story['blocked'] else '']))
-    btn = (f'<button class="cp" data-copy="pr-{kid}-{pk}" title="Copy the {pk} prompt">⧉ {pk}</button>' if pk else '')
+    if story['waits']:
+        btn = f'<span class="fine">waits for {e(story["waits"])} — the owner\'s gate</span>'
+    else:
+        btn = (f'<button class="cp" data-copy="pr-{kid}-{pk}" title="Copy the {pk} prompt">Copy prompt ›</button>' if pk else '')
     tag = ''
     if story['issues']:
         tag = '<span class="tag crit">issues</span>'
-    elif story['lane'] == 'test':
+    elif story['handoff']:
         tag = '<span class="tag warn">your move</span>'
+    elif story['phase'] == 'Test':
+        tag = f'<span class="fine">{e(NO_SCREEN)}</span>'
     if story['blocked']:
         tag += '<span class="tag crit">blocked</span>'
-    return (f'<article class="{cls}" data-e="{ep["n"]}" data-s="{e(search)}" id="c-{kid}">'
+    if story['unverified']:
+        tag += '<span class="tag warn long">Verification names no real service</span>'
+    return (f'<article class="{cls}" data-e="{ep["n"]}" data-key="{e(story["key"])}" data-s="{e(search)}" id="c-{kid}">'
             f'<div class="ch"><span class="ebadge">E{ep["n"]}</span><span class="key">{e(story["key"])}</span>'
-            f'<span class="ph {story["phase"]}">{story["phase"]}</span></div>'
-            f'<h3><a href="#{e(story["key"])}">{e(story["title"])}</a></h3>'
-            f'<div class="cf">{btn}{tag}<a class="more" href="#{e(story["key"])}" aria-label="open story {e(story["key"])}">…</a></div></article>')
+            f'<span class="ph {story["phase"]}">{lab(story["phase"])}</span></div>'
+            f'<h3>{e(story["title"])}</h3>'
+            f'<div class="cf">{btn}{tag}<a class="more" href="#{e(story["key"])}" aria-label="open story {e(story["key"])}">Details</a></div></article>')
 
 
 def next_action(ctx, stories):
-    """(kind, title, why, prompt text or None, link or None)."""
+    """(kind, title, why, prompt text or None, link or None, briefing text)."""
+    br = ctx['briefs']
     if not ctx['have_epics']:
         return ('setup', 'Run step 6 — the story breakdown',
-                'There is no epics.md yet, so the lanes are empty and the epics on the left come from the '
-                'PRD. Copy this prompt into a Claude Code chat; it writes the epics and stories, and the '
-                'board fills on the next commit.', ctx['step6'], None)
+                'The stories are not written yet. Copy this prompt into a Claude Code chat; when that session '
+                'finishes it saves its work and this page fills itself — press reload.', ctx['step6'], None, br['step6'])
     if not ctx['have_status']:
         return ('setup', 'Run step 6b — the readiness gate',
-                'epics.md exists but the sprint tracker (sprint-status.yaml) does not, so every story '
-                'shows as backlog. This prompt checks readiness and writes the tracker.', ctx['step6b'], None)
-    yours = [s for s in stories if s['lane'] == 'test' and s['phase'] == 'Test']
+                'The stories are written but the tracker (sprint-status.yaml) is not, so every story shows as '
+                'backlog. Copy this prompt into a Claude Code chat; it checks readiness and writes the tracker — '
+                'press reload when it says it has saved.', ctx['step6b'], None, br['step6b'])
+    yours = [s for s in stories if s['handoff']]
     if yours:
         s = yours[0]
         return ('you', f'Your test — story {s["key"]}, {s["title"]}',
                 'It is live on the real site. Open the story, follow the numbered steps, and tell me in '
                 'chat what you saw. Then this prompt records your verdict.',
-                fill(ctx['phase_prompts']['Record'], s), f'#{s["key"]}/test')
+                fill(ctx['phase_prompts']['Record'], s), f'#{s["key"]}/test', br['Record'])
     rank = {'Fix': 0}
     lane_rank = {'review': 1, 'progress': 2, 'ready': 3, 'backlog': 4}
-    open_ = [s for s in stories if s['lane'] != 'done']
+    open_ = [s for s in stories if s['lane'] != 'done' and not s['waits']]
     if not open_:
-        return ('done', 'Every story is done', 'Nothing is open. The launch gates are on the build board.', None, None)
+        return ('done', 'Every story is done', 'Nothing is open. The launch gates are on the build board.', None, None, '')
     s = min(open_, key=lambda x: (rank.get(x['phase'], lane_rank.get(x['lane'], 5)), x['e'], snum(x['s'])))
     pk = PROMPT_FOR[s['phase']]
-    return ('run', f'Story {s["key"]} — {PROMPT_LABEL[pk]}',
-            f'{s["title"]}. It is in the {LANE_NAME[s["lane"]].lower()} lane at the {s["phase"]} phase; '
-            f'copy the {pk} prompt and paste it into a Claude Code chat.',
-            fill(ctx['phase_prompts'][pk], s), f'#{s["key"]}')
+    if s['phase'] == 'Test':
+        why = f'{s["title"]}. It is deployed and has no screen for you to test — say \'done\' in chat, then this prompt closes it.'
+    else:
+        why = (f'{s["title"]}. It is in the {LANE_NAME[s["lane"]].lower()} column at the {lab(s["phase"])} phase; '
+               'copy the prompt and paste it into a Claude Code chat.')
+    return ('run', f'Story {s["key"]} — {PROMPT_LABEL[pk]}', why, fill(ctx['phase_prompts'][pk], s), f'#{s["key"]}', br[pk])
 
 
 CSS = """
@@ -628,16 +780,16 @@ border-radius:12px;padding:9px 16px 10px;box-shadow:var(--sh)}
 .next details{flex-basis:100%}.next summary{cursor:pointer;font-size:.8rem;color:var(--accent)}
 .next pre{margin:6px 0 0;max-height:200px}
 .board{flex:1;min-height:0;display:grid;grid-template-columns:var(--rail) 1fr;gap:12px;padding:10px 18px 10px}
-.rail{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px;min-height:0}
+.rail{overflow:auto;display:flex;flex-direction:column;gap:4px;padding-right:3px;min-height:0}
 .ep{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
-border-radius:10px;padding:7px 10px;cursor:pointer;color:var(--ink);flex:none}
+border-radius:8px;padding:4px 8px;cursor:pointer;color:var(--ink);flex:none;display:flex;gap:6px;align-items:center;
+position:relative;overflow:hidden;line-height:1.3}
 .ep:hover{border-color:var(--accent)}.ep.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
 .ep.done{border-left-color:var(--good)}.ep.progress{border-left-color:var(--accent)}
-.ep .et{display:flex;gap:6px;align-items:baseline;font-size:.78rem;font-weight:650;line-height:1.25}
-.ep .en{color:var(--muted);font-weight:700;font-size:.68rem;flex:none}
-.ep .em{display:block;color:var(--muted);font-size:.7rem;margin-top:2px}
-.epbar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
-.epbar i{display:block;height:100%;background:var(--good)}
+.ep .en{color:var(--muted);font-weight:700;font-size:.66rem;flex:none;min-width:22px}
+.ep .et{flex:1;min-width:0;font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep .em{color:var(--muted);font-size:.66rem;flex:none;white-space:nowrap}
+.ep .epbar{position:absolute;left:0;bottom:0;height:2px;background:var(--good)}
 .lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;min-height:0}
 .lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;border:1px solid var(--line)}
 .lane h2{font-size:.78rem;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);line-height:1.2}
@@ -649,7 +801,8 @@ font-size:.7rem;color:var(--muted);white-space:nowrap}
 .lane.test{border-color:var(--warn)}
 .cards{overflow:auto;flex:1;padding:8px;display:flex;flex-direction:column;gap:8px}
 .card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--wait);border-radius:9px;
-padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none}
+padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none;cursor:pointer}
+.card:hover{border-color:var(--accent)}
 .card.ready,.card.progress,.card.review{border-left-color:var(--accent)}.card.test{border-left-color:var(--warn)}
 .card.done{border-left-color:var(--good);opacity:.8}.card.issues,.card.blocked{border-left-color:var(--crit)}
 .card .ch{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
@@ -659,19 +812,20 @@ padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none}
 border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
 .ph.Test{background:var(--warn-s);color:var(--warn)}.ph.Fix,.ph.Blocked{background:var(--crit-s);color:var(--crit)}
 .ph.Done{background:var(--good-s);color:var(--good)}.ph.Dev,.ph.Review,.ph.Deploy{background:var(--accent-s);color:var(--accent)}
-.card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}.card h3 a{color:inherit;text-decoration:none}
-.card h3 a:hover{color:var(--accent)}
+.card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
 background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
-.cp.ok,.btn.ok{background:var(--good);border-color:var(--good);color:#fff}
-.more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:700;padding:0 7px;border-radius:6px;
-border:1px solid var(--line);font-size:.8rem;line-height:1.5}
+.cp.ok,.btn.ok,.cpv.ok{background:var(--good);border-color:var(--good);color:#fff}
+.more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:600;padding:0 7px;border-radius:6px;
+border:1px solid var(--line);font-size:.7rem;line-height:1.7}
 .more:hover{color:var(--accent);border-color:var(--accent)}
 .empty{color:var(--muted);font-size:.76rem;padding:10px 8px;text-align:center;line-height:1.45}
 .tag{display:inline-block;font-size:.64rem;font-weight:700;padding:1px 7px;border-radius:99px;vertical-align:middle;
 text-transform:uppercase;letter-spacing:.04em}
+.tag.long{text-transform:none;letter-spacing:0}
 .tag.warn{background:var(--warn);color:#fff}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
+.flag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--warn)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
 box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:21;overflow:auto;padding:16px 22px 48px}
@@ -697,20 +851,25 @@ background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:
 .flags{margin:4px 0 0}
 .tbox{border:1px solid var(--accent);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
 .tbox h3{color:var(--accent);margin-top:4px}
-.tw{overflow-x:auto;max-width:100%}
-table.mt{border-collapse:collapse;width:100%;font-size:.8rem;margin:6px 0}
-.mt th,.mt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
-.mt th{background:var(--code);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.steps{padding-left:1.4em;font-size:.88rem}.steps li{margin:4px 0}
+.steps{padding-left:1.4em;font-size:.88rem}.steps li{margin:8px 0}.steps label{display:block}
+.steps .see{margin:3px 0 0 22px}.steps .dummy{margin:3px 0 0 22px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.84rem}
+.steps .dummy code{font-size:.9em;padding:2px 6px}
+.cpv{font:inherit;font-size:.68rem;font-weight:650;padding:1px 7px;border-radius:6px;border:1px solid var(--accent);
+background:var(--card);color:var(--accent);cursor:pointer}
 .tasks{list-style:none;padding:0;margin:0}.tasks li{padding:2px 0 2px 22px;position:relative;font-size:.86rem}
 .tasks li::before{content:'☐';position:absolute;left:2px;color:var(--muted)}.tasks li.done::before{content:'☑';color:var(--good)}
 .tasks li.done{color:var(--muted)}
 .ct{width:100%;border-collapse:collapse;font-size:.8rem}.ct td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:top}
 .ct td:first-child{white-space:nowrap;color:var(--muted)}
+details.eng{margin:14px 0;border:1px solid var(--line);border-radius:10px;padding:0 12px}
+details.eng summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--muted);padding:8px 0;text-transform:uppercase;letter-spacing:.07em}
+details.eng[open] summary{border-bottom:1px solid var(--line)}details.eng h3:first-of-type{margin-top:10px}
 .pr{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
 .pr.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
 .prh{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--code);font-size:.84rem}.prh b{flex:1}
 .pr pre{border:0;border-radius:0;margin:0;max-height:280px}
+.brief{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:6px 0;font-size:.86rem}
+.pr .brief{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0}.next .brief{flex-basis:100%;margin:0 0 8px}
 .links{font-size:.84rem;color:var(--muted);margin-top:16px}
 .dw{border-top:1px solid var(--line);padding:8px 0}.dw:first-of-type{border-top:0}.dw b{display:block}
 .help p{margin:6px 0;font-size:.92rem;line-height:1.55}.help dt{font-weight:700;margin-top:8px}.help dd{margin:0 0 4px;color:var(--muted);font-size:.9rem}
@@ -754,18 +913,22 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.classList.contains
   t.checked?ticks.add(t.dataset.k):ticks.delete(t.dataset.k);
   try{localStorage.setItem(TK,JSON.stringify([...ticks]));}catch(x){}});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-copy]');
-  if(c){const src=document.getElementById(c.dataset.copy);if(!src)return;
-    copy(src.textContent).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
+  const c=e.target.closest('[data-copy],[data-text]');
+  if(c){const src=c.dataset.text!==undefined?c.dataset.text:(document.getElementById(c.dataset.copy)||{}).textContent;
+    if(src===undefined)return;
+    copy(src).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
       setTimeout(()=>{c.textContent=o;c.classList.remove('ok');},1400);});return;}
   const p=e.target.closest('[data-panel]');
   if(p){location.hash='#'+p.dataset.panel;return;}
   if(e.target.closest('.close')||e.target===scrim){closeDrawer();return;}
+  const card=e.target.closest('.card');
+  if(card&&!e.target.closest('a,button,input')){location.hash='#'+card.dataset.key;return;}
   const ep=e.target.closest('.ep');
   if(ep){epicFilter=(epicFilter===ep.dataset.e)?'':ep.dataset.e;apply();}});
 function apply(){
   const s=q.value.trim().toLowerCase();
-  $$('.card').forEach(c=>{c.hidden=(epicFilter&&c.dataset.e!==epicFilter)||(s&&!c.dataset.s.includes(s));});
+  const needle=/^\d+\.\d+[a-z]?$/.test(s)?' '+s+' ':s;   // a story key matches whole: 1.1 is not 1.10
+  $$('.card').forEach(c=>{c.hidden=(epicFilter&&c.dataset.e!==epicFilter)||(s&&!c.dataset.s.includes(needle));});
   $$('.lane').forEach(l=>{const all=l.querySelectorAll('.card'),shown=[...all].filter(c=>!c.hidden);
     l.querySelector('.n').textContent=shown.length===all.length?all.length:shown.length+' of '+all.length;});
   $$('.ep').forEach(b=>b.classList.toggle('on',b.dataset.e===epicFilter));}
@@ -776,6 +939,24 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('hashchange',route);route();
 """
 
+HELP = '''<section class="pd help" id="pd-help" hidden><h2>How to read this board</h2>
+<p>Every card is one story. A story moves left to right as it is built, and it comes to you once, in the gold column.</p>
+<dl>
+<dt>Backlog</dt><dd>Not started. Its spec (the written plan for the story) has not been written.</dd>
+<dt>Ready</dt><dd>The spec is written and waiting to be built.</dd>
+<dt>In progress</dt><dd>Being built now.</dd>
+<dt>In review</dt><dd>Being checked against the real services, then deployed. Nothing for you to do yet.</dd>
+<dt>Deployed, your test</dt><dd>The gold column. Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed. A story with no screen skips your test: say "done" in chat and the Record prompt closes it.</dd>
+<dt>Done</dt><dd>You accepted it.</dd>
+</dl>
+<p><b>The phases.</b> Create (write the spec) → Build → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
+<p><b>The prompts.</b> Each card carries one Copy prompt button, for the phase on its badge; Details shows every phase's prompt. Paste it into a Claude Code chat exactly as copied, top to bottom — some begin with a /command, some do not.</p>
+<p><b>Reload.</b> Reload this page whenever a session says it has saved. Every save is a commit shaped <code>Story E.S - Phase - one line</code>, this board is rebuilt from those commits, and a story's history is its commit list.</p>
+<p><b>Questions for you.</b> The inbox in the top bar lists every open question across every story. Each is plain English with numbered options and one marked RECOMMENDED; answer in chat by number.</p>
+<p><b>Waits for.</b> In the two library epics the stories run one at a time behind your category gate, so only the first open one carries a prompt; the rest say which story they wait for.</p>
+<p><b>Keys.</b> <code>/</code> focuses the search, <code>Esc</code> closes a panel. The ticks on a test script are stored in this browser only; your verdict still goes through chat.</p>
+</section>'''
+
 
 def render(ctx):
     epics, status = ctx['epics'], ctx['status']
@@ -785,6 +966,7 @@ def render(ctx):
         for st in ep['stories']:
             derive(st, status, ctx['specs'], ctx['commits'])
             stories.append((st, ep))
+        gate_epic(ep)
         ep['status'] = epic_status(ep, status)
     flat = [s for s, _ in stories]
 
@@ -799,8 +981,9 @@ def render(ctx):
              f'<span class="lbl">Stories</span>'
              + ''.join(f'<span class="chip {k}"><i></i>{lane_n[k]} {e(n.lower())}</span>' for k, n in LANES))
 
-    kind, title, why, prompt, link = next_action(ctx, flat)
-    na = f'<section class="next {kind}"><div class="nh"><span class="kick">Next action</span><h2>{e(title)}</h2></div><p>{e(why)}</p><div class="na">'
+    kind, title, why, prompt, link, brief = next_action(ctx, flat)
+    na = (f'<section class="next {kind}"><div class="nh"><span class="kick">Next action</span><h2>{e(title)}</h2></div><p>{e(why)}</p>'
+          + (f'<div class="brief">{mdblock(brief)}</div>' if brief else '') + '<div class="na">')
     if prompt:
         na += '<button class="btn copy" data-copy="na-prompt">Copy prompt</button>'
     if link:
@@ -809,17 +992,17 @@ def render(ctx):
         na += f'<details><summary>Show the prompt</summary><pre id="na-prompt">{e(prompt)}</pre></details>'
     na += '</div></section>'
 
-    # ── the epic rail ──
-    rail = ['<button class="ep all" data-e="">'
-            f'<span class="et">All epics</span><span class="em">{len(epics)} epics · {len(flat)} stories</span></button>']
+    # ── the epic rail: one line per epic ──
+    rail = ['<button class="ep all" data-e=""><span class="et">All epics</span>'
+            f'<span class="em">{len(epics)} epics · {len(flat)} stories</span></button>']
     for ep in epics:
         n_done = sum(1 for s in ep['stories'] if s['lane'] == 'done')
         tot = len(ep['stories'])
         pct = int(100 * n_done / tot) if tot else 0
-        meta = f'{n_done} of {tot} stories done' if tot else 'no stories yet'
+        meta = f'{n_done}/{tot}' if tot else '—'
         rail.append(f'<button class="ep {ep["status"]}" data-e="{ep["n"]}" title="{e(ep["goal"])}">'
-                    f'<span class="et"><span class="en">E{ep["n"]}</span><span>{e(ep["title"])}</span></span>'
-                    f'<span class="em">{e(meta)}</span><span class="epbar"><i style="width:{pct}%"></i></span></button>')
+                    f'<span class="en">E{ep["n"]}</span><span class="et">{e(ep["title"])}</span>'
+                    f'<span class="em" title="stories done">{e(meta)}</span><i class="epbar" style="width:{pct}%"></i></button>')
 
     # ── the lanes ──
     lanes = []
@@ -832,27 +1015,36 @@ def render(ctx):
                      f'<div class="cards">{cards}</div></section>')
 
     # ── the hidden detail sections and the panels ──
-    details = [render_story(s, ep, ctx['phase_prompts']) for s, ep in stories]
+    details = [render_story(s, ep, ctx['phase_prompts'], ctx['briefs']) for s, ep in stories]
     if open_qs:
         ql = ''.join(f'<div class="dw"><b><a href="#{e(s["key"])}/questions">{e(s["key"])} · {e(s["title"])}</a></b>'
                      f'{e(q["title"])}'
-                     + ('<span class="tag warn"> needs options</span>' if not q['options'] else
-                        '<span class="tag warn"> needs a (RECOMMENDED)</span>' if not q['recommended'] else '')
+                     + (f'<br><span class="flag">{e(NO_OPTIONS)}</span>' if not q['options'] else
+                        f'<br><span class="flag">{e(NO_RECOMMENDED)}</span>' if not q['recommended'] else '')
                      + '</div>' for s, ep, q in open_qs)
     else:
         ql = '<p class="fine">Nothing is waiting on you. A question appears here the moment a spec writes one under "Questions for the owner".</p>'
     details.append(f'<section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">{len(open_qs)} open</span></h2>'
                    '<p class="fine">Everything the build needs you to decide, across every story. Open one, read the options, answer in chat by number.</p>'
                    f'{ql}</section>')
-    feed = ctx['commits'][:20]
+    feed = [c for c in ctx['commits'] if c['kind'] != 'unreadable'][:20]
+    unreadable = [c for c in ctx['commits'] if c['kind'] == 'unreadable']
     if feed:
         rows = ''.join(f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td>'
                        f'<td>{("<a href=#" + e(c["key"]) + ">" + e(c["key"]) + "</a>") if c["kind"] == "story" else e(c["key"])} '
-                       f'<span class="ph {e(c["phase"])}">{e(c["phase"])}</span></td><td>{e(c["msg"])}</td></tr>' for c in feed)
+                       + (f'<span class="ph {e(c["phase"])}">{e(c["phase"])}</span>' if c['phase'] else '')
+                       + f'</td><td>{e(c["msg"])}</td></tr>' for c in feed)
         act = f'<table class="ct">{rows}</table>'
     else:
         act = '<p class="fine">No story commits yet. Every phase ends with one, shaped <code>Story E.S - Phase - one line</code>, and they appear here as they land.</p>'
-    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last {len(feed)} story commits</span></h2>{act}</section>')
+    if unreadable:
+        act += (f'<h3>Unreadable commits <span class="fine">{len(unreadable)}</span></h3>'
+                '<p class="fine">These start like a story, step, hotfix or retro commit but do not fit the shape '
+                '<code>Story E.S - Phase - one line</code> (or <code>Step n - Phase - …</code>, <code>Hotfix - …</code>, '
+                '<code>Epic N - Retro - …</code>), so the board cannot read them. The commit-msg hook rejects new ones.</p>'
+                '<table class="ct">' + ''.join(f'<tr><td>{e(c["date"])}</td><td><code>{e(c["h"])}</code></td><td>{e(c["msg"])}</td></tr>'
+                                               for c in unreadable) + '</table>')
+    details.append(f'<section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last {len(feed)} commits</span></h2>{act}</section>')
     if ctx['deferred']:
         dw = ''.join(f'<div class="dw"><b>{e(d["id"] + " · " if d["id"] else "")}{e(d["title"])}'
                      + (f' <span class="tag {"crit" if d["severity"] in ("critical", "high") else "warn" if d["severity"] else "good"}">{e(d["severity"] or d["status"])}</span>' if (d['severity'] or d['status']) else '')
@@ -861,24 +1053,9 @@ def render(ctx):
     else:
         dw = ('<p class="fine">Nothing has been deferred.' + ('' if ctx['deferred_exists'] else ' The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.') + '</p>')
     details.append(f'<section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">{len(ctx["deferred"])} entries</span></h2>'
-                   '<p class="fine">Things a review chose not to do inside its story. Each is a small decision for later, not a bug in what shipped.</p>'
+                   '<p class="fine">Small things put off for later: a review chose not to do them inside its story. Each is a small decision for later, not a bug in what shipped.</p>'
                    f'{dw}</section>')
-    details.append('''<section class="pd help" id="pd-help" hidden><h2>How to read this board</h2>
-<p>Every card is one story. A story moves left to right as it is built, and it comes to you once, in the amber lane.</p>
-<dl>
-<dt>Backlog</dt><dd>Not started. Its spec has not been written.</dd>
-<dt>Ready</dt><dd>The spec is written and waiting to be built.</dd>
-<dt>In progress</dt><dd>Being built now.</dd>
-<dt>In review</dt><dd>Being checked against the real services, then deployed. Nothing for you to do yet.</dd>
-<dt>Deployed, your test</dt><dd>Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed.</dd>
-<dt>Done</dt><dd>You accepted it.</dd>
-</dl>
-<p><b>The phases.</b> Create (write the spec) → Dev (build it) → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
-<p><b>The prompts.</b> Each card carries a copy button for the phase it is in; the story panel carries every phase's prompt. Paste one into a Claude Code chat exactly as copied, including the first line that starts with a slash.</p>
-<p><b>The commit rule.</b> Every phase ends with a commit and push to main, shaped <code>Story E.S - Phase - one line</code>. This board reads those commits, so a story's history is its commit list, and the board itself is regenerated on every commit — reload it after each one.</p>
-<p><b>Questions for you.</b> The inbox in the top bar lists every open question across every story. Each is plain English with numbered options and one marked RECOMMENDED; answer in chat by number.</p>
-<p><b>Keys.</b> <code>/</code> focuses the search, <code>Esc</code> closes a panel. The ticks on a test script are stored in this browser only; your verdict still goes through chat.</p>
-</section>''')
+    details.append(HELP)
 
     stamp = ctx['stamp']
     demo = '<span class="demo">DEMO DATA</span>' if ctx['demo'] else ''
@@ -895,7 +1072,7 @@ def render(ctx):
   <div class="tools"><input id="q" type="search" placeholder="Search stories  ( / )" aria-label="search stories">
     <button class="btn" data-panel="questions">Questions for you <b class="{'zero' if not open_qs else ''}">{len(open_qs)}</b></button>
     <button class="btn" data-panel="activity">Activity</button>
-    <button class="btn" data-panel="deferred">Deferred</button>
+    <button class="btn" data-panel="deferred" title="small things put off for later">Deferred</button>
     <button class="btn" data-panel="help">Help</button></div>
 </header>
 {na}
@@ -923,7 +1100,7 @@ def read(path):
 def real():
     seq = read(SEQ)
     assert seq, f'missing {SEQ}'
-    phase, step6, step6b = prompts_from_sequence(seq)
+    phase, step6, step6b, briefs = prompts_from_sequence(seq)
     epics_md, status_md, deferred_md = read(EPICS), read(STATUS), read(DEFERRED)
     specs = []
     if os.path.isdir(IMPL):
@@ -941,7 +1118,7 @@ def real():
             'status': load_status(status_md or ''), 'specs': load_specs(specs),
             'commits': load_commits(log), 'deferred': load_deferred(deferred_md or ''),
             'deferred_exists': deferred_md is not None,
-            'phase_prompts': phase, 'step6': step6, 'step6b': step6b, 'demo': False,
+            'phase_prompts': phase, 'step6': step6, 'step6b': step6b, 'briefs': briefs, 'demo': False,
             'stamp': f'on {head}' if head else 'outside git'}
 
 
@@ -949,7 +1126,8 @@ DEMO_EPICS = """# Inflozo - Epic Breakdown
 
 ## Overview
 
-Demo fixture. Two epics from the PRD's §8, six stories, one per lane, plus one with issues.
+Demo fixture. Three epics from the PRD's §8: one per lane, one with issues, a no-screen story, a blocked
+one, a tracker-only one, and a gated library epic.
 
 ## Epic 1: Foundations & Design System
 
@@ -1004,6 +1182,18 @@ So that every later surface has a home.
 **When** I open the dashboard
 **Then** it matches frame S2a
 
+### Story 1.5: The database schema applied to the Supabase project
+
+As a builder,
+I want SCHEMA.sql applied to the real Supabase project with RLS-TEST.sql passing,
+So that every later story has a database with its policies proven.
+
+**Acceptance Criteria:**
+
+**Given** the production Supabase project
+**When** RLS-TEST.sql runs against it
+**Then** every assertion passes
+
 ## Epic 3: Sites & Connections
 
 The connect wizard, the server-side Admin proxy, health checks and multi-site management.
@@ -1043,6 +1233,58 @@ So that one site's change never touches another.
 **Given** two connected sites
 **When** I rotate one site's key
 **Then** the other site's connection is untouched
+
+### Story 3.4: Site removal with the confirm sheet
+
+As a site owner,
+I want to remove a site I no longer own,
+So that its keys leave Inflozo.
+
+**Acceptance Criteria:**
+
+**Given** a connected site
+**When** I confirm its removal
+**Then** its keys are deleted from the Vault
+
+### Story 3.5: Health-check retry policy
+
+As a site owner,
+I want the health check to retry three times before it emails me,
+So that one flaky minute does not read as a broken connection.
+
+**Acceptance Criteria:**
+
+**Given** a site that fails once and answers on the retry
+**When** the daily check runs
+**Then** no email is sent
+
+## Epic 9: The Shell Block
+
+The complete site-wide chrome plus every template the compiler emits, one category at a time behind the owner's gate.
+
+### Story 9.1: Headers & Navigation
+
+As a site owner,
+I want the header designs placeable and compiled,
+So that a real Ghost site renders with Inflozo's chrome.
+
+**Acceptance Criteria:**
+
+**Given** the first header design on the canvas
+**When** the theme deploys to ghost6.inflozo.com
+**Then** the header renders as drawn
+
+### Story 9.2: Footers
+
+As a site owner,
+I want the footer designs placeable and compiled,
+So that every page ends as drawn.
+
+**Acceptance Criteria:**
+
+**Given** a footer design on the canvas
+**When** the theme deploys
+**Then** the footer renders as drawn
 """
 
 DEMO_STATUS = """generated: 09-05-2026 10:00
@@ -1053,15 +1295,22 @@ development_status:
   epic-1: in-progress
   1-1-repository-next-js-app-and-ci-to-production-vercel: done
   1-2-design-tokens-and-components-from-the-export: review
-  1-3-magic-link-sign-in-with-the-branded-emails: review
+  1-3-magic-link-sign-in-with-the-branded-emails: done
   1-4-the-dashboard-shell-and-navigation: review
+  1-5-the-database-schema-applied-to-the-supabase-project: done
   epic-1-retrospective: optional
 
   epic-3: in-progress
   3-1-connect-wizard-validates-the-three-keys: in-progress
   3-2-daily-health-check-and-the-reconnect-needed-email: ready-for-dev
   3-3-multi-site-management-and-key-rotation: backlog
+  3-4-site-removal-with-the-confirm-sheet: blocked
+  3-5-health-check-retry-policy: in-progress
   epic-3-retrospective: optional
+
+  epic-9: backlog
+  9-1-headers-navigation: ready-for-dev
+  9-2-footers: backlog
 """
 
 
@@ -1100,6 +1349,11 @@ The app exists and every push to main puts it live on the real Vercel project. Y
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | https://demo.example/ | Sign in | Open the address | — | The sign-in page from frame S1a |
+
+## Verification
+
+**Commands:**
+- `curl -s https://api.vercel.com/v9/projects/inflozo` -- expected: 200, the production project
 """),
  demo_spec(1, 2, 'design-tokens-and-components', 'in-review', 'baseline_commit: 0000002\n', """
 ## In plain English
@@ -1121,7 +1375,7 @@ Every colour, size and control the app uses now comes from the design export, ge
 **Commands:**
 - `npm test -- tokens` -- expected: every token equal to the frame's
 """),
- demo_spec(1, 3, 'magic-link-sign-in', 'in-review', 'owner_test: pending\nbaseline_commit: 0000003\n', """
+ demo_spec(1, 3, 'magic-link-sign-in', 'done', 'owner_test: pending\nbaseline_commit: 0000003\n', """
 ## In plain English
 
 A visitor can type their email and get a sign-in link. The email is the branded one, sent through Resend. Clicking the link signs them in and lands them on the dashboard.
@@ -1169,7 +1423,8 @@ Today the link email is sent either way and the account is created on first sign
 ## Verification
 
 **Commands:**
-- `curl -s https://demo.example/api/health` -- expected: 200 from the production project
+- `curl -s https://inflozo.vercel.app/api/health` -- expected: 200 from the production project
+- `POST https://api.resend.com/emails` -- expected: 200, one message id
 """),
  demo_spec(1, 4, 'dashboard-shell', 'in-review', 'owner_test: issues\nbaseline_commit: 0000004\n', """
 ## In plain English
@@ -1187,14 +1442,33 @@ Signed-in users see the dashboard: the top bar, the project list and the connect
 ## Owner's manual test
 
 1. Open https://demo.example/dashboard — the dashboard — sign in first — you should see the top bar and an empty project list.
-2. Press the New project button — the create sheet — nothing to type — the sheet from frame S3a opens.
+2. Press the New project button — the create sheet — nothing to type — you should see the sheet from frame S3a open.
 
 ## Owner's test findings
 
 - The top bar's logo is the old coral one, not the ink one in S2a.
 - The New project button opens the sheet but Esc does not close it.
 """),
- demo_spec(3, 1, 'connect-wizard', 'in-progress', 'owner_test: pending\nbaseline_commit: 0000005\n', """
+ demo_spec(1, 5, 'database-schema', 'done', 'owner_test: none\nbaseline_commit: 0000005\n', """
+## In plain English
+
+The real database now exists with every table and every policy from the architecture, and the security proof passes against it. There is no screen; nothing to look at yet.
+
+## Tasks & Acceptance
+
+**Execution:**
+- [x] `SCHEMA.sql` -- applied to the production project -- AD-26
+- [x] `RLS-TEST.sql` -- run against it -- E1's exit criterion
+
+**Acceptance Criteria:**
+- Given the production project, when RLS-TEST.sql runs, then every assertion passes
+
+## Verification
+
+**Commands:**
+- `psql postgresql://…@db.abcdefgh.supabase.co:5432/postgres -f RLS-TEST.sql` -- expected: every assertion passes
+"""),
+ demo_spec(3, 1, 'connect-wizard', 'in-progress', 'owner_test: pending\nbaseline_commit: 0000006\n', """
 ## In plain English
 
 A site owner pastes three keys into the connect wizard and each is checked against their real Ghost site as they type. A wrong key is caught before anything is saved.
@@ -1218,6 +1492,24 @@ Every day Inflozo checks each connected site still answers to its key. When one 
 
 Should the daily check also run right after a deploy, or only on its schedule? A deploy already talks to the site, so a second check may be redundant.
 """),
+ demo_spec(3, 4, 'site-removal', 'blocked', 'owner_test: pending\nbaseline_commit: 0000007\n', """
+## In plain English
+
+A site owner can remove a site from Inflozo. The confirm sheet says what is deleted, and the keys leave the Vault the moment they confirm.
+
+## Questions for the owner
+
+QUESTION 1 — Should removing a site also delete the projects that were deployed to it?
+
+Example: you remove your test site; two projects were last deployed there.
+
+1. Keep the projects; they simply lose their linked site. (RECOMMENDED)
+   Nothing a user made is destroyed by a connection change.
+2. Delete the projects with the site.
+   One action, but it throws away work.
+
+Answer: 1 — keep the projects.
+"""),
 ]
 
 DEMO_LOG = """a1b2c3d\t2026-09-11\tStory 1.4 - Test - 2 findings
@@ -1231,8 +1523,17 @@ f607182\t2026-09-10\tStory 3.1 - Create - connect wizard spec against frame S5a
 293a4b5\t2026-09-08\tStory 1.4 - Dev - dashboard shell from frame S2a
 3a4b5c6\t2026-09-08\tStory 1.3 - Create - sign-in spec with the owner's test script
 4b5c6d7\t2026-09-08\tStory 1.2 - Dev - tokens and controls lifted from the export
+4b5c6d8\t2026-09-08\tStory 1.2 - Dvelop - a phase word with a typo, which the commit-msg hook now rejects
 5c6d7e8\t2026-09-07\tStory 1.4 - Create - dashboard shell spec
+5c6d7e9\t2026-09-07\tStory 3.4 - Blocked - waits on the owner: do removed sites take their projects with them
+5c6d7f0\t2026-09-07\tStory 3.4 - Create - site removal spec against frame S6b
 6d7e8f9\t2026-09-07\tStory 1.2 - Create - token spec
+6d7e900\t2026-09-07\tHotfix - the sign-in email's logo was the coral one
+6d7e901\t2026-09-07\tEpic 1 - Retro - two findings carried to E3
+6d7e902\t2026-09-07\tStory 1.5 - Deploy - schema applied to the production Supabase project, RLS-TEST green
+6d7e903\t2026-09-07\tStory 1.5 - Review - the proof re-run against the real project
+6d7e904\t2026-09-06\tStory 1.5 - Dev - SCHEMA.sql applied
+6d7e905\t2026-09-06\tStory 1.5 - Create - schema story spec, no screen
 7e8f901\t2026-09-07\tStory 1.1 - Done - accepted by the owner
 8f90112\t2026-09-06\tStory 1.1 - Deploy - production project serves main
 90a1223\t2026-09-06\tStory 1.1 - Review - pipeline verified against the real Vercel project
@@ -1260,25 +1561,50 @@ status: open
 
 
 def demo():
-    """The same page from an in-memory fixture — and this script's self-check."""
-    phase, step6, step6b = prompts_from_sequence(read(SEQ))
+    """The same page from an in-memory fixture — and this script's self-check, one story per rule."""
+    phase, step6, step6b, briefs = prompts_from_sequence(read(SEQ))
     ctx = {'epics': load_epics(DEMO_EPICS), 'have_epics': True, 'have_status': True,
            'status': load_status(DEMO_STATUS), 'specs': load_specs(DEMO_SPECS),
            'commits': load_commits(DEMO_LOG), 'deferred': load_deferred(DEMO_DEFERRED),
-           'deferred_exists': True, 'phase_prompts': phase, 'step6': step6, 'step6b': step6b,
+           'deferred_exists': True, 'phase_prompts': phase, 'step6': step6, 'step6b': step6b, 'briefs': briefs,
            'demo': True, 'stamp': 'from the demo fixture'}
     out = render(ctx)
     flat = {s['key']: s for ep in ctx['epics'] for s in ep['stories']}
     lanes = {s['lane'] for s in flat.values()}
     assert lanes == {k for k, _ in LANES}, f'the fixture does not populate every lane: {lanes}'
-    assert flat['1.4']['issues'] and flat['1.3']['phase'] == 'Test' and flat['1.1']['phase'] == 'Done'
+    assert flat['1.4']['issues'] and flat['1.3']['phase'] == 'Test' and flat['1.3']['handoff']
+    assert flat['1.1']['phase'] == 'Done' and len(flat['1.1']['commits']) == 5
+    # F2: a tracker `done` is not Done until the owner's test — 1.3 is done in the tracker, owner_test pending
+    assert flat['1.3']['lane'] == 'test' and flat['1.3']['status'] == 'done'
+    # F5/6.1: owner_test: none + a Deploy commit is Done without a Done commit, and never the owner's move
+    assert flat['1.5']['phase'] == 'Done' and 'Done' not in [c['phase'] for c in flat['1.5']['commits']]
+    # F1: a tracker-only status (no spec, no commit) moves the lane
+    assert flat['3.5']['lane'] == 'progress' and flat['3.5']['spec'] is None and not flat['3.5']['commits']
     assert flat['3.1']['lane'] == 'progress' and flat['3.2']['lane'] == 'ready' and flat['3.3']['lane'] == 'backlog'
+    # 4.1: blocked from the tracker and the trail; the question carries an Answer line
+    assert flat['3.4']['blocked'] and flat['3.4']['spec']['questions'][0]['answered']
+    # F9: past Dev with no real service named → the amber tag; a real service named → none
+    assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
+    # 2.1: the library epic gates its stories on the one before
+    assert flat['9.1']['waits'] is None and flat['9.2']['waits'] == '9.1' and 'waits for 9.1' in out
+    # F6: the commit vocabulary, and everything else shaped like ours is listed rather than dropped
+    kinds = {c['kind'] for c in ctx['commits']}
+    assert {'story', 'step', 'hotfix', 'retro', 'unreadable'} <= kinds, kinds
+    assert 'Dvelop' in out and 'Unreadable commits' in out
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
     assert not q32[0]['options'], 'the shapeless question must fail R-83'
-    assert 'needs options' in out and 'DEMO DATA' in out and flat['1.3']['spec']['test']['kind'] == 'table'
-    assert flat['1.4']['spec']['test']['kind'] == 'list' and len(flat['1.1']['commits']) == 5
+    assert NO_OPTIONS.split('.')[0] in out and 'DEMO DATA' in out and flat['1.3']['spec']['test']['kind'] == 'table'
+    assert flat['1.4']['spec']['test']['kind'] == 'list'
+    # the two-line test form, with the dummy value on its own copy button
+    assert 'data-text="owner+test1@inflozo.com"' in out and 'You should see:' in out
+    # F13: the plain-sentence fallback reads as English
+    assert 'can the app deployed' not in out and 'wants the health check to retry' in out
     assert 'Story 1.3 from _bmad-output/planning-artifacts/epics.md' in out, 'the {E.S} placeholder was not filled'
+    assert '/command.' not in out, 'never tell the owner every prompt starts with a /command'
+    # the briefing extractor: the blockquote right before a fence, and only that one, only that shape
+    assert fenced('> **Before you paste it** — one\n> two\n```\nA\n```\n\n> a note\n\n```\nB\n```\n') == \
+        [('A', '**Before you paste it** — one\ntwo'), ('B', '')]
     return out
 
 

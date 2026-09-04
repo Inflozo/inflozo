@@ -79,8 +79,7 @@ STEPS = [
   'Four rulings in \u00a7A11 of the decisions file (R-76 \u2026 R-79); prd.md FR-D1, FR-J7 and FR-J9 '
   'moved.',
   'Four journeys and eight flows, authored rather than verified — plus a Claude Design prompt per '
-  'undrawn surface group in EXPERIENCE.md Appendix A (eight of them; its ### A headings are the '
-  'count). A8 came out of the step\u2019s own stress test: the export draws the editor at 1440 and '
+  'undrawn surface group in EXPERIENCE.md Appendix A (its ### A headings are the count). A8 came out of the step\u2019s own stress test: the export draws the editor at 1440 and '
   'NOWHERE ELSE, so R-76\u2019s tablet half and the 200%-zoom floor were both prose with no frame '
   'behind them.', None),
  ('s5b', '5b', 'Static prototype', 'done',
@@ -98,10 +97,11 @@ STEPS = [
   'A\u2019s Claude Design prompts had NOT been run when it was built, so a surface with no frame says '
   'so and shows nothing.',
   'A walkable static prototype of the product, and <b>R-75\u2019s gate: the owner walking it is what '
-  'unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end, '
-  'with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, '
-  'The walk, and that section holds the date line, which is his to write. WALKED 2026-09-04 \u2014 the '
-  'date stands; what he found goes to the stories (R-80, \u00a7A13).',
+  'unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end and '
+  'the date written on the line under build-sequence.md step 5b, The walk, which is his to write; notes '
+  'in ux-designs/WALK-NOTES.md were optional. WALKED 2026-09-04 \u2014 the date stands. What he found is '
+  'fixed inside the stories that own the screens, from his own test of each deployed story (R-80 as '
+  'amended, \u00a7A13).',
   None),
  ('s5c', '5c', 'The walkthrough', 'done',
   "The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, "
@@ -126,9 +126,9 @@ STEPS = [
  ('s6', '6', 'Epics and stories', 'next',
   'OPEN SINCE 2026-09-04 \u2014 the owner walked 5b and wrote the date under build-sequence.md step 5b, '
   'The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every '
-  'story with a surface names the frame it is built from; per R-80 (\u00a7A13) every screen with a line '
-  'in ux-designs/WALK-NOTES.md carries that line as an acceptance criterion \u2014 the walk\u2019s findings '
-  'are fixed in their stories, not by another design pass first.',
+  'story with a surface names the frame it is built from; per R-80 as amended (\u00a7A13) every story '
+  'with a screen carries the owner\u2019s manual-test steps and he tests it on the deployed site before '
+  'it is done \u2014 what he finds is fixed in that story, not by another design pass first.',
   'The story breakdown.', None),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
@@ -136,7 +136,7 @@ STEPS = [
  ('s7', '7', 'The development loop', 'later',
   'Per story: Create \u2192 Dev \u2192 Review \u2192 Deploy \u2192 your test on the live site \u2192 Done, with a '
   'commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every '
-  'question to you in plain English with options and one marked RECOMMENDED (R-83). The four prompts '
+  'question to you in plain English with options and one marked RECOMMENDED (R-83). The prompts '
   'below are TEMPLATES with placeholders \u2014 copy the filled-in prompt for a given story from the story '
   'board, STORY-BOARD.html (R-84), which is regenerated on every commit.',
   'Working software, one story at a time, tested by you before it is done.',
@@ -176,8 +176,8 @@ PROMPTS = [
   '  ux-designs/walkthrough/index.html to look at it, after 5b. Read build-app.py\u2019s docstring first.',
   'Rebuild or extend the Inflozo walkthrough'),
  ('s6',  'Epics and stories', 'live',
-  'DO NOT RUN before the owner\u2019s walk of 5b has a date under build-sequence.md step 5b, The walk '
-  '(R-75). Nothing technical stops it; the gate is that line.',
+  'Step 6 is open (2026-09-04); the gate is met \u2014 the owner\u2019s walk of 5b has its date under '
+  'build-sequence.md step 5b, The walk (R-75).',
   '/bmad-create-epics-and-stories'),
  ('s6b', 'Readiness gate', 'live', None, '/bmad-sprint-planning'),
  ('s7', 'Create \u2014 the spec (template)', 'template',
@@ -187,8 +187,12 @@ PROMPTS = [
   'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'IMPLEMENT the spec at'),
  ('s7', 'Review (template)', 'template',
   'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'Review story {E.S}'),
+ ('s7', 'Deploy (template)', 'template',
+  'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'Deploy story {E.S} to the real stack'),
  ('s7', 'Fix \u2014 the owner\u2019s findings (template)', 'template',
   'A template: copy the finished prompt for a story from STORY-BOARD.html.', "FIX the owner's test findings"),
+ ('s7', 'Record \u2014 your test, or your answer (template)', 'template',
+  'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'I tested story {E.S} on the live site'),
 ]
 
 # What to do the moment a patched export lands in the design-export folder, in order.
@@ -272,19 +276,6 @@ ACTIONS = [
   'block nothing. Export the whole project ONCE after the second session, drop it into the export '
   'directory, run the runbook above once, then both generators: the '
   'pages that say \u201cnot drawn\u201d lift the new frames.'),
- ('soon', 'The Image-focus sweep \u2014 23 categories',
-  'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
-  'which is the owner\u2019s "one control name, one set of values" ruling in its worst form. Pass '
-  'four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY '
-  'PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The '
-  'list is derived by tools/design-patch-prompts-4.py, which tests the real condition \u2014 does '
-  'the spec enumerate the values WITHOUT referencing P0\u00b79 \u2014 after its first version got '
-  'this wrong by assuming a category in the pass had been fixed.'),
- ('soon', 'Five registry rulings for the architect',
-  'Not yours, and not blocking: A5\u2019s tabs announced twice without JavaScript, A5\u2019s scroller '
-  'rule having no registry sentence, A13\u2019s walkthrough emitting a heading per panel, A33\u2019s '
-  'gallery script having no registry entry, and whether group-headings may re-level a heading. One '
-  'pass covers all five.'),
  ('gate', 'Supabase Pro before the live site has real customers',
   'Free has no backups at all. Includes doing one real restore.'),
  ('gate', 'Ghost(Pro) Starter before public launch', 'Blocks launch. Comes up at the end of E13.'),
@@ -295,22 +286,46 @@ def fenced(md):
     return re.findall(r'\n```\n(.*?)\n```\n', md, re.S)
 
 
+def briefing(md, pos):
+    """The `> **Before you paste it** …` blockquote that runs up to the fence at `pos`, with the `> `
+    marks stripped, or '' when the prompt has none. build-sequence.md keeps this plain-English note
+    beside each remaining prompt; it is extracted here, never retyped, so an edit to it makes the
+    board stale."""
+    before, quote = md[:pos].rstrip('\n').split('\n'), []
+    while before and before[-1].startswith('>'):
+        quote.insert(0, before.pop())
+    text = '\n'.join(re.sub(r'^>[ \t]?', '', l) for l in quote).strip()
+    return text if text.startswith('**Before you paste it**') else ''
+
+
+def brief_html(text):
+    def inl(t):
+        t = html.escape(t)
+        t = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', t)
+        t = re.sub(r'(?<!\*)\*([^*\n]+?)\*(?!\*)', r'<i>\1</i>', t)
+        return re.sub(r'`([^`]+)`', r'<code>\1</code>', t)
+    paras = [' '.join(p.split()) for p in re.split(r'\n\s*\n', text) if p.strip()]
+    return '<div class="brief">' + ''.join(f'<p>{inl(p)}</p>' for p in paras) + '</div>'
+
+
 def build():
     md = open(SRC, encoding='utf8').read()
     # A step prompt is a fenced block that either starts with a slash command, or sits under a
-    # '### … Prompt …' heading. The union matters: step 5b's prompt starts with plain prose
-    # ('Build the static prototype…') and the OLD slash-only filter silently dropped it while
-    # the count check still passed — an invisible prompt with a green check — and step 6b's
-    # slash prompt sits under a heading with no 'Prompt' in it, so a heading-only anchor
-    # drops that one instead. Both signals together cover every shape this file actually has.
+    # '### … prompt …' heading (any case: step 7's "### The phase prompts" holds the Deploy and
+    # Record prompts, which start with plain text). The union matters: step 5b's prompt starts with
+    # plain prose ('Build the static prototype…') and the OLD slash-only filter silently dropped it
+    # while the count check still passed — an invisible prompt with a green check — and step 6b's
+    # slash prompt sits under a heading with no 'Prompt' in it, so a heading-only anchor drops that
+    # one instead. Both signals together cover every shape this file actually has. Each block is
+    # paired with the briefing before it.
     heads = [(m.start(), m.group(0)) for m in re.finditer(r'^###[^\n]*$', md, re.M)]
     blocks = []
     for m in re.finditer(r'\n```\n(.*?)\n```', md, re.S):
         body = m.group(1)
         prior = [h for h in heads if h[0] < m.start()]
-        under_prompt = prior and 'Prompt' in prior[-1][1]
+        under_prompt = prior and 'prompt' in prior[-1][1].lower()
         if body.lstrip().startswith('/') or under_prompt:
-            blocks.append(body)
+            blocks.append((body, briefing(md, m.start())))
     if len(blocks) != len(PROMPTS):
         print(f'  ! build-sequence.md has {len(blocks)} slash-prompts, PROMPTS declares '
               f'{len(PROMPTS)}. Update tools/build-board.py.', file=sys.stderr)
@@ -320,7 +335,7 @@ def build():
     e = html.escape
     by_step, claimed = {}, set()
     for skey, title, kind, note, needle in PROMPTS:
-        hits = [i for i, b in enumerate(blocks) if needle in b]
+        hits = [i for i, (b, _) in enumerate(blocks) if needle in b]
         if len(hits) != 1:
             print(f'  ! PROMPTS needle {needle!r} matches {len(hits)} blocks in build-sequence.md; '
                   'it must match exactly one. Update tools/build-board.py.', file=sys.stderr)
@@ -329,28 +344,41 @@ def build():
             print(f'  ! two PROMPTS entries claim the same block ({needle!r}).', file=sys.stderr)
             sys.exit(2)
         claimed.add(hits[0])
-        by_step.setdefault(skey, []).append((title, kind, note, blocks[hits[0]]))
+        by_step.setdefault(skey, []).append((title, kind, note, *blocks[hits[0]]))
+
+    paste = next(((b, br) for b, br in blocks if b.lstrip().startswith(PASTE_ID)), None)
+    if paste is None:
+        print(f'  ! no {PASTE_ID} block in build-sequence.md — {os.path.basename(PASTE)} not written',
+              file=sys.stderr)
+        sys.exit(2)
+    step_no = re.search(r'STEP-(\w+)-PROMPT', os.path.basename(PASTE)).group(1)
+    now_t, now_d = next((t, d) for k, t, d in ACTIONS if k == 'now')
+    strip = (f'<section class="strip"><div class="kick">Next action</div><h2>{e(now_t)}</h2><p>{e(now_d)}</p>'
+             f'{brief_html(paste[1]) if paste[1] else ""}'
+             f'<div class="sa"><button class="copy" data-t="{e(paste[0])}">Copy the step {e(step_no)} prompt</button>'
+             '<a class="lnk" href="STORY-BOARD.html">Then watch it on STORY-BOARD.html</a></div></section>')
 
     LABEL = {'done': 'complete', 'running': 'running now', 'next': 'next up',
              'ready': 'ready when unblocked', 'later': 'later'}
     cards = []
     for key, num, title, status, stands, produces, blocked in STEPS:
         ps = ''
-        for ptitle, kind, note, body in by_step.get(key, []):
+        for ptitle, kind, note, body, brief in by_step.get(key, []):
             warn = f'<p class="pnote {kind}">{e(note)}</p>' if note else ''
             btn = ('' if kind != 'live' else
                    f'<button class="copy" data-t="{e(body)}">Copy prompt</button>')
-            ps += (f'<div class="prompt {kind}"><div class="phead"><h4>{e(ptitle)}</h4>'
+            ps += (f'<div class="prompt {kind}">{brief_html(brief) if brief else ""}<div class="phead"><h4>{e(ptitle)}</h4>'
                    f'<span class="ptag {kind}">{kind}</span>{btn}</div>{warn}'
                    f'<pre>{e(body)}</pre></div>')
+        # stands and produces are authored here and carry their own <b> and <code>; not escaped
         cards.append(f'''<section class="step {status}" id="{key}">
   <div class="shead">
     <span class="snum">{e(num)}</span>
     <div class="stitle"><h2>{e(title)}</h2>
-      <span class="badge {status}">{LABEL[status]}</span></div>
+      <a class="badge {status}" href="#{key}">{LABEL[status]}</a></div>
   </div>
-  <p class="stands">{e(stands)}</p>
-  <dl><dt>Produces</dt><dd>{e(produces)}</dd>
+  <p class="stands">{stands}</p>
+  <dl><dt>Produces</dt><dd>{produces}</dd>
   {'<dt>Waiting on</dt><dd>' + e(blocked) + '</dd>' if blocked else ''}</dl>
   {ps}
 </section>''')
@@ -374,7 +402,17 @@ def build():
 --next:#1f6feb;--wait:#8b8b93;--red:#b42318;--red-s:#fdeceb;
 --sh:0 1px 2px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.055)}}
 .runbook{{background:var(--card);border:1px solid var(--line);border-radius:16px;
-padding:24px 26px;box-shadow:var(--sh);margin:26px 0 4px}}
+padding:24px 26px;box-shadow:var(--sh);margin:14px 0 4px}}
+.strip{{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:15px;
+padding:18px 24px;box-shadow:var(--sh);margin:26px 0 0}}
+.strip h2{{margin:.1em 0 .3em;font-size:1.15rem;letter-spacing:-.01em}}
+.strip p{{margin:0 0 10px;color:var(--muted);font-size:.93rem;max-width:80ch}}
+.sa{{display:flex;gap:14px;align-items:center;flex-wrap:wrap}}
+.lnk{{font-size:.9rem;font-weight:600}}
+.brief{{padding:11px 14px;font-size:.9rem;line-height:1.55;border-bottom:1px solid var(--line);background:var(--card)}}
+.brief p{{margin:0 0 6px;max-width:82ch}}.brief p:last-child{{margin:0}}
+.strip .brief{{border:1px solid var(--line);border-radius:10px;margin:0 0 12px;background:var(--code)}}
+.badge{{text-decoration:none}}
 .runbook h2{{font-size:1.12rem;margin:0 0 .4em;letter-spacing:-.01em}}
 .rblede{{color:var(--muted);font-size:.93rem;margin:0 0 18px;max-width:78ch}}
 ol.rb{{list-style:none;margin:0;padding:0;counter-reset:none}}
@@ -470,6 +508,12 @@ drift apart.</p>
 {''.join(f'<a class="{st}" href="#{k}"><span class="n">STEP {n}</span><span class="t">{e(t)}</span><span class="b"></span></a>' for k,n,t,st,_,_,_ in STEPS)}
 </div>
 
+{strip}
+
+<div class="acts">
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol></div>
+</div>
+
 <section class="runbook">
   <h2>When the patched export lands \u2014 run these, in this order</h2>
   <p class="rblede">The next export comes from the Appendix A prompts. This is what happens the moment
@@ -480,8 +524,7 @@ drift apart.</p>
 </section>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol>{''.join(acts['now'])}</ol></div>
-  <div class="act soon"><h3>Do soon</h3><ol>{''.join(acts['soon'])}</ol></div>
+  {f'<div class="act soon"><h3>Do soon</h3><ol>{"".join(acts["soon"])}</ol></div>' if acts['soon'] else ''}
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol>{''.join(acts['gate'])}</ol></div>
 </div>
 
@@ -502,14 +545,7 @@ document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {{
 }});
 </script></body></html>''')
 
-    for b in blocks:
-        if b.lstrip().startswith(PASTE_ID):
-            open(PASTE, 'w', encoding='utf8').write(b.rstrip() + '\n')
-            break
-    else:
-        print(f'  ! no {PASTE_ID} block in build-sequence.md — {os.path.basename(PASTE)} not written',
-              file=sys.stderr)
-        sys.exit(2)
+    open(PASTE, 'w', encoding='utf8').write(paste[0].rstrip() + '\n')
     return len(blocks)
 
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Inflozo — after every commit, regenerate STORY-BOARD.html in the working tree (R-84) so the page
+# the owner opens carries the commit just made. The committed copy is one commit behind by
+# construction — a page cannot carry the hash of the commit that carries it — and the next
+# pre-commit stages this regenerated copy. Silent, and never blocks.
+cd "$(git rev-parse --show-toplevel)" || exit 0
+python3 tools/story-board.py >/dev/null 2>&1 || true
+exit 0
