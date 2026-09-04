@@ -148,6 +148,8 @@ Every time a story's code is saved to the main branch on GitHub, something has t
 1. **Vercel watches GitHub and builds every push to `main` by itself; the Vercel key in `tools/probe/.env` is only ever used to read whether a build succeeded (RECOMMENDED)** — no manual step, one source of truth, and the checks run inside the build so a broken push never goes live.
 2. A Claude session deploys by running `vercel --prod` from this machine after each story — someone must remember to do it, and the key gains the power to write.
 
+**Ruled:** "i am okay with the recommended options for both questions" *(owner, 2026-09-04)* — option 1.
+
 ### 2. Where should the app's secret keys live?
 
 The app will need keys (Supabase, Resend, Dodo) to run in the cloud, and a copy on this machine to run locally. Example: story 1.4 sends sign-in emails through Resend, so the live site needs `RESEND_API_KEY` and so does a local test.
@@ -155,4 +157,6 @@ The app will need keys (Supabase, Resend, Dodo) to run in the cloud, and a copy 
 1. **Vercel's project environment variables are the master copy; local development copies them down with `vercel env pull`; `tools/probe/.env` keeps the verifier's set under the same names (RECOMMENDED)** — the live site and the checks always read the same names, and nothing secret is ever in the repository.
 2. One shared file kept by hand on this machine, copied into Vercel whenever it changes — simpler to picture, but two copies drift and one of them is invisible.
 
-Story 1.1 itself needs no secrets. The tasks assume answer 1 to both questions; the Dev session stops and re-plans if you rule otherwise.
+**Ruled:** "i am okay with the recommended options for both questions" *(owner, 2026-09-04)* — option 1.
+
+Story 1.1 itself needs no secrets. Both questions were ruled on 2026-09-04 with answer 1; the tasks stand as written.
