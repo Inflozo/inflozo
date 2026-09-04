@@ -1,0 +1,744 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Appendix A prompts</title><style>*{box-sizing:border-box}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--patch:#96650a;--patch-s:#fff4d9;--build:#12784a;--build-s:#e2f5ec;
+--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--patch:#e8bd57;--patch-s:#33280d;--build:#5ed6a0;--build-s:#112f20;
+--sh:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.36)}}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 96px}
+h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 22px;font-size:.93rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);
+margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog{height:8px;flex:1;min-width:180px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--build);transition:width .3s}
+.count{font-weight:680;font-size:.9rem;white-space:nowrap}
+.btn{font:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+margin:0 0 14px;overflow:hidden}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
+.chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
+color:var(--accent);min-width:44px;text-align:center}
+.cname{font-weight:650;flex:1}
+.cmeta{color:var(--muted);font-size:.82rem}
+.tick{width:19px;height:19px;accent-color:var(--build);cursor:pointer;flex:none}
+.cat.done .cname{text-decoration:line-through}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px 16px}
+.cat.open .body{display:block}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;
+overflow:auto;max-height:460px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
+.note{background:var(--patch-s);color:var(--patch);border-radius:9px;padding:10px 13px;
+font-size:.87rem;margin:0 0 16px}
+.big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
+font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
+footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}</style>
+<body><div class="wrap">
+<h1>Appendix A — the Claude Design prompts</h1>
+<p class="sub">These draw the parts of Inflozo's own app that Claude Design has not drawn yet, and
+correct the frames it drew wrongly. They live in the UX spine,
+<a href="ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md">EXPERIENCE.md</a> → Appendix A, and this page lifts them from it word
+for word. Open a card, press <b>Copy prompt</b> — it copies the whole prompt — and paste it into a
+Claude Design chat, <b>one prompt at a time, in the order shown</b>. Tick a card when its export is
+back. Progress is stored in this browser.</p>
+<div class="bar"><span class="count"></span><span class="prog"><i></i></span>
+<button class="btn" id="expand">Expand all</button><button class="btn" id="reset">Reset</button></div>
+<p class="note"><b>Running any of these produces a new export, which replaces the repository&#x27;s copy.</b> Two edits live in the repo rather than in Claude Design — the count-agnostic marketing copy and P0&#x27;s per-prop mark allowlist — and a re-export loses them by construction. <b>Follow the export runbook on the build board afterwards:</b> <code>tools/reapply-export-edits.py</code>, then <code>tools/verify-design-pass.py</code>, then the derivations, then <code>tools/doc-audit.py --check</code> twice. The build board is <a href="BUILD-BOARD.html">BUILD-BOARD.html</a>;
+the runbook is the numbered list at its top.</p>
+<div class="gate"><b>They can be run as two Claude Design sessions</b> — <b>A7 together with A8</b> (both correct or extend the editor&#x27;s existing frames and share the focus-ring token), then <b>A1 to A6</b> — and the export runbook above runs once after each session, not once per prompt.</div>
+<p class="note"><b>Every session must observe:</b> <b>A literal Ghost Handlebars expression must be written with zero-width entities. A bare <code>{{ … }}</code> is a Claude Design value hole and renders EMPTY.</b></p>
+<h2 class="wave">Session 1 — A7 with A8</h2><p class="why">Both correct or extend the editor&#x27;s existing frames and share the focus-ring token — A8&#x27;s prompt says &quot;Run with A7&quot;. Paste A7 first, then A8, in the same chat.</p><div class="cat" data-cat="A7">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A7 done">
+    <span class="step">1</span>
+    <span class="cid">A7</span><span class="cname">The existing frames that need correcting</span>
+    <span class="cmeta">session 1</span></div>
+  <div class="body"><pre>Correct the existing frames listed below in the Inflozo design project. THE VISUAL TREATMENT OF
+EACH IS RIGHT AND STAYS — same components, same layout, same colour, same density. Only what they
+SAY, what they DO, and what assistive technology is TOLD changes. Do not redesign any of them.
+Items 1–6 are mechanism corrections. The items after them correct copy that states a Ghost fact
+wrongly, fixture drift, or an accessibility defect that lives in the frame&#x27;s own markup or tokens
+(owner, 2026-09-03: an accessibility fix must not change the design, so these are attribute and
+token corrections, never a redraw).
+
+1. `B Missing Surfaces.dc.html` B19 · MEMBERSHIP PAGE BINDING.
+   The mechanism drawn is one the product forbids. The file is `custom-membership.hbs`, NOT
+   `page-membership.hbs` — a slug-matched template detaches the moment the user retitles the
+   page and overrides their explicit choice, so Inflozo never emits one.
+   The three steps become: (1) &quot;Ship this template. It arrives in Ghost as a page template.&quot;
+   with `custom-membership.hbs` in mono AND the label Ghost will show for it: &quot;Membership&quot;.
+   (2) &quot;In Ghost, open a page and pick Membership from the Template dropdown.&quot; (3) &quot;That&#x27;s it —
+   Ghost remembers your choice on that page, even if you rename or re-slug it later.&quot;
+   DELETE THE &quot;MATCHED&quot; BADGE. Inflozo cannot see which template a Ghost page chose. Replace the
+   &quot;If the slug does not match&quot; block with, verbatim: &quot;We can&#x27;t see whether you did this.
+   Ghost doesn&#x27;t tell us which template a page picked, so tick it off yourself when it&#x27;s done.&quot;
+   Add a TICKABLE DONE STATE to the row, and draw the surface as a CHECKLIST with THREE rows
+   (three emitted templates: Membership, Signin, Member home), not one.
+   KEEP the right-hand Ghost facsimile panel — it is what makes this usable — redrawn to show
+   Ghost&#x27;s TEMPLATE DROPDOWN open with &quot;Membership&quot; in it, rather than the URL field.
+
+2. B12a/B12b · SNAPSHOT GATE.
+   B12a: delete &quot;and happens on every deploy&quot; — it happens at the FIRST upload to a site only.
+   Delete &quot;Snapshots count towards your history — Free keeps 3, Pro keeps 10.&quot; The snapshot is
+   exempt from the history limit; replace with &quot;Kept outside your version limit.&quot;
+   B12b: the reason drawn is wrong and sends people to fix something that cannot be fixed.
+   Replace the body with: &quot;Reading your live theme needs a Staff Access Token from the site Owner or an Administrator,
+   and this project doesn&#x27;t have one. That&#x27;s how Ghost works on every version and every host —
+   there&#x27;s no permission to switch on.&quot; Then the reassurance: &quot;Ghost keeps your previous theme
+   under Settings → Design, so you can put it back yourself if you need to.&quot; Buttons become
+   &quot;Add the token&quot;, &quot;Deploy without a snapshot&quot;, &quot;Cancel&quot;. Delete &quot;Check the key&quot;.
+
+3. B16 · ROUTES FALLBACK CARD.
+   Replace &quot;Your integration key is missing the settings permission&quot; with &quot;Uploading a routing
+   file needs a Staff Access Token from the site Owner or an Administrator, and this project doesn&#x27;t have one.&quot;
+   Delete &quot;Fix the key instead&quot; → &quot;Add the token instead&quot;; its footnote becomes &quot;Adding the
+   token makes this automatic from now on.&quot;
+   DELETE THE HARD-CODED &quot;Settings → Labs&quot; PATH. Ghost 6 has no Labs page. Replace step 2 with
+   a description of what to look for plus a link out: &quot;In Ghost, find the routes upload for
+   your version&quot; + &quot;Show me where ↗&quot;.
+
+4. B13a · PRO BLOCKING SHEET.
+   Two remedies are drawn; four exist. Add &quot;Remove it&quot; as a third action on every row — some
+   sections have no free design to swap to. Add a fourth row TYPE for non-placeable treatments
+   (the paywall design, a card treatment, a pagination style): these are chosen, not placed, so
+   their action is &quot;Revert to the free one&quot;, and the row names where it reverts.
+   DELETE the note reading &quot;The swap for suggestions are per-design pairings someone has to
+   author — every Pro design needs a named Free fallback&quot;. No pairing table exists or is needed:
+   swapping goes through Shuffle, which offers any free design in that category&#x27;s ring.
+
+5. B24 · PAST-DUE GRACE BANNER.
+   The consequence drawn is wrong and it is the frightening half. Replace &quot;after that, Pro
+   designs stop rendering and your sites fall back to their Free replacements&quot; with: &quot;After
+   that you go back to Free. Your live sites are never touched — what&#x27;s shipped stays shipped.
+   You&#x27;d just need to sort out anything over the Free limits before you ship again.&quot;
+
+6. B11a/B11b · DEVICE PREVIEW.
+   Delete the user-operated Zoom control (&quot;Fit / 55%&quot;). There is no user zoom in this product;
+   the only scale is fit-to-screen and it is automatic. KEEP the mono chip that states both
+   facts — &quot;VIEWPORT 390 × 844 · SHOWN AT 55%&quot; — and keep the Desktop / Tablet / Mobile
+   segmented control, which is the only thing the user operates here.
+
+7. `Calibration Set.dc.html` · THE FOCUS-RING TOKEN.
+   The keyboard focus indicator is a 2px coral ring at 40% — rgba(255,89,65,.4) — which composites
+   to 1.55:1 on paper #F7F5F2 and 1.59:1 on white; WCAG 2.1 1.4.11 needs 3:1, and even solid
+   coral #FF5941 reaches only 2.86:1 on paper. Replace the token with ONE ring that meets 3:1 on
+   paper AND on white — 2px solid coral-text #C2381F (7.9:1 on paper) or 2px ink #1C1B1A — and
+   use it for every keyboard-focus state in every frame (the routes-manager inputs&#x27; solid-coral
+   style-focus border included). Keep the 40% coral wash for hover and selection only. A8
+   inherits this token.
+
+8. `S4 Editor` · `S6 Variant Shuffle` · `S7 Style Packs` · ACCESSIBLE NAMES.
+   Every icon-only button gets an aria-label: the ▾ half of the &quot;Ship it&quot; split button
+   (&quot;Deploy options&quot;), the ⋯ menus, the eye toggles, every close ×. Attributes only — nothing
+   visible changes.
+
+9. `S4` · `S7` · `S9 Routes` · `S12 Billing` · `S1` · `S2` · `S11` · `S13` · LABELS.
+   Every input carries a &lt;label for&gt; or an sr-only label: the hero title input (S4c, S6), the
+   pack-name and hex fields in S7c (&quot;Tangerine&quot;, &quot;#C24E1E&quot;), the route paths in S9a
+   (&quot;/travel/&quot;, &quot;/reading-list/&quot;), the typed confirm in S12c (&quot;delete my acc&quot;), the assets
+   search (&quot;Search assets…&quot;). The &lt;label&gt; elements drawn as captions with no control — in S1, S2b,
+   S7, S9, S11d, S12 and S13 — each get a `for` or become plain text. Every scrolling list (the
+   Section Picker&#x27;s grid in S5a/S5c, the assets grid) gets tabindex=&quot;0&quot;. Attributes only.
+
+10. `Calibration Set.dc.html` · PLACEHOLDER AND HINT COLOUR.
+    Placeholder and hint text is set in --ink-faint #A8A29A: 2.53:1 on white (&quot;Search assets…&quot;,
+    &quot;Choose…&quot;) and 2.32:1 on paper (&quot;ALL DESIGNS&quot;). Make it a Calibration Set rule that placeholder
+    and hint text use --ink-soft-aa #6B6459 (5.85:1), and re-tint the mono line numbers in S9&#x27;s
+    YAML pane from #C9C2B8 (1.76:1) to the same AA value. This is the one visible token change
+    in this prompt, and it is a text-colour token, not a layout.
+
+11. `S8 Deploy` S8d′ · `S11 Sites` S11a · A FAILURE GHOST NEVER PRODUCES.
+    &quot;Ghost said no — your Admin key expired.&quot; and the chip &quot;Admin key expired Aug 15&quot;: Admin API
+    keys never expire (Ghost&#x27;s api_keys table has no expiry column; docs.ghost.org/admin-api: &quot;You
+    can regenerate the Admin API key any time&quot;). What Ghost returns for a regenerated or deleted
+    key is 401 &quot;Unknown Admin API Key&quot; — executed on Ghost 5.130.6 and 6.58.0, 2026-09-03,
+    MEASUREMENTS §37. S8d′&#x27;s sentence becomes: &quot;Ghost said no — this Admin API key no longer works.
+    It was regenerated or removed in Ghost Admin. Paste the new key.&quot; with the Reconnect action.
+    S11a&#x27;s chip becomes &quot;Key regenerated Aug 15&quot;. Same voice, a cause that exists.
+
+12. `C Post Body` C3b · THE PAYWALL EMPTY STATE.
+    Delete &quot;Ghost has no paid tiers … so this block never renders — a members-only post shows the
+    sign-in prompt instead&quot; and &quot;with no paid tier, Ghost&#x27;s paywall never renders at all&quot;. Ghost&#x27;s
+    paywall renders on EVERY gated post — members-only, paid or tier-gated — whether or not a paid
+    tier exists: its content-cta.hbs carries its own visibility=&quot;members&quot; branch (VERIFY-AT-BUILD
+    item 11, executed). The empty state&#x27;s condition becomes &quot;members are disabled on this site&quot;
+    and its copy names that setting and the Ghost Admin toggle to look for. The shape stays.
+
+13. `S8 Deploy` S8c · CANCEL DURING UPLOAD.
+    Delete the Cancel action from the &quot;Uploading to Ghost&quot; card, or grey it with its reason in the
+    disabled-control pattern. FR-J8: once uploading starts the deploy runs to completion. Keep
+    the card, its progress bar and the Activating row.
+
+14. `S7 Style Packs` S7c · THE THIRD SWATCH ROW.
+    The Edit pack dialog stacks a third row labelled &quot;Dark&quot; with four swatches
+    (Base/Surface/Accent/Contrast) under the two correct seven-swatch rows, against its own
+    &quot;Seven roles per mode&quot; copy. Delete the third row. (S7d&#x27;s four-swatch block is different: it
+    anchors the colour-picker popover and stays.)
+
+15. `S14 Editor Cards` S14a · GHOST&#x27;S OWN CARD ORDER.
+    The dropdown claims Ghost&#x27;s order and is not it. Reorder to the editor&#x27;s own menu, read from
+    the koenig-lexical bundle on 5.130.6 and 6.58.0 (identical): Image, Markdown, HTML, Gallery,
+    Divider, Bookmark, Email content, Email call to action, Public preview, Button, Callout, GIF,
+    Toggle, Video, Audio, File, Product, Header, Embed. Slot 8 is &quot;Email call to action&quot; — an
+    email-only card that renders nothing on the web (MEASUREMENTS §35b), so it has no panel and
+    that is where the NO COLOUR CTLS mark belongs. Keep a separate &quot;Call to action&quot; entry for the
+    web card, which does get its panel. Video before Audio.
+
+16. EVERY APP FRAME · ONE FIXTURE IDENTITY.
+    The session belongs to one person: Maya Chen · maya@orbitweekly.com · orbitweekly.com. Replace
+    you@example.com in the account chip (S4c, S6, S7, C4); replace you@yoursite.com in S1a&#x27;s
+    placeholder — yoursite.com is a registered, parked domain — with you@example.com; and replace
+    the real third-party sites with fixtures: kickscondor.com in C4&#x27;s style-guide citation, and
+    fieldnotes.ghost.io / sam@fieldnotes.blog on S3a and S11a (both resolve to live sites). Only
+    orbitweekly.com, inflozo.app and RFC 2606 example.* domains may appear anywhere.
+
+17. `S5 Section Picker` S5a · S5c · THE HEROES COUNT.
+    S5a&#x27;s rail reads &quot;Heroes 28 designs&quot;, S5c reads &quot;18 designs&quot;, and B1a&#x27;s counter is &quot;Design 7
+    of 18&quot;. Make S5a agree with the other two. A per-category count is a runtime figure and is
+    allowed; a library total still is not.
+
+18. `S4 Editor` S4d · THREE MEMBER STATES.
+    Replace the tier rows (Orbit Supporter $5/mo · Orbit Patron $12/mo · Founding $120/yr) with
+    FR-D16&#x27;s three: Logged out · Free member · Paid member. Keep the toggle and the panel. Add the
+    unviewed-states marker beside the toggle and the &quot;Gated content — shown with sample text&quot;
+    indicator on a gated body — neither frame draws them.
+
+19. `B Missing Surfaces` B23a · THE STARTER ROSTER.
+    Replace the invented names with Appendix E&#x27;s ten, each with its pack: Aurora · Gazette ·
+    Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio. Only Quiet and Ledger
+    carry the Free mark. Delete &quot;Cohort — tiers and member pages&quot;. The grid, the category filter,
+    the free filter, the &quot;swap or upgrade&quot; marks and the &quot;Start empty&quot; escape all stay.
+
+20. `S11 Sites` S11c · `S12 Billing` S12a, S12b · `M5 Pricing` · THE PLAN LIMITS.
+    Appendix F.1 is the only definition. Free: 1 project · 1 site · 100 MB storage · history
+    last 3. Pro: 25 projects · 10 sites · 5 GB · history last 10 per project. 10 MB per upload on
+    both. Replace the drawn figures (&quot;up to 3&quot;, &quot;unlimited&quot;, &quot;full&quot;, &quot;1 / 3&quot;, &quot;Last 2 / Full&quot;)
+    with these. S10b&#x27;s &quot;up to 30 MB each&quot; is A8 FRAME 4&#x27;s.
+
+21. `S4 Editor` S4c · `S6 Variant Shuffle` · &quot;Try a variant&quot; → &quot;Try a design&quot;.
+    Appendix H: the unit is a design; only the feature name &quot;Variant Shuffle&quot; keeps the old word.
+
+DO NOT TOUCH THE FRAME CAPTIONS. Each frame carries a settings snapshot in its caption —
+&quot;drawn at padding Comfortable 96, ground Background, actions Both&quot;. Those are RETIRED control
+names and they stay exactly as they are: a caption records how a frame was drawn on the day it was
+drawn, and correcting one value inside it produces a caption that reads as current and is not
+(ruling R-73). Change the surfaces&#x27; own copy and behaviour, nothing else.
+
+VOICE: PRD Appendix H. Errors are human and name the fix. Billing stays serious.
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A8">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A8 done">
+    <span class="step">2</span>
+    <span class="cid">A8</span><span class="cname">The editor below 1440, and the affordances the floor needs</span>
+    <span class="cmeta">session 1</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D8 · THE EDITOR BELOW 1440, AND THE AFFORDANCES
+THE ACCESSIBILITY FLOOR NEEDS. Run with A7: the focus ring drawn here is A7 item 7&#x27;s token.
+
+INHERIT FROM: `S4 Editor.dc.html` (the whole editor shell — top bar, Layers, canvas, Controls
+sidebar), `B Missing Surfaces.dc.html` B7 (Layers rows and their three states), B13a (a confirm
+over a dimmed surface) and `S10 Assets.dc.html` (the drop zone). Tokens and components from
+`Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`. DO NOT INVENT A COMPONENT — every
+frame here is the existing editor rearranged or an existing control gaining a state.
+
+WHY THIS CANVAS EXISTS. The editor is drawn at 1440 and at no other width. Two things need it
+narrower and neither is a phone: TABLET (834, touch) is in scope by the owner&#x27;s ruling, and a
+DESKTOP USER AT 200% BROWSER ZOOM sees roughly a 720 CSS px viewport — throwing them out would
+fail WCAG 1.4.4, so the editor has to hold. Below that the product shows a designed notice
+instead, which is drawn separately (prompt A4, frame D4f).
+
+FRAME 1 — D8a · THE EDITOR AT 834 · TABLET, TOUCH, 834 × 1112.
+The same four parts, rearranged rather than redesigned:
+  - The Layers panel COLLAPSES TO AN ICON RAIL at the left edge — the layer mini-thumbnails
+    only, no names — and expands as an overlay over the canvas when tapped. `L` still toggles it.
+  - The Controls sidebar becomes an OVERLAY PANEL anchored to the right edge, over the canvas,
+    at its usual 280–320px, with a scrim behind it. It opens on selection and has a close
+    affordance. The canvas does not resize under it.
+  - The top bar keeps the template switcher, View as and Ship it; anything that does not fit
+    moves into a single overflow menu rather than shrinking.
+  - EVERY TARGET IS AT LEAST 44px. That is the one thing this width changes about the controls
+    themselves, and it is why the frame is needed rather than assumed.
+
+FRAME 2 — D8b · THE EDITOR AT 720 · A DESKTOP AT 200% ZOOM, 720 × 900.
+The SAME collapse as D8a — icon rail, overlay sidebar — but with a fine pointer, so targets stay
+at their desktop sizes and hover affordances still work. Caption it explicitly as &quot;1440 display
+at 200% browser zoom&quot;, because a reader will otherwise assume it is a small device and apply the
+touch rules. This frame is what proves the notice does not fire here.
+
+FRAME 3 — D8c · THE SKIP LINK, detail at 620.
+Two states of ONE element: hidden at rest, and visible on keyboard focus. It is the FIRST
+focusable thing in the editor shell, sitting over the top bar&#x27;s left edge — a surface pill,
+12 radius, sm shadow, the focus ring as A7 item 7 corrects it (3:1, never the 40% wash) —
+reading &quot;Skip the canvas&quot;. Draw the focused state with
+the ring, and a second, dimmed copy showing where it sits when nobody has focused it.
+WHY: the canvas renders the USER&#x27;S OWN SITE, so tabbing through it means tabbing through every
+link that site emits — dozens of stops before the sidebar.
+
+FRAME 4 — D8d · THE ASSETS DROP ZONE, WITH A KEYBOARD PATH, detail at 720.
+`S10 Assets`&#x27;s drop zone as drawn, plus a secondary button inside it reading &quot;Choose files&quot;,
+below the existing &quot;Drop images — we&#x27;ll optimize them ✨&quot; line and above &quot;JPG, PNG, SVG or WebP&quot;.
+A drop zone with no button cannot be reached by keyboard at all. Keep the sparkle and the tone.
+NOTE FOR THE SESSION: the size line on that frame currently reads &quot;up to 30 MB each&quot; and the
+product limit is 10 MB per file on BOTH plans — correct it to &quot;up to 10 MB each&quot; while you are
+in there.
+
+FRAME 5 — D8e · A LAYERS ROW, FOCUSED, detail at 520.
+B7&#x27;s layers rows currently have three states: rest, hover (a wash), selected (coral tint). Draw
+the FOURTH: keyboard focus — the focus-ring token AS A7 ITEM 7 CORRECTS IT (a 2px ring at 3:1 or
+better, NOT the 40% coral wash, which stays the hover/selection wash), drawn OVER the row&#x27;s
+existing state so focused-and-selected is legible as both. Show three rows: rest+focused, hover, selected+focused.
+Beside them, a small caption naming the keys, in the kbd-chip style: ↑ ↓ move focus, ⌥↑ ⌥↓ move
+the section itself.
+
+FRAME 6 — D8f · A DESTRUCTIVE CONFIRM, OPENED, detail at 620.
+Any of the product&#x27;s irreversible confirms — use &quot;Take over from Rosa?&quot; (B5c) as the subject.
+Draw it AS IT OPENS: the focus ring is on the CANCELLING action (&quot;Wait&quot;), not on the danger-fill
+button. This is a rule rather than a list — the same treatment governs Delete account, Roll back,
+project delete, delete-in-use assets and &quot;Overwrite and ship anyway&quot; — so caption it as the rule.
+
+FRAME 7 — D8g · SHIP IT FROM A READ-ONLY SESSION, detail at 620.
+The fourth edit-lock state (F2), drawn on no frame today: a reader — someone else holds the lock —
+presses Ship it or Export. Reuse B5c&#x27;s shape exactly (a confirm over the dimmed editor, danger
+fill, &quot;Or message Rosa&quot; escape). Heading: &quot;Take over to ship?&quot;. Body, from the heartbeat count:
+&quot;7 unsynced edits exist in Rosa&#x27;s browser and will be lost. We cannot retrieve them from here.&quot;
+Two actions: &quot;Take over and ship&quot; (danger) · &quot;Wait&quot; — and focus opens on &quot;Wait&quot;, per FRAME 6.
+
+COUNTS: 10 MB per file is a PRODUCT LIMIT and must be printed. Never print a total of designs,
+categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><h2 class="wave">Session 2 — A1 to A6</h2><p class="why">New canvases, each independent of the others. Paste one at a time, in the order shown.</p><div class="cat" data-cat="A1">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A1 done">
+    <span class="step">3</span>
+    <span class="cid">A1</span><span class="cname">The first-deploy gates</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D1 · THE FIRST-DEPLOY GATES.
+Three surfaces the deploy wizard shows only on the FIRST deploy to a given site.
+
+INHERIT FROM: `S8 Deploy.dc.html` — the ship wizard. Use its numbered step rail, its step
+card, its checked-row list (S8b) and its Back / primary button pair verbatim. Use the itemised
+rows of `B Missing Surfaces.dc.html` B13a for the checklist. Tokens and components come from
+`Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`. Do not invent a component.
+
+THE RAIL GROWS. An ordinary deploy is 4 steps: Destination, Check, Ship, Live. The FIRST deploy
+to a site is 6: Destination, Safety net, Backup, Check, Ship, Live. Draw the 6-step rail.
+
+FRAME 1 — D1a · DESTINATION, FIRST DEPLOY (step 1 of 6), 1440.
+S8a exactly as drawn, plus one row under the destination card: the theme that will be created,
+in JetBrains Mono — `inflozo-orbit-weekly` — with one line of 11px helper text: &quot;This name is
+permanent for orbitweekly.com. Renaming the project later changes its name in Inflozo only.&quot;
+
+FRAME 2 — D1b · SAFETY NET · THE OFFER (step 2 of 6), 1440.
+Heading: &quot;One more step unlocks a safety net&quot;. Body, verbatim: &quot;A copy of your current theme
+before we replace it, plus a check that nothing else has changed it.&quot;
+Then, quieter, in ink-soft: this is a Staff Access Token from the site Owner or an Administrator —
+every staff user has one on their own profile, and an Administrator&#x27;s is enough — and it is a
+full-Administrator credential — say so plainly, do not soften it. A mono input for the token, a screenshotted Ghost Admin step beside it in the S2b·1 style.
+TWO PLAIN BUTTONS, side by side, the same weight: &quot;Add the token&quot; (primary ink) and &quot;Not now&quot;
+(secondary surface + hairline). &quot;Not now&quot; is NOT a small link.
+
+FRAME 3 — D1c · SAFETY NET · DECLINED (step 2 of 6), 1440.
+The same card, after &quot;Not now&quot;. It acknowledges ONCE and names exactly three costs as three
+rows with icons: no copy of your current theme before we replace it · no check that the live
+theme changed since we last shipped · routes.yaml uploads by hand, with a guided card.
+One closing line: &quot;You can add it any time from Manage keys.&quot; One button: &quot;Continue&quot;.
+Nothing here implies the user has done something wrong. It is never raised again.
+
+FRAME 4 — D1d · BACKUP GATE · SELF-HOSTED (step 3 of 6), 1440.
+This BLOCKS the deploy button. Reading order matters and is the design:
+  (a) FIRST, the modest truth, in a bordered panel: &quot;Inflozo writes exactly two things to your
+      Ghost site: your theme, and routes.yaml. It never writes posts, pages, members, tags,
+      settings or redirects.&quot;
+  (b) THEN the recommendation with its reason: a full backup is still right, because a theme
+      change is reversible only if you can put the old theme back.
+  (c) THEN the shortcut, as a highlighted single checkbox row with a mono command:
+      `ghost backup` — &quot;one archive: content, members, every installed theme, images, files,
+      media, routes and redirects.&quot; Checkbox label: &quot;I have run ghost backup and saved the
+      archive somewhere off the server.&quot; Ticking it checks every row below AND THE ROWS STAY
+      VISIBLE, ticked, so the customer sees what they now hold.
+  (d) THEN seven individual checkbox rows: Theme (marked &quot;Inflozo replaces this&quot;, warning
+      &quot;the one thing that makes rollback possible&quot;) · routes.yaml (marked &quot;Inflozo may
+      overwrite this&quot;) · Content (warning &quot;does NOT include your images&quot;) · Members ·
+      Redirects · Images, files and media (warning &quot;the gap most people miss&quot;) · Database.
+      Each row DESCRIBES what to look for in Ghost Admin and links to Ghost&#x27;s own help.
+      DO NOT PRINT A GHOST ADMIN MENU PATH — Ghost 6 does not have the menus Ghost 5 has.
+      DOWNLOADS (FR-J13): when the token was given at step 2, the Theme and routes.yaml rows each
+      carry a secondary &quot;Download&quot; button — the file Inflozo fetched. When it was declined, NO
+      download button anywhere on the gate; those two rows describe what to look for in Ghost
+      Admin like the others. Draw D1d with the token given; D1e below with it declined.
+  (e) LAST, separated by a rule, the master confirm, DISABLED: &quot;I confirm I have a complete
+      backup of my site and understand Inflozo will replace my theme.&quot; Under it, greyed, the
+      deploy button, with a reason line naming how many rows remain.
+
+FRAME 5 — D1e · BACKUP GATE · GHOST(PRO), detail at 940.
+The same gate, with the `ghost backup` shortcut REPLACED by an honest block, in the sky
+information style, NOT danger:
+&quot;On Ghost(Pro), themes, content, members, routes and redirects all download from Ghost Admin.
+Images and media do not — Ghost Admin has no bulk export for them, and there is no server to
+copy them from. Ghost&#x27;s own documentation points you at your host&#x27;s support for this.
+Ghost(Pro) also takes its own platform backups; that is a Ghost service, not an Inflozo one,
+and it is worth confirming with Ghost what it covers and how to request a restore.&quot;
+Then, in ink, its own line: &quot;This is not something Inflozo can fix, and we are not going to
+pretend otherwise.&quot;
+
+VOICE: short, warm, confident — but this canvas is a safety surface, so no wit anywhere on it.
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A2">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A2 done">
+    <span class="step">4</span>
+    <span class="cid">A2</span><span class="cname">Deploy history with pinning, and the partial success</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D2 · DEPLOY HISTORY, COMPLETED.
+
+INHERIT FROM: `S8 Deploy.dc.html` region S8e — the history drawer. Keep its drawer shape, its
+version rows, its mono version chips, its Live badge, its &quot;0 · 2&quot; gscan chips, its by-line, its
+Roll back buttons and its roll-back confirm modal EXACTLY. Tokens and components from
+`Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`. Do not invent a component.
+
+FRAME 1 — D2a · HISTORY WITH PINNING · PRO, 1440.
+S8e&#x27;s drawer, plus:
+  - A PIN control on every row: a small outline pin icon button, 28px, in the row&#x27;s right
+    cluster beside Roll back. Pinned rows show it filled, in marigold, and the row takes a
+    faint marigold-tint wash. Two of the ten rows are pinned.
+  - ABOVE the version list, its own row, visually separated by a rule and NOT numbered as a
+    version: THE ORIGINAL THEME. Label &quot;Your original theme&quot;, the live theme&#x27;s name and
+    version in mono (`casper 5.9.4`), the date it was archived, and a &quot;Restore original&quot;
+    button. A quiet line: &quot;Kept outside your version limit. Ghost checks every theme on the
+    way in, so a very old theme can be refused — we&#x27;ll offer the zip if that happens.&quot;
+  - The footer line stays and gains one sentence: &quot;Pro keeps the last 10 versions. Free keeps
+    the last 3. Older versions are removed, not hidden — an Inflozo theme can&#x27;t be rebuilt
+    later, so this is how far back you can go.&quot;
+
+FRAME 2 — D2b · THE PIN REFUSAL, detail at 520.
+The user clicks pin on the last unpinned row. A small popover anchored to that pin, in the
+notice (marigold) banner style: &quot;One version has to stay unpinned so your next deploy has
+somewhere to go. Unpin another first.&quot; One button: &quot;Got it&quot;. The pin stays UNfilled.
+This is a refusal with a reason, never a greyed control and never a silent failure.
+
+FRAME 3 — D2c · FREE PLAN, 1440.
+The same drawer at three versions, one pinned, the original-theme row present. The limit line
+is shown on Free too — never hidden as an upsell. There is no upgrade prompt in this drawer.
+
+FRAME 4 — D2d · PARTIAL SUCCESS · THE ROW, detail at 620.
+A version row with NO Live badge, carrying instead a sky-tinted chip reading &quot;Uploaded, not
+live&quot; and a primary &quot;Re-activate&quot; button in place of Roll back. One helper line: &quot;Your theme is
+on your site but isn&#x27;t live yet.&quot;
+
+FRAME 5 — D2e · PARTIAL SUCCESS · IN THE WIZARD, 1440.
+The final step after an upload that succeeded and an activation that FAILED. NOT the S8d′ failure
+treatment — sky, not danger. Heading: &quot;Your theme is on your site but isn&#x27;t live yet.&quot; Body:
+&quot;v5 uploaded cleanly. Ghost didn&#x27;t switch to it, so orbitweekly.com is still serving v4 — nothing
+on your site changed.&quot; The step rail shows Ship complete and Live incomplete. Buttons:
+&quot;Re-activate v5&quot; (primary) and &quot;Leave it for now&quot; (secondary). NO CONFETTI.
+
+FRAME 6 — D2f · DEPLOY ONLY · THE OTHER ENDING, 1440.
+The SAME card, reached deliberately: the user picked &quot;Deploy only&quot; at step 1. Same sky treatment,
+same rail state, same two buttons — only the sentence changes, because only the cause changed.
+Heading: &quot;Uploaded. Not live yet.&quot; Body: &quot;v5 is on orbitweekly.com and v4 is still what readers
+see. Make it live whenever you are ready.&quot; NO CONFETTI HERE EITHER: the one confetti moment is the
+first deploy that makes the site LIVE, and this one deliberately did not.
+Draw these two side by side, because they are ONE state with two causes — a reader of the frames
+should see at once that the history row for both is identical.
+
+COUNTS: 10 and 3 stored versions ARE product limits and MUST be printed. Never print a total of
+designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A3">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A3 done">
+    <span class="step">5</span>
+    <span class="cid">A3</span><span class="cname">The drift report</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D3 · THE DRIFT REPORT.
+
+INHERIT FROM: `S8 Deploy.dc.html` region S8b — the pre-flight check. Keep its step card, its
+checked-row list, its expandable warning row and its Back / primary button pair. For the file
+list, reuse the LAYERS ROW pattern from `B Missing Surfaces.dc.html` B7 — grip removed, name
+and mini-thumb kept. Tokens from `Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`.
+
+WHAT THIS IS. Before every deploy AFTER the first to a given site, Inflozo reads the live theme
+and compares what it finds against what it last deployed there. If anything differs, THE DEPLOY
+STOPS and shows exactly what changed. It is skipped on the first deploy, and it FAILS OPEN.
+
+FRAME 1 — D3a · DRIFT FOUND · THE DEPLOY STOPS, 1440.
+Heading: &quot;Something changed on your site since we last shipped.&quot; Body: &quot;We compare what&#x27;s live
+against what we put there. These files are different — someone edited the theme in Ghost, or
+another tool did.&quot;
+A list, one row per file, grouped as Changed / Added / Removed. CRITICAL: each row is named by
+THE USER&#x27;S OWN LAYER NAME wherever the file is a section partial — &quot;Home hero&quot;, &quot;Latest issues&quot;,
+&quot;Three Column footer&quot; — with the raw filename only as small mono text beneath it. Never a raw
+path as the primary label.
+Two actions: &quot;Download the live theme first&quot; (secondary, and it is offered before the
+destructive one) and &quot;Overwrite and ship anyway&quot; (primary ink, NOT danger — this is a deliberate
+choice, not an accident). Plus &quot;Cancel&quot;.
+
+FRAME 2 — D3b · COULD NOT VERIFY · IT PROCEEDS, detail at 720.
+A single sky-tinted information row inside the pre-flight list, NOT a blocking state:
+&quot;Couldn&#x27;t check whether your live theme changed.&quot; Body: &quot;We need a Staff Access Token from the site Owner or an Administrator
+to read the live theme, and this project doesn&#x27;t have one. Shipping anyway.&quot; A quiet
+&quot;Add the token&quot; link. THE DEPLOY CONTINUES — this row sits among the passing checks and does not
+stop anything. Drift is never asserted without two manifests in hand.
+
+FRAME 3 — D3c · NO DRIFT, detail at 620.
+One passing row in the S8b list, identical in weight to &quot;Ghost 6.x compatible&quot;: &quot;Nothing changed
+on your site since v4 — pass&quot;.
+
+NOTE FOR THE SESSION: a layer RENAME produces no drift at all, so the list never shows one.
+Nothing on the live site changed, only a filename Inflozo chose.
+
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A4">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A4 done">
+    <span class="step">6</span>
+    <span class="cid">A4</span><span class="cname">Dashboard sheets and blocks</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D4 · DASHBOARD SHEETS AND BLOCKS.
+
+INHERIT FROM: `S3 Dashboard.dc.html` (the shell, the project cards, the ⋯ menus),
+`S2 Onboarding.dc.html` S2a (the three-door card layout) and `B Missing Surfaces.dc.html` B23a
+(the starter grid) and B13a (the itemised-rows sheet over a dimmed surface). Tokens and
+components from `Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`.
+
+FRAME 1 — D4a · NEW PROJECT SHEET, 1440.
+Opens from the Dashboard&#x27;s &quot;New project&quot; button, over a dimmed dashboard. FOUR doors, drawn as
+S2a&#x27;s radio-card rows, each with one line of consequence:
+  - &quot;Start from a starter&quot; — &quot;Ten full sites, ready to wear your brand.&quot; (opens the starter
+    chooser, B23a)
+  - &quot;Blank canvas&quot; — &quot;An empty page and every design.&quot;
+  - &quot;Duplicate an existing project&quot; — with a select showing the user&#x27;s projects
+  - &quot;Redesign one of my sites&quot; — &quot;We look at your posts and suggest whole-site designs.&quot;
+    GREYED, with the reason shown, when no site is connected: &quot;Connect a Ghost site first.&quot;
+Below: a Style Pack row — the pack cell component from the Editor Sidebar Kit — with a line
+saying it can be changed any time. Buttons: &quot;Cancel&quot; and &quot;Create project&quot;.
+
+FRAME 2 — D4b · NEW PROJECT · FREE, AT THE CAP, detail at 720.
+The same sheet on a Free account that already has one project. The four doors are still drawn
+and are GREYED WITH THE REASON, not hidden. Under them, the upgrade row: &quot;Free includes 1
+project. Pro gives you 25.&quot; with &quot;Go Pro — $15/mo&quot;. Nothing is deleted and nothing is hidden.
+
+FRAME 3 — D4c · OVER-LIMIT SHEET, 1440.
+Fires when a Pro account has become Free and is over its limits. Over a dimmed dashboard.
+Heading: &quot;Let&#x27;s get you back under the Free limits.&quot; First line, before anything else:
+&quot;Nothing has been deleted, and nothing will be. Your live sites are untouched.&quot;
+Then FOUR itemised rows in B13a&#x27;s row style — each naming what is over, by how much, and the
+one action that fixes it:
+  - Projects · 6 of 1 · &quot;Choose which one stays editable&quot;
+  - Connected sites · 2 of 1 · &quot;Disconnect one&quot;
+  - Assets · 312 MB of 100 MB · &quot;Delete some files&quot;
+  - Stored versions · 8 of 3 · &quot;Nothing to do — we keep these, we just won&#x27;t add more&quot;
+    (this row is informational and has no action)
+Footer, quiet: &quot;Rollback, restore and export keep working the whole time.&quot;
+Buttons: &quot;Go Pro — $15/mo&quot; (marigold) and &quot;Sort it out myself&quot; (secondary).
+
+FRAME 4 — D4d · WHICH PROJECT STAYS EDITABLE, detail at 720.
+A radio list of the six projects, each with its site badge and last-updated date, the most
+recently updated PRE-SELECTED. One line: &quot;The other five stay viewable and exportable — you
+just can&#x27;t edit them until you&#x27;re on Pro.&quot; Button: &quot;Keep this one editable&quot;.
+
+FRAME 5 — D4e · A READ-ONLY PROJECT, 1440.
+The S4 editor shell with the read-only treatment from B5a: canvas fully legible, sidebar dimmed
+to 55%, controls visible but inert. The bar reads: &quot;Read-only — this project is over your Free
+plan&#x27;s limit.&quot; Two buttons in the bar: &quot;Make this the editable one&quot; and &quot;Export theme zip&quot;.
+Export is NOT disabled. Read-only means not editable; it never means locked in.
+
+FRAME 6 — D4f · SMALL SCREEN NOTICE, 390.
+What a user sees when they open a project on a phone. NOT an error page.
+IT FIRES ON A COARSE POINTER AT A SMALL VIEWPORT, NOT ON WIDTH ALONE — a desktop user at 200%
+browser zoom sees a ~720px viewport and must get the EDITOR, not this card (prompt A8 draws that).
+Caption the frame with that condition so nobody builds it as a width test. A calm centred card:
+&quot;The editor needs a bigger screen.&quot; Body: &quot;Dragging sections and a 300-pixel control panel don&#x27;t
+fit on a phone yet. Open this project on a laptop or tablet.&quot; Then, as a list of real
+affordances that DO work here: the project&#x27;s deploy history with a one-tap &quot;Roll back to v4&quot;,
+&quot;Your sites&quot; and &quot;Billing&quot;. Ink line drawing with one coral accent shape, per the empty-state
+illustration rule.
+
+COUNTS: 1 project, 25 projects, 1 site, 10 sites, 100 MB, 5 GB, 10 MB per file, 3 and 10 stored
+versions ARE product limits and MUST be printed. Never print a total of designs, categories or
+free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A5">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A5 done">
+    <span class="step">7</span>
+    <span class="cid">A5</span><span class="cname">Editor canvas markers and the template switcher</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D5 · CANVAS MARKERS AND THE TEMPLATE SWITCHER.
+Six small things the editor shows constantly and that were never drawn.
+
+INHERIT FROM: `S4 Editor.dc.html` (the top bar, the template dropdown, the canvas),
+`B Missing Surfaces.dc.html` B7 (Layers), B9 (the content-source pill) and B10 (the Pro mark),
+and `P0-0 Greyed Control Pattern.dc.html`. Tokens and components from `Calibration Set.dc.html`
+and `Editor Sidebar Kit.dc.html`.
+
+THE PILL SPEC IS SHARED AND ALREADY SET (B9/B10&#x27;s note): ink pill floating over the canvas,
+10px radius, 4px padding, lg shadow, 30px targets, no coral.
+
+FRAME 1 — D5a · AUTO-GENERATED MARKER, 1440.
+An untouched Tag archive canvas rendering its default stack. TWO markers, and they are the same
+sentence in two places: a chip in the top bar beside the template name, and a row at the head of
+the Layers panel. Both read: &quot;Auto-generated — edit anything to make it yours&quot;. Informational,
+never apologetic — the canvas is telling the user what they are looking at, not excusing it.
+Both vanish on the first edit.
+
+FRAME 2 — D5b · TEMPLATE SWITCHER, COMPLETE, detail at 520.
+S4a&#x27;s template dropdown, redrawn with the full set: Home · Post · Page · Tag · Author ·
+Membership (as a GROUP with three children: Signup, Signin, Member home) · 404 · Private (shown
+ONLY when a Private Site Gate section has been designed) · then a rule · then custom templates
+created in the Routes Manager · then &quot;+ New template&quot;. Templates that have never been designed
+show a small hollow dot LABELLED &quot;Auto-generated&quot;; designed ones show a filled one with no label.
+The current one takes the check. THE WORD IS NOT OPTIONAL: a shape alone is the same failure as a
+colour alone, and this menu is where a user decides which template to open.
+
+FRAME 3 — D5c · MAIN FEED MARKER AND REASSIGN, 1440.
+An Author archive with two feed sections. The designated main feed carries a small mono chip on
+its canvas outline reading &quot;MAIN FEED&quot;, and its Layers row carries the same chip. The section&#x27;s
+control sidebar shows, where a Count control would be on any other feed: a GREYED count with the
+reason — &quot;This feed is sized by your theme&#x27;s Posts per page. Change it in Theme settings.&quot; —
+plus a working link to Theme Settings. Below it, the Pagination control, which ONLY the main
+feed has. On the second feed&#x27;s row, a &quot;Make this the main feed&quot; item in its ⋯ menu.
+
+FRAME 4 — D5d · PAGE 2 PREVIEW, 1440.
+The same archive previewed on page 2. An ink pill at the top of the canvas reading &quot;Page 2&quot; with
+a &quot;Back to page 1&quot; action beside it. The pagination treatment at the foot shows its full range —
+a previous link, numbers, and a next link — which is the only state in which a numbered treatment
+shows what it is. Reached from the Pagination control, not from a keyboard shortcut.
+
+FRAME 5 — D5e · PREVIEW SUBJECT PICKER, detail at 520.
+B9&#x27;s content-source pill, opened. It has three parts: the SOURCE (&quot;Orbit Weekly&quot; / &quot;Sample
+content&quot;), then a rule, then THE SUBJECT — a searchable list of the connected site&#x27;s posts for
+a Post canvas, showing title, date and — for those with a feature image — a small marker WITH THE
+WORDS &quot;has image&quot; beside it, never the marker alone. The current one is checked. At the top of that list, always: &quot;Style-guide article — the one every post
+design is designed against&quot;, checked by default. One helper line: &quot;This canvas renders one post.
+Which one changes what you see, because a post with a feature image and one without are
+different shapes.&quot;
+
+FRAME 6 — D5f · EMPTY TEMPLATE WARNING, detail at 620.
+Fires when the user removes the LAST section from a designed custom template. A notice-style
+(marigold) confirm, not danger: &quot;Remove the last section from Membership?&quot; Body: &quot;This template
+stops shipping. Any Ghost page still pointing at custom-membership.hbs will still load — it will
+just wear your ordinary page design instead. Ghost won&#x27;t warn anyone, which is why we are.&quot;
+Buttons: &quot;Remove it&quot; and &quot;Keep it&quot;.
+
+COUNTS: never print a total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div><div class="cat" data-cat="A6">
+  <div class="chead"><input class="tick" type="checkbox" aria-label="mark A6 done">
+    <span class="step">8</span>
+    <span class="cid">A6</span><span class="cname">Theme Settings, completed</span>
+    <span class="cmeta">session 2</span></div>
+  <div class="body"><pre>Add one canvas to the Inflozo design project: D6 · THEME SETTINGS, COMPLETED.
+
+INHERIT FROM: `B Missing Surfaces.dc.html` B17 — theme settings with the custom-settings
+builder. Keep its two-column shape, its left settings rail, its padlocked &quot;Ghost owns this&quot;
+rows, its &quot;from Ghost&quot; marks and its right-hand builder EXACTLY. Tokens and components from
+`Calibration Set.dc.html` and `Editor Sidebar Kit.dc.html`.
+
+FOUR CHANGES TO THE LEFT COLUMN, and one of them is the surface&#x27;s own primary value.
+
+1. POSTS PER PAGE, and it goes FIRST, above Site basics. A stepper (tabular numerals), default
+   12, with helper text: &quot;How many posts your archives show before paginating. Your theme owns
+   this — Ghost has no setting for it.&quot; This is the control every other surface in the product
+   links TO. Never link a user into Ghost Admin looking for it; it does not exist there.
+
+2. THE LOGO ROW LOSES ITS &quot;REPLACE&quot; BUTTON. Inflozo reads Ghost&#x27;s logo and never writes it.
+   Draw it padlocked like the site title, showing the file and its size, with a link out:
+   &quot;Change this in Ghost&quot;. Same treatment as the accent row already has.
+
+3. THE DARK MODE ROW IS REPLACED. What is drawn (&quot;Follows the reader&#x27;s system setting&quot;) is the
+   VISITOR&#x27;s moon toggle, a different thing entirely. Draw instead a two-option segmented
+   control labelled &quot;This project&quot;: &quot;Light only&quot; | &quot;Light + Dark&quot;, with &quot;Light + Dark&quot; selected
+   and helper text: &quot;Every Style Pack ships a hand-paired dark palette, so dark is already paid
+   for.&quot; Beneath it, a secondary row: &quot;Clear dark overrides&quot; with a count — &quot;3 sections carry a
+   dark override&quot; — and a small moon badge, which is the same 12px badge that marks an
+   overridden control in the sidebar. WHEREVER THAT BADGE APPEARS IT CARRIES AN ACCESSIBLE
+   LABEL READING &quot;Dark override&quot; — a 12px shape is not a signal on its own. On a Light-only project the row greys with the reason.
+
+4. A NEW &quot;CREDITS&quot; GROUP. One toggle: &quot;Show &#x27;Built with Inflozo&#x27;&quot; — on, with helper text
+   naming both places it appears: the theme footer and the README. On PRO it is a working
+   toggle. On FREE draw the SAME row GREYED WITH THE REASON — &quot;Credits stay on with the Free
+   plan&quot; — plus a &quot;Go Pro&quot; link. Greyed, never hidden: this exists here and is unavailable now.
+
+ONE CHANGE TO THE METER: it reads &quot;3 OF 17&quot;, not &quot;3 OF 20&quot;. Ghost allows twenty custom settings
+per theme and three of them are the dark-mode built-ins that every Inflozo project declares.
+Helper text says so in one line.
+
+FOUR ADDITIONS TO THE BUILDER (right column), each a row in the promote form:
+  - &quot;Group in Ghost&quot; — a named select: Site wide / Homepage / Post.
+  - &quot;Only show when&quot; — an optional visibility condition, using the condition row component
+    from the Editor Sidebar Kit (field · operator · value).
+  - A confirm state for promoting a TEXT prop: &quot;Ghost&#x27;s own settings are plain text, so bold,
+    italic, underline and links will be removed from this field while it stays promoted.&quot;
+  - A quiet permanent notice under the meter: &quot;Keys freeze once you deploy or export — pick
+    them like you mean it.&quot; And, on a promoted accent, a warning that switching Style Packs
+    changes what that setting is pointing at.
+
+FRAME 1 — D6a · THEME SETTINGS, PRO, 1440 — all of the above.
+FRAME 2 — D6b · THEME SETTINGS, FREE, detail at 720 — the credits row greyed with its reason.
+FRAME 3 — D6c · THE TEXT-PROP PROMOTE CONFIRM, detail at 520.
+
+COUNTS: 17 and 20 here are Ghost&#x27;s custom-setting limits and MUST be printed. Never print a
+total of designs, categories or free designs.
+
+A literal Ghost Handlebars expression must be written with zero-width entities. A bare
+{{ … }} is a Claude Design value hole and renders EMPTY.</pre>
+    <button class="btn copy">Copy prompt</button></div></div>
+<footer>Generated from <code>tools/appendix-a-prompts.py</code>. Every prompt, the export warning and
+the Handlebars line are extracted from <code>ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md</code> at generation time and
+retyped nowhere; <code>python3 tools/appendix-a-prompts.py --check</code> fails when the two disagree.
+As many cards as the spine has <code>### A</code> headings.</footer>
+</div><script>const K='inflozo-appendix-a-done';
+let done;
+try{done=new Set(JSON.parse(localStorage.getItem(K)||'[]'));}catch(e){done=new Set();}
+function save(){try{localStorage.setItem(K,JSON.stringify([...done]))}catch(e){}paint()}
+function paint(){
+  const cats=document.querySelectorAll('.cat');
+  cats.forEach(c=>{const is=done.has(c.dataset.cat);
+    c.classList.toggle('done',is); c.querySelector('.tick').checked=is;});
+  document.querySelector('.count').textContent=done.size+' / '+cats.length+' done';
+  document.querySelector('.prog i').style.width=(done.size/cats.length*100)+'%';}
+function copy(txt){                       // file:// has no clipboard API in some browsers
+  if(navigator.clipboard) return navigator.clipboard.writeText(txt);
+  const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+  ta.select(); document.execCommand('copy'); ta.remove(); return Promise.resolve();}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.classList.contains('tick')){const id=t.closest('.cat').dataset.cat;
+    done.has(id)?done.delete(id):done.add(id); save(); e.stopPropagation(); return;}
+  if(t.closest('.chead')){t.closest('.cat').classList.toggle('open'); return;}
+  if(t.classList.contains('copy')){
+    copy(t.closest('.body').querySelector('pre').textContent).then(()=>{
+      const o=t.textContent; t.textContent='Copied'; setTimeout(()=>t.textContent=o,1200);});}
+});
+document.querySelector('#reset').onclick=()=>{if(confirm('Clear all progress?')){done.clear();save();}};
+document.querySelector('#expand').onclick=()=>document.querySelectorAll('.cat').forEach(c=>c.classList.add('open'));
+paint();</script></body></html>

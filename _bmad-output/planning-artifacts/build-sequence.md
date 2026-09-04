@@ -2,7 +2,7 @@
 title: Inflozo — Build Sequence & Handoff Prompts
 status: operational note (not normative; `prd.md` governs on any conflict)
 created: 2026-08-19
-updated: 2026-09-03 (ninth pass) — steps 1, 2, 3, 4, 5, 5B and 5C COMPLETE. TWO BUILDS EXIST AND NEITHER REPLACES THE OTHER: `ux-designs/prototype/index.html` is the ANNOTATED one (5b — checkable against the frames) and `ux-designs/walkthrough/index.html` is the PRODUCT one (5c — no scaffolding, it behaves; double-click this to see how it will feel). WHAT IS OWED NOW IS THE OWNER'S WALK OF 5b — R-75's gate, with "walked" defined under step 5b's *The walk* — and 5c afterwards for feel: step 6 does not open until he says he has walked 5b, and that sentence is his (R-75). The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
+updated: 2026-09-04 (tenth pass) — steps 1, 2, 3, 4, 5, 5B and 5C COMPLETE; THE OWNER WALKED 5B ON 2026-09-04 AND STEP 6 IS OPEN. His walk findings are fixed in their stories, not by another design pass first (R-80, §A13), and the Appendix A prompts run as two sessions from APPENDIX-A-PROMPTS.html in parallel. TWO BUILDS EXIST AND NEITHER REPLACES THE OTHER: `ux-designs/prototype/index.html` is the ANNOTATED one (5b — checkable against the frames) and `ux-designs/walkthrough/index.html` is the PRODUCT one (5c — no scaffolding, it behaves; double-click this to see how it will feel). WHAT IS OWED NOW IS STEP 6 — the story breakdown — and the two Appendix A sessions; the walk of 5b (R-75's gate, "walked" defined under step 5b's *The walk*) is done and its date stands. The library is derived, never restated: run `python3 tools/inventory-gen.py --check`. The rulings live in prds/.../reconcile-designs-decisions.md — §A the step-4b rulings, §A2-§A4 the 2026-08-31 additions — and four of the controls pass's decisions are reversed there (D3, D17, D26, D27-in-half). One step-2 prompt still contradicts executed evidence and stays flagged in place rather than deleted
 covers: the steps from finished PRD to first story, what each needs from the owner, and a self-contained prompt for each
 ---
 
@@ -67,7 +67,7 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | Journeys & flows | ✅ **DONE 2026-09-03 — step 5.** `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and `EXPERIENCE.md`, both `status: final`. Four journeys, eight flows, every surface with one stable name and a named source frame; **Appendix A carries a Claude Design prompt per undrawn surface group** (eight at the time of writing; the headings are the count). Found the **Paywall editor already drawn** at `C Post Body` C3a, which §37.7 called missing; found a library total in `S3`'s product copy that both controls had been blind to for a third time. Four rulings in `reconcile-designs-decisions.md` §A11 (R-76…R-79); `prd.md` FR-D1, FR-J7 and FR-J9 moved |
 | Static prototype | ✅ **BUILT 2026-09-03 — step 5b** (owner's ruling R-75, 2026-09-02). `ux-designs/prototype/` — **double-click `index.html`**, no server and no build step. One page per surface `EXPERIENCE.md` names, every panel/pill/marker/sheet as a section of the page it lives on, and the four journeys and eight flows as labelled trails; every page's first HTML comment names the frame it derives from (R-74) and the section it implements. Built from the frames as they stood — **Appendix A's prompts had not been run**, so its extrapolated pages should be re-checked against the D-canvases once they exist. 🔵 **What is owed: the owner's walk, which gates step 6** |
 | Walkthrough | ✅ **BUILT 2026-09-03 — step 5c, second cut.** `ux-designs/walkthrough/` — **double-click `index.html`**, which opens on Sign In as a user would meet it. No scaffolding on a product screen: every screen is a frame lifted from the export and patched with links and hooks — menus, popovers and sheets open from the control that raises them; segmented controls, tabs and radio lists pick; the deploy wizard walks its four drawn steps through the library-update confirm and the snapshot gate; `P`, `L` and `Esc` work in the editor. **What it does not do is listed in `_screens.html`** under three headings — no frame yet (an Appendix A prompt owes it), drawn on a mechanism a ruling re-specifies (held out or shown as drawn until A7 runs, §A12 decision 6), and states no frame draws. The backup gate is in the first list, not in the build; the ring steps between its two drawn positions with `]`, `[` and the drawn ◀ ▶. `_screens.html` and `_selfcheck.html` are the two files that are not product screens. **It does not replace 5b** — a change to the design belongs in both, and 5c is walked after 5b, for feel |
-| Stories | ⬜ not started — **step 6**, and it does not open until the owner has walked 5b (R-75) — a date on the line under step 5b, *The walk*, which no tool reads |
+| Stories | 🔵 **OPEN — step 6.** The owner walked 5b on **2026-09-04** and wrote the date under step 5b, *The walk* (R-75). **The UI issues he found on the walk are fixed inside the stories that own their surfaces, not by another Claude Design pass first — R-80, §A13** — so they go in `ux-designs/WALK-NOTES.md`, a line under the screen, and each story carries its own. The Appendix A prompts still run, as two sessions, in parallel with the stories |
 
 ## The BMAD skill for each step
 
@@ -853,7 +853,7 @@ export are its only visual vocabulary; the PRD and Appendix H are its behaviour 
 **Produces:** a clickable, static HTML prototype of Inflozo's own UI — the interface the final
 product will have — that the owner opens with a double-click and walks in his browser.
 **Needs from the owner:** walk it, and say what reads wrong. That is the whole ask.
-**Unblocks:** step 6. **Step 6 does not open until the owner has walked the prototype** — a wrong
+**Unblocks:** step 6 — **opened 2026-09-04, when the owner walked the prototype** (R-75). The rule was that step 6 did not open until he had, because a wrong
 screen is cheapest the moment before anyone builds it. What "walked" means is defined below.
 
 > ⚠️ **5B WAS MADE CLICKABLE AND THEN DELIBERATELY UNWIRED AGAIN. Do not re-wire it.**
@@ -882,10 +882,22 @@ screen is cheapest the moment before anyone builds it. What "walked" means is de
 
 ### The walk — the sentence that unlocks step 6
 
-**Owner walked the prototype on: _(not yet — this line is the owner's to write)_.**
+**Owner walked the prototype on: 4-Sep-2026.**
 
-Until a date stands on that line, step 6 stays shut. It is deliberately not something a session may
-fill in on his behalf: the gate is the walk, not the build. **And it is a human tick that no tool
+> **IMP NOTE BY OWNER** *(2026-09-04, verbatim)*: There are some issues in UI that owner found. But instead of
+> fixing them now and doing more Claude Design passes, we will fix them during development of their
+> respective stories.
+
+**That note is ruling R-80** (`reconcile-designs-decisions.md` §A13): a finding from the walk is fixed in
+the story that owns its surface, not by a further design pass before step 6. For that to work, **each
+finding must be written where its story will find it — `ux-designs/WALK-NOTES.md`, one line under the
+screen it belongs to.** Step 6's prompt tells the story writer to read that file and carry every line
+into the story that owns the screen, as an acceptance criterion beside R-74's "matches the frame".
+The Appendix A prompts are unaffected and still run, as two sessions, in parallel with the stories.
+
+**The date stands, so step 6 is open** *(2026-09-04)*. What follows is the rule that held it shut,
+kept as the record of how the gate worked. Until a date stood on that line, step 6 stayed shut. It was
+deliberately not something a session could fill in on his behalf: the gate is the walk, not the build. **And it is a human tick that no tool
 reads** (F-082): `doc-audit.py` quotes this sentence and checks nothing, the board's step-6 status
 is set by hand, and step 6's prompt is on the board and runnable today. **Nobody runs the step-6
 prompt before a date stands here.**
@@ -1192,11 +1204,12 @@ generators, then `python3 tools/doc-audit.py --check` TWICE.
 # Step 6 — Epics and stories
 
 **Produces:** the story breakdown.
-**Needs from the owner:** to have **walked step 5b's prototype first — R-75 gates this step**, and
-the gate is the date line under step 5b, *The walk* — a human tick no tool reads. The prompt below is
-runnable today and nothing technical stops it; **do not run it before that date stands.** And
-per **R-74**, every story with a surface carries a "matches the frame" acceptance criterion naming
-the frame (or extrapolated frame) it is built from.
+**Needs from the owner:** to have **walked step 5b's prototype first — R-75 gates this step** —
+**done, 2026-09-04**: the date stands under step 5b, *The walk*, a human tick no tool reads. Two rules
+ride into every story. Per **R-74**, every story with a surface carries a "matches the frame" acceptance
+criterion naming the frame (or extrapolated frame) it is built from. Per **R-80** (§A13), every screen
+with a line in `ux-designs/WALK-NOTES.md` carries that line as an acceptance criterion of the story that
+owns it — the walk's findings are fixed in their stories, not by a further design pass first.
 **Unblocks:** development.
 
 §8 already fixes the epics, their order, their exit criteria and every FR's owning epic. This step expands that into stories — it does not re-plan it.
@@ -1231,6 +1244,18 @@ minimal shell), then the gated categories in inventory order beginning with Hero
 
 A category story cannot open until that category's design-and-specification session has landed
 its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md's Information Architecture gives every surface its frame — and carry a
+    "matches the frame" acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE WALK'S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
+    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
+    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
+    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
+    carries none. Do not fix anything yourself.
 ```
 
 ---
@@ -1265,7 +1290,8 @@ Two readiness conditions are specific to this project and are not the usual ones
 | ~~Step 4b — you in the room~~ | ✅ **DONE 2026-08-27**, and extended on 2026-08-31 when the design patch pass and the §F asks came back to you (R-30 … R-38) |
 | ~~Step 5 — journeys and flows~~ | ✅ **DONE 2026-09-03.** It asked you three questions and you ruled all three (R-76, R-77, R-78). Both spines are final |
 | **① Still owed — eight Claude Design prompts** | `EXPERIENCE.md` Appendix A, and its `### A` headings are the count if this line has gone stale. **Step 5b's prototype was built without them**, so its pages for undrawn surfaces are extrapolated from the frames the spine names; run these and those pages should be checked against the result. A1 to A6 draw surfaces that were never drawn (the first-deploy gates · history with pinning · the drift report · the dashboard sheets · the canvas markers · Theme Settings completed) · **A7 corrects existing frames** — its numbered items are the list, and since the 2026-09-03 review they include the accessibility items that would change a frame · **A8 draws the editor at 834 and 720**, which R-76 and the accessibility floor both need and the export has never drawn. They block nothing — run them before or after step 5b, whichever you prefer |
-| **② Then — walk 5b, then 5c.** | **5b is R-75's gate** (§A12 decision 3): double-click `_bmad-output/planning-artifacts/ux-designs/prototype/index.html` and open **every journey and every flow on its front door, end to end**, writing a line per screen in `ux-designs/WALK-NOTES.md` — the checklist, and the five things to look at hardest, are under step 5b, *The walk*. **Then 5c** — `ux-designs/walkthrough/index.html`, which opens on Sign In with everything clickable — for how it feels. **Step 6 does not open until you have walked 5b**, and saying you have is yours to say (R-75); the date line is under step 5b |
+| ~~② Walk 5b, then 5c~~ | ✅ **DONE 2026-09-04.** The owner walked 5b and wrote the date under step 5b, *The walk*. The UI issues he found are **fixed in their stories, not by another design pass first — R-80** (§A13); they belong in `ux-designs/WALK-NOTES.md`, a line under the screen, so each story can carry its own |
+| **③ Now — step 6, the story breakdown** | **Open since 2026-09-04.** Run the step-6 prompt from the board. Per R-74 every story with a surface names its frame; per R-80 every screen with a line in `WALK-NOTES.md` carries that line as an acceptance criterion. Runs in parallel with ①, which blocks nothing |
 | **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
 | ⛔ **Before the Live project takes real customer data** | **Put Live on the Supabase Pro plan** *(register 42)*. The **Free plan has NO automatic backups at all** — that gap, not the point-in-time question, is the real cliff, and AD-26 provisions Live as a **fresh project** at go-live, so this is a step someone must perform rather than inherit. The gate is: Pro active, daily backups visible in the dashboard, **and one real restore performed** using `RESTORE-RUNBOOK.md` — a backup nobody has restored from is a hypothesis, which is exactly how the first drill found two defects |

@@ -27,7 +27,8 @@ numbered options and one marked **(RECOMMENDED)**.
 
 ## Where the project is
 
-**Steps 1–5, 5b and 5c are complete, and so is the inventory merge.** The architecture, the schema and its
+**Steps 1–5, 5b and 5c are complete, the owner walked 5b on 2026-09-04, and step 6 is open.** The
+inventory merge is done too. The architecture, the schema and its
 runnable proof, both compiler emitters, four stress rounds, a reliability round and three propagation
 audits are all applied. Every design category is drawn, specified, patched twice and exported. The
 library inventory is now **generated from the design export** and gated, so it cannot drift.
@@ -44,17 +45,18 @@ python3 tools/doc-audit.py --check        # the documentation gate
 
 ## The immediate task
 
-**The owner's walk of the step-5b prototype. It is not a build task, and no session can do it for
-him.** The critical path now runs through one person opening one file.
+**Step 6 — the story breakdown — is open.** The owner walked 5b on **2026-09-04** and the date stands
+under `build-sequence.md` step 5b, *The walk* (R-75's gate, a human tick no tool reads). His note there
+is **ruling R-80** (`reconcile-designs-decisions.md` §A13): the UI issues he found on the walk are fixed
+inside the stories that own their surfaces, not by another Claude Design pass first — so they must be
+written in `ux-designs/WALK-NOTES.md`, a line under the screen, where the story writer is told to find
+them.
 
-**5b is R-75's gate; 5c is walked afterwards, for feel** (owner, 2026-09-03 —
-`reconcile-designs-decisions.md` §A12 decision 3). **"Walked" means every journey and every flow on
-`ux-designs/prototype/index.html`'s front door opened end to end, with his notes in one named file:
-`ux-designs/WALK-NOTES.md`** — a heading per journey and per flow, a line per screen. The checklist
-he follows in one sitting, and the five things to look at hardest, are in `build-sequence.md` step
-5b under *The walk*. **The gate is a human tick no tool reads** — the date line in that section;
-`doc-audit.py` quotes it and checks nothing, the board's step-6 status is set by hand — **and the
-step-6 prompt is not run before a date stands there.**
+**Two things run now, in parallel.** (1) **Step 6**, from the board's prompt: per R-74 every story with
+a surface names its frame, per R-80 every screen with a walk note carries it as an acceptance criterion.
+(2) **The Appendix A Claude Design prompts**, from `planning-artifacts/APPENDIX-A-PROMPTS.html` — copy
+buttons, extracted from the spine so the page cannot drift: **A7 with A8 as one session, then A1 to A6
+as another**, the export runbook on the board once after each. They block nothing.
 
 **Two builds exist, they answer different questions, and neither replaces the other.**
 
@@ -128,10 +130,9 @@ limits are shown as **Appendix F.1's table beside the frame**, the frames that d
 untouched; and **Appendix A's Claude Design prompts had not been run**, so a surface with no frame
 says so and shows nothing — once the D-canvases exist, those pages lift the new frames.
 
-**Step 6 does not open until the owner has walked 5b** (ruling **R-75**), and saying he has walked
-it is his to say — the line it goes on is in `build-sequence.md` step 5b, under *The walk*, and it is
-a human tick no tool reads. **The gate is the walk, not the build.** A wrong screen is cheapest the
-moment before anyone builds it.
+**Step 6 opened on 2026-09-04, when the owner walked 5b** (ruling **R-75**) and wrote the date under
+`build-sequence.md` step 5b, *The walk* — a human tick no tool reads. **The gate was the walk, not the
+build.** What he found on it is fixed in the stories, not by another design pass first (R-80, §A13).
 
 **Step 5 is done — 2026-09-03.** `planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/` holds
 `DESIGN.md` (the visual spine — a **transcription** of the Claude Design export; on any disagreement

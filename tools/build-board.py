@@ -28,14 +28,11 @@ OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
 #
 # IT MOVES WITH THE CRITICAL PATH. On 2026-09-03 step 5 completed, its prompt block was replaced by
 # a completion record, and STEP-5-PROMPT.txt lost its source — so the two constants below moved to
-# step 5b and the old file was removed.
-#
-# THEY STAY ON 5B EVEN THOUGH 5B IS BUILT, and that is deliberate rather than an oversight. The
-# owner's next action is a WALK, not a paste, and it has no prompt of its own; moving these to step 6
-# would put step 6's prompt under his cursor before the gate that guards it (R-75). Move them when he
-# has walked the prototype and step 6 actually opens — and delete this paragraph then.
-PASTE = os.path.join(PLAN, 'STEP-5B-PROMPT.txt')
-PASTE_ID = 'Build the static prototype'   # the block this file mirrors, matched on its first line
+# step 5b and the old file was removed. They stayed on 5b while the owner's next action was a walk
+# rather than a paste, so that step 6's prompt never sat under his cursor before R-75's gate; on
+# 2026-09-04 he walked it, step 6 opened, and the constants moved on again.
+PASTE = os.path.join(PLAN, 'STEP-6-PROMPT.txt')
+PASTE_ID = '/bmad-create-epics-and-stories'   # the block this file mirrors, matched on its first line
 
 # key, number, title, status, one-line where-it-stands, what it produces, blocked-by
 STEPS = [
@@ -103,7 +100,8 @@ STEPS = [
   'A walkable static prototype of the product, and <b>R-75\u2019s gate: the owner walking it is what '
   'unlocks step 6</b>. Walked means every journey and every flow on index.html opened end to end, '
   'with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, '
-  'The walk, and that section holds the date line, which is his to write.',
+  'The walk, and that section holds the date line, which is his to write. WALKED 2026-09-04 \u2014 the '
+  'date stands; what he found goes to the stories (R-80, \u00a7A13).',
   None),
  ('s5c', '5c', 'The walkthrough', 'done',
   "The owner read 5b and said what was true: its annotations — the frame reference, the journey trail, "
@@ -125,13 +123,13 @@ STEPS = [
   'The product as a clickable application \u2014 the artifact that answers <b>is this any good</b>, where '
   '5b answers <b>is this screen right</b>. Walked AFTER 5b, for feel; it is not the gate. A change to '
   'the design belongs in both.', None),
- ('s6', '6', 'Epics and stories', 'later',
-  'Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS '
-  'BUILT BUT THE GATE IS THE WALK, not the build \u2014 this step opens the day the owner says he '
-  'has walked it, and per R-74 every story with a surface names the frame it is built from.',
-  'The story breakdown.', "the owner's walk of the step-5b prototype \u2014 every journey and flow on its "
-  'index.html end to end, notes in ux-designs/WALK-NOTES.md, and a date on the line under '
-  'build-sequence.md step 5b, The walk. A human tick no tool reads; do not run the prompt below before it stands'),
+ ('s6', '6', 'Epics and stories', 'next',
+  'OPEN SINCE 2026-09-04 \u2014 the owner walked 5b and wrote the date under build-sequence.md step 5b, '
+  'The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every '
+  'story with a surface names the frame it is built from; per R-80 (\u00a7A13) every screen with a line '
+  'in ux-designs/WALK-NOTES.md carries that line as an acceptance criterion \u2014 the walk\u2019s findings '
+  'are fixed in their stories, not by another design pass first.',
+  'The story breakdown.', None),
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
@@ -240,16 +238,19 @@ RUNBOOK = [
 
 
 ACTIONS = [
- ('now', 'Walk 5b \u2014 THE CRITICAL PATH, and only you can do it (R-75)',
-  'Double-click ux-designs/prototype/index.html and open every journey and every flow on its front '
-  'door end to end, a line per screen in ux-designs/WALK-NOTES.md. The checklist, and the five '
-  'things to look at hardest, are under build-sequence.md step 5b, The walk. Then 5c \u2014 '
-  'ux-designs/walkthrough/index.html \u2014 for how it feels. Write the date on the line under '
-  'The walk; step 6 opens on that line and on nothing else.'),
- ('soon', 'The Appendix A Claude Design prompts',
-  'EXPERIENCE.md Appendix A; its ### A headings are the count. A7 and A8 together (they share the '
-  'focus-ring token), then A1 to A6. They block nothing. Run the export runbook above after each '
-  'session, then both generators: the pages that say \u201cnot drawn\u201d lift the new frames.'),
+ ('now', 'Step 6 \u2014 the story breakdown. Open since 2026-09-04',
+  'You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run '
+  'the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names '
+  'its frame; and R-80, your own ruling from the walk \u2014 the UI issues you found are fixed in the '
+  'stories that own their screens, not by another design pass first. For that to work, write each '
+  'issue in ux-designs/WALK-NOTES.md, one line under the screen it belongs to; the prompt tells the '
+  'story writer to read that file and carry every line into its story.'),
+ ('now', 'The Appendix A Claude Design prompts \u2014 two sessions, in parallel with step 6',
+  'Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, '
+  'extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the '
+  'count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They '
+  'block nothing. Run the export runbook above once after each session, then both generators: the '
+  'pages that say \u201cnot drawn\u201d lift the new frames.'),
  ('soon', 'The Image-focus sweep \u2014 23 categories',
   'Image focus was never a shared control: two dozen category specs each enumerate their own copy, '
   'which is the owner\u2019s "one control name, one set of values" ruling in its worst form. Pass '

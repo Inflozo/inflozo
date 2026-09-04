@@ -100,7 +100,7 @@ footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:v
 drift apart.</p>
 
 <div class="rail">
-<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="done" href="#s5c"><span class="n">STEP 5c</span><span class="t">The walkthrough</span><span class="b"></span></a><a class="later" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
+<a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="done" href="#s5c"><span class="n">STEP 5c</span><span class="t">The walkthrough</span><span class="b"></span></a><a class="next" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a>
 </div>
 
 <section class="runbook">
@@ -113,8 +113,8 @@ drift apart.</p>
 </section>
 
 <div class="acts">
-  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Walk 5b — THE CRITICAL PATH, and only you can do it (R-75)</b><span>Double-click ux-designs/prototype/index.html and open every journey and every flow on its front door end to end, a line per screen in ux-designs/WALK-NOTES.md. The checklist, and the five things to look at hardest, are under build-sequence.md step 5b, The walk. Then 5c — ux-designs/walkthrough/index.html — for how it feels. Write the date on the line under The walk; step 6 opens on that line and on nothing else.</span></li></ol></div>
-  <div class="act soon"><h3>Do soon</h3><ol><li><b>The Appendix A Claude Design prompts</b><span>EXPERIENCE.md Appendix A; its ### A headings are the count. A7 and A8 together (they share the focus-ring token), then A1 to A6. They block nothing. Run the export runbook above after each session, then both generators: the pages that say “not drawn” lift the new frames.</span></li><li><b>The Image-focus sweep — 23 categories</b><span>Image focus was never a shared control: two dozen category specs each enumerate their own copy, which is the owner’s &quot;one control name, one set of values&quot; ruling in its worst form. Pass four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The list is derived by tools/design-patch-prompts-4.py, which tests the real condition — does the spec enumerate the values WITHOUT referencing P0·9 — after its first version got this wrong by assuming a category in the pass had been fixed.</span></li><li><b>Five registry rulings for the architect</b><span>Not yours, and not blocking: A5’s tabs announced twice without JavaScript, A5’s scroller rule having no registry sentence, A13’s walkthrough emitting a heading per panel, A33’s gallery script having no registry entry, and whether group-headings may re-level a heading. One pass covers all five.</span></li></ol></div>
+  <div class="act now"><h3>Do now — time-sensitive</h3><ol><li><b>Step 6 — the story breakdown. Open since 2026-09-04</b><span>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass first. For that to work, write each issue in ux-designs/WALK-NOTES.md, one line under the screen it belongs to; the prompt tells the story writer to read that file and carry every line into its story.</span></li><li><b>The Appendix A Claude Design prompts — two sessions, in parallel with step 6</b><span>Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the count). Session one: A7 with A8 (they share the focus-ring token). Session two: A1 to A6. They block nothing. Run the export runbook above once after each session, then both generators: the pages that say “not drawn” lift the new frames.</span></li></ol></div>
+  <div class="act soon"><h3>Do soon</h3><ol><li><b>The Image-focus sweep — 23 categories</b><span>Image focus was never a shared control: two dozen category specs each enumerate their own copy, which is the owner’s &quot;one control name, one set of values&quot; ruling in its worst form. Pass four defines it once in P0-9 with both axes and A13 now points at it. THE OTHER 23 STILL CARRY PRIVATE COPIES and none of them has the new horizontal axis. Mechanical, but it is 23 specs. The list is derived by tools/design-patch-prompts-4.py, which tests the real condition — does the spec enumerate the values WITHOUT referencing P0·9 — after its first version got this wrong by assuming a category in the pass had been fixed.</span></li><li><b>Five registry rulings for the architect</b><span>Not yours, and not blocking: A5’s tabs announced twice without JavaScript, A5’s scroller rule having no registry sentence, A13’s walkthrough emitting a heading per panel, A33’s gallery script having no registry entry, and whether group-headings may re-level a heading. One pass covers all five.</span></li></ol></div>
   <div class="act gate"><h3>Gates — purchases and checks with triggers</h3><ol><li><b>Supabase Pro before the live site has real customers</b><span>Free has no backups at all. Includes doing one real restore.</span></li><li><b>Ghost(Pro) Starter before public launch</b><span>Blocks launch. Comes up at the end of E13.</span></li><li><b>Turn on Dodo renewal reminder</b><span>Settings, Communication. Off by default.</span></li></ol></div>
 </div>
 
@@ -604,7 +604,7 @@ House rules for tonight:
       <span class="badge done">complete</span></div>
   </div>
   <p class="stands">BUILT 2026-09-03. &lt;b&gt;Double-click &lt;code&gt;_bmad-output/planning-artifacts/ux-designs/prototype/index.html&lt;/code&gt;&lt;/b&gt; — no server, no install, and it reads complete with JavaScript off. One page per surface EXPERIENCE.md names; every panel, pill, marker, popover and sheet that only exists over another surface is a section of that page, linked from it and listed on the index. The four journeys and eight flows are each a labelled, clickable trail. EVERY PAGE’S FIRST HTML COMMENT NAMES THE FRAME IT DERIVES FROM (R-74) and the EXPERIENCE.md section it implements, so any page can be held against its frame. Every screen is a frame LIFTED from the export byte-identical, with the annotation around it and never in it; the frames drawn on the wrong mechanism are shown as drawn with the re-specification in a note beside them, and the plan limits are Appendix F.1’s table beside the frame. ITS FRAMES ARE NEVER WIRED — that was tried and reverted; the clickable build is 5c. Appendix A’s Claude Design prompts had NOT been run when it was built, so a surface with no frame says so and shows nothing.</p>
-  <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and &lt;b&gt;R-75’s gate: the owner walking it is what unlocks step 6&lt;/b&gt;. Walked means every journey and every flow on index.html opened end to end, with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, The walk, and that section holds the date line, which is his to write.</dd>
+  <dl><dt>Produces</dt><dd>A walkable static prototype of the product, and &lt;b&gt;R-75’s gate: the owner walking it is what unlocks step 6&lt;/b&gt;. Walked means every journey and every flow on index.html opened end to end, with his notes in ux-designs/WALK-NOTES.md; the checklist is under build-sequence.md step 5b, The walk, and that section holds the date line, which is his to write. WALKED 2026-09-04 — the date stands; what he found goes to the stories (R-80, §A13).</dd>
   </dl>
   <div class="prompt live"><div class="phead"><h4>Static prototype</h4><span class="ptag live">live</span><button class="copy" data-t="Build the static prototype of Inflozo&#x27;s own UI — ruling R-75 (reconcile-designs-decisions.md §A10).
 Working directory: /home/ghost/Dev/Inflozo. Read CLAUDE.md first; the seven standing rules bind.
@@ -819,15 +819,15 @@ page. If a reader could tell it is a prototype without clicking anything, it is 
 A CHANGE TO THE DESIGN BELONGS IN BOTH BUILDS. 5b is how a screen is checked against its
 frame; 5c is how it is judged. Update prototype/build.py in the same pass, run both
 generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
-</section><section class="step later" id="s6">
+</section><section class="step next" id="s6">
   <div class="shead">
     <span class="snum">6</span>
     <div class="stitle"><h2>Epics and stories</h2>
-      <span class="badge later">later</span></div>
+      <span class="badge next">next up</span></div>
   </div>
-  <p class="stands">Expands section 8 into stories. It does not re-plan anything. R-75 gates it: THE PROTOTYPE IS BUILT BUT THE GATE IS THE WALK, not the build — this step opens the day the owner says he has walked it, and per R-74 every story with a surface names the frame it is built from.</p>
+  <p class="stands">OPEN SINCE 2026-09-04 — the owner walked 5b and wrote the date under build-sequence.md step 5b, The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every story with a surface names the frame it is built from; per R-80 (§A13) every screen with a line in ux-designs/WALK-NOTES.md carries that line as an acceptance criterion — the walk’s findings are fixed in their stories, not by another design pass first.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
-  <dt>Waiting on</dt><dd>the owner&#x27;s walk of the step-5b prototype — every journey and flow on its index.html end to end, notes in ux-designs/WALK-NOTES.md, and a date on the line under build-sequence.md step 5b, The walk. A human tick no tool reads; do not run the prompt below before it stands</dd></dl>
+  </dl>
   <div class="prompt live"><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
@@ -854,7 +854,19 @@ platform-verification spike, then the complete shell block (all 47 designs of Gr
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).">Copy prompt</button></div><p class="pnote live">DO NOT RUN before the owner’s walk of 5b has a date under build-sequence.md step 5b, The walk (R-75). Nothing technical stops it; the gate is that line.</p><pre>/bmad-create-epics-and-stories
+its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md&#x27;s Information Architecture gives every surface its frame — and carry a
+    &quot;matches the frame&quot; acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE WALK&#x27;S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
+    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
+    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
+    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
+    carries none. Do not fix anything yourself.">Copy prompt</button></div><p class="pnote live">DO NOT RUN before the owner’s walk of 5b has a date under build-sequence.md step 5b, The walk (R-75). Nothing technical stops it; the gate is that line.</p><pre>/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
@@ -880,7 +892,19 @@ platform-verification spike, then the complete shell block (all 47 designs of Gr
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
 A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).</pre></div>
+its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md&#x27;s Information Architecture gives every surface its frame — and carry a
+    &quot;matches the frame&quot; acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE WALK&#x27;S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
+    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
+    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
+    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
+    carries none. Do not fix anything yourself.</pre></div>
 </section><section class="step later" id="s6b">
   <div class="shead">
     <span class="snum">6b</span>

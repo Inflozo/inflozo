@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets)
+status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 — walk findings are fixed in their stories)
 created: 2026-08-27
-updated: 2026-09-03 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets)
+updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -1292,7 +1292,7 @@ on every one. Each row names its targets so a later session can tick them. ✅ l
 |---|---|---|
 | **1** | **Fix the generators and the documents first, then walk.** The findings that were reproduced are fixed at their source — the generator, never an emitted page — before the owner opens 5b | ✅ this file · ✅ `EXPERIENCE.md`, `DESIGN.md`, `prd.md`, `ARCHITECTURE-SPINE.md` AD-20, `BACKUP-GATE.md`, `VERIFY-AT-BUILD.md` items 1, 2, 59–61, `MEASUREMENTS.md` §37 (the rows below say which) · ⬜ `prototype/build.py`, `walkthrough/build-app.py` (the generator passes) · ⬜ the walk itself (owner) |
 | **2** | **The plan-limit strings the frames draw wrongly are patched in 5c to Appendix F.1 at lift time**, each patch carrying a comment naming this decision; the frames catch up in A7 | ✅ `EXPERIENCE.md` § Plan limits ("In the walk") · ✅ A7 item 20 · ⬜ `walkthrough/build-app.py` (the patches) |
-| **3** | **5b is R-75's gate, and "walked" means every journey and every flow on its front door, with the owner's notes in one named file** | ⬜ `build-sequence.md` step 5b (the definition of done) · ⬜ `prototype/index.html` (the front door lists them) · ⬜ the notes file (owner) |
+| **3** | **5b is R-75's gate, and "walked" means every journey and every flow on its front door, with the owner's notes in one named file** | ✅ `build-sequence.md` step 5b (the definition of done) · ⬜ `prototype/index.html` (the front door lists them) · ⬜ the notes file (owner) — landed 2026-09-03 by the docs pass; the walk itself 2026-09-04 (§A13) |
 | **4** | **An accessibility item that would change a frame goes to Claude Design prompt A7, not A8**, because it corrects an existing frame; nothing in 5b or 5c alters what a frame looks like | ✅ `EXPERIENCE.md` Appendix A7 items 7–10 (focus-ring token, accessible names, labels, placeholder colour) · ✅ A8 FRAMES 3 and 5 inherit A7's ring · ⬜ 5c may add attributes only, each naming its finding |
 | **5** | **FR-J13's gate offers the theme and `routes.yaml` downloads only when the Staff Access Token is present, and otherwise names the Ghost Admin path** (F-077 — FR-J13 and `BACKUP-GATE.md` had disagreed) | ✅ `prd.md` FR-J13 · ✅ `BACKUP-GATE.md` § What the gate offers as a download · ✅ `EXPERIENCE.md` F7 and A1 FRAME 4 · ⬜ `prototype/build.py` backup-gate note · *recorded for the owner:* `routes.yaml` alone is readable with the integration key (`MEASUREMENTS.md` §37) |
 | **6** | **The wrong-mechanism frames are held out of 5c until A7 runs, except copy the PRD owns**: Redesign Proposals (B22) held out entirely; the Pro Exit Sheet stays and its remedy count is A7's; the Starter Chooser stays and its roster is A7's; S4d's paid-tier rows are A7's | ✅ `EXPERIENCE.md` § Drawn, but on the wrong mechanism (preamble; S4d and B23a marked → A7) · ✅ A7 items 18 and 19 · ⬜ `walkthrough/build-app.py` and `_screens.html` (the held-out list) |
@@ -1307,6 +1307,25 @@ now carries them, FR-D10's names being state names (F-080); (d) **the Staff Acce
 and an Administrator's suffices** — a Ghost fact, cited, correcting FR-C1, §3 and the A1 prompt
 (F-063); (e) prompt A7's numbered items are its count, and the Appendix A preamble no longer writes
 one down.
+
+## A13 · The walk — 2026-09-04, and R-80
+
+The owner walked the step-5b prototype on **2026-09-04** and wrote the date under `build-sequence.md`
+step 5b, *The walk* — R-75's gate. With it he left a note, quoted verbatim there: *"There are some
+issues in UI that owner found. But instead of fixing them now and doing more Claude Design passes, we
+will fix them during development of their respective stories."*
+
+**R-80 — a finding from the owner's walk is fixed in the story that owns its surface, not by a further
+Claude Design pass before step 6.** The Appendix A prompts are unaffected: they draw the surfaces that
+have no frame and correct the frames the review found wrong, and they still run — as two sessions, A7
+with A8 and then A1 to A6 — in parallel with the stories. For R-80 to work, every finding must be
+written where its story will find it: `ux-designs/WALK-NOTES.md`, one line under the screen it belongs
+to. Step 6's prompt tells the story writer to read that file and carry each line into the story that
+owns the screen, as an acceptance criterion beside R-74's "matches the frame" criterion.
+- Targets: `build-sequence.md` step 5b (*The walk*), the step table, the outstanding table, step 6
+  (*Needs from the owner* and its prompt) · `HANDOVER.md` (*Where the project is*, *The immediate
+  task*) · `tools/build-board.py` (the step-6 status and the actions) · `ux-designs/WALK-NOTES.md`
+  (the owner's own lines — his to write). ✅ all landed 2026-09-04, except the owner's lines.
 
 ## B · Approved decisions superseded by this session
 

@@ -1,0 +1,39 @@
+/bmad-create-epics-and-stories
+
+Create the epics and stories list for Inflozo.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
+Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
+reconcile-designs-decisions.md — the rulings there bind the stories.
+
+Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR's
+owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
+it into stories; do not re-plan it and do not renumber anything.
+
+Three rules from section 8 that shape the story list and are easy to get wrong:
+  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
+    category. A category story delivers every design in that category against one shared content
+    model and one stylesheet, plus that category's behaviour modules.
+  - The library epics run SEQUENTIALLY. There are no waves. Each category's owner gate blocks
+    the next category from starting.
+  - There are as many owner gates as there are categories, the shell block's three included.
+
+Section 4's build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
+platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+minimal shell), then the gated categories in inventory order beginning with Heroes.
+
+A category story cannot open until that category's design-and-specification session has landed
+its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md's Information Architecture gives every surface its frame — and carry a
+    "matches the frame" acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE WALK'S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
+    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
+    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
+    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
+    carries none. Do not fix anything yourself.
