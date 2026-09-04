@@ -487,6 +487,12 @@ DOCS = [
   'Written by step 6 (/bmad-create-epics-and-stories): every epic from the PRD\'s §8 expanded into '
   'stories with acceptance criteria. The story board reads it — its epics and stories are the cards — '
   'and the sprint tracker keys off its headings. Absent until step 6 runs; this row waits for it.'),
+ ('planning-artifacts/epics-stress-test.md', 'record', 'The step-6 stress test — five findings, all closed',
+  'Run 2026-09-04 on the story decomposition only, at the owner\'s instruction, after step 6 wrote epics.md. '
+  'Scope is what got dropped between the PRD and the story list, not whether the requirements are right — '
+  'Rounds 1-4 did that. Found that three of the four NFR-6 quality layers had no story building them while '
+  'all 33 owner gates depended on them (F0), and that the canvas had no token set to render against three '
+  'epics before Style Packs are authored (F2). Dated: never edit it.'),
  ('planning-artifacts/implementation-readiness.md', 'record', 'The readiness gate\'s verdict — step 6b',
   'Written by /bmad-sprint-planning\'s readiness gate (step 6b): the go/no-go on opening the first '
   'story, with the two project-specific conditions about the library running sequentially. A dated '

@@ -1079,6 +1079,11 @@ resolves to a value on one side and becomes a mustache on the other
 emission (AD-5)
 **And** **the build decides the page and the render never re-decides it** (AD-37): there is no render-time design
 substitution, and adjacency is answered by the compiler from the placement list
+**And** **one reference token set ships with the runtime** — the full custom-property contract at a single set of
+values — because a design's CSS consumes Style Pack custom properties *exclusively*, so without it nothing renders
+on the canvas at all. **E6 replaces it with the twelve authored packs and does not change the contract.** *(Added
+by the step-6 stress test, finding F2: E5's canvas and Section Picker render "in the project's current Style
+Pack" three epics before E6 authors one.)*
 **And** every AD-36 sink is closed with a runnable assertion that the vector is inert **and** the legitimate case
 still works — URL schemes allow-listed in the **shared core** so both renderers inherit it, helper arguments
 validated against each helper's own grammar rather than concatenated, bindable attribute names allow-listed with
@@ -1347,6 +1352,43 @@ gate, because the compiler is E7's.
 
 **FRs:** the exit proof for FR-F1–F8, FR-G3, FR-H5, FR-H7, FR-H8. · **Frame:** each pilot's own
 `<ID>-<n> <Name>.dc.html` and its `<ID>-0 Category Proof.dc.html`. · **Owner test:** yes.
+
+### Story 4.11: The render matrix and the accessibility scan that runs on it
+
+As every one of the 33 owner gates,
+I want the render matrix to exist before the first category needs it,
+So that a gate is not blocked on a harness nobody built.
+
+**Acceptance Criteria:**
+
+**Given** §4's statement that **the render matrix renders locally and needs no Ghost**, which is why it can be
+built here rather than waiting on the compiler
+**When** the matrix is built over the five pilot sections
+**Then** it renders **every design × 3 reference Style Packs × light/dark × 3 viewports** — the count derived
+from the inventory and moving with it, never restated independently
+**And** it produces **Playwright screenshot baselines with diff gates**, failing a design above **1% differing
+pixels at a per-pixel tolerance of 0.1**
+**And** the renderer is **pinned**: one fixed Playwright/Chromium version, in one fixed container image, **with
+fonts installed in the image**, animations and caret disabled — **the runner is part of the baseline**
+**And** **the NFR-5 axe-core scan runs on these same renders**, at WCAG 2.1 AA and **zero violations**, at
+near-zero marginal cost — **no second matrix exists**
+**And** the scan's scope includes **the fixture renders and the six synthesized templates**, not only placed
+designs
+**And** the matrix **pins its fixtures**: A32 on a gated `post.hbs`, A33 on the style-guide post, A34 on the
+32-post feed at all three of its pages, A25 on the style-guide post *and* page, the six synthesized stacks as
+themselves, and **an empty tag pinned as a fixture** so the main feed's empty state is a render like any other
+**And** **reduced motion is a matrix case with the query forced, and 200% browser zoom is a viewport case**
+(UX-DR21)
+**And** **baseline regeneration has a rule before it is ever needed**: a change to a Style Pack, a shared
+primitive or the pinned renderer invalidates the whole set at once, so a mass rebaseline **requires the owner's
+approval on a sampled visual review** — one design per category, both modes — lands as its own commit touching
+baselines only, and names the change that caused it
+**And** the cadence is set here: **the full matrix nightly and before each release; per-commit runs cover only
+the designs a commit touched.**
+
+**FRs:** none — this builds NFR-6(a) and the NFR-5 scan that rides on it. · **Owner test:** none (a harness). ·
+**Note:** §8 assigns the (c1) and (c2) layers to E4 by name and leaves (a) unowned; it is placed here because
+§4 states the matrix needs no Ghost, and because **every category gate from E9 onward requires it green**.
 
 *Exit:* the five pilot sections render editor-perfect on canvas and their compiled `.hbs` snapshots are
 committed and diffing per-commit; **the fixture set ships here**. "Compiles byte-identical" is the joint gate's,
@@ -1905,7 +1947,9 @@ case that bites — **the budget is per page, not per section** — with the pre
 show instead**
 **And** the marker matches D5c.
 
-**FRs:** FR-H2. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c. · **Owner test:** yes.
+**FRs:** FR-H2. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c. · **Owner test:** yes. ·
+**Depends on E10:** the main-feed designation and its Pagination control are built here; **A34's ten treatments
+arrive in E10**, and the two meet at A34's owner gate. *(Declared by the step-6 stress test, finding F3.)*
 
 ### Story 5.20: Tier-bound surfaces and the Paywall editor
 
@@ -1940,7 +1984,9 @@ the page; anything identifying is a hand-off to Ghost's own account panel (AD-38
 **And** the editor matches C3a and its empty state matches C3b as corrected.
 
 **FRs:** FR-H6. · **Frame:** `C Post Body.dc.html` C3a · C3b. · **Owner test:** yes. · **Verification:** T1 with
-members enabled and T3 with members off (R-82).
+members enabled and T3 with members off (R-82). · **Depends on E10:** the editor is built and tested here against
+whatever paywall designs exist; **A32's twelve arrive in E10**, and the two meet at A32's own owner gate. Same
+shape as §8's declared A25 → FR-Q7 dependency. *(Declared by the step-6 stress test, finding F3.)*
 
 ### Story 5.21: The two Ghost-surface shims on the canvas
 
@@ -2140,8 +2186,11 @@ the one mode signal present in the HTML Ghost sends, and it composes with `{{bod
 a scheme class or on `data-mode`
 **And** a dark override resolves to a token, and exactly one file selects on mode (AD-30).
 
-**FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** rendered on
-T1 and T3 in all three states.
+**FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** on the
+canvas in all three states, plus a unit assertion over the emitted token block — **not on T1/T3, because the
+compiler is E7's and does not exist yet.** The on-Ghost confirmation of all three states lands at the **E4/E7
+joint gate (Story 7.35)**, which is where a compiled theme first reaches a real Ghost. *(Corrected by the step-6
+stress test, finding F1: this line originally named T1 and T3, which E6 cannot reach.)*
 
 ### Story 6.6: Auto-branding seeds the pack
 
@@ -2612,7 +2661,9 @@ column they sit in**
 **And** excluding a card **restores gscan's Koenig rules for it**, so checking scales with what Inflozo wrote
 **And** the surface matches S14a–e.
 
-**FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes.
+**FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
+module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
+*against* this module, which §8 requires to land first. *(Declared by the step-6 stress test, finding F3.)*
 
 ### Story 7.14: Treatment selection from Theme Settings
 
@@ -3151,7 +3202,66 @@ re-activate action, because "failed" would be wrong and silence would be worse
 **FRs:** FR-J8 (the partial-success half). · **Frame:** `D2 Deploy History Completed.dc.html` D2d · D2e · D2f. ·
 **Owner test:** yes.
 
-### Story 7.33: The E4/E7 joint compile gate — E7's closing story
+### Story 7.33: Compile CI — synthetic themes over the whole library
+
+As every category gate,
+I want a nightly assembly proving the whole library still compiles,
+So that a defect in a shared primitive is caught by CI rather than by a user's deploy.
+
+**Acceptance Criteria:**
+
+**Given** §4's statement that **compile CI needs only gscan** — no Ghost host
+**When** it runs nightly
+**Then** it assembles **synthetic themes covering 100% of designs** and each scans **gscan 0 errors / 0
+warnings** at the pinned version, against **both the v5 and v6 specs**
+**And** it asserts the checks the compiler's own stories declared but which only a whole-library run can
+exercise: that **`assets/js/` contains only files authored in the Inflozo repository**, with `cards.js` the
+single declared exception; that **no emitted stylesheet contains a rule reachable only under another design's
+root attribute**, which is what makes the dead-CSS strip sound rather than usually-right; that **every `size=`
+argument in emitted `.hbs` exists as a key in `image_sizes`**; and that **every emitted guard resolves to a real
+bound field**, since a guard on an identifier that does not exist passes a presence check and renders nothing
+**And** it reports **emitted CSS bytes against the bytes reachable from the placed designs' selectors**, and a
+gap is a build warning
+**And** it runs `size-limit` over `assets/js/main.js` at the **40 KB brotli** budget as a **developer-facing
+warning, not a build failure**
+**And** the **FR-J17 quality gate runs in the same lane**, so a category gate has one sheet to read.
+
+**FRs:** none — this builds NFR-6(b). · **Owner test:** none (a CI lane). · **Verification:** gscan 6.4.2, both
+specs.
+
+### Story 7.34: The canvas-vs-real-Ghost comparison harness
+
+As the first gated category and every one after it,
+I want the real-Ghost comparison to exist before the gate that needs it,
+So that the shell block does not stall on a harness scheduled for E15.
+
+**Acceptance Criteria:**
+
+**Given** §4's ruling that **NFR-6(c3) is a dependency of the library epics, not of hardening** — "the comparison
+harness and the T1 droplet must exist before the **first** gated category — not at E15"
+**When** the harness is built, here, immediately before E9 opens
+**Then** it renders **the canvas against the same page deployed to a real Ghost target**, at the render matrix's
+**1% threshold on its pinned renderer**, with **animations frozen** for the comparison
+**And** it honours the **exclusion regions**, which are §1.2's carve-outs and are named because this is the test
+that enforces them: **the post and page body** (the canvas shows the fixture, the live page shows the author's
+own HTML), **Portal's floating button and Ghost's announcement strip** (both Inflozo-drawn approximations of
+Ghost's own markup), **Ghost's native comments and search overlay**, and **any region the site's own code
+injection touches**
+**And** an **intentional change is approved in one click rather than re-baselined by hand**
+**And** the cadence is set here: nightly over a **risk-weighted rotating batch sized to the serialization
+budget**, such that **every design has been compared within 30 days**, front-loading the designs most likely to
+diverge — anything sticky or fixed, the Koenig card treatments, member-state-dependent sections, announcement
+bars and edge rails
+**And** runs are **serialized per target**, because theme activation is globally stateful, so concurrent runs
+queue and never interleave
+**And** **the T1 droplet is confirmed available to it**, which is the other half of §4's precondition
+**And** **the CI lane is a costed line item, not an aside**.
+
+**FRs:** none — this builds NFR-6(c3). · **Owner test:** none (a harness). · **Verification:** T1 (6.58.0) and
+T3 (5.130.6), a real deploy compared against a real canvas (R-82). · **Blocks:** E9 Story 9.1 cannot open until
+this is done.
+
+### Story 7.35: The E4/E7 joint compile gate — E7's closing story
 
 As both E4 and E7,
 I want one gate neither epic can pass alone,
@@ -3321,6 +3431,14 @@ button, link column, social row, inline newsletter form.
 > [Free] designs plus two Pro.** Every story in every category therefore carries four designs, except a final
 > story taking the remainder. The Free pair ships in a category's first story, which is what makes a category
 > usable by a Free account the moment its first story lands.
+>
+> **One imbalance, named rather than smoothed over** *(step-6 stress test, finding F4)*. **A category's first
+> story does strictly more than the others** — the shared content model and the stylesheet *plus* four designs,
+> against four designs alone. It is the one story in each run most likely to overrun a single session, and R-85
+> puts the model and the stylesheet there deliberately, so splitting it would contradict the ruling. **A1 is
+> the calibration point:** the very first story of the very first category is where this is measured. If
+> Story 9.1 overruns, resize the *later* stories of each run rather than the first, and say so on the board —
+> do not discover it silently thirty categories in.
 
 ### A1 · Headers — 15 designs, 4 stories
 
@@ -7788,7 +7906,7 @@ Run at step 4 and checked mechanically rather than by eye, because a coverage li
 | **Epic ownership** | 132 assigned, matching §8 exactly, with the three documented splits (FR-P1 per email, FR-Q6 format vs surface, FR-G1/G4/G5/G6 shell block vs gated pipeline) and no others. |
 | **UX-DR coverage** | **22 of 22.** UX-DR2–UX-DR22 are cited by name in the stories that implement them. **UX-DR1 is discharged structurally rather than by citation:** every one of the **231 owner-tested stories names the frame it is built from**, verified by script over the metadata blocks — which is what R-74 asks for. |
 | **Owner-test verdict** | **255 of 255** story metadata blocks carry an explicit `Owner test:` verdict, so no story is ambiguous about whether R-80 applies to it. |
-| **Story sizing** | **263 stories.** Every story is scoped to one build session. The library runs are the R-85 shape at the owner's ruled sizing — four designs per story, the first story's four being the two [Free] plus two Pro. |
+| **Story sizing** | **266 stories.** Every story is scoped to one build session. The library runs are the R-85 shape at the owner's ruled sizing — four designs per story, the first story's four being the two [Free] plus two Pro. |
 | **Starter template** | The architecture specifies **none** — the repo is greenfield and its structure is the spine's Structural Seed, which is Story 1.1. There is therefore no "set up from starter template" story to write, and its absence is deliberate rather than an omission. |
 
 **Four of the skill's own checks fail against §8, and each is overruled by it rather than worked around.**
