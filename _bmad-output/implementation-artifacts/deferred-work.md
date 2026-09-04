@@ -3,8 +3,15 @@
 Findings that are real, are not this story's to fix, and would otherwise be lost. The story board
 reads this file. An entry is closed by the story that fixes it, never by deleting the row.
 
+Besides the fields the format defines, every entry carries **`plain:` — one sentence a non-engineer
+reads**, because the owner sees this ledger on the story board and `reason:` is written for a
+developer. Write it in the owner's language: what is not right, and what it costs him. The board
+falls back to `reason:` when an entry has no `plain:`, which reads as jargon and is the bug, not the
+fallback.
+
 ### DW-1: `packages/library` declares no entry point, so the dependency arrow cannot resolve
 
+plain: The shared parts store has no way in yet, so no other part of the code can take anything out of it; the first story that needs to will build the door.
 status: open
 severity: medium
 origin: Story 1.1 review (2026-09-04)
@@ -18,6 +25,7 @@ reason: The three core packages each declare `"@inflozo/library": "workspace:*"`
 
 ### DW-2: `apps/web` declares no dependency on the core packages, so `transpilePackages` is inert
 
+plain: The website has not been told it is allowed to use the four building blocks, so a setting that connects them currently does nothing.
 status: open
 severity: low
 origin: Story 1.1 review (2026-09-04)
@@ -29,6 +37,7 @@ reason: `next.config.ts` lists the three core packages in `transpilePackages`, b
 
 ### DW-3: `@types/node` is two majors ahead of the pinned runtime
 
+plain: The reference notes describing our engine are two versions ahead of the engine we actually run, so code could be written against something that is not there.
 status: open
 severity: low
 origin: Story 1.1 review (2026-09-04)
@@ -40,6 +49,7 @@ reason: `@types/node@26.4.1` types Node 26 while the stack pins Node 24.x, so co
 
 ### DW-4: `.toString()` is banned on every receiver, not only on a Date
 
+plain: One safety rule is stricter than intended and also blocks a few harmless things; nothing is broken, and it gets narrowed the first time it blocks real work.
 status: open
 severity: low
 origin: Story 1.1 review (2026-09-04)
@@ -52,6 +62,7 @@ reason: AD-1 bans `.toString()` *on a Date*; the selector cannot see the receive
 
 ### DW-5: the GitHub token expires 2027-09-05 and nothing carries the date
 
+plain: The GitHub key that lets me read whether the safety check passed stops working on 5 September 2027, and nothing yet reminds anyone.
 status: open
 severity: low
 origin: Story 1.1 review (2026-09-04)
@@ -63,6 +74,7 @@ reason: The date lives in a comment and in this story's Verification. When it la
 
 ### DW-6: `node --test` warns MODULE_TYPELESS_PACKAGE_JSON on every `apps/web` run
 
+plain: Running the tests prints four harmless warning lines every time; nothing fails, it is only noise.
 status: open
 severity: low
 origin: Story 1.1 review (2026-09-04)

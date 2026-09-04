@@ -403,9 +403,11 @@ def load_deferred(text):
              for k, v in re.findall(r'^(\w+):[ \t]*(.*(?:\n[ \t]+\S.*)*)$', blk, re.M)}
         out.append({'id': m.group(1), 'title': m.group(2), 'status': f.get('status', 'open'),
                     'severity': f.get('severity', ''), 'reason': f.get('reason', ''),
+                    'plain': f.get('plain', ''),      # the owner's sentence; reason is the developer's
                     'origin': f.get('origin', ''), 'location': f.get('location', '')})
     if not out:
-        out = [{'id': '', 'title': t, 'status': 'open', 'severity': '', 'reason': '', 'origin': '', 'location': ''}
+        out = [{'id': '', 'title': t, 'status': 'open', 'severity': '', 'reason': '', 'plain': '',
+                'origin': '', 'location': ''}
                for t in re.findall(r'^[-*] (.*)$', text, re.M)]
     return out
 
@@ -769,10 +771,10 @@ def next_action(ctx, stories):
 
 CSS = """
 :root{--good:var(--build);--good-s:var(--build-s);--warn:var(--patch);--warn-s:var(--patch-s);
---crit:#b42318;--crit-s:#fdeceb;--wait:#8b8b93;--rail:224px;--on:#fff;
+--crit:#b42318;--crit-s:#fdeceb;--wait:#8b8b93;--rail:238px;--on:#fff;
 --l-backlog:#8b8b93;--l-backlog-s:#f2f1ef;--l-ready:#0f8a86;--l-ready-s:#e0f4f3;
 --l-progress:#1f6feb;--l-progress-s:#e9f0fe;--l-review:#7847cc;--l-review-s:#f1eafc;
---l-test:#96650a;--l-test-s:#fff4d9;--l-done:#12784a;--l-done-s:#e2f5ec}
+--l-test:#96650a;--l-test-s:#fff4d9;--l-done:#12784a;--l-done-s:#e2f5ec;}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--crit:#f08b80;--crit-s:#3a1a17;--wait:#75757e;--on:#15151a;
 --l-backlog:#75757e;--l-backlog-s:#26262c;--l-ready:#4fc9c2;--l-ready-s:#102c2b;
 --l-progress:#6ea8fe;--l-progress-s:#1b2a45;--l-review:#b494f5;--l-review-s:#281c40;
@@ -795,17 +797,23 @@ background:var(--card);flex-wrap:wrap}
 .top h1{font-size:1.1rem;margin:0}
 .kick{color:var(--accent);font-weight:650;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;display:block}
 .demo{background:var(--crit);color:var(--on);font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:99px;letter-spacing:.08em}
-.stats{display:flex;align-items:center;gap:9px 20px;flex-wrap:wrap;padding:7px 18px;
+/* Three readings, and the eye has to see they are three: a rule between the groups, a total beside
+   each label, and a dot on every pill that is the colour of the column it counts. Same height. */
+.stats{display:flex;align-items:center;gap:4px 14px;flex-wrap:wrap;padding:7px 18px;
 border-bottom:1px solid var(--line);background:var(--card)}
 .sgrp{display:flex;align-items:center;gap:6px;min-width:0}
-.sgrp .lbl{text-transform:uppercase;letter-spacing:.07em;font-size:.63rem;font-weight:700;color:var(--muted)}
+.sgrp+.sgrp{align-self:stretch;border-left:1px solid var(--line);padding-left:14px}
+.sgrp .lbl{text-transform:uppercase;letter-spacing:.07em;font-size:.63rem;font-weight:700;color:var(--muted);
+white-space:nowrap}
+.sgrp .lbl b{color:var(--ink);font-size:.78rem;letter-spacing:0;margin-left:3px;font-variant-numeric:tabular-nums}
 .pct{font-size:1.2rem;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
-.stats .prog{width:150px;height:7px;flex:none}
+.stats .prog{width:130px;height:7px;flex:none}
 .stats .prog i{background:var(--l-done)}
 .sn{font-size:.76rem;color:var(--muted);white-space:nowrap}
-.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 7px;border-radius:99px;
 background:var(--cs);color:var(--c);font-size:.73rem;font-weight:700;white-space:nowrap;
 font-variant-numeric:tabular-nums}
+.pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
 .pill.zero{background:var(--code);color:var(--muted);opacity:.6;font-weight:600}
 .tools{margin-left:auto;display:flex;gap:7px;align-items:center}
 #q{font:inherit;font-size:.84rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;
@@ -825,16 +833,28 @@ border-radius:11px;box-shadow:var(--sh)}
 .pd .brief{margin:10px 0 0}
 .pd .brief .md{font-size:.9rem}
 .board{flex:1;min-height:0;display:grid;grid-template-columns:var(--rail) 1fr;gap:12px;padding:10px 18px 10px}
-.rail{overflow:auto;display:flex;flex-direction:column;gap:4px;padding-right:3px;min-height:0}
-.ep{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
-border-radius:8px;padding:4px 8px;cursor:pointer;color:var(--ink);flex:none;display:flex;gap:6px;align-items:center;
-position:relative;overflow:hidden;line-height:1.3}
-.ep:hover{border-color:var(--accent)}.ep.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
-.ep.done{border-left-color:var(--good)}.ep.progress{border-left-color:var(--accent)}
-.ep .en{color:var(--muted);font-weight:700;font-size:.66rem;flex:none;min-width:22px}
-.ep .et{flex:1;min-width:0;font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ep .em{color:var(--muted);font-size:.66rem;flex:none;white-space:nowrap}
-.ep .epbar{position:absolute;left:0;bottom:0;height:2px;background:var(--good)}
+.rail{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px;min-height:0}
+/* An epic card carries its own lane colour as a wash and a bar, the way a story card does, so its
+   state reads before its name does. The name wraps — an epic truncated to "Section Runtime Platf…"
+   is a card that failed at the one job it has. */
+.ep{--c:var(--l-backlog);--cs:var(--l-backlog-s);font:inherit;text-align:left;cursor:pointer;color:var(--ink);
+flex:none;display:flex;flex-direction:column;gap:7px;line-height:1.3;padding:9px 11px;border-radius:11px;
+border:1px solid var(--line);border-left:4px solid var(--c);background:var(--card);
+background-image:linear-gradient(105deg,var(--cs),transparent 78%);transition:box-shadow .12s,border-color .12s}
+.ep.progress{--c:var(--l-progress);--cs:var(--l-progress-s)}
+.ep.done{--c:var(--l-done);--cs:var(--l-done-s)}
+.ep:hover{border-color:var(--c);box-shadow:var(--sh)}
+.ep.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
+.eh{display:flex;gap:7px;align-items:baseline;min-width:0}
+.ep .en{color:var(--c);font-weight:800;font-size:.68rem;flex:none;min-width:24px;letter-spacing:.03em}
+.ep .et{flex:1;min-width:0;font-size:.81rem;font-weight:650;overflow-wrap:anywhere}
+.ef{display:flex;gap:9px;align-items:center}
+.ep .track{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.ep .track i{display:block;height:100%;background:var(--c);border-radius:99px}
+.ep .em{color:var(--muted);font-size:.7rem;flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+/* "All epics" is a control, not an epic: no bar, one line. */
+.ep.all{flex-direction:row;align-items:baseline;gap:8px;background-image:none}
+.ep.all .et{flex:none;font-weight:700}.ep.all .em{margin-left:auto}
 .lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;min-height:0}
 .lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;
 border:1px solid var(--line);border-top:3px solid var(--c);overflow:hidden}
@@ -945,6 +965,7 @@ padding:10px 14px;transition:border-color .12s,box-shadow .12s}
 .plh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
 .plh b{font-size:.9rem;font-weight:700;margin-right:auto}.plh b a{text-decoration:none}
 .plh .ph{margin-left:0}
+.pl .lede{margin:0 0 5px;font-size:.92rem;line-height:1.5;color:var(--ink)}
 .pl .why{margin:0;font-size:.84rem;line-height:1.5;color:var(--muted);max-width:none}
 .pl .where{display:block;margin-top:5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
 font-size:.74rem;color:var(--muted);word-break:break-word}
@@ -1075,14 +1096,14 @@ def render(ctx):
     pct = int(round(100 * done_n / tot_n)) if tot_n else 0
     def pill(cls, n, label):
         return f'<span class="pill {cls}{" zero" if not n else ""}">{n} {e(label)}</span>'
+    # The total belongs to the label, so a pill only ever carries one number and never "of N".
     stats = (f'<div class="sgrp"><span class="pct">{pct}%</span>'
              f'<div class="prog" role="img" aria-label="{pct}% of stories done"><i style="width:{pct}%"></i></div>'
-             f'<span class="sn">{done_n} of {tot_n} stories done</span></div>'
-             f'<div class="sgrp"><span class="lbl">Epics</span>'
+             f'<span class="sn">{done_n} of {tot_n} stories accepted</span></div>'
+             f'<div class="sgrp"><span class="lbl">Epics<b>{len(epics)}</b></span>'
              + pill('done', ep_n['done'], 'done') + pill('progress', ep_n['progress'], 'in progress')
-             + pill('', ep_n['backlog'], 'not started')
-             + f'<span class="sn">of {len(epics)}</span></div>'
-             f'<div class="sgrp"><span class="lbl">Stories</span>'
+             + pill('', ep_n['backlog'], 'not started') + '</div>'
+             f'<div class="sgrp"><span class="lbl">Stories<b>{tot_n}</b></span>'
              + ''.join(pill(k, lane_n[k], n.lower()) for k, n in LANES) + '</div>')
 
     # The bar carries the one thing to do and the button that does it; everything that explains it —
@@ -1110,11 +1131,15 @@ def render(ctx):
     for ep in epics:
         n_done = sum(1 for s in ep['stories'] if s['lane'] == 'done')
         tot = len(ep['stories'])
-        pct = int(100 * n_done / tot) if tot else 0
-        meta = f'{n_done}/{tot}' if tot else '—'
+        # E0 is done by execution and owns no story: a full bar and the word is the honest reading.
+        pct = int(100 * n_done / tot) if tot else (100 if ep['status'] == 'done' else 0)
+        meta = f'{n_done}/{tot}' if tot else ('done' if ep['status'] == 'done' else 'no stories')
         rail.append(f'<button class="ep {ep["status"]}" data-e="{ep["n"]}" title="{e(ep["goal"])}">'
-                    f'<span class="en">E{ep["n"]}</span><span class="et">{e(ep["title"])}</span>'
-                    f'<span class="em" title="stories done">{e(meta)}</span><i class="epbar" style="width:{pct}%"></i></button>')
+                    f'<span class="eh"><span class="en">E{ep["n"]}</span>'
+                    f'<span class="et">{e(ep["title"])}</span></span>'
+                    f'<span class="ef"><span class="track" role="img" aria-label="{pct}% done">'
+                    f'<i style="width:{pct}%"></i></span>'
+                    f'<span class="em" title="stories done">{e(meta)}</span></span></button>')
 
     # ── the lanes ──
     lanes = []
@@ -1182,6 +1207,8 @@ def render(ctx):
                         f'<b>{e(d["id"] + " · " if d["id"] else "")}{md(d["title"])}</b>'
                         + (f'<span class="st {tone} solid">{e(d["severity"])}</span>' if d['severity'] else '')
                         + f'<span class="st {"s-good" if closed else "s-mute"}">{e(d["status"] or "open")}</span></div>'
+                        # The owner reads the first line; `reason` is the developer's note under it.
+                        + (f'<p class="lede">{md(d["plain"])}</p>' if d['plain'] else '')
                         + (f'<p class="why">{md(d["reason"])}</p>' if d['reason'] else '')
                         + (f'<span class="where">{e(d["location"])}</span>' if d['location'] else '')
                         + (f'<span class="from">Raised by {e(d["origin"])}</span>' if d['origin'] else '')
@@ -1693,6 +1720,7 @@ reason: A retry count belongs in configuration once a second caller exists; toda
 status: open
 
 ### DW-2: The sign-in page has no rate limit of its own
+plain: Someone could hammer the sign-in page with requests; the email service already stops the emails, so nothing is at risk today.
 origin: code review of spec-1-3-magic-link-sign-in.md, 2026-09-10
 location: app/sign-in/page.tsx
 severity: medium
@@ -1738,6 +1766,8 @@ def demo():
     # this pair catches, because both classes are one class and only source order separates them.
     assert '<tr class="p-Deploy">' in out and '<tr class="s-mute">' in out, 'activity rows carry no tone'
     assert '<span class="st s-crit solid">not answerable yet' in out, 'a shapeless question is not flagged red'
+    assert 'class="lede">Someone could hammer' in out, 'a deferred entry ignores its plain: line'
+    assert 'A retry count belongs in configuration' in out, 'an entry with no plain: lost its reason'
     assert CSS.index('.st{') < CSS.index('.s-crit{'), 'a tone must be declared after the chip it overrides'
     q13, q32 = flat['1.3']['spec']['questions'], flat['3.2']['spec']['questions']
     assert q13[0]['options'] and q13[0]['recommended'], 'the shaped question must pass R-83'
