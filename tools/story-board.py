@@ -921,7 +921,9 @@ footer{padding:6px 18px;margin:0;border-top:1px solid var(--line);font-size:.72r
 JS = r"""
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const drawer=$('#drawer'),dbody=$('#dbody'),store=$('#details'),scrim=$('#scrim'),q=$('#q');
+const EK='inflozo-story-board-epic';
 let openSec=null,epicFilter='',lastFocus=null;
+try{epicFilter=localStorage.getItem(EK)||'';}catch(e){}
 function copy(txt){                       // file:// has no clipboard API in some browsers
   if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(txt);
   const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);
@@ -963,7 +965,8 @@ document.addEventListener('click',e=>{
   const card=e.target.closest('.card');
   if(card&&!e.target.closest('a,button,input')){location.hash='#'+card.dataset.key;return;}
   const ep=e.target.closest('.ep');
-  if(ep){epicFilter=(epicFilter===ep.dataset.e)?'':ep.dataset.e;apply();}});
+  if(ep){epicFilter=(epicFilter===ep.dataset.e)?'':ep.dataset.e;
+    try{localStorage.setItem(EK,epicFilter);}catch(x){}apply();}});
 function apply(){
   const s=q.value.trim().toLowerCase();
   const needle=/^\d+\.\d+[a-z]?$/.test(s)?' '+s+' ':s;   // a story key matches whole: 1.1 is not 1.10
@@ -975,6 +978,9 @@ q.addEventListener('input',apply);
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!drawer.hidden)closeDrawer();else if(document.activeElement===q){q.value='';apply();q.blur();}}
   else if(e.key==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();q.focus();q.select();}});
+// a remembered epic that no longer exists would hide every card
+if(epicFilter&&!$('.ep[data-e="'+epicFilter+'"]'))epicFilter='';
+apply();
 window.addEventListener('hashchange',route);route();
 """
 

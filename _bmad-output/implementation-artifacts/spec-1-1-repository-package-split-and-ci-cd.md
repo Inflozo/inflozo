@@ -337,6 +337,41 @@ longer 308'd to `/ly`) · `inflozo.com/app/signin?next=%2Fdashboard` → **308**
 `MEASUREMENTS.md` §18's CSP probe is no longer reachable in place — story 1.5 must re-execute it
 rather than cite it. Nothing touched the alias; it moved. That is question 6 below.
 
+### Deploy phase — 2026-09-04, confirmed on the one pre-launch stack (PRD §4, AD-26)
+
+Nothing was deployed by hand: question 1 was ruled option 1, so the push of the Review phase's last
+commit built itself. This phase read the result. Keys were read only into a command's environment and
+are recorded by variable name — `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `GITHUB_TOKEN` — never by value.
+
+**Deployment:** `dpl_7iWXMixjX1TVvbRYRDVfMKcEUHR4` · `inflozo-o3l32841z-umangkagathara.vercel.app` ·
+`READY` · `target: production` · `meta.githubCommitSha` `aa65c107`, which equals `HEAD` and
+`origin/main`. Read with `GET /v6/deployments?projectId=prj_ptauaY2o7FQckRDk31b7hdl06FSb&target=production`.
+The four production deployments before it — `7861f2af`, `03521443`, `02c44887`, `66a86ca4` — are all
+READY too, so no push on this story left a red build behind.
+
+**The production domains, re-read live against that deployment** (never a `vercel.app` URL in the
+owner's test):
+
+| Request | Returned |
+|---|---|
+| `GET https://inflozo.com/` | **200**, body `Inflozo` |
+| `GET https://app.inflozo.com/` | **200**, body `Inflozo · app`, no redirect |
+| `GET https://www.inflozo.com/` | **308** → `https://inflozo.com/` |
+| `GET https://inflozo.com/app/x` | **308** → `https://app.inflozo.com/x` |
+| `GET https://inflozo.com/app/signin?next=%2Fdashboard` | **308** → `https://app.inflozo.com/signin?next=%2Fdashboard` — query intact |
+| `GET https://app.inflozo.com/app/x` | **308** → `https://app.inflozo.com/x` |
+| `GET https://inflozo.com/apply` | **404** — a missing marketing page, not hijacked to `/ly` |
+
+The last three are the review's routing fixes, still closed on the live site at this deployment.
+
+**GitHub Actions at `HEAD`** (`GET /repos/Inflozo/inflozo/actions/runs`): `aa65c107` CI `completed
+success`, and the two commits before it likewise.
+
+No schema and no migration belong to this story, so `RLS-TEST.sql` is not in scope here; story 1.2
+owns it. No tooling change to deploy.
+
+**Real services hit (R-82):** `api.vercel.com`, `api.github.com`, and the three production domains.
+
 ## Owner's manual test
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
