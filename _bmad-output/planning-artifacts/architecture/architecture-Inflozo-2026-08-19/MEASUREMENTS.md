@@ -1773,6 +1773,17 @@ E12 as its owner, and the schema still applies clean: **67 assertions, 0 failure
 **The consequence of owning it is stated in the AD rather than discovered later:** a silent failure
 of that job now means nobody is warned at all, so it belongs on the NFR-9 alerting path.
 
+> **Amended 2026-09-04 — ruling R-89, the monthly leg is withdrawn.** Asked at step 6 whether the
+> reminder should cover monthly subscriptions as well as annual, the owner ruled **"Only annually"**.
+> The **30-day annual** reminder above stands unchanged; the **7-day monthly** one is not built.
+> The reason is FR-P2: twelve reminders a year to a monthly subscriber is a nudge campaign whatever
+> it is called, and the statutory basis — California's ARL, the EU/UK rules — attaches to the annual
+> term, not to a monthly card charge people already expect. **Nothing else in §23c moves:**
+> `renewal_reminders`, its `(user_id, period_end)` primary key, AD-33's seventh cron and its E12
+> ownership are all unchanged, and the decision to leave Dodo's ~2-day reminder on is unchanged too.
+> *(The line above is left as written, per the standing rule that a dated decision is not rewritten
+> to match a later one.)*
+
 ### 23d. The harness is now pure SQL, and runs on three targets
 `RLS-TEST.sql` opened with `\set ON_ERROR_STOP on` and `\pset pager off`. Those are **psql client
 directives, not SQL** — the Supabase dashboard SQL editor sends raw SQL to the server, which

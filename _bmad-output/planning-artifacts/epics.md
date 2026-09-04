@@ -7258,32 +7258,33 @@ So that a $150 renewal is never a surprise — and so the product meets its stat
 
 **Acceptance Criteria:**
 
-**Given** the owner's ruling of 2026-09-04 — **Dodo does not send it, so Inflozo must** — which resolves FR-P1's
-condition and makes the reminder **email #6, unconditionally**
+**Given** that **Dodo's own *Upcoming Renewal Reminder* is ~2 days ahead and off by default**
+(`MEASUREMENTS.md` §23c, `SCHEMA.sql`), so **the statutory timing is Inflozo's to own** — Round 4's decision of
+2026-08-20, reaffirmed as **R-88** on 2026-09-04
 **When** an annual subscription approaches its auto-renewal date
-**Then** Inflozo **sends the reminder automatically** via Resend, ahead of the charge, naming the renewal date and
-the amount that will be charged
-**And** it is **automated, never a manual task**: it is a scheduled job with **one owning epic and one home**
-(AD-33), driven off the subscription's own renewal date rather than off a calendar someone maintains
-**And** it is **idempotent** — a subscription is reminded once per renewal period, and a retry, a webhook replay
-or a re-run of the job never sends a second copy
-**And** it is **carved out of FR-P2's no-nudge rule** as one of exactly two non-discretionary carve-outs, the
-other being the Ghost-compatibility notice that names affected shipped designs
-**And** it is sent for **annual subscriptions**, whose advance notice is statutory in several target markets —
-California's ARL and EU/UK consumer rules among them
-**And** **no other subscription reminder is sent**: a monthly subscriber is not emailed twelve times a year,
-because that is precisely the nudge pattern FR-P2 forbids and no statute asks for it. *(The scope of "automated
-reminders for subscriptions" is question 1 under* Questions for the owner *— it is written here as annual-only,
-which is the reading the statutory basis and the no-nudge rule both support.)*
-**And** a cancelled subscription — auto-renew already stopped — **is not reminded**, because there is no charge
-coming
+**Then** Inflozo sends its own reminder **30 days ahead**, via Resend, naming the renewal date and the amount
+**And** **Dodo's ~2-day reminder is left on** — the two fire at different moments and complement rather than
+duplicate: ours is the heads-up, Dodo's is the final nudge, and **enabling Dodo's is a launch-checklist item**
+**And** it is **automated, never a manual task**: AD-33's **seventh cron**, owned by this epic, driven off the
+subscription's own renewal date rather than off a calendar someone maintains
+**And** it is **idempotent as a database fact rather than as something the cron must remember**:
+`renewal_reminders`' primary key `(user_id, period_end)` **is** the never-send-twice rule, and because it is
+keyed on the renewal being announced, **a renewal date that moves earns a fresh reminder**
+**And** **a silent failure of that job means nobody is warned at all, so it sits on the NFR-9 alerting path**
+**And** it is sent for **annual renewals only** *(ruling **R-89**, 2026-09-04)* — **which withdraws the 7-day
+monthly leg of the 2026-08-20 decision** — because twelve reminders a year to a monthly subscriber is precisely
+the nudge pattern FR-P2 forbids and the statutory basis attaches to the annual term
+**And** **no DDL changes are needed for that narrowing**: the table and its key are unchanged and monthly rows
+are simply never written
+**And** a subscription whose auto-renew has already been stopped **is not reminded**, there being no charge coming
+**And** it is one of exactly **two non-discretionary carve-outs** from FR-P2, the other being the
+Ghost-compatibility notice
 **And** **"Theme updates available" is surfaced in-app only, never by email**, and the routine per-release
-confirmation that the library was verified **stays in-app**
-**And** the send is recorded, so a customer support question about "did we tell them" has a fact to answer with.
+confirmation that the library was verified **stays in-app**.
 
-**FRs:** FR-P1 email (6, now unconditional), FR-P2. · **Frame:** none — a transactional email is not a drawn
-surface. · **Owner test:** yes. · **Verification:** a real Resend send against a real Dodo annual subscription
-approaching renewal (R-82).
+**FRs:** FR-P1 email (6), FR-P2. · **Frame:** none — a transactional email is not a drawn surface. · **Owner
+test:** yes. · **Verification:** a real Resend send against a real Dodo annual subscription approaching renewal
+(R-82).
 
 *Exit:* live-mode $15 transaction; downgrade rules verified; entitlement transitions verified against real Dodo
 events.
@@ -7845,42 +7846,37 @@ the moment its first story lands.
 subscription's own renewal date, idempotent so a webhook replay never sends a second copy, and carved out of
 FR-P2's no-nudge rule as one of exactly two carve-outs.
 
-### 3. Should the reminder cover monthly subscriptions too, or annual only? — OPEN
+### 3. Should the reminder cover monthly subscriptions too, or annual only? — ANSWERED
 
-**Why this is being asked.** Your ruling said "reminders for subscriptions", which could mean annual only or
-every subscription. It matters because the two answers produce very different amounts of email.
+> **Ruled: "Only annually"** *(owner, 2026-09-04 — recorded as **R-89**)*
 
-**An example.** A monthly customer paying $15 renews twelve times a year. Reminding them each time is **twelve
-emails a year to every monthly customer**. The annual customer gets **one**.
+**Applied,** and it turned out to matter more than the question suggested. **This reverses the monthly leg of a
+decision you took on 2026-08-20**, which was *30 days (annual) / 7 days (monthly)*. The 30-day annual reminder
+stands; the 7-day monthly one is not built. No database change was needed — `renewal_reminders` and its key are
+unchanged, and monthly rows are simply never written. **Say the word if you want the monthly leg back.**
 
-1. **(RECOMMENDED) Annual only — one reminder per year, before the $150 charge.** This is what the law actually
-   asks for: California's ARL and the EU/UK rules attach to long-term auto-renewals, not to a monthly card
-   charge people already expect. It is also the only reading that does not collide with FR-P2, which forbids
-   nudge emails — twelve reminders a year is a nudge campaign whatever it is called. **Story 12.8 is written this
-   way.**
-2. **Annual and monthly — a reminder before every renewal.** Maximum transparency, and defensible if you want it.
-   Cost: twelve emails a year per monthly customer, a real unsubscribe and spam-complaint risk on a transactional
-   channel, and an explicit amendment to FR-P2, which currently permits exactly two carve-outs.
-3. **Annual, plus monthly only on the first renewal.** A middle option: a monthly customer is reminded once, the
-   first time they are charged again, and never after. More email than (1), far less than (2).
+### What the propagation actually found — and one correction to the answer above
 
-*Reply, for example:* `Ruled: annual only` — and if that is what you meant all along, Story 12.8 already says it
-and nothing changes.
+**Ruling 2 was landed in the PRD, and checking the repository first changed what got written.** Grepping for the
+old claim, as standing rule 7 requires, turned up two things this run had not been told:
 
-### And one propagation this run did not make, deliberately
+1. **Dodo *does* have an "Upcoming Renewal Reminder"** — but it is **~2 days ahead and off by default**
+   (`MEASUREMENTS.md` §23c, `SCHEMA.sql`). So "Dodo does not send it" is right about **what matters** — the
+   timing is far short of a statutory annual notice, and it is off unless someone turns it on — but it is **not**
+   literally true, and writing it into the PRD as a flat fact would have been exactly the external-platform claim
+   standing rule 1 exists to stop. **The PRD now states the timing, not a denial**, and the outcome is unchanged:
+   Inflozo sends its own at 30 days and leaves Dodo's on, because the two fire at different moments.
+2. **You had already decided this on 2026-08-20.** Round 4 settled it, `renewal_reminders` is already in
+   `SCHEMA.sql` with `(user_id, period_end)` as its never-send-twice rule, AD-33 already carries the cron, and
+   `ARCHITECTURE-SPINE.md` already said **six** transactional emails. **Only the PRD had not been told** — which
+   is precisely the R-79 failure class, and it is now closed.
 
-**Ruling 2 contradicts the PRD's own text and the PRD has not been changed.** FR-P1 still calls the sixth email
-conditional, FR-P2 still describes the carve-out as conditional, and §7.6 still carries "verify whether Dodo
-sends it" as an open item. This document records the ruling; the PRD does not yet.
-
-That is exactly the failure class **R-79** was written about — a decision the owner made that never reached the
-document a story is built from. **This run did not edit the PRD on its own**, because amending normative FR text
-is a numbered-ruling act with its own propagation ledger, and a half-propagation is worse than none.
-
-**Recommended:** let me land it as a numbered ruling — FR-P1, FR-P2, §7.6's item, and the ledger row in
-`reconcile-designs-decisions.md` — in one pass, then re-run the gate. Say the word and it is one commit.
+**Landed as R-88 and R-89:** `prd.md` FR-P1, FR-P2, §7.6 item 6 and §8's E12 line · `SCHEMA.sql`'s comment ·
+`MEASUREMENTS.md` §23c, **annotated rather than rewritten**, because a dated decision is not edited to match a
+later one · the ruling ledger in `reconcile-designs-decisions.md` §A16 · and Story 12.8 above.
 
 ---
+
 
 *End of the epic breakdown. Generated at step 6 from PRD §8, `ARCHITECTURE-SPINE.md`,
 `reconcile-designs-decisions.md` §A10/A13/A14/B, and the `ux-Inflozo-2026-09-03` spine pair, against the design

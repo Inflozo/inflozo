@@ -550,8 +550,13 @@ create table public.subscriptions (
 --
 -- Dodo DOES send an "Upcoming Renewal Reminder", ~2 days ahead, off by default. The owner's
 -- decision is to send our own AND to leave Dodo's on — and the two do not collide, because they
--- fire at different moments: ours is the heads-up (30 days before an annual renewal, 7 before a
--- monthly one), Dodo's ~2-day note is the final nudge.
+-- fire at different moments: ours is the heads-up (30 days before an annual renewal), Dodo's
+-- ~2-day note is the final nudge.
+--
+-- ANNUAL ONLY, as of ruling R-89 (owner, 2026-09-04, at step 6). The 2026-08-20 decision also sent
+-- one 7 days before a MONTHLY renewal; that leg is WITHDRAWN. Twelve reminders a year to a monthly
+-- subscriber is the nudge pattern FR-P2 forbids, and the statutory basis is the annual term. No DDL
+-- changes: the table and its key are unchanged, and monthly rows simply are not written.
 --
 -- Owning it is about CONTROL rather than redundancy. The compliance exposure is in the TIMING —
 -- ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes

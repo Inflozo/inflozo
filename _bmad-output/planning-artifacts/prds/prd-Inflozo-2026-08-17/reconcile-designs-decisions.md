@@ -1566,6 +1566,42 @@ process documents and generators that said "not drawn", "until A7 runs" or "prom
 (main session, above) · ✅ the prototypes lift the D frames (2026-09-04, both builds) · ✅ decision 1
 (R-86) and decision 2 (R-87), ruled 2026-09-04 · ✅ A9, both halves, and the export runbook after it (the owner ran it; landed and verified 2026-09-04).
 
+## A16 · Step 6 — two rulings on the renewal reminder, 2026-09-04
+
+Taken while step 6 expanded §8 into stories. Step 6 asked whether Dodo sends the annual renewal
+notice as merchant of record — §7.6 item 6's open half, and the one thing blocking a story.
+
+**R-88 — Inflozo sends its own renewal reminder; the condition on FR-P1's sixth email is closed.**
+The owner ruled *"It does not. We need to send automated reminders for subscriptions"*. **This
+reaffirms rather than creates:** Round 4 already decided it on 2026-08-20 and the schema already
+carries `renewal_reminders`. **And the fact base is more precise than the ruling's wording, which
+matters under standing rule 1** — Dodo *does* have an *Upcoming Renewal Reminder*, but it is **~2
+days ahead and off by default** (`MEASUREMENTS.md` §23c, `SCHEMA.sql`). The exposure is the
+**timing**, which Inflozo cannot set on Dodo's email: ~2 days is very likely short of the statutory
+window for an annual term, and Appendix F assumes a 60% yearly mix. So Inflozo sends its own at
+**30 days** and leaves Dodo's on — they fire at different moments and complement. FR-P1's count
+moves from five to six.
+- Targets: ✅ `prd.md` FR-P1, FR-P2, §7.6 item 6 and §8's E12 line · ✅ `epics.md` Story 12.8 ·
+  already correct and unchanged: `ARCHITECTURE-SPINE.md`'s `resend` row (already "six"), AD-33's
+  seventh cron, `SCHEMA.sql`'s `renewal_reminders`, `build-sequence.md`'s launch-checklist item to
+  enable Dodo's own reminder.
+
+**R-89 — the reminder is ANNUAL ONLY, and this withdraws the monthly leg of the 2026-08-20
+decision.** Asked whether "reminders for subscriptions" meant annual only or every subscription,
+the owner ruled **"Only annually"**. Round 4 had said **30 days (annual) / 7 days (monthly)**; the
+7-day monthly reminder is **not built**. Twelve reminders a year to a monthly subscriber is the
+nudge pattern FR-P2 forbids, and the statutory basis attaches to the annual term rather than to a
+monthly card charge people already expect. **No DDL changes** — `renewal_reminders` and its
+`(user_id, period_end)` key are unchanged; monthly rows are simply never written.
+- Targets: ✅ `prd.md` FR-P1 and FR-P2 · ✅ `SCHEMA.sql`'s comment on `renewal_reminders` ·
+  ✅ `MEASUREMENTS.md` §23c, **annotated rather than rewritten**, because a dated decision is not
+  edited to match a later one · ✅ `epics.md` Story 12.8.
+- **Flagged to the owner:** this reverses a decision he took on 2026-08-20. He ruled on 2026-09-04
+  with the trade-off in front of him, so it is treated as deliberate — but it is recorded as a
+  reversal rather than as a fresh decision, so restoring the monthly leg is one instruction.
+
+---
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
