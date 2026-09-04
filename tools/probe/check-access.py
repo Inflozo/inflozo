@@ -23,6 +23,13 @@ def env():
 
 
 def say(tag, label, detail=''):
+    # Standing rule 2: a result whose control did not pass is not a result. http()
+    # returns status 0 when the request never reached the server — DNS, timeout, TLS —
+    # so a verdict built on an HTTP 0 is a broken test and can never be an 'ok'. Guarded
+    # here, at the one funnel every check prints through, so a new check cannot forget it.
+    if tag == OK and re.search(r'\bHTTP 0\b', detail):
+        tag = BAD
+        detail += '  <- request never reached the server; this check did NOT run'
     print(f'[{tag}] {label:<46} {detail}')
 
 
@@ -81,8 +88,8 @@ def main():
             f'HTTP {st} {code} — ' + ('accepted (relation absent, as expected)' if st != 401 else 'KEY REJECTED'))
         # F3: is the storage schema reachable through PostgREST with a browser key?
         st2, b2 = http(f'{url}/rest/v1/buckets?select=id', {'apikey': pub})
-        say(OK, 'F3  storage schema via PostgREST (anon)',
-            f'HTTP {st2} — {"NOT exposed (good)" if st2 in (404,400,401,403) else "EXPOSED — investigate"}')
+        say(OK if st2 in (404, 400, 401, 403) else BAD, 'F3  storage schema via PostgREST (anon)',
+            f'HTTP {st2} — {"did NOT run — no response" if st2 == 0 else "NOT exposed (good)" if st2 in (404,400,401,403) else "EXPOSED — investigate"}')
 
     if url and sec:
         st, body = http(f'{url}/rest/v1/', {'apikey': sec})
@@ -90,8 +97,8 @@ def main():
         # documented new-key behaviour: a secret key must be refused from a browser UA
         st2, _ = http(f'{url}/rest/v1/', {'apikey': sec,
                       'User-Agent': 'Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/140 Safari/537.36'})  # deliberate
-        say(OK, 'secret key refused from a browser User-Agent',
-            f'HTTP {st2} — {"REFUSED as documented" if st2 == 401 else "ACCEPTED — the documented guard did not fire"}')
+        say(OK if st2 == 401 else BAD, 'secret key refused from a browser User-Agent',
+            f'HTTP {st2} — {"did NOT run — no response" if st2 == 0 else "REFUSED as documented" if st2 == 401 else "ACCEPTED — the documented guard did not fire"}')
 
     # ---------------------------------------------------------------- Vercel
     tok, team = e.get('VERCEL_TOKEN'), e.get('VERCEL_TEAM_ID')
