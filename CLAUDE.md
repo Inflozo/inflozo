@@ -127,7 +127,12 @@ other status change — commit and push to `main` with the one-line message
 `Story <epic>.<story> - <Phase> - <one line about the story>`, e.g. `Story 3.2 - Dev - connect wizard
 validates the three keys`. The rule, the phases and the real-infra rule below are bound inside the BMAD
 skills themselves through `docs/project-context.md` (loaded as persistent facts) and
-`_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` (the committed team layer). Claude must **never**, without the owner asking in that moment: force-push,
+`_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` (the committed team layer).
+**That binding is why BMAD is never updated** (owner, 2026-09-04, ruling **R-91**): the project finishes
+on **6.11.0**, the version in `_bmad/_config/manifest.yaml`. Never run `npx bmad-method install` and never
+propose an update — 6.12.0 ships `persistent_facts` empty and renames `{diff_output}` to `{diff_file}`,
+so the rulings stop reaching the skills and the reviewer receives an empty diff, both without an error and
+both invisible to the gate. Claude must **never**, without the owner asking in that moment: force-push,
 `reset --hard`, rebase, amend anything already pushed, delete a branch or tag, rewrite history, or
 delete files it did not create. Those rules are also encoded in `.claude/settings.json`, but a
 deny-list over shell strings is leaky by construction — treat the rule as the real control and the

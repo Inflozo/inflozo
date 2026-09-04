@@ -16,6 +16,7 @@ A visual site builder for Ghost CMS: users drag ready-made sections onto a canva
 - Never edit `_bmad-output/planning-artifacts/design/claude-design-export/` — it is Claude Design's export and the design authority (ruling R-74). A story with a surface names the frame it is built from and carries a "matches the frame" acceptance criterion.
 - Never edit a document marked `record` in `INDEX.md`; never hand-edit a generated file (`INDEX.md`, `BUILD-BOARD.html`, `STORY-BOARD.html`, `STEP-*-PROMPT.txt`, the `*-PROMPTS.html` pages, the two prototype folders' `.html`) — change the generator and regenerate.
 - A claim about Ghost, Supabase, Vercel or Dodo is a hypothesis until executed or read in its source. Cite `MEASUREMENTS.md` or execute against T1/T3; never assert. Counts are derived, never written down.
+- **Never update or reinstall BMAD; this project finishes on the version it has** (ruling R-91). It is **6.11.0**, installed 2026-08-17 — `_bmad/_config/manifest.yaml` is the record. Never run `npx bmad-method install`, and never propose an update: 6.12.0 ships `persistent_facts` empty, which is how this file reaches every skill (losing it unbinds R-80 to R-84 with no error), and renames `{diff_output}` to `{diff_file}`, which all three `_bmad/custom/*.toml` overrides use. Both fail silently and the gate cannot see either.
 
 ## Where things are
 

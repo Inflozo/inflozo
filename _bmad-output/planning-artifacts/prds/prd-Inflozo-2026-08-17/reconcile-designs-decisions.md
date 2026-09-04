@@ -1632,6 +1632,29 @@ there with external DNS.
   reference. Every other `inflozo-probe` in the repository is a Ghost theme filename or a probe
   User-Agent and has nothing to do with the Vercel project.
 
+**R-91 — the project finishes on the BMAD it has; never update it.** Asked whether to take BMAD
+**6.12.0**, released 2026-09-04, the owner ruled **no: the build stays on 6.11.0 until the project is
+complete.** The installed version is recorded in `_bmad/_config/manifest.yaml` (6.11.0, installed
+2026-08-17). **No session runs `npx bmad-method install`, and none proposes an update** — the version
+is settled for the duration, so the question is closed rather than deferred.
+- **Three of 6.12.0's breaking changes land on this repository, and two of them fail silently** — the
+  reason the ruling is recorded with its evidence rather than as a preference. (1) `persistent_facts`
+  ships empty in 6.12.0, and it is the mechanism by which `docs/project-context.md` reaches every
+  skill; losing it unbinds R-80 to R-84 from the loop with no error. (2) `{diff_output}` is renamed
+  `{diff_file}`, and the old name is used in all three team overrides — `_bmad/custom/bmad-build.toml`,
+  `bmad-build-auto.toml` and `bmad-code-review.toml`; an unresolved placeholder hands the real-infra
+  reviewer an empty diff. (3) Build in 6.12.0 decides its own ceremony and can finish a simple change
+  in one session, which the phase split in `_bmad/custom/bmad-build.toml` currently forbids by naming
+  6.11.0's steps. **The documentation gate cannot see any of this**: it checks that `_bmad/custom/`
+  has its catalogue rows, never that the placeholders inside them still resolve.
+- **What the ruling costs, stated so it is not rediscovered as a surprise.** 6.12.0 fixes review layers
+  that returned nothing silently and adds a logged verdict and evidence per finding — both of which
+  bear on R-82's real-infra review. The overrides in `_bmad/custom/` are what stand in for that, and a
+  review that reports zero findings is therefore treated as a result to check, not to trust.
+- Targets: ✅ `docs/project-context.md`, so every skill run inherits it · ✅ `CLAUDE.md`, so every
+  session inherits it before it reaches for the installer · `_bmad/_config/manifest.yaml` needs no
+  edit — it is the installer's own record and already names the version.
+
 ---
 
 ## B · Approved decisions superseded by this session
