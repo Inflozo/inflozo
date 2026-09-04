@@ -22,3 +22,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm build
+
+  # The database gate (AD-26). It keys on the exit code, not on the log: every assertion in
+  # supabase/tests/rls.sql aborts the run when it fails, so a red job is a real RLS hole.
+  # docker is preinstalled on the runner; the script brings its own postgres and psql.
+  rls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash supabase/tests/run-rls-gate.sh
