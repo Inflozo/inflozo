@@ -311,6 +311,18 @@ def test_steps(t):
     return None
 
 
+def answered(blk):
+    """True only when a ruling label carries a ruling. An empty `**Ruled:**` is a placeholder a
+    spec leaves for the owner, and reading it as an answer hides a live question from his inbox —
+    which is exactly what it did to two of Story 1.1's (owner, 2026-09-04)."""
+    for line in blk.splitlines():
+        m = re.match(r'\s*\**\s*(Answer|Answered|Ruled|Ruling|Decision)\b\**\s*:?\**\s*(.*)$',
+                     line, re.I)
+        if m and m.group(2).strip(' *:'):
+            return True
+    return False
+
+
 def question_blocks(text):
     """One block per question: a `###` heading or a 'QUESTION n' line starts one; else the whole section.
     R-83 says each carries numbered options and a (RECOMMENDED) mark — both are checked, not assumed."""
@@ -332,8 +344,7 @@ def question_blocks(text):
         out.append({'title': first, 'text': blk,
                     'options': bool(re.search(r'^\s*\d+[.)]\s+\S', blk, re.M)),
                     'recommended': '(RECOMMENDED)' in blk,
-                    'answered': bool(re.search(r'^\s*\**\s*(Answer|Answered|Ruled|Ruling|Decision)\b',
-                                               blk, re.M | re.I))})
+                    'answered': answered(blk)})
     return out
 
 
@@ -1631,6 +1642,8 @@ def demo():
     assert flat['3.1']['lane'] == 'progress' and flat['3.2']['lane'] == 'ready' and flat['3.3']['lane'] == 'backlog'
     # 4.1: blocked from the tracker and the trail; the question carries an Answer line
     assert flat['3.4']['blocked'] and flat['3.4']['spec']['questions'][0]['answered']
+    # an empty ruling label is a placeholder, never an answer — it used to hide the question
+    assert not answered('### Q\n\n**Ruled:**\n') and answered('### Q\n\n**Ruled:** option 1\n')
     # F9: past Dev with no real service named → the amber tag; a real service named → none
     assert flat['1.2']['unverified'] and not flat['1.1']['unverified'] and not flat['1.5']['unverified']
     # 2.1: the library epic gates its stories on the one before

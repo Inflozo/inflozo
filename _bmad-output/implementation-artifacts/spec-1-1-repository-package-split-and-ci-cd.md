@@ -443,7 +443,13 @@ anyone noticing.
    stops a building block reaching the host machine stops being enforced, and that rule is the main
    thing this story built.
 
-**Ruled:**
+*Asked back by the owner 2026-09-04: which version does the project need, and why is an older one
+in use? Answer: the project needs and uses **7.0.2** for everything it builds and ships — all four
+packages and the app compile with it and nothing about that changes. The older 6.0.3 is used by
+**one tool only**, `typescript-eslint`, which reads the code to enforce the AD-1 boundary rule and
+refuses to start against 7.0.2; its own error names the remedy and its issue 10940 tracks support
+for TypeScript 7.1. It compiles nothing and ships nothing. This question is only about whether the
+architecture's version table should say so.*
 
 ### 6. A leftover test address now shows the real site. Leave it, or take it down?
 
@@ -461,5 +467,7 @@ measurement that story 1.5 was going to build on used to live at that address an
    `app.inflozo.com` are unaffected. Choose this if you would rather nothing but your two real
    addresses ever answers.
 
-**Ruled:**
+**Ruled:** "Leave it" *(owner, 2026-09-04)* — **option 1**. The alias stays attached and keeps
+serving production. Story 1.5 must **re-execute** `MEASUREMENTS.md` §18's CSP probe rather than cite
+it, because the deployment it measured no longer sits at that address.
 
