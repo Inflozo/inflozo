@@ -67,7 +67,7 @@ Written 2026-08-19, immediately after `prd.md` reached **v4.0 / final**. This fi
 | Journeys & flows | ✅ **DONE 2026-09-03 — step 5.** `ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` and `EXPERIENCE.md`, both `status: final`. Four journeys, eight flows, every surface with one stable name and a named source frame; **Appendix A carries a Claude Design prompt per undrawn surface group** (eight at the time of writing; the headings are the count). Found the **Paywall editor already drawn** at `C Post Body` C3a, which §37.7 called missing; found a library total in `S3`'s product copy that both controls had been blind to for a third time. Four rulings in `reconcile-designs-decisions.md` §A11 (R-76…R-79); `prd.md` FR-D1, FR-J7 and FR-J9 moved |
 | Static prototype | ✅ **BUILT 2026-09-03 — step 5b** (owner's ruling R-75, 2026-09-02). `ux-designs/prototype/` — **double-click `index.html`**, no server and no build step. One page per surface `EXPERIENCE.md` names, every panel/pill/marker/sheet as a section of the page it lives on, and the four journeys and eight flows as labelled trails; every page's first HTML comment names the frame it derives from (R-74) and the section it implements. Built from the frames as they stood — **Appendix A's prompts had not been run**, so its extrapolated pages should be re-checked against the D-canvases once they exist. 🔵 **What is owed: the owner's walk, which gates step 6** |
 | Walkthrough | ✅ **BUILT 2026-09-03 — step 5c, second cut.** `ux-designs/walkthrough/` — **double-click `index.html`**, which opens on Sign In as a user would meet it. No scaffolding on a product screen: every screen is a frame lifted from the export and patched with links and hooks — menus, popovers and sheets open from the control that raises them; segmented controls, tabs and radio lists pick; the deploy wizard walks its four drawn steps through the library-update confirm and the snapshot gate; `P`, `L` and `Esc` work in the editor. **What it does not do is listed in `_screens.html`** under three headings — no frame yet (an Appendix A prompt owes it), drawn on a mechanism a ruling re-specifies (held out or shown as drawn until A7 runs, §A12 decision 6), and states no frame draws. The backup gate is in the first list, not in the build; the ring steps between its two drawn positions with `]`, `[` and the drawn ◀ ▶. `_screens.html` and `_selfcheck.html` are the two files that are not product screens. **It does not replace 5b** — a change to the design belongs in both, and 5c is walked after 5b, for feel |
-| Stories | 🔵 **OPEN — step 6.** The owner walked 5b on **2026-09-04** and wrote the date under step 5b, *The walk* (R-75). **The UI issues he found on the walk are fixed inside the stories that own their surfaces, not by another Claude Design pass first — R-80, §A13** — so they go in `ux-designs/WALK-NOTES.md`, a line under the screen, and each story carries its own. The Appendix A prompts still run, as two sessions, in parallel with the stories |
+| Stories | 🔵 **OPEN — step 6.** The owner walked 5b on **2026-09-04** and wrote the date under step 5b, *The walk* (R-75). **UI issues are fixed inside the stories that own their screens, not by another Claude Design pass — R-80, §A13, as amended: he tests every UI story on the deployed site from its spec's manual-test script and reports what he finds.** The Appendix A prompts still run, as two sessions, in parallel with the stories. **The loop is step 7**, and its board is `STORY-BOARD.html` (R-84) |
 
 ## The BMAD skill for each step
 
@@ -83,10 +83,11 @@ Every step below runs through a BMAD skill. Paste the prompt **including its lea
 | 5 — Journeys & flows | `/bmad-ux` | UX (Sally) |
 | 6 — Epics & stories | `/bmad-create-epics-and-stories` | Scrum Master |
 | 6b — Readiness gate | `/bmad-sprint-planning` | Scrum Master |
+| 7 — The development loop, per story | `/bmad-build` (Create, Dev, Fix) · `/bmad-code-review` (Review) · a session with the deploy keys (Deploy) · **the owner** (Test) | Dev (Amelia) · reviewers · Umang |
 
 The PM stage is already complete — `prd.md` **v4.1** is its output. **Two deprecations to avoid:** `bmad-create-architecture` forwards to `bmad-architecture`, and `bmad-create-story` / `bmad-dev-story` are superseded by `bmad-build`. Use the current names.
 
-Once stories exist, the development loop is `/bmad-build` per story, with `/bmad-code-review` and the `/bmad-testarch-*` skills on the QA side — but that is beyond this document, which ends at the first story.
+Once stories exist, the development loop is **step 7** below: `/bmad-build` per story, `/bmad-code-review` and the `/bmad-testarch-*` skills on the QA side, the owner's own test on the deployed site, and a commit after every phase. The story board (`STORY-BOARD.html`) carries each phase's prompt, copied from step 7.
 
 ## Standing rules — these apply to every step below
 
@@ -888,12 +889,12 @@ screen is cheapest the moment before anyone builds it. What "walked" means is de
 > fixing them now and doing more Claude Design passes, we will fix them during development of their
 > respective stories.
 
-**That note is ruling R-80** (`reconcile-designs-decisions.md` §A13): a finding from the walk is fixed in
-the story that owns its surface, not by a further design pass before step 6. For that to work, **each
-finding must be written where its story will find it — `ux-designs/WALK-NOTES.md`, one line under the
-screen it belongs to.** Step 6's prompt tells the story writer to read that file and carry every line
-into the story that owns the screen, as an acceptance criterion beside R-74's "matches the frame".
-The Appendix A prompts are unaffected and still run, as two sessions, in parallel with the stories.
+**That note is ruling R-80** (`reconcile-designs-decisions.md` §A13), **amended by him the same day:** he
+does not write the findings down in advance — **he tests every UI story himself on the deployed site**,
+from the spec's `## Owner's manual test`, and what he finds is fixed inside that story before it is done,
+not by a further design pass. `WALK-NOTES.md` stays as his optional notebook. The Appendix A prompts are
+unaffected and still run, as two sessions, in parallel with the stories. The loop that carries this is
+**step 7** below.
 
 **The date stands, so step 6 is open** *(2026-09-04)*. What follows is the rule that held it shut,
 kept as the record of how the gate worked. Until a date stood on that line, step 6 stayed shut. It was
@@ -1207,9 +1208,11 @@ generators, then `python3 tools/doc-audit.py --check` TWICE.
 **Needs from the owner:** to have **walked step 5b's prototype first — R-75 gates this step** —
 **done, 2026-09-04**: the date stands under step 5b, *The walk*, a human tick no tool reads. Two rules
 ride into every story. Per **R-74**, every story with a surface carries a "matches the frame" acceptance
-criterion naming the frame (or extrapolated frame) it is built from. Per **R-80** (§A13), every screen
-with a line in `ux-designs/WALK-NOTES.md` carries that line as an acceptance criterion of the story that
-owns it — the walk's findings are fixed in their stories, not by a further design pass first.
+criterion naming the frame (or extrapolated frame) it is built from. Per **R-80** (§A13, as amended),
+every story with a screen carries `## In plain English` and `## Owner's manual test`, is tested by the owner
+on the deployed site before it is done, and his findings are fixed inside it — not by a design pass. And
+per **R-83** (§A14), every question this step asks him is plain English with an example, numbered options
+and one marked (RECOMMENDED).
 **Unblocks:** development.
 
 §8 already fixes the epics, their order, their exit criteria and every FR's owning epic. This step expands that into stories — it does not re-plan it.
@@ -1251,11 +1254,19 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     from — EXPERIENCE.md's Information Architecture gives every surface its frame — and carry a
     "matches the frame" acceptance criterion. The export under
     _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
-  - THE WALK'S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
-    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
-    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
-    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
-    carries none. Do not fix anything yourself.
+  - THE OWNER TESTS EVERY SCREEN HIMSELF, ON THE DEPLOYED SITE, before its story is done (R-80 as
+    amended 2026-09-04). So every story with a screen must be written so that a non-engineer can
+    test it: its spec will carry "## In plain English" (three sentences: what the user can now do,
+    and what they will see) and "## Owner's manual test" (numbered steps — URL, screen, what to do,
+    dummy data to type if any, what should be seen). Write the story's acceptance criteria so those
+    two sections can be derived from them without guessing. His findings are fixed inside that
+    story, not by a design pass.
+
+AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
+  - Every question you need him to answer is written in plain English a non-engineer reads, with
+    an example, numbered options, and the option or combination you recommend marked
+    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+  - When epics.md is complete, commit and push to main: "Step 6 - Create - epics and stories".
 ```
 
 ---
@@ -1278,6 +1289,121 @@ Two readiness conditions are specific to this project and are not the usual ones
     gate, so the sprint plan must not show library categories running in parallel.
 ```
 
+# Step 7 — The development loop *(the owner's rulings of 2026-09-04, R-80 amended and R-81 … R-84, `reconcile-designs-decisions.md` §A13–§A14)*
+
+**Produces:** working software, one story at a time, on the real infrastructure, with the owner testing every
+screen himself before its story is done.
+**Needs from the owner:** his test of each deployed UI story, and his ruling on any question a phase raises.
+**Watched from:** `_bmad-output/planning-artifacts/STORY-BOARD.html` (R-84) — every epic and story,
+colour-coded, each phase's prompt copyable from the card, the owner's test script on the story. Generated by
+`tools/story-board.py`; the gate regenerates it on every commit; never hand-edited.
+
+**The loop, per story.** Every phase ends with a commit and a push to `main` (R-81), message
+`Story <epic>.<story> - <Phase> - <one line about the story>`. The rules are bound inside the skills
+by `docs/project-context.md` and the `_bmad/custom/*.user.toml` overrides, so a session that forgets them
+is reminded by the skill itself.
+
+```
+  Create ──► Dev ──► Review ──► Deploy ──► Test (the owner, on the real site) ──► Done
+    │          │        │                        │
+    │          │        │                        └─ issues? ──► Fix ──► Review ──► Deploy ──► Test
+    │          │        └─ runs on the REAL infrastructure (R-82) — never mocks alone
+    │          └─ the spec is the sole source of truth; tasks ticked, verification recorded
+    └─ the spec carries "In plain English", "Owner's manual test", "Questions for the owner"
+```
+
+| Phase | Who | What "done" means | Commit |
+|---|---|---|---|
+| **Create** | `/bmad-build`, planning only | The spec exists at `implementation-artifacts/spec-<E>-<S>-<slug>.md`, status `ready-for-dev`, with `## In plain English`, `## Owner's manual test` (any story with a screen), the frame it matches (R-74), and `## Questions for the owner` only if a decision is genuinely his (R-83) | `Story E.S - Create - …` |
+| **Dev** | `/bmad-build`, implementing | Every task ticked, every acceptance criterion met, `## Verification` names the real services hit and what they returned | `Story E.S - Dev - …` |
+| **Review** | `/bmad-code-review` | The three review layers plus the *Real-infra verifier* ran; findings triaged; nothing open that is not the owner's to rule | `Story E.S - Review - …` |
+| **Deploy** | a session with the keys | The story is live on the real stack (§4: pre-launch, the production Vercel project) and the spec's test steps carry the live URLs | `Story E.S - Deploy - …` |
+| **Test** | **the owner** | He follows `## Owner's manual test` on the live site. *Passed* → `owner_test: passed`. *Issues* → recorded under `## Owner's test findings`, `owner_test: issues` | `Story E.S - Test - …` |
+| **Fix** | `/bmad-build` with the findings | Every finding fixed inside this story; then Review → Deploy → Test again | `Story E.S - Fix - …` |
+| **Done** | the session, on his word | `owner_test: passed` (or no screen), sprint status `done` | `Story E.S - Done - …` |
+
+**Three rules the loop never bends.** **R-82:** review and test run on the real infrastructure — the keys are
+in `tools/probe/.env`; a spec whose `## Verification` names no real service for a story that reads or writes
+one fails its review. **R-83:** any question to the owner is plain English with an example, numbered options
+and one marked (RECOMMENDED), under `## Questions for the owner`; the unattended loop never decides one — it
+halts with the question written. **R-80:** his findings are fixed in the story, never by a design pass.
+
+### The phase prompts
+
+The story board copies these from here — the placeholders `{E.S}` (the story key, e.g. `3.2`) and
+`{spec}` (the spec's path) are filled in per story; a page that retyped them would drift. Paste one
+**including its leading `/command`**.
+
+```
+/bmad-build
+
+Story {E.S} from _bmad-output/planning-artifacts/epics.md — CREATE THE SPEC ONLY. Stop when the spec
+reaches ready-for-dev; do not implement in this run.
+Read docs/project-context.md first; its rulings bind. Besides the template's sections the spec carries:
+  - "## In plain English" — three sentences a non-engineer reads: what the user can do after this
+    story that they could not before, and what they will see.
+  - "## Owner's manual test" — for any story with a screen: numbered steps, each with the URL (a
+    placeholder until Deploy fills it), the screen, what to do, the dummy data to type if any, and
+    what should be seen. The owner follows it on the real site after deploy (R-80).
+  - "## Questions for the owner" — only if a decision is genuinely his: plain English, an example,
+    numbered options, one marked (RECOMMENDED) (R-83). Otherwise omit the section.
+  - The frame the surface is built from, named, with a "matches the frame" acceptance criterion
+    (R-74; EXPERIENCE.md's Information Architecture names every surface's frame).
+  - `owner_test: pending` in the frontmatter of any story with a screen.
+Then commit and push: "Story {E.S} - Create - <one line>".
+```
+
+```
+/bmad-build
+
+Story {E.S} — IMPLEMENT the spec at {spec}. It is the sole source of truth; read
+docs/project-context.md first. Tick every task, satisfy every acceptance criterion, and write
+"## Verification" naming the real services the story hit (Supabase, Vercel, Resend, Dodo, the Ghost
+test servers T1/T3 — keys in tools/probe/.env, never printed) and what each returned (R-82). Stop
+before the review phase. Then commit and push: "Story {E.S} - Dev - <one line>".
+```
+
+```
+/bmad-code-review
+
+Review story {E.S}: the diff since the baseline_commit in {spec}, against that spec. Read
+docs/project-context.md first. Run every review layer, the Real-infra verifier included — the review
+runs on the real infrastructure, never mocks alone (R-82). Triage the findings; fix what is a patch;
+anything that is the owner's to decide goes under "## Questions for the owner" in the spec in plain
+English with an example, numbered options and one marked (RECOMMENDED) (R-83). Then commit and
+push: "Story {E.S} - Review - <one line>".
+```
+
+```
+Deploy story {E.S} to the real stack — the production Vercel project (PRD §4: pre-launch, production is
+the stack under test), with the keys in tools/probe/.env, never printed. Then open {spec}, fill the
+live URL into every step of "## Owner's manual test", set owner_test: pending, regenerate the story
+board (python3 tools/story-board.py), run the gate twice, and commit and push:
+"Story {E.S} - Deploy - <one line>". Then show the owner the test steps, in plain English.
+```
+
+```
+/bmad-build
+
+Story {E.S} — FIX the owner's test findings. Read docs/project-context.md, then {spec}: the findings
+are under "## Owner's test findings" (set owner_test: issues). Fix every one inside this story — never
+by a design pass — keeping the spec's frozen intent. When done, "## Verification" is refreshed
+against the real services (R-82), and the story goes back through Review and Deploy for the owner
+to test again. Commit and push: "Story {E.S} - Fix - <one line>".
+```
+
+```
+Record the owner's test of story {E.S}. If he passed it: set owner_test: passed in {spec}, mark the
+story done in _bmad-output/implementation-artifacts/sprint-status.yaml, regenerate the story board,
+run the gate twice, and commit and push: "Story {E.S} - Done - accepted by the owner". If he reported
+issues: write each one under "## Owner's test findings" in {spec} in his words, set owner_test: issues,
+regenerate the board, and commit and push: "Story {E.S} - Test - <n> findings"; the Fix prompt is next.
+```
+
+**Unblocks:** the next story, and — through the last one — step 6b's readiness gates and E15's launch gates.
+
+---
+
 # What is owed to the owner, collected in one place
 
 | When | What |
@@ -1290,8 +1416,8 @@ Two readiness conditions are specific to this project and are not the usual ones
 | ~~Step 4b — you in the room~~ | ✅ **DONE 2026-08-27**, and extended on 2026-08-31 when the design patch pass and the §F asks came back to you (R-30 … R-38) |
 | ~~Step 5 — journeys and flows~~ | ✅ **DONE 2026-09-03.** It asked you three questions and you ruled all three (R-76, R-77, R-78). Both spines are final |
 | **① Still owed — eight Claude Design prompts** | `EXPERIENCE.md` Appendix A, and its `### A` headings are the count if this line has gone stale. **Step 5b's prototype was built without them**, so its pages for undrawn surfaces are extrapolated from the frames the spine names; run these and those pages should be checked against the result. A1 to A6 draw surfaces that were never drawn (the first-deploy gates · history with pinning · the drift report · the dashboard sheets · the canvas markers · Theme Settings completed) · **A7 corrects existing frames** — its numbered items are the list, and since the 2026-09-03 review they include the accessibility items that would change a frame · **A8 draws the editor at 834 and 720**, which R-76 and the accessibility floor both need and the export has never drawn. They block nothing — run them before or after step 5b, whichever you prefer |
-| ~~② Walk 5b, then 5c~~ | ✅ **DONE 2026-09-04.** The owner walked 5b and wrote the date under step 5b, *The walk*. The UI issues he found are **fixed in their stories, not by another design pass first — R-80** (§A13); they belong in `ux-designs/WALK-NOTES.md`, a line under the screen, so each story can carry its own |
-| **③ Now — step 6, the story breakdown** | **Open since 2026-09-04.** Run the step-6 prompt from the board. Per R-74 every story with a surface names its frame; per R-80 every screen with a line in `WALK-NOTES.md` carries that line as an acceptance criterion. Runs in parallel with ①, which blocks nothing |
+| ~~② Walk 5b, then 5c~~ | ✅ **DONE 2026-09-04.** The owner walked 5b and wrote the date under step 5b, *The walk*. UI issues are **fixed in their stories, not by another design pass first — R-80** (§A13, as amended): he tests each UI story on the deployed site and reports what he finds |
+| **③ Now — step 6, the story breakdown** | **Open since 2026-09-04.** Run the step-6 prompt from the board. Per R-74 every story with a surface names its frame; per R-80 every story with a screen carries the owner's manual-test script and waits for his test after deploy. Then the loop of step 7, watched from `STORY-BOARD.html` (R-84), with a commit after every phase (R-81) and review on the real infrastructure (R-82). Runs in parallel with ①, which blocks nothing |
 | **Launch checklist** | **Enable Dodo's *Upcoming Renewal Reminder*** — Settings → Communication → Customer Emails, **off by default**. Note this is now a *backstop*, not the mechanism: by owner decision (register 37b) **Inflozo sends its own** reminder at **30 days before an annual renewal and 7 before a monthly one**, because the exposure was always the *timing* — ~2 days is very likely short of the statutory window for an annual term, and Appendix F assumes a 60% yearly mix. The two do not collide: ours is the heads-up, Dodo's is the final nudge |
 | Before deploy paths are verified end to end | **T2** — Ghost(Pro) Publisher, $29/mo |
 | ⛔ **Before the Live project takes real customer data** | **Put Live on the Supabase Pro plan** *(register 42)*. The **Free plan has NO automatic backups at all** — that gap, not the point-in-time question, is the real cliff, and AD-26 provisions Live as a **fresh project** at go-live, so this is a step someone must perform rather than inherit. The gate is: Pro active, daily backups visible in the dashboard, **and one real restore performed** using `RESTORE-RUNBOOK.md` — a backup nobody has restored from is a hypothesis, which is exactly how the first drill found two defects |

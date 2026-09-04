@@ -1,0 +1,315 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflozo — Story Board</title><style>*{box-sizing:border-box}
+:root{--bg:#fbfaf8;--card:#fff;--ink:#191919;--muted:#6a6a6c;--line:#e5e1db;--code:#f4f2ef;
+--accent:#1f6feb;--accent-s:#e9f0fe;--patch:#96650a;--patch-s:#fff4d9;--build:#12784a;--build-s:#e2f5ec;
+--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#131316;--card:#1b1b20;
+--ink:#ecebea;--muted:#9e9b99;--line:#2f2f36;--code:#232329;--accent:#6ea8fe;--accent-s:#1b2a45;
+--patch:#e8bd57;--patch-s:#33280d;--build:#5ed6a0;--build-s:#112f20;
+--sh:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.36)}}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 96px}
+h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 22px;font-size:.93rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);
+margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog{height:8px;flex:1;min-width:180px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--build);transition:width .3s}
+.count{font-weight:680;font-size:.9rem;white-space:nowrap}
+.btn{font:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh);
+margin:0 0 14px;overflow:hidden}
+.cat.done{opacity:.5}
+.cat.urgent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s),var(--sh)}
+.chead{display:flex;gap:12px;align-items:center;padding:13px 16px;cursor:pointer}
+.cid{font-weight:700;font-size:.82rem;padding:3px 9px;border-radius:99px;background:var(--accent-s);
+color:var(--accent);min-width:44px;text-align:center}
+.cname{font-weight:650;flex:1}
+.cmeta{color:var(--muted);font-size:.82rem}
+.tick{width:19px;height:19px;accent-color:var(--build);cursor:pointer;flex:none}
+.cat.done .cname{text-decoration:line-through}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px 16px}
+.cat.open .body{display:block}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;
+overflow:auto;max-height:460px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+white-space:pre-wrap;word-break:break-word;margin:0 0 10px}
+.note{background:var(--patch-s);color:var(--patch);border-radius:9px;padding:10px 13px;
+font-size:.87rem;margin:0 0 16px}
+.big{background:var(--build-s);color:var(--build);border-radius:9px;padding:10px 13px;
+font-size:.87rem;font-weight:600;margin:0 0 6px;display:inline-block}
+h2.wave{font-size:1.02rem;margin:30px 0 4px;letter-spacing:-.01em}
+.why{color:var(--muted);font-size:.87rem;margin:0 0 12px;max-width:78ch}
+.step{font-weight:700;font-size:.78rem;min-width:22px;text-align:right;color:var(--muted);flex:none}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;border-radius:8px;padding:5px 10px;margin:0 6px 10px 0}
+.flag.hole{background:var(--patch-s);color:var(--patch)}
+.flag.big{background:var(--build-s);color:var(--build)}
+.gate{background:var(--accent-s);color:var(--accent);border-radius:11px;padding:13px 16px;
+margin:14px 0 8px;font-size:.89rem;line-height:1.55}
+.gate code{background:transparent;font-weight:600}
+footer{color:var(--muted);font-size:.82rem;margin-top:32px;border-top:1px solid var(--line);padding-top:14px}
+:root{--good:var(--build);--good-s:var(--build-s);--warn:var(--patch);--warn-s:var(--patch-s);
+--crit:#b42318;--crit-s:#fdeceb;--wait:#8b8b93;--rail:224px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--crit:#f08b80;--crit-s:#3a1a17;--wait:#75757e}}
+[hidden]{display:none!important}
+html,body{height:100%}body{display:flex;flex-direction:column;overflow:hidden}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.top{display:flex;align-items:center;gap:14px;padding:9px 18px;border-bottom:1px solid var(--line);
+background:var(--card);flex-wrap:wrap}
+.top h1{font-size:1.1rem;margin:0}
+.kick{color:var(--accent);font-weight:650;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;display:block}
+.demo{background:var(--crit);color:#fff;font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:99px;letter-spacing:.08em}
+.pulse{display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--muted)}
+.pulse .lbl{margin:0 2px 0 8px;text-transform:uppercase;letter-spacing:.06em;font-size:.66rem;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:99px;background:var(--code);
+border:1px solid var(--line);color:var(--ink);font-size:.74rem;font-weight:600;text-decoration:none}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--wait)}
+.chip.done i{background:var(--good)}.chip.progress i,.chip.review i{background:var(--accent)}
+.chip.test i{background:var(--warn)}.chip.ready i{background:var(--accent);opacity:.5}
+.tools{margin-left:auto;display:flex;gap:7px;align-items:center}
+#q{font:inherit;font-size:.84rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;
+background:var(--bg);color:var(--ink);width:210px}
+.btn b{background:var(--crit);color:#fff;border-radius:99px;padding:0 7px;margin-left:5px;font-size:.7rem}
+.btn b.zero{background:var(--line);color:var(--muted)}
+.next{margin:10px 18px 0;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+border-radius:12px;padding:9px 16px 10px;box-shadow:var(--sh)}
+.next.you{border-left-color:var(--warn)}.next.done{border-left-color:var(--good)}
+.next .nh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.next h2{font-size:.98rem;margin:0}
+.next p{margin:3px 0 7px;color:var(--muted);font-size:.86rem;max-width:120ch}
+.next .na{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.next details{flex-basis:100%}.next summary{cursor:pointer;font-size:.8rem;color:var(--accent)}
+.next pre{margin:6px 0 0;max-height:200px}
+.board{flex:1;min-height:0;display:grid;grid-template-columns:var(--rail) 1fr;gap:12px;padding:10px 18px 10px}
+.rail{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px;min-height:0}
+.ep{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
+border-radius:10px;padding:7px 10px;cursor:pointer;color:var(--ink);flex:none}
+.ep:hover{border-color:var(--accent)}.ep.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
+.ep.done{border-left-color:var(--good)}.ep.progress{border-left-color:var(--accent)}
+.ep .et{display:flex;gap:6px;align-items:baseline;font-size:.78rem;font-weight:650;line-height:1.25}
+.ep .en{color:var(--muted);font-weight:700;font-size:.68rem;flex:none}
+.ep .em{display:block;color:var(--muted);font-size:.7rem;margin-top:2px}
+.epbar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.epbar i{display:block;height:100%;background:var(--good)}
+.lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;min-height:0}
+.lane{display:flex;flex-direction:column;min-height:0;background:var(--code);border-radius:12px;border:1px solid var(--line)}
+.lane h2{font-size:.78rem;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);line-height:1.2}
+.lane h2::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--wait);flex:none}
+.lane h2 .n{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:0 7px;
+font-size:.7rem;color:var(--muted);white-space:nowrap}
+.lane.ready h2::before{background:var(--accent);opacity:.5}.lane.progress h2::before,.lane.review h2::before{background:var(--accent)}
+.lane.test h2::before{background:var(--warn)}.lane.done h2::before{background:var(--good)}
+.lane.test{border-color:var(--warn)}
+.cards{overflow:auto;flex:1;padding:8px;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--wait);border-radius:9px;
+padding:7px 9px 8px;box-shadow:var(--sh);font-size:.78rem;flex:none}
+.card.ready,.card.progress,.card.review{border-left-color:var(--accent)}.card.test{border-left-color:var(--warn)}
+.card.done{border-left-color:var(--good);opacity:.8}.card.issues,.card.blocked{border-left-color:var(--crit)}
+.card .ch{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.ebadge{font-size:.66rem;font-weight:700;padding:1px 6px;border-radius:99px;background:var(--accent-s);color:var(--accent);white-space:nowrap}
+.key{font-weight:700;font-size:.78rem}
+.ph{margin-left:auto;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;
+border-radius:99px;background:var(--code);color:var(--muted);white-space:nowrap}
+.ph.Test{background:var(--warn-s);color:var(--warn)}.ph.Fix,.ph.Blocked{background:var(--crit-s);color:var(--crit)}
+.ph.Done{background:var(--good-s);color:var(--good)}.ph.Dev,.ph.Review,.ph.Deploy{background:var(--accent-s);color:var(--accent)}
+.card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}.card h3 a{color:inherit;text-decoration:none}
+.card h3 a:hover{color:var(--accent)}
+.card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
+background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap}
+.cp.ok,.btn.ok{background:var(--good);border-color:var(--good);color:#fff}
+.more{margin-left:auto;text-decoration:none;color:var(--muted);font-weight:700;padding:0 7px;border-radius:6px;
+border:1px solid var(--line);font-size:.8rem;line-height:1.5}
+.more:hover{color:var(--accent);border-color:var(--accent)}
+.empty{color:var(--muted);font-size:.76rem;padding:10px 8px;text-align:center;line-height:1.45}
+.tag{display:inline-block;font-size:.64rem;font-weight:700;padding:1px 7px;border-radius:99px;vertical-align:middle;
+text-transform:uppercase;letter-spacing:.04em}
+.tag.warn{background:var(--warn);color:#fff}.tag.good{background:var(--good-s);color:var(--good)}.tag.crit{background:var(--crit-s);color:var(--crit)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);background:var(--card);border-left:1px solid var(--line);
+box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:21;overflow:auto;padding:16px 22px 48px}
+.drawer .close{position:sticky;top:0;float:right;font:inherit;font-size:.88rem;border:1px solid var(--line);
+background:var(--card);border-radius:8px;padding:3px 9px;cursor:pointer;z-index:1}
+.sd header .ebadge{font-size:.72rem}
+.sd h2,.pd h2{font-size:1.18rem;margin:8px 0 4px;letter-spacing:-.01em;line-height:1.3}
+.sd h3,.pd h3{font-size:.74rem;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.sd h3 .fine{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.meta{margin:0 0 4px;font-size:.8rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lanechip{font-weight:700;font-size:.72rem;padding:2px 9px;border-radius:99px;background:var(--code);color:var(--muted)}
+.lanechip.test{background:var(--warn-s);color:var(--warn)}.lanechip.done{background:var(--good-s);color:var(--good)}
+.lanechip.progress,.lanechip.review,.lanechip.ready{background:var(--accent-s);color:var(--accent)}
+.fine{color:var(--muted);font-size:.8rem}
+.md{font-size:.9rem;line-height:1.55}.md p{margin:5px 0}.md ul,.md ol{padding-left:1.35em;margin:4px 0}.md h4{margin:10px 0 2px;font-size:.92rem}
+.stepper{display:flex;gap:4px;list-style:none;margin:12px 0;padding:0}
+.stepper li{flex:1;text-align:center;font-size:.7rem;font-weight:700;padding:5px 2px;border-radius:7px;background:var(--code);color:var(--muted)}
+.stepper li.done{background:var(--good-s);color:var(--good)}.stepper li.cur{background:var(--accent);color:#fff}
+.stepper li.issues{background:var(--crit);color:#fff}
+.now{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--accent-s);border-radius:10px;padding:9px 12px;margin:8px 0;font-size:.88rem}
+.qbox{border:1px solid var(--warn);background:var(--warn-s);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
+.qbox h3{color:var(--warn);margin-top:4px}.q{padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}.q:first-of-type{border-top:0}
+.flags{margin:4px 0 0}
+.tbox{border:1px solid var(--accent);border-radius:10px;padding:8px 14px 10px;margin:12px 0}
+.tbox h3{color:var(--accent);margin-top:4px}
+.tw{overflow-x:auto;max-width:100%}
+table.mt{border-collapse:collapse;width:100%;font-size:.8rem;margin:6px 0}
+.mt th,.mt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.mt th{background:var(--code);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.steps{padding-left:1.4em;font-size:.88rem}.steps li{margin:4px 0}
+.tasks{list-style:none;padding:0;margin:0}.tasks li{padding:2px 0 2px 22px;position:relative;font-size:.86rem}
+.tasks li::before{content:'☐';position:absolute;left:2px;color:var(--muted)}.tasks li.done::before{content:'☑';color:var(--good)}
+.tasks li.done{color:var(--muted)}
+.ct{width:100%;border-collapse:collapse;font-size:.8rem}.ct td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:top}
+.ct td:first-child{white-space:nowrap;color:var(--muted)}
+.pr{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
+.pr.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-s)}
+.prh{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--code);font-size:.84rem}.prh b{flex:1}
+.pr pre{border:0;border-radius:0;margin:0;max-height:280px}
+.links{font-size:.84rem;color:var(--muted);margin-top:16px}
+.dw{border-top:1px solid var(--line);padding:8px 0}.dw:first-of-type{border-top:0}.dw b{display:block}
+.help p{margin:6px 0;font-size:.92rem;line-height:1.55}.help dt{font-weight:700;margin-top:8px}.help dd{margin:0 0 4px;color:var(--muted);font-size:.9rem}
+footer{padding:6px 18px;margin:0;border-top:1px solid var(--line);font-size:.72rem;color:var(--muted);background:var(--card)}
+@media(max-width:1100px){.lanes{grid-template-columns:repeat(3,minmax(0,1fr))}.board{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+.rail{flex-direction:row;overflow-x:auto}.ep{min-width:180px}}
+@media print{.tools,.scrim,.drawer,.next details{display:none!important}body{overflow:visible;height:auto}.cards,.rail{overflow:visible}}
+</style>
+<body>
+<header class="top">
+  <div><span class="kick">Inflozo</span><h1>Story board</h1></div>
+  <div class="pulse"><span class="lbl">Epics</span><span class="chip done"><i></i>0 done</span><span class="chip progress"><i></i>0 in progress</span><span class="chip"><i></i>16 not started</span><span class="lbl">Stories</span><span class="chip backlog"><i></i>0 backlog</span><span class="chip ready"><i></i>0 ready</span><span class="chip progress"><i></i>0 in progress</span><span class="chip review"><i></i>0 in review</span><span class="chip test"><i></i>0 deployed, your test</span><span class="chip done"><i></i>0 done</span></div>
+  <div class="tools"><input id="q" type="search" placeholder="Search stories  ( / )" aria-label="search stories">
+    <button class="btn" data-panel="questions">Questions for you <b class="zero">0</b></button>
+    <button class="btn" data-panel="activity">Activity</button>
+    <button class="btn" data-panel="deferred">Deferred</button>
+    <button class="btn" data-panel="help">Help</button></div>
+</header>
+<section class="next setup"><div class="nh"><span class="kick">Next action</span><h2>Run step 6 — the story breakdown</h2></div><p>There is no epics.md yet, so the lanes are empty and the epics on the left come from the PRD. Copy this prompt into a Claude Code chat; it writes the epics and stories, and the board fills on the next commit.</p><div class="na"><button class="btn copy" data-copy="na-prompt">Copy prompt</button><details><summary>Show the prompt</summary><pre id="na-prompt">/bmad-create-epics-and-stories
+
+Create the epics and stories list for Inflozo.
+
+PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
+Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
+reconcile-designs-decisions.md — the rulings there bind the stories.
+
+Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
+owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
+it into stories; do not re-plan it and do not renumber anything.
+
+Three rules from section 8 that shape the story list and are easy to get wrong:
+  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
+    category. A category story delivers every design in that category against one shared content
+    model and one stylesheet, plus that category&#x27;s behaviour modules.
+  - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
+    the next category from starting.
+  - There are as many owner gates as there are categories, the shell block&#x27;s three included.
+
+Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission spike, then the E0
+platform-verification spike, then the complete shell block (all 47 designs of Group 1, not a
+minimal shell), then the gated categories in inventory order beginning with Heroes.
+
+A category story cannot open until that category&#x27;s design-and-specification session has landed
+its specs in sections-inventory.md (§4).
+
+TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
+§A10 and §A13):
+  - MATCHES THE FRAME. Name the frame (or the frame it is extrapolated from) the surface is built
+    from — EXPERIENCE.md&#x27;s Information Architecture gives every surface its frame — and carry a
+    &quot;matches the frame&quot; acceptance criterion. The export under
+    _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
+  - THE OWNER TESTS EVERY SCREEN HIMSELF, ON THE DEPLOYED SITE, before its story is done (R-80 as
+    amended 2026-09-04). So every story with a screen must be written so that a non-engineer can
+    test it: its spec will carry &quot;## In plain English&quot; (three sentences: what the user can now do,
+    and what they will see) and &quot;## Owner&#x27;s manual test&quot; (numbered steps — URL, screen, what to do,
+    dummy data to type if any, what should be seen). Write the story&#x27;s acceptance criteria so those
+    two sections can be derived from them without guessing. His findings are fixed inside that
+    story, not by a design pass.
+
+AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
+  - Every question you need him to answer is written in plain English a non-engineer reads, with
+    an example, numbered options, and the option or combination you recommend marked
+    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+  - When epics.md is complete, commit and push to main: &quot;Step 6 - Create - epics and stories&quot;.</pre></details></div></section>
+<main class="board">
+  <nav class="rail" aria-label="epics"><button class="ep all" data-e=""><span class="et">All epics</span><span class="em">16 epics · 0 stories</span></button><button class="ep backlog" data-e="0" title="Owns no FRs; owns two blocking spikes."><span class="et"><span class="en">E0</span><span>De-risking Spikes</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="1" title="Owns FR-A1, FR-B3, FR-B4, FR-B5, FR-P1 emails (1)–(2)."><span class="et"><span class="en">E1</span><span>Foundations &amp; Design System</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="2" title="Owns FR-A2–A6."><span class="et"><span class="en">E2</span><span>Accounts &amp; Passkeys</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="3" title="Owns FR-C1–C6, FR-C8, FR-P1 email (3)."><span class="et"><span class="en">E3</span><span>Sites &amp; Connections</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="4" title="Owns FR-F1–F8, FR-G3, FR-G7, FR-G8, FR-H1, FR-H3, FR-H5, FR-H7, FR-H8, and FR-Q6&#x27;s string-catalog format."><span class="et"><span class="en">E4</span><span>Section Runtime Platform</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="5" title="Owns FR-D1–D22, FR-H2, FR-H4, FR-H6."><span class="et"><span class="en">E5</span><span>Editor Shell</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="6" title="Owns FR-E1–E5."><span class="et"><span class="en">E6</span><span>Style Packs</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="7" title="Owns FR-I1–I6, FR-J1–J17 (including FR-J4&#x27;s two-bundle emission and the `size-limit` gate), FR-K5, FR-Q1–Q5, FR-Q7–Q10, FR-Q6&#x27;s Translations surface and `locales/` emission, FR-P1 email (5)."><span class="et"><span class="en">E7</span><span>Compiler, Deploy &amp; Routes</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="8" title="Owns FR-K1–K4, FR-K6."><span class="et"><span class="en">E8</span><span>Asset Library</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="9" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for Group 1 (Headers &amp; Navigation, Announcement Bars, Footers)."><span class="et"><span class="en">E9</span><span>The Shell Block</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="10" title="Owns FR-G1, FR-G4, FR-G5, FR-G6 for every category outside Group 1."><span class="et"><span class="en">E10</span><span>The Gated Library Pipeline</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="11" title="Owns FR-G2 (the Free-tier floor, verifiable only once every category exists) and FR-O1–O4."><span class="et"><span class="en">E11</span><span>Starters</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="12" title="Owns FR-L1–L5, FR-P1 email (4) and the conditional annual-renewal email (6), FR-P2."><span class="et"><span class="en">E12</span><span>Billing &amp; Entitlements</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="13" title="Owns FR-M1–M4, FR-B1, FR-B2, FR-B6, FR-B7, FR-C7."><span class="et"><span class="en">E13</span><span>Suggestions, Notifications &amp; Dashboard Completion</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="14" title="Owns FR-N1–N5, FR-P3."><span class="et"><span class="en">E14</span><span>Marketing Site &amp; Docs</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button><button class="ep backlog" data-e="15" title="Owns no new FRs; owns the launch gates."><span class="et"><span class="en">E15</span><span>Hardening &amp; Launch</span></span><span class="em">no stories yet</span><span class="epbar"><i style="width:0%"></i></span></button></nav>
+  <div class="lanes"><section class="lane backlog"><h2>Backlog<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane ready"><h2>Ready<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane progress"><h2>In progress<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane review"><h2>In review<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane test"><h2>Deployed, your test<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section><section class="lane done"><h2>Done<span class="n">0</span></h2><div class="cards"><p class="empty">No stories yet — step 6 writes them.</p></div></section></div>
+</main>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="details"><button class="close" aria-label="close">✕ close</button><div id="dbody"></div></aside>
+<div id="details" hidden><section class="pd" id="pd-questions" hidden><h2>Questions for you <span class="fine">0 open</span></h2><p class="fine">Everything the build needs you to decide, across every story. Open one, read the options, answer in chat by number.</p><p class="fine">Nothing is waiting on you. A question appears here the moment a spec writes one under "Questions for the owner".</p></section><section class="pd" id="pd-activity" hidden><h2>Activity <span class="fine">the last 0 story commits</span></h2><p class="fine">No story commits yet. Every phase ends with one, shaped <code>Story E.S - Phase - one line</code>, and they appear here as they land.</p></section><section class="pd" id="pd-deferred" hidden><h2>Deferred work <span class="fine">0 entries</span></h2><p class="fine">Things a review chose not to do inside its story. Each is a small decision for later, not a bug in what shipped.</p><p class="fine">Nothing has been deferred. The ledger (deferred-work.md) does not exist yet; a review writes it the first time it sets something aside.</p></section><section class="pd help" id="pd-help" hidden><h2>How to read this board</h2>
+<p>Every card is one story. A story moves left to right as it is built, and it comes to you once, in the amber lane.</p>
+<dl>
+<dt>Backlog</dt><dd>Not started. Its spec has not been written.</dd>
+<dt>Ready</dt><dd>The spec is written and waiting to be built.</dd>
+<dt>In progress</dt><dd>Being built now.</dd>
+<dt>In review</dt><dd>Being checked against the real services, then deployed. Nothing for you to do yet.</dd>
+<dt>Deployed, your test</dt><dd>Live on the real site and waiting for <b>you</b>. Open the card, follow the numbered steps, and say what you saw in chat. A red stripe means you reported issues and they are being fixed.</dd>
+<dt>Done</dt><dd>You accepted it.</dd>
+</dl>
+<p><b>The phases.</b> Create (write the spec) → Dev (build it) → Review (check it on the real services) → Deploy (put it live) → Test (you) → Done. If your test finds issues: Fix → Review → Deploy → Test again, inside the same story.</p>
+<p><b>The prompts.</b> Each card carries a copy button for the phase it is in; the story panel carries every phase's prompt. Paste one into a Claude Code chat exactly as copied, including the first line that starts with a slash.</p>
+<p><b>The commit rule.</b> Every phase ends with a commit and push to main, shaped <code>Story E.S - Phase - one line</code>. This board reads those commits, so a story's history is its commit list, and the board itself is regenerated on every commit — reload it after each one.</p>
+<p><b>Questions for you.</b> The inbox in the top bar lists every open question across every story. Each is plain English with numbered options and one marked RECOMMENDED; answer in chat by number.</p>
+<p><b>Keys.</b> <code>/</code> focuses the search, <code>Esc</code> closes a panel. The ticks on a test script are stored in this browser only; your verdict still goes through chat.</p>
+</section></div>
+<footer>Generated on 2026-09-04 by <code>tools/story-board.py</code> from the PRD&#x27;s §8 epic list (epics.md does not exist yet), git log and build-sequence.md. The phase prompts are extracted from
+<a href="build-sequence.md">build-sequence.md</a> step 7, never retyped. Every count is derived. The gate regenerates this page on every
+commit; <code>python3 tools/story-board.py --check</code> fails when it is stale. The step board is <a href="BUILD-BOARD.html">BUILD-BOARD.html</a>.</footer>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const drawer=$('#drawer'),dbody=$('#dbody'),store=$('#details'),scrim=$('#scrim'),q=$('#q');
+let openSec=null,epicFilter='',lastFocus=null;
+function copy(txt){                       // file:// has no clipboard API in some browsers
+  if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(txt);
+  const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);
+  ta.select();document.execCommand('copy');ta.remove();return Promise.resolve();}
+function openSection(id,sub){
+  const s=document.getElementById(id);if(!s)return;
+  if(openSec&&openSec!==s){openSec.hidden=true;store.append(openSec);}
+  lastFocus=lastFocus||document.activeElement;
+  openSec=s;dbody.append(s);s.hidden=false;drawer.hidden=false;scrim.hidden=false;paintTicks(s);
+  drawer.scrollTop=0;
+  if(sub){const el=s.querySelector('[data-sub="'+sub+'"]');if(el)el.scrollIntoView({block:'start'});}
+  drawer.querySelector('.close').focus();}
+function closeDrawer(){
+  if(openSec){openSec.hidden=true;store.append(openSec);openSec=null;}
+  drawer.hidden=true;scrim.hidden=true;
+  if(location.hash)history.replaceState(null,'',location.pathname+location.search);
+  if(lastFocus&&lastFocus.focus){lastFocus.focus();}lastFocus=null;}
+function route(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(!h){if(!drawer.hidden)closeDrawer();return;}
+  const [key,sub]=h.split('/');
+  if(document.getElementById('pd-'+key))openSection('pd-'+key);
+  else openSection('sd-'+key.replace(/\./g,'-'),sub);}
+const TK='inflozo-story-board-ticks';let ticks;
+try{ticks=new Set(JSON.parse(localStorage.getItem(TK)||'[]'));}catch(e){ticks=new Set();}
+function paintTicks(root){root.querySelectorAll('input.tick').forEach(c=>{c.checked=ticks.has(c.dataset.k);});}
+document.addEventListener('change',e=>{const t=e.target;if(!t.classList.contains('tick'))return;
+  t.checked?ticks.add(t.dataset.k):ticks.delete(t.dataset.k);
+  try{localStorage.setItem(TK,JSON.stringify([...ticks]));}catch(x){}});
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-copy]');
+  if(c){const src=document.getElementById(c.dataset.copy);if(!src)return;
+    copy(src.textContent).then(()=>{const o=c.textContent;c.textContent='Copied';c.classList.add('ok');
+      setTimeout(()=>{c.textContent=o;c.classList.remove('ok');},1400);});return;}
+  const p=e.target.closest('[data-panel]');
+  if(p){location.hash='#'+p.dataset.panel;return;}
+  if(e.target.closest('.close')||e.target===scrim){closeDrawer();return;}
+  const ep=e.target.closest('.ep');
+  if(ep){epicFilter=(epicFilter===ep.dataset.e)?'':ep.dataset.e;apply();}});
+function apply(){
+  const s=q.value.trim().toLowerCase();
+  $$('.card').forEach(c=>{c.hidden=(epicFilter&&c.dataset.e!==epicFilter)||(s&&!c.dataset.s.includes(s));});
+  $$('.lane').forEach(l=>{const all=l.querySelectorAll('.card'),shown=[...all].filter(c=>!c.hidden);
+    l.querySelector('.n').textContent=shown.length===all.length?all.length:shown.length+' of '+all.length;});
+  $$('.ep').forEach(b=>b.classList.toggle('on',b.dataset.e===epicFilter));}
+q.addEventListener('input',apply);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(!drawer.hidden)closeDrawer();else if(document.activeElement===q){q.value='';apply();q.blur();}}
+  else if(e.key==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();q.focus();q.select();}});
+window.addEventListener('hashchange',route);route();
+</script></body></html>

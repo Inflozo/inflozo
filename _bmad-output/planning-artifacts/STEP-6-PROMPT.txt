@@ -32,8 +32,16 @@ TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile
     from — EXPERIENCE.md's Information Architecture gives every surface its frame — and carry a
     "matches the frame" acceptance criterion. The export under
     _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/ is the design authority.
-  - THE WALK'S FINDINGS. Read _bmad-output/planning-artifacts/ux-designs/WALK-NOTES.md first. Every
-    line the owner wrote under a screen is a defect he found walking the prototype on 2026-09-04,
-    and by his ruling it is fixed IN THE STORY THAT OWNS THAT SCREEN, not by a design pass first:
-    carry each line into that story as an acceptance criterion, quoting it. A screen with no line
-    carries none. Do not fix anything yourself.
+  - THE OWNER TESTS EVERY SCREEN HIMSELF, ON THE DEPLOYED SITE, before its story is done (R-80 as
+    amended 2026-09-04). So every story with a screen must be written so that a non-engineer can
+    test it: its spec will carry "## In plain English" (three sentences: what the user can now do,
+    and what they will see) and "## Owner's manual test" (numbered steps — URL, screen, what to do,
+    dummy data to type if any, what should be seen). Write the story's acceptance criteria so those
+    two sections can be derived from them without guessing. His findings are fixed inside that
+    story, not by a design pass.
+
+AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
+  - Every question you need him to answer is written in plain English a non-engineer reads, with
+    an example, numbered options, and the option or combination you recommend marked
+    (RECOMMENDED). Collect them under one heading at the end; he reads and rules.
+  - When epics.md is complete, commit and push to main: "Step 6 - Create - epics and stories".

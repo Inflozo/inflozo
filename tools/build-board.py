@@ -133,6 +133,14 @@ STEPS = [
  ('s6b', '6b', 'Readiness gate', 'later',
   'Two readiness conditions specific to this project, both about the library running sequentially.',
   'Sprint status tracking, and a go/no-go on opening any story.', 'step 6'),
+ ('s7', '7', 'The development loop', 'later',
+  'Per story: Create \u2192 Dev \u2192 Review \u2192 Deploy \u2192 your test on the live site \u2192 Done, with a '
+  'commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every '
+  'question to you in plain English with options and one marked RECOMMENDED (R-83). The four prompts '
+  'below are TEMPLATES with placeholders \u2014 copy the filled-in prompt for a given story from the story '
+  'board, STORY-BOARD.html (R-84), which is regenerated on every commit.',
+  'Working software, one story at a time, tested by you before it is done.',
+  'step 6 producing the first stories'),
 ]
 
 # which fenced block in build-sequence.md belongs to which step, whether it is safe to run, and a
@@ -172,6 +180,15 @@ PROMPTS = [
   '(R-75). Nothing technical stops it; the gate is that line.',
   '/bmad-create-epics-and-stories'),
  ('s6b', 'Readiness gate', 'live', None, '/bmad-sprint-planning'),
+ ('s7', 'Create \u2014 the spec (template)', 'template',
+  'A template: {E.S} and {spec} are filled in per story. Copy the finished prompt from STORY-BOARD.html.',
+  'CREATE THE SPEC ONLY'),
+ ('s7', 'Dev \u2014 implement (template)', 'template',
+  'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'IMPLEMENT the spec at'),
+ ('s7', 'Review (template)', 'template',
+  'A template: copy the finished prompt for a story from STORY-BOARD.html.', 'Review story {E.S}'),
+ ('s7', 'Fix \u2014 the owner\u2019s findings (template)', 'template',
+  'A template: copy the finished prompt for a story from STORY-BOARD.html.', "FIX the owner's test findings"),
 ]
 
 # What to do the moment a patched export lands in the design-export folder, in order.
@@ -242,9 +259,12 @@ ACTIONS = [
   'You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run '
   'the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names '
   'its frame; and R-80, your own ruling from the walk \u2014 the UI issues you found are fixed in the '
-  'stories that own their screens, not by another design pass first. For that to work, write each '
-  'issue in ux-designs/WALK-NOTES.md, one line under the screen it belongs to; the prompt tells the '
-  'story writer to read that file and carry every line into its story.'),
+  'stories that own their screens, not by another design pass \u2014 and they come from YOUR OWN TEST of each '
+  'UI story on the deployed site, following the test steps its spec carries, not from notes written in '
+  'advance. Then the loop of build-sequence.md '
+  'step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase '
+  '(R-81), review and test on the real infrastructure (R-82), every question to you in plain English with '
+  'options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.'),
  ('now', 'The Appendix A Claude Design prompts \u2014 two sessions, in parallel with step 6',
   'Open _bmad-output/planning-artifacts/APPENDIX-A-PROMPTS.html: every prompt with a copy button, '
   'extracted from EXPERIENCE.md Appendix A so the page cannot drift (its ### A headings are the '
@@ -429,13 +449,13 @@ dd{{margin:0}}
 .phead h4{{margin:0;font-size:.93rem;font-weight:660;flex:1}}
 .ptag{{font-size:.68rem;font-weight:680;padding:2px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}}
 .ptag.live{{background:var(--done-s);color:var(--done)}}
-.ptag.historical{{background:var(--code);color:var(--wait);border:1px solid var(--line)}}
+.ptag.historical,.ptag.template{{background:var(--code);color:var(--wait);border:1px solid var(--line)}}
 .ptag.refuted{{background:var(--red-s);color:var(--red)}}
 .pnote{{margin:0;padding:11px 14px;font-size:.87rem;color:var(--muted);border-bottom:1px solid var(--line)}}
 .pnote.refuted{{background:var(--red-s);color:var(--red)}}
 pre{{margin:0;padding:14px;background:var(--card);overflow-x:auto;font-size:.79rem;line-height:1.5;
 font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}}
-.prompt.historical pre,.prompt.refuted pre{{opacity:.6}}
+.prompt.historical pre,.prompt.refuted pre,.prompt.template pre{{opacity:.6}}
 button.copy{{font:inherit;font-size:.8rem;font-weight:640;cursor:pointer;border:1px solid var(--accent);
 background:var(--accent);color:#fff;border-radius:8px;padding:5px 13px}}
 button.copy:hover{{opacity:.9}}button.copy.ok{{background:var(--done);border-color:var(--done)}}
@@ -468,7 +488,7 @@ drift apart.</p>
 {''.join(cards)}
 
 <footer>Generated {e(date)} from <code>build-sequence.md</code>, which governs on any conflict.
-Regenerate with <code>python3 tools/build-board.py</code>. A prompt marked <b>historical</b> has no
+Regenerate with <code>python3 tools/build-board.py</code>. A prompt marked <b>template</b> is filled in per story on STORY-BOARD.html; one marked <b>historical</b> has no
 copy button on purpose — one of them contains an instruction that execution disproved.</footer>
 </div>
 <script>

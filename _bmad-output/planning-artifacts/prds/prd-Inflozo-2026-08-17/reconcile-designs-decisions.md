@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 — walk findings are fixed in their stories)
+status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half is design work owed to a Claude Design patch prompt before E4/E9; §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 as amended — UI findings come from his test of each deployed story and are fixed there; §A14 the four development-loop rulings R-81…R-84 of the same day)
 created: 2026-08-27
-updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80)
+updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80, amended the same day; §A14 adds R-81…R-84 — commit after every phase, real-infra review, plain-English questions, the story board)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -1315,17 +1315,63 @@ step 5b, *The walk* — R-75's gate. With it he left a note, quoted verbatim the
 issues in UI that owner found. But instead of fixing them now and doing more Claude Design passes, we
 will fix them during development of their respective stories."*
 
-**R-80 — a finding from the owner's walk is fixed in the story that owns its surface, not by a further
-Claude Design pass before step 6.** The Appendix A prompts are unaffected: they draw the surfaces that
-have no frame and correct the frames the review found wrong, and they still run — as two sessions, A7
-with A8 and then A1 to A6 — in parallel with the stories. For R-80 to work, every finding must be
-written where its story will find it: `ux-designs/WALK-NOTES.md`, one line under the screen it belongs
-to. Step 6's prompt tells the story writer to read that file and carry each line into the story that
-owns the screen, as an acceptance criterion beside R-74's "matches the frame" criterion.
+**R-80 — a finding the owner makes about the UI is fixed in the story that owns its surface, not by a
+further Claude Design pass.** *Amended the same day, by the owner:* he does not write the walk's findings
+down in advance. **Every UI story is tested by him on the deployed site after it is built**; he reports what
+he finds; those findings are fixed inside that story before it is done. The mechanism is the spec: every
+story with a screen carries `## Owner's manual test` (numbered steps — URL · screen · what to do · dummy
+data · what should be seen), `owner_test: pending` in its frontmatter until he has tested it, and his
+findings under `## Owner's test findings` with `owner_test: issues` until they are fixed and `passed` when
+he accepts. `ux-designs/WALK-NOTES.md` stays as his optional notebook for the prototypes; it is no longer
+the channel. The Appendix A prompts are unaffected and still run as two sessions, A7 with A8 and then A1
+to A6, in parallel with the stories.
 - Targets: `build-sequence.md` step 5b (*The walk*), the step table, the outstanding table, step 6
-  (*Needs from the owner* and its prompt) · `HANDOVER.md` (*Where the project is*, *The immediate
-  task*) · `tools/build-board.py` (the step-6 status and the actions) · `ux-designs/WALK-NOTES.md`
-  (the owner's own lines — his to write). ✅ all landed 2026-09-04, except the owner's lines.
+  (*Needs from the owner* and its prompt), step 7 (the loop) · `HANDOVER.md` · `CLAUDE.md` ·
+  `docs/project-context.md` · `_bmad/custom/bmad-build.user.toml` and `bmad-build-auto.user.toml` ·
+  `tools/build-board.py` · `ux-designs/WALK-NOTES.md` (its purpose line). ✅ all landed 2026-09-04.
+
+## A14 · The development loop — four rulings, 2026-09-04
+
+Given by the owner in the same message as the amendment above, while the Claude Design sessions run.
+Each binds every story from the first one, and each is bound where the work happens — inside the BMAD
+skills through `docs/project-context.md` (loaded as a persistent fact by `bmad-build`,
+`bmad-build-auto`, `bmad-code-review` and the testarch skills) and the `_bmad/custom/*.user.toml`
+overrides — not only in prose.
+
+**R-81 — after every story phase, commit and push to `main`.** Create, dev, review, deploy, owner test,
+fix, done, and any other status change. One-line message, always this shape: `Story <epic>.<story> -
+<Phase> - <one line about the story>`; Phase is one word from *Create · Dev · Review · Deploy · Test ·
+Fix · Done · Blocked*. The gate runs first and is never pushed red.
+- Targets: `CLAUDE.md` (Git workflow) · `docs/project-context.md` · the three `.user.toml` overrides
+  (`on_complete`) · `build-sequence.md` step 7 · `HANDOVER.md`. ✅ landed 2026-09-04.
+
+**R-82 — the review phase and the test phase run on the real infrastructure, never on mocks alone.** The
+owner has put the keys in `tools/probe/.env` (Supabase, Vercel, Resend, Dodo, and the Ghost test servers
+T1 and T3; Ghost(Pro) is still empty). A spec's `## Verification` names the real services it hit and what
+they returned; every review carries a *Real-infra verifier* layer that executes those claims with one
+negative control. This restates for stories what NFR-6(d) already says for E2E: pre-launch, the stack
+under test is production.
+- Targets: `CLAUDE.md` · `docs/project-context.md` · the three overrides (`review_layers`) ·
+  `build-sequence.md` step 7 · `HANDOVER.md`. ✅ landed 2026-09-04. Ghost(Pro) keys: still owed to the
+  register's launch gate.
+
+**R-83 — every question to the owner, in every phase, is plain English with an example, numbered
+options, and the recommended option or combination marked (RECOMMENDED).** He reads and rules. In a story
+the question lives under `## Questions for the owner`, which the story board surfaces; the unattended
+loop never decides one — it halts with the question written.
+- Targets: `CLAUDE.md` (How the owner wants to work) · `docs/project-context.md` · the overrides ·
+  `build-sequence.md` step 6 prompt and step 7 · `HANDOVER.md`. ✅ landed 2026-09-04.
+
+**R-84 — the story board is the tracker.** `_bmad-output/planning-artifacts/STORY-BOARD.html`, generated
+by `tools/story-board.py` from `epics.md`, `implementation-artifacts/sprint-status.yaml`, the spec files
+and `git log`, and regenerated by the gate so every commit carries a current board. It shows every epic
+and story, colour-coded by status, without much scrolling; a story opens to its plain-English scope, its
+acceptance criteria, its commits, its questions for the owner and — when it is his to test — the manual
+test script with URLs, screens and dummy data; each phase's prompt is copyable from the card. The phase
+prompts are extracted from `build-sequence.md` step 7, never retyped.
+- Targets: `tools/story-board.py` and the page · `tools/doc-audit.py` (catalogue and the generator
+  list, so the gate regenerates it) · `build-sequence.md` step 7 · `HANDOVER.md` · `CLAUDE.md` ·
+  `tools/build-board.py` (the step-6 action points at it). ✅ landed 2026-09-04.
 
 ## B · Approved decisions superseded by this session
 

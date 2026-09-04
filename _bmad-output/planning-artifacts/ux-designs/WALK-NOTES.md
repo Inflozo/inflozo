@@ -2,7 +2,7 @@
 title: Inflozo — the owner's walk notes
 status: live
 created: 2026-09-03
-purpose: the owner's notes from walking step 5b (R-75's gate) and then step 5c — one file, a line per screen
+purpose: the owner's optional notebook from walking step 5b and 5c. Since 2026-09-04 (R-80 amended) it is NOT the channel for UI findings — those come from his manual test of each deployed story, recorded in that story's spec
 ---
 
 # Walk notes

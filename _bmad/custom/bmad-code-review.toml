@@ -1,0 +1,26 @@
+# Inflozo TEAM overrides for bmad-code-review (committed; the .user.toml layer is personal and gitignored) — a review of a story runs on the real infrastructure (R-82)
+# and ends with a commit and push (R-81). 2026-09-04.
+
+[workflow]
+
+activation_steps_append = [
+  "You are bound by docs/project-context.md: the review runs against the real infrastructure with the keys in tools/probe/.env, never mocks alone (R-82); every finding that needs the owner's decision is written in plain English with an example, numbered options and one marked (RECOMMENDED) (R-83); when the review is recorded, commit and push to main as `Story <epic>.<story> - Review - <one line>` (R-81).",
+]
+
+on_complete = """
+Before you end: `python3 {project-root}/tools/story-board.py`, then `python3 {project-root}/tools/doc-audit.py --check` twice, then commit and push to main as `Story <epic>.<story> - Review - <one line about what the review found>`. Never push a red gate.
+"""
+
+[[workflow.review_layers]]
+id = "real-infra-verifier"
+name = "Real-infra verifier"
+instruction = """
+Launch a context-free subagent with this prompt:
+You are verifying a story of Inflozo against the REAL infrastructure, never mocks alone (owner's ruling R-82).
+Read `{project-root}/docs/project-context.md` first. The keys are in `{project-root}/tools/probe/.env` (never print or commit one).
+Find the story's spec under `{project-root}/_bmad-output/implementation-artifacts/` (the `spec-<epic>-<story>-*.md` the diff belongs to); its `## Verification` section must name the real endpoints, sites or services the story touches — Supabase, Vercel, Resend, Dodo, the Ghost test servers T1 ghost6.inflozo.com and T3 ghost5.inflozo.com — and what each returned.
+Execute what it claims against those real services and record the command and its output, with one negative control. Report as a Markdown list: each claim, whether it held, and the evidence. If Verification names no real service for a story that reads or writes one, report that as a finding — the review cannot pass on mocks.
+Review content for context:
+{diff_output}
+Do not invoke any skill. Return only the review result.
+"""
