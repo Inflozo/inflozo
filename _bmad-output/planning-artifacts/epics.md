@@ -583,12 +583,13 @@ never scanned and never purged
 **And** that one deployment serves **both production domains** — `inflozo.com` (marketing) and
 `app.inflozo.com` (the app) — which is the spine's two-domains-one-deployment shape and the PRD's
 pre-launch mandate that every test runs on the real production domains, never a `vercel.app` preview URL
-**And** the predecessor stack is retired in the same step and not left half-connected: the Vercel project
-that holds those domains today is detached from them and then removed, and the GitHub repo `Inflozo/core`
-is archived — it carried no users (owner, 2026-09-04)
+**And** the three domains — already attached to the production Vercel project by the owner on 2026-09-04,
+where they currently return 404 because that project has no application yet — serve this deployment instead,
+so the story is not done while any of them still 404s
 
-**FRs:** none directly — this is the Structural Seed. · **Owner test:** yes — he opens both domains and
-sees the new deployment answer on each; there is no screen to judge yet, only that the cutover landed.
+**FRs:** none directly — this is the Structural Seed. · **Owner test:** yes — he opens `inflozo.com` and
+`app.inflozo.com` and sees this deployment answer on each instead of the 404 they return today; there is no
+screen to judge yet, only that the domains went live.
 
 ### Story 1.2: The whole data model and its row-level security
 
