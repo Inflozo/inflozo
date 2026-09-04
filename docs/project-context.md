@@ -39,5 +39,6 @@ A visual site builder for Ghost CMS: users drag ready-made sections onto a canva
 - `bmad-build` does not stop between phases on its own and the review skill sets `done` on a clean review; the team overrides in `_bmad/custom/` correct both — read them if a run behaves otherwise.
 - A propagation list cannot audit itself: end every vocabulary or schema change by grepping the repository for the old name.
 - Ghost Admin API keys never expire; a regenerated key returns 401 "Unknown Admin API Key". Reading the live theme needs a Staff Access Token; any staff user has one.
+- This machine's DNS stub (`systemd-resolved`, 127.0.0.53) **fails intermittently** while public resolvers answer fine. `check-access.py` reporting `HTTP 0 — did NOT run` on every host at once is that, not an outage: confirm with `dig +short @1.1.1.1 <host>` before concluding a service is down or asking the owner to fix it, and just retry. Observed 2026-09-04, recovered on its own within minutes.
 
 <!-- /bmad:context -->
