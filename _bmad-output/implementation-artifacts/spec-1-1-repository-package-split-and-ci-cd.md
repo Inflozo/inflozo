@@ -343,11 +343,14 @@ Nothing was deployed by hand: question 1 was ruled option 1, so the push of the 
 commit built itself. This phase read the result. Keys were read only into a command's environment and
 are recorded by variable name — `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `GITHUB_TOKEN` — never by value.
 
-**Deployment:** `dpl_7iWXMixjX1TVvbRYRDVfMKcEUHR4` · `inflozo-o3l32841z-umangkagathara.vercel.app` ·
-`READY` · `target: production` · `meta.githubCommitSha` `aa65c107`, which equals `HEAD` and
-`origin/main`. Read with `GET /v6/deployments?projectId=prj_ptauaY2o7FQckRDk31b7hdl06FSb&target=production`.
-The four production deployments before it — `7861f2af`, `03521443`, `02c44887`, `66a86ca4` — are all
-READY too, so no push on this story left a red build behind.
+**Deployment:** `dpl_D1yUsvbQw7oVy1oyhZYTrqHAeC1t` · `inflozo-7sr4u8619-umangkagathara.vercel.app` ·
+`READY` · `target: production` · `meta.githubCommitSha` `dacfa5bc`, which equals `HEAD` and
+`origin/main` at this phase. Read with
+`GET /v6/deployments?projectId=prj_ptauaY2o7FQckRDk31b7hdl06FSb&target=production`. Every production
+deployment on this story before it — `aa65c107` (`dpl_7iWXMixjX1TVvbRYRDVfMKcEUHR4`), `7861f2af`,
+`03521443`, `02c44887`, `66a86ca4` — is READY too, so no push on this story left a red build behind.
+R-81 pushes on every phase, so a later phase re-reads the newest deployment rather than trusting this
+id: it is the record of what was live when the owner was asked to test, not a pin.
 
 **The production domains, re-read live against that deployment** (never a `vercel.app` URL in the
 owner's test):
@@ -364,8 +367,8 @@ owner's test):
 
 The last three are the review's routing fixes, still closed on the live site at this deployment.
 
-**GitHub Actions at `HEAD`** (`GET /repos/Inflozo/inflozo/actions/runs`): `aa65c107` CI `completed
-success`, and the two commits before it likewise.
+**GitHub Actions at `HEAD`** (`GET /repos/Inflozo/inflozo/actions/runs`): `dacfa5bc` CI `completed
+success`, and `aa65c107` before it likewise.
 
 No schema and no migration belong to this story, so `RLS-TEST.sql` is not in scope here; story 1.2
 owns it. No tooling change to deploy.
