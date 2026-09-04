@@ -1601,8 +1601,9 @@ monthly card charge people already expect. **No DDL changes** — `renewal_remin
   reversal rather than as a fresh decision, so restoring the monthly leg is one instruction.
 
 **R-90 — the production domains are settled and the predecessor stack is deleted.** Asked where the
-real domains should point, the owner ruled that **`inflozo.com` is the marketing site** (with
-`www.inflozo.com` taking a 308 from the apex) and **`app.inflozo.com` is the app**, both served by
+real domains should point, the owner ruled that **`inflozo.com` is the marketing site — the apex is
+canonical and `www.inflozo.com` takes a 308 to it**, reversing Vercel's default, which pointed the apex
+at `www`; applied and verified the same day. **`app.inflozo.com` is the app.** Both are served by
 **one Vercel deployment** — the spine's two-domains-one-deployment shape, and the PRD's standing
 pre-launch mandate that testing runs on the real production domains. **Every owner test therefore runs
 on those domains, never on a `vercel.app` preview URL.** The predecessor — the Vercel project
@@ -1622,8 +1623,14 @@ there with external DNS.
   ✅ `docs/project-context.md`, so every session inherits the rule · ✅ `prd.md` and
   `ARCHITECTURE-SPINE.md` need no edit — both already name the two domains, which is why this is
   recorded as a settlement rather than a change.
-- **Open, and the owner's to rule:** the production Vercel project is still named `inflozo-probe`,
-  the name the E0 spike gave it.
+- **Ruled, with one step outstanding.** The production Vercel project is renamed `inflozo-probe` →
+  **`inflozo`** (owner, 2026-09-04), which also leaves `inflozo-admin` free for the backend console when
+  `admin.inflozo.com` is taken up. The rename itself is performed in the dashboard; when it lands,
+  `VERCEL_PROJECT` in `tools/probe/.env` moves with it. **The old name is deliberately left standing
+  elsewhere:** `STRESS-TEST-R4.md` and `R2-APPLY-2-SPINE.md` are `record` and are never edited, and
+  `MEASUREMENTS.md`'s two mentions are the context a measurement was taken in rather than a live
+  reference. Every other `inflozo-probe` in the repository is a Ghost theme filename or a probe
+  User-Agent and has nothing to do with the Vercel project.
 
 ---
 
