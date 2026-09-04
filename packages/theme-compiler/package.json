@@ -1,0 +1,22 @@
+{
+  "name": "@inflozo/theme-compiler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test 'src/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@inflozo/library": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.1",
+    "gscan": "6.4.2",
+    "handlebars": "4.7.9",
+    "typescript": "7.0.2"
+  }
+}

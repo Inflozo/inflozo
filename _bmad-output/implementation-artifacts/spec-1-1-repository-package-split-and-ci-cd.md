@@ -2,8 +2,9 @@
 title: 'Story 1.1 — The repository, the package split and CI/CD to production'
 type: 'feature'
 created: '2026-09-04'
-status: 'ready-for-dev'
+status: 'in-progress'
 review_loop_iteration: 0
+baseline_commit: '686749c3d822548125d383d06d6dbe8273794877'
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md']
 ---
@@ -71,17 +72,17 @@ Greenfield — nothing under `apps/` or `packages/` exists. Read-only evidence t
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `.nvmrc`, `.npmrc`, `pnpm-workspace.yaml`, `package.json` -- `24` · `engine-strict=true` · `packages: [apps/*, packages/*]` · root `private`, `packageManager: pnpm@11.22.0`, `engines.node: 24.x`, scripts `lint` (`eslint .`), `typecheck` (`pnpm -r typecheck`), `test` (`pnpm -r test`), `check` (`pnpm lint && pnpm typecheck && pnpm test`), `build` (`pnpm --filter @inflozo/web build`) -- the workspace and its pins
-- [ ] `tsconfig.base.json` -- `strict`, `erasableSyntaxOnly`, `allowImportingTsExtensions`, `rewriteRelativeImportExtensions`, `module: nodenext`, `noEmit` -- one config every package extends; erasable syntax is what lets `node --test` run `.ts` directly
-- [ ] `packages/library/package.json` -- `@inflozo/library`, private, no dependencies, no scripts -- data only, the root of the arrow
-- [ ] `packages/{section-runtime,ghost-shim,theme-compiler}/{package.json,tsconfig.json,src/index.ts,src/index.test.ts}` -- `@inflozo/<name>`, private, `dependencies: { "@inflozo/library": "workspace:*" }` (plus each other only where used); scripts `typecheck` (`tsc --noEmit -p .`) and `test` (`node --test 'src/**/*.test.ts'`); `index.ts` exports the package name, the test asserts it -- three pure packages with a green suite from day one
-- [ ] `packages/theme-compiler/package.json` -- `devDependencies: { "gscan": "6.4.2", "handlebars": "4.7.9" }` -- pinned, dev-only, never shipped
-- [ ] `eslint.config.js` -- flat config with `typescript-eslint`'s parser; one block scoped to `packages/{section-runtime,ghost-shim,theme-compiler}/**`: `no-restricted-imports` (patterns `next`, `next/*`, `@supabase/*`, `node:*`, `@inflozo/web`, `**/apps/**`, and the bare built-in names derived from `node:module`'s `builtinModules` — never a hand list), `no-restricted-globals` (`process`, `fetch`, `window`, `document`), `no-restricted-properties` (`Date.now`, `Math.random`, `Intl.*`), `no-restricted-syntax` on `localeCompare`/`toLocaleUpperCase`/`toLocaleLowerCase`/`toString`/`getHours` member calls -- AD-1's ban as a rule, not a review
-- [ ] `apps/web/{package.json,tsconfig.json,next.config.ts,postcss.config.mjs,app/globals.css,app/layout.tsx,app/(marketing)/page.tsx,app/(app)/app/page.tsx,proxy.ts}` -- `@inflozo/web` private; deps `next 16.3.1`, `react`/`react-dom 19.2.8`; dev `typescript 7.0.2`, `tailwindcss` 4.x, `@tailwindcss/postcss`, `@types/react`, `@types/node`; `transpilePackages` for the three core packages; `globals.css` = `@import "tailwindcss"; @source not "../../packages/library";`; layout `<html lang="en">`; two pages, one line of text each; `proxy.ts` per Design Notes -- the only deployable
-- [ ] `apps/web/vercel.json` -- `"buildCommand": "node --version && pnpm --version && pnpm -w check && next build"` -- lint, types and tests fail the deploy, and the build log proves the pins on the platform
-- [ ] `.github/workflows/ci.yml` -- on push to `main`: `pnpm/action-setup` (reads `packageManager`), `actions/setup-node` with `node-version-file: .nvmrc`, `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` -- the green check
-- [ ] `.gitignore` -- add `.next/`, `.vercel/`, `*.tsbuildinfo` -- build output stays out
-- [ ] Vercel project `inflozo` (API, token read only into the command's environment, recorded by name) -- `PATCH /v9/projects/{id}` `rootDirectory: "apps/web"`, `framework: "nextjs"`; env `ENABLE_EXPERIMENTAL_COREPACK=1` (production, preview, development); `POST /v9/projects/{id}/link` `{ "type": "github", "repo": "Inflozo/inflozo" }` with production branch `main` (fallback: the dashboard's *Connect Git*, by the owner) -- push-to-main deploys; assumes Question 1's recommended answer
+- [x] `.nvmrc`, `.npmrc`, `pnpm-workspace.yaml`, `package.json` -- `24` · `engine-strict=true` · `packages: [apps/*, packages/*]` · root `private`, `packageManager: pnpm@11.22.0`, `engines.node: 24.x`, scripts `lint` (`eslint .`), `typecheck` (`pnpm -r typecheck`), `test` (`pnpm -r test`), `check` (`pnpm lint && pnpm typecheck && pnpm test`), `build` (`pnpm --filter @inflozo/web build`) -- the workspace and its pins
+- [x] `tsconfig.base.json` -- `strict`, `erasableSyntaxOnly`, `allowImportingTsExtensions`, `rewriteRelativeImportExtensions`, `module: nodenext`, `noEmit` -- one config every package extends; erasable syntax is what lets `node --test` run `.ts` directly
+- [x] `packages/library/package.json` -- `@inflozo/library`, private, no dependencies, no scripts -- data only, the root of the arrow
+- [x] `packages/{section-runtime,ghost-shim,theme-compiler}/{package.json,tsconfig.json,src/index.ts,src/index.test.ts}` -- `@inflozo/<name>`, private, `dependencies: { "@inflozo/library": "workspace:*" }` (plus each other only where used); scripts `typecheck` (`tsc --noEmit -p .`) and `test` (`node --test 'src/**/*.test.ts'`); `index.ts` exports the package name, the test asserts it -- three pure packages with a green suite from day one
+- [x] `packages/theme-compiler/package.json` -- `devDependencies: { "gscan": "6.4.2", "handlebars": "4.7.9" }` -- pinned, dev-only, never shipped
+- [x] `eslint.config.js` -- flat config with `typescript-eslint`'s parser; one block scoped to `packages/{section-runtime,ghost-shim,theme-compiler}/**`: `no-restricted-imports` (patterns `next`, `next/*`, `@supabase/*`, `node:*`, `@inflozo/web`, `**/apps/**`, and the bare built-in names derived from `node:module`'s `builtinModules` — never a hand list), `no-restricted-globals` (`process`, `fetch`, `window`, `document`), `no-restricted-properties` (`Date.now`, `Math.random`, `Intl.*`), `no-restricted-syntax` on `localeCompare`/`toLocaleUpperCase`/`toLocaleLowerCase`/`toString`/`getHours` member calls -- AD-1's ban as a rule, not a review
+- [x] `apps/web/{package.json,tsconfig.json,next.config.ts,postcss.config.mjs,app/globals.css,app/layout.tsx,app/(marketing)/page.tsx,app/(app)/app/page.tsx,proxy.ts}` -- `@inflozo/web` private; deps `next 16.3.1`, `react`/`react-dom 19.2.8`; dev `typescript 7.0.2`, `tailwindcss` 4.x, `@tailwindcss/postcss`, `@types/react`, `@types/node`; `transpilePackages` for the three core packages; `globals.css` = `@import "tailwindcss"; @source not "../../packages/library";`; layout `<html lang="en">`; two pages, one line of text each; `proxy.ts` per Design Notes -- the only deployable
+- [x] `apps/web/vercel.json` -- `"buildCommand": "node --version && pnpm --version && pnpm -w check && next build"` -- lint, types and tests fail the deploy, and the build log proves the pins on the platform
+- [x] `.github/workflows/ci.yml` -- on push to `main`: `pnpm/action-setup` (reads `packageManager`), `actions/setup-node` with `node-version-file: .nvmrc`, `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` -- the green check
+- [x] `.gitignore` -- add `.next/`, `.vercel/`, `*.tsbuildinfo` -- build output stays out
+- [x] Vercel project `inflozo` (API, token read only into the command's environment, recorded by name) -- `PATCH /v9/projects/{id}` `rootDirectory: "apps/web"`, `framework: "nextjs"`; env `ENABLE_EXPERIMENTAL_COREPACK=1` (production, preview, development); `POST /v9/projects/{id}/link` `{ "type": "github", "repo": "Inflozo/inflozo" }` with production branch `main` (fallback: the dashboard's *Connect Git*, by the owner) -- push-to-main deploys; assumes Question 1's recommended answer
 
 **Acceptance Criteria:**
 - Given a fresh clone on Node 24, when `pnpm install --frozen-lockfile && pnpm check && pnpm build` runs, then every step exits 0 and `pnpm ls -r --depth 0` shows exactly the pinned versions
@@ -92,6 +93,32 @@ Greenfield — nothing under `apps/` or `packages/` exists. Read-only evidence t
 - Given this story has no frame, when the two pages are read, then each is one line of plain unstyled text and nothing else — no tokens, components or invented vocabulary; R-74 holds by absence and the frames arrive with 1.3 to 1.5
 
 ## Spec Change Log
+
+Five things the plan could not know until they were executed. None changes what the owner sees;
+each is recorded here and beside the code it governs.
+
+- **The linter's parser runs on the TypeScript 6 API.** `typescript-eslint` **refuses to load**
+  against `typescript@7.0.2` — executed 2026-09-04, and its own error names the remedy
+  ("Please see … running-side-by-side-with-typescript-6.0"; issue 10940 tracks TS ≥ 7.1). The
+  project's compiler is still **7.0.2**: `apps/web` and all three core packages declare it and
+  typecheck and build with it. The **root** workspace package declares `typescript@6.0.3` and owns
+  nothing but `eslint .`. The pin the spine states is intact; a second copy exists so ESLint can
+  read a `.ts` file at all. The reason is a comment at the top of [eslint.config.js](../../eslint.config.js).
+- **Test files are exempt from the AD-1 ban block.** `node --test` needs `node:test` and
+  `node:assert`, which the derived built-in ban would forbid. AD-1 governs what the compiler and
+  the canvas run, not what proves them, so the block carries `ignores: ['**/*.test.ts']`. The
+  negative control (`src/bad.ts`) is not a test file and is still caught.
+- **`@types/node` is a devDependency of the three core packages** and `tsconfig.base.json` carries
+  `"types": ["node"]`. Without it `tsc` 7.0.2 does not resolve `node:test` in the test files
+  (TS2591, executed). Types only — nothing is imported at runtime, and the ESLint ban is unchanged.
+- **`engine-strict` alone did not refuse the wrong Node.** pnpm 11 read `engines.node` and only
+  **warned** on Node 22 (executed). `engineStrict: true` in `pnpm-workspace.yaml` is what refuses;
+  `.npmrc` keeps `engine-strict=true` for npm's readers. The matrix row now holds.
+- **`pnpm-workspace.yaml` carries `allowBuilds: dtrace-provider: false`.** pnpm 11 fails the install
+  (`ERR_PNPM_IGNORED_BUILDS`) until every build script is ruled on; `dtrace-provider` is bunyan's
+  optional native DTrace binding reached through `gscan`. Its script is denied, not approved.
+  `eslint` is pinned at **10.9.1**, not the same-day 10.10.0, because pnpm 11's 24-hour
+  minimum-release-age policy rejected the newer one — the policy is left on rather than excluded from.
 
 ## Design Notes
 

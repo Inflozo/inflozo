@@ -1,0 +1,21 @@
+{
+  "name": "inflozo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "build": "pnpm --filter @inflozo/web build"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "10.9.1",
+    "typescript": "6.0.3"
+  }
+}

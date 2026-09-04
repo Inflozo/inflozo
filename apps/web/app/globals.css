@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Tailwind styles apps/web and only apps/web. The library's 484 flat stylesheets are
+   never scanned and never purged — the two never meet (spine, Consistency Conventions). */
+@source not "../../../packages/library";

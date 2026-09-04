@@ -1,0 +1,11 @@
+# .npmrc carries engine-strict for npm's readers; pnpm 11 reads its own settings here.
+engineStrict: true
+
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# dtrace-provider is bunyan's optional native DTrace binding, reached through gscan's
+# logger. Nothing here traces, so its build script never runs.
+allowBuilds:
+  dtrace-provider: false
