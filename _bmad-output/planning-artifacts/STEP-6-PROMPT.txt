@@ -15,10 +15,14 @@ Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and 
 owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
 it into stories; do not re-plan it and do not renumber anything.
 
-Three rules from section 8 that shape the story list and are easy to get wrong:
-  - STORY GRANULARITY: in the library epics E9 and E10 a CATEGORY is a story, not a design. One
-    story per category. Keep section 8's epic numbers and titles verbatim — the story board keys
-    the category gate off the titles "The Shell Block" and "The Gated Library Pipeline". A category story delivers every design in that category against one shared content
+Three rules from section 8 that shape the story list and are easy to get wrong:  - STORY GRANULARITY (section 8 as amended by ruling R-85, 2026-09-04): in the library epics E9 and
+    E10 a CATEGORY is a run of consecutive stories, each sized for ONE build session — never one story
+    per design, never one story for a whole category. The first story of a category delivers its shared
+    content model, its stylesheet and the first designs; each later story adds the next designs and their
+    behaviour modules against that model. Number them in order inside the epic; the owner tests every one
+    as it lands, and the category's owner gate is its LAST story. Keep section 8's epic numbers and
+    titles verbatim — the story board keys the category gate off the titles "The Shell Block" and "The
+    Gated Library Pipeline". Together a category's stories deliver every design in that category against one shared content
     model and one stylesheet, plus that category's behaviour modules.
   - The library epics run SEQUENTIALLY. There are no waves. Each category's owner gate blocks
     the next category from starting.
@@ -28,7 +32,7 @@ Section 4's build order is binding and comes first: the FR-D4 mark-emission spik
 platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
-A category story cannot open until that category's per-design specs exist. Since the 2026-08-31
+A category's first story cannot open until that category's per-design specs exist. Since the 2026-08-31
 merge they are the export's own files — design/claude-design-export/Inflozo/<ID> <Name> - Spec.md,
 one per category — and sections-inventory.md is GENERATED from them; `python3 tools/inventory-gen.py
 --check` printing "current" is the test, and it passes today for every category.

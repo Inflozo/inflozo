@@ -1238,10 +1238,14 @@ Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and 
 owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
 it into stories; do not re-plan it and do not renumber anything.
 
-Three rules from section 8 that shape the story list and are easy to get wrong:
-  - STORY GRANULARITY: in the library epics E9 and E10 a CATEGORY is a story, not a design. One
-    story per category. Keep section 8's epic numbers and titles verbatim — the story board keys
-    the category gate off the titles "The Shell Block" and "The Gated Library Pipeline". A category story delivers every design in that category against one shared content
+Three rules from section 8 that shape the story list and are easy to get wrong:  - STORY GRANULARITY (section 8 as amended by ruling R-85, 2026-09-04): in the library epics E9 and
+    E10 a CATEGORY is a run of consecutive stories, each sized for ONE build session — never one story
+    per design, never one story for a whole category. The first story of a category delivers its shared
+    content model, its stylesheet and the first designs; each later story adds the next designs and their
+    behaviour modules against that model. Number them in order inside the epic; the owner tests every one
+    as it lands, and the category's owner gate is its LAST story. Keep section 8's epic numbers and
+    titles verbatim — the story board keys the category gate off the titles "The Shell Block" and "The
+    Gated Library Pipeline". Together a category's stories deliver every design in that category against one shared content
     model and one stylesheet, plus that category's behaviour modules.
   - The library epics run SEQUENTIALLY. There are no waves. Each category's owner gate blocks
     the next category from starting.
@@ -1251,7 +1255,7 @@ Section 4's build order is binding and comes first: the FR-D4 mark-emission spik
 platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
-A category story cannot open until that category's per-design specs exist. Since the 2026-08-31
+A category's first story cannot open until that category's per-design specs exist. Since the 2026-08-31
 merge they are the export's own files — design/claude-design-export/Inflozo/<ID> <Name> - Spec.md,
 one per category — and sections-inventory.md is GENERATED from them; `python3 tools/inventory-gen.py
 --check` printing "current" is the test, and it passes today for every category.
@@ -1376,10 +1380,12 @@ retrospective, if one is run, as `Epic <N> - Retro - <one line>` (recommended at
 gate and E9's close only). A `commit-msg` hook in `tools/hooks/` rejects any other shape that starts with
 Story, Step, Hotfix or Epic.
 
-**The category gate is modelled by the loop, not by a status.** In E9 and E10 a category story cannot
-open until the previous category's story is `done` — and `done` there means the owner passed its test,
-which *is* §4's owner gate. The Create prompt refuses to plan the next category before that, and the story
-board offers no prompt for it. A category story's `## Verification` lists §4's automated sheet — live on
+**The category gate is modelled by the loop, not by a status.** In E9 and E10 a category is a run of
+consecutive stories, each one session (R-85); a story cannot open until the previous story in the epic is
+`done` — and `done` means the owner passed its test. The last story of a category *is* §4's owner gate:
+its owner test plus the automated sheet across the whole category. The Create prompt refuses to plan the
+next story before that, and the story board offers no prompt for it. A category's last story's
+`## Verification` lists §4's automated sheet — live on
 T1 and T3, the real-Ghost comparison, axe, compile CI with FR-J17, the render matrix, the ring
 preservation — as commands with expected results, and Deploy is refused while any is red. The E4/E7
 joint compile gate (§8) is E7's closing story.
@@ -1419,9 +1425,8 @@ Read docs/project-context.md first; its rulings bind. Besides the template's sec
   - The frame the surface is built from, named, with a "matches the frame" acceptance criterion
     (R-74; EXPERIENCE.md's Information Architecture names every surface's frame).
   - `owner_test: pending` in the frontmatter of any story with a screen; `owner_test: none` for a story
-    with no screen (schema, tooling, a server-only change).
-  - In E9 and E10 (the shell block and the gated library), refuse to plan a category story unless the
-    previous story in that epic is `done` in sprint-status.yaml — the owner's gate. A category story's
+    with no screen (schema, tooling, a server-only change).  - In E9 and E10 (the shell block and the gated library), refuse to plan a story unless the previous
+    story in that epic is `done` in sprint-status.yaml — the owner's test of it (R-85). A category's last story's
     "## Verification" lists PRD §4's automated sheet as commands with expected results.
   - Any question for the owner: plain English, an example, numbered options, one marked
     (RECOMMENDED), under "## Questions for the owner" — then stop and say so.

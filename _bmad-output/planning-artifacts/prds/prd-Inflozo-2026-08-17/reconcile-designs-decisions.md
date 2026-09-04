@@ -1,8 +1,8 @@
 ---
 title: Inflozo — Ghost Build Room rulings on the design reconciliation
-status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half landed in the design patch passes and is verified (§A5–§A9); §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 as amended — UI findings come from his test of each deployed story and are fixed there; §A14 the four development-loop rulings R-81…R-84 of the same day)
+status: live (§A2–§A3's R-30…R-38 — the normative half landed 2026-08-31, §A3's ledger is the evidence; the spec half landed in the design patch passes and is verified (§A5–§A9); §A10's two standing rulings bind every remaining step; §A11's R-76 and R-79 have landed in `prd.md`; §A12 records the six decisions of 2026-09-03 and their targets; §A13 records the owner's walk of 2026-09-04 and R-80 as amended — UI findings come from his test of each deployed story and are fixed there; §A14 the development-loop rulings R-81…R-85 of the same day)
 created: 2026-08-27
-updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80, amended the same day; §A14 adds R-81…R-84 — commit after every phase, real-infra review, plain-English questions, the story board)
+updated: 2026-09-04 (§A5–§A10 as before; §A11 adds step 5's four rulings R-76…R-79, §37.7 re-verified against the current export, and the third failure of the library-total control; §A12 adds the six decisions from the step-5b/5c review, with targets; 2026-09-04: §A13 adds the walk and R-80, amended the same day; §A14 adds R-81…R-85 — commit after every phase, real-infra review, plain-English questions, the story board, one-session category stories)
 covers: step 4b of `build-sequence.md` — the owner's rulings on everything `reconcile-designs.md` could not settle by reading, the four approved decisions those rulings supersede, the Ghost facts executed during the session, and the probe families that remain
 ---
 
@@ -1365,8 +1365,22 @@ acceptance criteria, its commits, its questions for the owner and — when it is
 test script with URLs, screens and dummy data; each phase's prompt is copyable from the card. The phase
 prompts are extracted from `build-sequence.md` step 7, never retyped.
 - Targets: `tools/story-board.py` and the page · `tools/doc-audit.py` (catalogue and the generator
-  list, so the gate regenerates it) · `build-sequence.md` step 7 · `HANDOVER.md` · `CLAUDE.md` ·
-  `tools/build-board.py` (the step-6 action points at it). ✅ landed 2026-09-04.
+  list, so the gate regenerates it) · `build-sequence.md` step 7 · `HANDOVER.md` · `CLAUDE.md` ·  `tools/build-board.py` (the step-6 action points at it). ✅ landed 2026-09-04.
+
+**R-85 — in the library epics a category is a run of consecutive one-session stories, and the owner
+tests every one as it lands.** Ruled 2026-09-04 (option 2a of the question the BMAD research raised —
+`BMAD-BEST-PRACTICES.md`), after the owner asked whether it beat the recommended "one story, several
+plans" and was told it did: the method's tooling keys everything on one story being one plan and one
+session, and a mistake in a category's shared content model surfaces at its first story rather than its
+last. The first story of a category delivers its content model, its stylesheet and the first designs; each
+later story adds the next designs and their behaviour modules; stories open in order, each after the
+previous one is `done`; the category's owner gate (§4) is its last story's test plus the automated sheet
+across the category. There are still as many owner gates as there are categories. §8's previous
+"one story per category" is superseded.
+- Targets: `prd.md` §8 *Story granularity* · `build-sequence.md` step 6 prompt and step 7 (the gate
+  paragraph, the Create prompt) · `_bmad/custom/bmad-build.toml` and `bmad-build-auto.toml` ·
+  `BMAD-BEST-PRACTICES.md` · `tools/story-board.py` (its rule — the first open story in E9/E10 gets a
+  prompt, later ones wait — already models a chain of stories, unchanged). ✅ landed 2026-09-04.
 
 ## B · Approved decisions superseded by this session
 

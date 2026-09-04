@@ -17,7 +17,7 @@ source named in the front matter; nothing here is asserted from memory.
 
 | # | What the method says | Where it comes from | Inflozo |
 |---|---|---|---|
-| 1 | **One goal per session, in a fresh chat.** "A typical session is one goal: about 500 lines of code added or changed"; "start a fresh session rather than reusing previous chats." A spec targets a single user-facing goal within 900–1600 tokens (roughly the words the AI can hold at once without losing the thread); above that "risks context-rot in implementation agents" — the AI forgetting the start of the plan before it reaches the end. | Build a Change; `bmad-build/workflow.md` | Step 7 makes every phase its own run; the briefings above each prompt in `build-sequence.md` say **new chat every time**. A category story (PRD §8: one story per category) will be larger than one session — see the open question at the end. |
+| 1 | **One goal per session, in a fresh chat.** "A typical session is one goal: about 500 lines of code added or changed"; "start a fresh session rather than reusing previous chats." A spec targets a single user-facing goal within 900–1600 tokens (roughly the words the AI can hold at once without losing the thread); above that "risks context-rot in implementation agents" — the AI forgetting the start of the plan before it reaches the end. | Build a Change; `bmad-build/workflow.md` | Step 7 makes every phase its own run; the briefings above each prompt in `build-sequence.md` say **new chat every time**. A library category is a run of consecutive one-session stories (PRD §8 as amended, R-85) — see the ruling at the end. |
 | 2 | **Approve the plan, do not skip it.** The planning checkpoint is the human's moment: "Approve the plan when it describes the right thing to build. Push back if it does not." Human attention is scarce; "that extra time and inference is worth it." | Build a Change | The Create phase stops exactly there, and the owner reads `## In plain English` and `## Owner's manual test` before approving. |
 | 3 | **Review in fresh context, ideally with a different model.** "Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)"; "run several blind-hunter lenses [reviewers told to find what is missing] … one on every LLM you have access to." And: "it is a bad idea to let teammates look at unreviewed LLM-generated code," worse to deploy it. | `sprint-status-template.yaml`; Review a Change | Review is a separate run of `/bmad-code-review` whose layers are independent subagents, plus this project's Real-infra verifier (R-82). Nothing deploys before it. |
 | 4 | **Keep repeating review until the findings are low-value; if they keep being substantial, the spec is the problem.** "Stop when the findings are mostly low-value notes about exotic corner cases." | Review a Change | The Fix → Review loop in step 7; a loopback (sending the story back to planning because the plan itself was wrong) is capped at five. |
@@ -34,22 +34,13 @@ source named in the front matter; nothing here is asserted from memory.
 - **Contradicting instructions are the silent killer.** "Conflicting instructions cause Claude Code to pick whichever instruction appeared last." That is why today's rulings were bound in one place the skills load (`docs/project-context.md`) and the skill overrides, and why the documentation gate greps for old wording.
 - **Supervise, do not translate.** The owner's job in the loop is three moments: approve the plan, test the deployed screen, rule on a question. Everything else is the session's, and the boards exist so those three moments are the only ones he has to find.
 
-## The one open question the research raises — a decision for you
+## The one question the research raised — ruled
 
-Section 8 says one category of designs is one story. But a story is meant to fit one AI session,
-and a category — every Hero design on one content model and one stylesheet, plus its behaviour —
-is bigger than that.
-
-*Example:* Heroes planned as a single job is several thousand words of plan, and the AI loses track
-of the start before it reaches the end.
-
-1. **Keep one story per category on the board and for your test, but let the planning session split
-   the work into an ordered set of smaller plans under that one story; you test once, at the end, as
-   now.** Nothing in section 8 changes. **(RECOMMENDED)**
-2. Split each category into several stories in step 6 — more stories for you to test, and section 8
-   changes.
-3. One big plan per category; accept the risk.
-
-Nothing waits on this: step 6 writes one story per category either way, and it matters only at the
-first category story. **To answer:** reply in any chat `Ruled: option 1` (or 2, or 3); the session
-records it as the next ruling in `reconcile-designs-decisions.md` §A14 and saves.
+Section 8 said one category of designs is one story; the method wants a story to fit one AI session,
+and a category is bigger than that. Three options were put to the owner with an example; he asked
+whether splitting the category into several stories in step 6 was better than the recommended
+"one story, several plans", was told plainly that it was — the tooling keys everything on one story
+being one plan and one session, and mistakes in a category's shared model surface at its first story
+rather than its last — and **ruled option 2a on 2026-09-04: a category is a run of consecutive
+one-session stories, and he tests every one as it lands** (ruling R-85, `reconcile-designs-decisions.md`
+§A14; PRD §8 amended; the step-6 prompt and the loop's gate wording carry it).
