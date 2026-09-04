@@ -206,6 +206,7 @@ otherwise unchanged, so every legitimate denial (42501 · 23505 · 23514) still 
 | Vercel `GET /v1/projects/{VERCEL_PROJECT}/env/{envId}` for both vars | HTTP 200, decrypted, compared in memory — **both match** `tools/probe/.env` |
 | GitHub Actions | `acc46ee1` → run 33908002428 **success**; HEAD `a7490b37` → run 33908127990 **success**, `check` and `rls` both green |
 | negative controls | a non-existent table → exit 1; a bare container → 0 tables not 29; a wrong REST key → 401; a wrong Vercel project → 404; an all-zero SHA → 0 runs |
+| GitHub Actions for the review commit `cc355abf` | run 33910932923 **success** — `check` and `rls` both green, so the **patched** gate passes on a clean runner, not only on this machine |
 
 **Reproducibility note the record needed:** the hosted database host is **IPv6-only**, so the `psql`
 container needs `--network host`; on the default bridge it returns `Network unreachable`, which reads
