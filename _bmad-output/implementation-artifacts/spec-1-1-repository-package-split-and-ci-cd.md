@@ -195,7 +195,7 @@ No domain returns 404 any more. The first deployment on this story, `dpl_BoS2pAq
 
 **Real services hit (R-82):** Vercel only — `api.vercel.com` (project read, `PATCH` project, `POST` env, `POST` link, deployment list, deployment events) and the three production domains. No Supabase, Resend, Dodo or Ghost call belongs to this story, and none was made.
 
-**One acceptance criterion is not verified from this machine.** *"the workflow is green"*: `Inflozo/inflozo` is a **private** repository, `gh` is not installed, and there is no GitHub token in `tools/probe/.env`, no `GH_TOKEN` and no git credential helper — the push is SSH-key only. `GET https://api.github.com/repos/Inflozo/inflozo/actions/runs` returns **404 Not Found** unauthenticated. What *is* verified is that the workflow's exact command sequence — `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` — passed twice: locally on Node 24.18.1, and inside the Vercel build on Node v24.19.0 with pnpm 11.22.0. The run's colour is a question for the owner below.
+**One acceptance criterion is not verified from this machine.** *"the workflow is green"*: `Inflozo/inflozo` is a **private** repository, `gh` is not installed, and there is no GitHub token in `tools/probe/.env`, no `GH_TOKEN` and no git credential helper — the push is SSH-key only. `GET https://api.github.com/repos/Inflozo/inflozo/actions/runs` returns **404 Not Found** unauthenticated. What *is* verified is that the workflow's exact command sequence — `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` — passed twice: locally on Node 24.18.1, and inside the Vercel build on Node v24.19.0 with pnpm 11.22.0. The run's colour is question 3 below, **ruled option 2 on 2026-09-04**: a read-only `GITHUB_TOKEN` goes into `tools/probe/.env`, and the criterion is read with the command recorded there as soon as it is in place.
 
 ## Owner's manual test
 
@@ -247,4 +247,10 @@ show a red cross that nobody in the session would ever see.
 3. Drop the GitHub checker entirely and rely on Vercel alone — fewer moving parts, but no second
    opinion at all, and no tick on github.com.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled:** "give me step by step guide on how to add the Github token and I will add it" *(owner, 2026-09-04)* — **option 2**. `GITHUB_TOKEN` is now a row in `tools/probe/.env.example` (fine-grained, resource owner `Inflozo`, repository `inflozo`, **Actions: Read-only** and nothing else — a classic token's `repo` scope is read *and* write and is deliberately not used). Once the owner has pasted it into `tools/probe/.env`, this story's last acceptance criterion is read with:
+
+```
+env $(grep -E '^GITHUB_TOKEN=' tools/probe/.env | xargs) sh -c 'curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/Inflozo/inflozo/actions/runs?per_page=5"' | python3 -c 'import json,sys; [print(r["head_sha"][:8], r["status"], r["conclusion"]) for r in json.load(sys.stdin)["workflow_runs"]]'
+```
+
+expected: a row per push to `main`, each `completed success`. Every later story's `## Verification` reads the check the same way.
