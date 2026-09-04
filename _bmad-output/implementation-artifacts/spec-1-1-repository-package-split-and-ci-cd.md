@@ -195,7 +195,32 @@ No domain returns 404 any more. The first deployment on this story, `dpl_BoS2pAq
 
 **Real services hit (R-82):** Vercel only — `api.vercel.com` (project read, `PATCH` project, `POST` env, `POST` link, deployment list, deployment events) and the three production domains. No Supabase, Resend, Dodo or Ghost call belongs to this story, and none was made.
 
-**One acceptance criterion is not verified from this machine.** *"the workflow is green"*: `Inflozo/inflozo` is a **private** repository, `gh` is not installed, and there is no GitHub token in `tools/probe/.env`, no `GH_TOKEN` and no git credential helper — the push is SSH-key only. `GET https://api.github.com/repos/Inflozo/inflozo/actions/runs` returns **404 Not Found** unauthenticated. What *is* verified is that the workflow's exact command sequence — `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` — passed twice: locally on Node 24.18.1, and inside the Vercel build on Node v24.19.0 with pnpm 11.22.0. The run's colour is question 3 below, **ruled option 2 on 2026-09-04**: a read-only `GITHUB_TOKEN` goes into `tools/probe/.env`, and the criterion is read with the command recorded there as soon as it is in place.
+**GitHub Actions (real service), read with `GITHUB_TOKEN` after the owner added it 2026-09-04.**
+Unauthenticated the API returned **404** (private repository, `gh` not installed, no credential helper — the push is SSH-key only), which is why question 3 exists. With the token, `GET /repos/Inflozo/inflozo/actions/runs`:
+
+| Commit | Workflow | Status | Conclusion |
+|---|---|---|---|
+| `20932eb3` | CI | completed | **success** |
+| `67953297` | CI | completed | **success** |
+| `d36b0095` | CI | completed | **success** |
+| `190fc972` | CI | completed | **success** |
+
+All four green, so *"the workflow is green"* holds and every acceptance criterion is now verified.
+
+**A finding the token bought, and it is worth more than the tick.** `190fc972` is **green on GitHub and
+failed on Vercel** — the deploy whose `eslint .` walked `.vercel/cache/`. The two checks run the same
+commands and disagreed, because that directory exists only on Vercel's builder. So the GitHub check is
+**not** a redundant second opinion, and neither is it a superset: each has a blind spot the other
+covers, and only the Vercel build gates what goes live. Any later story that reads "CI is green" as
+"the deploy will succeed" is reading it wrong.
+
+**Negative controls on the token itself** (standing rule 2 — a permission claim is a hypothesis too):
+`PUT /repos/Inflozo/inflozo/contents/…` → **403**, `POST /repos/Inflozo/inflozo/issues` → **403**. It
+cannot write. It is a fine-grained token (`github_pat_` prefix, no `x-oauth-scopes` header),
+`github-authentication-token-expiration: 2027-09-05`. **It reads more than the row in
+`tools/probe/.env.example` describes**, though: `contents`, `issues`, `pulls`, `actions/secrets` (names
+only — GitHub never returns a secret's value), `actions/variables`, `collaborators`, `hooks` and
+`orgs/Inflozo/members` all return **200**. Read-only, but repository-wide. That is question 4 below.
 
 ## Owner's manual test
 
@@ -254,3 +279,28 @@ env $(grep -E '^GITHUB_TOKEN=' tools/probe/.env | xargs) sh -c 'curl -s -H "Auth
 ```
 
 expected: a row per push to `main`, each `completed success`. Every later story's `## Verification` reads the check the same way.
+
+### 4. The GitHub token you made can read the whole repository, not just the check. Leave it or narrow it?
+
+I asked for a key that could read one thing: whether the safety check passed. The one now in
+`tools/probe/.env` reads that, and also every file, issue, pull request, webhook, collaborator and the
+list of who is in the Inflozo organisation. It **cannot change or delete anything** — I tried to write
+a file and to open an issue and GitHub refused both — and it cannot see the *value* of any secret,
+because GitHub never hands those out. It expires on 5 September 2027. Example: if that file were ever
+copied off your machine, whoever had it could read all of Inflozo's source code, but could not alter a
+line of it or deploy anything.
+
+Worth knowing before you choose: this machine already holds an SSH key that can **write** to the same
+repository — that is how the code got pushed. So the token is weaker than something already here.
+
+1. **Leave it as it is, and I correct the note in `tools/probe/.env.example` to describe what the key
+   actually does (RECOMMENDED)** — no risk that is not already present, nothing for you to redo, and
+   the written record stops being wrong, which is the part that actually matters.
+2. Narrow it to the check only — about two minutes: open
+   https://github.com/settings/personal-access-tokens, click `inflozo-ci-read`, under **Repository
+   permissions** set everything except **Actions** back to **No access**, and **Update**. The key in
+   your file keeps working; nothing needs re-pasting.
+3. Delete it and go back to glancing at github.com yourself — undoes the thing you just did, and every
+   later story loses the automatic tick.
+
+**Ruled:** _(awaiting the owner)_
