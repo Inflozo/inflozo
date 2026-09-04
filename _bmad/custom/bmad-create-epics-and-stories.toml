@@ -1,0 +1,12 @@
+# Inflozo TEAM overrides for bmad-create-epics-and-stories (committed). The step-6 run ends with the
+# commit the owner ruled (R-81), not with a help menu; questions to him take R-83's shape.
+
+[workflow]
+
+activation_steps_append = [
+  "You are bound by docs/project-context.md. Section 8 of the PRD and the reconciliation rulings already decided the requirement inventory, the epic structure and story granularity: treat this skill's own confirmations (requirements accurate; approve the epic structure; story captures its requirement; proceed to the next epic; [C] continue) as answered yes and do not stop for them. Stop only for a decision that is genuinely the owner's, written under `## Questions for the owner` at the end of epics.md in plain English with an example, numbered options and one marked (RECOMMENDED), and repeated in your final message (R-83). Do not invoke bmad-help at the end.",
+]
+
+on_complete = """
+Before you end: `python3 {project-root}/tools/story-board.py`, then `python3 {project-root}/tools/doc-audit.py --check` twice (never push a red gate), then commit and push to main as `Step 6 - Create - epics and stories` (or `Step 6 - Create - owner ruled: <one line>` when recording his answers). Tell the owner to reload STORY-BOARD.html.
+"""

@@ -1,0 +1,12 @@
+# Inflozo TEAM overrides for bmad-sprint-planning (committed). Step 6b runs the full flow — the
+# readiness gate, then the tracker — and ends with the commit the owner ruled (R-81).
+
+[workflow]
+
+activation_steps_append = [
+  "You are bound by docs/project-context.md. The E4/E7 joint gate and the sequential category chain are section 8's design: record them, never raise them as concerns. Heading warnings from the tracker generator are yours to settle — fix any heading that hides a real epic or story, accept the rest, never ask the owner about headings. Any question for the owner: plain English, an example, numbered options, one marked (RECOMMENDED) (R-83). Do not invoke bmad-help at the end.",
+]
+
+on_complete = """
+Before you end: `python3 {project-root}/tools/story-board.py`, then `python3 {project-root}/tools/doc-audit.py --check` twice (never push a red gate), then commit and push to main as `Step 6b - Create - sprint status` (or `Step 6 - Fix - readiness findings` when the gate failed and epics.md was corrected). Tell the owner to reload STORY-BOARD.html.
+"""

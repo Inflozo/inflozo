@@ -113,22 +113,27 @@ drift apart.</p>
 <a class="done" href="#s1"><span class="n">STEP 1</span><span class="t">Architecture</span><span class="b"></span></a><a class="done" href="#s2"><span class="n">STEP 2</span><span class="t">The two E0 spikes</span><span class="b"></span></a><a class="done" href="#s3"><span class="n">STEP 3</span><span class="t">Design prompts 2 and 3</span><span class="b"></span></a><a class="done" href="#s4"><span class="n">STEP 4</span><span class="t">Reconcile designs against the PRD, the architecture and Ghost</span><span class="b"></span></a><a class="done" href="#smerge"><span class="n">STEP 4½</span><span class="t">The inventory merge</span><span class="b"></span></a><a class="done" href="#s5"><span class="n">STEP 5</span><span class="t">Journeys and flows</span><span class="b"></span></a><a class="done" href="#s5b"><span class="n">STEP 5b</span><span class="t">Static prototype</span><span class="b"></span></a><a class="done" href="#s5c"><span class="n">STEP 5c</span><span class="t">The walkthrough</span><span class="b"></span></a><a class="next" href="#s6"><span class="n">STEP 6</span><span class="t">Epics and stories</span><span class="b"></span></a><a class="later" href="#s6b"><span class="n">STEP 6b</span><span class="t">Readiness gate</span><span class="b"></span></a><a class="later" href="#s7"><span class="n">STEP 7</span><span class="t">The development loop</span><span class="b"></span></a>
 </div>
 
-<section class="strip"><div class="kick">Next action</div><h2>Step 6 — the story breakdown. Open since 2026-09-04</h2><p>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</p><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The skill loads the PRD, the architecture and the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect thirty to sixty minutes.</p></div><div class="sa"><button class="copy" data-t="/bmad-create-epics-and-stories
+<section class="strip"><div class="kick">Next action</div><h2>Step 6 — the story breakdown. Open since 2026-09-04</h2><p>You walked 5b on 2026-09-04 and the date stands under build-sequence.md step 5b, The walk. Run the step-6 prompt below. Two rules ride into every story: R-74, every story with a surface names its frame; and R-80, your own ruling from the walk — the UI issues you found are fixed in the stories that own their screens, not by another design pass — and they come from YOUR OWN TEST of each UI story on the deployed site, following the test steps its spec carries, not from notes written in advance. Then the loop of build-sequence.md step 7 begins: Create, Dev, Review, Deploy, your test, Fix, Done — a commit and push after every phase (R-81), review and test on the real infrastructure (R-82), every question to you in plain English with options (R-83), and STORY-BOARD.html (R-84) is where you watch it and copy each prompt.</p><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The prompt names the PRD, the architecture and the rulings file; the skill finds the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — the extra documents the prompt names are already in, so answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect several hours — it writes well over a hundred stories and confirms each — and if the chat runs out of room, open a new chat, paste the same prompt and add: <code>epics.md exists — read its frontmatter stepsCompleted and resume</code>.</p></div><div class="sa"><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+  — read sections 5, 6 and 8 and Appendix F.1; never the whole file.
 Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
-Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
-reconcile-designs-decisions.md — the rulings there bind the stories.
+Rulings that bind the stories: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
+  — sections A10, A13, A14 and B only. Do not open reconcile-designs.md beside it: it is the
+  evidence file, 1.6 MB, and nothing in it is a requirement.
+The two UX documents the skill finds by itself: ux-designs/ux-Inflozo-2026-09-03/DESIGN.md and
+EXPERIENCE.md. EXPERIENCE.md Appendix A is the owner&#x27;s Claude Design work, not story material.
 
 Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
 owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
 it into stories; do not re-plan it and do not renumber anything.
 
 Three rules from section 8 that shape the story list and are easy to get wrong:
-  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
-    category. A category story delivers every design in that category against one shared content
+  - STORY GRANULARITY: in the library epics E9 and E10 a CATEGORY is a story, not a design. One
+    story per category. Keep section 8&#x27;s epic numbers and titles verbatim — the story board keys
+    the category gate off the titles &quot;The Shell Block&quot; and &quot;The Gated Library Pipeline&quot;. A category story delivers every design in that category against one shared content
     model and one stylesheet, plus that category&#x27;s behaviour modules.
   - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
     the next category from starting.
@@ -138,8 +143,25 @@ Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission
 platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
-A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).
+A category story cannot open until that category&#x27;s per-design specs exist. Since the 2026-08-31
+merge they are the export&#x27;s own files — design/claude-design-export/Inflozo/&lt;ID&gt; &lt;Name&gt; - Spec.md,
+one per category — and sections-inventory.md is GENERATED from them; `python3 tools/inventory-gen.py
+--check` printing &quot;current&quot; is the test, and it passes today for every category.
+
+SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GUESS:
+  - E0&#x27;s two spikes ran and closed at step 2 (tools/stress/test-renderer-agreement.js,
+    MEASUREMENTS.md): write Epic 0 with its goal and &quot;closed by execution&quot;, and no stories.
+  - Section 8&#x27;s pilot table names the five pilots by roster NUMBER (A1 #1, A17 #1, A22 #1, A24 #1,
+    A4 #2); the number is the identity and `python3 tools/export-roster.py` gives the current name.
+  - E1&#x27;s schema story is whole-model by section 8 (SCHEMA.sql and RLS-TEST.sql already exist);
+    the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
+  - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
+    flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
+    section 8 and go on; none of them is a stop.
+  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
+    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
+    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+  - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
 §A10 and §A13):
@@ -903,22 +925,27 @@ generators, then `python3 tools/doc-audit.py --check` TWICE.</pre></div>
   <p class="stands">OPEN SINCE 2026-09-04 — the owner walked 5b and wrote the date under build-sequence.md step 5b, The walk (R-75). Expands section 8 into stories; it does not re-plan anything. Per R-74 every story with a surface names the frame it is built from; per R-80 as amended (§A13) every story with a screen carries the owner’s manual-test steps and he tests it on the deployed site before it is done — what he finds is fixed in that story, not by another design pass first.</p>
   <dl><dt>Produces</dt><dd>The story breakdown.</dd>
   </dl>
-  <div class="prompt live"><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The skill loads the PRD, the architecture and the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect thirty to sixty minutes.</p></div><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
+  <div class="prompt live"><div class="brief"><p><b>Before you paste it</b> — Get the prompt from one place: <code>STORY-BOARD.html</code>, the top card, <i>Copy prompt</i> (the same text is in <code>STEP-6-PROMPT.txt</code>). Open a NEW chat in Claude Code — one job per chat, always — and paste the whole prompt including the first line. An <i>epic</i> is a chapter of the build; a <i>story</i> is one job inside it, sized for one session. The prompt names the PRD, the architecture and the rulings file; the skill finds the two UX documents (<code>DESIGN.md</code>, <code>EXPERIENCE.md</code>) by itself, then asks whether to include or exclude any other document — the extra documents the prompt names are already in, so answer <i>no others</i>. If it asks you to confirm the requirements, approve the epic structure, or confirm a story or an epic — reply <code>yes, continue</code>; section 8 already decided those. When it shows a <b>[C]</b> menu, type <code>C</code> and press Enter. If it ends with questions for you, they are in its last message: plain English, an example, numbered options, one marked (RECOMMENDED) — answer in the same chat by number (<code>1: option 2</code>); it writes your answer in and saves again. Three signs it worked: its last message says it saved and uploaded (committed and pushed) <code>Step 6 - Create - epics and stories</code>; <code>STORY-BOARD.html</code>, reloaded, shows story cards in the lanes; the top card has changed to <i>Run step 6b</i>. If instead it offers help or a next skill, reply <code>commit and push as the prompt says</code>. Expect several hours — it writes well over a hundred stories and confirms each — and if the chat runs out of room, open a new chat, paste the same prompt and add: <code>epics.md exists — read its frontmatter stepsCompleted and resume</code>.</p></div><div class="phead"><h4>Epics and stories</h4><span class="ptag live">live</span><button class="copy" data-t="/bmad-create-epics-and-stories
 
 Create the epics and stories list for Inflozo.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+  — read sections 5, 6 and 8 and Appendix F.1; never the whole file.
 Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
-Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
-reconcile-designs-decisions.md — the rulings there bind the stories.
+Rulings that bind the stories: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
+  — sections A10, A13, A14 and B only. Do not open reconcile-designs.md beside it: it is the
+  evidence file, 1.6 MB, and nothing in it is a requirement.
+The two UX documents the skill finds by itself: ux-designs/ux-Inflozo-2026-09-03/DESIGN.md and
+EXPERIENCE.md. EXPERIENCE.md Appendix A is the owner&#x27;s Claude Design work, not story material.
 
 Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
 owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
 it into stories; do not re-plan it and do not renumber anything.
 
 Three rules from section 8 that shape the story list and are easy to get wrong:
-  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
-    category. A category story delivers every design in that category against one shared content
+  - STORY GRANULARITY: in the library epics E9 and E10 a CATEGORY is a story, not a design. One
+    story per category. Keep section 8&#x27;s epic numbers and titles verbatim — the story board keys
+    the category gate off the titles &quot;The Shell Block&quot; and &quot;The Gated Library Pipeline&quot;. A category story delivers every design in that category against one shared content
     model and one stylesheet, plus that category&#x27;s behaviour modules.
   - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
     the next category from starting.
@@ -928,8 +955,25 @@ Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission
 platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
-A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).
+A category story cannot open until that category&#x27;s per-design specs exist. Since the 2026-08-31
+merge they are the export&#x27;s own files — design/claude-design-export/Inflozo/&lt;ID&gt; &lt;Name&gt; - Spec.md,
+one per category — and sections-inventory.md is GENERATED from them; `python3 tools/inventory-gen.py
+--check` printing &quot;current&quot; is the test, and it passes today for every category.
+
+SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GUESS:
+  - E0&#x27;s two spikes ran and closed at step 2 (tools/stress/test-renderer-agreement.js,
+    MEASUREMENTS.md): write Epic 0 with its goal and &quot;closed by execution&quot;, and no stories.
+  - Section 8&#x27;s pilot table names the five pilots by roster NUMBER (A1 #1, A17 #1, A22 #1, A24 #1,
+    A4 #2); the number is the identity and `python3 tools/export-roster.py` gives the current name.
+  - E1&#x27;s schema story is whole-model by section 8 (SCHEMA.sql and RLS-TEST.sql already exist);
+    the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
+  - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
+    flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
+    section 8 and go on; none of them is a stop.
+  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
+    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
+    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+  - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
 §A10 and §A13):
@@ -968,17 +1012,22 @@ AND TWO RULES ABOUT HOW THIS RUN TALKS TO THE OWNER (R-83, R-81):
 Create the epics and stories list for Inflozo.
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
+  — read sections 5, 6 and 8 and Appendix F.1; never the whole file.
 Architecture: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md
-Reconciliation (step 4): prds/prd-Inflozo-2026-08-17/reconcile-designs.md and
-reconcile-designs-decisions.md — the rulings there bind the stories.
+Rulings that bind the stories: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md
+  — sections A10, A13, A14 and B only. Do not open reconcile-designs.md beside it: it is the
+  evidence file, 1.6 MB, and nothing in it is a requirement.
+The two UX documents the skill finds by itself: ux-designs/ux-Inflozo-2026-09-03/DESIGN.md and
+EXPERIENCE.md. EXPERIENCE.md Appendix A is the owner&#x27;s Claude Design work, not story material.
 
 Section 8 ALREADY fixes the epic breakdown, the sequence, the exit criteria and every FR&#x27;s
 owning epic — every FR owned by exactly one epic apart from the splits section 8 documents explicitly (FR-P1 per email, FR-Q6 format-vs-surface, and FR-G1/G4/G5/G6 shared between the shell block and the gated pipeline). Expand
 it into stories; do not re-plan it and do not renumber anything.
 
 Three rules from section 8 that shape the story list and are easy to get wrong:
-  - STORY GRANULARITY: in the library epics a CATEGORY is a story, not a design. One story per
-    category. A category story delivers every design in that category against one shared content
+  - STORY GRANULARITY: in the library epics E9 and E10 a CATEGORY is a story, not a design. One
+    story per category. Keep section 8&#x27;s epic numbers and titles verbatim — the story board keys
+    the category gate off the titles &quot;The Shell Block&quot; and &quot;The Gated Library Pipeline&quot;. A category story delivers every design in that category against one shared content
     model and one stylesheet, plus that category&#x27;s behaviour modules.
   - The library epics run SEQUENTIALLY. There are no waves. Each category&#x27;s owner gate blocks
     the next category from starting.
@@ -988,8 +1037,25 @@ Section 4&#x27;s build order is binding and comes first: the FR-D4 mark-emission
 platform-verification spike, then the complete shell block (every design in Group 1 — the export is the count — not a
 minimal shell), then the gated categories in inventory order beginning with Heroes.
 
-A category story cannot open until that category&#x27;s design-and-specification session has landed
-its specs in sections-inventory.md (§4).
+A category story cannot open until that category&#x27;s per-design specs exist. Since the 2026-08-31
+merge they are the export&#x27;s own files — design/claude-design-export/Inflozo/&lt;ID&gt; &lt;Name&gt; - Spec.md,
+one per category — and sections-inventory.md is GENERATED from them; `python3 tools/inventory-gen.py
+--check` printing &quot;current&quot; is the test, and it passes today for every category.
+
+SIX THINGS ALREADY SETTLED THAT THE SKILL OR THE PRD WOULD OTHERWISE MAKE YOU GUESS:
+  - E0&#x27;s two spikes ran and closed at step 2 (tools/stress/test-renderer-agreement.js,
+    MEASUREMENTS.md): write Epic 0 with its goal and &quot;closed by execution&quot;, and no stories.
+  - Section 8&#x27;s pilot table names the five pilots by roster NUMBER (A1 #1, A17 #1, A22 #1, A24 #1,
+    A4 #2); the number is the identity and `python3 tools/export-roster.py` gives the current name.
+  - E1&#x27;s schema story is whole-model by section 8 (SCHEMA.sql and RLS-TEST.sql already exist);
+    the skill&#x27;s &quot;tables only when needed&quot; rule is overruled there.
+  - The skill&#x27;s technical-layer, file-churn, independence and single-session checks will all
+    flag section 8 (E0, E4, E15; E1/E13; E4→E7; the category stories). Note each as overruled by
+    section 8 and go on; none of them is a stop.
+  - Where EXPERIENCE.md&#x27;s Information Architecture gives a surface only &quot;→ A&lt;n&gt;&quot; (no frame yet),
+    name that prompt and write the criterion as &quot;matches the A&lt;n&gt; frame once the export carries
+    it&quot;. A category story&#x27;s frames are &lt;ID&gt;-&lt;n&gt; &lt;Name&gt;.dc.html and &lt;ID&gt;-0 Category Proof.dc.html.
+  - The E4/E7 joint compile gate is E7&#x27;s closing story.
 
 TWO RULES RIDE INTO EVERY STORY WITH A SURFACE (rulings R-74 and R-80, reconcile-designs-decisions.md
 §A10 and §A13):
@@ -1040,10 +1106,11 @@ _bmad-output/planning-artifacts/epics.md — the full flow, not the readiness re
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
 
-Two readiness conditions are specific to this project and are not the usual ones:
-  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
-    session has landed its per-design specs in sections-inventory.md (§4). A category whose
-    designs still carry only their one-line descriptor has not been through that session.
+Two readiness conditions are specific to this project and are not the usual ones:  - A library category&#x27;s story cannot open until that category&#x27;s per-design specs exist. They
+    are the export&#x27;s own files — design/claude-design-export/Inflozo/&lt;ID&gt; &lt;Name&gt; - Spec.md, one
+    per category — and sections-inventory.md is generated from them, carrying one-line
+    descriptors by design; `python3 tools/inventory-gen.py --check` printing &quot;current&quot; is the
+    test, and it passes today. Do not judge readiness by the inventory&#x27;s descriptors.
   - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
     gate, so the sprint plan must not show library categories running in parallel.
 The E4/E7 joint gate and the sequential category chain are by design — record them, do not raise
@@ -1058,10 +1125,11 @@ _bmad-output/planning-artifacts/epics.md — the full flow, not the readiness re
 
 PRD: /home/ghost/Dev/Inflozo/_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md
 
-Two readiness conditions are specific to this project and are not the usual ones:
-  - A library category&#x27;s story cannot open until that category&#x27;s design-and-specification
-    session has landed its per-design specs in sections-inventory.md (§4). A category whose
-    designs still carry only their one-line descriptor has not been through that session.
+Two readiness conditions are specific to this project and are not the usual ones:  - A library category&#x27;s story cannot open until that category&#x27;s per-design specs exist. They
+    are the export&#x27;s own files — design/claude-design-export/Inflozo/&lt;ID&gt; &lt;Name&gt; - Spec.md, one
+    per category — and sections-inventory.md is generated from them, carrying one-line
+    descriptors by design; `python3 tools/inventory-gen.py --check` printing &quot;current&quot; is the
+    test, and it passes today. Do not judge readiness by the inventory&#x27;s descriptors.
   - The library epics run SEQUENTIALLY, each category blocked by the previous category&#x27;s owner
     gate, so the sprint plan must not show library categories running in parallel.
 The E4/E7 joint gate and the sequential category chain are by design — record them, do not raise

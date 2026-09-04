@@ -756,13 +756,15 @@ All rows RLS-scoped to `user_id` (suggestions publicly readable). Registry, Styl
 
 **The five pilot sections (normative).** E4, E5 and E6 all gate on "the pilot sections", so they are fixed here and cannot be chosen at implementation time from the easy end of the library. They span the hard cases, not the common ones:
 
+*The number is the identity — `A4 #2` is the second design of Heroes as the export numbers it; the names below were re-derived from `tools/export-roster.py` on 2026-09-04 after the inventory merge had renamed them, and that tool is the source if they move again.*
+
 | Pilot | Why it is in the set |
 |---|---|
-| **A1 #1 Classic Left** (Headers & Navigation) | Site-wide singleton: lives on `default.hbs`, compiles to `partials/header.hbs` rather than a section partial, binds `@site.navigation` and `@site.logo`, and changes every template at once |
-| **A17 #1 Classic Cards** (Post Grids) | Dynamic feed: `{{#foreach}}` over the native paginated context, extracts the `post-card` partial invoked with **no params**, carries the main-feed designation and pagination, and is where the native-context-vs-`{{#get}}` rule is decided |
-| **A22 #1 Center Card** (Newsletter / Subscribe) | Members-aware: `@member` gating, the show-to control, Portal `data-portal` actions, and FR-D16's member-state preview |
-| **A24 #1 Classic Center** (Post Headers) | Wrapper context: valid only inside `{{#post}}` on `post.hbs` — the axis of FR-H7 that is easiest to get backwards, and that renders silently empty when it is |
-| **A4 #2 Split Editorial** (Heroes) | Static and control-dense: rich text with all four marks, a guarded media binding with `srcset` (FR-H8), and the heaviest control set in the library for §7.3's data-attribute mechanism |
+| **A1 #1 Rail** (Headers & Navigation) | Site-wide singleton: lives on `default.hbs`, compiles to `partials/header.hbs` rather than a section partial, binds `@site.navigation` and `@site.logo`, and changes every template at once |
+| **A17 #1 Three Up** (Post Grids) | Dynamic feed: `{{#foreach}}` over the native paginated context, extracts the `post-card` partial invoked with **no params**, carries the main-feed designation and pagination, and is where the native-context-vs-`{{#get}}` rule is decided |
+| **A22 #1 Inline Row** (Newsletter / Subscribe) | Members-aware: `@member` gating, the show-to control, Portal `data-portal` actions, and FR-D16's member-state preview |
+| **A24 #1 Centred** (Post Headers) | Wrapper context: valid only inside `{{#post}}` on `post.hbs` — the axis of FR-H7 that is easiest to get backwards, and that renders silently empty when it is |
+| **A4 #2 Flush Left** (Heroes) | Static and control-dense: rich text with all four marks, a guarded media binding with `srcset` (FR-H8), and the heaviest control set in the library for §7.3's data-attribute mechanism |
 
 **The post-body trio (normative sequencing).** The Post Content section (A25), the Ghost card design module (FR-Q7, styling A33's cards) and the style-guide fixture they are both designed against (FR-H3) are **one feature area specified in one pass**, not three independent pieces of work: A25's designs wrap the fixture, the card module styles what is inside it, and neither can be judged without the other rendering. Their build homes stay separate and each FR keeps exactly one owning epic — the fixture is **E4** platform work, the card module and its `cards.css` emission are **E7**, A25's twelve designs are a gated **E10** category — but two dependencies bind them: **A25's owner gate cannot open until the card module emits**, because a reading design assessed against Ghost's default card styling is being assessed against markup the finished theme will never render; and **both depend on the fixture existing in E4**. A25's design-and-specification session covers all three (§4).
 

@@ -1,5 +1,5 @@
 <!-- bmad:context -->
-<!-- Verified 2026-09-04 against 3a770638. Loaded as persistent facts by every BMAD workflow whose customize.toml lists `file:{project-root}/**/project-context.md` (bmad-build, bmad-build-auto, bmad-code-review, bmad-create-epics-and-stories, bmad-sprint-planning, bmad-retrospective, bmad-correct-course). Edits inside this block are the owner's rulings; the numbers cite `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`. -->
+<!-- Verified 2026-09-04 against 4f02f3f7. Loaded as persistent facts by every BMAD workflow whose customize.toml lists `file:{project-root}/**/project-context.md` (bmad-build, bmad-build-auto, bmad-code-review, bmad-create-epics-and-stories, bmad-sprint-planning, bmad-retrospective, bmad-correct-course). Edits inside this block are the owner's rulings; the numbers cite `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md`. -->
 
 ## Inflozo
 
