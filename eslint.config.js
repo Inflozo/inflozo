@@ -32,17 +32,15 @@ const hostReadingCalls = [
 
 export default [
   {
-    ignores: [
-      '**/node_modules/**',
-      '**/.next/**',
-      '_bmad/**',
-      '_bmad-output/**',
-      'docs/**',
-      'tools/**',
-    ],
+    // Everything that is not source. The dot-directory line is load-bearing: Vercel restores
+    // its build cache into `.vercel/cache/` inside the checkout, and `eslint .` linted the
+    // vendored pnpm bundle in there and failed the deploy (executed 2026-09-04).
+    ignores: ['**/node_modules/**', '**/.*/**', '_bmad/**', '_bmad-output/**', 'docs/**', 'tools/**'],
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    // Source is only ever under apps/ and packages/ — so no cache directory, whatever it is
+    // called, can reach a rule.
+    files: ['{apps,packages}/**/*.ts', '{apps,packages}/**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 'latest',
