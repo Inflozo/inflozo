@@ -579,9 +579,16 @@ So that every later story lands in the structure the architecture mandates rathe
 never scanned and never purged
 **And** every pinned version in the spine's Stack table is the version installed, `gscan` at 6.4.2 and
 `handlebars` 4.7.9 as a dev dependency that is never shipped
-**And** `pnpm build` and the test suite run green in CI and the app deploys to production Vercel on push to `main`.
+**And** `pnpm build` and the test suite run green in CI and the app deploys to production Vercel on push to `main`
+**And** that one deployment serves **both production domains** — `inflozo.com` (marketing) and
+`app.inflozo.com` (the app) — which is the spine's two-domains-one-deployment shape and the PRD's
+pre-launch mandate that every test runs on the real production domains, never a `vercel.app` preview URL
+**And** the predecessor stack is retired in the same step and not left half-connected: the Vercel project
+that holds those domains today is detached from them and then removed, and the GitHub repo `Inflozo/core`
+is archived — it carried no users (owner, 2026-09-04)
 
-**FRs:** none directly — this is the Structural Seed. · **Owner test:** none (no screen).
+**FRs:** none directly — this is the Structural Seed. · **Owner test:** yes — he opens both domains and
+sees the new deployment answer on each; there is no screen to judge yet, only that the cutover landed.
 
 ### Story 1.2: The whole data model and its row-level security
 
